@@ -4074,6 +4074,19 @@
             "from": "assets/orders/paow-giv-2-3-p4-c2-h24-cykel-02/take-1/after.mp4",
             "when": "2026-11-18"
           }
+        },
+        {
+          "id": "paow-c2-contact-20261118",
+          "role": "arbetsmaterial",
+          "name": "C2 · mindre blått vid fingret",
+          "path": "assets/proofs/paow-c2-contact-20261118/c2-34-jamforelse.png",
+          "pattern": "assets/proofs/paow-c2-contact-20261118/*",
+          "state": "kandidat",
+          "note": "Fyra native bildpar med oberoende kontroll. Mindre blåspill vid fingret; blå restkant och full rörelsedom återstår.",
+          "source": {
+            "from": "Lokal Dealer-studio · native skärmbilder",
+            "when": "2026-11-18"
+          }
         }
       ]
     },

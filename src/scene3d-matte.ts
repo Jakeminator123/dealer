@@ -365,6 +365,10 @@ export const PAPER_FACE = {
   // print comes in at rest.
   field: [0.916, 0.902, 0.877],
 };
+// A blue card blurred into the gripping finger can be purple (C2 f34), where
+// making it paper would paint the finger white. Remove only the excess blue,
+// with both unambiguous skin and blue card nearby; red and green stay put.
+export const PAPER_CONTACT = {red: [0.02, 0.06] as const, blue: [0.02, 0.08] as const, skin: [0.03, 0.08] as const, support: [0.7, 0.9] as const, step: 2, rings: 4, skinReach: 4};
 type Side = {card: number[]; pale: readonly [number, number]; rimPale: readonly [number, number]; screen: readonly [number, number]; dim: readonly [number, number] | null; red: readonly [number, number] | null; shade: boolean; bright: number; response: number; finger: boolean};
 const SIDES: Record<'back' | 'face', Side> = {back: {card: DARK_BACK.card, pale: DARK_BACK.pale, rimPale: DARK_BACK.rimPale, screen: DARK_BACK.screen, dim: null, red: null, shade: true, bright: DARK_BACK.bright, response: 1, finger: true}, face: {card: PAPER_FACE.card, pale: PAPER_FACE.pale, rimPale: [10, 14], screen: PAPER_FACE.screen, dim: PAPER_FACE.dim, red: PAPER_FACE.red, shade: false, bright: PAPER_FACE.bright, response: PAPER_FACE.response, finger: PAPER_FACE.finger}};
 // One side of the film's card (the back, or the face) in the shader: `${name}Side(c, px, key, zone, shoe, field, lying, w)` gives the
@@ -433,6 +437,21 @@ const vec2 BACK_AROUND[8] = vec2[8](vec2(-1., -1.), vec2(0., -1.), vec2(1., -1.)
 float backSkin(vec3 c){ return smoothstep(${f(DARK_BACK.skinRed[0])}, ${f(DARK_BACK.skinRed[1])}, c.r - c.g) * smoothstep(${f(DARK_BACK.skinBlue[0])}, ${f(DARK_BACK.skinBlue[1])}, c.b / max(c.g, .01)); }
 ${sideGlsl('back', SIDES.back)}
 ${sideGlsl('face', SIDES.face)}
+float paperContactWeight(vec3 c){ return smoothstep(${f(PAPER_CONTACT.red[0])}, ${f(PAPER_CONTACT.red[1])}, c.r - c.g) * smoothstep(${f(PAPER_CONTACT.blue[0])}, ${f(PAPER_CONTACT.blue[1])}, c.b - c.r); }
+vec3 paperContact(vec3 c, vec3 painted, vec2 px, vec3 key, float zone){
+  float amount = paperContactWeight(c) * zone; if (amount <= 0. || painted.b <= painted.g) return painted;
+  mat3 toFace = inverse(mat3(FACE_CARD, key, vec3(1.))); vec3 u; float blue = 0., skin = 0.;
+  for (int k = 0; k < ${PAPER_CONTACT.rings * 8}; k++) {
+    float radius = ${f(PAPER_CONTACT.step)} * (1. + floor(float(k) / 8.)), angle = mod(float(k), 8.) * .785398;
+    vec3 s = filmAt(map, px + radius * vec2(cos(angle), sin(angle)));
+    blue = max(blue, faceCardOf(s, toFace, u) * smoothstep(.03, .1, s.b - max(s.r, s.g)));
+    if (radius <= ${f(PAPER_CONTACT.skinReach)}) skin = max(skin, backSkin(s) * smoothstep(${f(PAPER_CONTACT.skin[0])}, ${f(PAPER_CONTACT.skin[1])}, s.r - s.b));
+    if (blue >= ${f(PAPER_CONTACT.support[1])} && skin >= ${f(PAPER_CONTACT.support[1])}) break;
+  }
+  amount *= smoothstep(${f(PAPER_CONTACT.support[0])}, ${f(PAPER_CONTACT.support[1])}, blue) * smoothstep(${f(PAPER_CONTACT.support[0])}, ${f(PAPER_CONTACT.support[1])}, skin);
+  painted.b = mix(painted.b, min(painted.b, painted.g), amount);
+  return painted;
+}
 // the film's colour evening comes after this and would move the card's colours with the film: they are laid in that much the other way
 vec3 beforeEven(vec3 lit){ return evenOn > .5 ? max(inverse(even) * ((lit - evenLift) / max(evenGain, vec3(.05))), 0.) : lit; } // (a solid pixel's lift)
 vec3 filmCard(vec3 c, vec2 px, vec3 key){
@@ -442,7 +461,8 @@ vec3 filmCard(vec3 c, vec2 px, vec3 key){
   float wb = 0., wf = 0.; vec3 b = c, f = c;
   if (backOn > .5) b = backSide(c, px, key, zone, shoe, beforeEven(backFieldLit), backLying, wb);
   if (faceOn > .5) f = faceSide(c, px, key, zone, shoe, beforeEven(faceFieldLit), faceLying, wf);
-  return wf > wb ? f : b;
+  vec3 painted = wf > wb ? f : b;
+  return faceOn > .5 && backUnder < .5 && shoe < .5 ? paperContact(c, painted, px, key, zone) : painted;
 }`;
 const solve3 = (cols: number[][], c: number[]): number[] => {
   const [a, b, d] = cols, det = (p: number[], q: number[], r: number[]) => p[0] * (q[1] * r[2] - q[2] * r[1]) - q[0] * (p[1] * r[2] - p[2] * r[1]) + r[0] * (p[1] * q[2] - p[2] * q[1]), D = det(a, b, d);
@@ -450,6 +470,11 @@ const solve3 = (cols: number[][], c: number[]): number[] => {
 };
 const step = (e0: number, e1: number, x: number) => { const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
 const lumaOf = (c: number[]) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+/** Contact despill arithmetic; support is the shader's nearby blue/skin evidence, not a tracked polygon. */
+export function paperContactOf(source: number[], painted: number[], blue: number, skin: number, zone = 1): {weight: number; colour: number[]} {
+  const weight = painted[2] <= painted[1] ? 0 : step(PAPER_CONTACT.red[0], PAPER_CONTACT.red[1], source[0] - source[1]) * step(PAPER_CONTACT.blue[0], PAPER_CONTACT.blue[1], source[2] - source[0]) * step(PAPER_CONTACT.support[0], PAPER_CONTACT.support[1], blue) * step(PAPER_CONTACT.support[0], PAPER_CONTACT.support[1], skin) * Math.min(1, Math.max(0, zone));
+  return {weight, colour: [painted[0], painted[1], painted[2] + weight * (Math.min(painted[2], painted[1]) - painted[2])]};
+}
 /**
  * darkBack in the shader for one pixel, for the tests: c the film's colour and key the screen's (0-1), shoe whether it lies in the shoe
  * window or within DARK_BACK.shoeRoom of it, skin how much skin lies within DARK_BACK.skinNear of it (0 to 1), rim whether surely card lies within DARK_BACK.near of it. The neighbourhood's mean over a blurred finger is left out. card

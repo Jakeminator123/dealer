@@ -3,7 +3,7 @@
 // edge; where the passes run; which quad lays the face print and how a film pixel finds its place on it.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {BACK_ZONE, CLASS_GLSL, CLASSIFY_FRAGMENT, DARK_BACK, FILM_CARD_GLSL, LIT, MATTE, MATTE_GLSL, MORPH_FRAGMENT, PAPER_FACE, PLANE, PLANE_GLSL, RULES, SHADE_FRAGMENT, SHOE_BOX, backZone, bodyOf, darkBackOf, matteBox, matteZone, meanLinear, paleZone, planeLight, printQuad, toPrint, turnZone, unmix} from '../src/scene3d-matte.ts';
+import {BACK_ZONE, CLASS_GLSL, CLASSIFY_FRAGMENT, DARK_BACK, FILM_CARD_GLSL, LIT, MATTE, MATTE_GLSL, MORPH_FRAGMENT, PAPER_FACE, PLANE, PLANE_GLSL, RULES, SHADE_FRAGMENT, SHOE_BOX, backZone, bodyOf, darkBackOf, matteBox, matteZone, meanLinear, paleZone, planeLight, printQuad, toPrint, turnZone, unmix, paperContactOf} from '../src/scene3d-matte.ts';
 import {is} from '../src/card-track.ts';
 import {BACK, CARRY, FACE, UNDER} from '../src/card-overlay.ts';
 import {squareToQuad, onSquare} from '../src/scene3d-geometry.ts';
@@ -281,7 +281,7 @@ test('the paper face ("pålägg: framsidan"): the blue face of the film goes pap
   assert.ok(darkBackOf(c(0, 121, 227), key).card < 0.05);
   // the shader has both sides, the face with its own colour, whiteness and light; the deal asks for each by its word (FACE: as filmed)
   for (const v of [...PAPER_FACE.card, ...PAPER_FACE.pale, ...PAPER_FACE.screen, ...PAPER_FACE.red, ...PAPER_FACE.dim, PAPER_FACE.smooth, PAPER_FACE.bright, PAPER_FACE.response]) assert.ok(FILM_CARD_GLSL.includes(v.toFixed(4)), `${v} in the shader`);
-  assert.ok(FILM_CARD_GLSL.includes('vec3 backSide(') && FILM_CARD_GLSL.includes('vec3 faceSide(') && FILM_CARD_GLSL.includes('return wf > wb ? f : b;'));
+  assert.ok(FILM_CARD_GLSL.includes('vec3 backSide(') && FILM_CARD_GLSL.includes('vec3 faceSide(') && FILM_CARD_GLSL.includes('vec3 painted = wf > wb ? f : b;'));
   assert.equal(FACE, 'film');
   const deal = await readFile('src/scene3d-deal.ts', 'utf8');
   assert.ok(deal.includes("const faceOf = (choice: Choice, extra: Extra, carry: Carry): 'film' | 'paper' => extra.face ?? choice.face ?? (carry === 'object' ? UNDER.face : FACE);") && deal.includes('face: paper ? PAPER_FACE.field : null'), 'the face by its own word, else what the carry itself answers');
@@ -345,6 +345,29 @@ test('paper rim repair retains weak face evidence at the screen threshold', () =
     assert.ok(Math.abs(repaired[i] - repaired[i - 1]) < 0.03, `one green level: ${repaired}`);
   }
   assert.ok(repaired.every((weight, i) => weight >= base[i] && weight <= base[i] + 0.01), `only the screen loss can be repaired: ${repaired}`);
+});
+
+test('paper removes purple contact spill without whitening fingers or changing green-key coverage', () => {
+  const video = (rgb: number[]) => rgb.map(v => v / 255);
+  // Measured C2 f34 at (988,938) and (992,943), beside both skin and blue card.
+  for (const rgb of [[96, 69, 133], [95, 62, 122]]) {
+    const source = video(rgb), result = paperContactOf(source, source, 1, 1);
+    assert.equal(result.weight, 1);
+    assert.deepEqual(result.colour, video([rgb[0], rgb[1], rgb[1]]));
+    const keyedGreen = (c: number[]) => Math.max(0, c[1] - Math.max(c[0], c[2]));
+    assert.equal(keyedGreen(result.colour), keyedGreen(source), 'contact stays opaque, not a new hole');
+    for (const support of [[0, 1], [1, 0], [.7, 1], [1, .7], [.536, .529]])
+      assert.deepEqual(paperContactOf(source, source, ...support as [number, number]).colour, source, 'both local supports are required');
+    assert.deepEqual(paperContactOf(source, source, 1, 1, 0).colour, source, 'outside card work area');
+    const alreadyWarm = video([96, 69, 60]);
+    assert.deepEqual(paperContactOf(source, alreadyWarm, 1, 1), {weight: 0, colour: alreadyWarm}, 'no search or change when there is no excess blue left');
+  }
+  // Actual blue body, pale blue card, skin, green, P7 dark tip, and a cool blue residue:
+  // none should be mistaken for the warm purple contact, even with full support.
+  for (const rgb of [[56,115,202], [120,132,194], [249,156,165], [0,236,43], [1,45,40], [84,93,156], [225,200,215], [40,30,45]]) {
+    const c = video(rgb); assert.deepEqual(paperContactOf(c,c,1,1).colour,c, `${rgb} stays`);
+  }
+  assert.ok(FILM_CARD_GLSL.includes('faceOn > .5 && backUnder < .5 && shoe < .5'), 'only the film-card trial, away from the shoe');
 });
 
 test('a card carried without a drawn one leaves the card seated in the shoe window in the drawn back\'s field: the window as dark as in every film', async () => {

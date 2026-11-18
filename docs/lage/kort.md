@@ -28,8 +28,8 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
   visar det som en bricka ("äldre plan", "annan kamera", "avviker").
 
 **Nästa steg.**
-1. C1 ligger kvar genom P4.C2 i Prov `paow-c1-c2-scene-20261118`. `paow-c2-paper-rim-20261118` visar jämnare färg
-   i C2 ruta 51/53 och bevarade P1/P7-kontroller. Blå vändkant, övriga andrakort/split, hålkort och Jakobs linsval återstår.
+1. C1 ligger kvar genom P4.C2. `paow-c2-paper-rim-20261118` och `paow-c2-contact-20261118` visar mindre blåspill
+   med P1/P7 intakta. Blå restkant, övriga andrakort/split, hålkort och Jakobs linsval återstår.
 2. När hans sparade plan checkas in, skriv om `data/media-fit.json` med `node tools/media-audit.ts --fit --write`.
    Gör samma mätning när planens regel, linsen eller ett ankare ändras.
 3. Kortets sidor i efterarbetet, efter filmerna: gul rygg (SG får stå kvar) och blå framsida, lika i labbet och spelet.
