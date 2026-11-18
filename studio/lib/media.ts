@@ -9,7 +9,7 @@
 /** Jakob's chain, in its order: from the first picture of a new dealer to the films, then what stands beside it. */
 // A proof is not a role: it is registered by its own assets/proofs/<id>/proof.json and shown in Granska's Prov (until
 // 2026-11-17 Material listed the proof folders a second time, as the role prov).
-export const ROLES = ["ingangsbild", "keystone", "ankare-1", "ankare-2.1", "ankare-2.2", "landning", "film", "referens", "arbetsmaterial"] as const;
+export const ROLES = ["ingangsbild", "keystone", "ankare-1", "ankare-2.1", "ankare-2.2", "ankare-2.3", "landning", "film", "referens", "arbetsmaterial"] as const;
 export type Role = (typeof ROLES)[number];
 export const isRole = (value: unknown): value is Role => typeof value === "string" && (ROLES as readonly string[]).includes(value);
 
@@ -19,6 +19,7 @@ export const ROLE_LABEL: Record<Role, string> = {
   "ankare-1": "Ankare 1",
   "ankare-2.1": "Ankare 2.1",
   "ankare-2.2": "Ankare 2.2",
+  "ankare-2.3": "Ankare 2.3",
   landning: "Landningar",
   film: "Filmer",
   referens: "Referenser",
@@ -32,7 +33,8 @@ export const ROLE_ABOUT: Record<Role, string> = {
   "ankare-1": "Vila. Bankens ruta (1764 × 1174, grönt) som filmer börjar och slutar på.",
   "ankare-2.1": "Nyp vid skons fönster.",
   "ankare-2.2": "Handen över kortet i skons öppning.",
-  landning: "Kortet på sin plats: givar slutar här, returer börjar här.",
+  "ankare-2.3": "Båda händerna vid skon precis före draget.",
+  landning: "Platsens egen slutbild: en giv bara dit slutar här, en retur börjar här. En bild per plats.",
   film: "Bankens filmer: ett steg mellan två ankare.",
   referens: "Färdiga filmer att jämföra mot.",
   arbetsmaterial: "Annat som filmer börjar eller slutar på, och mellanbilder.",
@@ -271,7 +273,7 @@ export type MediaAnswer = {
 
 // ── Adding a picture ────────────────────────────────────────────────────────
 /** The roles a picture can be added in from the studio. */
-export const UPLOAD_ROLES = ["ingangsbild", "keystone", "ankare-1", "ankare-2.1", "ankare-2.2"] as const satisfies readonly Role[];
+export const UPLOAD_ROLES = ["ingangsbild", "keystone", "ankare-1", "ankare-2.1", "ankare-2.2", "ankare-2.3"] as const satisfies readonly Role[];
 export type UploadRole = (typeof UPLOAD_ROLES)[number];
 export const isUploadRole = (value: unknown): value is UploadRole => typeof value === "string" && (UPLOAD_ROLES as readonly string[]).includes(value);
 /** The bank's frame: an anchor should be exactly this size. */
@@ -321,7 +323,7 @@ export function sizeWarning(role: Role, width: number, height: number): string |
 
 // ── The chain at a glance ───────────────────────────────────────────────────
 /** The roles of the chain itself, from the first picture to the films. */
-export const CHAIN: readonly Role[] = ["ingangsbild", "keystone", "ankare-1", "ankare-2.1", "ankare-2.2", "landning", "film"];
+export const CHAIN: readonly Role[] = ["ingangsbild", "keystone", "ankare-1", "ankare-2.1", "ankare-2.2", "ankare-2.3", "landning", "film"];
 export type RoleStatus = "gäller" | "finns" | "kandidat" | "saknas";
 
 /**

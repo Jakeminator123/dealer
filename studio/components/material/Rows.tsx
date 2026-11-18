@@ -1,6 +1,7 @@
 "use client";
 
 // The rows of the view Material: the chain at a glance (ChainStrip), one row per role with its pictures (RoleRow), the
+// landings seat by seat (LandingsRow: where a deal bara dit to each seat ends, or that the seat has no end picture), the
 // films as counts per seat (FilmsRow, a film built on a picture that no longer holds dimmed with its chip), the archived
 // pictures folded at the foot (ArchivedRow), and the sources of measures as the register lists them (Measures). Proofs are
 // not listed here: a proof is registered by its own proof.json and shown in Granska's Prov.
@@ -12,7 +13,9 @@ import { BUCKET_SIGN, BUCKET_WORD, BUCKETS } from "../../lib/edge-stats.ts";
 import { CHAIN, ROLE_ABOUT, ROLE_LABEL, roleStatus, sizeWords, type DealerAnswer, type EntryAnswer, type Measure, type Role, type RoleStatus } from "../../lib/media.ts";
 import { ProofStill } from "../proofs";
 import { buttonClasses, cn } from "../ui";
+import type { BankFacts } from "../../../src/order-model.ts";
 import { seatGroups, takeCount } from "./films.ts";
+import { endWord, seatEnds, seatEndsCount, seatEndsStatus, type SeatEndRow } from "./landings.ts";
 import { StateChip, Tile, coverOfEntry, filmLine, type TileMark } from "./Tile";
 import { fromOlderChip, olderOf, type Lineage } from "../../lib/lineage.ts";
 
@@ -28,12 +31,13 @@ const SIGN_TONE: Record<RoleStatus, string> = {
 const SIGN: Record<RoleStatus, string> = { gäller: "✓", finns: "✓", kandidat: "◐", saknas: "✕" };
 
 /** The chain from the first picture to the films, each step with how it stands; a click goes to its row. */
-export function ChainStrip({ dealer, bankTakes }: { dealer: DealerAnswer; bankTakes: number }) {
+export function ChainStrip({ dealer, bankTakes, landings }: { dealer: DealerAnswer; bankTakes: number; /** The landings counted seat by seat (seatEndsStatus). */ landings?: { status: RoleStatus; have: number; total: number } }) {
   return (
     <nav aria-label="Kedjan" className="flex flex-wrap items-center gap-1.5">
       {CHAIN.map((role, i) => {
-        const status = roleStatus(dealer, role, bankTakes);
-        const n = role === "film" ? bankTakes : dealer.entries.filter((e) => e.role === role).length;
+        // Landings are counted per seat: how many seats have an end picture of their own, never one picture for all.
+        const status = role === "landning" && landings ? landings.status : roleStatus(dealer, role, bankTakes);
+        const n = role === "landning" && landings ? `${landings.have}/${landings.total}` : role === "film" ? bankTakes : dealer.entries.filter((e) => e.role === role).length;
         return (
           <span key={role} className="flex items-center gap-1.5">
             {i ? <ChevronRight aria-hidden className="size-4 text-faint" /> : null}
@@ -54,7 +58,7 @@ export function ChainStrip({ dealer, bankTakes }: { dealer: DealerAnswer; bankTa
   );
 }
 
-const ANCHORS: readonly Role[] = ["ankare-1", "ankare-2.1", "ankare-2.2"];
+const ANCHORS: readonly Role[] = ["ankare-1", "ankare-2.1", "ankare-2.2", "ankare-2.3"];
 
 /**
  * What a film can be ordered from today: per anchor the picture that holds, else its candidates. A film begins and ends
@@ -184,6 +188,69 @@ export function RoleRow({
         <Missing text={missing ?? "Inget här än."} />
       )}
     </RowFrame>
+  );
+}
+
+/**
+ * Landningar, seat by seat: where a deal bara dit to each seat ends. The seat's own landing picture where one holds, else
+ * the cut frame of the bank's own film to the seat (the frame where the return he approved begins), else "ingen slutbild".
+ * Under the seats, the landing pictures of the register themselves (one that is set aside can be made to hold again).
+ */
+export function LandingsRow({ dealer, all = dealer.entries, bank, step, open, onOpen }: { dealer: DealerAnswer; all?: readonly EntryAnswer[]; bank: BankFacts | null; step: number; open: string | null; onOpen: (entry: EntryAnswer) => void }) {
+  const rows = seatEnds(dealer.entries, bank, dealer.id);
+  const state = seatEndsStatus(rows);
+  const list = dealer.entries.filter((e) => e.role === "landning");
+  return (
+    <RowFrame role="landning" step={step} status={state.status} count={seatEndsCount(state)}>
+      <div className="flex flex-col gap-3">
+        <ul data-seat-ends className="grid grid-cols-[repeat(auto-fill,minmax(132px,1fr))] gap-2.5">
+          {rows.map((row) => (
+            <li key={row.target}>
+              <SeatEndTile row={row} bank={bank} onOpen={onOpen} />
+            </li>
+          ))}
+        </ul>
+        {list.length ? (
+          <Strip>
+            {list.map((e) => (
+              <Tile key={e.id} entry={e} onOpen={onOpen} selected={open === e.id} quiet={fromOlderChip(e, all)} />
+            ))}
+          </Strip>
+        ) : null}
+      </div>
+    </RowFrame>
+  );
+}
+
+const END_TONE = { landningsbild: "text-[#6cc595]", snittruta: "text-[#9db3f8]", "ingen slutbild": "text-[#ef8b8b]" } as const;
+
+/** One seat: its end picture as a still with one word under it, or an empty frame that says there is none. */
+function SeatEndTile({ row, bank, onOpen }: { row: SeatEndRow<EntryAnswer>; bank: BankFacts | null; onOpen: (entry: EntryAnswer) => void }) {
+  const end = row.pinch ?? row.drag;
+  const word = endWord(end) as keyof typeof END_TONE;
+  const cover = !end ? null : end.kind === "LANDNING" ? coverOfEntry(end.entry) : ({ kind: "video", path: end.cut.path, frame: end.cut.frame } as const);
+  const fps = end?.kind === "SNITTRUTA" ? (bank?.motions?.[end.cut.clip]?.source?.fps ?? 24) : end?.kind === "LANDNING" ? (end.entry.fps ?? 30) : 30;
+  const title = !end ? `${row.label}: ingen landningsbild gäller, och banken har ingen egen film dit med en retur du har godkänt rakt.` : end.kind === "LANDNING" ? `${row.label}: ${end.entry.name}` : `${row.label}: ruta ${end.cut.frame} ur ${end.cut.clip}, där returen börjar`;
+  const inner = (
+    <>
+      {cover ? <ProofStill cover={cover} fps={fps} className="aspect-[3/2] w-full rounded-xs" /> : <span className="grid aspect-[3/2] w-full place-items-center rounded-xs border border-dashed border-underkand/40 text-lg text-[#ef8b8b]">✕</span>}
+      <span className="flex items-baseline justify-between gap-2">
+        <span className="text-md font-semibold text-ink">{row.label}</span>
+        <span className={cn("text-xs", END_TONE[word])}>{word}</span>
+      </span>
+      {/* From anchor 2.2 (the drag) a seat ends on the drag's own film: said where it differs from the pinch. */}
+      <span className="text-2xs text-faint">{row.drag ? "från 2.1 och 2.2" : row.pinch ? "från 2.1" : " "}</span>
+    </>
+  );
+  const frame = "flex h-full w-full flex-col gap-1 rounded-md border border-line bg-surface px-2 py-2 text-left";
+  return end?.kind === "LANDNING" ? (
+    <button type="button" data-seat-end={row.target} title={title} onClick={() => onOpen(end.entry)} className={cn(frame, "hover:border-line-strong hover:bg-raised")}>
+      {inner}
+    </button>
+  ) : (
+    <div data-seat-end={row.target} title={title} className={frame}>
+      {inner}
+    </div>
   );
 }
 

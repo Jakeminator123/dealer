@@ -1,29 +1,19 @@
 "use client";
 
-// A new order, all on one sheet with defaults for everything. It opens on the picture (Stage, Jakob 2026-11-17): his
-// notation for what is ordered ("A2.2 → P3C2 → A2.2") and one plain sentence, over the picture the film starts from with
-// every card place of the plan on it and the ordered card drawn where the plan lays it; a press on a place chooses that
-// card (a seat's second card too), "Flytta kortets plats" opens Bordet's Kortplan at it, and "Siluett" shows
-// the places on Kortplan's neutral table (Siluett) instead. Under the picture, what the choices turn into, changing as he sets
-// them: the order's line in Swedish, the pictures that are sent (first, last with the card drawn where the plan says, or
-// the dealer's picture and the pose) each with whose it is, the cost of all of it against the limits, and the exact text
-// with the parts a choice made marked (from promptFor, the function the store writes the draft's text with). Beside it
-// (under it on a phone), the choices in Jakob's words: dealer → what (the step, with the anchor it starts from said in a
-// line) → place on the table (one seat and its card 1 or 2, or "Alla sju": the first card to every player, one draft per
-// seat in a group) → how the card lands (stängt → stängt, stängt → öppet; the plan's choice marked "enligt Placering") →
-// which hand (vänster hela vägen, höger hela vägen, handbyte as a tick; handbyte suggested where the left hand would cross
-// her body) → how the card turns → model (every model that can make the step, its own marked "förval"; resolution,
-// lengths, cost and text follow it), length, takes and his own addition. The picture and the seat field stay in step.
-// "Skapa utkast" (beside the cost at the foot) makes the draft(s) (POST /api/orders) and opens "Det här skickas"; nothing
-// is approved here. Opened with values from the address (presetOf); the view mounts it anew per address, so the choices
-// start from what the address asks. With som=<id> every choice of that order is chosen (recipeOf), the pictures fetched
-// fresh from what holds now, the text written with today's template (Kort where the old order had the long text), and a
-// line says so.
-//
-// Template 4: the text (Kort förval, Minimal; a still Kort only) with its length in words; tur och retur or bara dit for
-// a deal, and a return as its own film, where the seat's landing picture holds (else what is missing and how to get one); a
-// reference film from the bank for a model that takes one; the card's size in this order (a trial). Only the dealers of
-// data/dealers.json are offered (the register may hold others).
+// A new order along one straight line (2026-11-18). A person chooses three things: the dealer, what (the step, which says the
+// anchor a film starts from) and, for a film with a card, the place on the table (one seat and its card 1 or 2, or "Alla sju").
+// Everything else is the step's ONE recipe (data/order-methods.json, src/order-methods.ts recipeFor), shown in a box as what
+// will be ordered: model, resolution, seconds, shape, the last picture, the reference film, the text and the takes. The sheet
+// sends only the dealer, the step and the card, and the store fills in the recipe; whatever is set under "Undantag från
+// receptet" (folded) is a deliberate exception, sent as such and named in the draft's notes. It opens on the picture (Stage):
+// his notation for what is ordered ("A2.1 → P4C1") over the picture the film starts from with every card place of the plan on
+// it; a press on a place chooses that card. Under the picture, exactly what goes to Runway, changing as he chooses: the
+// pictures (first, and last: the seat's own end picture for a deal bara dit), the reference film, the cost against the
+// limits, and the exact text (from promptFor, the function the store writes the draft's text with). No description of the
+// movement stands anywhere but in that text (Jakob 2026-11-17: only what is sent is described). "Skapa utkast" makes the
+// draft(s) (POST /api/orders) and opens "Det här skickas"; nothing is approved here. Opened with values from the address
+// (presetOf); with som=<id> every choice of that order is chosen as an exception (recipeOf), the pictures fetched fresh from
+// what holds now and the text written with today's template. Only the dealers of data/dealers.json are offered.
 import { useEffect, useState, type ReactNode } from "react";
 import { asApiError } from "../../lib/api.ts";
 import { useBank } from "../../lib/bank.ts";
@@ -34,19 +24,27 @@ import {
   type OrderAnswer, type OrdersAnswer, type Preset, type StepKey,
 } from "../../lib/orders.ts";
 import { kortplanHref } from "../../lib/bordet.ts";
+import cutFramesFile from "../../../data/cut-frames.json";
+import methodsFile from "../../../data/order-methods.json";
 import {
-  ALL_SEVEN, CROSSING_WHY, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, SEAT_TARGETS, SHAPE_LABEL, STEPS, STYLE_LABEL, TAKES_MAX,
-  costOf, credits, genitive, groupBudget, handChoiceOf, handsOf, landingMissing, landingOf, lengthFor, modelFor, modelsFor, paramsOf, referenceCandidates, scaleQuad, scaleWords, seatList, seatWords, startWords, stepOf, stylesFor, summaryOf,
+  ALL_SEVEN, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, SEAT_TARGETS, SHAPE_LABEL, STEPS, STYLE_LABEL, TAKES_MAX,
+  costOf, credits, genitive, groupBudget, handChoiceOf, handsOf, landingMissing, landingOf, lengthFor, modelFor, modelsFor, paramsOf, readCutChecks, referenceCandidates, scaleQuad, scaleWords, seatEndMissing, seatEndOf, seatList, seatWords, stepOf, stylesFor,
   type BankFacts, type FlipAxis, type HandChoice, type ModelDef, type Owner, type SeatPlan, type Shape, type TextStyle,
 } from "../../../src/order-model.ts";
+import { METHOD_STATUS_LABEL, recipeFor, recipeWords, referenceByRule, referenceWaits, secondsOf, type MethodRegister } from "../../../src/order-methods.ts";
 import { promptFor, wordCount } from "../../../src/order-prompts.ts";
 import { NEUTRAL_BACKDROP } from "../../../src/placement-model.ts";
 import { getMedia } from "../material/client.ts";
-import { Button, SegmentedControl, Sheet, TextArea, cn, useToast } from "../ui";
-import { FlipChoice, HandChoiceRow, LandsChoice, ModelChoice, ReferenceChoice, ScaleChoice, ShapeChoice, TextChoice } from "./Choices";
+import { Badge, Button, SegmentedControl, Sheet, TextArea, cn, useToast } from "../ui";
+import { HandChoiceRow, LandsChoice, ModelChoice, ReferenceChoice, ScaleChoice, ShapeChoice, TextChoice } from "./Choices";
 import { PreviewPicture } from "./Pictures";
 import { PromptText } from "./PromptText";
 import { Stage, type StageBase, type StageCard, type StageLook } from "./Stage";
+
+/** The register of how each step is ordered, as the studio was built with it (data/order-methods.json). */
+const METHODS = methodsFile as unknown as MethodRegister;
+/** The picture checks of cut frames, as the studio was built with them (data/cut-frames.json). */
+const CUT_CHECKS = readCutChecks(cutFramesFile);
 
 function Step({ n, title, aside, children }: { n: number; title: string; aside?: ReactNode; children: ReactNode }) {
   return (
@@ -87,12 +85,14 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   const [duration, setDuration] = useState<{ key: string; seconds: number } | null>(r?.duration ? { key: r.step, seconds: r.duration } : null);
   // The model chosen for a step (key null: asked for by address, for whatever step the sheet opens on).
   const [modelChoice, setModelChoice] = useState<{ key: string | null; id: string } | null>(r ? { key: r.step, id: r.model } : preset?.model ? { key: preset.step, id: preset.model } : null);
-  const [takes, setTakes] = useState(r?.takes ?? 2);
+  // Every exception starts unset (null, and for the reference film undefined): the recipe's value is then what is ordered.
+  const [takesChoice, setTakes] = useState<number | null>(r?.takes ?? null);
   const [base, setBase] = useState<{ key: string; id: string } | null>(null);
-  const [extra, setExtra] = useState(r?.extra ?? "");
-  const [styleChoice, setStyle] = useState<TextStyle>(r?.style ?? "KORT");
-  const [shapeChoice, setShape] = useState<Shape>(r?.shape === "ONE_WAY" ? "ONE_WAY" : "ROUND_TRIP");
-  const [refChoice, setRef] = useState<string | null>(r?.reference ?? null);
+  const [extraChoice, setExtra] = useState<string | null>(r ? r.extra : null);
+  const [styleChoice, setStyle] = useState<TextStyle | null>(r?.style ?? null);
+  const [shapeChoice, setShape] = useState<Shape | null>(r?.shape ?? null);
+  // undefined: the film the recipe's rule finds; null: none (an exception); a take: that film (an exception).
+  const [refChoice, setRef] = useState<string | null | undefined>(r ? r.reference : undefined);
   const [scaleChoice, setScale] = useState(r?.cardScale ?? 1);
   const [shownSeat, setShownSeat] = useState<string | null>(null);
   // The picture under the places: the dealer's own (what is sent) or Kortplan's neutral table (Siluett).
@@ -112,10 +112,13 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   const entries = dealer?.entries ?? [];
   const key = stepKey ?? (dealer ? firstLacking(entries) : "ANKARE-2.1");
   const step = stepOf(key)!;
+  // The step's one recipe for the card chosen: everything that is not set as an exception below comes from it.
+  const recipe = recipeFor(METHODS, key, step.card ? target : null);
   const models = modelsFor(step);
-  const model = (modelChoice && (modelChoice.key === null || modelChoice.key === key) ? modelFor(step, modelChoice.id) : null) ?? modelFor(step)!;
+  const model = (modelChoice && (modelChoice.key === null || modelChoice.key === key) ? modelFor(step, modelChoice.id) : null) ?? modelFor(step, recipe?.model) ?? models[0];
   const plan = all.plan ?? null;
-  const seconds = lengthFor(model, duration?.key === key ? duration.seconds : (step.duration ?? 4));
+  const takes = takesChoice ?? recipe?.takes ?? 1;
+  const extra = extraChoice ?? recipe?.extra ?? "";
   const start = anchorFor(entries, step.from);
   const startEntry = start.holds ?? (step.kind === "STILL" ? (start.candidates.find((c) => c.id === (base?.key === `${dealerId}:${key}` ? base.id : null)) ?? start.candidates[0] ?? null) : null);
   // The anchor a film ends on: an entry or a rest, and a return (from the landing picture back to its anchor).
@@ -129,7 +132,8 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   const crossing = ALL_SEVEN.filter((t) => seatOf(t)?.crosses);
   const handsAt = (t: string) => {
     const s = seatOf(t);
-    if (hand === null) return { hand: s?.hand ?? ("LH" as const), pass: s?.pass ?? false };
+    // Nothing chosen: the recipe's hand for a deal (the hand at the shoe all the way), else what Placering says for the card.
+    if (hand === null) return recipe?.hand && step.start !== "LAND" ? { hand: recipe.hand, pass: false } : { hand: s?.hand ?? ("LH" as const), pass: s?.pass ?? false };
     if (hand === "PASS" && seven && !passEverywhere) return { hand: "LH" as const, pass: !!s?.crosses };
     return handsOf(hand);
   };
@@ -137,34 +141,50 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   const planSides = [...new Set(targets.map((t) => seatOf(t)?.side ?? "FRONT"))];
   const planHands = [...new Set(targets.map((t) => handChoiceOf({ hand: seatOf(t)?.hand ?? "LH", pass: seatOf(t)?.pass })))];
   const shownSide = side ?? (planSides.length === 1 ? planSides[0] : null);
-  const shownHand: HandChoice = hand ?? (planHands.length === 1 ? planHands[0] : "LH");
+  // Nothing chosen: the recipe's hand for a deal, else the plan's where every seat says the same.
+  const shownHand: HandChoice = hand ?? (recipe?.hand && step.start !== "LAND" ? recipe.hand : planHands.length === 1 ? planHands[0] : "LH");
   const open_ = targets.some((t) => sideAt(t) === "FRONT");
   // How the card turns: what Kortplan's Rörelse says for the (first) card, unless chosen here.
   // Each seat turns as the plan says for it unless one turn is chosen for the whole order; only a chosen one is sent, so that
   // with "Alla sju" every seat keeps its own (the store takes each seat's from the plan when the order names none).
   const chosenFlip = flip?.key === key ? flip.axis : null;
-  const flipAt = (t: string) => seatFlip(key, seatOf(t), chosenFlip);
-  const planFlips = [...new Set(targets.map((t) => seatFlip(key, seatOf(t), null)))];
+  const flipAt = (t: string) => seatFlip(key, seatOf(t), chosenFlip ?? recipe?.turn ?? null);
+  const planFlips = [...new Set(targets.map((t) => seatFlip(key, seatOf(t), recipe?.turn ?? null)))];
   // The grip is the step's; where Placering plans the card(s) with the other one, the sheet says so.
   const gripLine = gripAgainstPlan(step, targets.map(seatOf));
   const focus = step.card ? (shownSeat && targets.includes(shownSeat) ? shownSeat : targets[0]) : null;
   const motionAt = (t: string) => ({ grip: step.grip ?? ("PINCH" as const), ...handsAt(t), turn: sideAt(t) === "FRONT", flipAxis: flipAt(t), side: sideAt(t), target: t });
 
-  // ── The text's style, tur och retur or bara dit, the landing picture, the card's size, a reference film ──
+  // ── The text's style, bara dit or tur och retur, the seat's end picture, the card's size, the reference film, the length ──
   const styles = stylesFor(step.kind, step);
-  const style: TextStyle = styles.includes(styleChoice) ? styleChoice : "KORT";
+  const style: TextStyle = styleChoice && styles.includes(styleChoice) ? styleChoice : (recipe?.style ?? "KORT");
   const deal = step.card && step.start !== "LAND";
-  const shape: Shape | null = step.kind !== "FILM" ? null : deal ? shapeChoice : "ONE_WAY";
+  const shape: Shape | null = step.kind !== "FILM" ? null : deal ? (shapeChoice ?? recipe?.shape ?? "ONE_WAY") : "ONE_WAY";
   const oneWay = deal && shape === "ONE_WAY";
-  // A return starts on the seat's landing picture and a deal bara dit ends on it: one must hold for every seat ordered.
-  const needsLanding = step.start === "LAND" || oneWay;
+  // The bank with the dummy's rendered films (the lab's clip bank does not list them; the store's answer does).
+  const bankFacts: BankFacts | null = bank ? { ...(bank as BankFacts), rendered: all.rendered ?? [], cutChecks: CUT_CHECKS } : null;
+  // The hand that lays the card: from anchor 2.3 always the other hand; else the one chosen or the plan's.
+  const laysAt = (t: string): "LH" | "RH" => (step.grip === "TWO_HANDS" || handsAt(t).pass ? "RH" : handsAt(t).hand);
+  // A deal bara dit ends on the seat's own end picture (its landing picture, else the cut frame of the bank's film to the
+  // seat), and a return starts on the seat's landing picture: every seat ordered must have its own.
+  const endAt = (t: string) => seatEndOf(entries, bankFacts, { dealer: dealerId, step, target: t, hand: laysAt(t) });
   const landing = step.card ? landingOf(entries, focus) : null;
-  const lacking = needsLanding ? targets.filter((t) => !landingOf(entries, t)) : [];
-  const landingWhy = lacking.length ? landingMissing(dealerName, lacking[0]) + (lacking.length > 1 ? ` (saknas för ${seatList(lacking)})` : "") : null;
+  const seatEnd = oneWay && focus ? endAt(focus) : null;
+  const lacking = oneWay ? targets.filter((t) => !endAt(t)) : step.start === "LAND" ? targets.filter((t) => !landingOf(entries, t)) : [];
+  const landingWhy = lacking.length ? (oneWay ? seatEndMissing(dealerName, lacking[0], step.from) : landingMissing(dealerName, lacking[0])) + (lacking.length > 1 ? ` (saknas för ${seatList(lacking)})` : "") : null;
   const scalable = deal && shape === "ROUND_TRIP";
   const cardScale = scalable ? scaleChoice : 1;
-  const candidates = model.videos && bank ? referenceCandidates(bank as BankFacts, { dealer: dealerId, step, target: focus, model }) : [];
-  const reference = model.videos ? (candidates.find((c) => c.take === refChoice && c.fits)?.take ?? null) : null;
+  const candidates = model.videos && bankFacts ? referenceCandidates(bankFacts, { dealer: dealerId, step, target: focus, model }) : [];
+  // The reference film: the one the recipe's rule finds for the step and the seat, unless he has chosen another or none.
+  const ruleAt = (t: string | null) => (recipe && recipe.reference !== "ingen" && model.videos ? referenceByRule(bankFacts, recipe.reference, { dealer: dealerId, step, target: t, model, shape, lays: t ? laysAt(t) : null }) : null);
+  const byRule = ruleAt(focus);
+  const chosenRef = refChoice === undefined ? byRule : refChoice ? (candidates.find((c) => c.take === refChoice && c.fits) ?? null) : null;
+  const reference = model.videos ? (chosenRef?.take ?? null) : null;
+  // Where the recipe wants a reference film and its rule finds none for a seat, nothing is ordered: the step waits.
+  const waiting = refChoice === undefined && recipe && recipe.reference !== "ingen" && model.videos ? (step.card ? targets : [null]).filter((t) => !ruleAt(t)) : [];
+  const referenceWhy = waiting.length ? `${step.label}${waiting[0] ? ` till ${seatWords(waiting[0])}` : ""} ${referenceWaits(recipe!.reference, step)}${waiting.length > 1 ? ` (gäller ${seatList(waiting.filter((t): t is string => !!t))})` : ""}. Inget beställs utan den.` : null;
+  // The length: his own; else the reference film's (the text says "with the same timing"); else the recipe's.
+  const seconds = lengthFor(model, duration?.key === key ? duration.seconds : (secondsOf(model, recipe?.seconds ?? null, chosenRef) ?? model.durations?.[0] ?? 4));
   const names = Object.fromEntries((all.dealers ?? []).map((d) => [d.id, d.name]));
 
   // ── What it turns into ──
@@ -173,16 +193,15 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
   // A step about a card that is not chosen (the hole card's turn): its place is that card's.
   const placeSeat = focusSeat ?? (step.target ? seatOf(step.target) : null);
   const prompt = look ? promptFor({ dealer: { name: dealerName, look }, step: key, model: model.id, motion, place: placeSeat ? { x: placeSeat.centre[0], y: placeSeat.centre[1] } : null, extra: extra.trim() || null, style, oneWay, reference: !!reference, cardScale }) : null;
-  const summary = summaryOf(step, dealerName, motion, shape);
   // The same parameters the store gives the draft (paramsOf), so the cost here is the draft's.
-  const params = paramsOf(step, model, step.kind === "FILM" ? { duration: seconds } : {});
+  const params = paramsOf(step, model, step.kind === "FILM" ? { duration: seconds, resolution: recipe?.resolution } : {});
   const cost = all.policy ? costOf({ model: model.id, params }, takes, all.policy.prices) : null;
   const count = Math.max(1, targets.length);
   const budget = cost && all.policy ? groupBudget(cost, count, all.policy, all.day.spent, all.balance?.credits ?? 0) : null;
   const durations = model.durations ? Array.from({ length: Math.min(model.durations[1], 10) - model.durations[0] + 1 }, (_, i) => model.durations![0] + i) : [];
   // Each model's resolution and price per take for the length chosen (within what that model takes).
   const modelWhat = (m: ModelDef) => {
-    const p = paramsOf(step, m, step.kind === "FILM" ? { duration: lengthFor(m, seconds) } : {});
+    const p = paramsOf(step, m, step.kind === "FILM" ? { duration: lengthFor(m, seconds), resolution: recipe?.resolution } : {});
     const c = all.policy ? costOf({ model: m.id, params: p }, 1, all.policy.prices) : null;
     return [resolutionWords(p), c ? `${credits(c.perTake)} krediter per tagning` : "inget pris"].filter(Boolean).join(" · ");
   };
@@ -223,7 +242,11 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
       <>
         <PreviewPicture src={served(start.holds)} name={`Första bild · ${entryName(start.holds, dealerName, step.from)}`} owner={me} dealer={dealerId} waiting={start.holds ? null : `ankare ${step.from}`} />
         {oneWay ? (
-          <PreviewPicture src={served(landing)} frame={frameOf(landing)} name={`Sista bild · ${genitive(dealerName)} landning på ${seatWords(focus)}`} owner={me} dealer={dealerId} waiting={landing ? null : "landningsbilden"} />
+          seatEnd?.kind === "SNITTRUTA" ? (
+            <PreviewPicture src={null} frame={{ video: labUrl(seatEnd.cut.path), time: (seatEnd.cut.frame + 0.5) / ((bank as BankFacts | null)?.motions?.[seatEnd.cut.clip]?.source?.fps ?? 24) }} name={`Sista bild · platsens slutbild: ruta ${seatEnd.cut.frame} ur ${seatEnd.cut.clip}`} owner={me} dealer={dealerId} waiting={null} />
+          ) : (
+            <PreviewPicture src={served(seatEnd?.entry ?? null)} frame={frameOf(seatEnd?.entry ?? null)} name={seatEnd ? `Sista bild · ${genitive(dealerName)} landning på ${seatWords(focus)}` : `Sista bild · ${seatWords(focus)} har ingen slutbild`} owner={me} dealer={dealerId} waiting={seatEnd ? null : "platsens slutbild"} />
+          )
         ) : step.card && focus && focusSeat ? (
           <PreviewPicture
             src={served(start.holds)}
@@ -286,20 +309,31 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
             : `Ingen landningsbild för ${seatWords(focus)} än; bilden är ${dealerBase.name}.`
           : step.card
             ? oneWay
-              ? `${dealerBase.name}: första bilden. Kortet visar var det landar; sista bilden är landningsbilden.`
+              ? `${dealerBase.name}: första bilden. Kortet visar var det landar; sista bilden är platsens egen slutbild.`
               : `${dealerBase.name} med ${seven ? "korten där planen lägger dem" : "kortet där planen lägger det"}: så ser sista bilden ut.`
             : `${dealerBase.name}: första bilden.`;
 
   const create = async () => {
     setBusy(true);
     try {
-      const common = { dealer: dealerId, step: key, takes, extra: extra.trim() || null, style, ...(model.id !== step.model ? { model: model.id } : {}), ...(step.kind === "FILM" ? { duration: seconds } : {}), ...(reference ? { reference } : {}) };
-      const card = step.card ? cardBody({ chosenFlip, shape, deal: !!deal, cardScale }) : {};
+      // The line: the dealer, the step and the card. The store fills in the recipe; only what he has set against it is sent.
+      const common = {
+        dealer: dealerId, step: key,
+        ...(!recipe || takes !== recipe.takes ? { takes } : {}),
+        ...(extraChoice !== null && extra.trim() !== (recipe?.extra ?? "") ? { extra: extra.trim() || null } : {}),
+        ...(!recipe || style !== recipe.style ? { style } : {}),
+        ...(!recipe || model.id !== recipe.model ? { model: model.id } : {}),
+        ...(step.kind === "FILM" && (!recipe || duration?.key === key) ? { duration: seconds } : {}),
+        ...(refChoice !== undefined && model.videos ? { reference } : {}),
+      };
+      const card = step.card ? cardBody({ chosenFlip, shape: !recipe || (deal && shape !== recipe.shape) ? shape : null, deal: !!deal, cardScale }) : {};
+      // The hand and the side only where he chose them: without a choice the store takes what Placering says for each card.
+      const seatOwn = (t: string) => ({ ...(hand !== null ? handsAt(t) : {}), ...(side !== null ? { side: sideAt(t) } : {}) });
       const made = !step.card
         ? await createOrder({ ...common, ...(step.kind === "STILL" && !start.holds && startEntry ? { base: startEntry.id } : {}) })
         : seven
-          ? await createOrder({ ...common, ...card, seats: targets.map((t) => ({ target: t, ...handsAt(t), side: sideAt(t) })) })
-          : await createOrder({ ...common, ...card, target, ...handsAt(target), side: sideAt(target) });
+          ? await createOrder({ ...common, ...card, seats: targets.map((t) => ({ target: t, ...seatOwn(t) })) })
+          : await createOrder({ ...common, ...card, target, ...seatOwn(target) });
       onCreated(made);
     } catch (error) {
       toast({ tone: "bad", title: asApiError(error, "Utkastet").message });
@@ -308,21 +342,12 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
     }
   };
 
-  const recommend = (() => {
-    if (!step.card || !plan) return null;
-    if (seven)
-      return crossing.length ? `Förslag: handbyte på ${seatList(crossing)}. Där ${CROSSING_WHY}.` : "Vänsterhanden når alla sju utan att korsa kroppen.";
-    const s = seatOf(target);
-    if (!s?.crosses) return `Vänsterhanden når ${seatWords(target)} utan att korsa kroppen.`;
-    return shownHand === "PASS" ? `Handbyte, som föreslaget: på ${seatWords(target)} ${CROSSING_WHY}.` : `Förslag: handbyte. På ${seatWords(target)} ${CROSSING_WHY}.`;
-  })();
-
   return (
     <Sheet
       open={open}
       onOpenChange={onOpenChange}
       title="Ny beställning"
-      subtitle="Allt har förval. Välj kortets plats på bilden; utkastet godkänns sedan i Det här skickas."
+      subtitle="Välj vad och kortets plats. Resten är stegets recept; utkastet godkänns sedan i Det här skickas."
       width={1280}
       // On a phone the sheet takes the whole width (the default leaves 96 px of the page beside it).
       className="max-sm:w-screen!"
@@ -336,7 +361,7 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
           <Button variant="quiet" onClick={() => onOpenChange(false)}>
             Avbryt
           </Button>
-          <Button variant="primary" loading={busy} disabled={!cost || !!step.off || (step.card && !plan) || !!landingWhy || !!model.off} title={landingWhy ?? model.off ?? undefined} onClick={() => void create()}>
+          <Button variant="primary" loading={busy} disabled={!cost || !!step.off || (step.card && !plan) || !!landingWhy || !!referenceWhy || !!model.off} title={landingWhy ?? referenceWhy ?? model.off ?? undefined} onClick={() => void create()}>
             {count > 1 ? `Skapa ${count} utkast` : "Skapa utkast"}
           </Button>
         </>
@@ -351,9 +376,8 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
           </div>
           {/* What it turns into */}
           <div className="order-3 flex flex-col gap-5">
-            {step.card || step.kind === "STILL" ? <p className="text-sm leading-[21px] text-ink">{summary}</p> : null}
             {step.card && motion ? (
-              <p className="-mt-3.5 text-sm text-dim">
+              <p className="text-sm text-dim">
                 {HAND_LABEL[handChoiceOf(motion)]} · {LANDS_LABEL[motion.side]}
                 {motion.side === "FRONT" && step.start !== "LAND" ? ` · ${FLIP_LABEL[motion.flipAxis]}` : ""}
                 {shape && deal ? ` · ${SHAPE_LABEL[shape]}` : ""}
@@ -432,18 +456,12 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
                 </div>
               ))}
             </div>
-            <p className="rounded-sm bg-raised px-2.5 py-1.5 text-sm text-ink">{startWords(step, shape)}</p>
             {gripLine ? (
               <p data-plan-differs className="text-sm text-[#f0b07a]">
                 {gripLine}
               </p>
             ) : null}
           </Step>
-          {step.kind === "FILM" || styles.length > 1 ? (
-            <Step n={next()} title="Text" aside={prompt ? `${wordCount(prompt.text)} ord` : undefined}>
-              <TextChoice value={style} styles={styles} onChange={setStyle} />
-            </Step>
-          ) : null}
           {step.card ? (
             <>
               <Step n={next()} title="Plats på bordet">
@@ -483,15 +501,37 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
                   {!seven && SECOND_CARD.test(target) ? ` ${SECOND_CARD_WORDS}` : ""}
                 </p>
               </Step>
-              {deal ? (
-                <Step n={next()} title="Tur och retur eller bara dit">
-                  <ShapeChoice value={shapeChoice} missing={targets.some((t) => !landingOf(entries, t)) ? landingMissing(dealerName, targets.find((t) => !landingOf(entries, t))) : null} onChange={setShape} />
-                </Step>
+            </>
+          ) : null}
+          {/* The recipe: what is ordered when nothing else is said. One line, and plainly what keeps the order from being made. */}
+          <section data-recipe className="my-3 flex flex-col gap-1.5 rounded-md border border-brass/30 bg-brass/5 px-3 py-2.5">
+            <h3 className="flex items-center gap-2 text-sm font-medium text-ink">
+              Receptet
+              {recipe ? (
+                <Badge tone={recipe.method.status === "gäller" ? "ok" : "wait"} size="sm">
+                  {METHOD_STATUS_LABEL[recipe.method.status]}
+                </Badge>
               ) : null}
-              {needsLanding ? (
-                <p className={cn("rounded-sm px-2.5 py-1.5 text-sm", landingWhy ? "bg-[#3a1d1d] text-[#ef8b8b]" : "bg-raised text-ink")}>
-                  {landingWhy ?? `Landningsbild: ${landing?.name ?? ""} (gäller).${landing?.note ? ` ${landing.note}` : ""}`}
-                </p>
+            </h3>
+            <p className="text-sm leading-5 text-ink">{recipe ? recipeWords(recipe.method) : "Ingen metod än för det här steget: inget är förvalt. Välj modell och längd själv under Undantag."}</p>
+            {landingWhy || referenceWhy ? <p data-blocked className="text-sm leading-5 text-[#ef8b8b]">{landingWhy ?? referenceWhy}</p> : null}
+          </section>
+          <details data-exceptions className="group rounded-md border border-line px-3 py-2" open={!recipe || !!like}>
+            <summary className="cursor-pointer text-sm text-ink">
+              Undantag från receptet <span className="text-xs text-dim">· ett val här är ett medvetet avsteg och står i utkastets anteckningar</span>
+            </summary>
+            <div className="mt-3">
+          {step.kind === "FILM" || styles.length > 1 ? (
+            <Step n={next()} title="Text" aside={prompt ? `${wordCount(prompt.text)} ord` : undefined}>
+              <TextChoice value={style} styles={styles} recipe={recipe?.style ?? null} onChange={setStyle} />
+            </Step>
+          ) : null}
+          {step.card ? (
+            <>
+              {deal ? (
+                <Step n={next()} title="Bara dit eller tur och retur">
+                  <ShapeChoice value={shape ?? "ONE_WAY"} recipe={recipe?.shape ?? null} missing={oneWay && lacking.length ? landingWhy : null} onChange={setShape} />
+                </Step>
               ) : null}
               <Step n={next()} title={step.start === "LAND" ? "Hur kortet ligger på platsen" : "Hur kortet landar"}>
                 <LandsChoice value={shownSide} plan={planSides.length === 1 ? planSides[0] : null} onChange={setSide} />
@@ -502,30 +542,10 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
                 {shownHand === "PASS" && seven && crossing.length && crossing.length < 7 ? (
                   <div className="flex items-center gap-2 text-sm">
                     <span className="text-dim">Handbyte på</span>
-                    <SegmentedControl label="Handbyte på" size="sm" value={passEverywhere ? "alla" : "korsar"} onChange={(v) => setPassEverywhere(v === "alla")} options={[{ value: "korsar", label: `${seatList(crossing)} (förslaget)` }, { value: "alla", label: "alla sju" }]} />
+                    <SegmentedControl label="Handbyte på" size="sm" value={passEverywhere ? "alla" : "korsar"} onChange={(v) => setPassEverywhere(v === "alla")} options={[{ value: "korsar", label: `${seatList(crossing)} (där handen korsar kroppen)` }, { value: "alla", label: "alla sju" }]} />
                   </div>
                 ) : null}
-                {recommend ? (
-                  <p className={cn("text-sm", recommend.startsWith("Förslag") ? "text-brass-hi" : "text-dim")}>
-                    {recommend}
-                    {recommend.startsWith("Förslag") && shownHand !== "PASS" ? (
-                      <button type="button" className="ml-2 text-brass-hi underline underline-offset-2" onClick={() => setHand("PASS")}>
-                        Ta förslaget
-                      </button>
-                    ) : null}
-                  </p>
-                ) : null}
               </Step>
-              {open_ && step.start !== "LAND" ? (
-                <Step n={next()} title="Hur kortet vänds">
-                  <FlipChoice value={chosenFlip ?? flipAt(focus ?? targets[0] ?? "P4.C1")} plan={planFlips.length === 1 ? planFlips[0] : null} onChange={(axis) => setFlip({ key, axis })} />
-                  {!chosenFlip && planFlips.length > 1 ? (
-                    <p data-seat-flips className="text-xs text-dim">
-                      Placering säger olika per plats; utan val vänds varje plats som planen säger: {targets.map((t) => `${t.replace(".C1", "")} ${FLIP_LABEL[flipAt(t)].toLowerCase()}`).join(" · ")}.
-                    </p>
-                  ) : null}
-                </Step>
-              ) : null}
               {scalable ? (
                 <Step n={next()} title="Kortets storlek i den här beställningen" aside={cardScale !== 1 ? "prov" : undefined}>
                   <ScaleChoice value={scaleChoice} onChange={setScale} />
@@ -540,9 +560,9 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
             ) : null}
             {models.length > 1 ? (
               <>
-                <ModelChoice models={models} value={model.id} own={step.model} what={modelWhat} onChange={(id) => setModelChoice({ key, id })} />
+                <ModelChoice models={models} value={model.id} recipe={recipe?.model ?? null} what={modelWhat} onChange={(id) => setModelChoice({ key, id })} />
                 {model.delivered ? <p className="text-sm text-brass-hi">{model.delivered}</p> : null}
-                {model.id !== step.model ? <p className="text-xs leading-[17px] text-dim">{model.note}</p> : null}
+                {recipe && model.id !== recipe.model ? <p className="text-xs leading-[17px] text-dim">{model.note}</p> : null}
               </>
             ) : null}
             <div className="flex flex-wrap items-center gap-3 text-sm">
@@ -553,7 +573,7 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
             {model.videos ? (
               <div className="flex flex-col gap-1.5">
                 <span className="text-sm text-dim">Referensfilm</span>
-                <ReferenceChoice candidates={candidates} value={reference} dealer={dealerId} names={names} range={model.referenceSeconds ?? null} onChange={setRef} />
+                <ReferenceChoice candidates={candidates} value={reference} rule={byRule?.take ?? null} dealer={dealerId} names={names} range={model.referenceSeconds ?? null} onChange={setRef} />
               </div>
             ) : step.kind === "FILM" ? (
               <p className="text-xs text-dim">{model.label} tar ingen referensfilm tillsammans med första och sista bild.</p>
@@ -564,6 +584,8 @@ export function NewOrder({ open, onOpenChange, all, preset, onCreated }: { open:
             </div>
             <TextArea label="Eget tillägg (valfritt, engelska)" value={extra} onChange={(e) => setExtra(e.target.value)} maxLength={600} rows={2} />
           </Step>
+            </div>
+          </details>
         </div>
       </div>
     </Sheet>

@@ -1,6 +1,7 @@
-// Ny beställning with several seats ("Alla sju"): each seat turns as the plan says for it unless Jakob chose one turn for the
-// whole order (studio/lib/orders.ts seatFlip, cardBody; the fault found 2026-11-17 was the first seat's turn sent for every
-// seat). Run against the order routes on a temporary copy of the data with a plan where two seats turn differently, as
+// Ny beställning with several seats ("Alla sju"): each seat turns as its recipe says (data/order-methods.json; the plan's turn
+// where the recipe leaves it to Placering), unless one turn is named for the whole order (studio/lib/orders.ts seatFlip,
+// cardBody; the fault found 2026-11-17 was the first seat's turn sent for every seat). And what Bordet's row shows as the
+// text is the text the store writes. Run against the order routes on a temporary copy of the data with a plan where two seats turn differently, as
 // tools/order-routes.test.ts runs them. Pictures are tiny PNGs; nothing is sent anywhere.
 // Run: node --test "studio/tests/new-order-seats.test.ts"
 import test from "node:test";
@@ -21,7 +22,7 @@ async function lab(t: { after(fn: () => Promise<void> | void): void }) {
   const root = await mkdtemp(path.join(base, "new-order-seats-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   for (const dir of ["data", "placements", "assets/anchors/paow-vila"]) await mkdir(path.join(root, dir), { recursive: true });
-  for (const file of ["data/order-policy.json", "data/dealers.json"]) await copyFile(path.join(repo, file), path.join(root, file));
+  for (const file of ["data/order-policy.json", "data/dealers.json", "data/order-methods.json"]) await copyFile(path.join(repo, file), path.join(root, file));
   // The plan: P1 turned at its place, P2 rolled about the long side on the way, P3 the wrist (the plan's own default).
   const plan = JSON.parse(await readFile(path.join(repo, "placements/default.json"), "utf8"));
   for (const id of ["P1.C1", "P2.C1", "P3.C1"]) Object.assign(plan.targets[id].intent, { startSide: "BACK", endSide: "FRONT", turn: true });
@@ -52,26 +53,32 @@ async function lab(t: { after(fn: () => Promise<void> | void): void }) {
 
 type Stored = { order: { group: { id: string } | null; motion: { target: string; flipAxis: string | null } } };
 const seats = ["P1.C1", "P2.C1", "P3.C1"].map((target) => ({ target, hand: "LH" as const, pass: false, side: "FRONT" as const }));
+/** The lab has no end pictures and no reference films, so the deals here are the exception that needs neither: tur och retur without a reference film. */
+const TUR = { reference: null, duration: 7 };
 
-test("several seats without a chosen turn: no turn is sent, and each seat keeps the plan's own", async (t) => {
+test("several seats without a chosen turn: no turn is sent, and each seat gets its recipe's turn, whatever the plan says", async (t) => {
   const { call, plan } = await lab(t);
   const card = cardBody({ chosenFlip: null, shape: "ROUND_TRIP", deal: true, cardScale: 1 });
   assert.equal("flipAxis" in card, false, "the body names no turn");
-  const made = await call("POST", "/api/orders", { dealer: "paow", step: "GIV-2.1", seats, takes: 1, ...card });
+  const made = await call("POST", "/api/orders", { dealer: "paow", step: "GIV-2.1", seats, takes: 1, ...card, ...TUR });
   assert.equal(made.status, 201, JSON.stringify(made.json));
-  const orders = ((await call("GET", "/api/orders")).json.orders as Stored[]).filter((a) => a.order.group);
+  const orders = ((await call("GET", "/api/orders")).json.orders as (Stored & { order: { motion: { planned: { flipAxis: string } } } })[]).filter((a) => a.order.group);
   const turns: Record<string, string | null> = Object.fromEntries(orders.map((a) => [a.order.motion.target, a.order.motion.flipAxis]));
-  assert.deepEqual(turns, { "P1.C1": "AT_PLACE", "P2.C1": "LONG_EDGE", "P3.C1": "FREE" });
-  // the sheet shows each seat the turn the store gives it
+  // From anchor 2.1 the recipe turns the card on the way; what Placering said for each card is kept beside it.
+  assert.deepEqual(turns, { "P1.C1": "FREE", "P2.C1": "FREE", "P3.C1": "FREE" });
+  assert.deepEqual(Object.fromEntries(orders.map((a) => [a.order.motion.target, a.order.motion.planned.flipAxis])), { "P1.C1": "AT_PLACE", "P2.C1": "LONG_EDGE", "P3.C1": "FREE" });
+  // the sheet shows each seat the turn the store gives it: the recipe's
   const seatPlan = (id: string) => ({ turnAt: plan.targets[id].intent.turnAt, flipAxis: plan.targets[id].intent.flipAxis });
-  for (const [id, turn] of Object.entries(turns)) assert.equal(seatFlip("GIV-2.1", seatPlan(id), null), turn, id);
+  for (const [id, turn] of Object.entries(turns)) assert.equal(seatFlip("GIV-2.1", seatPlan(id), "FREE"), turn, id);
+  // where a recipe leaves the turn to Placering, the plan's own is the seat's
+  assert.deepEqual(["P1.C1", "P2.C1", "P3.C1"].map((id) => seatFlip("GIV-2.1", seatPlan(id), null)), ["AT_PLACE", "LONG_EDGE", "FREE"]);
 });
 
 test("several seats with a chosen turn: that turn for every seat", async (t) => {
   const { call } = await lab(t);
   const card = cardBody({ chosenFlip: "LONG_EDGE", shape: "ROUND_TRIP", deal: true, cardScale: 1 });
   assert.equal(card.flipAxis, "LONG_EDGE");
-  assert.equal((await call("POST", "/api/orders", { dealer: "paow", step: "GIV-2.1", seats, takes: 1, ...card })).status, 201);
+  assert.equal((await call("POST", "/api/orders", { dealer: "paow", step: "GIV-2.1", seats, takes: 1, ...card, ...TUR })).status, 201);
   const orders = ((await call("GET", "/api/orders")).json.orders as Stored[]).filter((a) => a.order.group);
   assert.deepEqual(orders.map((a) => a.order.motion.flipAxis).sort(), ["LONG_EDGE", "LONG_EDGE", "LONG_EDGE"]);
   assert.equal(seatFlip("GIV-2.1", { turnAt: "PLACE", flipAxis: "FREE" }, "LONG_EDGE"), "LONG_EDGE");
@@ -87,28 +94,33 @@ test("the card's part of a body: tur och retur or bara dit only for a deal, the 
 test("what a row of Bordet shows as the text is, word for word, the text the store writes into the draft", async (t) => {
   const { call } = await lab(t);
   const { readMethods } = await import("../../src/order-methods.ts");
-  const { orderBody, sendsOf, withChoice } = await import("../lib/bordet.ts");
+  const { filmRow, sendsOf } = await import("../lib/bordet.ts");
   const register = readMethods(JSON.parse(await readFile(path.join(repo, "data/order-methods.json"), "utf8"))).register!;
-  const { methodFor } = await import("../../src/order-methods.ts");
   const before = (await call("GET", "/api/orders")).json as { dealers: { id: string; name: string; look: string }[]; plan: Parameters<typeof sendsOf>[0]["plan"] };
   const paow = before.dealers.find((d) => d.id === "paow")!;
+  // The lab has no end pictures and no reference films: a deal is ordered here as the exception that needs neither.
+  const round = { shape: "ROUND_TRIP", reference: null, duration: 7 };
   const cases: { step: string; target: string | null; choice?: Record<string, unknown> }[] = [
-    { step: "GIV-2.1", target: "P4.C1" },
-    { step: "GIV-2.1", target: "P1.C1" },
-    { step: "GIV-2.1", target: "P2.C1", choice: { side: "BACK", hand: "PASS", extra: "Slowly." } },
-    { step: "GIV-2.2", target: "P3.C1", choice: { flipAxis: "AT_PLACE", style: "MINIMAL", cardScale: 1.25 } },
+    { step: "GIV-2.1", target: "P4.C1", choice: round },
+    { step: "GIV-2.1", target: "P1.C1", choice: round },
+    { step: "GIV-2.1", target: "P2.C1", choice: { ...round, side: "BACK", hand: "PASS", extra: "Slowly." } },
+    { step: "GIV-2.2", target: "P3.C1", choice: { ...round, flipAxis: "LONG_EDGE", style: "MINIMAL", cardScale: 1.25 } },
+    // the line itself: the dealer and the step, the recipe's text (rest with the recipe's own addition)
     { step: "INGANG-2.1", target: null },
+    { step: "UTGANG", target: null },
     { step: "VILA", target: null },
   ];
   let compared = 0;
   for (const c of cases) {
-    const wish = { step: c.step as never, target: c.target };
-    const body = withChoice("paow", wish, orderBody("paow", wish, methodFor(register, wish.step, wish.target)), (c.choice ?? {}) as never);
-    assert.ok(body, `${c.step} ${c.target}: a body`);
-    const shown = sendsOf({ dealer: { id: "paow", name: paow.name, look: paow.look }, body: body!, entries: [], plan: before.plan })!;
-    const made = await call("POST", "/api/orders", body);
+    const wish = { step: c.step as never, target: c.target }, choice = (c.choice ?? {}) as never;
+    const row = filmRow("paow", wish, register, null, { bank: null, choice, entries: [], plan: before.plan });
+    assert.ok(row.body, `${c.step} ${c.target}: a body (${row.why})`);
+    if (!c.choice) assert.deepEqual(row.body, { dealer: "paow", step: c.step }, "the line: the dealer and the step, nothing else");
+    const shown = sendsOf({ dealer: { id: "paow", name: paow.name, look: paow.look }, wish, line: row.resolved, choice, entries: [], plan: before.plan })!;
+    const made = await call("POST", "/api/orders", row.body);
     assert.equal(made.status, 201, `${c.step} ${c.target}: ${JSON.stringify(made.json).slice(0, 300)}`);
     assert.equal(shown.prompt!.text, made.json.order.prompt.text, `${c.step} ${c.target}: the text shown is the text stored`);
+    assert.deepEqual([shown.seconds, shown.takes, shown.resolution], [made.json.order.generation.params.duration, made.json.order.takes, made.json.order.generation.params.resolution], `${c.step} ${c.target}: length, takes and resolution too`);
     compared++;
   }
   assert.equal(compared, cases.length);

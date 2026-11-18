@@ -9,7 +9,7 @@ import { Clock, Film, ImageIcon, Plus } from "lucide-react";
 import Link from "next/link";
 import { useBank } from "../../lib/bank.ts";
 import { labUrl } from "../../lib/lab.ts";
-import { HANDOVER, costWords, picturesInOrder, sections, styleWords, type OrderAnswer, type OrdersAnswer, type Picture } from "../../lib/orders.ts";
+import { HANDOVER, costWords, orderLine, picturesInOrder, sections, styleWords, type OrderAnswer, type OrdersAnswer, type Picture } from "../../lib/orders.ts";
 import { MODELS, approvalWords, credits, scaleWords } from "../../../src/order-model.ts";
 import { Page } from "../shell";
 import { Button, Card, EmptyState } from "../ui";
@@ -53,7 +53,7 @@ function OrderCard({ answer, onOpen }: { answer: OrderAnswer; onOpen: () => void
         <div className="min-w-0 flex-1">
           <p className="truncate font-display text-md font-semibold text-ink">{order.title}</p>
           {order.group ? <p className="truncate text-xs text-brass-hi">Grupp: {order.group.label}</p> : null}
-          {order.summary ? <p className="mt-0.5 text-sm leading-5 text-ink">{order.summary}</p> : null}
+          {orderLine(order) ? <p className="mt-0.5 font-mono text-sm leading-5 text-ink">{orderLine(order)}</p> : null}
           <p className="mt-0.5 truncate text-xs text-dim">
             {what} · {styleWords(order)}
             {order.reference.status === "FINNS" ? " · referensfilm" : ""}

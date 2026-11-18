@@ -86,10 +86,16 @@ bildmodellen ritade om skon varje gång (handboken 3.7) (V). Från ankare 2.2 ge
 returen och utgången från 2.2 är dömda (`SEAT_HUB` i `src/game-director.ts`, SYSTEM); för Paow är det plats 6, med
 `paow-giv-2-2-p6-02` (V).
 
-**6. Landningsbild per plats (nod `LAND(<plats>)`).** Handen vid kortet på planens plats. Krävs bara för en retur som
-egen film och för en giv "bara dit": roll `landning`, nod `LAND(<plats>)`, `card`, `gäller` (`landingOf` i
-`src/order-model.ts`) (V). Inget steg i Beställ; i dag en ruta ur en giv, vald i Material. Tur och retur behöver den
-inte.
+**6. Platsens slutbild (landningsbild per plats, nod `LAND(<plats>)`).** En giv bara dit, som är receptet, slutar på
+platsens EGEN slutbild (`seatEndOf` i `src/order-model.ts`): platsens landningsbild där en gäller (roll `landning`, nod
+`LAND(<plats>)`, `card`, `gäller`), annars snittrutan ur dealerns egen film från samma ankare till platsen, där returen
+Jakob har godkänt rakt börjar (`cutFrameOf`) (V). En plats med ingetdera har ingen slutbild, och det sägs rakt ut i
+Bordets rad och i Materials station Landningar, som visar plats för plats. En plats bild står aldrig för en annan
+plats. En snittruta håller bara om dess lagda kort ligger på planens kort (inom 5 bildpunkter, `checkCutFrame` i
+`src/cut-frame.ts`): `node tools/order-cut-frames.ts <dealer>` prövar varje snittruta mot filmerna och skriver svaren i
+`data/cut-frames.json`, som Material, Bordet och lagret läser, så att alla tre säger samma sak; kör det igen när planens
+kort har flyttats eller nya filmer har kommit in i banken (V: för Paow håller plats 3 och 4 från ankare 2.1 och plats 4
+från 2.2; plats 1, 2, 6 och dealerns kort har en ruta som ligger 7–13 bildpunkter fel, plats 5 och 7 har ingen). En retur som egen film börjar på platsens landningsbild. Inget steg i Beställ gör en landningsbild.
 
 **7. Vad saknas, och med vilken metod.** `node tools/produce.ts <dealer>` (eller Beställs block "Det här saknas för en
 runda") räknar de 33 filmerna med samma funktioner som Karta och ger varje steg ett läge i Jakobs ord: klar, levererad
@@ -99,9 +105,13 @@ kort) står i `data/order-methods.json` med status `gäller`, `prov` eller `sakn
 metod efter Jakobs domar: `node tools/verdicts-per-method.ts <dealer>` räknar dem per modell, vändning, referensfilm och
 mall (V).
 
-**8. Komponera i Bordet, Beställ** (`/studio/bordet/?lage=bestall`; `/studio/bestall/` leder dit). Stegen som kan beställas, med förvald modell, längd och de stilar
-texten kan skrivas i, står i `STEPS` i `src/order-model.ts`, och de kort en giv kan gå till i `SEAT_TARGETS`; en giv
-är tur och retur eller bara dit, och `GIV-2.1` går också till hålkortet `D.C2`, som landar stängt (V). Hålkortets
+**8. Komponera i Bordet, Beställ** (`/studio/bordet/?lage=bestall`; `/studio/bestall/` leder dit). En rak linje: välj
+steget (som säger ankaret) och kortets plats; allt annat är stegets enda recept i `data/order-methods.json`, visat som
+det som kommer att skickas, och ett avsteg görs medvetet under "Undantag från receptet" (handboken §2). Stegen som kan
+beställas står i `STEPS` i `src/order-model.ts` (vad en film går mellan, aldrig hur den beställs), och de kort en giv kan
+gå till i `SEAT_TARGETS`; en giv är bara dit, och `GIV-2.1` går också till hålkortet `D.C2`, som landar stängt (V).
+Ankare 2.3 har två steg: ingången `INGANG-2.3` (ankare 1 → 2.3) och given med två händer `GIV-2.3`; given väntar på en
+referensfilm som visar den och på en slutbild per plats med höger hand vid kortet. Hålkortets
 vändning (`HALKORT`, `IDLE>REVEAL(D.C2)`) har bara hålkortet ritat på sina bilder (V).
 `node tools/produce.ts <dealer> --draft` gör utkast där metoden gäller, `--draft --trial <steg|plats>` ett provutkast;
 den godkänner aldrig (V). Utkastet blir `data/orders/<id>.json` med bilderna i `assets/orders/<id>/`. Texten skrivs av
@@ -201,8 +211,9 @@ långt en dealer har kommit, och vad som är kvar för en runda, räknar `node t
 - **Ett tryckt spelkort** kan spåraren inte följa; det renderade kortet kräver enfärgat gult eller blått (`is.yellow`,
   `is.blue`, `isPale` i `src/card-track.ts`) (V).
 - **Kön** läggs bara när en huvudagentchatt är öppen (`docs/BRISTER.md`) (V).
-- **GitHubs kontroll** hoppar över testerna som kräver FFmpeg (elva) och de tre i `tools/order-images.test.ts` som kräver
-  bankens filmer; de körs på den här datorn (DRIFT; `docs/BRISTER.md`) (V).
+- **Kontrollen körs bara på den här datorn** (Jakob 2026-11-18; ingen kontroll hos GitHub längre): testerna som kräver
+  FFmpeg (elva) och de tre i `tools/order-images.test.ts` som kräver bankens filmer körs här eller inte alls (DRIFT;
+  `docs/BRISTER.md`) (V).
 
 ## Regler som kostar pengar när de bryts
 

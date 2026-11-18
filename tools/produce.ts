@@ -3,8 +3,8 @@
 // studio/lib/edge-stats.ts playing, with the verdict of studio/lib/verdict.ts), what is in flight (drafts and approved
 // orders of Beställ for that step), whether a round needs it (the round src/clip-graph.ts roundSequence plays: every
 // player two cards, the dealer two and the hole card turned, with the rest between), what it needs before it can be
-// ordered (the anchors and landing pictures that must hold in Material, a straight-approved reference film where the
-// method asks for one) and the method of record for it (data/order-methods.json, src/order-methods.ts). From that each
+// ordered (the anchors that must hold in Material, the seat's end picture for a deal bara dit, the reference film the
+// recipe's rule asks for) and the method of record for it (data/order-methods.json, src/order-methods.ts). From that each
 // step gets one state in Jakob's words: klar, levererad och väntar på hans dom, beställd, utkast, kommer med given, kan
 // beställas nu, kan provas, väntar på en bild, ingen metod än, inte byggd.
 //
@@ -24,8 +24,8 @@ import { existsSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SEATS, bankEdges, buildGraph, parseEdge, roundSequence, type BankData, type EdgeKind, type Graph } from '../src/clip-graph.ts';
-import { ANCHOR_NODE, ANCHOR_ROLE, FLIP_AXES, LANDING_ROLE, MODELS, SHOWN_LABEL, landingNode, referenceCandidates, seatWords, stepOf, type BankFacts, type FlipAxis, type Order, type Shown, type StepKey } from '../src/order-model.ts';
-import { methodFor, readMethods, recipeWords, type Method, type MethodRegister } from '../src/order-methods.ts';
+import { ANCHOR_NODE, ANCHOR_ROLE, LANDING_ROLE, MODELS, SHOWN_LABEL, landingNode, seatEndOf, seatWords, stepOf, type Anchor as AnchorKey, type BankFacts, type Order, type Shown, type StepKey } from '../src/order-model.ts';
+import { methodFor, readMethods, recipeWords, referenceByRule, referenceWaits, type Method, type MethodRegister } from '../src/order-methods.ts';
 import { bankSummary, hubAnchor, playing, type Hubs, type Summary } from '../studio/lib/edge-stats.ts';
 import { hubDeals } from '../src/game-director.ts';
 import { VERDICT_LABEL, verdictOf, verdictPhrase, type Verdict } from '../studio/lib/verdict.ts';
@@ -137,7 +137,7 @@ export type ProductionRow = {
   draft: NewOrder | null;
   picture: RowPicture;
 };
-export type Anchor = { at: '1' | '2.1' | '2.2'; state: 'gäller' | 'kandidat' | 'saknas'; path: string | null; name: string | null; candidates: number; orders: InFlight[] };
+export type Anchor = { at: AnchorKey; state: 'gäller' | 'kandidat' | 'saknas'; path: string | null; name: string | null; candidates: number; orders: InFlight[] };
 export type Production = {
   dealer: { id: string; name: string };
   rows: ProductionRow[];
@@ -152,7 +152,7 @@ export type Production = {
 
 const isPicture = (e: Entry) => !!e.path && (e.frame !== undefined || /\.(?:png|jpe?g)$/i.test(e.path)) && !/^[A-Za-z]:\//.test(e.path);
 /** The dealer's anchor that holds (gäller, no card, its node), as the store takes it (tools/order-store.ts holding). */
-export function anchorHolding(entries: readonly Entry[], at: '1' | '2.1' | '2.2'): Entry | null {
+export function anchorHolding(entries: readonly Entry[], at: AnchorKey): Entry | null {
   return entries.find((e) => e.role === ANCHOR_ROLE[at] && e.state === 'gäller' && !e.card && e.node === ANCHOR_NODE[at] && isPicture(e)) ?? null;
 }
 /** A seat's landing picture that holds, as the store takes it (landingEntry). */
@@ -172,35 +172,19 @@ export function roundFilms(graph: Graph): string[] {
 }
 
 /**
- * The bank's takes a reference film may be: a deal to the same seat (the same step first, then the same seat from the other
- * grip, as referenceCandidates orders them), approved straight by Jakob, of a length the model takes; the dealer's own first.
+ * The draft the list makes for a row: the dealer, the step and the card, nothing else. Everything else is the step's recipe,
+ * which the store fills in (tools/order-store.ts create: model, length, shape, takes, the reference film its rule finds, the
+ * seat's end picture). A trial gets a title that says so.
  */
-export function straightReferences(bank: BankFacts, dealer: string, step: StepKey, target: string | null, model: string | null, rendered = false) {
-  const def = stepOf(step), m = model ? MODELS[model] : null;
-  if (!def || !m?.videos) return [];
-  // Under the rule renderad-eller-samma-plats the dummy's film for the seat comes first (referenceCandidates puts it there).
-  return referenceCandidates(bank, { dealer, step: def, target, model: m }).filter((c) => c.match <= 1 && c.fits && ((rendered && c.kind === 'RENDERED') || (c.approvedStraight && c.verdict === 'GODKÄND')));
-}
-
-/** The draft the list would make for a row: from the method, the seat and the reference chosen; one take and a trial's title for a trial. */
 export function draftOf(input: Pick<ProductionInput, 'dealer' | 'createdBy'>, row: Pick<ProductionRow, 'label' | 'edge'>, at: { step: StepKey; target: string | null }, method: Method, reference: string | null, trial: boolean): NewOrder {
   const def = stepOf(at.step)!;
-  const flip = method.turn && method.turn !== 'plan' && FLIP_AXES.includes(method.turn as FlipAxis) ? (method.turn as FlipAxis) : undefined;
   const short = [MODELS[method.model!]?.label ?? method.model, reference ? 'referensfilm' : null].filter(Boolean).join(' + ');
   return {
     dealer: input.dealer.id,
     step: at.step,
     ...(def.card && at.target ? { target: at.target } : {}),
-    ...(method.model && method.model !== def.model ? { model: method.model } : {}),
-    ...(def.kind === 'FILM' && method.seconds ? { duration: method.seconds } : {}),
-    ...(method.style ? { style: method.style } : {}),
-    takes: trial ? 1 : (method.takes ?? 2),
-    extra: method.extra,
-    ...(def.card && def.start !== 'LAND' && method.shape ? { shape: method.shape } : {}),
-    ...(reference ? { reference } : {}),
-    ...(flip ? { flipAxis: flip } : {}),
     ...(trial ? { title: `${input.dealer.name} · prov: ${row.label.replace(' · ', ' till ').toLowerCase()} · ${short}`.slice(0, 120) } : {}),
-    notes: [`Metod ${method.id} (${method.status}) ur data/order-methods.json: ${recipeWords(method)}.`, ...(trial ? ['Ett prov: en tagning, en ändring mot jämförelsen i metodens belägg.'] : [])],
+    notes: trial ? ['Ett prov: en tagning, en ändring mot jämförelsen i metodens belägg.'] : [],
     createdBy: `${input.createdBy ?? 'Produktionslistan (node tools/produce.ts --draft)'}${trial ? ', prov' : ''}: steg ${row.edge}, metod ${method.id}`,
   };
 }
@@ -214,7 +198,7 @@ export function productionList(input: ProductionInput): Production {
   const flightOf = (o: OrderLike): InFlight => ({ id: o.order.id, title: o.order.title, shown: o.shown, approved: !!o.order.approval, delivered: DELIVERED.includes(o.shown) });
   const edgesOfOrder = (o: OrderLike) => (o.order.step.cutInto?.length ? o.order.step.cutInto : o.order.step.edge ? [o.order.step.edge] : []).map((e) => parseEdge(e)?.base ?? e);
   const inFlight = (edge: string) => mine.filter((o) => IN_FLIGHT.includes(o.shown) && edgesOfOrder(o).includes(edge)).map(flightOf);
-  const anchorWords = (at: '1' | '2.1' | '2.2') => `ankare ${at}`;
+  const anchorWords = (at: AnchorKey) => `ankare ${at}`;
 
   // Each step, in the order a round plays them, then the rest of the graph.
   const order = [...needed, ...bankEdges().map((e) => e.id).filter((id) => graph.summary.films.required.includes(id) && !needed.has(id))];
@@ -231,22 +215,22 @@ export function productionList(input: ProductionInput): Production {
     // What must hold first: the anchors the step's pictures are made from, a landing picture for a return.
     const needs: string[] = [];
     if (def) {
-      const anchors = new Set<'1' | '2.1' | '2.2'>(def.start === 'LAND' ? [def.to ?? def.from] : [def.from, ...(def.to ? [def.to] : [])]);
+      const anchors = new Set<AnchorKey>(def.start === 'LAND' ? [def.to ?? def.from] : [def.from, ...(def.to ? [def.to] : [])]);
       for (const a of anchors) if (!anchorHolding(entries, a)) needs.push(anchorWords(a));
       if (def.start === 'LAND' && !landingHolding(entries, at!.target)) needs.push(`landningsbild på ${cardWords(at!.target!)}`);
+      // A deal bara dit ends on the seat's own end picture: its landing picture, else the cut frame of the bank's film there.
+      if (def.card && def.start !== 'LAND' && method?.shape === 'ONE_WAY' && !seatEndOf(entries, input.bank, { dealer: dealer.id, step: def, target: at!.target })) needs.push(`slutbild för ${cardWords(at!.target!)}`);
     } else if (edge.kind === 'ARRIVE' || edge.kind === 'LEAVE') {
       needs.push('en bild av bordet utan henne (ingen roll i Material än)');
       const standing = entries.some((e) => e.role === 'keystone' && e.state === 'gäller' && isStanding(e));
       if (!standing) needs.push('en stående bild av henne');
     }
-    // A reference film where the method asks for one: a straight-approved deal to the same seat; without one, the model the
-    // method names for that case, or the step waits.
-    let reference: string | null = null, withoutReference = false;
+    // The reference film the recipe's rule finds for the step and the seat (the store takes the same one); without it the step waits.
+    let reference: string | null = null;
     const wantsRef = !!method && method.status !== 'saknas' && method.reference !== 'ingen';
-    if (wantsRef && at) {
-      reference = straightReferences(input.bank, dealer.id, at.step, at.target, method!.model, method!.reference === 'renderad-eller-samma-plats')[0]?.take ?? null;
-      if (!reference && method!.noReferenceModel) withoutReference = true;
-      else if (!reference) needs.push(`rakt godkänd referensfilm till ${cardWords(at.target ?? '')}`);
+    if (wantsRef && at && def) {
+      reference = referenceByRule(input.bank, method!.reference, { dealer: dealer.id, step: def, target: at.target, model: method!.model ? MODELS[method!.model] : null, shape: method!.shape })?.take ?? null;
+      if (!reference) needs.push(referenceWaits(method!.reference, def).replace(/^väntar på /, ''));
     }
     // A return to 2.1 comes with its deal while the deal's method goes tur och retur and the deal is not there yet.
     const dealEdge = edge.kind === 'RETURN' && edge.target && edge.to === 'READY' ? `READY>${edge.target}` : null;
@@ -282,14 +266,14 @@ export function productionList(input: ProductionInput): Production {
       : { path: null, frame: null, waits: def ? anchorWords(shownAnchor!) : 'bild utan henne', cards };
     rows.push({
       edge: id, label: now.hub && edge.kind === 'RETURN' ? stepLabel(edge).replace('ankare 2.1', hubAnchor(now.hub)) : stepLabel(edge), kind: edge.kind, target: edge.target, needed: needed.has(id), have, take: now.take?.id ?? null, hub: now.hub, byJakob: !!v?.byJakob, provisional: !!v?.provisional,
-      orders: flying, step: at?.step ?? null, method: method ? { id: method.id, status: method.status, recipe: recipeWords(method, withoutReference), reference } : null, needs,
+      orders: flying, step: at?.step ?? null, method: method ? { id: method.id, status: method.status, recipe: recipeWords(method), reference } : null, needs,
       comesWith: state === 'MED_GIVEN' ? dealEdge : null, state, words, orderable,
-      draft: orderable && method && at ? draftOf(input, { label: stepLabel(edge), edge: id }, at, withoutReference ? { ...method, model: method.noReferenceModel!, reference: 'ingen' } : method, reference, orderable === 'PROV') : null,
+      draft: orderable && method && at ? draftOf(input, { label: stepLabel(edge), edge: id }, at, method, reference, orderable === 'PROV') : null,
       picture,
     });
   }
 
-  const anchors: Anchor[] = (['1', '2.1', '2.2'] as const).map((a) => {
+  const anchors: Anchor[] = (['1', '2.1', '2.2', '2.3'] as const).map((a) => {
     const own = entries.filter((e) => e.role === ANCHOR_ROLE[a] && e.node === ANCHOR_NODE[a] && !e.card);
     const holds = anchorHolding(entries, a), candidates = own.filter((e) => e.state === 'kandidat');
     return {
@@ -358,7 +342,7 @@ export async function readProduction(root: string, dealerId: string, options: { 
   const sides = Object.fromEntries(Object.entries(all.plan?.seats ?? {}).map(([t, s]) => [t, s.side]));
   return {
     input: {
-      dealer: { id: known.id, name: known.name }, graph, bank: bank as BankFacts, methods: methodsRead.register, hubs: hubDeals(bank, dealerId),
+      dealer: { id: known.id, name: known.name }, graph, bank: { ...(bank as BankFacts), rendered: all.rendered ?? [] }, methods: methodsRead.register, hubs: hubDeals(bank, dealerId),
       entries: register?.dealers[dealerId]?.entries ?? [], orders: all.orders.map((a) => ({ order: a.order, shown: a.shown })), sides, createdBy: options.createdBy,
     },
     problems,

@@ -5,9 +5,10 @@ import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import {
-  ALL_SEVEN, CARD_SCALES, cutFrameOf, cutFrameWords, endsOnOf, FLIP_ABOUT, FLIP_AXES, MODELS, SEAT_TARGETS, STEPS, TEXT_STYLES, plannedDiffers, plannedOf, bodyLine, canonical, checkPolicy, costOf, crossesBody, cutIntoOf, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, groupBudget, handChoiceOf, handsOf, hashInput, landingMissing, landingOf, lengthFor, modelFor, modelsFor, paramsOf, priceOf, referenceCandidates, requestOf, scaleQuad, scaleWords, seatList, seatWords, shownOf, spentOn, startWords, stepOf, styleOf, stylesFor, summaryOf, takeStates, tidyMotion, validateOrder, verdictOf, waitWords,
+  ALL_SEVEN, CARD_SCALES, cutFrameOf, cutFrameWords, endsOnOf, FLIP_AXES, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, SHAPE_LABEL, MODELS, SEAT_TARGETS, STEPS, TEXT_STYLES, plannedDiffers, plannedOf, bodyLine, canonical, checkPolicy, costOf, crossesBody, cutIntoOf, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, groupBudget, handChoiceOf, handsOf, hashInput, isArchived, cutCheckKey, readCutChecks, landingMissing, landingOf, lengthFor, lengthOfReference, modelFor, modelsFor, paramsOf, priceOf, referenceCandidates, requestOf, scaleQuad, scaleWords, seatEndMissing, seatEndOf, seatEndWords, seatList, seatWords, shownOf, spentOn, stepOf, styleOf, stylesFor, summaryOf, takeStates, tidyMotion, validateOrder, verdictOf, waitWords,
   type BankFacts, type Order, type Policy, type Receipt,
 } from '../src/order-model.ts';
+import * as model from '../src/order-model.ts';
 import { orderPrompt } from '../src/order-prompts.ts';
 
 const sha = (s: string) => createHash('sha256').update(s).digest('hex');
@@ -57,6 +58,7 @@ test('the checkout: every order file holds, a draft is on today\'s template, an 
   else assert.doesNotMatch(draftProblems(film).join(' '), /Väntar på/);
   const still = list.find((o) => o.id === 'paow-ankare-2-1')!;
   assert.deepEqual(still.pictures.map((p) => [p.name, p.label]), [['anchor.png', 'Paows ankare 1 · kandidat 2'], ['pose-figure.png', 'Pose · bara armen, handen och skon']]);
+  // An order stored before 2026-11-18 keeps the line it was made with (and its hash): nothing rewrites it.
   assert.equal(still.summary, 'Gör Paows ankare 2.1: hennes ankare 1 där bara vänsterarmen flyttas till nypet vid skon.');
 });
 
@@ -78,18 +80,25 @@ test('the exact call per take: pictures by name, nothing the tool does not take,
 
 test('a film made with another model: the models that can make a step, their parameters, the exact call, the price and the check', async () => {
   const entry = stepOf('INGANG-2.1')!, deal = stepOf('GIV-2.1')!, still = stepOf('ANKARE-2.1')!;
-  assert.deepEqual(modelsFor(entry).map((m) => m.id), ['wan3', 'kling-4', 'kling-3-4k'], 'its own first, then every model that takes a first and a last picture');
+  assert.deepEqual(modelsFor(entry).map((m) => m.id), ['kling-4', 'wan3', 'kling-3-4k'], 'every model that takes a first and a last picture');
   assert.deepEqual(modelsFor(deal).map((m) => m.id), ['kling-4', 'wan3', 'kling-3-4k']);
   assert.deepEqual(modelsFor(still).map((m) => m.id), ['nano-banana-pro'], 'a still: only the picture model');
-  assert.equal(modelFor(entry)?.id, 'wan3');
+  // No step has a model of its own: which one it is ordered with is its recipe's (data/order-methods.json), and nothing else.
+  assert.equal(modelFor(entry, null), null);
+  assert.equal(modelFor(entry, undefined), null);
+  assert.equal(modelFor(entry, 'wan3')?.id, 'wan3');
   assert.equal(modelFor(entry, 'nano-banana-pro'), null);
   assert.equal(modelFor(still, 'kling-3-4k'), null);
   assert.equal(modelFor(entry, 'gen-9'), null);
-  // The step's own model gets what it got before the choice existed.
-  assert.deepEqual(paramsOf(entry, MODELS.wan3), { resolution: '1080p', duration: 4, ratio: 'adaptive', generateAudio: false });
-  assert.deepEqual(paramsOf(deal, MODELS['kling-4']), { resolution: '1080p', duration: 7 });
+  // The parameters: the length and the resolution given (the recipe's, or an exception's); a still's size is its step's.
+  assert.deepEqual(paramsOf(entry, MODELS.wan3, { duration: 4, resolution: '1080p' }), { resolution: '1080p', duration: 4, ratio: 'adaptive', generateAudio: false });
+  assert.deepEqual(paramsOf(deal, MODELS['kling-4'], { duration: 3 }), { resolution: '1080p', duration: 3 });
   assert.deepEqual(paramsOf(still, MODELS['nano-banana-pro']), { ratio: '4:3', imageSize: '4K' });
-  assert.deepEqual(paramsOf(deal, MODELS.wan3), { resolution: '1080p', duration: 7, ratio: 'adaptive', generateAudio: false }, 'the ratio and the sound are the model\'s');
+  assert.deepEqual(paramsOf(deal, MODELS.wan3, { duration: 7 }), { resolution: '1080p', duration: 7, ratio: 'adaptive', generateAudio: false }, 'the ratio and the sound are the model\'s');
+  assert.equal(paramsOf(deal, MODELS['kling-4'], { duration: 3, resolution: '4k' }).resolution, '1080p', 'a resolution the model does not take: its highest');
+  // The shortest each model takes (Runway's tool, 2026-11-18): Kling 4 from 3 s, WAN 3 from 2 s.
+  assert.deepEqual([MODELS['kling-4'].durations, MODELS.wan3.durations], [[3, 30], [2, 30]]);
+  assert.deepEqual([lengthOfReference(MODELS['kling-4'], 3.967), lengthOfReference(MODELS['kling-4'], 4.2), lengthOfReference(MODELS['kling-4'], 2.4), lengthOfReference(MODELS['kling-4'], 40)], [4, 5, 3, 30]);
   // Kling 3.0 4K: resolution fixed 4k, no ratio, sound off, 3–15 s.
   const k4k = modelFor(entry, 'kling-3-4k')!;
   const params = paramsOf(entry, k4k, { duration: 4 });
@@ -173,37 +182,44 @@ test('what a person sees: waiting, ready, then the least advanced take; doubt an
 });
 
 test('the steps: defaults from the plan, edges in the graph notation, and an order file that lies is refused', () => {
-  assert.equal(stepOf('GIV-2.1')?.model, 'kling-4');
-  assert.equal(stepOf('INGANG-2.1')?.duration, 4);
-  // A return is its own film from the landing picture (one action per film, 2026-11-13): WAN 3, 3 s.
-  for (const key of ['RETUR-2.1', 'RETUR-2.2', 'RETUR-1'] as const) assert.deepEqual([stepOf(key)?.start, stepOf(key)?.off, stepOf(key)?.model, stepOf(key)?.duration], ['LAND', undefined, 'wan3', 3], key);
+  // A step says what a film is between; how it is ordered is its recipe's alone (data/order-methods.json): no model, length or resolution here.
+  for (const s of STEPS) assert.deepEqual(Object.keys(s).filter((k) => ['model', 'duration', 'resolution', 'seconds', 'takes', 'shape'].includes(k)), [], `${s.key}: no ordering default on the step`);
+  // A return is its own film from the landing picture (one action per film, 2026-11-13).
+  for (const key of ['RETUR-2.1', 'RETUR-2.2', 'RETUR-1'] as const) assert.deepEqual([stepOf(key)?.start, stepOf(key)?.off], ['LAND', undefined], key);
+  // A deal's name says where the card goes, not that the hand comes back (the recipe is bara dit).
+  for (const s of STEPS.filter((x) => x.card)) assert.doesNotMatch(s.label, /och tillbaka/, s.key);
+  // Anchor 2.3 (Jakob 2026-11-18): its entry from rest and the deal with two hands, in the graph as a third pose at the shoe.
+  assert.deepEqual([stepOf('INGANG-2.3')?.from, stepOf('INGANG-2.3')?.to, edgeOf(stepOf('INGANG-2.3')!, null)], ['1', '2.3', 'IDLE>READY-C']);
+  assert.deepEqual([stepOf('GIV-2.3')?.from, stepOf('GIV-2.3')?.grip, edgeOf(stepOf('GIV-2.3')!, 'P4.C1'), cutIntoOf(stepOf('GIV-2.3')!, 'P4.C1', 'ONE_WAY')], ['2.3', 'TWO_HANDS', 'READY-C>P4.C1', ['READY-C>P4.C1']]);
+  assert.deepEqual([model.ANCHOR_NODE['2.3'], model.ANCHOR_ROLE['2.3']], ['READY-C', 'ankare-2.3']);
   assert.deepEqual(STEPS.map((s) => s.key).filter((k) => stepOf(k)?.off), [], 'nothing is switched off now');
   assert.deepEqual(['RETUR-2.1', 'RETUR-2.2', 'RETUR-1'].map((k) => edgeOf(stepOf(k)!, 'P4.C1')), ['P4.C1>READY', 'P4.C1>READY-B', 'P4.C1>IDLE']);
   assert.deepEqual(cutIntoOf(stepOf('GIV-2.1')!, 'P4.C1', 'ROUND_TRIP'), ['READY>P4.C1', 'P4.C1>READY']);
   assert.deepEqual(cutIntoOf(stepOf('GIV-2.1')!, 'P4.C1', 'ONE_WAY'), ['READY>P4.C1'], 'bara dit: the deal alone');
   assert.deepEqual(cutIntoOf(stepOf('RETUR-2.2')!, 'P4.C1', 'ONE_WAY'), ['P4.C1>READY-B']);
-  assert.equal(startWords(stepOf('RETUR-2.1')!), 'Börjar på platsens landningsbild (handen vid kortet) och slutar på ankare 2.1 (nyp): tummen och pekfingret på kortet i skons fönster.');
-  assert.equal(startWords(stepOf('GIV-2.1')!, 'ONE_WAY'), 'Börjar på ankare 2.1 (nyp): tummen och pekfingret på kortet i skons fönster, och slutar på platsens landningsbild.');
   assert.equal(edgeOf(stepOf('GIV-2.1')!, 'P4.C1'), 'READY>P4.C1');
   assert.equal(edgeOf(stepOf('INGANG-2.2')!, null), 'IDLE>READY-B');
   assert.equal(edgeOf(stepOf('ANKARE-2.1')!, null), null);
   assert.equal(stepOf('MELLANBILD'), null, 'the in-between picture (a turn about the short edge) is dropped');
-  assert.equal(stepOf('GIV-2.1')?.duration, 7, 'the bank round trip to seat 4 is 6,5 s');
   assert.ok(validateOrder({ schemaVersion: 1 }).errors.length > 3);
 });
 
-test('one line on what an order makes, in Jakob\'s words', () => {
-  assert.equal(summaryOf(stepOf('ANKARE-2.2')!, 'Paow', null), 'Gör Paows ankare 2.2: hennes ankare 1 där bara vänsterarmen flyttas, så att handen ligger över kortet vid skons öppning.');
-  assert.equal(summaryOf(stepOf('GIV-2.1')!, 'Paow', { turn: true, target: 'P4.C1' }), 'Gör en film av Paow: från ankare 2.1 (nyp) tar hon ett kort ur skon med vänster hand; hon vrider handleden och vänder kortet på vägen och lägger det öppet på plats 4; handen går tillbaka till nypet.');
-  // The long side: like a key, Pamela's way (Jakob 2026-11-17: both turns on the way are valid).
-  assert.equal(summaryOf(stepOf('GIV-2.1')!, 'Paow', { turn: true, target: 'P4.C1', hand: 'LH', pass: false, side: 'FRONT', flipAxis: 'LONG_EDGE' }), 'Gör en film av Paow: från ankare 2.1 (nyp) tar hon ett kort ur skon med vänster hand; hon vrider det kring långsidan som en nyckel (som Pamela) på vägen och lägger det öppet på plats 4; handen går tillbaka till nypet.');
-  for (const flipAxis of FLIP_AXES) assert.doesNotMatch(summaryOf(stepOf('GIV-2.2')!, 'Paow', { turn: true, target: 'P4.C1', flipAxis }) + FLIP_ABOUT[flipAxis], /som en hand kan|bankens filmer/, `${flipAxis}: the words of 2026-11-12 are gone`);
-  assert.match(FLIP_ABOUT.LONG_EDGE, /som en nyckel \(som Pamela\).*kvar vriden tills kortet ligger/);
-  assert.equal(summaryOf(stepOf('GIV-2.1')!, 'Paow', { turn: true, target: 'P4.C1', hand: 'LH', pass: false, side: 'FRONT', flipAxis: 'AT_PLACE' }), 'Gör en film av Paow: från ankare 2.1 (nyp) tar hon ett kort ur skon med vänster hand; hon för fram det med baksidan upp, vänder upp det vid plats 4 och lägger det öppet; handen går tillbaka till nypet.');
-  assert.equal(summaryOf(stepOf('GIV-2.2')!, 'Paow', { turn: true, target: 'P1.C1', hand: 'LH', pass: true, side: 'FRONT', flipAxis: 'FREE' }), 'Gör en film av Paow: från ankare 2.2 (släp) släpar hon ett kort ur skon med vänster hand och ger det till höger lågt framför kroppen; höger vrider handleden och vänder kortet på vägen och lägger det öppet på plats 1; händerna går tillbaka till ankaret.');
-  assert.equal(summaryOf(stepOf('GIV-2.2')!, 'Paow', { turn: false, target: 'P6.C1', hand: 'RH', pass: false, side: 'BACK' }), 'Gör en film av Paow: från ankare 2.2 (släp) släpar hon ett kort ur skon med höger hand; hon lägger det stängt, baksidan upp, på plats 6; händerna går tillbaka till ankaret.');
-  assert.equal(startWords(stepOf('GIV-2.2')!), 'Börjar och slutar på ankare 2.2 (släp): handen över kortet i skons öppning.');
-  assert.equal(startWords(stepOf('INGANG-2.1')!), 'Börjar på ankare 1 och slutar på ankare 2.1 (nyp): tummen och pekfingret på kortet i skons fönster.');
+test('one line on what an order makes: the pictures it goes between, never how she moves', () => {
+  assert.equal(summaryOf(stepOf('ANKARE-2.2')!, 'Paow', null), 'Gör Paows ankare 2.2 ur hennes ankare 1.');
+  assert.equal(summaryOf(stepOf('GIV-2.1')!, 'Paow', { target: 'P4.C1' }, 'ONE_WAY'), 'Gör en film av Paow: ett kort från ankare 2.1 till plats 4, bara dit.');
+  assert.equal(summaryOf(stepOf('GIV-2.2')!, 'Paow', { target: 'P1.C1' }, 'ROUND_TRIP'), 'Gör en film av Paow: ett kort från ankare 2.2 till plats 1, tur och retur.');
+  assert.equal(summaryOf(stepOf('GIV-2.3')!, 'Paow', { target: 'D.C2' }, 'ONE_WAY'), 'Gör en film av Paow: ett kort från ankare 2.3 till dealerns hålkort, bara dit.');
+  assert.equal(summaryOf(stepOf('RETUR-2.2')!, 'Paow', { target: 'P4.C1' }), 'Gör en film av Paow: från kortet på plats 4 till ankare 2.2.');
+  assert.equal(summaryOf(stepOf('INGANG-2.3')!, 'Paow', null), 'Gör en film av Paow: från ankare 1 till ankare 2.3.');
+  assert.equal(summaryOf(stepOf('UTGANG-2.2')!, 'Paow', null), 'Gör en film av Paow: från ankare 2.2 till ankare 1.');
+  assert.equal(summaryOf(stepOf('HALKORT')!, 'Paow', null), 'Gör en film av Paow: hålkortet vänds upp, från och till ankare 1.');
+  assert.equal(summaryOf(stepOf('VILA')!, 'Paow', null), 'Gör en vilofilm av Paow: från och till ankare 1.');
+  // Only what is sent is described (Jakob 2026-11-17): no line of a new order says how the hand or the card moves, and the
+  // model holds no description of a choice beside its name. The movement is said by the text that is sent and by nothing else.
+  for (const s of STEPS) for (const shape of ['ONE_WAY', 'ROUND_TRIP'] as const) assert.doesNotMatch(summaryOf(s, 'Paow', { target: 'P4.C1' }, shape), /hand|vrid|vänd(?!s upp)|släpa|nyp|lägg|handled|öppet|stängt|baksida/i, s.key);
+  for (const gone of ['FLIP_ABOUT', 'HAND_ABOUT', 'SHAPE_ABOUT', 'LANDS_ABOUT', 'startWords', 'dealWords']) assert.ok(!(gone in model), `${gone} is gone: it described the movement and was never sent`);
+  // The names of the choices stay: a name, not a description.
+  assert.deepEqual([FLIP_LABEL.FREE, HAND_LABEL.PASS, LANDS_LABEL.FRONT, SHAPE_LABEL.ONE_WAY], ['Handleden vänder kortet på vägen', 'Handbyte', 'Stängt → öppet', 'Bara dit']);
   assert.equal(genitive('Agnes'), 'Agnes');
   assert.equal(seatWords('D.C1'), 'dealerns plats');
   assert.equal(seatWords('P2.C2'), 'plats 2, kort 2');
@@ -237,7 +253,8 @@ test('the hand: left, right or handbyte (left to right), stored as the plan stor
   assert.match(validateOrder({ ...order, motion }).errors.join(' '), /handbyte går från vänster hand till höger/);
   assert.doesNotMatch(validateOrder({ ...order, motion: { ...motion, hand: 'LH' } }).errors.join(' '), /motion/);
   assert.match(validateOrder({ ...order, motion: { ...motion, hand: 'LH', side: 'UP' } }).errors.join(' '), /motion: hand/);
-  assert.match(validateOrder({ ...order, motion: { ...motion, hand: 'LH', grip: 'SLIDE' } }).errors.join(' '), /grip \(PINCH\/DRAG\)/, 'the grip is checked too');
+  assert.match(validateOrder({ ...order, motion: { ...motion, hand: 'LH', grip: 'SLIDE' } }).errors.join(' '), /grip \(PINCH\/DRAG\/TWO_HANDS\)/, 'the grip is checked too');
+  assert.doesNotMatch(validateOrder({ ...order, motion: { ...motion, hand: 'LH', pass: false, grip: 'TWO_HANDS' } }).errors.join(' '), /motion/, 'the deal with two hands from anchor 2.3');
   // what Placering said for the card: its grip and its turn (or null), nothing else
   assert.doesNotMatch(validateOrder({ ...order, motion: { ...motion, hand: 'LH', planned: { grip: 'DRAG', flipAxis: 'LONG_EDGE' } } }).errors.join(' '), /motion/);
   assert.doesNotMatch(validateOrder({ ...order, motion: { ...motion, hand: 'LH', planned: { grip: 'PINCH', flipAxis: null } } }).errors.join(' '), /motion/);
@@ -288,8 +305,6 @@ test('the text style: Kort for every new order, no minimal still, never Utförli
   const order = { schemaVersion: 1, id: 'x', title: 'x', dealer: 'paow', kind: 'FILM', step: { key: 'GIV-2.1', shape: 'ONE_WAY' }, pictures: [], generation: {}, prompt: { text: '', sha256: '', extra: null, style: 'LÅNG' }, takes: 1, cost: {}, reference: {}, status: 'UTKAST', approval: null, notes: [] };
   assert.match(validateOrder(order).errors.join(' '), /prompt\.style ska vara KORT, MINIMAL eller UTFÖRLIG/);
   assert.match(validateOrder({ ...order, step: { key: 'GIV-2.1', shape: 'BOTH' } }).errors.join(' '), /step\.shape/);
-  assert.equal(summaryOf(stepOf('GIV-2.1')!, 'Paow', { turn: true, target: 'P4.C1', hand: 'LH', pass: false, side: 'FRONT', flipAxis: 'AT_PLACE' }, 'ONE_WAY'), 'Gör en film av Paow: från ankare 2.1 (nyp) tar hon ett kort ur skon med vänster hand; hon för fram det med baksidan upp, vänder upp det vid plats 4 och lägger det öppet; filmen slutar med handen vid kortet (bara dit).');
-  assert.equal(summaryOf(stepOf('RETUR-2.2')!, 'Paow', { turn: false, target: 'P4.C1' }), 'Gör en film av Paow: handen går från kortet på plats 4 tillbaka och lägger sig över kortet vid skons öppning.');
 });
 
 test('the landing picture: role landning, LAND(<seat>), gäller, the card on that seat; what is missing otherwise', () => {
@@ -298,7 +313,60 @@ test('the landing picture: role landning, LAND(<seat>), gäller, the card on tha
   assert.equal(landingOf(entries, 'P4.C1')?.id, 'c');
   assert.equal(landingOf(entries, 'P1.C1'), null);
   assert.equal(landingOf(entries, null), null);
-  assert.match(landingMissing('Paow', 'P1.C1'), /^Ingen landningsbild gäller för Paows plats 1\. Godkänn en i Material \(roll landning, LAND\(P1\.C1\)\)/);
+  assert.match(landingMissing('Paow', 'P1.C1'), /^Ingen landningsbild gäller för Paows plats 1\. En retur som egen film börjar på den: gör en gällande i Material \(roll landning, LAND\(P1\.C1\)\)/);
+});
+
+test('a deal bara dit ends on THAT seat\'s own end picture: its landing picture, else the cut frame of the bank\'s film there; a seat with neither says so', () => {
+  const landing = (id: string, target: string, state = 'gäller') => ({ id, name: `Plats ${target[1]}, landning`, role: 'landning', node: `LAND(${target})`, state, card: target });
+  const straight = { decision: 'ACCEPTED', userAccepted: true, userReview: 'Jakob 2026-11-13: bra' };
+  const trip = (clip: string, target: string, cut: number, node = 'READY') => [{ id: `${clip}-deal`, from: node, to: target, clip, frames: [0, cut] as [number, number], dealer: 'paow' }, { id: `${clip}-return`, from: target, to: node, clip, frames: [cut + 1, cut + 60] as [number, number], dealer: 'paow' }];
+  const bank: BankFacts = {
+    derived: [...trip('paow-giv-2-1-p4-04-01', 'P4.C1', 108), ...trip('paow-giv-2-1-p1-06-01', 'P1.C1', 112), ...trip('paow-giv-2-2-p4-01-01', 'P4.C1', 126, 'READY-B')],
+    motions: { 'paow-giv-2-1-p4-04-01-return': { review: straight }, 'paow-giv-2-1-p1-06-01-return': { review: straight }, 'paow-giv-2-2-p4-01-01-return': { review: straight } },
+  };
+  const pinch = stepOf('GIV-2.1')!, drag = stepOf('GIV-2.2')!, two = stepOf('GIV-2.3')!;
+  const end = (entries: ReturnType<typeof landing>[], step: typeof pinch, target: string, hand?: 'LH' | 'RH', from = bank) => seatEndOf(entries, from, { dealer: 'paow', step, target, hand });
+  // The seat's landing picture first; one seat's picture never stands in for another seat.
+  const p4 = [landing('paow-landning-p4', 'P4.C1')];
+  assert.deepEqual(end(p4, pinch, 'P4.C1'), { kind: 'LANDNING', entry: p4[0] });
+  assert.equal(end(p4, pinch, 'P1.C1')?.kind, 'SNITTRUTA', 'seat 1 does not end on seat 4\'s picture');
+  assert.equal(end(p4, pinch, 'P5.C1'), null, 'no landing picture and no film of its own: no end picture');
+  // A landing picture set aside does not hold: the seat then ends on the cut frame of the bank's own film from the same anchor.
+  const aside = [landing('paow-landning-p4', 'P4.C1', 'ersatt')];
+  const cut = end(aside, pinch, 'P4.C1');
+  assert.deepEqual(cut && cut.kind === 'SNITTRUTA' ? [cut.cut.clip, cut.cut.frame, cut.cut.ret] : null, ['paow-giv-2-1-p4-04-01', 108, 'paow-giv-2-1-p4-04-01-return']);
+  const dragged = end([], drag, 'P4.C1');
+  assert.deepEqual(dragged && dragged.kind === 'SNITTRUTA' ? [dragged.cut.clip, dragged.cut.frame] : null, ['paow-giv-2-2-p4-01-01', 126], 'the drag ends on the drag\'s own film');
+  assert.equal(end([], drag, 'P1.C1'), null, 'the pinch\'s film to seat 1 is no end for the drag');
+  // The hand that lays the card: a cut frame laid with the left is no end for a handbyte or for the two-hand deal from 2.3.
+  assert.equal(end([], pinch, 'P4.C1', 'RH'), null);
+  assert.equal(end([], two, 'P4.C1', 'RH'), null);
+  assert.equal(seatEndOf([], null, { dealer: 'paow', step: pinch, target: 'P4.C1' }), null, 'no bank read: no cut frame');
+  // An archived take is out of play: neither its deal nor its return gives a last frame.
+  const archived = { ...bank, motions: { ...bank.motions, 'paow-giv-2-1-p4-04-01-return': { review: { ...straight, archived: { by: 'Jakob', where: 'Karta' } } } } };
+  assert.equal(isArchived(archived, 'paow-giv-2-1-p4-04-01-return'), true);
+  assert.equal(end([], pinch, 'P4.C1', 'LH', archived), null);
+  assert.equal(end([], pinch, 'P4.C1', 'LH', { ...bank, motions: { ...bank.motions, 'paow-giv-2-1-p4-04-01': { review: { archived: { by: 'Jakob' } } } } }), null, 'the whole film archived');
+  // A cut frame whose picture check is written down as not holding (its card lies off the plan's card) is no end picture:
+  // the next film's frame is taken, and a seat whose every frame fails has none. A frame not written down is offered.
+  const checks = readCutChecks({ frames: [
+    { clip: 'paow-giv-2-1-p4-04-01', frame: 108, target: 'P4.C1', holds: false, problems: ['kortet ligger 12 px från planens'], windowPrinted: true, offFromPlan: 12 },
+    { clip: 'paow-giv-2-1-p1-06-01', frame: 112, target: 'P1.C1', holds: true, problems: [], windowPrinted: false, offFromPlan: 2 },
+    { clip: 'utan-ruta', target: 'P4.C1', holds: false }, 'skräp',
+  ] });
+  assert.deepEqual(Object.keys(checks), [cutCheckKey('paow-giv-2-1-p4-04-01', 108, 'P4.C1'), 'paow-giv-2-1-p1-06-01@112>P1.C1'], 'what does not hold its shape is left out');
+  assert.deepEqual(checks['paow-giv-2-1-p4-04-01@108>P4.C1'], { holds: false, problems: ['kortet ligger 12 px från planens'], windowPrinted: true, offFromPlan: 12 });
+  assert.deepEqual(readCutChecks(null), {});
+  const checked = { ...bank, cutChecks: checks };
+  assert.equal(end([], pinch, 'P4.C1', 'LH', checked), null, 'seat 4\'s only frame from the pinch does not hold');
+  assert.equal(end([], pinch, 'P1.C1', 'LH', checked)?.kind, 'SNITTRUTA');
+  assert.equal(end([], drag, 'P4.C1', 'LH', checked)?.kind, 'SNITTRUTA', 'the drag\'s own frame is not written down: offered');
+  assert.equal(end(p4, pinch, 'P4.C1', 'LH', checked)?.kind, 'LANDNING', 'a landing picture that holds needs no frame');
+  // In words: which picture, or plainly that there is none and the two ways to get one.
+  assert.equal(seatEndWords(end(p4, pinch, 'P4.C1')), 'landningsbilden Plats 4, landning');
+  assert.equal(seatEndWords(cut), 'ruta 108 ur paow-giv-2-1-p4-04-01, där returen börjar (Jakob: ”bra”)');
+  assert.equal(seatEndWords(null), 'ingen slutbild');
+  assert.equal(seatEndMissing('Paow', 'P5.C1', '2.1'), 'Plats 5 har ingen slutbild för Paows giv från ankare 2.1: ingen landningsbild gäller för platsen, och banken har ingen egen film dit vars retur du har godkänt rakt. Gör en landningsbild för platsen gällande i Material, eller godkänn en retur från platsen i Granska.');
 });
 
 test('a reference film from the bank: the same step and seat first, the dealer\'s own before another\'s, a rejected take last; length against the model', () => {
@@ -332,9 +400,12 @@ test('a reference film from the bank: the same step and seat first, the dealer\'
     ['pamela-p4-c1-plan-deal-02', 0, 'pamela', 'GODKÄND'],
     ['paow-giv-p4-01-deal', 0, 'paow', 'UNDERKÄND'],
     ['pamela-p4-c1-plan-deal-01', 0, 'pamela', 'UNDERKÄND'],
+    ['pamela-p4-c1-drawn-deal-01', 1, 'pamela', 'EJ_DÖMD'],
     ['pamela-p4-c1-readyb-deal-01', 1, 'pamela', 'EJ_DÖMD'],
     ['pamela-p1-c1-plan-deal-02', 2, 'pamela', 'EJ_DÖMD'],
-  ], 'one per film; DRAWN is not a node of the graph; the entry is another step');
+  ], 'one per film; the film from the drawn-out pose is a drag to the seat (the other grip here); the entry is another step');
+  // For the drag itself that film is the same step and seat (trial 2A held with it as the reference).
+  assert.deepEqual(referenceCandidates(bank, { dealer: 'paow', step: stepOf('GIV-2.2')!, target: 'P4.C1', model: MODELS['kling-4'] }).filter((c) => c.match === 0).map((c) => c.take), ['pamela-p4-c1-drawn-deal-01', 'pamela-p4-c1-readyb-deal-01']);
   const own = list[0];
   assert.deepEqual([own.film, own.path, own.seconds, own.frames, own.also, own.fits, own.words], ['paow-giv-p4-02', 'assets/motions/paow-giv-p4-02/source.mp4', 7.042, [0, 104], ['paow-giv-p4-02-return-ready'], true, 'Denna är bra']);
   assert.deepEqual([list[1].seconds, list[1].frames, list[1].approvedStraight, list[1].goesTo], [4, null, true, 'P4.C1']);
@@ -383,32 +454,28 @@ test('the steps a round needs: the hole card as a deal\'s target, its turn from 
   const give = stepOf('GIV-2.1')!;
   assert.equal(edgeOf(give, 'D.C2'), 'READY>D.C2');
   assert.deepEqual(cutIntoOf(give, 'D.C2', 'ROUND_TRIP'), ['READY>D.C2', 'D.C2>READY']);
-  assert.match(summaryOf(give, 'Paow', { turn: false, target: 'D.C2', side: 'BACK' }), /lägger det stängt, baksidan upp, på dealerns hålkort/);
+  assert.match(summaryOf(give, 'Paow', { target: 'D.C2' }, 'ONE_WAY'), /ett kort från ankare 2\.1 till dealerns hålkort, bara dit/);
   // The hole card turned open from rest and back to rest: IDLE>REVEAL(D.C2), the card fixed, both pictures with that card
   // alone (the game draws every lying card itself; with both drawn she lifted both, round 6).
   const turn = stepOf('HALKORT')!;
-  assert.deepEqual([turn.kind, turn.from, turn.to, turn.card, turn.target, turn.model, turn.duration], ['FILM', '1', '1', false, 'D.C2', 'wan3', 5]);
+  assert.deepEqual([turn.kind, turn.from, turn.to, turn.card, turn.target], ['FILM', '1', '1', false, 'D.C2']);
   assert.equal(edgeOf(turn, null), 'IDLE>REVEAL(D.C2)');
   assert.deepEqual(cutIntoOf(turn, null, 'ONE_WAY'), [], 'one edge, its step.edge');
   assert.deepEqual(turn.cards, [{ target: 'D.C2', before: 'BACK', after: 'FRONT' }]);
-  assert.match(startWords(turn), /^Börjar och slutar på ankare 1 \(vila\).*, med bara hålkortet ritat där planen säger: stängt i första bilden och öppet i sista\.$/);
-  assert.match(summaryOf(turn, 'Paow', null), /vänder hon upp hålkortet/);
+  assert.match(summaryOf(turn, 'Paow', null), /hålkortet vänds upp, från och till ankare 1/);
   // The way out: anchor 2.1 to anchor 1, READY>IDLE.
   const out = stepOf('UTGANG')!;
   assert.deepEqual([out.from, out.to, out.card, edgeOf(out, null)], ['2.1', '1', false, 'READY>IDLE']);
-  assert.match(startWords(out), /^Börjar på ankare 2\.1 och slutar på ankare 1 \(vila\)/);
   // The way out from the drag: anchor 2.2 to anchor 1, READY-B>IDLE (a round through 2.2 goes by rest, 2026-11-13).
   const outDrag = stepOf('UTGANG-2.2')!;
-  assert.deepEqual([outDrag.kind, outDrag.from, outDrag.to, outDrag.card, outDrag.model, outDrag.duration, edgeOf(outDrag, null)], ['FILM', '2.2', '1', false, 'wan3', 4, 'READY-B>IDLE']);
+  assert.deepEqual([outDrag.kind, outDrag.from, outDrag.to, outDrag.card, edgeOf(outDrag, null)], ['FILM', '2.2', '1', false, 'READY-B>IDLE']);
   assert.deepEqual(cutIntoOf(outDrag, null, 'ONE_WAY'), [], 'one edge');
-  assert.match(startWords(outDrag), /^Börjar på ankare 2\.2 och slutar på ankare 1 \(vila\)/);
-  assert.match(summaryOf(outDrag, 'Paow', null), /från handen över kortet vid skons öppning \(ankare 2\.2\) lyfter hon fingertopparna från kortet, och handen går tillbaka till vila/);
+  assert.match(summaryOf(outDrag, 'Paow', null), /från ankare 2\.2 till ankare 1/);
   // Short or minimal only, as every new film; a still Kort only.
   for (const s of [turn, out, outDrag]) assert.deepEqual(stylesFor(s.kind, s), ['KORT', 'MINIMAL']);
   assert.deepEqual(stylesFor('FILM', stepOf('VILA')), ['KORT', 'MINIMAL']);
   assert.deepEqual(stylesFor('STILL'), ['KORT']);
-  // Every model that can make them takes their length; a reference film is chosen from the bank's takes of that edge.
-  for (const s of [turn, out]) assert.ok(modelsFor(s).every((m) => !m.durations || (s.duration! >= m.durations[0] && s.duration! <= m.durations[1])), s.key);
+  // A reference film is chosen from the bank's takes of that edge.
   const bank: BankFacts = { jobs: [{ id: 'pamela-reveal-01', from: 'IDLE', to: 'REVEAL(D.C2)', duration: 4 }], motions: { 'pamela-reveal-01': { source: { frames: 120, fps: 30 }, review: { decision: 'ACCEPTED', userAccepted: true } } } };
   assert.deepEqual(referenceCandidates(bank, { dealer: 'paow', step: turn, target: null, model: MODELS['kling-4'] }).map((c) => [c.take, c.match, c.approvedStraight]), [['pamela-reveal-01', 0, true]]);
 });

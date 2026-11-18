@@ -31,6 +31,7 @@ export const ANCHOR_WORDS = {
   IDLE: { code: "A1", name: "A1 vila" },
   READY: { code: "A2.1", name: "A2.1 nyp" },
   "READY-B": { code: "A2.2", name: "A2.2 hand över" },
+  "READY-C": { code: "A2.3", name: "A2.3 två händer" },
   AWAY: { code: "Borta", name: "Borta" },
   "REVEAL(D.C2)": { code: "DC2 upp", name: "DC2 upp" },
 } as const;
@@ -40,6 +41,7 @@ export const WORDS: readonly Word[] = [
   { grupp: "Ankare och platser", ord: "A1 vila", betyder: "Ankare 1: hon sitter med båda händerna på filten. Varje runda börjar och slutar här.", sager: ["ankare 1"], aven: ["IDLE", "VILA", "Keystone 1 (gammalt namn)", "IDLE-B (vila med den öppna skon)"] },
   { grupp: "Ankare och platser", ord: "A2.1 nyp", betyder: "Ankare 2.1: hennes vänstra hand nyper det gula kortet i skons fönster mellan tumme och pekfinger, på kortet och inte på skons kant.", sager: ["ankare 2.1", "nyper", "nypet"], aven: ["READY", "REDO", "Keystone 2 (gammalt namn)", "variant A", "PINCH"] },
   { grupp: "Ankare och platser", ord: "A2.2 släp", betyder: "Ankare 2.2: hennes vänstra hand ligger platt över det gula kortet i skon, redo att släpa ut det längs filten.", sager: ["ankare 2.2", "släpar", "släpet"], aven: ["A2.2 hand över", "READY-B", "REDO B", "variant B", "DRAG"] },
+  { grupp: "Ankare och platser", ord: "A2.3 två händer", betyder: "Ankare 2.3: båda händerna vid skon precis före draget. Vänster hand stryker ut kortet och för det plant på filten till höger hand, som vänder det och lägger det.", sager: ["ankare 2.3"], aven: ["READY-C", "TWO_HANDS"] },
   { grupp: "Ankare och platser", ord: "Borta", betyder: "Bordet utan dealern: innan hon har kommit och sedan hon har gått.", sager: [], aven: ["AWAY", "tomt bord"] },
   { grupp: "Ankare och platser", ord: "DC2 upp", betyder: "Dealerns hålkort (DC2) vänt med framsidan upp medan hon vilar; rundan går vidare som från A1.", sager: [], aven: ["REVEAL(D.C2)", "hålkortet vänt"] },
   { grupp: "Ankare och platser", ord: "Plats och kort", betyder: "P1–P7 är spelarnas platser från kamerans vänster, C1 och C2 deras två kort: P4C1 är plats 4, första kortet.", sager: [], aven: ["P4.C1", "box 3 i Scout (box = plats − 1)", "kortplats", "placeringsnyckel"] },
@@ -54,7 +56,7 @@ export const WORDS: readonly Word[] = [
   { grupp: "Steg och filmer", ord: "Ingång", betyder: "Filmen från vilan till skon: A1 → A2.1 eller A1 → A2.2.", sager: [], aven: ["ENTRY", "IDLE>READY", "INGANG-2.1"] },
   { grupp: "Steg och filmer", ord: "Giv", betyder: "Filmen där kortet går från skon ut till sin plats: A2.1 → P4C1 med nyp, A2.2 → P4C1 med släp. Beställs tur och retur eller bara dit.", sager: ["utgiven", "dela ut"], aven: ["DEAL", "utdelning", "GIV-2.1"] },
   { grupp: "Steg och filmer", ord: "Tur och retur", betyder: "En giv där handen kommer tillbaka i samma film, skriven A2.2 → P3C2 → A2.2. I banken blir filmen två tagningar: given och returen.", sager: [], aven: ["ROUND_TRIP"] },
-  { grupp: "Steg och filmer", ord: "Bara dit", betyder: "En giv som slutar när kortet ligger, på platsens landningsbild. Returen beställs som en egen film.", sager: [], aven: ["ONE_WAY"] },
+  { grupp: "Steg och filmer", ord: "Bara dit", betyder: "En giv som slutar när kortet ligger, på platsens egen slutbild: platsens landningsbild, annars snittrutan ur bankens egen film dit. Så beställs en giv enligt receptet.", sager: [], aven: ["ONE_WAY"] },
   { grupp: "Steg och filmer", ord: "Retur", betyder: "Filmen där handen går tillbaka från kortet på bordet: till nypet (A2.1), över skon (A2.2) eller till vila (A1).", sager: ["tillbakagången", "retreat"], aven: ["RETURN", "P4.C1>READY", "RETUR-2.1"] },
   { grupp: "Steg och filmer", ord: "Utgång", betyder: "Filmen från skon tillbaka till vilan, utan kort: A2.1 → A1 eller A2.2 → A1.", sager: [], aven: ["exit", "READY>IDLE", "UTGANG-2.2"] },
   { grupp: "Steg och filmer", ord: "Vilan", betyder: "Filmerna A1 → A1 där hon vilar: lugna klipp är grunden, och gesterna (hosta, sträcka på sig, le, dricka …) slumpas in emellan.", sager: ["grundloopen"], aven: ["IDLE>IDLE", "idle-loopen", "gester"] },
@@ -78,7 +80,7 @@ export const WORDS: readonly Word[] = [
   { grupp: "Kortet", ord: "Bordets perspektiv", betyder: "Ett reglage för hela kortplanen (Kortplan, Kortets mått): hur smal kortets bortre kant ritas, mätt vid plats 4, från ett verkligt korts 96 % ner till 80 %. Bara formen ändras: varje kort har kvar sin verkliga storlek och plats. Din plan (87 %) är förval. Sparas med Spara i kortplanen.", sager: ["djup", "djupet i bordet"], aven: ["tableProjection.perspective", "lensForTaper"] },
   { grupp: "Kortet", ord: "Kortbana", betyder: "Kortplanens skiss av kortets väg: från skon till platsen och handen tillbaka, med Spela kortbanan. En skiss, inte filmen; den skickas aldrig till Runway.", sager: [], aven: ["Kortbanan"] },
   { grupp: "Kortet", ord: "Rörelse", betyder: "Fliken i Placering för hur kortet tas, vänds och läggs: teknik, hand, grepp vid skon, sidor, handbyte, var det vänds och kortbanan. Beställ utgår från den.", sager: [], aven: ["intent", "Teknik"] },
-  { grupp: "Kortet", ord: "Landningsbild", betyder: "Stillbilden med handen vid kortet på sin plats. En giv bara dit slutar på den och en retur som egen film börjar på den. Rollen Landningar i Material.", sager: ["A3", "ankare 3"], aven: ["LAND(P4.C1)", "landningsankare", "3.1–3.7 (en per plats)"] },
+  { grupp: "Kortet", ord: "Landningsbild", betyder: "Stillbilden med handen vid kortet på sin plats, en per plats. En giv bara dit till platsen slutar på den och en retur som egen film börjar på den. En plats utan landningsbild slutar på snittrutan ur bankens egen film dit. Rollen Landningar i Material.", sager: ["A3", "ankare 3"], aven: ["LAND(P4.C1)", "landningsankare", "3.1–3.7 (en per plats)"] },
   { grupp: "Kortet", ord: "Landningsruta", betyder: "Rutan i en giv där kortet just har landat och returen tar vid. Märkt Landning under filmen i Granska och Jämför.", sager: [], aven: ["landingFrame", "startsOn"] },
   { grupp: "Kortet", ord: "Släpp", betyder: "När handen släpper kortet på platsen. Placering visar vilken hand som släpper (Hand vid släpp).", sager: [], aven: ["RELEASE"] },
   // ── Pictures ──

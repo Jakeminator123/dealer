@@ -11,6 +11,7 @@ const ANCHORS: Record<string, { code: string; name: string }> = {
   IDLE: ANCHOR_WORDS.IDLE,
   READY: ANCHOR_WORDS.READY,
   "READY-B": ANCHOR_WORDS["READY-B"],
+  "READY-C": ANCHOR_WORDS["READY-C"],
   AWAY: ANCHOR_WORDS.AWAY,
   [REVEAL_NODE]: ANCHOR_WORDS["REVEAL(D.C2)"],
 };
@@ -193,6 +194,7 @@ const TOKENS: [RegExp, string | null][] = [
   [/A1(?:\s*vila)?(?![\p{L}\d.])/iuy, "IDLE"],
   [/A2\.1(?:\s*nyp)?(?![\p{L}\d.])/iuy, "READY"],
   [/A2\.2(?:\s*hand\s*över)?(?![\p{L}\d.])/iuy, "READY-B"],
+  [/A2\.3(?:\s*två\s*händer)?(?![\p{L}\d.])/iuy, "READY-C"],
   [/D\.?C2\s+upp(?![\p{L}\d.])/iuy, REVEAL_NODE],
   [/REVEAL\(\s*D\.?C2\s*\)/iuy, REVEAL_NODE],
   [/READY-[A-Z](?![\p{L}\d.])/iuy, null], // a hub variant, written out: READY-B

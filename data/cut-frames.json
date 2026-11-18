@@ -1,0 +1,283 @@
+{
+  "about": "Which cut frames of the bank's own films hold as the last picture of a deal bara dit (src/order-model.ts cutFrameOf, seatEndOf): for each frame the check the store makes when a draft is made (src/cut-frame.ts checkCutFrame: the laid card within 5 px of the plan's card on the edges the fingers leave free), made once here so that Material, Bordet's row and the store say the same. holds false: the frame is no end picture, and the seat has none unless another frame or a landing picture holds. windowPrinted: the card in the shoe's window is printed, and the store puts the shoe back from anchor 1. Written by node tools/order-cut-frames.ts <dealer>; run it again when the plan's cards move or new films come into the bank. plan: the plan the frames were checked against.",
+  "schemaVersion": 1,
+  "plan": {
+    "path": "placements/default.json",
+    "sha256": "dbb558211411ad4a2a45ee1047e9794ab39912084a0ad6717a020e443d2f7e7c"
+  },
+  "checkedAt": "2026-11-18T02:04Z",
+  "frames": [
+    {
+      "dealer": "paow",
+      "step": "GIV-2.1",
+      "clip": "paow-giv-2-1-p1-06-01",
+      "frame": 112,
+      "target": "P1.C1",
+      "holds": false,
+      "problems": [
+        "kortet ligger 10 px från planens"
+      ],
+      "windowPrinted": true,
+      "offFromPlan": 10
+    },
+    {
+      "dealer": "paow",
+      "step": "GIV-2.1",
+      "clip": "paow-giv-2-1-p1-04-01",
+      "frame": 95,
+      "target": "P1.C1",
+      "holds": false,
+      "problems": [
+        "kortet ligger 12 px från planens"
+      ],
+      "windowPrinted": true,
+      "offFromPlan": 12
+    },
+    {
+      "dealer": "paow",
+      "step": "GIV-2.1",
+      "clip": "paow-giv-2-1-p1-05-01",
+      "frame": 99,
+      "target": "P1.C1",
+      "holds": false,
+      "problems": [
+        "kortet ligger 10 px från planens"
+      ],
+      "windowPrinted": false,
+      "offFromPlan": 10
+    },
+    {
+      "dealer": "paow",
+      "step": "GIV-2.1",
+      "clip": "paow-giv-2-1-p1-07-02",
+      "frame": 123,
+      "target": "P1.C1",
+      "holds": false,
+      "problems": [
+        "kortet ligger 12 px från planens"
+      ],
+      "windowPrinted": false,
+      "offFromPlan": 12
+    },
+    {
+      "dealer": "paow",
+      "step": "GIV-2.1",
+      "clip": "paow-giv-2-1-p1-08-01",
+      "frame": 119,
+      "target": "P1.C1",
+      "holds": false,
+      "problems": [
+        "kortet ligger 10 px från planens"
+      ],
+      "windowPrinted": true,
+      "offFromPlan": 10
+    },
+    {
+      "dealer": "paow",
+      "step": "GIV-2.1",
+      "clip": "paow-giv-2-1-p1-01-01",
+      "frame": 137,
+      "target": "P1.C1",
+      "holds": false,
+      "problems": [
+        "kortet ligger 10 px från planens"
+      ],
+      "windowPrinted": false,
+      "offFromPlan": 10
+    },
+    {
+      "dealer": "paow",
+      "step": "GIV-2.1",
+      "clip": "paow-giv-2-1-p2-03-01",
+      "frame": 124,
+      "target": "P2.C1",
+      "holds": false,
+      "problems": [
+        "kortet ligger 8 px från planens"
+      ],
+      "windowPrinted": false,
+      "offFromPlan": 8
+    },
+    {
+      "dealer": "paow",
+      "step": "GIV-2.1",
+      "clip": "paow-giv-2-1-p2-04-02",
+      "frame": 113,
+      "target": "P2.C1",
+      "holds": false,
+      "problems": [
+        "kortet ligger 7 px från planens"
+      ],
+      "windowPrinted": true,
+      "offFromPlan": 7
+    },
+    {
+      "dealer": "paow",
+      "step": "GIV-2.1",
+      "clip": "paow-giv-2-1-p3-02-01",
+      "frame": 137,
+      "target": "P3.C1",
+      "holds": true,
+      "problems": [],
+      "windowPrinted": false,
+      "offFromPlan": 5
+    },
+    {
+      "dealer": "paow",
+      "step": "GIV-2.1",
+      "clip": "paow-giv-2-1-p4-04-01",
+      "frame": 108,
+      "target": "P4.C1",
+      "holds": true,
+      "problems": [],
+      "windowPrinted": true,
+      "offFromPlan": 2
+    },
+    {
+      "dealer": "paow",
+      "step": "GIV-2.1",
+      "clip": "paow-giv-2-1-p4-08-01",
+      "frame": 133,
+      "target": "P4.C1",
+      "holds": true,
+      "problems": [],
+      "windowPrinted": false,
+      "offFromPlan": 1
+    },
+    {
+      "dealer": "paow",
+      "step": "GIV-2.1",
+      "clip": "paow-giv-2-1-p4-10-01",
+      "frame": 103,
+      "target": "P4.C1",
+      "holds": true,
+      "problems": [],
+      "windowPrinted": true,
+      "offFromPlan": 2
+    },
+    {
+      "dealer": "paow",
+      "step": "GIV-2.1",
+      "clip": "paow-giv-2-1-p4-13-01",
+      "frame": 100,
+      "target": "P4.C1",
+      "holds": false,
+      "problems": [
+        "inget lagt kort"
+      ],
+      "windowPrinted": true,
+      "offFromPlan": null
+    },
+    {
+      "dealer": "paow",
+      "step": "GIV-2.1",
+      "clip": "paow-giv-p4-01",
+      "frame": 102,
+      "target": "P4.C1",
+      "holds": true,
+      "problems": [],
+      "windowPrinted": false,
+      "offFromPlan": 2
+    },
+    {
+      "dealer": "paow",
+      "step": "GIV-2.1",
+      "clip": "paow-giv-p4-02",
+      "frame": 104,
+      "target": "P4.C1",
+      "holds": true,
+      "problems": [],
+      "windowPrinted": false,
+      "offFromPlan": 1
+    },
+    {
+      "dealer": "paow",
+      "step": "GIV-2.1",
+      "clip": "paow-giv-2-1-p6-03-01",
+      "frame": 112,
+      "target": "P6.C1",
+      "holds": false,
+      "problems": [
+        "kortet ligger 11 px från planens"
+      ],
+      "windowPrinted": true,
+      "offFromPlan": 11
+    },
+    {
+      "dealer": "paow",
+      "step": "GIV-2.1",
+      "clip": "paow-giv-2-1-p6-04-01",
+      "frame": 106,
+      "target": "P6.C1",
+      "holds": false,
+      "problems": [
+        "kortet ligger 8 px från planens"
+      ],
+      "windowPrinted": true,
+      "offFromPlan": 8
+    },
+    {
+      "dealer": "paow",
+      "step": "GIV-2.1",
+      "clip": "paow-giv-2-1-p6-07-01",
+      "frame": 70,
+      "target": "P6.C1",
+      "holds": false,
+      "problems": [
+        "kortet ligger 7 px från planens"
+      ],
+      "windowPrinted": true,
+      "offFromPlan": 7
+    },
+    {
+      "dealer": "paow",
+      "step": "GIV-2.1",
+      "clip": "paow-giv-2-1-p6-07-02",
+      "frame": 88,
+      "target": "P6.C1",
+      "holds": false,
+      "problems": [
+        "kortet ligger 7 px från planens"
+      ],
+      "windowPrinted": true,
+      "offFromPlan": 7
+    },
+    {
+      "dealer": "paow",
+      "step": "GIV-2.1",
+      "clip": "paow-giv-2-1-d-01-01",
+      "frame": 165,
+      "target": "D.C1",
+      "holds": false,
+      "problems": [
+        "kortet ligger 13 px från planens"
+      ],
+      "windowPrinted": true,
+      "offFromPlan": 13
+    },
+    {
+      "dealer": "paow",
+      "step": "GIV-2.1",
+      "clip": "paow-giv-2-1-d-c2-03-01",
+      "frame": 104,
+      "target": "D.C2",
+      "holds": false,
+      "problems": [
+        "kortet ligger 11 px från planens"
+      ],
+      "windowPrinted": true,
+      "offFromPlan": 11
+    },
+    {
+      "dealer": "paow",
+      "step": "GIV-2.2",
+      "clip": "paow-giv-2-2-p4-01-01",
+      "frame": 126,
+      "target": "P4.C1",
+      "holds": true,
+      "problems": [],
+      "windowPrinted": true,
+      "offFromPlan": 1
+    }
+  ]
+}

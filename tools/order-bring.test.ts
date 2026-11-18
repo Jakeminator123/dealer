@@ -23,7 +23,7 @@ async function lab(t: { after(fn: () => Promise<void>): void }) {
   const root = await mkdtemp(path.join(base, 'order-bring-'));
   t.after(() => rm(root, { recursive: true, force: true }));
   for (const dir of ['data', 'placements', 'motions', 'assets/anchors/a', 'assets/anchors/b', 'assets/proofs/natten']) await mkdir(path.join(root, dir), { recursive: true });
-  for (const file of ['data/order-policy.json', 'data/dealers.json', 'placements/default.json']) await copyFile(file, path.join(root, file));
+  for (const file of ['data/order-policy.json', 'data/dealers.json', 'data/order-methods.json', 'placements/default.json']) await copyFile(file, path.join(root, file));
   const png = await sharp({ create: { width: 1764, height: 1174, channels: 3, background: { r: 0, g: 237, b: 44 } } }).png().toBuffer();
   await writeFile(path.join(root, 'assets/anchors/a/anchor.png'), png);
   await writeFile(path.join(root, 'assets/anchors/b/anchor.png'), png);

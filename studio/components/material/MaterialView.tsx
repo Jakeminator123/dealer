@@ -1,8 +1,8 @@
 "use client";
 
 // Material (/material/?bild=<id>, ?dealer=pamela for another dealer than the first): the one place where Jakob sees what
-// is what, per dealer. At the top the chain at a glance (ingångsbild → keystone → ankare 1 → 2.1 → 2.2 → landningar →
-// filmer), then one row per role with large stills, a state chip and how many of the bank's films start or end on each picture; an empty role says what is
+// is what, per dealer. At the top the chain at a glance (ingångsbild → keystone → ankare 1 → 2.1 → 2.2 → 2.3 → landningar →
+// filmer; the landings counted seat by seat), then one row per role with large stills, a state chip and how many of the bank's films start or end on each picture; an empty role says what is
 // missing. A click opens the picture over the whole window with its facts on demand (MaterialViewer). Under the chain:
 // references, the rest, the archived pictures (folded, each with Ta tillbaka in the viewer), and the sources of measures the register lists. Proofs are Granska's Prov, registered by their own
 // proof.json, and not listed here. "Lägg till bild" adds a picture (not in the online copy).
@@ -23,8 +23,14 @@ import { Button, EmptyState, ErrorState, Skeleton } from "../ui";
 import { AddDialog } from "./AddDialog";
 import { getMedia } from "./client.ts";
 import { MaterialViewer } from "./MaterialViewer";
-import { ArchivedRow, ChainStrip, FilmsRow, Measures, OrderFrom, RoleRow } from "./Rows";
+import cutFramesFile from "../../../data/cut-frames.json";
+import { readCutChecks, type BankFacts } from "../../../src/order-model.ts";
+import { ArchivedRow, ChainStrip, FilmsRow, LandingsRow, Measures, OrderFrom, RoleRow } from "./Rows";
+import { seatEnds, seatEndsStatus } from "./landings.ts";
 import { takeCount } from "./films.ts";
+
+/** The picture checks of cut frames, as the studio was built with them (data/cut-frames.json): which frames hold as a seat's end picture. */
+const CUT_CHECKS = readCutChecks(cutFramesFile);
 
 type State = { status: "loading" } | { status: "ready"; answer: MediaAnswer } | { status: "error"; error: ApiError };
 
@@ -45,7 +51,7 @@ export function MaterialView() {
   const picture = params.get("bild");
   const [state, setState] = useState<State>({ status: "loading" });
   const [adding, setAdding] = useState(false);
-  const { graph, dealer: studioDealer, setDealer } = useBank();
+  const { graph, bank, dealer: studioDealer, setDealer } = useBank();
 
   const read = useCallback(async () => {
     try {
@@ -111,7 +117,10 @@ export function MaterialView() {
 
   // Archived pictures are out of the lists: the chain, the rows and what a role has are read without them.
   const live = { ...dealer, entries: dealer.entries.filter((e) => e.state !== "arkiverad") };
-  const missingRoles = CHAIN.filter((r) => roleStatus(live, r, bankTakes) === "saknas");
+  // The landings are counted seat by seat: a seat's own landing picture, else the cut frame of the bank's own film to it.
+  const bankFacts: BankFacts | null = bank ? { ...(bank as BankFacts), cutChecks: CUT_CHECKS } : null;
+  const landings = seatEndsStatus(seatEnds(live.entries, bankFacts, dealer.id));
+  const missingRoles = CHAIN.filter((r) => (r === "landning" ? landings.status : roleStatus(live, r, bankTakes)) === "saknas");
   const step = (role: Role) => CHAIN.indexOf(role) + 1;
   return (
     <Page
@@ -133,7 +142,7 @@ export function MaterialView() {
     >
       <div className="flex flex-col">
         <div className="flex flex-col gap-3 pb-2">
-          <ChainStrip dealer={live} bankTakes={bankTakes} />
+          <ChainStrip dealer={live} bankTakes={bankTakes} landings={landings} />
           <OrderFrom dealer={live} onOpen={(e) => setParams({ bild: e.id })} />
           {answer.unassigned.length ? (
             <p className="text-xs text-[#f0b07a]">{answer.unassigned.length} bilder som filmer börjar eller slutar på saknar roll i registret.</p>
@@ -143,6 +152,8 @@ export function MaterialView() {
           {CHAIN.map((role) =>
             role === "film" ? (
               <FilmsRow key={role} dealer={live} graph={graph} step={step(role)} open={open?.id ?? null} onOpen={(e) => setParams({ bild: e.id })} lineage={lineage} />
+            ) : role === "landning" ? (
+              <LandingsRow key={role} dealer={live} all={dealer.entries} bank={bankFacts} step={step(role)} open={open?.id ?? null} onOpen={(e) => setParams({ bild: e.id })} />
             ) : (
               <RoleRow key={role} dealer={live} all={dealer.entries} role={role} step={step(role)} open={open?.id ?? null} onOpen={(e) => setParams({ bild: e.id })} />
             ),

@@ -15,7 +15,7 @@ import { useState, type ReactNode } from "react";
 import { asApiError } from "../../lib/api.ts";
 import { labUrl } from "../../lib/lab.ts";
 import { swedishMoment } from "../../lib/mode.ts";
-import { approveOrder, changeOrder, costWords, motionWords, paramRows, picturesInOrder, plannedWords, referenceWords, refreshOrder, storedParts, styleWords, type OrderAnswer, type OrdersAnswer } from "../../lib/orders.ts";
+import { approveOrder, changeOrder, costWords, motionWords, orderLine, paramRows, picturesInOrder, plannedWords, referenceWords, refreshOrder, storedParts, styleWords, type OrderAnswer, type OrdersAnswer } from "../../lib/orders.ts";
 import { MODELS, REF_VERDICT_LABEL, approvalWords, SHAPE_LABEL, TAKES_MAX, credits, defaultFlip, genitive, groupBudget, handChoiceOf, handsOf, requestOf, scaleWords, seatWords, stepOf, takeStates, waitWords } from "../../../src/order-model.ts";
 import { Page } from "../shell";
 import { Badge, Button, Dialog, SegmentedControl, TextArea, cn, useToast } from "../ui";
@@ -174,7 +174,7 @@ export function SendScreen({ answer, all, onBack, onOpen, onSaved, onLike }: { a
     >
       <div className="flex flex-col gap-7">
         <div className="flex flex-col gap-1.5">
-          {order.summary ? <p className="font-display text-lg font-semibold leading-7 text-ink">{order.summary}</p> : null}
+          {orderLine(order) ? <p className="font-mono text-lg font-semibold leading-7 text-ink">{orderLine(order)}</p> : null}
           <p className="flex flex-wrap items-center gap-2 text-sm text-dim">
             <Badge tone="neutral" size="md">Text: {styleWords(order)}</Badge>
             {choices ? (

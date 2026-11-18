@@ -154,9 +154,11 @@ test("what is ordered, in his notation and one sentence: the edges the film is f
   assert.deepEqual(said("GIV-2.1", ["D.C2"], "ROUND_TRIP"), ["A2.1 → DC2 → A2.1", "Nyp: ett kort till dealerns hålkort, och tillbaka till nypet."]);
   assert.deepEqual(said("RETUR-2.2", ["P3.C2"], "ONE_WAY"), ["P3C2 → A2.2", "Tillbaka över skon, från kortet på plats 3, kort 2."]);
   assert.deepEqual(said("RETUR-1", ["P4.C1"], "ONE_WAY"), ["P4C1 → A1", "Tillbaka till vila, från kortet på plats 4."]);
-  assert.deepEqual(said("INGANG-2.1", [], "ONE_WAY"), ["A1 → A2.1", "Från vila (ankare 1) flyttar hon vänsterhanden till nypet vid skon (ankare 2.1)."]);
-  assert.deepEqual(said("VILA", [], "ONE_WAY")[0], "A1 → A1");
-  assert.match(said("VILA", [], "ONE_WAY")[1], /^Hon sitter still/);
+  // A film without a card: the anchors it goes between, and nothing of how she moves (only what is sent is described).
+  assert.deepEqual(said("INGANG-2.1", [], "ONE_WAY"), ["A1 → A2.1", "Från ankare 1 till ankare 2.1."]);
+  assert.deepEqual(said("INGANG-2.3", [], "ONE_WAY"), ["A1 → A2.3", "Från ankare 1 till ankare 2.3."]);
+  assert.deepEqual(said("GIV-2.3", ["P4.C1"], "ONE_WAY"), ["A2.3 → P4C1", "Två händer: ett kort till plats 4, bara dit."]);
+  assert.deepEqual(said("VILA", [], "ONE_WAY"), ["A1 → A1", "Från och till ankare 1."]);
   assert.deepEqual(said("HALKORT", [], "ONE_WAY")[0], "A1 → DC2 upp");
   assert.deepEqual(said("ANKARE-2.2", []), ["A1 → bild A2.2", "Bild: ankare 2.2 görs ur ankare 1."]);
   // Every step has a line and a sentence, and every film's line reads back without an error.

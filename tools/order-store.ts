@@ -10,8 +10,12 @@
 // caller presents the revision it read (If-Match), writes are queued, and a file is replaced through a temporary file
 // renamed into place. Routes: tools/order-routes.ts.
 //
-// A film is made with its step's own model unless another that can make it is asked for (modelsFor in src/order-model.ts:
-// first and last picture); its parameters are the model's (paramsOf), as the sheet shows them.
+// One straight line (2026-11-18): a draft says its dealer, its step and its card, and everything else comes from the step's
+// ONE recipe in data/order-methods.json (src/order-methods.ts recipeFor): model, resolution, takes, text style, shape, turn,
+// the reference film the recipe's rule finds (referenceByRule; the dummy's rendered films from data/rendered-references.json
+// first) and the film's length (the reference film's own, else the recipe's). What a draft says against its recipe is a
+// deliberate exception and is named in its notes; a step without a recipe has no default, and where the recipe's rule finds
+// no reference film nothing is made.
 // A deal's choices (which hand, handbyte, how the card lands and turns) come with the new draft and default to what the
 // plan says for the card; the last picture draws the card closed or open as chosen. "Alla sju" makes one draft per seat
 // sharing a group (createMany). A draft follows Jakob's choice in Material: when another anchor of the same role holds
@@ -25,9 +29,11 @@
 //
 // Template 4 (2026-11-13): a new film draft is written in the short text unless another style is asked for (prompt.style);
 // a draft without a style was written before and is Utförlig, and keeps its text. A return starts on the seat's landing
-// picture and a deal "bara dit" ends on it (a register entry, role landning, that holds); where none holds, the draft is
-// refused with what is missing. A reference film is a take of the bank (referenceCandidates), copied into the order's
-// folder with its hash like the pictures; another dealer's film is allowed there and named.
+// picture (a register entry, role landning, that holds). A deal "bara dit" ends on the seat's OWN end picture: its landing
+// picture where one holds, else the cut frame of the bank's own film to the seat (cutFrameOf; checked as a picture and its
+// shoe put back from anchor 1 where the window's card is printed, cutPicture); a seat with neither is refused with what is
+// missing. A reference film is a take of the bank or a rendered film (referenceCandidates; never an archived take), copied
+// into the order's folder with its hash like the pictures; another dealer's film is allowed there and named.
 import { readFile, writeFile, mkdir, rename, rm, stat, realpath, readdir } from 'node:fs/promises';
 import { createHash, randomUUID } from 'node:crypto';
 import path from 'node:path';
@@ -35,11 +41,13 @@ import { StoreError } from './placement-store.ts';
 import { mediaRoles } from './media-roles.ts';
 import {
   ANCHOR_NODE, ANCHOR_ROLE, CARD_SCALES, EXTRA_LIMIT, MODELS, FILE_NAME, FLIP_AXES, ORDER_ID, SEAT_TARGETS, TAKES_MAX, scaleWords,
-  bodyLine, checkPolicy, costOf, crossesBody, cutIntoOf, tidyMotion, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, hashInput, landingMissing, landingOf, modelFor, modelsFor, paramsOf, plannedOf, referenceCandidates, seatList, seatWords, secondsWords, shownOf, spentOn, stepOf, stylesFor, summaryOf, validateOrder, waitingOf,
-  type BankFacts, type Drawn, type FlipAxis, type Motion, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Policy, type PoseAnswer, type Receipt, type Reference, type SeatPlan, type Shape, type StepDef, type StepKey, type TextStyle, type Waits,
+  bodyLine, checkPolicy, costOf, crossesBody, cutFrameOf, cutFrameWords, cutIntoOf, tidyMotion, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, hashInput, landingMissing, landingOf, modelFor, modelsFor, paramsOf, plannedOf, readCutChecks, referenceCandidates, seatEndMissing, seatList, seatWords, secondsWords, shownOf, spentOn, stepOf, stylesFor, summaryOf, validateOrder, waitingOf,
+  type Anchor, type BankFacts, type CutFrame, type Drawn, type FlipAxis, type Motion, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Policy, type PoseAnswer, type Receipt, type RefCandidate, type Reference, type RenderedReference, type SeatPlan, type Shape, type StepDef, type StepKey, type TextStyle, type Waits,
 } from '../src/order-model.ts';
-import { orderPrompt } from '../src/order-prompts.ts';
-import { CUT, LAY, armAlone, cardTexture, cutFigure, drawCard, drawCards, matchGreen, pictureBytes, planQuad, pngOf, poseOnShoe, readPlan, readRgb, type CardOutline, type Pt, type Texture } from './order-images.ts';
+import { readMethods, recipeFor, referenceByRule, referenceWaits, secondsOf, type MethodRegister } from '../src/order-methods.ts';
+import { handsIn, orderPrompt } from '../src/order-prompts.ts';
+import { checkCutFrame, patchShoe } from '../src/cut-frame.ts';
+import { CUT, H, LAY, W, armAlone, cardTexture, cutFigure, drawCard, drawCards, matchGreen, pictureBytes, planQuad, pngOf, poseOnShoe, readPlan, readRgb, type CardOutline, type Pt, type Texture } from './order-images.ts';
 import type { PlacementPlan } from '../src/placement-model.ts';
 import type { Entry, Register } from '../studio/lib/media.ts';
 
@@ -69,7 +77,7 @@ export type NewOrder = {
   /** Several seats at once ("Alla sju"): one draft per seat, sharing a group (createMany). */
   seats?: SeatChoice[];
   flipAxis?: FlipAxis;
-  /** The model, when not the step's own (modelsFor: a film can be made by every model that takes a first and a last picture). */
+  /** The model, when not the recipe's (an exception; modelsFor: a film can be made by every model that takes a first and a last picture). */
   model?: string;
   duration?: number;
   resolution?: string;
@@ -80,9 +88,9 @@ export type NewOrder = {
   pose?: Source | null;
   /** The text's style (default: Kort for a film; a still has one text). */
   style?: TextStyle;
-  /** A deal: tur och retur (default) or bara dit, ending on the seat's landing picture. */
+  /** A deal: bara dit, ending on the seat's own end picture (the recipe), or tur och retur (an exception). */
   shape?: Shape;
-  /** A reference film: the bank's take (referenceCandidates), for a model that takes one; absent or null: none. */
+  /** A reference film (referenceCandidates), for a model that takes one. Absent: the one the recipe's rule finds; null: none (an exception). */
   reference?: string | null;
   /** The card's size on the last picture of a round trip, as a factor of the plan's (CARD_SCALES; a trial); absent: 1. */
   cardScale?: number;
@@ -156,7 +164,12 @@ const fromPlanOf = (plan: PlacementPlan, m: Pick<Motion, 'target' | 'hand' | 'pa
 };
 
 /** The anchor ("1", "2.1", "2.2") an anchor role stands for. */
-const ANCHOR_OF: Record<string, '1' | '2.1' | '2.2'> = { 'ankare-1': '1', 'ankare-2.1': '2.1', 'ankare-2.2': '2.2' };
+const ANCHOR_OF: Record<string, Anchor> = { 'ankare-1': '1', 'ankare-2.1': '2.1', 'ankare-2.2': '2.2', 'ankare-2.3': '2.3' };
+/** A rendered reference film as its register must list it: under assets/references/docka/<id>/ with its hash and length. */
+const isRendered = (f: unknown): f is RenderedReference => {
+  const r = f as Partial<RenderedReference> | null;
+  return !!r && typeof r === 'object' && typeof r.id === 'string' && ORDER_ID.test(r.id) && typeof r.edge === 'string' && r.path === `assets/references/docka/${r.id}/source.mp4` && typeof r.sha256 === 'string' && /^[0-9a-f]{64}$/.test(r.sha256) && typeof r.seconds === 'number' && r.seconds > 0;
+};
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /** "Paows ankare 1 · kandidat 2", "Paows ankare 2.1": which of the dealer's pictures a draft uses. */
@@ -196,7 +209,7 @@ export function resolveWaits(register: Register, waits: Waits): Entry | null {
  * card), and the entry of that role that holds now when it is another one, or the same one approved since (only its name
  * in the label changes). Null when nothing has changed or the picture is not a dealer's anchor.
  */
-export function followOf(register: Register, dealer: string, picture: Pick<Picture, 'from' | 'waits' | 'path' | 'label'>, dealerName: string): { was: Entry; now: Entry; at: '1' | '2.1' | '2.2'; swap: boolean } | null {
+export function followOf(register: Register, dealer: string, picture: Pick<Picture, 'from' | 'waits' | 'path' | 'label'>, dealerName: string): { was: Entry; now: Entry; at: Anchor; swap: boolean } | null {
   if (picture.from?.built || !picture.from?.entry || !picture.path) return null;
   const found = entryOf(register, picture.from.entry);
   if (!found || found.dealer !== dealer || found.entry.card) return null;
@@ -229,7 +242,7 @@ export function ownerOf(picture: Picture, pictures: readonly Picture[], register
   return null;
 }
 
-export type StoreOptions = { now?: () => Date; /** Other pose sources than POSE (tests). */ poses?: Partial<Record<keyof typeof POSE, Source>> };
+export type StoreOptions = { now?: () => Date; /** Other pose sources than POSE (tests). */ poses?: Partial<Record<keyof typeof POSE, Source>>; /** Another way to take a frame out of a film than FFmpeg (tests, whose films are not films). */ frame?: (source: { path: string; frame?: number }) => Promise<Buffer> };
 export function orderStore(root: string, options: StoreOptions = {}) {
   const now = options.now ?? (() => new Date());
   const dir = path.join(root, 'data/orders');
@@ -263,10 +276,22 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     const jobs = named<NonNullable<BankFacts['jobs']>[number]>(file?.jobs), edits = named<NonNullable<BankFacts['edits']>[number]>(file?.edits);
     const derived = named<NonNullable<BankFacts['derived']>[number]>(file?.derived).filter((d) => typeof d.clip === 'string' && ORDER_ID.test(d.clip));
     const motions: NonNullable<BankFacts['motions']> = {};
-    const record = (id: string) => readJson<{ source?: NonNullable<NonNullable<BankFacts['motions']>[string]>['source']; review?: NonNullable<NonNullable<BankFacts['motions']>[string]>['review'] }>(path.join(root, 'motions', `${id}.json`));
+    type Fact = NonNullable<NonNullable<BankFacts['motions']>[string]>;
+    const record = (id: string) => readJson<{ source?: Fact['source']; review?: Fact['review']; motion?: Fact['motion'] }>(path.join(root, 'motions', `${id}.json`));
     for (const j of [...jobs, ...edits]) motions[j.id] = await record(j.id);
-    for (const d of derived) { const own = await record(d.id), clip = await record(d.clip); motions[d.id] = { source: clip?.source, review: own?.review }; }
-    return { jobs, derived, edits, motions };
+    // A derived take: its own verdict (an archive too) and the hand that laid the card, its film's facts; the film itself too.
+    for (const d of derived) { const own = await record(d.id), clip = await record(d.clip); motions[d.id] = { source: clip?.source, review: own?.review, motion: own?.motion }; if (!(d.clip in motions)) motions[d.clip] = clip; }
+    // The picture checks of cut frames as they are written down (data/cut-frames.json): what Material and Bordet read too.
+    return { jobs, derived, edits, motions, rendered: await readRendered(), cutChecks: readCutChecks(await readJson(path.join(root, 'data/cut-frames.json'))) };
+  }
+  /** The dummy's rendered reference films (data/rendered-references.json: films[]); an entry that does not hold its shape is left out. */
+  async function readRendered(): Promise<RenderedReference[]> {
+    const file = await readJson<{ films?: unknown[] }>(path.join(root, 'data/rendered-references.json'));
+    return (Array.isArray(file?.films) ? file.films : []).filter(isRendered);
+  }
+  /** The method register, or null where it is missing or does not hold (every draft then has to say its own values). */
+  async function readMethodRegister(): Promise<MethodRegister | null> {
+    return readMethods(await readJson(path.join(root, 'data/order-methods.json'))).register;
   }
 
   async function load(id: string): Promise<{ order: Order; revision: string; text: string }> {
@@ -461,56 +486,106 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     const policy = await readPolicy();
     if (!policy) throw new StoreError(500, 'data/order-policy.json kunde inte läsas.');
     const register = await readRegister();
-    // The step's own model, or one asked for that can make it (a film: first and last picture, no reference).
-    const model = input.model === undefined || input.model === null ? modelFor(step) : typeof input.model === 'string' ? modelFor(step, input.model) : null;
-    if (!model) throw new StoreError(400, `${String(input.model)} kan inte göra ${step.label}: välj ${modelsFor(step).filter((m) => !m.off).map((m) => m.id).join(', ')}.`);
-    if (model.off) throw new StoreError(400, `${model.label} beställs inte längre: ${model.off}`);
     // A step about one card that is not chosen (the hole card's turn) has its own; a deal or a return, the seat chosen.
     const target = step.target ?? (step.card ? (input.target ?? null) : null);
     const { plan } = await readPlan(root);
     if (step.card && (!target || !plan.targets[target])) throw new StoreError(400, 'Välj en plats på bordet (P1.C1 … D.C2).');
     if (step.cards?.some((c) => !plan.targets[c.target])) throw new StoreError(400, `Planen saknar ${step.cards.filter((c) => !plan.targets[c.target]).map((c) => c.target).join(' och ')}.`);
-    const takes = input.takes ?? 2;
+    // The step's one recipe (data/order-methods.json): everything the order does not say itself comes from it, and what the
+    // order says against it is a deliberate exception, named in the draft's notes. A step without a recipe has no default.
+    const recipe = recipeFor(await readMethodRegister(), step.key, target);
+    const noRecipe = `${step.label} har ingen metod än (data/order-methods.json), så inget är förvalt`;
+    const style = input.style ?? recipe?.style ?? defaultStyle(step.kind);
+    if (!stylesFor(step.kind, step).includes(style)) throw new StoreError(400, step.styles ? `${step.label} skrivs ${step.styles.join(' eller ')}.` : step.kind === 'STILL' ? 'En bild skrivs KORT.' : 'Texten är KORT eller MINIMAL; den långa texten (UTFÖRLIG) skrivs inte längre för en ny beställning.');
+    // A return starts on the seat's landing picture: one must hold.
+    const landing = step.start === 'LAND' ? landingEntry(register, dealer.id, target) : null;
+    if (step.start === 'LAND' && !landing) throw new StoreError(400, landingMissing(dealer.name, target));
+    const modelId = input.model === undefined || input.model === null ? (recipe?.model ?? null) : String(input.model);
+    if (!modelId) throw new StoreError(400, `${noRecipe}: säg modell (${modelsFor(step).filter((m) => !m.off).map((m) => m.id).join(', ')}) och längd själv.`);
+    const model = modelFor(step, modelId);
+    if (!model) throw new StoreError(400, `${String(input.model)} kan inte göra ${step.label}: välj ${modelsFor(step).filter((m) => !m.off).map((m) => m.id).join(', ')}.`);
+    if (model.off) throw new StoreError(400, `${model.label} beställs inte längre: ${model.off}`);
+    const takes = input.takes ?? recipe?.takes ?? 1;
     if (!Number.isInteger(takes) || takes < 1 || takes > TAKES_MAX) throw new StoreError(400, `Tagningar ska vara 1–${TAKES_MAX}.`);
     // The free addition is refused beyond the limit, as change() refuses it: cut, it would end the text mid-sentence unseen.
     if (input.extra !== undefined && input.extra !== null && typeof input.extra !== 'string') throw new StoreError(400, 'Tillägget ska vara en text.');
-    const extra = input.extra?.trim() || null;
+    const extra = (input.extra === undefined ? recipe?.extra : input.extra)?.trim() || null;
     if (extra && extra.length > EXTRA_LIMIT) throw new StoreError(400, `Tillägget får vara högst ${EXTRA_LIMIT} tecken (det här har ${extra.length}).`);
     const intent = target ? plan.targets[target].intent : null;
-    const flipAxis = input.flipAxis ?? defaultFlip(step.key, intent?.turnAt, intent?.flipAxis);
+    // The turn: the order's own, else the recipe's, else what Placering says for the card.
+    const flipAxis = input.flipAxis ?? recipe?.turn ?? defaultFlip(step.key, intent?.turnAt, intent?.flipAxis);
     if (!FLIP_AXES.includes(flipAxis)) throw new StoreError(400, 'Okänd vändning.');
     if (input.hand !== undefined && input.hand !== 'LH' && input.hand !== 'RH') throw new StoreError(400, 'Handen ska vara LH eller RH.');
     if (input.pass !== undefined && typeof input.pass !== 'boolean') throw new StoreError(400, 'Handbyte ska vara sant eller falskt.');
     if (input.side !== undefined && input.side !== 'FRONT' && input.side !== 'BACK') throw new StoreError(400, 'Kortet landar FRONT (öppet) eller BACK (stängt).');
-    const style = input.style ?? defaultStyle(step.kind);
-    if (!stylesFor(step.kind, step).includes(style)) throw new StoreError(400, step.styles ? `${step.label} skrivs ${step.styles.join(' eller ')}.` : step.kind === 'STILL' ? 'En bild skrivs KORT.' : 'Texten är KORT eller MINIMAL; den långa texten (UTFÖRLIG) skrivs inte längre för en ny beställning.');
     const deal = step.card && step.start !== 'LAND';
-    if (input.shape !== undefined && input.shape !== 'ROUND_TRIP' && input.shape !== 'ONE_WAY') throw new StoreError(400, 'En giv är ROUND_TRIP (tur och retur) eller ONE_WAY (bara dit).');
+    if (input.shape !== undefined && input.shape !== 'ROUND_TRIP' && input.shape !== 'ONE_WAY') throw new StoreError(400, 'En giv är ONE_WAY (bara dit) eller ROUND_TRIP (tur och retur).');
     if (input.shape !== undefined && !deal && input.shape !== 'ONE_WAY') throw new StoreError(400, 'Bara en giv kan gå tur och retur.');
-    const shape: Shape | null = step.kind !== 'FILM' ? null : deal ? (input.shape ?? 'ROUND_TRIP') : 'ONE_WAY';
-    // A return starts on the seat's landing picture and a deal bara dit ends on it: one must hold.
-    const landing = step.start === 'LAND' || (deal && shape === 'ONE_WAY') ? landingEntry(register, dealer.id, target) : null;
-    if ((step.start === 'LAND' || (deal && shape === 'ONE_WAY')) && !landing) throw new StoreError(400, landingMissing(dealer.name, target));
+    // A deal is bara dit unless the recipe or the order says tur och retur (the trials hold only for bara dit, handbook §5).
+    const shape: Shape | null = step.kind !== 'FILM' ? null : deal ? (input.shape ?? recipe?.shape ?? 'ONE_WAY') : 'ONE_WAY';
+    // The hands of a deal: the order's, else the recipe's (the hand at the shoe all the way, as the trials that held), else
+    // what Placering says for the card. A handbyte is never a default, also where the plan says it for the card: it is an
+    // exception a draft has to say. From anchor 2.3 the hand at the shoe strokes the card out and the other hand lays it.
+    const twoHands = step.grip === 'TWO_HANDS';
+    const said = input.pass !== undefined || input.hand !== undefined, byRecipe = deal && !said ? (recipe?.hand ?? null) : null;
+    const pass = !step.card || !intent || twoHands || byRecipe ? false : (input.pass ?? (input.hand === undefined ? intent.pass : false));
+    const hand: 'LH' | 'RH' = pass || twoHands ? 'LH' : (input.hand ?? byRecipe ?? intent?.takeHand ?? 'LH');
+    if (pass && input.hand === 'RH') throw new StoreError(400, 'Handbyte går från vänster hand till höger: vänster tar kortet ur skon.');
+    const lays: 'LH' | 'RH' = twoHands ? 'RH' : handsIn({ hand, pass }).lays;
+    const bank = step.kind === 'FILM' ? await readBank() : null;
+    // A deal bara dit ends on the seat's own end picture: its landing picture where one holds, else the cut frame of the
+    // bank's own film to the seat. A seat with neither says so.
+    const oneWayDeal = deal && shape === 'ONE_WAY';
+    const seatLanding = oneWayDeal ? landingEntry(register, dealer.id, target) : null;
+    const cuts = oneWayDeal && !seatLanding ? cutFrameOf(bank!, { dealer: dealer.id, step, target, hand: lays }) : [];
+    if (oneWayDeal && !seatLanding && !cuts.length) throw new StoreError(400, seatEndMissing(dealer.name, target, step.from));
     if (input.reference !== undefined && input.reference !== null && typeof input.reference !== 'string') throw new StoreError(400, 'Referensfilmen ska vara en tagnings id.');
     const cardScale = input.cardScale ?? 1;
     if (!(CARD_SCALES as readonly unknown[]).includes(cardScale)) throw new StoreError(400, `Kortets storlek ska vara ${CARD_SCALES.map((f) => scaleWords(f)).join(', ')}.`);
-    if (cardScale !== 1 && !(deal && shape === 'ROUND_TRIP')) throw new StoreError(400, 'Kortets storlek väljs bara för tur och retur, där sista bilden ritas; i bara dit och en retur är kortet som i landningsbilden.');
+    if (cardScale !== 1 && !(deal && shape === 'ROUND_TRIP')) throw new StoreError(400, 'Kortets storlek väljs bara för tur och retur, där sista bilden ritas; i bara dit och en retur är kortet som i sista bilden.');
     if (input.reference && !model.videos) throw new StoreError(400, `${model.label} tar ingen referensfilm tillsammans med första och sista bild.`);
+    // The reference film: the one the order names; none when it says null; else the one the recipe's rule finds for the
+    // step and the seat. Where the rule finds none the step waits: nothing is ordered without the film the recipe wants.
+    let chosen: RefCandidate | null = null;
+    if (input.reference) {
+      chosen = referenceCandidates(bank ?? {}, { dealer: dealer.id, step, target, model }).find((c) => c.take === input.reference || c.film === input.reference) ?? null;
+      if (!chosen) throw new StoreError(400, `${input.reference} finns inte bland bankens tagningar för ${step.label}${target ? ` till ${seatWords(target)}` : ''}.`);
+      if (!chosen.fits) throw new StoreError(400, `Referensfilmen är ${secondsWords(chosen.seconds)}; ${model.label} tar ${model.referenceSeconds?.join('–')} s.`);
+    } else if (input.reference === undefined && recipe && recipe.reference !== 'ingen' && model.videos) {
+      chosen = referenceByRule(bank, recipe.reference, { dealer: dealer.id, step, target, model, shape, lays });
+      if (!chosen) throw new StoreError(400, `${step.label}${target && step.card ? ` till ${seatWords(target)}` : ''} ${referenceWaits(recipe.reference, step)}${lays === 'RH' && !twoHands ? ', lagd med höger hand' : ''} (receptet ${recipe.method.id} i data/order-methods.json). Inget beställs utan den; välj en referensfilm själv eller ingen, som ett undantag.`);
+    }
     const seat = target && step.card ? target.toLowerCase().replace('.c1', '').replace('.', '-') : null;
     const id = input.id ?? (await nextId([dealer.id, step.key.toLowerCase().replace('.', '-'), seat].filter(Boolean).join('-')));
     if (!ORDER_ID.test(id)) throw new StoreError(400, 'Ogiltigt beställnings-id.');
 
-    // Generation parameters by name, as the tools take them for this model (the sheet shows the same, from paramsOf).
+    // Generation parameters by name, as the tools take them for this model. The length: the order's own, else the reference
+    // film's (the text says "with the same timing"), else the recipe's.
     if (input.resolution !== undefined && typeof input.resolution !== 'string') throw new StoreError(400, 'Upplösningen ska vara en text.');
     if (input.duration !== undefined && typeof input.duration !== 'number') throw new StoreError(400, 'Längden ska vara ett tal.');
-    const params = paramsOf(step, model, { duration: input.duration, resolution: input.resolution });
+    const seconds = step.kind !== 'FILM' ? undefined : (input.duration ?? secondsOf(model, recipe?.seconds ?? null, chosen) ?? undefined);
+    if (step.kind === 'FILM' && seconds === undefined) throw new StoreError(400, `${noRecipe}: säg längden själv (${model.durations?.join('–')} s för ${model.label}).`);
+    const params = paramsOf(step, model, { duration: seconds, resolution: input.resolution ?? recipe?.resolution });
     if (step.kind === 'FILM') {
-      if (model.resolutions && !model.resolutions.includes(String(params.resolution))) throw new StoreError(400, `${model.label} tar ${model.resolutions.join(', ')}, inte ${params.resolution}.`);
+      if (input.resolution !== undefined && model.resolutions && !model.resolutions.includes(input.resolution)) throw new StoreError(400, `${model.label} tar ${model.resolutions.join(', ')}, inte ${input.resolution}.`);
       const d = Number(params.duration);
       if (model.durations && !(d >= model.durations[0] && d <= model.durations[1])) throw new StoreError(400, `Längden ska vara ${model.durations[0]}–${model.durations[1]} s för ${model.label}.`);
     }
     const cost = costOf({ model: model.id, params }, takes, policy.prices);
     if (!cost) throw new StoreError(400, `Inget pris för ${model.label} med de här värdena i data/order-policy.json.`);
+    // Where the draft departs from the recipe, said once in its notes (a deliberate exception, never a silent one).
+    const exceptions: string[] = [];
+    if (recipe) {
+      if (model.id !== recipe.model) exceptions.push(`modell ${model.label} i stället för ${MODELS[recipe.model]?.label ?? recipe.model}`);
+      if (deal && shape !== recipe.shape) exceptions.push(`${shape === 'ONE_WAY' ? 'bara dit' : 'tur och retur'} i stället för ${recipe.shape === 'ONE_WAY' ? 'bara dit' : 'tur och retur'}`);
+      if (style !== recipe.style) exceptions.push(`texten ${style} i stället för ${recipe.style}`);
+      if (recipe.turn && input.flipAxis && input.flipAxis !== recipe.turn) exceptions.push(`vändningen ${input.flipAxis} i stället för ${recipe.turn}`);
+      if (recipe.reference !== 'ingen' && !chosen) exceptions.push('ingen referensfilm fast receptet vill ha en');
+      if (recipe.reference === 'ingen' && chosen) exceptions.push('en referensfilm fast receptet inte har någon');
+      if (input.duration !== undefined && input.duration !== secondsOf(model, recipe.seconds, chosen)) exceptions.push(`${input.duration} s i stället för ${secondsOf(model, recipe.seconds, chosen)} s`);
+      if (takes !== recipe.takes) exceptions.push(`${takes} tagningar i stället för ${recipe.takes}`);
+      if (deal && recipe.hand && (pass || hand !== recipe.hand)) exceptions.push(`${pass ? 'handbyte' : hand === 'RH' ? 'höger hand hela vägen' : 'vänster hand hela vägen'} i stället för ${recipe.hand === 'LH' ? 'handen vid skon hela vägen' : 'andra handen hela vägen'}`);
+    }
 
     const folder = path.join(root, folderOf(id));
     await mkdir(path.dirname(folder), { recursive: true });
@@ -518,8 +593,12 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     try { await mkdir(folder); } catch (error) { if ((error as NodeJS.ErrnoException).code === 'EEXIST') throw new StoreError(409, 'Mappen för beställningen finns redan.'); throw error; }
     try {
       const pictures: Picture[] = [];
-      const notes = [...(input.notes ?? [])];
-      const anchorPicture = async (name: string, label: (words: string) => string, goesAs: Picture['goesAs'], at: '1' | '2.1' | '2.2', tag?: string): Promise<{ picture: Picture; bytes: Buffer | null }> => {
+      const notes = [
+        ...(input.notes ?? []),
+        ...(recipe ? [`Recept ${recipe.method.id} (${recipe.method.status}) ur data/order-methods.json.`] : [`Inget recept finns för ${step.label}: varje värde är valt för den här beställningen.`]),
+        ...(exceptions.length ? [`Undantag från receptet: ${exceptions.join('; ')}.`] : []),
+      ];
+      const anchorPicture = async (name: string, label: (words: string) => string, goesAs: Picture['goesAs'], at: Anchor, tag?: string): Promise<{ picture: Picture; bytes: Buffer | null }> => {
         const entry = input.base && at === step.from ? entryOf(register, input.base)?.entry ?? null : holding(register, dealer.id, ANCHOR_ROLE[at], ANCHOR_NODE[at]);
         if (input.base && at === step.from && !entry) throw new StoreError(404, `${input.base} finns inte i registret.`);
         const words = anchorWords(dealer.name, at, entry);
@@ -531,30 +610,27 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       };
 
       // A seat's landing picture, copied byte for byte from the register like an anchor (a still, or one frame of a film).
-      const landingPicture = async (name: string, label: string, goesAs: Picture['goesAs']): Promise<Picture> => {
-        const { bytes, from } = await sourceBytes(register, { entry: landing!.id });
+      const landingPicture = async (entry: Entry, name: string, label: string, goesAs: Picture['goesAs']): Promise<Picture> => {
+        const { bytes, from } = await sourceBytes(register, { entry: entry.id });
         return { name, label, goesAs, ...(await put(id, name, bytes)), width: 1764, height: 1174, from, waits: null };
       };
       const landingWords = `${genitive(dealer.name)} landning på ${seatWords(target)}`;
+      const side: 'FRONT' | 'BACK' = input.side ?? intent?.endSide ?? 'FRONT';
       let motion: Order['motion'] = null;
       if (step.kind === 'FILM' && step.cards?.length) pictures.push(...(await cardPictures(id, step, register, dealer)));
       else if (step.kind === 'FILM') {
-        const first = step.start === 'LAND' ? { picture: await landingPicture('first.png', `Första bild · ${landingWords}`, 'startFrame'), bytes: null } : await anchorPicture('first.png', (w) => `Första bild · ${w}`, 'startFrame', step.from);
+        const first = step.start === 'LAND' ? { picture: await landingPicture(landing!, 'first.png', `Första bild · ${landingWords}`, 'startFrame'), bytes: null } : await anchorPicture('first.png', (w) => `Första bild · ${w}`, 'startFrame', step.from);
         pictures.push(first.picture);
         if (step.card && intent) {
-          // The choices made in the sheet, else what Placering says for the card. Every card leaves the shoe closed; in a
-          // return it lies where it was laid and is not turned.
-          const pass = input.pass ?? (input.hand === undefined ? intent.pass : false);
-          const hand = pass ? 'LH' : (input.hand ?? intent.takeHand);
-          if (pass && input.hand === 'RH') throw new StoreError(400, 'Handbyte går från vänster hand till höger: vänster tar kortet ur skon.');
-          const side = input.side ?? intent.endSide;
+          // Every card leaves the shoe closed; in a return it lies where it was laid and is not turned.
           const turn = step.start === 'LAND' ? false : side !== intent.startSide;
           motion = { grip: step.grip ?? 'PINCH', hand, pass, turn, flipAxis: turn ? flipAxis : null, target, side, fromPlan: false, ...(cardScale !== 1 ? { cardScale } : {}) };
           motion.fromPlan = fromPlanOf(plan, motion);
           // What Placering said for the card's grip and turn, kept with a deal so that where it differs stays said.
           if (step.start !== 'LAND') motion.planned = plannedOf({ grip: intent.grip, turnAt: intent.turnAt, flipAxis: intent.flipAxis, side: intent.endSide });
           if (step.start === 'LAND') pictures.push((await anchorPicture('last.png', (w) => `Sista bild · ${w}`, 'endFrame', step.to ?? step.from)).picture);
-          else if (shape === 'ONE_WAY') pictures.push(await landingPicture('last.png', `Sista bild · ${landingWords}`, 'endFrame'));
+          else if (shape === 'ONE_WAY' && seatLanding) pictures.push(await landingPicture(seatLanding, 'last.png', `Sista bild · ${landingWords}`, 'endFrame'));
+          else if (shape === 'ONE_WAY') pictures.push(await cutPicture(id, cuts, target!, side, register, dealer));
           else {
             // Drawn on the dealer's own anchor only; while it waits, the picture shows that it waits (no other dealer stands in).
             const last: Picture = { name: 'last.png', label: `Sista bild · samma + kortet ${side === 'BACK' ? 'stängt' : 'öppet'} på ${seatWords(target)}`, goesAs: 'endFrame', path: null, sha256: null, from: { built: `första bilden + kortet ${target} där planen säger` }, waits: first.picture.waits ?? null };
@@ -585,16 +661,15 @@ export function orderStore(root: string, options: StoreOptions = {}) {
         }
       }
 
-      // A reference film: a take of the bank for this step, copied into the order's folder with its hash.
+      // The reference film, copied into the order's folder with its hash: a take of the bank, or the dummy's rendered film.
       let reference: Reference = { status: 'INGEN', why: noReferenceWhy(model.id) };
-      if (input.reference) {
-        const found = referenceCandidates(await readBank(), { dealer: dealer.id, step, target, model }).find((c) => c.take === input.reference || c.film === input.reference);
-        if (!found) throw new StoreError(400, `${input.reference} finns inte bland bankens tagningar för ${step.label}${target ? ` till ${seatWords(target)}` : ''}.`);
-        if (!found.fits) throw new StoreError(400, `Referensfilmen är ${secondsWords(found.seconds)}; ${model.label} tar ${model.referenceSeconds?.join('–')} s.`);
+      if (chosen) {
+        const found = chosen;
+        const home = found.kind === 'RENDERED' ? ['assets', 'references', 'docka'] : ['assets', 'motions'];
         const file = path.join(root, ...found.path.split('/'));
-        try { if ((await realpath(file)) !== path.join(await realpath(path.join(root, 'assets', 'motions')), found.film, 'source.mp4')) throw new Error('outside'); } catch { throw new StoreError(404, `Filmen ${found.path} finns inte i banken.`); }
+        try { if ((await realpath(file)) !== path.join(await realpath(path.join(root, ...home)), found.film, 'source.mp4')) throw new Error('outside'); } catch { throw new StoreError(404, `Filmen ${found.path} finns inte ${found.kind === 'RENDERED' ? 'bland dockans filmer' : 'i banken'}.`); }
         const bytes = await readFile(file);
-        if (found.sha256 && sha(bytes) !== found.sha256) throw new StoreError(409, `${found.path} är inte den film banken mätte (sha256 skiljer).`);
+        if (found.sha256 && sha(bytes) !== found.sha256) throw new StoreError(409, `${found.path} är inte den film ${found.kind === 'RENDERED' ? 'registret över dockfilmer säger' : 'banken mätte'} (sha256 skiljer).`);
         const copied = await put(id, 'reference.mp4', bytes);
         reference = {
           status: 'FINNS', clips: [found.take], ...copied, seconds: found.seconds!, goesTo: found.goesTo ?? found.edge, approvedStraight: found.approvedStraight, dealer: found.dealer,
@@ -608,7 +683,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       const order: Order = {
         schemaVersion: 1,
         id,
-        title: input.title ?? `${dealer.name} · ${step.label}${target && step.card ? ` · ${seatWords(target)}` : ''}${deal && shape === 'ONE_WAY' ? ' · bara dit' : ''}${model.id !== step.model ? ` · ${model.label}` : ''}${cardScale !== 1 ? ` · prov: kortet ${scaleWords(cardScale)}` : ''}`,
+        title: input.title ?? `${dealer.name} · ${step.label}${target && step.card ? ` · ${seatWords(target)}` : ''}${deal && shape === 'ROUND_TRIP' ? ' · tur och retur' : ''}${recipe && model.id !== recipe.model ? ` · ${model.label}` : ''}${cardScale !== 1 ? ` · prov: kortet ${scaleWords(cardScale)}` : ''}`,
         summary: summaryOf(step, dealer.name, motion, shape),
         group: input.group ?? null,
         dealer: dealer.id,
@@ -635,6 +710,38 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       await rm(folder, { recursive: true, force: true });
       throw error;
     }
+  }
+
+  /**
+   * The seat's end picture from the bank's own film: the first cut frame (cutFrameOf) that holds as a picture (src/cut-frame.ts
+   * checkCutFrame: the laid card on the plan's card), taken out of the film, with the shoe put back from the dealer's anchor 1
+   * where the card in the shoe's window is printed (patchShoe). Where none holds, the draft is refused with what each lacks.
+   */
+  async function cutPicture(id: string, cuts: readonly CutFrame[], target: string, side: 'FRONT' | 'BACK', register: Register, dealer: DealerInfo): Promise<Picture> {
+    const { plan } = await readPlan(root), quad = planQuad(plan, target);
+    // The plan's card as a box in whole pixels, as the frame's own card is measured.
+    const box = [Math.min(...quad.map((p) => p[0])), Math.min(...quad.map((p) => p[1])), Math.max(...quad.map((p) => p[0])), Math.max(...quad.map((p) => p[1]))].map(Math.round) as [number, number, number, number];
+    const lacks: string[] = [];
+    for (const cut of cuts) {
+      let frame: Buffer;
+      try { frame = await (options.frame ?? ((source) => pictureBytes(root, source)))({ path: cut.path, frame: cut.frame }); } catch { lacks.push(`${cut.clip}: filmen finns inte i banken`); continue; }
+      let rgb = await readRgb(frame);
+      const check = checkCutFrame(rgb, W, H, box, { side });
+      if (!check.holds) { lacks.push(`${cut.clip} ruta ${cut.frame}: ${check.problems.join(', ')}`); continue; }
+      let shoeFrom: string | null = null;
+      if (check.windowPrinted) {
+        const rest = holding(register, dealer.id, ANCHOR_ROLE['1'], ANCHOR_NODE['1']);
+        if (!rest) { lacks.push(`${cut.clip} ruta ${cut.frame}: kortet i skons fönster är tryckt, och ankare 1 saknas att ta skon ur`); continue; }
+        rgb = Buffer.from(patchShoe(rgb, await readRgb((await sourceBytes(register, { entry: rest.id })).bytes), W, H));
+        shoeFrom = rest.id;
+      }
+      const bytes = shoeFrom ? await pngOf(rgb) : frame;
+      return {
+        name: 'last.png', label: `Sista bild · platsens slutbild: ruta ${cut.frame} ur ${cut.clip}`, goesAs: 'endFrame', ...(await put(id, 'last.png', bytes)), width: 1764, height: 1174,
+        from: { path: cut.path, frame: cut.frame, note: `${cutFrameWords(cut)}${shoeFrom ? '; skon och kortet i fönstret ur ankare 1' : ''}`, cut: { clip: cut.clip, frame: cut.frame, ret: cut.ret, shoeFrom } }, waits: null,
+      };
+    }
+    throw new StoreError(400, `${seatWords(target).replace(/^./, (c) => c.toUpperCase())} har ingen slutbild som håller: ${lacks.join('; ')}.`);
   }
 
   /**
@@ -706,6 +813,8 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       if (changes.duration !== undefined) { if (next.kind !== 'FILM') throw new StoreError(400, 'En bild har ingen längd.'); next.generation.params.duration = changes.duration; }
       if (changes.hand !== undefined || changes.pass !== undefined || changes.side !== undefined) {
         if (!next.motion) throw new StoreError(400, 'Steget har ingen hand eller sida att välja.');
+        // The last picture of a deal bara dit is the seat's end picture, which shows a hand and a side: they follow it.
+        if (next.step.shape === 'ONE_WAY' && !next.pictures.some((p) => p.goesAs === 'endFrame' && p.from?.built)) throw new StoreError(400, 'Sista bilden är platsens slutbild, som visar handen och kortets sida: de ändras inte i utkastet. Gör ett nytt utkast.');
         const pass = changes.pass ?? (changes.hand !== undefined ? false : !!next.motion.pass);
         const hand = changes.hand ?? (pass ? 'LH' : next.motion.hand);
         if (pass && hand !== 'LH') throw new StoreError(400, 'Handbyte går från vänster hand till höger: vänster tar kortet ur skon.');
@@ -936,6 +1045,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       schemaVersion: 1, orders, policy, day: { date, spent, cap: policy?.dailyCapCredits ?? 0 }, balance, problems,
       dealers: dealers.map(({ id, name, look, paused }) => ({ id, name, look, paused: paused ?? null })),
       plan,
+      rendered: await readRendered(),
       poses: posesOf(register, dealers),
     };
   }

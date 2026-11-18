@@ -1217,9 +1217,8 @@
     "paow": {
       "name": "Paow",
       "missing": {
-        "ankare-2.2": "Ingen hand över kortet än: första beställningen föll på posebildens sko, en ny väntar (paow-ankare-2-2-01).",
-        "landning": "Inget landningsankare som gäller. En ruta ur given till plats 4 är kandidat, men visar handryggen; en riktig landningsbild görs som stillbild.",
-        "referens": "Inga egna. Hennes filmer beställs med Pamelas rakt godkända filmer som referens."
+        "ankare-2.2": "Ankare 2.2 görs om på Jakobs ord (blicken mot skon, en styvare hand). Tre försök i bildmodellen föll; det tas nu ur en film som dockan styr. Bilden som gäller används tills dess.",
+        "referens": "Inga egna. En giv beställs med dockans film till platsen som referensfilm, annars med en rakt godkänd giv dit (Pamelas)."
       },
       "films": {
         "from": "data/clip-jobs.json",
@@ -1704,7 +1703,7 @@
           "fps": 24,
           "card": "P4.C1",
           "node": "LAND(P4.C1)",
-          "state": "gäller",
+          "state": "ersatt",
           "builtOn": [
             "paow-film-ny-giv-p4-t2"
           ],
@@ -1713,7 +1712,7 @@
             "from": "beställningen paow-giv-p4, tagning 2, ruta 104",
             "when": "2026-11-13"
           },
-          "stateBy": "Jakob 2026-11-13 02:39: kandidat → gäller (Material)"
+          "stateBy": "Jakob 2026-11-13 02:39: kandidat → gäller (Material); Huvudagentens underagent 2026-11-18 02:56: gäller → ersatt (huvudagentens beslut på Jakobs ord i huvudagentens chatt 2026-11-18 cirka 01.54 om landningarna: ”Detta bör rimligtvis tas bort helt, eller så bör vi skapa nya bilder för respektive position.” Bilden visar handryggen och ingen film slutar på den; lagd åt sidan, inte raderad)"
         },
         {
           "id": "paow-profil-kavaj",
@@ -3722,6 +3721,23 @@
             "from": "paow-ankare-2-2-t1 redigerad (Nano Banana Pro 2K för huvud och hand, storlek och inpassning lokalt; kvittot ligger bredvid bilden)",
             "when": "2026-11-18"
           }
+        },
+        {
+          "id": "paow-ankare-2-3-a",
+          "role": "ankare-2.3",
+          "name": "Ankare 2.3, båda händerna vid skon före första kortet (A)",
+          "path": "assets/anchors/paow-ankare-2-3-a/anchor.png",
+          "node": "READY-C",
+          "state": "gäller",
+          "builtOn": [
+            "paow-vila-tatuerad"
+          ],
+          "note": "Båda händerna vid skon precis före draget: vänster hand platt på kortet i skons fönster, höger hand platt på filten, huvudet sänkt. Ruta 94 ur en film från ankare 1 som dockan styrde (sessionen MODEL), med bankens sko ur ankare 1. Granskad oberoende: filmen 4/5, stillbilden 4/5; bilden efter sista rättningen är inte sedd av en granskare. Kvittot ligger bredvid bilden.",
+          "source": {
+            "from": "ruta 94 ur filmen ankare 1 → 2.3 (Runway-uppdrag 5b26016d; receipt.json bredvid bilden)",
+            "when": "2026-11-18"
+          },
+          "stateBy": "Jakob 2026-11-18 02:39: kandidat → gäller (hans ja i Beslut 2026-11-18, \"Ja, registrera\"; infört av huvudagenten genom dess underagent för beställningslinjen)"
         }
       ]
     },

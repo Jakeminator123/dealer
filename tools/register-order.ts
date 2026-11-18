@@ -2,8 +2,8 @@
 //   node tools/register-order.ts <order-id> <take> [--split <frame>] [--film <file>] [--id <clip-id>] [--dry]
 //   node tools/register-order.ts <order-id> <take> --fixed <k> [--dry]
 // Ported from D:/dealer-scratch/tmp/filmagent/register-mcp.mjs, with the dealer and the model taken from the order. A film ordered
-// through Runway's app is no job of tools/clip-job.ts (that file's jobs and edits follow the API's rules and are checked as such),
-// so it enters the bank the way register-mcp.mjs brought films in: as frames of its own clip, a derived take in
+// through Runway's app is none of the bank's older jobs and edits (data/clip-jobs.json jobs and edits, made through Runway's
+// API by a tool that is gone since c1b0ab2), so it enters the bank the way register-mcp.mjs brought films in: as frames of its own clip, a derived take in
 // data/clip-jobs.json, here carrying what it was ordered with (dealer, model, duration, text, first and last picture, the order).
 //   - The film is copied to assets/motions/<clip>/source.mp4 with generation.json beside it (the order, the task id, the hashes).
 //   - ONE_WAY: one take. ROUND_TRIP (a deal and its return in one film): two takes, split where the return begins (--split, the

@@ -32,7 +32,7 @@ const NEW_KEYS = ['dealer', 'step', 'target', 'hand', 'pass', 'side', 'seats', '
 
 export function orderRoutes(options: { root: string; origin: string } & StoreOptions) {
   const { root, origin } = options;
-  const store = orderStore(root, { now: options.now, poses: options.poses });
+  const store = orderStore(root, { now: options.now, poses: options.poses, frame: options.frame });
   const media = mediaRoles(root);
 
   const json = (res: ServerResponse, status: number, value: unknown) => { res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }).end(JSON.stringify(value)); };

@@ -34,10 +34,10 @@ test("the fit chip: nothing when it fits or was not measured; a reference says w
   assert.deepEqual(referenceChips(null), []);
 });
 
-test("the chain is Jakob's order, and only the first five roles take a picture from the studio", () => {
-  assert.deepEqual(CHAIN, ["ingangsbild", "keystone", "ankare-1", "ankare-2.1", "ankare-2.2", "landning", "film"]);
+test("the chain is Jakob's order (anchor 2.3 with it), and only the first six roles take a picture from the studio", () => {
+  assert.deepEqual(CHAIN, ["ingangsbild", "keystone", "ankare-1", "ankare-2.1", "ankare-2.2", "ankare-2.3", "landning", "film"]);
   assert.deepEqual(ROLES.slice(0, CHAIN.length), [...CHAIN]);
-  assert.deepEqual([...UPLOAD_ROLES], ["ingangsbild", "keystone", "ankare-1", "ankare-2.1", "ankare-2.2"]);
+  assert.deepEqual([...UPLOAD_ROLES], ["ingangsbild", "keystone", "ankare-1", "ankare-2.1", "ankare-2.2", "ankare-2.3"]);
 });
 
 test("a folder name from what was typed: lower case, å ä ö plain, the dealer's own name not twice", () => {

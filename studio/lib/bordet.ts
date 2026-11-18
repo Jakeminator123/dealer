@@ -2,15 +2,15 @@
 // one frame (Jakob 2026-11-17: "Scen och placering bör ha samma typ av vy, och på högersidan ska man kunna ändra och laborera
 // med detta. Detta ska också vara underlaget för beställning av nya filmer."). Pure helpers for it: the stage's camera (fit,
 // zoom towards the pointer, pan, the close-up on a card), the one card shape every card on the stage is drawn with, and the
-// list of films to order (step 3): which steps a card can have, each in his notation, with the method of record's recipe
-// and price and the exact body of POST /api/orders that the production list would send for it (tools/produce.ts draftOf,
-// without its notes and createdBy, which the page cannot set). Nothing here composes an order: the store does, as for every
-// draft. No DOM, no network; tests in studio/tests/bordet.test.ts.
+// list of films to order (step 3): which steps a card can have, each in his notation, with its step's one recipe
+// (data/order-methods.json), what the store will resolve for it (lineOf, from the same pure functions the store uses), its
+// price, and the body of POST /api/orders: the dealer, the step and the card, and over them only his deliberate exceptions.
+// Nothing here composes an order: the store does, as for every draft. No DOM, no network; tests in studio/tests/bordet.test.ts.
 import {
-  ANCHOR_NODE, MODELS, STEPS, costOf, credits, defaultFlip, genitive, landingOf, lengthFor, modelFor, paramsOf, referenceCandidates, scaleQuad, seatWords, stepOf,
-  type BankFacts, type FlipAxis, type HandChoice, type PlanAnswer, type Policy, type RefCandidate, type Shape, type StepDef, type StepKey, type TextStyle,
+  ANCHOR_NODE, STEPS, costOf, credits, defaultFlip, genitive, handsOf, landingOf, modelFor, paramsOf, referenceCandidates, scaleQuad, seatEndOf, seatWords, stepOf,
+  type BankFacts, type FlipAxis, type HandChoice, type ModelDef, type PlanAnswer, type Policy, type RefCandidate, type SeatEnd, type Shape, type StepDef, type StepKey, type TextStyle,
 } from "../../src/order-model.ts";
-import { methodFor, recipeWords, type Method, type MethodRegister } from "../../src/order-methods.ts";
+import { methodFor, recipeFor, recipeWords, referenceByRule, referenceWaits, secondsOf, type Method, type MethodRegister, type Recipe } from "../../src/order-methods.ts";
 import { promptFor, type Prompt } from "../../src/order-prompts.ts";
 import type { Intent, Place, Side } from "../../src/placement-model.ts";
 import { SHOE } from "../../src/placement-model.ts";
@@ -106,16 +106,17 @@ const dealFrom = (intent: Pick<Intent, "grip">) => (intent.grip === "DRAG" ? "2.
 
 /**
  * The films a card can have, as one click each: its deal from the anchor the plan's grip says, the return to that anchor,
- * and the return to rest. The shoe has none. Steps that cannot be ordered here (`off`) are left out.
+ * the return to rest, and the deal with two hands from anchor 2.3. The shoe has none. Steps that cannot be ordered here
+ * (`off`) are left out.
  */
 export function cardWishes(place: Place, intent: Pick<Intent, "grip"> | null): FilmWish[] {
   if (place === SHOE || !intent) return [];
   const from = dealFrom(intent);
-  const keys: StepKey[] = [from === "2.2" ? "GIV-2.2" : "GIV-2.1", from === "2.2" ? "RETUR-2.2" : "RETUR-2.1", "RETUR-1"];
+  const keys: StepKey[] = [from === "2.2" ? "GIV-2.2" : "GIV-2.1", from === "2.2" ? "RETUR-2.2" : "RETUR-2.1", "RETUR-1", "GIV-2.3"];
   return keys.filter((k) => !stepOf(k)?.off).map((step) => ({ step, target: place }));
 }
 /** The films without a card, in the order a round meets them: the entries, the ways out, rest, the hole card's turn. */
-export const OTHER_STEPS: readonly StepKey[] = ["INGANG-2.1", "INGANG-2.2", "UTGANG", "UTGANG-2.2", "VILA", "HALKORT"];
+export const OTHER_STEPS: readonly StepKey[] = ["INGANG-2.1", "INGANG-2.2", "INGANG-2.3", "UTGANG", "UTGANG-2.2", "VILA", "HALKORT"];
 export const otherWishes = (): FilmWish[] => OTHER_STEPS.filter((k) => stepOf(k) && !stepOf(k)!.off).map((step) => ({ step, target: null }));
 
 /** The bank's edges a film is filed under, as nodes: a deal tur och retur gives anchor → card → anchor. */
@@ -124,173 +125,169 @@ function nodesOf(step: StepDef, target: string | null, shape: Shape | null): str
   if (step.edge === "IDLE>REVEAL(D.C2)") return ["IDLE", "REVEAL(D.C2)", "IDLE"];
   if (step.card && target) {
     if (step.start === "LAND") return [target, to];
-    return shape === "ONE_WAY" ? [from, target] : [from, target, from];
+    return shape === "ROUND_TRIP" ? [from, target, from] : [from, target];
   }
   return [from, to];
 }
-/** "A2.1 → P4C1 → A2.1", "P4C1 → A2.1", "A1 → A2.1": a film in his notation. */
+/** "A2.1 → P4C1", "P4C1 → A2.1", "A1 → A2.1": a film in his notation (a deal is bara dit unless it is said to go tur och retur). */
 export const wishLine = (step: StepDef, target: string | null, shape: Shape | null): string => nodesOf(step, target, shape).map(nodeCode).join(" → ");
 
 /**
- * What Jakob chose himself on an opened row, over the method's recipe and the plan (the choices Ny beställning has): the model,
- * its length, takes, the text's style, tur och retur or bara dit, the reference film, hand, side and turn, the trial card scale
- * and his own addition. Only what is chosen is sent; what is not is the method's, or the plan's as the store takes it.
+ * A deliberate exception on an opened row: what Jakob chose himself against the step's recipe (the model, its length, takes,
+ * the text's style, tur och retur, another reference film or none, the hand, the side, the turn, the trial card scale) and
+ * his own addition. Only what is chosen is sent; everything else is the recipe's, which the store fills in.
  */
 export type RowChoice = Partial<{ model: string; duration: number; takes: number; style: TextStyle; shape: Shape; reference: string | null; hand: HandChoice; side: Side; flipAxis: FlipAxis; cardScale: number; extra: string }>;
+
+type EntryLike = { id: string; role: string; state?: string; node?: string; card?: string; served: string | null; name?: string; frame?: number; fps?: number | null };
+
+/**
+ * What the store makes of a film on the list, resolved the same way before a draft exists (tools/order-store.ts create, from
+ * the same pure functions): the step's one recipe, and over it only his deliberate exceptions. `why`: why no draft can be
+ * made (no method yet, a seat without an end picture, a reference film the recipe waits for), else null.
+ */
+export type Line = {
+  recipe: Recipe | null;
+  model: ModelDef | null;
+  seconds: number | null;
+  takes: number;
+  style: TextStyle;
+  /** A deal's shape; every other film is one way. */
+  shape: Shape | null;
+  /** The turn the draft gets: his own, else the recipe's; null: what Placering says for the card (the store takes it). */
+  flipAxis: FlipAxis | null;
+  hands: { hand: "LH" | "RH"; pass: boolean };
+  side: Side;
+  reference: RefCandidate | null;
+  /** The recipe wants a reference film (and he has not said otherwise). */
+  wanted: boolean;
+  /** Where a deal bara dit ends: the seat's own end picture, or null where the seat has none. */
+  end: SeatEnd<EntryLike> | null;
+  why: string | null;
+};
+export function lineOf(input: { dealer: string; wish: FilmWish; methods: Pick<MethodRegister, "methods"> | null; bank: BankFacts | null; entries: readonly EntryLike[]; plan: Pick<PlanAnswer, "seats"> | null; choice?: RowChoice }): Line {
+  const { dealer, wish, bank, entries } = input, c = input.choice ?? {};
+  const def = stepOf(wish.step)!;
+  const recipe = recipeFor(input.methods, wish.step, wish.target);
+  const model = modelFor(def, c.model ?? recipe?.model ?? null);
+  const deal = def.card && def.start !== "LAND";
+  const shape: Shape | null = def.kind !== "FILM" ? null : deal ? (c.shape ?? recipe?.shape ?? "ONE_WAY") : "ONE_WAY";
+  const seat = wish.target ? (input.plan?.seats[wish.target] ?? null) : null;
+  const twoHands = def.grip === "TWO_HANDS";
+  // The hand: his exception, else the recipe's (the hand at the shoe all the way), else what Placering says for the card.
+  const hands = twoHands ? { hand: "LH" as const, pass: false } : c.hand ? handsOf(c.hand) : deal && recipe?.hand ? { hand: recipe.hand, pass: false } : { hand: seat?.hand ?? ("LH" as const), pass: seat?.pass ?? false };
+  const lays: "LH" | "RH" = twoHands || hands.pass ? "RH" : hands.hand;
+  const side: Side = c.side ?? seat?.side ?? "FRONT";
+  const oneWayDeal = deal && shape === "ONE_WAY";
+  const end = oneWayDeal ? seatEndOf(entries, bank, { dealer, step: def, target: wish.target, hand: lays }) : null;
+  const byRule = c.reference === undefined && !!recipe && recipe.reference !== "ingen" && !!model?.videos;
+  const reference = c.reference
+    ? ((bank && model ? referenceCandidates(bank, { dealer, step: def, target: wish.target, model }).find((x) => x.take === c.reference && x.fits) : null) ?? null)
+    : byRule ? referenceByRule(bank, recipe!.reference, { dealer, step: def, target: wish.target, model, shape, lays }) : null;
+  const seconds = def.kind !== "FILM" || !model ? null : (c.duration ?? secondsOf(model, recipe?.seconds ?? null, reference));
+  const why =
+    !model ? "ingen metod än"
+    : def.kind === "FILM" && seconds === null ? "ingen metod än: säg längden"
+    : def.start === "LAND" && !landingOf(entries, wish.target) ? "ingen landningsbild gäller för platsen"
+    : oneWayDeal && !end ? `ingen slutbild för platsen${lays === "RH" ? " med höger hand vid kortet" : ""}`
+    : byRule && !reference ? `${referenceWaits(recipe!.reference, def)}${lays === "RH" && !twoHands ? ", lagd med höger hand" : ""}`
+    : null;
+  return { recipe, model, seconds, takes: c.takes ?? recipe?.takes ?? 1, style: c.style ?? recipe?.style ?? "KORT", shape, flipAxis: c.flipAxis ?? recipe?.turn ?? null, hands, side, reference, wanted: byRule, end, why };
+}
 
 export type FilmRow = {
   key: string;
   wish: FilmWish;
-  /** His notation, and the step's own name ("Nyp, ett kort till platsen och tillbaka"). */
+  /** His notation, and the step's own name ("Nyp, ett kort till platsen"). */
   line: string;
   label: string;
   method: Pick<Method, "id" | "status" | "reference"> | null;
-  /** The method's recipe in one line ("Kling 4 · kort text · 7 s · …"), or "ingen metod än". */
+  /** The method's recipe in one line ("Kling 4 · 1080p · 3 s · bara dit · …"), or "ingen metod än". */
   recipe: string;
   /** What one draft of it costs (all its takes), or null where no price is known or nothing can be sent. */
   cost: number | null;
-  /** The body of POST /api/orders for it: the production list's draft, with his own choices over it; null when it cannot be sent. */
+  /** The body of POST /api/orders for it: the dealer, the step and the card, and his exceptions; null when it cannot be sent. */
   body: NewOrderInput | null;
-  /** Why it cannot be made a draft from here (no method, no reference film where the method wants one), or null. */
+  /** Why it cannot be made a draft from here (no method, no end picture for the seat, no reference film where the recipe wants one), or null. */
   why: string | null;
-  /** The reference film that goes with it (the bank's take), or null; `wanted`: the method asks for one. */
+  /** The reference film that goes with it, or null; `wanted`: the recipe asks for one. */
   reference: RefCandidate | null;
   wanted: boolean;
-  /** He has changed something on the row. */
+  /** He has chosen something against the recipe on the row. */
   chosen: boolean;
+  /** Everything the store will resolve for it (what "Det här skickas" shows before the draft exists). */
+  resolved: Line;
 };
 
 /**
- * The reference film the production list takes where the method wants one (tools/produce.ts straightReferences): a deal to
- * the same seat (the same step first, then the other grip), approved straight by Jakob, of a length the model takes.
+ * The body of POST /api/orders for a film: the line and nothing else. The dealer, the step and the card; the store fills in
+ * the recipe (model, length, shape, takes, text, the reference film its rule finds, the seat's end picture). Over that, only
+ * his deliberate exceptions, with the keys the store reads them under.
  */
-export function straightReference(bank: BankFacts | null, dealer: string, step: StepKey, target: string | null, model: string | null): RefCandidate | null {
-  const def = stepOf(step), m = model ? MODELS[model] : null;
-  if (!bank || !def || !m?.videos) return null;
-  return referenceCandidates(bank, { dealer, step: def, target, model: m }).find((c) => c.match <= 1 && c.approvedStraight && c.verdict === "GODKÄND" && c.fits) ?? null;
-}
-
-/**
- * The draft the production list would make for a step and a card from the method of record (tools/produce.ts draftOf), as the
- * page sends it: dealer, step, card, the model when it is not the step's own, seconds, style, takes, Jakob's addition, tur och
- * retur or bara dit for a deal, the reference film the method's rule finds, and the turn when the method names one (else the
- * plan's, which the store takes). A method still being tried (prov) gives a trial, one take, as the list's --trial does (its
- * title is left to the store). Where the method wants a reference film and none is found: the model it names for that case
- * without one, else null (the step waits for such a film). null when the method holds no recipe.
- */
-export function orderBody(dealer: string, wish: FilmWish, method: Method | null, reference: string | null = null): NewOrderInput | null {
-  const def = stepOf(wish.step);
-  if (!def || !method || method.status === "saknas" || !method.model) return null;
-  const wants = method.reference !== "ingen";
-  if (wants && !reference && !method.noReferenceModel) return null;
-  const model = wants && !reference ? method.noReferenceModel! : method.model;
-  const flip = method.turn && method.turn !== "plan" ? method.turn : undefined;
-  return {
-    dealer,
-    step: wish.step,
-    ...(def.card && wish.target ? { target: wish.target } : {}),
-    ...(model !== def.model ? { model } : {}),
-    ...(def.kind === "FILM" && method.seconds ? { duration: method.seconds } : {}),
-    ...(method.style ? { style: method.style } : {}),
-    takes: method.status === "prov" ? 1 : (method.takes ?? 2),
-    extra: method.extra,
-    ...(def.card && def.start !== "LAND" && method.shape ? { shape: method.shape } : {}),
-    ...(wants && reference ? { reference } : {}),
-    ...(flip ? { flipAxis: flip } : {}),
-  };
-}
-
-/**
- * His choices laid over a body, with the keys Ny beställning sends them under (lib/orders.ts NewOrderInput): only what he has
- * chosen changes. Without a method's body, Ny beställning's own defaults for the step (its model, its length, two takes, Kort).
- */
-export function withChoice(dealer: string, wish: FilmWish, body: NewOrderInput | null, c: RowChoice): NewOrderInput | null {
+export function orderBody(dealer: string, wish: FilmWish, c: RowChoice = {}): NewOrderInput | null {
   const def = stepOf(wish.step);
   if (!def) return null;
-  if (!body && !Object.keys(c).length) return null;
-  const base: NewOrderInput = body ?? { dealer, step: wish.step, ...(def.card && wish.target ? { target: wish.target } : {}), ...(def.kind === "FILM" && def.duration ? { duration: def.duration } : {}), takes: 2, style: "KORT", extra: null };
-  const out: NewOrderInput = { ...base };
-  if (c.model !== undefined) {
-    if (c.model === def.model) delete out.model;
-    else out.model = c.model;
-  }
+  const out: NewOrderInput = { dealer, step: wish.step, ...(def.card && wish.target ? { target: wish.target } : {}) };
+  if (c.model !== undefined) out.model = c.model;
   if (c.duration !== undefined) out.duration = c.duration;
   if (c.takes !== undefined) out.takes = c.takes;
   if (c.style !== undefined) out.style = c.style;
   if (c.shape !== undefined && def.card && def.start !== "LAND") out.shape = c.shape;
-  if (c.reference !== undefined) {
-    if (c.reference) out.reference = c.reference;
-    else delete out.reference;
-  }
+  if (c.reference !== undefined) out.reference = c.reference || null;
   if (c.hand !== undefined) Object.assign(out, c.hand === "PASS" ? { hand: "LH", pass: true } : { hand: c.hand, pass: false });
   if (c.side !== undefined) out.side = c.side;
   if (c.flipAxis !== undefined) out.flipAxis = c.flipAxis;
-  if (c.cardScale !== undefined) {
-    if (c.cardScale === 1) delete out.cardScale;
-    else out.cardScale = c.cardScale;
-  }
+  if (c.cardScale !== undefined && c.cardScale !== 1) out.cardScale = c.cardScale;
   if (c.extra !== undefined) out.extra = c.extra.trim() || null;
   return out;
 }
 
-/** What one draft of a body costs at the policy's prices: its model, its length, its takes (as Ny beställning counts it). */
-export function bodyCost(body: NewOrderInput | null, policy: Pick<Policy, "prices"> | null): number | null {
-  const def = body ? stepOf(body.step) : null;
-  const model = def ? modelFor(def, body!.model ?? null) : null;
-  if (!body || !def || !model || !policy) return null;
-  const params = paramsOf(def, model, def.kind === "FILM" ? { duration: lengthFor(model, body.duration ?? def.duration ?? 4) } : {});
-  return costOf({ model: model.id, params }, body.takes ?? 2, policy.prices)?.total ?? null;
+/** What one draft costs at the policy's prices: the model, the length and the takes the store will give it. */
+export function lineCost(step: StepDef, line: Pick<Line, "model" | "seconds" | "takes" | "recipe">, policy: Pick<Policy, "prices"> | null): number | null {
+  if (!line.model || !policy) return null;
+  const params = paramsOf(step, line.model, step.kind === "FILM" ? { duration: line.seconds ?? undefined, resolution: line.recipe?.resolution } : {});
+  return costOf({ model: line.model.id, params }, line.takes, policy.prices)?.total ?? null;
 }
 
-/** A film of the list with its method's recipe, its reference film, his choices, its price and the body to send. */
-export function filmRow(dealer: string, wish: FilmWish, methods: Pick<MethodRegister, "methods"> | null, policy: Pick<Policy, "prices"> | null, more: { bank?: BankFacts | null; choice?: RowChoice } = {}): FilmRow {
+/** A film of the list with its recipe, what the store will resolve for it, his exceptions, its price and the body to send. */
+export function filmRow(dealer: string, wish: FilmWish, methods: Pick<MethodRegister, "methods"> | null, policy: Pick<Policy, "prices"> | null, more: { bank?: BankFacts | null; choice?: RowChoice; entries?: readonly EntryLike[]; plan?: Pick<PlanAnswer, "seats"> | null } = {}): FilmRow {
   const def = stepOf(wish.step)!;
   const method = methodFor(methods, wish.step, wish.target);
-  const wanted = !!method && method.status !== "saknas" && method.reference !== "ingen";
-  const found = wanted ? straightReference(more.bank ?? null, dealer, wish.step, wish.target, method!.model) : null;
   const choice = more.choice ?? {};
-  const body = withChoice(dealer, wish, orderBody(dealer, wish, method, found?.take ?? null), choice);
-  const takeId = body?.reference ?? null;
-  const reference = !takeId ? null : found?.take === takeId ? found : more.bank ? (referenceCandidates(more.bank, { dealer, step: def, target: wish.target, model: MODELS[body?.model ?? def.model] }).find((c) => c.take === takeId) ?? null) : null;
-  const shape: Shape | null = def.card && def.start !== "LAND" ? (body?.shape ?? method?.shape ?? "ROUND_TRIP") : null;
-  const why = body ? null : !method || method.status === "saknas" ? "ingen metod än" : wanted ? "väntar på en rakt godkänd referensfilm till platsen" : null;
+  const resolved = lineOf({ dealer, wish, methods, bank: more.bank ?? null, entries: more.entries ?? [], plan: more.plan ?? null, choice });
   return {
-    key: wishKey(wish), wish, line: wishLine(def, wish.target, shape), label: def.label, method: method ? { id: method.id, status: method.status, reference: method.reference } : null,
-    recipe: recipeWords(method, wanted && !found), cost: bodyCost(body, policy), body, why, reference, wanted, chosen: Object.keys(choice).length > 0,
+    key: wishKey(wish), wish, line: wishLine(def, wish.target, resolved.shape), label: def.label, method: method ? { id: method.id, status: method.status, reference: method.reference } : null,
+    recipe: recipeWords(method), cost: resolved.why ? null : lineCost(def, resolved, policy), body: resolved.why ? null : orderBody(dealer, wish, choice), why: resolved.why,
+    reference: resolved.reference, wanted: resolved.wanted, chosen: Object.keys(choice).length > 0, resolved,
   };
 }
 
-/** "Pamelas giv till plats 4", "Paows retur från plats 2": a reference film by whose it is and what it shows. */
+/** "Dockans giv till plats 4", "Pamelas giv till plats 4", "Paows retur från plats 2": a reference film by whose it is and what it shows. */
 export function referenceName(c: Pick<RefCandidate, "dealer" | "edge" | "goesTo">, names: Readonly<Record<string, string>>): string {
-  const who = genitive(names[c.dealer] ?? c.dealer);
-  const back = !/^(READY|READY-B|IDLE)>/.test(c.edge);
+  const who = c.dealer === "docka" ? "Dockans" : genitive(names[c.dealer] ?? c.dealer);
+  const back = !/^(READY(?:-[A-Z])?|DRAWN|IDLE)>/.test(c.edge);
   return `${who} ${back ? "retur från" : "giv till"} ${seatWords(c.goesTo)}`;
 }
 
 // ── What goes to Runway for a row ───────────────────────────────────────────
-// The same pictures, text and values Ny beställning shows before a draft exists, from the same functions (anchorFor,
-// landingOf, the plan's card where the last picture draws it, promptFor): the first picture, the last picture (the anchor
-// with the card drawn where the plan lays it, or a landing picture or an anchor), the reference film or none, the text word
-// for word, and model, length and takes. Nothing else is sent: no card path, no JSON.
-type EntryLike = { id: string; role: string; state?: string; node?: string; card?: string; served: string | null; name?: string; frame?: number; fps?: number | null };
+// Exactly what the store will make of the row, from the same functions (lineOf above, anchorFor, seatEndOf, promptFor): the
+// first picture, the last picture (the seat's own end picture for a deal bara dit; the anchor with the card drawn where the
+// plan lays it for a round trip; an anchor otherwise), the reference film or none, the text word for word, and model, length
+// and takes. Nothing else is sent: no card path, no JSON.
 export type Shot = { entry: EntryLike | null; name: string; waiting: string | null; cards: { quad: [number, number][]; side: Side }[] };
 export type Sends = { first: Shot; last: Shot; drawn: boolean; prompt: Prompt | null; model: string; seconds: number | null; takes: number; resolution: string };
 
-export function sendsOf(input: { dealer: { id: string; name: string; look: string | null }; body: NewOrderInput; entries: readonly EntryLike[]; plan: Pick<PlanAnswer, "seats"> | null }): Sends | null {
-  const { body, entries, plan, dealer } = input;
-  const step = stepOf(body.step);
-  if (!step || step.kind !== "FILM") return null;
-  const model = modelFor(step, body.model ?? null) ?? MODELS[step.model];
-  const seconds = lengthFor(model, body.duration ?? step.duration ?? 4);
-  const target = step.card ? (body.target ?? null) : null;
+export function sendsOf(input: { dealer: { id: string; name: string; look: string | null }; wish: FilmWish; line: Line; choice?: RowChoice; entries: readonly EntryLike[]; plan: Pick<PlanAnswer, "seats"> | null; bank?: BankFacts | null }): Sends | null {
+  const { wish, line, entries, plan, dealer } = input, c = input.choice ?? {};
+  const step = stepOf(wish.step);
+  if (!step || step.kind !== "FILM" || !line.model) return null;
+  const model = line.model;
+  const target = step.card ? (wish.target ?? null) : null;
   const seat = target ? (plan?.seats[target] ?? null) : null;
   const deal = step.card && step.start !== "LAND";
-  const shape: Shape | null = deal ? (body.shape ?? "ROUND_TRIP") : null;
-  const oneWay = deal && shape === "ONE_WAY";
-  const side: Side = body.side ?? seat?.side ?? "FRONT";
-  const hands = body.hand ? { hand: body.hand, pass: !!body.pass } : { hand: seat?.hand ?? ("LH" as const), pass: seat?.pass ?? false };
-  const flipAxis: FlipAxis = body.flipAxis ?? defaultFlip(body.step, seat?.turnAt, seat?.flipAxis);
-  const scale = body.cardScale ?? 1;
+  const oneWay = deal && line.shape === "ONE_WAY";
+  const flipAxis: FlipAxis = line.flipAxis ?? defaultFlip(wish.step, seat?.turnAt, seat?.flipAxis);
+  const scale = c.cardScale ?? 1;
   const start = anchorFor(entries, step.from);
   const end = !step.card || step.start === "LAND" ? (step.to ? anchorFor(entries, step.to).holds : null) : null;
   const landing = target ? landingOf(entries, target) : null;
@@ -298,7 +295,7 @@ export function sendsOf(input: { dealer: { id: string; name: string; look: strin
   const shot = (e: EntryLike | null, name: string, waiting: string, cards: Shot["cards"] = []): Shot => ({ entry: e, name, waiting: e ? null : waiting, cards });
   let first: Shot, last: Shot, drawn = false;
   if (step.cards?.length) {
-    const cards = (when: "before" | "after") => step.cards!.flatMap((c) => (plan?.seats[c.target] ? [{ quad: plan.seats[c.target].quad, side: c[when] }] : []));
+    const cards = (when: "before" | "after") => step.cards!.flatMap((x) => (plan?.seats[x.target] ? [{ quad: plan.seats[x.target].quad, side: x[when] }] : []));
     first = shot(start.holds, `Första bild · ${anchorName(start.holds, step.from)} + hålkortet stängt`, `ankare ${step.from}`, cards("before"));
     last = shot(start.holds, "Sista bild · samma + hålkortet öppet", `ankare ${step.from}`, cards("after"));
     drawn = true;
@@ -307,22 +304,28 @@ export function sendsOf(input: { dealer: { id: string; name: string; look: strin
     last = shot(end, `Sista bild · ${anchorName(end, step.to ?? step.from)}`, `ankare ${step.to}`);
   } else if (step.card) {
     first = shot(start.holds, `Första bild · ${anchorName(start.holds, step.from)}`, `ankare ${step.from}`);
-    if (oneWay) last = shot(landing, `Sista bild · ${genitive(dealer.name)} landning på ${seatWords(target)}`, "landningsbilden");
-    else {
-      last = shot(start.holds, `Sista bild · samma + kortet ${side === "BACK" ? "stängt" : "öppet"} på ${seatWords(target)}`, `ankare ${step.from}`, seat ? [{ quad: scaleQuad(seat.quad, scale).quad, side }] : []);
+    if (oneWay) {
+      // The seat's own end picture: its landing picture, else the cut frame of the bank's film to the seat, shown as that frame.
+      const e = line.end;
+      const fps = e?.kind === "SNITTRUTA" ? (input.bank?.motions?.[e.cut.clip]?.source?.fps ?? input.bank?.motions?.[e.cut.ret]?.source?.fps ?? 24) : null;
+      const picture: EntryLike | null = !e ? null : e.kind === "LANDNING" ? e.entry : { id: e.cut.clip, role: "film", served: e.cut.path, frame: e.cut.frame, fps };
+      last = shot(picture, !e ? `Sista bild · ${seatWords(target)} har ingen slutbild` : e.kind === "LANDNING" ? `Sista bild · ${genitive(dealer.name)} landning på ${seatWords(target)}` : `Sista bild · platsens slutbild: ruta ${e.cut.frame} ur ${e.cut.clip}`, "platsens slutbild");
+    } else {
+      last = shot(start.holds, `Sista bild · samma + kortet ${line.side === "BACK" ? "stängt" : "öppet"} på ${seatWords(target)}`, `ankare ${step.from}`, seat ? [{ quad: scaleQuad(seat.quad, scale).quad, side: line.side }] : []);
       drawn = true;
     }
   } else {
     first = shot(start.holds, `Första bild · ${anchorName(start.holds, step.from)}`, `ankare ${step.from}`);
     last = shot(end, `Sista bild · ${anchorName(end, step.to ?? step.from)}`, `ankare ${step.to}`);
   }
-  const motion = target ? { grip: step.grip ?? ("PINCH" as const), ...hands, turn: side === "FRONT", flipAxis, side, target } : null;
+  const motion = target ? { grip: step.grip ?? ("PINCH" as const), ...line.hands, turn: line.side === "FRONT", flipAxis, side: line.side, target } : null;
   const place = seat ?? (step.target ? (plan?.seats[step.target] ?? null) : null);
+  const extra = (c.extra !== undefined ? c.extra : line.recipe?.extra)?.trim() || null;
   const prompt = dealer.look
-    ? promptFor({ dealer: { name: dealer.name, look: dealer.look }, step: body.step, model: model.id, motion, place: place ? { x: place.centre[0], y: place.centre[1] } : null, extra: body.extra?.trim() || null, style: body.style ?? "KORT", oneWay, reference: !!body.reference, cardScale: deal && shape === "ROUND_TRIP" ? scale : 1 })
+    ? promptFor({ dealer: { name: dealer.name, look: dealer.look }, step: wish.step, model: model.id, motion, place: place ? { x: place.centre[0], y: place.centre[1] } : null, extra, style: line.style, oneWay, reference: !!line.reference, cardScale: deal && line.shape === "ROUND_TRIP" ? scale : 1 })
     : null;
-  const params = paramsOf(step, model, { duration: seconds });
-  return { first, last, drawn, prompt, model: model.label, seconds, takes: body.takes ?? 2, resolution: String(params.resolution ?? "") };
+  const params = paramsOf(step, model, { duration: line.seconds ?? undefined, resolution: line.recipe?.resolution });
+  return { first, last, drawn, prompt, model: model.label, seconds: line.seconds, takes: line.takes, resolution: String(params.resolution ?? "") };
 }
 
 /** "3 filmer · 640 krediter" (and how many have no price), for the foot of the list. */

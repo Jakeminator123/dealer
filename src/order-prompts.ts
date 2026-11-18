@@ -28,7 +28,7 @@
 // cut-out: only the dealing forearm and hand of another dealer at the window shoe, the rest of her filled with green
 // (tools/order-images.ts cutFigure; for 2.2 laid on the dealer's own shoe and card, poseOnShoe), so that only the hand's
 // place and grip can be taken from it. Tests: tools/order-prompts.test.ts.
-import type { FlipAxis, StepKey, TextStyle } from './order-model.ts';
+import type { FlipAxis, Grip, StepKey, TextStyle } from './order-model.ts';
 
 /**
  * The formula's version. 4: the short and minimal texts (Utförlig is always named @3, the long text's own version).
@@ -72,12 +72,27 @@ import type { FlipAxis, StepKey, TextStyle } from './order-model.ts';
  * SAY.blankCard. The words "pale edge" and "edge to edge" are gone (a suspected light rim). A round trip keeps
  * template 9's lay and way back; closed deals, handbyte and the right hand keep template 9's words, untried with 10.
  * Template 9's words stay in SAY (still used by the other steps); fromTen chooses.
+ * 11 (2026-11-18): no instruction twice (Jakob: "för många val som kan leda till överlappande instruktioner"). The words of
+ * 10 for a deal by the hand at the shoe are unchanged, word for word (tools/order-line.test.ts holds it): that is the deal
+ * the trials tried. What changes is the deals bara dit that 10 left on template 9's words, where the end was said twice or
+ * against the last picture: an open deal by the other hand or with handbyte now turns with the key turn and ends on
+ * SAY.layOneWay like every other (before: "lets go of it; only then does her empty hand turn palm down" and then "Her hand
+ * ends at the card, as in the last frame"), and a closed deal ends in one sentence with the fingertips on the card
+ * (SAY.layClosedOneWay, SAY.stopClosedOneWay, SAY.stopFlatOneWay; before: "lifts her fingertips off it" and then "Her
+ * hand ends at the card"). New with 11: anchor 2.3 (both hands at the shoe; Jakob 2026-11-18), its entry from rest
+ * (SAY.reach['2.3'], SAY.eyesStay) and the deal with two hands as the session MODEL measured it on a real dealer
+ * (SAY.strokeOut, SAY.meetAt, SAY.raiseAndTurn, SAY.layPalmDown, SAY.shoeHandBack, SAY.headToPlace): the hand at the shoe
+ * strokes the card out and brings it flat on the felt to the other hand, both hands tip it up onto a short end, the other
+ * hand turns it over in the air and lays it palm down with its fingertips on it, and her head follows the place. Untried as a
+ * text. And the short entry
+ * no longer opens on "Both hands rest on the felt." (SAY.bothRest): the first frame shows it, and the resting hand is said
+ * once, by "The other hand rests on the felt.".
  */
-export const TEMPLATE_VERSION = 10;
+export const TEMPLATE_VERSION = 11;
 /** The version of the long text (template 3, 2026-11-13); Utförlig writes it unchanged. */
 export const LONG_VERSION = 3;
 export type Dealer = { name: string; look: string };
-export type DealMotion = { grip: 'PINCH' | 'DRAG'; hand?: 'LH' | 'RH'; pass?: boolean; turn: boolean; flipAxis: FlipAxis | null; side: 'FRONT' | 'BACK' };
+export type DealMotion = { grip: Grip; hand?: 'LH' | 'RH'; pass?: boolean; turn: boolean; flipAxis: FlipAxis | null; side: 'FRONT' | 'BACK' };
 export type PromptInput = {
   /** The formula's version the text is written with (absent: today's). An order stored with an older one is reproduced with it. */
   version?: number;
@@ -192,6 +207,30 @@ export const SAY = {
   oneCardMovesFree: 'Only one card moves: a small card, about half as long as her hand. It is blank, solid yellow on one side and solid blue on the other, each colour reaching right out to its corners, and the next card in the window is the same blank yellow.',
   blankCard: 'The card is blank, solid yellow on one side and solid blue on the other, each colour reaching right out to its corners, and the next card in the window is the same blank yellow.',
   layClosed: 'She lays it flat there, yellow side up.',
+  // A closed deal bara dit (from template 11): the end said once, with the fingertips where the last frame shows them.
+  layClosedOneWay: 'She lays it flat there, yellow side up, and her fingertips come to rest on it, as in the last frame.',
+  stopClosedOneWay: 'She stops it there, yellow side up, and her fingertips stay on it, as in the last frame.',
+  stopFlatOneWay: 'She stops it there, and her fingertips stay on it, as in the last frame.',
+  // The deal with two hands from anchor 2.3 (from template 11), as the session MODEL read it frame by frame off a real dealer
+  // (D:/dealer-scratch/tmp/yt-referens/ut/giv-fran-2-3.md; untried as a text): the hand at the shoe strokes the card out and
+  // brings it flat on the felt to her other hand, which meets it 7 to 31 cm from the shoe's mouth, further out the further
+  // the seat lies (meetAt); both hands tip it up onto a short end; the other hand lets it go on over that end in the air
+  // and lays it with its palm down, fingertips on the card; the hand from the shoe goes back to the shoe; her head
+  // follows the place, not the shoe.
+  strokeOut: 'strokes the yellow card out of the window and slides it flat on the felt, its broad yellow side up,',
+  meetAt: { near: 'just in front of the shoe, where her other hand meets it', mid: 'a short way out from the shoe, where her other hand meets it', far: 'to the middle in front of her, where her other hand meets it' },
+  // The turn of the real dealer, read in close-up (yt-referens/ut/vandning-narbild.md): end over end about the short end the
+  // card stands on, a quarter up by both hands and a quarter on and down by the other hand, towards the player. One whole
+  // turn, said as one: it begins yellow side up and ends blue side up, never begun and broken off (Jakob 2026-11-18).
+  raiseAndTurn: (carry: string): string =>
+    `There both hands tip the card up onto its short end, and her other hand, palm down, carries it on ${carry}; on that way the card goes on over the same short end, end over end, in one unbroken turn that begins with the yellow side up and ends with the blue side up.`,
+  takeClosed: (carry: string): string => `There her other hand takes it by its short end, palm down, and carries it on low over the felt, yellow side up, ${carry}.`,
+  layPalmDown: 'She lays the card flat at its place, blue side up, with her palm down, and her fingertips come to rest on it, as in the last frame.',
+  layPalmDownRound: 'She lays the card flat at its place, blue side up, with her palm down.',
+  shoeHandBack: 'The hand from the shoe lets go once the card stands on its end and settles back at the shoe.',
+  shoeHandBackClosed: 'The hand from the shoe lets go once her other hand holds the card and settles back at the shoe.',
+  headToPlace: 'Her head stays bowed and turns towards the place where the card will lie.',
+  backTwoHands: 'Then the hand that laid it glides back low over the felt, palm down, to the shoe, as in the first frame.',
   stopClosed: 'She stops it there, yellow side up, and lifts her fingertips off it.',
   // A closed card from the pinch (from template 7): laid flat in front of the shoe and slid, never carried tilted.
   layAndSlide: 'lays it flat on the felt in front of the shoe and slides it under her fingertips, flat and yellow side up, to its place',
@@ -227,10 +266,15 @@ export const SAY = {
   reach: {
     '2.1': "Her hand nearest the shoe rises calmly and reaches straight to the yellow card in the window; her thumb and forefinger close on the card's upper edge, the forefinger touching only that edge, and draw the card a little way up out of the window, as in the last frame.",
     '2.2': 'Her hand nearest the shoe rises calmly and reaches straight to the yellow card in the window and lays its fingertips flat on the card, as in the last frame.',
+    // Anchor 2.3 (from template 11): both hands at the shoe just before the deal.
+    '2.3': 'Both her hands rise calmly and go to the shoe: her hand nearest the shoe lays its fingertips on the yellow card in the window, ready to stroke it out, and her other hand comes to wait close beside the shoe, as in the last frame.',
   },
   // Jakob of the entry film: "hon rör inte blicken, vilket är tråkigt".
   eyes: 'Her eyes follow her hand down to the shoe and come back up.',
+  // To anchor 2.3 she looks down at the hand that strokes the card out, and keeps looking there (Jakob 2026-11-18).
+  eyesStay: 'Her eyes go down to her hand at the card and stay there, as in the last frame.',
   reachMinimal: 'Her hand goes from the table to the yellow card in the shoe, as in the last frame.',
+  reachBothMinimal: 'Both her hands go from the table to the shoe, as in the last frame.',
   // The way out, from the pinch at the shoe to rest (READY>IDLE, anchor 2.1 to anchor 1): one action.
   leaveShoe: "Her thumb and forefinger let the yellow card settle back into the shoe's window, and her hand comes back low over the felt, palm down, and rests flat on the felt, as in the last frame.",
   // The way out from the drag (READY-B>IDLE, anchor 2.2 to anchor 1): the hand lies flat over the card in the window.
@@ -271,7 +315,7 @@ const handWord = (h: 'LH' | 'RH') => (h === 'LH' ? 'left' : 'right');
  * The turn of the long text, one sentence per choice and per grip; the hand that holds the card while it turns follows the
  * hand chosen. keepsSize false (a card drawn larger than the plan's): the words that it keeps its size are left out.
  */
-export function turnSentence(axis: FlipAxis, grip: 'PINCH' | 'DRAG' = 'PINCH', hands: Pick<DealMotion, 'hand' | 'pass'> | null = null, keepsSize = true): string {
+export function turnSentence(axis: FlipAxis, grip: Grip = 'PINCH', hands: Pick<DealMotion, 'hand' | 'pass'> | null = null, keepsSize = true): string {
   const { lays, pass } = handsIn(hands);
   if (axis === 'AT_PLACE') {
     const start = grip === 'DRAG' && !pass ? 'At the place her fingertips tip the card up onto its long edge and her thumb and fingers take hold of it; her wrist rolls it on' : `At the place the wrist of her ${handWord(lays)} hand rolls: the card tilts up onto its long edge, held between thumb and fingers, and the roll goes on`;
@@ -394,6 +438,8 @@ const moves = (input: PromptInput) => (input.version ?? TEMPLATE_VERSION) === 7;
 const fromNine = (input: PromptInput) => (input.version ?? TEMPLATE_VERSION) >= 9;
 /** From template 10 an open deal of the short text is the reference-film trials' text (TEMPLATE_VERSION's note): the hold, the flat drag, the key turn, the one-way lay, the card. */
 const fromTen = (input: PromptInput) => (input.version ?? TEMPLATE_VERSION) >= 10;
+/** From template 11 every deal bara dit says its end once (TEMPLATE_VERSION's note), and anchor 2.3 has its words. */
+const fromEleven = (input: PromptInput) => (input.version ?? TEMPLATE_VERSION) >= 11;
 /** The card's colours in Minimal, and "Only one card moves" with them in Kort: plain from template 9, before as templates 4 to 8 said them. */
 const cardColours = (input: PromptInput) => (fromNine(input) ? SAY.colours : SAY.v8.colours);
 const cardMoves = (input: PromptInput) => (fromNine(input) ? SAY.oneCardMoves : SAY.v8.oneCardMoves);
@@ -493,12 +539,15 @@ function dealText(input: PromptInput): Prompt {
  */
 function shortDeal(input: PromptInput): Prompt {
   const m: DealMotion = input.motion ?? DEFAULT_MOTION;
+  if (m.grip === 'TWO_HANDS') return twoHandDeal(input, m);
   const { takes, pass } = handsIn(m);
   const drag = m.grip === 'DRAG', open = m.side === 'FRONT';
   // Back up along the felt to the place: a closed card, or one turned at the place; else turned on the way.
   const alongFelt = !open || m.flipAxis === 'AT_PLACE';
   // From template 10 an open deal by the hand at the shoe is written as the reference-film trials sent it (fromTen).
   const ten = fromTen(input) && open && takes === 'LH' && !pass;
+  // From template 11 every deal bara dit ends in one sentence, on the last frame: the other hand's and a handbyte's too, and a closed one.
+  const once = fromEleven(input) && !!input.oneWay && !ten;
   const out = drag ? SAY.slideOut : ten ? SAY.pinchHold : SAY.pinchOut, seven = twoHands(input), nine = fromNine(input);
   // A closed card from the pinch, by the hand that lays it (from template 7): laid flat in front of the shoe and slid,
   // as the model does well; carried, it tilted and showed its blue face, and changed size when the hand left it.
@@ -520,12 +569,12 @@ function shortDeal(input: PromptInput): Prompt {
   // On the way: from template 9 a turn of the wrist that stays turned until the card lies (rolled about the long side, or free).
   const onTheWay = m.flipAxis === 'LONG_EDGE' ? (nine ? SAY.rollOnTheWay(takesOnTheWay) : SAY.v8.rollOnTheWay) : nine ? SAY.turnOnTheWay(takesOnTheWay) : SAY.v8.turnOnTheWay;
   // Template 10: the key turn on the way (FREE and LONG_EDGE) or close to the place (AT_PLACE); a round trip then lays it as 9 did.
-  const key = m.flipAxis === 'AT_PLACE' ? SAY.keyAtPlace(drag) : SAY.keyOnTheWay(drag);
-  const turn = ten ? (input.oneWay ? key : `${key} ${SAY.layTurned}`) : slid ? SAY.stopFlat : !open ? (drag && !pass ? SAY.stopClosed : SAY.layClosed) : m.flipAxis === 'AT_PLACE' ? turnAtPlace(input) : onTheWay;
+  const key = m.flipAxis === 'AT_PLACE' ? SAY.keyAtPlace(takesOnTheWay) : SAY.keyOnTheWay(takesOnTheWay);
+  const turn = ten ? (input.oneWay ? key : `${key} ${SAY.layTurned}`) : once ? (open ? key : slid ? SAY.stopFlatOneWay : drag && !pass ? SAY.stopClosedOneWay : SAY.layClosedOneWay) : slid ? SAY.stopFlat : !open ? (drag && !pass ? SAY.stopClosed : SAY.layClosed) : m.flipAxis === 'AT_PLACE' ? turnAtPlace(input) : onTheWay;
   const own = takes === 'LH' && !pass;
   // The arm out at the card comes back: the hand at the shoe itself, or the hand that laid it (after a handover the
   // hand that gave it goes back to the shoe, from template 7).
-  const back = input.oneWay ? (ten ? SAY.layOneWay : SAY.endAtCard) : own ? (drag ? SAY.backDrag : SAY.backPinch) : pass && seven ? SAY.backPass(drag) : SAY.backOther(drag);
+  const back = input.oneWay ? (ten || (once && open) ? SAY.layOneWay : once ? '' : SAY.endAtCard) : own ? (drag ? SAY.backDrag : SAY.backPinch) : pass && seven ? SAY.backPass(drag) : SAY.backOther(drag);
   // Her body as she deals: in template 7 alone she moves a little; before and after, the other hand rests (own hand alone).
   const body = moves(input) ? (own ? SAY.moveOwn : SAY.moveBoth) : own ? SAY.otherRests : '';
   // The card: one two-sided object; in template 6 alone, which colour is up at the end, following the side it lands with.
@@ -540,6 +589,35 @@ function shortDeal(input: PromptInput): Prompt {
     { text: back, from: input.oneWay ? ['shape'] : ['hand'] },
     { text: body, from: ['hand'] },
     { text: card, from: colours ? ['side'] : [] },
+    extraPart(input),
+  ];
+  return { template: templateOf('film-giv', 'KORT'), style: 'KORT', text: joined(parts), parts };
+}
+
+/**
+ * The deal with two hands from anchor 2.3 (from template 11), in the order the session MODEL measured it: the hand at the
+ * shoe strokes the card out and slides it flat on the felt to her other hand (where they meet follows the seat, meetAt);
+ * both hands tip it up onto a short end and the other hand turns it over the rest of the way in the air on its way to the
+ * place (a closed card is taken and carried yellow side up); it is laid palm down with the fingertips on it; the hand from
+ * the shoe goes back to the shoe; her head turns towards the place. Each thing once. The turn is the step's own: the order's
+ * flipAxis changes no word here. Bara dit ends on the last frame; tur och retur brings the laying hand back to the shoe.
+ */
+function twoHandDeal(input: PromptInput, m: DealMotion): Prompt {
+  const open = m.side === 'FRONT', placed = !!input.place, sized = !!input.cardScale && input.cardScale !== 1;
+  // The shoe stands at the right of the picture: a seat near it is met just in front of the shoe, a far one in front of her.
+  const meet = !placed ? SAY.meetAt.mid : input.place!.x >= 1180 ? SAY.meetAt.near : input.place!.x >= 760 ? SAY.meetAt.mid : SAY.meetAt.far;
+  const carry = placed ? `towards its place ${whereShort(input.place!)}` : 'towards its place';
+  const lay = open ? (input.oneWay ? SAY.layPalmDown : SAY.layPalmDownRound) : input.oneWay ? SAY.layClosedOneWay : SAY.layClosed;
+  const parts: Part[] = [
+    { text: SAY.camera, from: [] },
+    referencePart(input),
+    { text: `${SAY.handAtShoe} ${SAY.strokeOut} ${meet}.`, from: ['hand', ...(placed ? (['place'] as Choice[]) : [])] },
+    { text: open ? SAY.raiseAndTurn(carry) : SAY.takeClosed(carry), from: [open ? 'turn' : 'side', ...(placed ? (['place'] as Choice[]) : [])] },
+    { text: lay, from: input.oneWay ? ['shape'] : ['side'] },
+    { text: input.oneWay ? '' : SAY.backTwoHands, from: ['hand'] },
+    { text: open ? SAY.shoeHandBack : SAY.shoeHandBackClosed, from: ['hand'] },
+    { text: SAY.headToPlace, from: [] },
+    { text: sized ? SAY.oneCardMovesFree : SAY.oneCardMovesSized, from: [] },
     extraPart(input),
   ];
   return { template: templateOf('film-giv', 'KORT'), style: 'KORT', text: joined(parts), parts };
@@ -591,11 +669,21 @@ function returnText(input: PromptInput, to: '1' | '2.1' | '2.2', style: TextStyl
   return { template: templateOf('film-retur', 'KORT'), style: 'KORT', text: joined(parts), parts };
 }
 
-function entryText(input: PromptInput, to: '2.1' | '2.2', style: TextStyle = 'UTFÖRLIG'): Prompt {
+function entryText(input: PromptInput, to: '2.1' | '2.2' | '2.3', style: TextStyle = 'UTFÖRLIG'): Prompt {
+  // Anchor 2.3 came with template 11 and has no long text: both hands go to the shoe, and her eyes stay on the hand at the card.
+  if (to === '2.3') {
+    const parts: Part[] = style === 'MINIMAL'
+      ? [{ text: SAY.cameraMinimal, from: [] }, referencePart(input), { text: SAY.reachBothMinimal, from: [] }, extraPart(input)]
+      : [{ text: SAY.camera, from: [] }, referencePart(input), { text: SAY.reach['2.3'], from: [] }, { text: SAY.eyesStay, from: [] }, extraPart(input)];
+    const written: TextStyle = style === 'MINIMAL' ? 'MINIMAL' : 'KORT';
+    return { template: templateOf('film-ingang', written), style: written, text: joined(parts), parts };
+  }
   if (style !== 'UTFÖRLIG') {
     const short = style === 'KORT';
     const parts: Part[] = short
-      ? [{ text: SAY.camera, from: [] }, referencePart(input), { text: SAY.bothRest, from: [] }, { text: SAY.reach[to], from: [] }, { text: SAY.eyes, from: [] }, { text: SAY.otherRests, from: [] }, extraPart(input)]
+      // Until template 10 the entry also said that both hands rest on the felt before one of them moves: the first frame shows
+      // it, and with "The other hand rests on the felt." the resting hand was said twice (from template 11 once).
+      ? [{ text: SAY.camera, from: [] }, referencePart(input), { text: fromEleven(input) ? '' : SAY.bothRest, from: [] }, { text: SAY.reach[to], from: [] }, { text: SAY.eyes, from: [] }, { text: SAY.otherRests, from: [] }, extraPart(input)]
       : [{ text: SAY.cameraMinimal, from: [] }, referencePart(input), { text: SAY.reachMinimal, from: [] }, extraPart(input)];
     return { template: templateOf('film-ingang', style), style, text: joined(parts), parts };
   }
@@ -694,6 +782,8 @@ function written(input: PromptInput): Prompt {
     case 'GIV-2.1':
     case 'GIV-2.2':
       return style === 'KORT' ? shortDeal(input) : style === 'MINIMAL' ? minimalDeal(input) : dealText(input);
+    case 'GIV-2.3':
+      return style === 'MINIMAL' ? minimalDeal(input) : shortDeal({ ...input, motion: { ...(input.motion ?? DEFAULT_MOTION), grip: 'TWO_HANDS' } });
     case 'RETUR-2.1':
       return returnText(input, '2.1', style);
     case 'RETUR-2.2':
@@ -704,6 +794,8 @@ function written(input: PromptInput): Prompt {
       return entryText(input, '2.1', style);
     case 'INGANG-2.2':
       return entryText(input, '2.2', style);
+    case 'INGANG-2.3':
+      return entryText(input, '2.3', style);
     case 'UTGANG':
       return exitText(input, style);
     case 'UTGANG-2.2':
@@ -742,7 +834,7 @@ export function orderPrompt(
   const drawn = order.pictures.find((p) => p.goesAs === 'endFrame')?.drawn ?? null;
   const place = drawn ? { x: drawn.centre[0], y: drawn.centre[1] } : planPlace;
   const m = order.motion;
-  const deal = order.step.key === 'GIV-2.1' || order.step.key === 'GIV-2.2';
+  const deal = order.step.key === 'GIV-2.1' || order.step.key === 'GIV-2.2' || order.step.key === 'GIV-2.3';
   return promptFor({
     dealer, step: order.step.key, model: order.generation.model,
     motion: m ? { grip: m.grip, hand: m.hand, pass: !!m.pass, turn: m.turn, flipAxis: m.flipAxis, side: m.side } : null,

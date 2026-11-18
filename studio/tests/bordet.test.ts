@@ -1,15 +1,16 @@
-// Bordet's pure helpers (studio/lib/bordet.ts): the stage's camera, the one card shape, and step 3's list of films with the
-// method's recipe, price and the body of POST /api/orders, which must be the production list's own draft (tools/produce.ts).
+// Bordet's pure helpers (studio/lib/bordet.ts): the stage's camera, the one card shape, and step 3's list of films: each with
+// its step's one recipe, what the store will resolve for it (lineOf), its price, and the body of POST /api/orders, which is
+// the line (the dealer, the step and the card, as the production list drafts it) and his exceptions, nothing else.
 // Run: node --test "studio/tests/bordet.test.ts"
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { STEPS, stepOf } from "../../src/order-model.ts";
-import { methodFor, readMethods, type Method } from "../../src/order-methods.ts";
+import { STEPS, stepOf, type BankFacts } from "../../src/order-model.ts";
+import { methodFor, readMethods, recipeFor, type Method } from "../../src/order-methods.ts";
 import { INTENT_DEFAULTS, SHOE, defaultPlan, planQuad } from "../../src/placement-model.ts";
 import { draftOf } from "../../tools/produce.ts";
 import {
-  OTHER_STEPS, ZOOM_MAX, actualCamera, bordetOrderAddress, bordetSceneAddress, sceneWords, cardPath, cardWishes, clampCamera, closeUp, filmRow, fitCamera, lastOrder, orderBody, otherWishes, panBy, pictureOrigin, referenceName, sendsOf, straightReference, sumWords, wishKey, withChoice, zoomAt,
+  OTHER_STEPS, ZOOM_MAX, actualCamera, bordetOrderAddress, bordetSceneAddress, sceneWords, cardPath, cardWishes, clampCamera, closeUp, filmRow, fitCamera, lastOrder, lineOf, orderBody, otherWishes, panBy, pictureOrigin, referenceName, sendsOf, sumWords, wishKey, zoomAt,
 } from "../lib/bordet.ts";
 
 const picture = { w: 1762, h: 1174 };
@@ -66,11 +67,12 @@ test("one card shape: rounded corners a share of the card's own side, the same l
   assert.equal(big, d.replace(/\d+(\.\d+)?/g, (n) => String(Number(n) * 2)));
 });
 
-test("a card's films: the deal from the anchor the plan's grip says, its return, the return to rest; the shoe has none", () => {
+test("a card's films: the deal from the anchor the plan's grip says, its return, the return to rest, the deal with two hands; the shoe has none", () => {
   const pinch = cardWishes("P4.C1", { grip: "PINCH" }).map((w) => w.step);
   const drag = cardWishes("P6.C1", { grip: "DRAG" }).map((w) => w.step);
-  assert.deepEqual(pinch, ["GIV-2.1", "RETUR-2.1", "RETUR-1"]);
-  assert.deepEqual(drag, ["GIV-2.2", "RETUR-2.2", "RETUR-1"]);
+  assert.deepEqual(pinch, ["GIV-2.1", "RETUR-2.1", "RETUR-1", "GIV-2.3"]);
+  assert.deepEqual(drag, ["GIV-2.2", "RETUR-2.2", "RETUR-1", "GIV-2.3"]);
+  assert.ok(OTHER_STEPS.includes("INGANG-2.3"), "the entry to anchor 2.3 is on the list of films without a card");
   assert.deepEqual(cardWishes(SHOE, { grip: "PINCH" }), []);
   // every film step of the model is offered somewhere in step 3
   const offered = new Set([...pinch, ...drag, ...OTHER_STEPS]);
@@ -82,44 +84,52 @@ const register = readMethods(JSON.parse(readFileSync(new URL("../../data/order-m
 test("a film in his notation", () => {
   assert.ok(register, "data/order-methods.json reads");
   const line = (step: string, target: string | null) => filmRow("paow", { step: step as never, target }, register, null).line;
-  assert.equal(line("GIV-2.1", "P4.C1"), "A2.1 → P4C1 → A2.1");
-  assert.equal(line("GIV-2.2", "P3.C2"), "A2.2 → P3C2 → A2.2");
+  // A deal is bara dit by its recipe: the notation says the anchor and the card, and the way back only where it is chosen.
+  assert.equal(line("GIV-2.1", "P4.C1"), "A2.1 → P4C1");
+  assert.equal(line("GIV-2.2", "P3.C2"), "A2.2 → P3C2");
+  assert.equal(line("GIV-2.3", "P4.C1"), "A2.3 → P4C1");
+  assert.equal(line("INGANG-2.3", null), "A1 → A2.3");
+  assert.equal(filmRow("paow", { step: "GIV-2.1", target: "P4.C1" }, register, null, { choice: { shape: "ROUND_TRIP" } }).line, "A2.1 → P4C1 → A2.1");
   assert.equal(line("RETUR-2.1", "P4.C1"), "P4C1 → A2.1");
   assert.equal(line("RETUR-1", "P4.C1"), "P4C1 → A1");
   assert.equal(line("INGANG-2.1", null), "A1 → A2.1");
   assert.equal(line("UTGANG-2.2", null), "A2.2 → A1");
 });
 
-test("the body sent for a film is the production list's own draft, without what the page cannot set", () => {
+test("the body sent for a film is the line: the dealer, the step and the card, as the production list drafts it", () => {
   assert.ok(register);
   const wishes = [...cardWishes("P4.C1", { grip: "PINCH" }), ...cardWishes("P6.C1", { grip: "DRAG" }), ...cardWishes("D.C1", { grip: "PINCH" }), ...otherWishes()];
   let compared = 0;
   for (const w of wishes) {
     const method = methodFor(register, w.step, w.target);
-    const body = orderBody("paow", w, method);
-    if (!method || method.status === "saknas" || method.reference !== "ingen") {
-      assert.equal(body, null, `${wishKey(w)}: no body without a whole method`);
-      continue;
-    }
-    // a method still being tried is ordered as the list's trial: one take (its title is the store's here)
+    const body = orderBody("paow", w);
+    assert.deepEqual(body, { dealer: "paow", step: w.step, ...(w.target ? { target: w.target } : {}) }, `${wishKey(w)}: nothing but the line`);
+    if (!method || method.status === "saknas") continue;
+    // the production list's draft for the same step is the same line, with its own notes, title and who made it
     const draft = draftOf({ dealer: { id: "paow", name: "Paow" } }, { label: "x", edge: "x" }, { step: w.step, target: w.target }, method as Method, null, method.status === "prov");
     const same = Object.fromEntries(Object.entries(draft).filter(([k]) => !["notes", "createdBy", "title"].includes(k)));
     assert.deepEqual(body, same, wishKey(w));
     compared++;
   }
-  assert.ok(compared >= 5);
+  assert.ok(compared >= 8);
 });
 
-test("a film's price is the method's model, seconds and takes at the policy's prices; the sum says what has none", () => {
+test("a film's price is the recipe's model, seconds and takes at the policy's prices; a film that cannot be ordered has none and says why", () => {
   assert.ok(register);
   const policy = JSON.parse(readFileSync(new URL("../../data/order-policy.json", import.meta.url), "utf8"));
-  const row = filmRow("paow", { step: "GIV-2.1", target: "P4.C1" }, register, policy);
-  const method = methodFor(register, "GIV-2.1", "P4.C1")!;
+  // The entry holds as a method and needs nothing but its anchors: the line can be ordered.
+  const row = filmRow("paow", { step: "INGANG-2.1", target: null }, register, policy);
+  const method = methodFor(register, "INGANG-2.1", null)!;
+  assert.deepEqual([row.why, row.body], [null, { dealer: "paow", step: "INGANG-2.1" }]);
   assert.ok(row.cost !== null && row.cost > 0);
-  assert.equal(row.recipe.startsWith(method.model === "kling-4" ? "Kling 4" : ""), true);
+  assert.equal(row.recipe.startsWith(method.model === "wan3" ? "WAN 3" : ""), true);
+  assert.deepEqual([row.resolved.model?.id, row.resolved.seconds, row.resolved.takes], [method.model, method.seconds, method.takes]);
+  // A return has no method yet: no default, no price, no body.
   const none = filmRow("paow", { step: "RETUR-2.1", target: "P4.C1" }, register, policy);
-  assert.equal(none.cost, null);
-  assert.equal(none.why, "ingen metod än");
+  assert.deepEqual([none.cost, none.body, none.why], [null, null, "ingen metod än"]);
+  // A deal bara dit to a seat without an end picture says so plainly, and is not sent.
+  const noEnd = filmRow("paow", { step: "GIV-2.1", target: "P4.C1" }, register, policy);
+  assert.deepEqual([noEnd.cost, noEnd.body, noEnd.why], [null, null, "ingen slutbild för platsen"]);
   assert.match(sumWords([row, none]), /^2 filmer · [\d  ]+ krediter · 1 utan pris$/);
   assert.equal(sumWords([]), "Inga filmer");
   assert.equal(stepOf("GIV-2.1")!.card, true);
@@ -127,46 +137,84 @@ test("a film's price is the method's model, seconds and takes at the policy's pr
 });
 
 // ── Step 3's choices, its reference film and what is sent ──
-test("his choices on a row go under the keys Ny beställning sends, and only those the routes take", () => {
+test("his exceptions on a row go under the keys the store reads, and only those the routes take; nothing chosen is the line alone", () => {
   assert.ok(register);
   const routes = readFileSync(new URL("../../tools/order-routes.ts", import.meta.url), "utf8");
   const allowed = JSON.parse(/const NEW_KEYS = (\[[^\]]+\])/.exec(routes)![1].replace(/'/g, '"')) as string[];
   const wish = { step: "GIV-2.1" as const, target: "P4.C1" };
-  const base = orderBody("paow", wish, methodFor(register, wish.step, wish.target));
-  const chosen = withChoice("paow", wish, base, { model: "wan3", duration: 6, takes: 2, style: "MINIMAL", shape: "ONE_WAY", hand: "PASS", side: "BACK", flipAxis: "LONG_EDGE", cardScale: 1.25, extra: " Slowly. " });
-  assert.ok(chosen);
-  for (const key of Object.keys(chosen!)) assert.ok(allowed.includes(key), `${key} tas inte av POST /api/orders`);
-  assert.equal(chosen!.model, "wan3");
-  assert.deepEqual([chosen!.hand, chosen!.pass, chosen!.side, chosen!.flipAxis, chosen!.extra], ["LH", true, "BACK", "LONG_EDGE", "Slowly."]);
-  // the step's own model is not named; nothing chosen is the method's body unchanged
-  assert.equal("model" in withChoice("paow", wish, base, { model: "kling-4" })!, false);
-  assert.deepEqual(withChoice("paow", wish, base, {}), base);
-  // no method and nothing chosen: nothing can be sent; a choice gives Ny beställning's defaults with it
+  const chosen = orderBody("paow", wish, { model: "wan3", duration: 6, takes: 2, style: "MINIMAL", shape: "ROUND_TRIP", reference: null, hand: "PASS", side: "BACK", flipAxis: "LONG_EDGE", cardScale: 1.25, extra: " Slowly. " })!;
+  for (const key of Object.keys(chosen)) assert.ok(allowed.includes(key), `${key} tas inte av POST /api/orders`);
+  assert.deepEqual([chosen.model, chosen.duration, chosen.takes, chosen.style, chosen.shape, chosen.reference], ["wan3", 6, 2, "MINIMAL", "ROUND_TRIP", null]);
+  assert.deepEqual([chosen.hand, chosen.pass, chosen.side, chosen.flipAxis, chosen.extra, chosen.cardScale], ["LH", true, "BACK", "LONG_EDGE", "Slowly.", 1.25]);
+  assert.deepEqual(orderBody("paow", wish, {}), { dealer: "paow", step: "GIV-2.1", target: "P4.C1" });
+  assert.equal("cardScale" in orderBody("paow", wish, { cardScale: 1 })!, false);
+  // a step without a method cannot be sent until the model and the length are said, as an exception
   const none = { step: "RETUR-1" as const, target: "P4.C1" };
-  assert.equal(withChoice("paow", none, orderBody("paow", none, methodFor(register, none.step, none.target)), {}), null);
-  assert.deepEqual(withChoice("paow", none, null, { takes: 1 }), { dealer: "paow", step: "RETUR-1", target: "P4.C1", duration: 3, takes: 1, style: "KORT", extra: null });
+  const landing = { id: "l", role: "landning", node: "LAND(P4.C1)", card: "P4.C1", state: "gäller", served: "assets/anchors/l/anchor.png" };
+  assert.equal(filmRow("paow", none, register, null, { entries: [landing] }).body, null);
+  assert.equal(filmRow("paow", none, register, null, { entries: [landing], choice: { model: "wan3" } }).why, "ingen metod än: säg längden");
+  assert.deepEqual(filmRow("paow", none, register, null, { entries: [landing], choice: { model: "wan3", duration: 3 } }).body, { dealer: "paow", step: "RETUR-1", target: "P4.C1", model: "wan3", duration: 3 });
+  assert.equal(filmRow("paow", none, register, null, { choice: { model: "wan3", duration: 3 } }).why, "ingen landningsbild gäller för platsen");
 });
 
-test("a method that wants a reference film takes the production list's: a straight-approved deal to the same seat", async () => {
-  const { readBank, straightReferences } = await import("../../tools/produce.ts");
-  const bank = await readBank(new URL("../../", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
-  for (const target of ["P1.C1", "P4.C1", "P6.C1", "D.C1"])
-    for (const dealer of ["paow", "pamela"]) assert.equal(straightReference(bank as never, dealer, "GIV-2.1", target, "kling-4")?.take ?? null, straightReferences(bank as never, dealer, "GIV-2.1", target, "kling-4")[0]?.take ?? null, `${dealer} ${target}`);
-  // the body carries it, and without one the method's model for that case (or nothing)
-  const method = { ...methodFor(register, "GIV-2.1", "P4.C1")!, reference: "samma-plats-rakt-godkänd" as const, noReferenceModel: "wan3" };
-  assert.equal(orderBody("paow", { step: "GIV-2.1", target: "P4.C1" }, method, "pamela-p4-c1-plan-deal-02")!.reference, "pamela-p4-c1-plan-deal-02");
-  assert.equal(orderBody("paow", { step: "GIV-2.1", target: "P4.C1" }, method, null)!.model, "wan3");
-  assert.equal(orderBody("paow", { step: "GIV-2.1", target: "P4.C1" }, { ...method, noReferenceModel: null }, null), null);
+test("the line as the store resolves it: the recipe, the reference film its rule finds, the film as long as the reference, the seat's own end picture", () => {
+  assert.ok(register);
+  const straight = { decision: "ACCEPTED", userAccepted: true, userReview: "Jakob 2026-11-13: bra" };
+  const trip = (clip: string, target: string, cut: number) => [{ id: `${clip}-deal`, from: "READY", to: target, clip, frames: [0, cut] as [number, number], dealer: "paow" }, { id: `${clip}-return`, from: target, to: "READY", clip, frames: [cut + 1, cut + 60] as [number, number], dealer: "paow" }];
+  const bank: BankFacts = {
+    jobs: [{ id: "pamela-p4-c1-plan-deal-02", from: "READY", to: "LAND(P4.C1)" }],
+    derived: [...trip("paow-giv-2-1-p4-04-01", "P4.C1", 108), ...trip("paow-giv-2-1-p1-06-01", "P1.C1", 112)],
+    motions: { "pamela-p4-c1-plan-deal-02": { source: { frames: 120, fps: 30 }, review: straight }, "paow-giv-2-1-p4-04-01-return": { review: straight }, "paow-giv-2-1-p1-06-01-return": { review: straight }, "paow-giv-2-1-p4-04-01": { source: { frames: 169, fps: 24 } } },
+  };
+  const of = (target: string, choice = {}, more: Partial<Parameters<typeof lineOf>[0]> = {}) => lineOf({ dealer: "paow", wish: { step: "GIV-2.1", target }, methods: register, bank, entries: [], plan: null, choice, ...more });
+  // Seat 4: Kling 4, bara dit, one take (a trial); Pamela's approved deal by rule, 4 s as that film; the cut frame of Paow's own film.
+  const p4 = of("P4.C1");
+  assert.deepEqual([p4.model?.id, p4.shape, p4.takes, p4.style, p4.flipAxis, p4.reference?.take, p4.seconds, p4.wanted, p4.why], ["kling-4", "ONE_WAY", 1, "KORT", "FREE", "pamela-p4-c1-plan-deal-02", 4, true, null]);
+  assert.deepEqual(p4.end && p4.end.kind === "SNITTRUTA" ? [p4.end.cut.clip, p4.end.cut.frame] : null, ["paow-giv-2-1-p4-04-01", 108]);
+  assert.equal(recipeFor(register, "GIV-2.1", "P4.C1")!.seconds, 3, "without a reference film the recipe's three seconds");
+  // The row for it: the line as body, a price, and the cut frame shown as the last picture.
+  const row = filmRow("paow", { step: "GIV-2.1", target: "P4.C1" }, register, JSON.parse(readFileSync(new URL("../../data/order-policy.json", import.meta.url), "utf8")), { bank });
+  assert.deepEqual([row.body, row.why, row.line, row.reference?.take], [{ dealer: "paow", step: "GIV-2.1", target: "P4.C1" }, null, "A2.1 → P4C1", "pamela-p4-c1-plan-deal-02"]);
+  assert.ok(row.cost !== null && row.cost > 0);
+  const anchor = { id: "a21", role: "ankare-2.1", node: "READY", state: "gäller", served: "assets/anchors/a21/anchor.png", name: "Nyp" };
+  const sent = sendsOf({ dealer: { id: "paow", name: "Paow", look: "x" }, wish: row.wish, line: row.resolved, entries: [anchor], plan: null, bank })!;
+  assert.deepEqual([sent.first.entry?.id, sent.last.entry?.served, sent.last.entry?.frame, sent.last.entry?.fps, sent.last.name, sent.drawn], ["a21", "assets/motions/paow-giv-2-1-p4-04-01/source.mp4", 108, 24, "Sista bild · platsens slutbild: ruta 108 ur paow-giv-2-1-p4-04-01", false]);
+  assert.deepEqual([sent.model, sent.seconds, sent.takes, sent.resolution], ["Kling 4", 4, 1, "1080p"]);
+  assert.match(sent.prompt!.text, /^Locked camera, one continuous shot\. Video 1 shows only the movement/);
+  // Seat 1 has its own end picture, but its recipe takes only the dummy's film, and there is none: it waits.
+  const p1 = of("P1.C1");
+  assert.deepEqual([p1.end?.kind, p1.reference, p1.why], ["SNITTRUTA", null, "väntar på dockans film till platsen"]);
+  // Seat 5 has no end picture of its own: said plainly, before anything about the reference film.
+  assert.equal(of("P5.C1").why, "ingen slutbild för platsen");
+  // A landing picture for the seat comes before the cut frame, and one seat's picture is never another seat's.
+  const landing = { id: "paow-landning-p5", role: "landning", node: "LAND(P5.C1)", card: "P5.C1", state: "gäller", served: "assets/anchors/x/anchor.png" };
+  assert.equal(of("P5.C1", {}, { entries: [landing] }).end?.kind, "LANDNING");
+  assert.equal(of("P4.C1", {}, { entries: [landing] }).end?.kind, "SNITTRUTA");
+  assert.equal(of("P6.C1", {}, { entries: [landing] }).end, null);
+  // A handbyte (his exception, or the plan's): the hand at the card is the right one, and no cut frame or reference shows that.
+  assert.equal(of("P4.C1", { hand: "PASS" }).why, "ingen slutbild för platsen med höger hand vid kortet");
+  // His exceptions: no reference film (then the recipe's 3 s), another film, another model, tur och retur.
+  assert.deepEqual([of("P4.C1", { reference: null }).reference, of("P4.C1", { reference: null }).seconds, of("P4.C1", { reference: null }).why], [null, 3, null]);
+  assert.deepEqual([of("P4.C1", { model: "wan3" }).model?.id, of("P4.C1", { model: "wan3" }).reference, of("P4.C1", { model: "wan3" }).why], ["wan3", null, null]);
+  const round = of("P5.C1", { shape: "ROUND_TRIP", reference: null });
+  assert.deepEqual([round.shape, round.end, round.why], ["ROUND_TRIP", null, null]);
+  // The dummy's film for the seat comes first where the rule takes it.
+  const docka = { ...bank, rendered: [{ id: "docka-giv-p4-4", edge: "READY>P4.C1", path: "assets/references/docka/docka-giv-p4-4/source.mp4", sha256: "a".repeat(64), seconds: 3.967 }] };
+  assert.deepEqual([of("P4.C1", {}, { bank: docka }).reference?.take, of("P4.C1", {}, { bank: docka }).seconds], ["docka-giv-p4-4", 4]);
+  assert.equal(referenceName({ dealer: "docka", edge: "READY>P4.C1", goesTo: "P4.C1" }, {}), "Dockans giv till plats 4");
   assert.equal(referenceName({ dealer: "pamela", edge: "READY>P4.C1", goesTo: "P4.C1" }, { pamela: "Pamela" }), "Pamelas giv till plats 4");
+  assert.equal(referenceName({ dealer: "pamela", edge: "DRAWN>LAND(P4.C1)", goesTo: "P4.C1" }, { pamela: "Pamela" }), "Pamelas giv till plats 4");
   assert.equal(referenceName({ dealer: "paow", edge: "P2.C1>READY", goesTo: "P2.C1" }, { paow: "Paow" }), "Paows retur från plats 2");
 });
 
-test("what is sent for a row: the anchor first, the anchor with the plan's card last, the text, model, length, takes", () => {
+test("what is sent for a round trip (an exception): the anchor first, the anchor with the plan's card last, the text, model, length, takes", () => {
   const anchor = { id: "a21", role: "ankare-2.1", node: "READY", state: "gäller", served: "assets/anchors/a21/anchor.png", name: "Nyp" };
   const quad: [number, number][] = [[800, 1060], [900, 1060], [905, 1130], [795, 1130]];
   const seat = { target: "P4.C1", centre: [850, 1095] as [number, number], quad, side: "FRONT" as const, startSide: "BACK" as const, hand: "LH" as const, pass: false, grip: "PINCH" as const, turnAt: "AIR" as const, flipAxis: "FREE" as const, crosses: false };
-  const body = { dealer: "paow", step: "GIV-2.1" as const, target: "P4.C1", takes: 1, style: "KORT" as const, duration: 7, shape: "ROUND_TRIP" as const, extra: null };
-  const s = sendsOf({ dealer: { id: "paow", name: "Paow", look: "a young woman" }, body, entries: [anchor], plan: { seats: { "P4.C1": seat } } })!;
+  const wish = { step: "GIV-2.1" as const, target: "P4.C1" }, plan = { seats: { "P4.C1": seat } };
+  const choice = { shape: "ROUND_TRIP" as const, reference: null, duration: 7 };
+  const line = lineOf({ dealer: "paow", wish, methods: register, bank: null, entries: [anchor], plan, choice });
+  const s = sendsOf({ dealer: { id: "paow", name: "Paow", look: "a young woman" }, wish, line, choice, entries: [anchor], plan })!;
   assert.equal(s.first.entry?.id, "a21");
   assert.equal(s.last.entry?.id, "a21");
   assert.equal(s.drawn, true);
@@ -175,10 +223,11 @@ test("what is sent for a row: the anchor first, the anchor with the plan's card 
   assert.equal(s.seconds, 7);
   assert.equal(s.takes, 1);
   assert.ok(s.prompt && s.prompt.text.length > 100);
-  // bara dit: the last picture is the landing picture, nothing drawn
-  const oneWay = sendsOf({ dealer: { id: "paow", name: "Paow", look: "x" }, body: { ...body, shape: "ONE_WAY" }, entries: [anchor], plan: { seats: { "P4.C1": seat } } })!;
+  // bara dit (the recipe) to a seat without an end picture: the last picture says so, nothing is drawn
+  const bare = lineOf({ dealer: "paow", wish, methods: register, bank: null, entries: [anchor], plan });
+  const oneWay = sendsOf({ dealer: { id: "paow", name: "Paow", look: "x" }, wish, line: bare, entries: [anchor], plan })!;
   assert.equal(oneWay.drawn, false);
-  assert.equal(oneWay.last.waiting, "landningsbilden");
+  assert.deepEqual([oneWay.last.waiting, oneWay.last.name], ["platsens slutbild", "Sista bild · plats 4 har ingen slutbild"]);
 });
 
 test("Beställ's old address leads to Bordet's Beställ with its words", () => {

@@ -12,7 +12,7 @@ import { nodeCode } from "./names.ts";
 import { GRIP_LABEL } from "./placement.ts";
 import {
   ANCHOR_NODE, ANCHOR_ROLE, FLIP_LABEL, defaultFlip, HAND_LABEL, LANDS_LABEL, REF_VERDICT_LABEL, STYLE_LABEL, genitive, MODELS, SEAT_TARGETS, SHOWN_LABEL, STEPS, credits, cutIntoOf, edgeOf, handChoiceOf, plannedDiffers, requestOf, seatList, seatWords, secondsWords, stepOf, styleOf, summaryOf, waitWords,
-  type FlipAxis, type HandChoice, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type SeatPlan, type Shape, type Shown, type StepDef, type StepKey, type TextStyle,
+  type Anchor, type FlipAxis, type Grip, type HandChoice, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type SeatPlan, type Shape, type Shown, type StepDef, type StepKey, type TextStyle,
 } from "../../src/order-model.ts";
 import { orderPrompt, wordCount, type Choice, type Part } from "../../src/order-prompts.ts";
 
@@ -48,7 +48,7 @@ const send = (method: string, body: unknown, revision?: string): RequestInit => 
 
 export const getOrders = () => call<OrdersAnswer>("api/orders", "Beställningarna");
 /** One seat of a new deal with its own choices ("Alla sju" sends seven). */
-export type SeatInput = { target: string; hand: "LH" | "RH"; pass: boolean; side: "FRONT" | "BACK" };
+export type SeatInput = { target: string; hand?: "LH" | "RH"; pass?: boolean; side?: "FRONT" | "BACK" };
 export type NewOrderInput = {
   dealer: string;
   step: StepKey;
@@ -58,13 +58,16 @@ export type NewOrderInput = {
   side?: "FRONT" | "BACK";
   seats?: SeatInput[];
   flipAxis?: FlipAxis;
-  /** Sent only when it is not the step's own model, so that a server from before the choice still takes the rest. */
+  /** Sent only when it is not the recipe's model (an exception). */
   model?: string;
   duration?: number;
   takes?: number;
   extra?: string | null;
   base?: string;
-  /** The text's style; tur och retur or bara dit for a deal; a reference film (the bank's take) for a model that takes one. */
+  /**
+   * Exceptions from the step's recipe (the store fills in whatever is not said): the text's style; tur och retur for a deal;
+   * a reference film named outright, or null for none (absent: the one the recipe's rule finds).
+   */
   style?: TextStyle;
   shape?: Shape;
   reference?: string | null;
@@ -191,7 +194,7 @@ export function sections(orders: readonly OrderAnswer[]): Section[] {
 }
 
 /** A dealer's anchor for a new order: the picture that holds, else its candidates (the order then says it is one). */
-export function anchorFor<E extends { role: string; state?: string; node?: string; card?: string; served: string | null }>(entries: readonly E[], at: "1" | "2.1" | "2.2"): { holds: E | null; candidates: E[] } {
+export function anchorFor<E extends { role: string; state?: string; node?: string; card?: string; served: string | null }>(entries: readonly E[], at: Anchor): { holds: E | null; candidates: E[] } {
   const role = ANCHOR_ROLE[at], node = ANCHOR_NODE[at];
   const mine = entries.filter((e) => e.role === role && e.node === node && !e.card && e.served);
   return { holds: mine.find((e) => e.state === "gäller") ?? null, candidates: mine.filter((e) => e.state === "kandidat") };
@@ -226,7 +229,9 @@ export const SECOND_CARD_WORDS = "I rundan spelar kort 2 i dag kort 1:s film. En
 
 // ── What is ordered, in his notation ────────────────────────────────────────
 /** Where the hand goes back to, in the model's words (the returns' labels "Tillbaka till nypet (2.1)", "… över skon (2.2)"). */
-const BACK_TO: Record<"1" | "2.1" | "2.2", string> = { "1": "till vila", "2.1": "till nypet", "2.2": "över skon" };
+const BACK_TO: Record<Anchor, string> = { "1": "till vila", "2.1": "till nypet", "2.2": "över skon", "2.3": "till skon" };
+/** A deal's grip as the studio names it: the plan's two (lib/placement.ts), and the two hands of anchor 2.3. */
+const gripLabel = (grip: Grip): string => (grip === "TWO_HANDS" ? "A2.3 två händer" : GRIP_LABEL[grip]);
 const split = (edge: string): [string, string] => [edge.slice(0, edge.indexOf(">")), edge.slice(edge.indexOf(">") + 1)];
 export type Route = { nodes: string[]; line: string; sentence: string };
 /**
@@ -253,8 +258,18 @@ export function routeOf(step: StepDef, targets: readonly string[], shape: Shape 
   const seat = many ? `var och en av ${seatList(targets)}` : seatWords(target);
   const back = BACK_TO[step.to ?? step.from];
   if (step.start === "LAND") return { nodes, line, sentence: `Tillbaka ${back}, från kortet på ${seat}.` };
-  const grip = step.grip === "DRAG" ? "Släp" : "Nyp";
-  return { nodes, line, sentence: shape === "ONE_WAY" ? `${grip}: ett kort till ${seat}, bara dit.` : `${grip}: ett kort till ${seat}, och tillbaka ${back}.` };
+  const grip = step.grip === "DRAG" ? "Släp" : step.grip === "TWO_HANDS" ? "Två händer" : "Nyp";
+  return { nodes, line, sentence: shape === "ROUND_TRIP" ? `${grip}: ett kort till ${seat}, och tillbaka ${back}.` : `${grip}: ett kort till ${seat}, bara dit.` };
+}
+
+/**
+ * A stored order in his notation, "A2.1 → P4C1" (a still: "A1 → bild A2.2"): what it goes between, shown on the order's card
+ * and at the top of "Det här skickas" in place of its stored summary, which for an order made before 2026-11-18 describes the
+ * movement in words that were never sent. Null for an order whose step is unknown.
+ */
+export function orderLine(order: Pick<Order, "step" | "motion">): string | null {
+  const step = stepOf(order.step.key);
+  return step ? routeOf(step, order.motion?.target ? [order.motion.target] : [], order.step.shape, "").line : null;
 }
 
 // ── A seat's turn, and the card's part of a new order ───────────────────────
@@ -357,7 +372,7 @@ export function motionWords(order: Pick<Order, "motion"> & { step?: Pick<Order["
 export function gripAgainstPlan(step: Pick<StepDef, "grip" | "card" | "start">, seats: readonly (Pick<SeatPlan, "target" | "grip"> | null | undefined)[]): string | null {
   if (!step.card || !step.grip || step.start === "LAND") return null;
   const differ = seats.filter((s): s is Pick<SeatPlan, "target" | "grip"> => !!s && s.grip !== step.grip);
-  return differ.length ? `Placering säger ${GRIP_LABEL[differ[0].grip]} för ${seatList(differ.map((s) => s.target))}; steget är ${GRIP_LABEL[step.grip]}.` : null;
+  return differ.length ? `Placering säger ${GRIP_LABEL[differ[0].grip]} för ${seatList(differ.map((s) => s.target))}; steget är ${gripLabel(step.grip)}.` : null;
 }
 /** A stored deal against what Placering said for its card when the draft was made (Motion.planned): the grip, then the turn. */
 export function plannedWords(order: Pick<Order, "motion">): string[] {
@@ -365,7 +380,7 @@ export function plannedWords(order: Pick<Order, "motion">): string[] {
   if (!m?.planned) return [];
   const differ = plannedDiffers(m, m.planned), seat = seatWords(m.target);
   return [
-    ...(differ.includes("grip") ? [`Placering sa ${GRIP_LABEL[m.planned.grip]} för ${seat}; steget är ${GRIP_LABEL[m.grip]}.`] : []),
+    ...(differ.includes("grip") ? [`Placering sa ${GRIP_LABEL[m.planned.grip]} för ${seat}; steget är ${gripLabel(m.grip)}.`] : []),
     ...(differ.includes("turn") && m.planned.flipAxis && m.flipAxis ? [`Placering sa ”${FLIP_LABEL[m.planned.flipAxis]}” för ${seat}; utkastet säger ”${FLIP_LABEL[m.flipAxis]}”.`] : []),
   ];
 }

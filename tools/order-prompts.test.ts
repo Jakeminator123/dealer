@@ -44,7 +44,7 @@ test('every Utförlig text ends with what must not happen, a short or minimal on
       assert.doesNotMatch(text, /blonde|blazer|black blazer|young/, `${at}: nothing of her look`);
     }
   }
-  assert.equal(TEMPLATE_VERSION, 10);
+  assert.equal(TEMPLATE_VERSION, 11);
   assert.equal(LONG_VERSION, 3);
   for (const ban of ['a second card', 'a finger passes through the card', 'grows or shrinks', 'hovers in the air', 'the picture cuts']) assert.ok(BANS_FILM.includes(ban), ban);
   assert.equal(bansFor(null), BANS_FILM, 'without a motion the bans are the film bans');
@@ -610,7 +610,9 @@ test('template 10: an open deal is written as the reference-film trials sent it,
   // Trial 2A (D:/dealer-scratch/tmp/giv-experiment-2, text A): the drag from anchor 2.2 to seat 4, turned close to the place.
   const trial2A = "Locked camera, one continuous shot. Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing. Her hand at the shoe slides the yellow card out of the window and drags it flat along the felt under her fingertips, its broad yellow side up, towards its place in the middle of the picture, where the last frame shows it. Close to its place her thumb and fingers take the card at its edge, her wrist rolls once and her hand and the card turn over together about the card's long side, like turning a key: the broad yellow side narrows to a thin edge, then the broad blue side opens towards the camera. With her hand still turned and the same hold, she lays the card flat at its place, blue side up, and her fingertips come to rest on it, as in the last frame. The other hand rests on the felt. Only one card moves: a small card, about half as long as her hand, which keeps the size it has in the last frame all the way from the shoe to its place. It is blank, solid yellow on one side and solid blue on the other, each colour reaching right out to its corners, and the next card in the window is the same blank yellow.";
   const one = open('PINCH', 'FREE', { oneWay: true, reference: true });
-  assert.deepEqual([one.text, one.template], [trial1, 'film-giv-kort@10']);
+  // Template 11 keeps these words (tools/order-line.test.ts holds every deal by the hand at the shoe against template 10).
+  assert.deepEqual([one.text, one.template], [trial1, 'film-giv-kort@11']);
+  assert.deepEqual([open('PINCH', 'FREE', { oneWay: true, reference: true, version: 10 }).text, open('PINCH', 'FREE', { oneWay: true, reference: true, version: 10 }).template], [trial1, 'film-giv-kort@10']);
   assert.equal(open('DRAG', 'AT_PLACE', { oneWay: true, reference: true }).text, trial2A);
   // FREE and LONG_EDGE write the same key turn (Jakob: both are valid, the wrist turns and yellow goes to blue).
   assert.equal(open('PINCH', 'LONG_EDGE', { oneWay: true, reference: true }).text, trial1);
@@ -633,8 +635,10 @@ test('template 10: an open deal is written as the reference-film trials sent it,
   // Untried with 10, so as template 9 wrote them: a closed deal, the right hand, handbyte.
   for (const m of [{ side: 'BACK' as const, turn: false, flipAxis: null }, { hand: 'RH' as const }, { pass: true }]) {
     const motion: DealMotion = { grip: 'PINCH', hand: 'LH', pass: false, turn: true, flipAxis: 'FREE', side: 'FRONT', ...m };
-    const ten = promptFor({ dealer, step: 'GIV-2.1', model: 'kling-4', motion, style: 'KORT' }), nine = promptFor({ dealer, step: 'GIV-2.1', model: 'kling-4', motion, style: 'KORT', version: 9 });
+    const ten = promptFor({ dealer, step: 'GIV-2.1', model: 'kling-4', motion, style: 'KORT', version: 10 }), nine = promptFor({ dealer, step: 'GIV-2.1', model: 'kling-4', motion, style: 'KORT', version: 9 });
     assert.equal(ten.text, nine.text, JSON.stringify(m));
+    // Tur och retur is as 10 wrote it in template 11 too; only a deal bara dit changed there (its end said once).
+    assert.equal(promptFor({ dealer, step: 'GIV-2.1', model: 'kling-4', motion, style: 'KORT' }).text, ten.text, JSON.stringify(m));
   }
   // An order stored with template 9 is reproduced with template 9's words (the loop over data/orders above checks them all).
   const { dealers } = JSON.parse(await readFile('data/dealers.json', 'utf8'));

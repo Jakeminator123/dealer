@@ -16,7 +16,7 @@ async function approved(t: { after(fn: () => Promise<void>): void }) {
   const root = await mkdtemp(path.join(base, 'order-put-'));
   t.after(() => rm(root, { recursive: true, force: true }));
   for (const dir of ['data', 'placements', 'assets/anchors/a', 'assets/anchors/b']) await mkdir(path.join(root, dir), { recursive: true });
-  for (const file of ['data/order-policy.json', 'data/dealers.json', 'placements/default.json']) await copyFile(file, path.join(root, file));
+  for (const file of ['data/order-policy.json', 'data/dealers.json', 'data/order-methods.json', 'placements/default.json']) await copyFile(file, path.join(root, file));
   const png = await sharp({ create: { width: 1764, height: 1174, channels: 3, background: { r: 0, g: 237, b: 44 } } }).png().toBuffer();
   await writeFile(path.join(root, 'assets/anchors/a/anchor.png'), png);
   await writeFile(path.join(root, 'assets/anchors/b/anchor.png'), png);
@@ -26,7 +26,7 @@ async function approved(t: { after(fn: () => Promise<void>): void }) {
     paow: { name: 'Paow', entries: [{ id: 'paow-vila', role: 'ankare-1', name: 'Vila', path: 'assets/anchors/a/anchor.png', node: 'IDLE', state: 'gäller' }] },
   } }));
   const store = orderStore(root);
-  const draft = await store.create({ dealer: 'paow', step: 'ANKARE-2.1', id: 'prov-ett', pose: { entry: 'pamela-nyp', keep: ARM_AT_SHOE, what: POSE_WHAT } });
+  const draft = await store.create({ dealer: 'paow', step: 'ANKARE-2.1', takes: 2, id: 'prov-ett', pose: { entry: 'pamela-nyp', keep: ARM_AT_SHOE, what: POSE_WHAT } });
   const r = receipts(root, { now: () => new Date('2026-11-12T22:00:00Z') });
   await assert.rejects(r.begin('prov-ett', 1), /inte godkänd/);
   await store.approve('prov-ett', draft.revision);
@@ -102,7 +102,7 @@ test('nothing is placed for an order that changed after approval or whose pictur
 test('the main agent approves on Jakob\'s mandate with the same checks; check takes it only with the mandate; a draft can be set aside', async (t) => {
   const { root, store } = await approved(t);
   const { approveCommand } = await import('./order-approve.ts');
-  const draft = await store.create({ dealer: 'paow', step: 'ANKARE-2.1', id: 'prov-tva', pose: { entry: 'pamela-nyp', keep: ARM_AT_SHOE, what: POSE_WHAT } });
+  const draft = await store.create({ dealer: 'paow', step: 'ANKARE-2.1', takes: 2, id: 'prov-tva', pose: { entry: 'pamela-nyp', keep: ARM_AT_SHOE, what: POSE_WHAT } });
   await assert.rejects(approveCommand(root, ['prov-tva', '--mandate', ' ']), /Använd/);
   const out = await approveCommand(root, ['prov-tva', '--mandate', 'Jakob 2026-11-13: beställ lämpliga filmer automatiskt utan mitt godkännande'], { now: () => new Date('2026-11-12T22:00:00Z') });
   const approval = out.approval as { by: string; mandate: string; orderSha256: string };
@@ -121,7 +121,7 @@ test('the main agent approves on Jakob\'s mandate with the same checks; check ta
   await assert.rejects(r.check('prov-tva'), /uppdrag/);
   await assert.rejects(r.begin('prov-tva', 1), /uppdrag/);
   // Set aside with why: AVBRUTEN, the reason kept; an approved order cannot be set aside.
-  await store.create({ dealer: 'paow', step: 'ANKARE-2.1', id: 'prov-tre', pose: { entry: 'pamela-nyp', keep: ARM_AT_SHOE, what: POSE_WHAT } });
+  await store.create({ dealer: 'paow', step: 'ANKARE-2.1', takes: 2, id: 'prov-tre', pose: { entry: 'pamela-nyp', keep: ARM_AT_SHOE, what: POSE_WHAT } });
   const aside = await approveCommand(root, ['prov-tre', '--set-aside', 'Långa textens metodprov körs inte (huvudagenten 2026-11-13).']);
   assert.equal(aside.status, 'AVBRUTEN');
   assert.match(String((aside.setAside as { why: string }).why), /körs inte/);

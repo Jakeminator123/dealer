@@ -11,8 +11,8 @@
     { "model": "kling-4", "resolution": "1080p", "perSecond": 21.3, "listedPerSecond": 23.5, "source": "Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12." },
     { "model": "kling-4", "resolution": "720p", "perSecond": 15.7, "listedPerSecond": 15.7, "source": "Listpris i verktyget generate_video 2026-11-12; inte mätt i någon liggare." },
     { "model": "kling-3-4k", "resolution": "4k", "perSecond": 43, "listedPerSecond": 43, "source": "Runways API-prislista: kling3.0_4k 43 krediter per s, med eller utan ljud (https://docs.dev.runwayml.com/guides/pricing/, läst 2026-11-13); inte mätt i någon liggare, så det är listpriset och värsta fallet." },
-    { "model": "wan3", "resolution": "1080p", "perSecond": 20, "source": "DRIFT, Lärdomar: 20 per s i full storlek; planen: 4 s = 80." },
-    { "model": "wan3", "resolution": "480p", "perSecond": 5, "source": "DRIFT, Lärdomar: auto_480p kostar 5 per s." },
+    { "model": "wan3", "resolution": "1080p", "perSecond": 20, "source": "DRIFT, Lärdomar som gäller, som sidan stod till commit f6f68ef (git show f6f68ef:docs/DRIFT.md): 20 per s i full storlek; en ingång på 4 s kostade 80 (handboken, tools/film-prompting.md §5)." },
+    { "model": "wan3", "resolution": "480p", "perSecond": 5, "source": "DRIFT, Lärdomar som gäller, som sidan stod till commit f6f68ef (git show f6f68ef:docs/DRIFT.md): auto_480p kostar 5 per s." },
     { "model": "nano-banana-pro", "imageSize": "2K", "perImage": 20, "source": "LASMIG: Nano Banana Pro 20 krediter per bild i 2K." },
     { "model": "nano-banana-pro", "imageSize": "4K", "perImage": 40, "source": "LASMIG: Nano Banana Pro 40 krediter per bild i 4K." }
   ]

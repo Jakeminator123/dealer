@@ -3,8 +3,10 @@
 // "Det här skickas" for one film of Bordet's list, in one glance (Jakob 2026-11-17: "Vad är det som skickas till Runway?"):
 // exactly what goes and nothing else. Before a draft exists: the first picture, the last picture (the anchor with the card
 // drawn where the plan lays it, marked so), the reference film by whose film it is or "ingen referensfilm", the text word for
-// word (promptFor, the function the store writes the draft's text with) and model, length and takes; under it the choices
-// Ny beställning has, in his words only (no descriptions that never go to Runway). After the draft is made: the same from the
+// word (promptFor, the function the store writes the draft's text with) and model, length and takes: all of it the step's one
+// recipe as the store will resolve it (lib/bordet.ts lineOf). Under it, folded, the exceptions he can make against the recipe,
+// by name only (no descriptions that never go to Runway); how the card turns is not among them: the recipe says it (Jakob
+// 2026-11-18: "litew skitsamma vilken vridning som gjörs", as long as every turn is a good one). After the draft is made: the same from the
 // stored order (its pictures, its reference film, its text, the call's values), and the way to its "Det här skickas" with
 // the approval. No card path and no JSON of the plan is ever sent.
 // Granska filmen (the sketch's step 4): where the film has been ordered before, its last order with the takes that came of
@@ -14,8 +16,8 @@ import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import {
-  CARD_SCALES, FLIP_AXES, HAND_CHOICES, HAND_LABEL, LANDS_LABEL, MODELS, SHAPE_LABEL, STYLE_LABEL, TAKES_MAX, credits, defaultFlip, handChoiceOf, lengthFor, modelsFor, referenceCandidates, scaleWords, stepOf, stylesFor,
-  type BankFacts, type FlipAxis, type PlanAnswer, type RefCandidate,
+  CARD_SCALES, HAND_CHOICES, HAND_LABEL, LANDS_LABEL, SHAPE_LABEL, STYLE_LABEL, TAKES_MAX, credits, handChoiceOf, modelsFor, referenceCandidates, scaleWords, stepOf, stylesFor,
+  type BankFacts, type PlanAnswer, type RefCandidate,
 } from "../../../src/order-model.ts";
 import { referenceName, type FilmRow, type RowChoice, type Sends } from "../../lib/bordet.ts";
 import { labUrl } from "../../lib/lab.ts";
@@ -25,8 +27,6 @@ import { PictureCard, PreviewPicture, StatusChip } from "../order/Pictures";
 import { PromptText } from "../order/PromptText";
 import { Badge, SegmentedControl, Select, TextArea, buttonClasses, cn } from "../ui";
 
-/** The turn in his words (docs/BESKED.md, "Filmerna och given"): Handleden, Långsidan, Vid platsen. */
-const FLIP_WORD: Record<FlipAxis, string> = { FREE: "Handleden", LONG_EDGE: "Långsidan", AT_PLACE: "Vid platsen" };
 const served = (e: Sends["first"]["entry"]) => (e?.served && !e.served.endsWith(".mp4") ? labUrl(e.served) : null);
 const frameOf = (e: Sends["first"]["entry"]) => (e?.served?.endsWith(".mp4") && e.frame !== undefined ? { video: labUrl(e.served), time: (e.frame + 0.5) / (e.fps ?? 24) } : null);
 
@@ -44,7 +44,7 @@ function Part({ title, aside, children }: { title: string; aside?: ReactNode; ch
 
 /** The reference film that goes, by whose film it is, with the film itself; or "ingen referensfilm". */
 function Reference({ film, wanted, names }: { film: { path: string; dealer: string; edge: string; goesTo: string | null } | null; wanted: boolean; names: Record<string, string> }) {
-  if (!film) return <p className={cn("text-sm", wanted ? "text-[#f0b07a]" : "text-dim")}>{wanted ? "Metoden vill ha en referensfilm, och ingen rakt godkänd finns till platsen." : "Ingen referensfilm"}</p>;
+  if (!film) return <p className={cn("text-sm", wanted ? "text-[#f0b07a]" : "text-dim")}>{wanted ? "Receptet vill ha en referensfilm, och ingen finns till platsen: inget beställs utan den." : "Ingen referensfilm"}</p>;
   return (
     <div className="flex flex-col gap-1.5">
       <p data-reference className="text-sm font-medium text-ink">
@@ -74,15 +74,15 @@ export function RowSends({
 }) {
   if (made && all) return <DraftSends answer={made} all={all} names={names} takes={last?.answer.order.id === made.order.id ? last.takes : []} />;
   const step = stepOf(row.wish.step)!;
-  const body = row.body;
-  const model = body ? (MODELS[body.model ?? step.model] ?? MODELS[step.model]) : MODELS[step.model];
+  // What the store will resolve for the row: the recipe, with his exceptions over it.
+  const line = row.resolved;
+  const model = line.model;
   const seat = row.wish.target ? (plan?.seats[row.wish.target] ?? null) : null;
   const deal = step.card && step.start !== "LAND";
-  const durations = model.durations ? Array.from({ length: Math.min(model.durations[1], 10) - model.durations[0] + 1 }, (_, i) => model.durations![0] + i) : [];
-  const candidates: RefCandidate[] = model.videos && bank ? referenceCandidates(bank, { dealer, step, target: row.wish.target, model }).filter((c) => c.fits) : [];
-  const side = body?.side ?? seat?.side ?? "FRONT";
-  const hand = body?.hand ? handChoiceOf({ hand: body.hand, pass: body.pass }) : seat ? handChoiceOf({ hand: seat.hand, pass: seat.pass }) : "LH";
-  const flip: FlipAxis = body?.flipAxis ?? defaultFlip(row.wish.step, seat?.turnAt, seat?.flipAxis);
+  const durations = model?.durations ? Array.from({ length: Math.min(model.durations[1], 10) - model.durations[0] + 1 }, (_, i) => model.durations![0] + i) : [];
+  const candidates: RefCandidate[] = model?.videos && bank ? referenceCandidates(bank, { dealer, step, target: row.wish.target, model }).filter((c) => c.fits) : [];
+  const side = line.side;
+  const hand = handChoiceOf(line.hands);
   // the pictures are the dealer's own: her anchors (a picture of another dealer never goes in a draft)
   const own = { dealer, name: names[dealer] ?? dealer, part: "whole" as const };
   return (
@@ -91,10 +91,15 @@ export function RowSends({
         <h2 className="font-mono text-md font-semibold text-ink">{row.line}</h2>
         {row.chosen ? (
           <button type="button" onClick={() => onChoice(null)} className="ml-auto text-xs text-dim hover:text-ink hover:underline">
-            Tillbaka till metoden
+            Tillbaka till receptet
           </button>
         ) : null}
       </div>
+      {row.why ? (
+        <p data-why className="rounded-sm bg-[#3a2a1a] px-2.5 py-1.5 text-sm text-[#f0b07a]">
+          Kan inte beställas än: {row.why}.
+        </p>
+      ) : null}
       {sends ? (
         <>
           <div className="grid grid-cols-2 gap-2">
@@ -114,8 +119,8 @@ export function RowSends({
             {row.cost !== null ? ` · ${credits(row.cost)} krediter` : ""}
           </p>
         </>
-      ) : (
-        <p className="text-sm text-dim">{row.why ?? "Inget skickas för den här."}</p>
+      ) : row.why ? null : (
+        <p className="text-sm text-dim">Inget skickas för den här.</p>
       )}
       {last && all ? (
         <details data-last={last.answer.order.id} className="rounded-md border border-line px-3 py-2" open={last.takes.some((t) => !!t.see.film)}>
@@ -128,56 +133,59 @@ export function RowSends({
           </div>
         </details>
       ) : null}
-      <details className="rounded-md border border-line px-3 py-2" open={row.chosen}>
-        <summary className="cursor-pointer text-sm text-ink">Ändra</summary>
+      <details data-exceptions className="rounded-md border border-line px-3 py-2" open={row.chosen}>
+        <summary className="cursor-pointer text-sm text-ink">
+          Receptet <span className="text-xs text-dim">· {row.recipe}</span>
+          <span className="ml-2 text-xs text-brass-hi">{row.chosen ? "undantag gjort" : "gör ett undantag"}</span>
+        </summary>
         <div className="mt-3 flex flex-col gap-3 text-sm">
           <Row label="Modell">
-            <SegmentedControl size="sm" label="Modell" className="max-w-full flex-wrap" value={model.id} onChange={(id) => onChoice({ model: id })} options={modelsFor(step).filter((m) => !m.off).map((m) => ({ value: m.id, label: m.label }))} />
+            <SegmentedControl size="sm" label="Modell" className="max-w-full flex-wrap" value={model?.id ?? ""} onChange={(id) => onChoice({ model: id })} options={modelsFor(step).filter((m) => !m.off).map((m) => ({ value: m.id, label: m.label }))} />
           </Row>
           {durations.length ? (
             <Row label="Längd">
-              <SegmentedControl size="sm" label="Längd" className="max-w-full flex-wrap" value={lengthFor(model, body?.duration ?? step.duration ?? 4)} onChange={(d) => onChoice({ duration: d })} options={durations.map((d) => ({ value: d, label: `${d}` }))} />
+              <SegmentedControl size="sm" label="Längd" className="max-w-full flex-wrap" value={line.seconds ?? 0} onChange={(d) => onChoice({ duration: d })} options={durations.map((d) => ({ value: d, label: `${d}` }))} />
             </Row>
           ) : null}
           <Row label="Tagningar">
-            <SegmentedControl size="sm" label="Tagningar" value={body?.takes ?? 2} onChange={(n) => onChoice({ takes: n })} options={Array.from({ length: TAKES_MAX }, (_, i) => ({ value: i + 1, label: String(i + 1) }))} />
+            <SegmentedControl size="sm" label="Tagningar" value={line.takes} onChange={(n) => onChoice({ takes: n })} options={Array.from({ length: TAKES_MAX }, (_, i) => ({ value: i + 1, label: String(i + 1) }))} />
           </Row>
           {stylesFor(step.kind, step).length > 1 ? (
             <Row label="Text">
-              <SegmentedControl size="sm" label="Text" value={body?.style ?? "KORT"} onChange={(s) => onChoice({ style: s })} options={stylesFor(step.kind, step).filter((s) => s !== "UTFÖRLIG").map((s) => ({ value: s, label: STYLE_LABEL[s] }))} />
+              <SegmentedControl size="sm" label="Text" value={line.style} onChange={(s) => onChoice({ style: s })} options={stylesFor(step.kind, step).filter((s) => s !== "UTFÖRLIG").map((s) => ({ value: s, label: STYLE_LABEL[s] }))} />
             </Row>
           ) : null}
           {deal ? (
             <Row label="Form">
-              <SegmentedControl size="sm" label="Tur och retur eller bara dit" value={body?.shape ?? "ROUND_TRIP"} onChange={(s) => onChoice({ shape: s })} options={(["ROUND_TRIP", "ONE_WAY"] as const).map((s) => ({ value: s, label: SHAPE_LABEL[s] }))} />
+              <SegmentedControl size="sm" label="Bara dit eller tur och retur" value={line.shape ?? "ONE_WAY"} onChange={(s) => onChoice({ shape: s })} options={(["ONE_WAY", "ROUND_TRIP"] as const).map((s) => ({ value: s, label: SHAPE_LABEL[s] }))} />
             </Row>
           ) : null}
-          {model.videos ? (
+          {model?.videos ? (
             <Row label="Referensfilm">
-              <Select size="sm" aria-label="Referensfilm" value={body?.reference ?? ""} onChange={(v) => onChoice({ reference: v || null })} options={[{ value: "", label: "Ingen" }, ...candidates.map((c) => ({ value: c.take, label: referenceName(c, names), hint: c.verdict === "GODKÄND" ? "godkänd" : c.verdict.toLowerCase() }))]} className="w-56" />
+              <Select size="sm" aria-label="Referensfilm" value={line.reference?.take ?? ""} onChange={(v) => onChoice({ reference: v || null })} options={[{ value: "", label: "Ingen" }, ...candidates.map((c) => ({ value: c.take, label: referenceName(c, names), hint: c.kind === "RENDERED" ? "dockan" : c.verdict === "GODKÄND" ? "godkänd" : c.verdict.toLowerCase() }))]} className="w-56" />
             </Row>
           ) : null}
           {step.card ? (
             <>
-              <Row label="Hand">
-                <SegmentedControl size="sm" label="Hand" value={hand} onChange={(h) => onChoice({ hand: h })} options={HAND_CHOICES.map((h) => ({ value: h, label: HAND_LABEL[h].replace(" hela vägen", "") }))} />
-              </Row>
-              <Row label="Sidan">
-                <SegmentedControl size="sm" label="Hur kortet landar" value={side} onChange={(s) => onChoice({ side: s })} options={(["BACK", "FRONT"] as const).map((s) => ({ value: s, label: LANDS_LABEL[s] }))} />
-              </Row>
-              {deal && side === "FRONT" ? (
-                <Row label="Vändning">
-                  <SegmentedControl size="sm" label="Hur kortet vänds" className="max-w-full flex-wrap" value={flip} onChange={(a) => onChoice({ flipAxis: a })} options={FLIP_AXES.map((a) => ({ value: a, label: FLIP_WORD[a] }))} />
+              {step.grip !== "TWO_HANDS" ? (
+                <Row label="Hand">
+                  <SegmentedControl size="sm" label="Hand" value={hand} onChange={(h) => onChoice({ hand: h })} options={HAND_CHOICES.map((h) => ({ value: h, label: HAND_LABEL[h].replace(" hela vägen", "") }))} />
                 </Row>
               ) : null}
-              {deal && (body?.shape ?? "ROUND_TRIP") === "ROUND_TRIP" ? (
+              {/* The last picture of a deal bara dit shows the card's side, so the side is chosen only where the last picture is drawn. */}
+              {!deal || line.shape === "ROUND_TRIP" ? (
+                <Row label="Sidan">
+                  <SegmentedControl size="sm" label="Hur kortet landar" value={side} onChange={(s) => onChoice({ side: s })} options={(["BACK", "FRONT"] as const).map((s) => ({ value: s, label: LANDS_LABEL[s] }))} />
+                </Row>
+              ) : null}
+              {deal && line.shape === "ROUND_TRIP" ? (
                 <Row label="Kortets storlek">
-                  <SegmentedControl size="sm" label="Kortets storlek i den här beställningen" value={body?.cardScale ?? 1} onChange={(f) => onChoice({ cardScale: f })} options={CARD_SCALES.map((f) => ({ value: f, label: scaleWords(f) }))} />
+                  <SegmentedControl size="sm" label="Kortets storlek i den här beställningen" value={choice.cardScale ?? 1} onChange={(f) => onChoice({ cardScale: f })} options={CARD_SCALES.map((f) => ({ value: f, label: scaleWords(f) }))} />
                 </Row>
               ) : null}
             </>
           ) : null}
-          <TextArea label="Eget tillägg (engelska)" value={choice.extra ?? body?.extra ?? ""} maxLength={600} rows={2} onChange={(e) => onChoice({ extra: e.target.value })} />
+          <TextArea label="Eget tillägg (engelska)" value={choice.extra ?? line.recipe?.extra ?? ""} maxLength={600} rows={2} onChange={(e) => onChoice({ extra: e.target.value })} />
         </div>
       </details>
     </div>

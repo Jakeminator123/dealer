@@ -22,8 +22,9 @@ import { Play, RotateCcw, Save, Square, Undo2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import cutFramesFile from "../../../data/cut-frames.json";
 import methodsFile from "../../../data/order-methods.json";
-import { FLIP_LABEL, LANDS_LABEL, type BankFacts, type OrdersAnswer } from "../../../src/order-model.ts";
+import { FLIP_LABEL, LANDS_LABEL, readCutChecks, type BankFacts, type OrdersAnswer } from "../../../src/order-model.ts";
 import type { MethodRegister } from "../../../src/order-methods.ts";
 import { SHOE, VIEWS, type Place } from "../../../src/placement-model.ts";
 import { asApiError } from "../../lib/api.ts";
@@ -68,6 +69,8 @@ const isScene = (m: Mode): m is SceneKind => m === "scen" || m === "rafilm" || m
 const START_PLACE: Place = "P4.C1";
 /** The register of how each step is ordered, as the studio was built with it (data/order-methods.json). */
 const METHODS = methodsFile as unknown as MethodRegister;
+/** The picture checks of cut frames, as the studio was built with them (data/cut-frames.json): which frames hold as a seat's end picture. */
+const CUT_CHECKS = readCutChecks(cutFramesFile);
 
 /** Beställ's own words in the address (OrderView: an order open, a new order asked for), which open Beställ's queue here. */
 const QUEUE_WORDS = ["ko", "order", "ny", "som", "dealer", "steg", "plats", "modell"] as const;
@@ -134,7 +137,11 @@ export function BordetView() {
 
   const d = draft.draft;
   const plan = d?.plan ?? null;
-  const rowOf = useCallback((w: FilmWish) => filmRow(dealer, w, METHODS, orders?.policy ?? null, { bank: (bank as BankFacts | null) ?? null, choice: choices[wishKey(w)] }), [dealer, orders, bank, choices]);
+  // The dealer's pictures in Material and the bank with the dummy's rendered films: what a film's recipe is resolved against
+  // (its reference film by rule, the seat's own end picture), the same as the store resolves it when the draft is made.
+  const entries = useMemo(() => media?.dealers.find((x) => x.id === dealer)?.entries ?? [], [media, dealer]);
+  const bankFacts = useMemo<BankFacts | null>(() => (bank ? { ...(bank as BankFacts), rendered: orders?.rendered ?? [], cutChecks: CUT_CHECKS } : null), [bank, orders]);
+  const rowOf = useCallback((w: FilmWish) => filmRow(dealer, w, METHODS, orders?.policy ?? null, { bank: bankFacts, choice: choices[wishKey(w)], entries, plan: orders?.plan ?? null }), [dealer, orders, bankFacts, choices, entries]);
   const rows = useMemo(() => wishes.map(rowOf), [wishes, rowOf]);
   const listed = useMemo(() => new Set(wishes.map(wishKey)), [wishes]);
   const marked = useMemo(() => new Set(wishes.flatMap((w) => (w.target ? [w.target] : []))), [wishes]);
@@ -181,20 +188,19 @@ export function BordetView() {
   // What goes to Runway for the chosen film of the list, before and after its draft is made.
   const names = Object.fromEntries((orders?.dealers ?? []).map((x) => [x.id, x.name]));
   const look = orders?.dealers?.find((x) => x.id === dealer) ?? null;
-  const entries = media?.dealers.find((x) => x.id === dealer)?.entries ?? [];
   const chosen = rows.find((r) => r.key === chosenRow) ?? null;
   const madeAnswer = chosen && made[chosen.key] ? (orders?.orders.find((a) => a.order.id === made[chosen.key]) ?? null) : null;
   // Granska filmen: the film's last order (the same dealer, step and card, not set aside), with the takes that came of it.
   const lastAnswer = chosen ? lastOrder(orders?.orders ?? [], dealer, chosen.wish, (id) => !!ledger?.rows.some((r) => r.order === id && r.see.film)) : null;
   const last = lastAnswer ? { answer: lastAnswer, takes: (ledger?.rows ?? []).filter((r) => r.order === lastAnswer.order.id) } : null;
-  const sends = chosen?.body ? sendsOf({ dealer: { id: dealer, name: look?.name ?? dealer, look: look?.look ?? null }, body: chosen.body, entries, plan: orders?.plan ?? null }) : null;
+  const sends = chosen ? sendsOf({ dealer: { id: dealer, name: look?.name ?? dealer, look: look?.look ?? null }, wish: chosen.wish, line: chosen.resolved, choice: choices[chosen.key], entries, plan: orders?.plan ?? null, bank: bankFacts }) : null;
   const sendsPanel = chosen ? (
     <RowSends
       row={chosen}
       sends={sends}
       names={names}
       plan={orders?.plan ?? null}
-      bank={(bank as BankFacts | null) ?? null}
+      bank={bankFacts}
       dealer={dealer}
       choice={choices[chosen.key] ?? {}}
       onChoice={(patch) => setChoices((was) => ({ ...was, [chosen.key]: patch ? { ...(was[chosen.key] ?? {}), ...patch } : {} }))}
