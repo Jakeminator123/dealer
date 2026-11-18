@@ -5,9 +5,10 @@
 // `scale` (the contract's k) says how many times larger the dealer's own world is.
 // The pinhole itself is the one in src/scene-geometry.ts (table millimetres, Y away from the camera); this file only changes frame.
 import {applyH, cameraHomography, cameraProject, inv3, type Camera} from './scene-geometry.ts';
+import {horizonRow, planPixel, type Lens} from './table-lens.ts';
 
 export const FILM = {width: 1764, height: 1174};
-export type FilmCamera = {focalPx: number; horizonRow: number; edgeRow: number; heightM: number; scale: number; source: 'contract' | 'estimate'};
+export type FilmCamera = {focalPx: number; horizonRow: number; edgeRow: number; heightM: number; scale: number; source: 'contract' | 'estimate' | 'lens'};
 export type TablePoint = {x: number; z: number};
 export type Spot = {id: string; x: number; s: number}; // dealer metres: x across the table, s from the dealer-side edge toward the players
 const CX = (FILM.width - 1) / 2, CY = (FILM.height - 1) / 2;
@@ -23,6 +24,28 @@ const figure = (group: Record<string, Figure> | undefined, name: string): number
 export function cameraFromContract(contract: {keyFigures?: Record<string, Figure>; cardSizeAtTargets?: {scale?: {bodyScale?: {k?: unknown}}}}): FilmCamera {
   const k = contract.keyFigures, focalPx = figure(k, 'focalPx'), tilt = figure(k, 'tiltDownDeg') * Math.PI / 180, body = contract.cardSizeAtTargets?.scale?.bodyScale?.k;
   return {focalPx, horizonRow: CY - focalPx * Math.tan(tilt), edgeRow: figure(k, 'dealerEdgeImageRow'), heightM: figure(k, 'heightAboveFeltMm') / 1000, scale: typeof body === 'number' && body > 0 ? body : 1, source: 'contract'};
+}
+/**
+ * The table's lens (src/table-lens.ts, the card plan's) as the scene's film camera: the same pinhole in the same world frame,
+ * in real metres, so the scale is 1 and a dealer metre is a scene metre. `edgeRow` is the film row of the dealer's table edge
+ * (the contract's dealerEdgeImageRow, measured in the film). Under this camera a pixel's place on the felt is the one
+ * pixelToFelt gives (tools/card-plan.test.ts holds filmToTable, filmPixel and cardSpots to it), which is what makes the
+ * scene's card places, bet rings and table the card plan's own. The scene uses it where TABLE_GEOMETRY says 'lens'.
+ */
+export function lensCamera(lens: Lens, edgeRow: number): FilmCamera {
+  return {focalPx: lens.focalPx, horizonRow: horizonRow(lens), edgeRow, heightM: lens.height, scale: 1, source: 'lens'};
+}
+/** The film row of the dealer's table edge, as the contract has measured it. */
+export const edgeRowOf = (contract: {keyFigures?: Record<string, Figure>}): number => figure(contract.keyFigures, 'dealerEdgeImageRow');
+/**
+ * A view setting written for one film camera as the setting that gives the same picture under another: the game's framings and
+ * the saved looks (yaw and pitch in degrees, dx, dy and dz in scene units) were made under the contract's camera. A turn keeps
+ * how far it moves the film frame in the picture (degrees mean less under a longer lens), and a move keeps its length in dealer
+ * metres. Exact for the frame's middle; the picture's keystone under a turn differs a little between two lenses.
+ */
+export function viewUnder(camera: FilmCamera, written: FilmCamera, view: {yaw: number; pitch: number; dx: number; dy: number; dz: number}): {yaw: number; pitch: number; dx: number; dy: number; dz: number} {
+  const turn = (degrees: number) => Math.atan(Math.tan(degrees * Math.PI / 180) * written.focalPx / camera.focalPx) * 180 / Math.PI, move = camera.scale / written.scale;
+  return {yaw: turn(view.yaw), pitch: turn(view.pitch), dx: view.dx * move, dy: view.dy * move, dz: view.dz * move};
 }
 // Pitch below the horizontal (radians), ground distance from below the camera to the dealer-side table edge, vertical field of view.
 export function solveCamera(c: FilmCamera) {
@@ -51,7 +74,7 @@ export function cardSpots(plan: {targets?: Record<string, {geometry?: {native?: 
   const edge = -solveCamera(c).edgeDistance, out: Spot[] = [];
   for (const [id, target] of Object.entries(plan?.targets ?? {})) {
     const n = target.geometry?.native; if (typeof n?.u !== 'number' || typeof n?.v !== 'number') continue;
-    const p = filmToTable(c, n.u * (FILM.width - 1), (1 - n.v) * (FILM.height - 1)); if (!p) continue;
+    const pixel = planPixel(n as {u: number; v: number}), p = filmToTable(c, pixel.x, pixel.y); if (!p) continue;
     const spot = {id, x: p.x / c.scale, s: (p.z - edge) / c.scale}; if (spot.s > -0.05 && spot.s < 1.2) out.push(spot);
   }
   return out;

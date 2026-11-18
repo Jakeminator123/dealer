@@ -46,6 +46,19 @@ const ray = (e: Eye, px: number, py: number): Vec3 => { const {f, r, u} = basis(
 
 export const filmEye = (l: Lens): Eye => ({position: [0, l.height, 0], forward: [0, -Math.sin(l.pitch), -Math.cos(l.pitch)], focalPx: l.focalPx});
 export const horizonRow = (l: Lens) => CY - l.focalPx * Math.tan(l.pitch);
+// The conversion between the picture and the table, in one place. A pixel of the bank's frame to the point of the felt it
+// shows, in metres of the world frame above (the 3D scene's own: src/scene3d-geometry.ts lensCamera builds the scene's film
+// camera from the same lens, and tools/card-plan.test.ts holds the two to each other), and a point of the table back to
+// its pixel. Every drawn card, card place and bet ring that follows the lens goes through these two.
+/** The point of the felt a pixel shows, in metres; null at or above the horizon. */
+export const pixelToFelt = (pixel: Pixel, lens: Lens = TABLE_LENS): Vec3 | null => onPlane(filmEye(lens), pixel.x, pixel.y);
+/** The pixel a point of the table (metres) has in the film; null behind the camera. */
+export const feltToPixel = (point: Vec3, lens: Lens = TABLE_LENS): Pixel | null => see(filmEye(lens), point);
+/**
+ * A pixel of one picture in a picture of another size that shows the same frame (pixel centres: 0 and width - 1 are the
+ * frame's edges). The lens stands in the bank's pixels (FILM); a picture of any other size is reached through this.
+ */
+export const inFrame = (p: Pixel, to: {width: number; height: number}, from: {width: number; height: number} = FILM): Pixel => ({x: p.x * (to.width - 1) / (from.width - 1), y: p.y * (to.height - 1) / (from.height - 1)});
 export const fovYDeg = (focalPx: number) => 2 * Math.atan(FILM.height / 2 / focalPx) * 180 / Math.PI;
 
 /** A world point as this eye sees it, in film pixels; null behind the eye. */

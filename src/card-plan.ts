@@ -9,10 +9,41 @@
 // lens that also shrank the dealer's cards: "Kortet i skon är större än korten som ligger närmare oss"): size and place stay
 // the real camera's, and each card is drawn as a keystone about its own middle (planShape).
 // The rule every drawing of the plan in the lab and in an order uses: Bordet's Kortplan and card path, Ny beställning's
-// picture, an order's last picture (tools/order-images.ts). The game keeps src/placement-model.ts flatQuad until its lying
-// card is changed in a step of its own. Pure; tests in tools/card-plan.test.ts.
-import { TABLE_PERSPECTIVE, planQuad, quad, toPixels, type Geometry, type PlacementPlan, type View } from './placement-model.ts';
-import { FILM, TABLE_LENS, realCardQuad, type Lens, type Pixel } from './table-lens.ts';
+// picture, an order's last picture (tools/order-images.ts). The game's lying cards (src/game-table.ts), the resting card of
+// the drawn cards (src/card-overlay.ts) and the 3D scene's film camera (src/scene3d-view.ts) follow the same rule and lens
+// where TABLE_GEOMETRY below says 'lens'; until Jakob has seen that in the lab they keep the older rule ('contract').
+// Pure; tests in tools/card-plan.test.ts.
+import { TABLE_PERSPECTIVE, flatQuad, planQuad, quad, toPixels, type Geometry, type PlacementPlan, type View } from './placement-model.ts';
+import { FILM, TABLE_LENS, pixelToFelt, realCardQuad, type Lens, type Pixel } from './table-lens.ts';
+
+/**
+ * Which geometry the game and the 3D scene follow (the lab's card plan always follows the lens):
+ * - 'contract', as before 2026-11-18: the game lays its cards with the plan's older projective plane (flatQuad), the drawn card
+ *   rests as the contract's card times Kortens storlek (card-overlay.ts restingQuad), and the scene's film camera is the
+ *   contract's (scene3d-geometry.ts cameraFromContract, k = 2), which is another camera than the lens;
+ * - 'lens': all three follow the card plan's rule below through the table's lens, so the same plan and the same card give the
+ *   same outline in the lab, in the game and in the scene.
+ * The default is one line: change it to 'lens' when Jakob has said yes to the look in the lab (docs/SYSTEM.md, "Ritade kort",
+ * names what is then left over). Until then the look is asked for by the address word geometri=lins on game.html and on a
+ * page that shows the scene; geometri=kontrakt is the way back once the default has changed.
+ */
+export type TableGeometry = 'contract' | 'lens';
+export const TABLE_GEOMETRY: TableGeometry = 'contract';
+export const GEOMETRY_WORD = 'geometri', GEOMETRY_WORDS: Readonly<Record<string, TableGeometry>> = { lins: 'lens', kontrakt: 'contract' };
+/** The geometry a page follows: its address's word (geometri=lins or geometri=kontrakt), else TABLE_GEOMETRY. `search` is the address's query; left out, the page's own (there is none in Node). */
+export function tableGeometry(search: string | null = (globalThis as { location?: { search?: string } }).location?.search ?? null): TableGeometry {
+  const word = search ? new URLSearchParams(search).get(GEOMETRY_WORD) : null;
+  return (word !== null && GEOMETRY_WORDS[word]) || TABLE_GEOMETRY;
+}
+/**
+ * Efterarbete's "Kortens storlek" as a share of the rule's card. The setting is written against the contract's card, of which
+ * the plan's own card is 1.2 (the scene's default: restingQuad at 1.2 is the older plan's outline at seat 4 within a
+ * twentieth). Under the lens the plan's card is a real card, so the same setting draws the same share of the plan's card:
+ * 1.2 is a real card, exactly what the lab's Kortplan draws, and 1.65 is 1.375 of one. When the default geometry has changed,
+ * the setting can be rewritten so that 1 is a real card, and this goes.
+ */
+export const PLAN_CARD_SIZE = 1.2;
+export const cardGrow = (size: number, geometry: TableGeometry): number => (geometry === 'lens' ? size / PLAN_CARD_SIZE : size);
 
 /** The plan's Dator view is 1762 wide and the film 1764: a plan pixel's x times 1763/1761 is the film's (the game's FILM_X). */
 const PLAN_X = 1761, FILM_X = FILM.width - 1;
@@ -29,17 +60,17 @@ export function planTaper(plan: Pick<PlacementPlan, 'tableProjection' | 'targets
   const t = plan.tableProjection?.perspective ?? plan.targets['P4.C1']?.geometry.native.taper ?? 0.956;
   return Math.min(TABLE_PERSPECTIVE.max, Math.max(TABLE_PERSPECTIVE.min, t));
 }
-/** A real card at its place of the plan through the real camera, film pixels (corners far left, far right, near right, near left). */
-function realAt(plan: PlacementPlan, id: string): Pixel[] | null {
-  return realCardQuad(planToFilm(toPixels(plan.targets[id].geometry.native, 'native')), headingOf(plan, plan.targets['P4.C1'].geometry.native), 1, TABLE_LENS);
+/** A real card at a place of the plan's Dator view through the real camera, film pixels (corners far left, far right, near right, near left). */
+function realAt(plan: PlacementPlan, g: { u: number; v: number }, lens: Lens = TABLE_LENS): Pixel[] | null {
+  return realCardQuad(planToFilm(toPixels(g, 'native')), headingOf(plan, plan.targets['P4.C1'].geometry.native), 1, lens);
 }
 /**
  * The plan's shape as one number for every card, film pixels: how much a card's sideways offsets from its own middle shrink
  * per pixel up the picture (0: a real card's shape), set so that seat 4's card (P4C1, real) has its far edge `planTaper` of
  * its near edge. 96 % is a real card's own shape.
  */
-export function planShape(plan: PlacementPlan): number {
-  const t = planTaper(plan), q = realAt(plan, 'P4.C1');
+export function planShape(plan: PlacementPlan, lens: Lens = TABLE_LENS): number {
+  const t = planTaper(plan), q = realAt(plan, plan.targets['P4.C1'].geometry.native, lens);
   if (!q || t >= TABLE_PERSPECTIVE.max) return 0;
   const m = screenMeasure(q), near = Math.max(...q.map((p) => p.y)), far = (q[0].y + q[1].y) / 2;
   return near > far ? (1 - t / (m.far / m.near)) / (near - far) : 0;
@@ -62,12 +93,72 @@ export const throughLens = (plan: Pick<PlacementPlan, 'tableProjection'>, view: 
  * table, in the plan's shape (keystone, planShape); else the plan's own rule (planQuad: the card's stored measures; Mobil keeps its
  * projective plane, since the lens is the film's).
  */
-export function planCardQuad(plan: PlacementPlan, id: string, view: View): Pixel[] {
+export function planCardQuad(plan: PlacementPlan, id: string, view: View, lens: Lens = TABLE_LENS): Pixel[] {
   if (!throughLens(plan, view)) return planQuad(plan, id, view);
   const g = plan.targets[id]?.geometry.native;
   if (!g) throw Error(`Okänd kortplats ${id}.`);
-  const q = realAt(plan, id);
-  return q ? keystone(q, planToFilm(toPixels(g, 'native')).x, planShape(plan)).map(filmToPlan) : quad(g, 'native');
+  return planCardAt(plan, g, view, lens);
+}
+/**
+ * The same rule for a card at any place of the view, for the places the plan does not name (the game's third and later cards,
+ * split hands and the dealer's third card, which src/game-table.ts lays out from the plan's two per seat): `g` is the card's
+ * place, with the stored measures the plan's own rule reads where the table is not drawn through the lens. In the view's pixels.
+ */
+export function planCardAt(plan: PlacementPlan, g: Geometry, view: View, lens: Lens = TABLE_LENS): Pixel[] {
+  if (!throughLens(plan, view)) return plan.tableProjection?.mode === 'flat' ? flatQuad(g, plan.targets['P4.C1'].geometry[view], view, plan.tableProjection.heading) : quad(g, view);
+  const q = realAt(plan, g, lens);
+  return q ? keystone(q, planToFilm(toPixels(g, 'native')).x, planShape(plan, lens)).map(filmToPlan) : quad(g, 'native');
+}
+
+// ---- from an outline back to the card ------------------------------------------------------------------------------------
+// The game's drawn cards are handed outlines (the place the layout gave a card, or the film's own card where it came to rest)
+// and lay a card of their own size there (Efterarbete's "Kortens storlek"). These two read where an outline lies on the table
+// and lay the rule's card at that place, so that a card of size 1 on a place of the plan is the plan's own outline.
+const SIDEWAYS = 1.15; // an outline whose first side is this much longer than its second (on the felt, in metres) begins on a long side
+/**
+ * Where an outline (film pixels, four corners going round) lies on the table: the pixel of the card's middle, its turn on the
+ * felt (radians, as realCardQuad takes it), whether the outline begins on one of the card's long sides (`turned`: the card's
+ * own first corner is then the outline's second) and whether it runs the other way round than a card seen from above
+ * (`mirrored`). `shape` is the plan's shape the outline was drawn with (planShape; 0 for a real card's own). Null for an
+ * outline that is no card on the felt (at or above the horizon, folded).
+ */
+export function cardPlace(outline: readonly Pixel[], shape = 0, lens: Lens = TABLE_LENS): { place: Pixel; heading: number; turned: boolean; mirrored: boolean } | null {
+  if (outline.length !== 4 || !outline.every((p) => Number.isFinite(p.x) && Number.isFinite(p.y))) return null;
+  const near = Math.max(...outline.map((p) => p.y));
+  // the keystone undone about a middle: the outline the real camera gives
+  const real = (middle: number) => outline.map((p) => ({ x: middle + (p.x - middle) / Math.max(0.2, 1 - shape * (near - p.y)), y: p.y }));
+  // a card's middle is where its diagonals meet, in the picture as on the felt; the middle the keystone was made about is
+  // found by going round (each turn brings it about twenty times nearer)
+  const meet = (q: Pixel[]): Pixel | null => {
+    const [a, b, c, d] = q, rx = c.x - a.x, ry = c.y - a.y, sx = d.x - b.x, sy = d.y - b.y, den = rx * sy - ry * sx;
+    if (Math.abs(den) < 1e-9) return null;
+    const t = ((b.x - a.x) * sy - (b.y - a.y) * sx) / den;
+    return { x: a.x + rx * t, y: a.y + ry * t };
+  };
+  let place = meet([...outline]);
+  for (let i = 0; place && shape && i < 8; i++) place = meet(real(place.x));
+  if (!place) return null;
+  const felt = real(place.x).map((p) => pixelToFelt(p, lens));
+  if (!felt.every(Boolean)) return null;
+  const [a, b, c, d] = felt as [number, number, number][], mid = (p: number[], q: number[]) => [(p[0] + q[0]) / 2, (p[2] + q[2]) / 2];
+  let up = [mid(a, b)[0] - mid(d, c)[0], mid(a, b)[1] - mid(d, c)[1]], right = [mid(b, c)[0] - mid(a, d)[0], mid(b, c)[1] - mid(a, d)[1]];
+  const turned = Math.hypot(right[0], right[1]) > SIDEWAYS * Math.hypot(up[0], up[1]);
+  if (turned) [up, right] = [right, [-up[0], -up[1]]]; // the long way is the card's length
+  if (!(Math.hypot(up[0], up[1]) > 1e-9)) return null;
+  const heading = Math.atan2(up[0], -up[1]);
+  return { place, heading, turned, mirrored: right[0] * Math.cos(heading) + right[1] * Math.sin(heading) < 0 };
+}
+/**
+ * The rule's card where an outline lies: a card `grow` times a real one at the outline's place and turn, through the lens, in
+ * the plan's `shape`; film pixels, in the card's own corner order as the outline has it (the corners of its far short side
+ * first; `turned` says that this is the outline's order a quarter turn on). An outline that is itself the rule's card of size 1
+ * comes back as it is (within a thousandth of a pixel). Null where cardPlace gives none.
+ */
+export function planCardFrom(outline: readonly Pixel[], shape = 0, grow = 1, lens: Lens = TABLE_LENS): { quad: Pixel[]; turned: boolean } | null {
+  const at = cardPlace(outline, shape, lens), q = at ? realCardQuad(at.place, at.heading, grow, lens) : null;
+  if (!at || !q) return null;
+  const k = keystone(q, at.place.x, shape);
+  return { quad: at.mirrored ? [k[1], k[0], k[3], k[2]] : k, turned: at.turned };
 }
 
 /**

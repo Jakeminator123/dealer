@@ -5,7 +5,13 @@
 // pixels. The placement plan only has two places per seat (C1, C2). Everything beyond them is laid out here from those two:
 // a third, fourth and fifth card continue the line C1 → C2 in short steps, and split hands lie one behind the other toward
 // the dealer. Seats are 1–7, seat 1 at camera left; nothing here knows the engine's zero-based boxes.
+//
+// A card's outline at its place follows one of two rules (src/card-plan.ts, TABLE_GEOMETRY): 'lens', the card plan's own
+// (planCardAt: a real card through the table's lens in the plan's shape, the same for a place of the plan and for a place made
+// up here), or 'contract', the plan's older projective plane (flatQuad), which is what the game shows until Jakob has said yes.
 import {flatQuad, quad, toPixels, fromPixels, type Geometry, type PlacementPlan} from './placement-model.ts';
+import {filmToPlan, planCardAt, planToFilm, tableGeometry, type TableGeometry} from './card-plan.ts';
+import type {Lens} from './table-lens.ts';
 
 export type Pt = {x: number; y: number};
 // owner P: a seat 1–7. owner D: the dealer (seat 0). hand: which of the seat's hands, 0 first, of `hands`. index: the card's
@@ -24,8 +30,7 @@ export const FAN_AT: Record<number, number> = {5: 16, 7: 12};
 // The dealer's third card lies where its film lays it (film pixels), not beside the second: the archive film's hand lands
 // there, and a card that slides a hundred pixels away from the fingers looks worse than a gap in the row.
 export const DEALER_THIRD = {x: 1069, y: 926};
-// The plan is written for the 1762 px wide lab view; the films are 1764 px wide.
-const FILM_X = 1763 / 1761;
+// The plan is written for the 1762 px wide lab view and the films are 1764 px wide: src/card-plan.ts planToFilm and filmToPlan.
 
 export function slotOf(table: TableCards, shoeDraw: number): Slot | null {
   const d = table.dealer.indexOf(shoeDraw);
@@ -52,15 +57,20 @@ export function slotFilm(slot: Slot): string {
 /** True when the plan has no place of its own for the slot, so the layout below made one up. */
 export const slotImprovised = (slot: Slot) => slot.hands > 1 || slot.index > 1;
 
-/** fan: one step for every seat instead of FAN and FAN_AT (for trying values from the page's address). */
-export function createLayout(plan: PlacementPlan, options: {fan?: number | null} = {}) {
+/**
+ * fan: one step for every seat instead of FAN and FAN_AT (for trying values from the page's address). geometry: the rule a
+ * card's outline follows (see the top); left out, the page's own (tableGeometry: the address's geometri word, else
+ * TABLE_GEOMETRY). lens: another lens than the table's, for the tests that change the camera.
+ */
+export function createLayout(plan: PlacementPlan, options: {fan?: number | null; geometry?: TableGeometry; lens?: Lens} = {}) {
   const flat = plan.tableProjection?.mode === 'flat', heading = plan.tableProjection?.heading ?? 0, reference = plan.targets['P4.C1'].geometry.native;
-  const shape = (g: Geometry): Pt[] => (flat ? flatQuad(g, reference, 'native', heading) : quad(g, 'native')).map(p => ({x: p.x * FILM_X, y: p.y}));
+  const rule = options.geometry ?? tableGeometry();
+  const shape = (g: Geometry): Pt[] => (rule === 'lens' ? planCardAt(plan, g, 'native', options.lens) : flat ? flatQuad(g, reference, 'native', heading) : quad(g, 'native')).map(planToFilm);
   function geometry(slot: Slot): Geometry {
     const first = plan.targets[`${place(slot)}.C1`].geometry.native, second = plan.targets[`${place(slot)}.C2`].geometry.native;
     if (slot.hands === 1 && slot.index <= 1) return slot.index ? second : first;
     const step = options.fan ?? FAN_AT[slot.seat] ?? FAN;
-    if (slot.owner === 'D') return {...second, ...fromPixels((DEALER_THIRD.x + (slot.index - 2) * step) / FILM_X, DEALER_THIRD.y, 'native')};
+    if (slot.owner === 'D') { const third = filmToPlan({x: DEALER_THIRD.x + (slot.index - 2) * step, y: DEALER_THIRD.y}); return {...second, ...fromPixels(third.x, third.y, 'native')}; }
     const a = toPixels(first, 'native'), b = toPixels(second, 'native'), length = Math.hypot(b.x - a.x, b.y - a.y) || 1;
     const along = {x: (b.x - a.x) / length, y: (b.y - a.y) / length};
     // Split hands step away from the player, toward the dealer: up in the image, whichever way the line C1 → C2 points.

@@ -84,7 +84,8 @@ bilden vilken webbläsare det är, om bildytan har förlorats, sidans senaste fe
 i den (`players.diagnosis()`), så att en skärmbild från telefonen bär svaret.
 
 Filmkameran läses ur `data/scene-contract.json` i `src/scene3d-geometry.ts` (ren geometri, test
-`tools/scene3d-geometry.test.ts` utan media). Kontraktet skrivs av `node tools/scene-measure.ts`, som mäter bordets
+`tools/scene3d-geometry.test.ts` utan media); där geometrin är `lens` är den i stället bordets lins (`lensCamera`, se
+"Ritade kort", En geometri för bordet). Kontraktet skrivs av `node tools/scene-measure.ts`, som mäter bordets
 plan, ljuset och porträttramen ur verkliga rutor i Pamelas film (matematiken i `src/scene-geometry.ts`, test
 `tools/scene-geometry.test.ts`); varje tal i kontraktet bär sin grund (`basisLegend`). Verktyget läser bara media och
 skriver kontraktet, granskningsbilder under `D:/dealer-scratch/review/scen` och skuggmattor under `assets/scene-work`.
@@ -218,6 +219,39 @@ Spelet med flera dealers (2026-11-13):
     var i rutorna före.
   - Ett kort som ligger sedan en tidigare film ritas i samma storlek som det givna kortet vilade i (Kortens storlek
     gånger kontraktets kort, på planens plats), så att det inte krymper eller växer när nästa film börjar.
+  - **En geometri för bordet, bakom ett val** (`TABLE_GEOMETRY` i `src/card-plan.ts`; adressordet `geometri=lins` eller
+    `geometri=kontrakt` på `game.html` och på en sida som visar scenen). Förvalet är `contract`, dagens bild: spelets
+    liggande kort läggs med planens äldre plan (`flatQuad`), det ritade kortet vilar som kontraktets kort gånger Kortens
+    storlek (`restingQuad`), och scenens filmkamera är kontraktets (886 px, k = 2), en annan kamera än kortplanens lins.
+    Med `lens` följer alla tre kortplanens regel och lins:
+    - `planCardAt` (`src/card-plan.ts`): ett verkligt kort, 63 × 88 mm, genom `TABLE_LENS` i planens form. Samma regel
+      för planens platser (`planCardQuad`) och för platserna spelet räknar fram (`src/game-table.ts`: tredje kort och
+      senare, splittade händer, dealerns tredje kort).
+    - `planScene` (`src/card-overlay.ts`): det ritade kortets vila. `planCardFrom` läser var en kontur ligger på filten
+      (`cardPlace`: plats och riktning) och lägger regelns kort där. Kortens storlek är en andel av planens kort
+      (`cardGrow`): förvalet 1,2 är ett verkligt kort, det Kortplan ritar, och 1,65 är 1,375 av ett.
+    - `lensCamera` (`src/scene3d-geometry.ts`): linsen som scenens filmkamera, i verkliga meter och skala 1, så att
+      kortplatser, insatsringar, marker och bord delar kamera med korten. Scenens vyinställningar (`yaw`, `pitch`,
+      `dx`, `dy`, `dz`) är skrivna för kontraktets kamera och räknas om under linsen (`viewUnder`: en vridning flyttar
+      filmrutan lika långt i bild, en förflyttning är lika lång i dealermeter).
+    Omvandlingen mellan bildpunkter och bordets meter står på ett ställe: `pixelToFelt` och `feltToPixel` i
+    `src/table-lens.ts`. Linsen står i bankens bildpunkter (1764 × 1174); en bild av annan storlek nås med `inFrame`,
+    och planens vy (1762 bred) med `planToFilm`. `tools/card-plan.test.ts` håller kortplan, spel, vilande kort och
+    scenens projektion till samma fyrhörning inom en hundradels bildpunkt, också med annan lins och annan bildstorlek,
+    och håller förvalets bild oförändrad (1e-9 bildpunkter).
+    Uppmätt 2026-11-18 på samma plan: på plats 1 skiljer geometrierna 28 px i kortets hörn, och dealerns kort är
+    25 % smalare och 45 % grundare med `contract`. Bankens givar har kort som följer den äldre planen (beställningens
+    sista bild ritades med den), så med `lens` ligger det ritade kortet inte på filmens eget kort vid ytterplatserna
+    och hos dealern förrän givarna är nya. Bytet av förval är därför Jakobs, efter att han sett det i labbet; inget
+    av `lens` är sett i en webbläsare än.
+    **När förvalet byts** (en rad, `TABLE_GEOMETRY`) blir detta över och tas bort: grenen `contract` i `createLayout`
+    (`src/game-table.ts`, med importen av `flatQuad` och `quad`); `cameraFromContract` och `DEALER_LENS_ESTIMATE` i
+    scenens `filmCamera` med nyckeln `lens` (`src/scene3d-view.ts`; `cameraFromContract` själv behålls så länge
+    Modeller, `src/props-stage.ts`, och `tools/scene-material.ts` läser den); `viewUnder`, när spelets inramning
+    (`FRAMING` i `src/game-page.ts`) och sparade vyer har skrivits om för linsen; `cardGrow` och `PLAN_CARD_SIZE`, när
+    Kortens storlek har skrivits om så att 1 är ett verkligt kort; och adressordet, om vägen tillbaka inte behövs.
+    Kvar med flit på den äldre regeln: `restingQuad`s kontraktsgren med `sceneOf` (för `tools/card-coverage.ts` och det
+    äldre kortsättet `film`, `src/scene3d-cards.ts`), `tools/build-anchor.ts` och `tools/placement-backdrop.ts`.
   - Hålkortets valör och dealerns summa visas när kortets framsida syns i vändningsfilmen, inte när filmen slutar.
   - En linje för korten (Jakob 2026-11-13: "Jag vill bara att det ska bli en linje och att allt ska anpassas till en
     standard som passar med det som för närvarande finns i systemet"): **det ritade kortet hela vägen, också i hennes
@@ -419,7 +453,8 @@ uppmätt fysisk kamera. Valfria `perspective` (0,80–0,96, sedan 2026-11-18) ä
 form: varje kort har den verkliga kamerans storlek och plats (`TABLE_LENS`), och dess bortre kant ritas smalare som en
 trapets kring kortets egen mittlinje uppåt i bilden, så att den vid plats 4 är den valda andelen av den närmre (96 % är ett
 verkligt korts egen form, 0,956). Utan fältet gäller plats 4:s sparade `taper` (P4.C1, 0,87 sedan 11 november). Regeln
-`src/card-plan.ts` (`planShape`, `keystone`) läser det för labbet och beställningarnas bilder; spelet läser det inte. Riktning i bordplanet är skild från kamerans lutning och kortets böjning. Utdelningsteknik i
+`src/card-plan.ts` (`planShape`, `keystone`) läser det för labbet och beställningarnas bilder; spelet läser det bara där
+geometrin är `lens` ("Ritade kort", En geometri för bordet). Riktning i bordplanet är skild från kamerans lutning och kortets böjning. Utdelningsteknik i
 `intent` (2026-11-11): `grip` är `PINCH` (nyp i skons fönster och lyft, ankare 2 läge 1; standard) eller `DRAG`
 (fingertopparna på kortet i skons öppning, släp längs filten, läge 2); `turnAt` är `AIR` (standard) eller `PLACE` (vid
 platsen på filten) och gäller bara när `turn` är sant. Vänds senare är inget eget värde: `turn=false` och landning på

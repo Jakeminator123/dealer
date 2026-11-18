@@ -25,7 +25,7 @@ export type Target = { geometry: Record<View, Geometry>; intent: Intent; materia
 // perspective is only its shape: how much narrower its far edge is drawn, as the share at seat 4 (far over near, 0.80 to
 // 0.96; src/card-plan.ts). Absent, seat 4's own stored taper (P4.C1's, 0.87 in his plan of 11 Nov). One number for the whole
 // plan (Jakob 2026-11-17/18: depth in the shape, "brist på djup i bordet", but sizes that agree with the shoe's card); the
-// game does not read it yet.
+// game reads it where its geometry is 'lens' (src/card-plan.ts TABLE_GEOMETRY).
 export type TableProjection = { mode:'flat'|'individual'; heading:number; perspective?:number };
 /** The table's perspective on "Plant bord": its limits and step. 0.96 is a real card's own shape (the real camera's 0.956). */
 export const TABLE_PERSPECTIVE = { min: .80, max: .96, step: .01 } as const;
@@ -166,7 +166,8 @@ export const SHOE = 'shoe';
 const unit = (x: number) => Math.max(0, Math.min(1, x));
 const placeOf = (plan: PlacementPlan, id: string) => { const t = plan.targets[id]; if (!t) throw Error(`Okänd kortplats ${id}.`); return t; };
 /**
- * The quad a card is drawn with in a view: the plan's own drawing rule, as the game lays its cards (src/game-table.ts). On a flat
+ * The quad a card is drawn with in a view by the plan's own, older drawing rule: as the game lays its cards with the geometry
+ * 'contract' (src/game-table.ts); the lab, and the game with the geometry 'lens', draw src/card-plan.ts planCardQuad. On a flat
  * table (tableProjection.mode 'flat') every card is P4.C1's outline carried over one plane to its own centre (flatQuad); otherwise
  * each card has its own angle, size and taper (quad). A plan without tableProjection is drawn card by card, as the game does.
  */

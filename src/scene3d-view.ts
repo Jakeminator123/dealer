@@ -3,7 +3,9 @@
 // With focus off, table and film are drawn straight to the screen and stay sharp (the look of checkpoint v1).
 // With focus on, they go through a full-size target and are blurred by their own distance from the focus.
 import * as T from 'three';
-import {DEALER_LENS_ESTIMATE, FILM, aimCorrection, betSpots, cameraFromContract, cardFocusPixel, cardPixel, cardSpots, cloudLevel, filmToScene, flickerLevel, sceneToSpot, solveCamera, spotToScene, viewFovDeg, type CardTrack, type FilmCamera} from './scene3d-geometry.ts';
+import {DEALER_LENS_ESTIMATE, FILM, aimCorrection, betSpots, cameraFromContract, cardFocusPixel, cardPixel, cardSpots, cloudLevel, edgeRowOf, filmToScene, flickerLevel, lensCamera, sceneToSpot, solveCamera, spotToScene, viewFovDeg, viewUnder, type CardTrack, type FilmCamera} from './scene3d-geometry.ts';
+import {cardGrow, tableGeometry} from './card-plan.ts';
+import {TABLE_LENS} from './table-lens.ts';
 import {EVEN, createFilmLayers, createPlayers, evenFor, frameAt, lightOnDealer, matchLeft, roomFlashAt, roomGlow, toneMatch, toneOf, toneUnder, type FilmTone, type Part, type RoomGlow, type ToneMatch} from './scene3d-film.ts';
 import {createFanLight} from './scene3d-light.ts';
 import {createChipTray, TRAY} from './scene3d-props.ts';
@@ -130,6 +132,10 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   const players = createPlayers(texture => film.setTexture(texture), data.onChange, {refused: (part, video) => voice.refused(part, video)});
   const mouth = createMouthLayer(shown => film.setMouth(shown), {audio: sound}); // a spoken line's mouth on the part on screen (src/scene3d-mouth.ts)
   let camera: FilmCamera = DEALER_LENS_ESTIMATE, pitch = 0, edgeZ = -1, guides: T.Group | null = null, track: CardTrack | null = null;
+  // The page's geometry (src/card-plan.ts TABLE_GEOMETRY, or the address's geometri word), read once: 'lens' makes the plan's camera
+  // the table's lens, in real metres, the drawn cards rest by the card plan's rule, and Kortens storlek is a share of the plan's
+  // card (cardGrow; the earlier way 'film' keeps the contract's card and its own size); 'contract' is the scene as it was.
+  const geometry = tableGeometry();
   let focusNow = NaN, focusWhat = '', lastSeconds = NaN, moved = false;
   // Rendered cards, three ways: 'scene' makes each card an object in the scene under the film (scene3d-deal.ts); 'film' draws
   // the card into the film frame (scene3d-cards.ts), the earlier way, kept to compare; 'matte' (a trial) draws over the film's own
@@ -145,7 +151,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   function loadCards() {
     const method = state.cardMethod; if (cardLayers[method] || cardLoads.has(method)) return; cardLoads.add(method);
     (method !== 'film' ? import('./scene3d-deal.ts').then(m => { if (gone) return null; const layer = m.createDealLayer({contract: data.contract, plan: data.plan, film, light: light.uniforms, camera: () => camera, edgeZ: () => edgeZ,
-      renderer, view: () => view, pixels: () => Math.min(canvas.width / W, canvas.height / H) * state.zoom, way: method}); fg.add(layer.group); return layer; })
+      renderer, view: () => view, pixels: () => Math.min(canvas.width / W, canvas.height / H) * state.zoom, way: method, geometry}); fg.add(layer.group); return layer; })
       : import('./scene3d-cards.ts').then(m => gone ? null : m.createCardLayer(data.contract)))
       .then(layer => { if (!layer) return; cardLayers[method] = layer; cardError = ''; }, error => { cardError = String((error as Error)?.message ?? error); if (state.cardMethod === method) state.cards = false; })
       .then(() => { cardLoads.delete(method); if (gone) return; useCards(); data.onChange(); });
@@ -205,7 +211,10 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   }
 
   // ---- film camera and everything that depends on it ----------------------------------------------
-  function filmCamera(): FilmCamera { const base = state.lens === 'plan' ? cameraFromContract(data.contract) : DEALER_LENS_ESTIMATE; return state.scale > 0 ? {...base, scale: state.scale} : base; }
+  // The plan's camera: the contract's, or with the geometry 'lens' the table's lens itself (scene3d-geometry.ts lensCamera), the one
+  // the card plan draws through. `written`: the camera the game's framings and the saved looks were made under (updateView).
+  const written = () => cameraFromContract(data.contract);
+  function filmCamera(): FilmCamera { const base = state.lens !== 'plan' ? DEALER_LENS_ESTIMATE : geometry === 'lens' ? lensCamera(TABLE_LENS, edgeRowOf(data.contract)) : written(); return state.scale > 0 ? {...base, scale: state.scale} : base; }
   function buildGuides() {
     if (guides) fg.remove(guides); guides = new T.Group(); fg.add(guides);
     const line = (points: number[][], color: number) => { const l = new T.LineLoop(new T.BufferGeometry().setFromPoints(points.map(p => new T.Vector3(...p))), new T.LineBasicMaterial({color, depthTest: false})); l.renderOrder = 20; guides!.add(l); };
@@ -236,6 +245,8 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   function updateView(seconds: number) {
     let {yaw, pitch: tilt, dx, dy, dz} = state;
     if (state.sway) { if (state.mode === 'look') { yaw += 9 * Math.sin(seconds * 0.55); tilt += 2.5 * Math.sin(seconds * 0.37); } else { dx += 0.13 * Math.sin(seconds * 0.6); dy += 0.035 * Math.sin(seconds * 0.43); } }
+    // Under the table's lens the same settings give the same picture: they were written for the contract's camera (viewUnder).
+    if (camera.source === 'lens') ({yaw, pitch: tilt, dx, dy, dz} = viewUnder(camera, written(), {yaw, pitch: tilt, dx, dy, dz}));
     const base = filmCam.position; view.position.set(base.x + dx, base.y + dy, base.z + dz); moved = !!(dx || dy || dz);
     let ry = yaw * RAD, rx = -pitch + tilt * RAD;
     if (state.aim && moved) { const fix = aimCorrection(base.toArray(), view.position.toArray(), [0, 0.3, edgeZ]); ry += fix.yaw; rx += fix.pitch; }
@@ -340,7 +351,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     // A film with a frame of its own has no shoe and no card places in its picture: the rendered cards (the one seated in the shoe window among them) stay out of it.
     evenFilm(playing?.video ?? null, part, seconds); film.setLife(state.dealerLife, seconds);
     const cardsOn = state.cards && !part?.frame; if (!cardsOn) cardLayer?.off?.();
-    if (playing) film.setTexture(cardsOn && cardLayer?.update(playing.video, players.frame(), track, {rank: state.cardRank, suit: state.cardSuit, scale: state.cardScale, hand: state.cardHand}, part?.cards) ? cardLayer.texture : playing.texture);
+    if (playing) film.setTexture(cardsOn && cardLayer?.update(playing.video, players.frame(), track, {rank: state.cardRank, suit: state.cardSuit, scale: state.cardMethod === 'film' ? state.cardScale : cardGrow(state.cardScale, geometry), hand: state.cardHand}, part?.cards) ? cardLayer.texture : playing.texture);
     const focusOn = state.focus !== 'off', u = blurMat.uniforms, scale = canvas.width / W;
     light.update(seconds, state.fan, state.fanStrength, state.fanPeriod);
     if (focusOn) { const goal = focusTarget(seconds), dt = Math.max(0, Math.min(0.2, seconds - lastSeconds)); focusWhat = goal.what;

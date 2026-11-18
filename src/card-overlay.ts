@@ -3,6 +3,9 @@
 // (tools/track-card.ts); size does not: a card has one physical size, taken from the scene contract.
 // No DOM, WebGL or file access here. The drawing itself is src/card-overlay-view.ts.
 import {classify, morph, blobs, grown, centre, signedArea, inside, clockwise, is, sound, YELLOW, BLUE, SHADE, TINT, TABLE, SKIN, DARK, type Pt, type Side} from './card-track.ts';
+import {planCardFrom, planShape, throughLens} from './card-plan.ts';
+import {TABLE_LENS, type Lens} from './table-lens.ts';
+import type {PlacementPlan} from './placement-model.ts';
 
 // film: where the film's own card is in the frame, when the track draws the card somewhere else than the film has it (a track that
 // carries an even card in the grip): what is covered and keyed is then this quad, and quad is only where the card is drawn.
@@ -15,7 +18,9 @@ export type TrackFrame = {frame: number; side: Side; quad: number[][] | null; ed
 export type CardTrack = {clip?: string; width: number; height: number; hand?: boolean; drawnFrom?: number; frames: TrackFrame[]; edgeWindow: [number, number] | null; flips?: {from: number; to: number; quarterTurns: number}[];
   leavesShoe?: number | null; restFrom: number | null; restQuad: number[][] | null; shoeWindow?: {box: number[]} | null};
 // toImage/toTable are homographies as eight numbers (the ninth is 1): table millimetres <-> image pixels.
-export type Scene = {toImage: number[]; toTable: number[]; cardWidth: number; cardHeight: number; bodyScale: number};
+// rule: set by planScene, for a scene whose resting card is the card plan's own (src/card-plan.ts) and not the contract's:
+// the lens the card is seen through and the plan's shape, or `own` where the plan draws each card by its stored measures.
+export type Scene = {toImage: number[]; toTable: number[]; cardWidth: number; cardHeight: number; bodyScale: number; rule?: {lens: Lens; shape: number; own: boolean}};
 // How the card a film carries is shown while it is in her hand, when nothing says otherwise: the drawn card ('object'; the
 // address's kort=hand). On 2026-11-13 Jakob asked for the cards to be started over from the film's own ("orsaken till att vi inte
 // kan behålla det blått och gult, så att vi kan börja om med att hantera överlägg, pålägg och underlägg med kort"), and for an
@@ -122,6 +127,7 @@ export function sceneOf(contract: unknown): Scene | null {
  * lies sideways arrives a quarter turn off, and is turned back here so the footprint is covered.
  */
 export function restingQuad(scene: Scene, film: Pt[], scale: number): {quad: Pt[]; turned: boolean} {
+  if (scene.rule) return planRest(scene.rule, film, scale);
   const t = film.map(p => apply(scene.toTable, p)), c = centre(t), mid = (a: Pt, b: Pt): Pt => ({x: (a.x + b.x) / 2, y: (a.y + b.y) / 2});
   let up = {x: mid(t[0], t[1]).x - mid(t[3], t[2]).x, y: mid(t[0], t[1]).y - mid(t[3], t[2]).y}, right = {x: mid(t[1], t[2]).x - mid(t[0], t[3]).x, y: mid(t[1], t[2]).y - mid(t[0], t[3]).y};
   const turned = Math.hypot(right.x, right.y) > 1.15 * Math.hypot(up.x, up.y);
@@ -130,6 +136,22 @@ export function restingQuad(scene: Scene, film: Pt[], scale: number): {quad: Pt[
   const hw = scene.cardWidth * scale / 2, hh = scene.cardHeight * scale / 2;
   const corner = (a: number, b: number) => apply(scene.toImage, {x: c.x + u.x * hh * a + r.x * hw * b, y: c.y + u.y * hh * a + r.y * hw * b});
   return {quad: [corner(1, -1), corner(1, 1), corner(-1, 1), corner(-1, -1)], turned};
+}
+
+/**
+ * A scene whose resting card follows the card plan's rule (TABLE_GEOMETRY 'lens' in src/card-plan.ts): a card `scale` times a
+ * real one at the outline's place and turn, through the table's lens, in the plan's shape. Kortens storlek 1 on a place of the
+ * plan is then the outline the lab's Kortplan draws there. The contract (`base`) is not read for it; without one the scene
+ * stands by itself. `lens`: another lens than the table's, for the tests that change the camera.
+ */
+export function planScene(base: Scene | null, plan: PlacementPlan, lens: Lens = TABLE_LENS): Scene {
+  const through = throughLens(plan, 'native');
+  return {...(base ?? {toImage: [1, 0, 0, 0, 1, 0, 0, 0], toTable: [1, 0, 0, 0, 1, 0, 0, 0], cardWidth: 63, cardHeight: 88, bodyScale: 1}), rule: {lens, shape: through ? planShape(plan, lens) : 0, own: !through}};
+}
+// The resting card by the plan's rule. Where the plan draws each card by its own stored measures ("individual"), and for an
+// outline that is no card on the felt, the outline itself is the card, `scale` times about its middle in the picture.
+function planRest(rule: NonNullable<Scene['rule']>, film: Pt[], scale: number): {quad: Pt[]; turned: boolean} {
+  return (rule.own ? null : planCardFrom(film, rule.shape, scale, rule.lens)) ?? {quad: about(film, scale), turned: false};
 }
 
 /**
