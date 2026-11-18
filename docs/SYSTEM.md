@@ -83,6 +83,11 @@ adressordet `diagnos=1` (`src/game-diagnosis.ts`; kopians dörrar bär det vidar
 bilden vilken webbläsare det är, om bildytan har förlorats, sidans senaste fel, vad kön håller och vad som senast hände
 i den (`players.diagnosis()`), så att en skärmbild från telefonen bär svaret.
 
+Casino (`/studio/game/`) behåller också spelets uttryckliga adressval genom förvalsbyte och nytt bord:
+`diagnos=0|1`, `kort=hand|liggande|matt`, `cardBack=film|dark`, `cardFace=film|paper` och `dealTempo=1…1.15`.
+De går vidare till spelet i ramen, inte till scenens förval eller länken Kalibrera i Scen. Ogiltiga värden lämnas
+utanför och redovisas som okända (`studio/lib/casino.ts`). Utan adressval gäller spelets ordinarie förval.
+
 Filmkameran läses ur `data/scene-contract.json` i `src/scene3d-geometry.ts` (ren geometri, test
 `tools/scene3d-geometry.test.ts` utan media); där geometrin är `lens` är den i stället bordets lins (`lensCamera`, se
 "Ritade kort", En geometri för bordet). Kontraktet skrivs av `node tools/scene-measure.ts`, som mäter bordets

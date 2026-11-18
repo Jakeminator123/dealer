@@ -16,7 +16,8 @@ och Trailer lämnade. Här står bara det som gäller nu; kontraktet står i `do
 - `dealTempo` är ett prov med standard 1 och intervallet 1–1,15. Bara tysta givar och returer ändrar takt efter
   munlappsvalet. I Chrome verifierades tredje P6-kortet vid filmruta 86 och 1,12×, samt tre P6-kort och två
   dealerkort efter returen. Mjukhet och övergång i rörelse återstår att bedöma.
-- `diagnos=1` på `/game.html` ger paus/stegning. Hålkortets värde följer visad ruta: native-provet
+- `diagnos=1` på `/game.html` och `/studio/game/` ger paus/stegning. Casino behåller även kortfärg, kortmetod och
+  `dealTempo` i ramen och vid förvalsbyte/nytt bord. Hålkortets värde följer visad ruta: native-provet
   `paow-game-frame-20261118` höll 8 i över 22 s paus; ruta 60 visade 8, ruta 61 visade 13. Maskens kvalitet bedöms separat.
 - Filmkortsprovet behåller filmens kort vid eget mål och ritar återbruk till C2/split på spelplatsen. Spår måste täcka
   landning/övertoning genom returskarven. `paow-game-carry-20261118`: native split 18/17 mot 17, saldo 1005; C2-kant högst 1 px vid två gränser. Full rörelsedom återstår.

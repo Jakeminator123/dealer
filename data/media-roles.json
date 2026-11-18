@@ -4139,6 +4139,19 @@
             "from": "Lokal Dealer · native Chrome och oberoende granskning",
             "when": "2026-11-18"
           }
+        },
+        {
+          "id": "paow-carry-jitter-20261118",
+          "role": "arbetsmaterial",
+          "name": "P7 · kortets darr, native A/B",
+          "path": "assets/proofs/paow-carry-jitter-20261118/carry-1to1.png",
+          "pattern": "assets/proofs/paow-carry-jitter-20261118/*",
+          "state": "kandidat",
+          "note": "Samma sex filmrutor i två kortlägen. Ritat kort fryser två rutor; filmkonturen följer greppet bättre men har färgrester. Pausbilder, inte rörelsedom; ordinarie förval oförändrat.",
+          "source": {
+            "from": "Lokal Dealer · native Chrome och oberoende granskning",
+            "when": "2026-11-18"
+          }
         }
       ]
     },
