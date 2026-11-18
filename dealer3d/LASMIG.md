@@ -21,6 +21,11 @@ den här sidan och `AGENTS.md`; resten står i commitmeddelandena och i varje fi
   ände i höger hand; kortet ritas 1,4 gånger liggande); jämförelsen `ut/giv-fran-2-3-p4/jamforelse-e-f-kortets-storlek.png`.
   Den avlästa given från ankare 2.1 (`src/capture.ts`) är orörd. Inget betalt är lagt av banan.
 
+**Jakobs dom på tagningarna gjorda på "-f" (2026-11-18).** "Hon flippar korten lixom utanpå fingrarna.. […] så måste
+vit-figuren bli bättre med att sköta kordineringen med kort/fingrar". Först av allt: en version där tummen ligger på
+kortets ena sida och fingrarna på den andra genom hela vändningen, och handleden och underarmen vrider kortet (handen
+förblir vänd tills kortet ligger); ingen ring som kortet rullar i, och inga fingrar som byter sida om kanten.
+
 **Nästa steg, i ordning.** Vänta på Jakobs ord om -f.
 1. Plats 1 (och se plats 2): en kropp som kan resa sig och luta sig över bordet (en ny led i `src/body.ts`).
 2. Höger hand under rullningen sluter sig till en ring om kortets kortsida (`gripBend` 0,6): prova ett plattare grepp.

@@ -342,6 +342,11 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   eller nått". En film slutar när rörelsen är klar, utan ett stilla slut; hans andra väg är en enda film från vila
   via 2.3 till platsens slutbild, klippt i två. Samma stund märkte han givarna till plats 4 och plats 1 som Inte bra
   i Prov, utan skäl.
+- **Dockan ska hålla kortet genom vändningen** (Prov 2026-11-18, cirka kl. 05.14, om given till plats 4): "Hon
+  flippar korten lixom utanpå fingrarna.. Är denn gjort av en sån vitfigur så måste vit-figuren bli bättre med att
+  sköta kordineringen med kort/fingrar". Kortet ligger kvar mellan tumme och fingrar genom hela vändningen, och det
+  är handleden som vrider det (hans regel sedan 2026-11-17, "Handleden vrider kortet"); en docka där kortet rullar
+  fritt i en ring av fingrar duger inte som förlaga.
 - **Flera kameravinklar ur samma film** (2026-11-18, kl. 03.10 och 03.25). Först: "Kna du itne bara prova att
   förenkla.. Typ skicka filemn för när PAOW dealar till P4C1 och sedan säger du att samma video ska genereras med säg
   35% från sida". Om provet `sidovinkel-ur-film`: "Det här är mycket bra, jag vet inte hur du gjorde. Det kanske är
