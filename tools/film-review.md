@@ -51,9 +51,11 @@ står i beställningen (`motion.hand`, vänster hand syns till höger i bilden).
   tilläggen sist.
 
 Spelaren klipper mellan filmer på exakta rutor: de första rutorna ska stämma med första bilden och de sista med sista
-bilden. En genererad film är ljusare i sina första rutor och kan hoppa i sina två sista (WAN 3 mörknar dem). Filmens
-kort målas bort och ett renderat kort ritas där kortspåret säger, med handen framför. Därför väger kortets storlek, form
-och obrutenhet tyngre än dess utseende.
+bilden. En genererad film kan avvika i ljus i sina första rutor och hoppa i sina två sista. Ange vilken kortmetod
+som granskas: grundspelets underlägg ersätter filmkortet med ett spårat kort; provet `kort=liggande&cardMethod=film`
+behåller filmkortet i luften. Scenprovet med `kort=liggande&cardBack=dark&cardFace=paper` färgar dess yta och ritar
+kortvärdet först på bordet. Granska originalets grepp, form och färg samt den använda metodens synliga resultat
+separat. En godkänd mask eller ett stabilt kortspår godkänner inte filmens rörelse.
 
 ## Metod
 

@@ -20,15 +20,15 @@ Läs AGENTS.md, den här sidan och EN lägesfil för din bana. Ersätt inaktuell
 Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-18), med EN trovärdig giv först ([film](docs/lage/film.md)).
 
 1. Bevara Jakobs ändrade kortplan och oincheckade orderutkast. Läs nya anteckningar med `node tools/proof-notes.ts`.
-2. Eget C2-par prioriteras före C1-återbruk. P4.C2:s film är införd som Variant (giv 3/5, retur 4/5), split 64 och eget spår.
-   Lös övriga andrakort och hålkortets vändning före kortförvalet ([kort](docs/lage/kort.md)); P1:s landningsslöja är rättad.
+2. P4.C2 Cykel01 väljs; det svagare omtaget är arkiverat med bevis kvar. Inget Primär-byte.
+   Lös övriga andrakort och hålkortets vändning före kortförvalet ([kort](docs/lage/kort.md)).
 3. Använd automatiska testkvitton och det återbyggbara SQLite-indexet ([evidens](tools/evidence.md)); inga medieblobs.
 4. Munproven är lokala jämförelser; inget byte i banken före Jakobs val i Beslut. Körarens kod finns nu i repot.
 5. Testa, pusha och verifiera fjärrens SHA. Sessionens tio GPT-meddelanden är förbrukade; färdiga granskningsfynd är
-   rättade. Fyra Runway-filmer kostade 319 krediter; lokal Claude-MCP fungerar. Inget anrop eller KÖR pågår.
-6. Prov `paow-c1-c2-scene-20261118` visar C1 kvar genom C2. `paow-c2-paper-rim-20261118` visar jämnare sen kortfärg
-   med P1/P7 intakta. C2 är fortsatt Variant: blå vändkant och grepp återstår. Ett lokalt omgreppsprov finns i
-   `paow-c2-rig-regrip-20261118`; ingen beställning. READY-C saknar godkänt inpass och utpass.
+   rättade. Fem Runway-filmer kostade 404 krediter; lokal Claude-MCP fungerar. Inget anrop eller KÖR pågår.
+6. C1 ligger kvar genom C2. `paow-c2-paper-rim-20261118` visar jämnare kortfärg med P1/P7 intakta.
+   `paow-c2-film-regrip-20261118` dokumenterar omtaget: fortsatt tvekan, längre blekning, ingen serie.
+   Blå vändkant, grepp och godkänt READY-C-inpass/utpass återstår.
 
 Äldre frågor till honom som inte är kort än: `D:/dealer-scratch/tmp/handoff-nytt/forslag-kort.md`.
 

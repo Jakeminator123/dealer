@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-giv-2-3-p4-c2-h24-cykel-02-01",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-giv-2-3-p4-c2-h24-cykel-02-01/source.mp4",
+    "sha256": "51b92d1936fa2c3e626978a7e43c02b33e9146a1447d1bee352d01f02011ffc4",
+    "bytes": 4477176,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 97,
+    "provider": "Runway MCP server (app account credits)",
+    "model": "kling-4"
+  },
+  "cutInto": [
+    "paow-giv-2-3-p4-c2-h24-cykel-02-01-deal",
+    "paow-giv-2-3-p4-c2-h24-cykel-02-01-return-ready-c"
+  ],
+  "order": {
+    "id": "paow-giv-2-3-p4-c2-h24-cykel-02",
+    "take": 1,
+    "path": "data/orders/paow-giv-2-3-p4-c2-h24-cykel-02.json",
+    "orderSha256": "d7f1033f378833f1b219040e6f3fa4c72df2534c3757070e4bef00bfbfbd5c05",
+    "receipt": "assets/orders/paow-giv-2-3-p4-c2-h24-cykel-02/receipt.json",
+    "taskId": "3d1a09d9-8182-4a17-845a-ed8c4ae130ee",
+    "delivered": {
+      "path": "assets/orders/paow-giv-2-3-p4-c2-h24-cykel-02/take-1/after.mp4",
+      "sha256": "51b92d1936fa2c3e626978a7e43c02b33e9146a1447d1bee352d01f02011ffc4"
+    }
+  },
+  "generationRef": "assets/motions/paow-giv-2-3-p4-c2-h24-cykel-02-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

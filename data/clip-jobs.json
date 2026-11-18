@@ -8637,6 +8637,60 @@
         "id": "paow-giv-2-3-p4-c2-h24-cykel-01",
         "take": 1
       }
+    },
+    {
+      "id": "paow-giv-2-3-p4-c2-h24-cykel-02-01-deal",
+      "kind": "DEAL",
+      "from": "READY-C",
+      "to": "P4.C2",
+      "clip": "paow-giv-2-3-p4-c2-h24-cykel-02-01",
+      "frames": [
+        0,
+        64
+      ],
+      "purpose": "Beställning paow-giv-2-3-p4-c2-h24-cykel-02, tagning 1: Paow · P4.C2 · tidigare nedläggning.",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 4,
+      "promptText": "Locked camera. Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing. The card is blank, solid yellow on one side and solid blue on the other, each colour reaching right out to its corners, and the next card in the window is the same blank yellow. One card goes from the shoe to where the last frame shows it, and the hand comes back to its pose in the first frame. After the handoff, her left hand rests at the shoe. Her right fingertip stays on the blue card until it lies flat, pauses briefly, then lifts away. Her right hand returns low and calmly to its pose in the first frame. The blue card stays still on the table. The next card visible inside the shoe stays saturated yellow throughout the shot. The dealt card keeps its solid yellow back and saturated blue face through the entire motion. The blue face keeps the same color from approach to placement and return.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-3-p4-c2-h24-cykel-02/first.png",
+          "sha256": "340842ba3b6af20bdf36646b517d20501163496b426c154d1dd798b488f75542"
+        },
+        "note": "Första bilden i beställningen paow-giv-2-3-p4-c2-h24-cykel-02."
+      },
+      "order": {
+        "id": "paow-giv-2-3-p4-c2-h24-cykel-02",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-3-p4-c2-h24-cykel-02-01-return-ready-c",
+      "kind": "RETURN",
+      "from": "P4.C2",
+      "to": "READY-C",
+      "clip": "paow-giv-2-3-p4-c2-h24-cykel-02-01",
+      "frames": [
+        65,
+        96
+      ],
+      "purpose": "Beställning paow-giv-2-3-p4-c2-h24-cykel-02, tagning 1: Paow · P4.C2 · tidigare nedläggning.",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 4,
+      "promptText": "Locked camera. Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing. The card is blank, solid yellow on one side and solid blue on the other, each colour reaching right out to its corners, and the next card in the window is the same blank yellow. One card goes from the shoe to where the last frame shows it, and the hand comes back to its pose in the first frame. After the handoff, her left hand rests at the shoe. Her right fingertip stays on the blue card until it lies flat, pauses briefly, then lifts away. Her right hand returns low and calmly to its pose in the first frame. The blue card stays still on the table. The next card visible inside the shoe stays saturated yellow throughout the shot. The dealt card keeps its solid yellow back and saturated blue face through the entire motion. The blue face keeps the same color from approach to placement and return.",
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-3-p4-c2-h24-cykel-02/last.png",
+          "sha256": "62424d2be79a2a37ab7524c9319f1d048e19486e1ea96f903ddc50d620f8f1ce"
+        },
+        "note": "Sista bilden i beställningen paow-giv-2-3-p4-c2-h24-cykel-02."
+      },
+      "order": {
+        "id": "paow-giv-2-3-p4-c2-h24-cykel-02",
+        "take": 1
+      }
     }
   ],
   "edits": [

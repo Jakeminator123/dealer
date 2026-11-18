@@ -17,7 +17,8 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   retur 4/5. Prov `paow-c1-c2-scene-20261118` visar C1 kvar genom C2:s giv, släpp och returände. Maskjämförelsen
   `paow-air-paper-chroma-verified-20261118` visar minskad vitfärgning av grön skugga vid P1 ruta 113 och bevarat kort
   vid P7 ruta 73. Prov `paow-c2-paper-rim-20261118` visar jämnare pappersfärg i C2 ruta 51/53, med oberoende
-  synkontroll av fem bildpar. Blå vändkant och full rörelseacceptans återstår. Stänger: egna landningar eller verifierat återbruk, hålkortets
+  synkontroll av fem bildpar. Omgreppsfilmen `paow-c2-film-regrip-20261118` behåller tvekan och har längre blekning;
+  Cykel01 är fortfarande den starkare given. Blå vändkant och full rörelseacceptans återstår. Stänger: egna landningar eller verifierat återbruk, hålkortets
   vändning och en hel giv i båda renderlägena. Spelets förval är därför kvar; inget Primär-val har ändrats.
 - **Forkens hela giv är ett separat metodprov.** Prov `paow-fork-round-review-20261118`: 14 kort ligger kvar och
   13 skarvpar matchar i oberoende bildgranskning. Kamera och startpose skiljer sig från Dealer 2.3; blank yta byts

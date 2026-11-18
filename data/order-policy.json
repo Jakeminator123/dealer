@@ -13,7 +13,7 @@
   "maxPerOrder": 2000,
   "minBalance": 0,
   "timeZone": "Europe/Stockholm",
-  "balance": { "credits": 2127, "at": "2026-11-18T15:24:00Z", "source": "Runway whoami i Codex och den lokala Claude-MCP-klienten: Jakob, workspace 67037521, båda 2127. Jakob gav fortsatt genereringstillstånd; samma mandat och tidigare förbrukning bevaras. Ett granskat C2-prov, denna order högst 94 krediter; ingen serie före granskning." },
+  "balance": { "credits": 2006, "at": "2026-11-18T16:33:35.019Z", "source": "Runway whoami: Jakob, workspace67037521. Kontrollerat C2-omtag med endast ändrad referens; en tagning, högst94. Samma mandat och förbrukning bevaras." },
   "prices": [
     { "model": "kling-4", "resolution": "1080p", "perSecond": 21.3, "listedPerSecond": 23.5, "source": "Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12." },
     { "model": "kling-4", "resolution": "720p", "perSecond": 15.7, "listedPerSecond": 15.7, "source": "Listpris i verktyget generate_video 2026-11-12; inte mätt i någon liggare." },

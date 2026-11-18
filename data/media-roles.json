@@ -3793,6 +3793,20 @@
           }
         },
         {
+          "id": "paow-film-giv-2-3-p4-c2-h24-cykel-02-t1",
+          "role": "film",
+          "name": "P4.C2 · omgreppsprov · variant",
+          "path": "assets/films/paow/giv-2-3-p4-c2-h24-cykel-02-t1/source.mp4",
+          "still": 53,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Variant: giv 3/5, retur 4/5. Omgreppet tar inte bort tvekan f43–49; blåytan bleknar längre, f41–50. Ersätter inte C2-01. Synlig långkantvändning och låg retur. Split65 är första säkra glipan. Eget C2-spår, automatisk vila55. Huvudagent och oberoende granskare; ingen Jakobsdom eller Primär.",
+          "source": {
+            "from": "beställningen paow-giv-2-3-p4-c2-h24-cykel-02, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-18"
+          }
+        },
+        {
           "id": "paow-film-intro-noir-3-startruta",
           "role": "arbetsmaterial",
           "name": "Startrutan till filmen före spelet",
@@ -4032,6 +4046,32 @@
           "note": "Lokalt omgreppsprov, inte beställningsreferens eller godkänd film.",
           "source": {
             "from": "Lokal Dealer-docka · källbunden rendering",
+            "when": "2026-11-18"
+          }
+        },
+        {
+          "id": "docka-2-3-p4c2-h24-omgrepp",
+          "role": "referens",
+          "name": "Docka H24 · P4.C2 · tidigare nedläggning",
+          "path": "assets/references/docka/docka-2-3-p4c2-h24-omgrepp/source.mp4",
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Oberoende förhandsgranskad för ett prov. Ändrat omgrepp i k59–69; övrig rörelse, ändbilder och prompt bevaras. Väljs uttryckligen, inget förvalsbyte.",
+          "source": {
+            "from": "Lokal dockrendering med källhashar, mått och förhandsgranskning bredvid filmen",
+            "when": "2026-11-18"
+          }
+        },
+        {
+          "id": "paow-c2-film-regrip-20261118",
+          "role": "arbetsmaterial",
+          "name": "P4.C2 · omtag med ändrat omgrepp",
+          "path": "assets/proofs/paow-c2-film-regrip-20261118/film.mp4",
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Omtag med ändrad referens: fortsatt tvekan och längre blekning. Variant, ersätter inte C2-01.",
+          "source": {
+            "from": "assets/orders/paow-giv-2-3-p4-c2-h24-cykel-02/take-1/after.mp4",
             "when": "2026-11-18"
           }
         }
