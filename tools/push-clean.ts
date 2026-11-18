@@ -34,7 +34,7 @@ export function parseArgs(argv: string[]): Options {
 }
 
 /** The summary lines of node's test runner ("ℹ tests 1023 ℹ pass 1018 …") on one line. */
-export const testSummary = (log: string) => log.split(/\r?\n/).filter(line => /^ℹ (tests|pass|fail|skipped)/.test(line)).join(' ');
+export const testSummary = (log: string) => log.split(/\r?\n/).filter(line => /^ℹ (tests|pass|fail|cancelled|skipped|todo)\b/.test(line)).join(' ');
 /** The failing tests' lines, at most 20. */
 export const testFailures = (log: string) => log.split(/\r?\n/).filter(line => /^✖|not ok/.test(line)).slice(0, 20);
 /** The publication check's red lines, at most 20. */
@@ -46,9 +46,18 @@ export type Io = {run: Exec; say: Say; log: (name: string, text: string) => void
 export function pushClean(root: string, options: Options, io: Io): number {
   const {run, say, log} = io;
   const step = (name: string, cmd: string, args: string[]) => { const r = run(cmd, args, options.tree); log(name, r.out); return r; };
+  const remoteHead = (cwd: string) => {
+    const result = run('git', ['ls-remote', 'origin', 'refs/heads/main'], cwd);
+    const match = /^([a-f0-9]{40,64})\s+refs\/heads\/main\s*$/i.exec(result.out.trim());
+    if (result.code !== 0 || !match) throw new Stop('STOPP: fjärrens main kunde inte verifieras');
+    return match[1];
+  };
   try {
     const sha = commitOf(root, options.commit, run);
     const old = cleanAt(root, options.tree, sha, say, run, io.exists);
+    // A detached tree has no upstream. Without an explicit base the gate scans all history on every push.
+    // Read the actual destination; the pre-push hook still checks Git's exact outgoing interval independently.
+    const base = remoteHead(root);
     const why = needsCi(options.tree, '', old, sha, run, io.exists);
     if (why) {
       say(`${why}: npm ci`);
@@ -58,7 +67,7 @@ export function pushClean(root: string, options: Options, io: Io): number {
     const test = step('npm-test.log', 'npm', ['test']);
     say(testSummary(test.out));
     if (test.code !== 0) throw new Stop([`STOPP: npm test (kod ${test.code})`, ...testFailures(test.out)].join('\n'));
-    const check = step('npm-check.log', 'npm', ['run', 'check']);
+    const check = step('npm-check.log', 'npm', ['run', 'check', '--', '--base', base]);
     for (const line of tail(check.out, 6)) say(line);
     if (check.code !== 0) throw new Stop([`STOPP: npm run check (kod ${check.code})`, ...checkRed(check.out)].join('\n'));
     if (options.dryRun) say('torrkörning: git push origin HEAD:main körs inte');
@@ -67,8 +76,12 @@ export function pushClean(root: string, options: Options, io: Io): number {
       for (const line of tail(push.out, 5)) say(line);
       if (push.code !== 0) throw new Stop(`STOPP: git push (kod ${push.code})`);
     }
-    say(`lokalt: ${run('git', ['rev-parse', 'HEAD'], options.tree).out.trim()}`);
-    say(`fjärr:  ${run('git', ['ls-remote', 'origin', 'refs/heads/main'], options.tree).out.split(/\s/)[0] ?? ''}`);
+    const local = run('git', ['rev-parse', 'HEAD'], options.tree);
+    if (local.code !== 0 || local.out.trim() !== sha) throw new Stop('STOPP: arbetsträdets HEAD ändrades under körningen');
+    const remote = remoteHead(options.tree);
+    say(`lokalt: ${sha}`);
+    say(`fjärr:  ${remote}`);
+    if (!options.dryRun && remote !== sha) throw new Stop('STOPP: fjärrens main motsvarar inte den pushade committen');
     say(`klart ${clock()}`);
     return 0;
   } catch (error) {

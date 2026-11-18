@@ -58,6 +58,9 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   gång med `git worktree add --detach <mapp på D:> main` (förvalet är `D:/dealer-scratch/tmp/huvudagent11/push-trad`)
   och står kvar mellan pusharna; verktyget vägrar huvudträdet och ett träd ur ett annat repo. Det som pushas är
   incheckade commits, aldrig någons öppna filer.
+  Förkontrollen får fjärrens verifierade `main`-SHA som `--base`, så ett detached träd inte behöver granska hela
+  historiken igen. Pre-push kontrollerar fortfarande Git:s verkliga pushintervall. Sammanfattningen skiljer
+  godkänt, fel, avbrutet, överhoppat och TODO; efter push måste fjärrens SHA motsvara den avsedda committen.
 - **Testerna läser Jakobs arbetsfiler som de är incheckade** (2026-11-18). Hans kortplan (`placements/default.json`)
   och ett utkast i `data/orders/` som inte är incheckat ändras när han sparar i labbet. Ett test som behöver dem tar
   dem ur HEAD med `tools/committed.ts`, så att `npm test` säger samma sak i huvudträdet som i ett rent träd. Rött i

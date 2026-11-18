@@ -21,8 +21,8 @@ function world(answers: Record<string, Answer> = {}, present = (p: string) => tr
     if (key === 'git rev-parse HEAD') return {code: 0, out: (calls.some(c => c.includes('checkout')) ? SHA : OLD) + '\n'};
     if (key.startsWith('git diff --quiet')) return {code: 0, out: ''};
     if (key === 'npm test') return {code: 0, out: TEST_LOG};
-    if (key === 'npm run check') return {code: 0, out: 'a\nb\nc\nd\ne\nf\nKontrollen är grön.\n'};
-    if (key.startsWith('git ls-remote')) return {code: 0, out: `${SHA}\trefs/heads/main\n`};
+    if (key.startsWith('npm run check')) return {code: 0, out: 'a\nb\nc\nd\ne\nf\nKontrollen är grön.\n'};
+    if (key.startsWith('git ls-remote')) return {code: 0, out: `${calls.some(c => c.includes('git push')) ? SHA : OLD}\trefs/heads/main\n`};
     return {code: 0, out: ''};
   };
   const go = (options: Partial<Options> = {}) => pushClean(ROOT, {commit: 'main', tree: TREE, dryRun: false, ...options}, {run, say: l => said.push(l), log: (n, t) => { logs[n] = t; }, exists: present});
@@ -48,7 +48,8 @@ test('a dry run does every step in order but never git push, and still reads bot
   assert.match(w.text(), /^från b{40} till a{40} \(\d\d:\d\d:\d\d\)/);
   assert.match(w.text(), /ℹ tests 3 ℹ pass 3 ℹ fail 0 ℹ skipped 0/);
   assert.match(w.text(), /torrkörning: git push origin HEAD:main körs inte/);
-  assert.match(w.text(), new RegExp(`lokalt: ${SHA}\nfjärr:  ${SHA}\nklart \\d\\d:\\d\\d:\\d\\d$`));
+  assert.match(w.text(), new RegExp(`lokalt: ${SHA}\nfjärr:  ${OLD}\nklart \\d\\d:\\d\\d:\\d\\d$`));
+  assert.ok(w.calls.includes(`tree: npm run check -- --base ${OLD}`), 'the detached check uses the verified remote base');
   assert.ok(!('push.log' in w.logs) && 'npm-test.log' in w.logs && 'npm-check.log' in w.logs);
 });
 
@@ -66,7 +67,7 @@ test('each stop stops before the next step, with the words the script printed', 
     ['npm ci', {'git diff --quiet': {code: 1}, 'npm ci': {code: 1, out: 'npm error x\n'}}, /paketlistan har ändrats: npm ci\nSTOPP: npm ci\nnpm error x/, 'npm test'],
     ['npm test', {'npm test': {code: 1, out: '✖ a test fails\nℹ tests 3\nℹ pass 2\nℹ fail 1\n'}}, /ℹ tests 3 ℹ pass 2 ℹ fail 1\nSTOPP: npm test \(kod 1\)\n✖ a test fails/, 'npm run check'],
     ['the check', {'npm run check': {code: 1, out: '[RÖD] tools/x.ts: Ändrad testfil\n'}}, /STOPP: npm run check \(kod 1\)\n\[RÖD\] tools\/x\.ts/, 'git push'],
-    ['the push', {'git push': {code: 1, out: 'rejected\n'}}, /rejected\nSTOPP: git push \(kod 1\)$/, 'ls-remote'],
+    ['the push', {'git push': {code: 1, out: 'rejected\n'}}, /rejected\nSTOPP: git push \(kod 1\)$/, 'tree: git ls-remote'],
   ];
   for (const [name, answers, words, never] of cases) {
     const w = world(answers);
@@ -100,9 +101,22 @@ test('npm ci runs when the package list changed or node_modules is missing, and 
 });
 
 test('the log readers pick the lines the script grepped', () => {
-  const log = 'x\nℹ tests 10\nℹ suites 2\nℹ pass 8\nℹ fail 1\nℹ cancelled 0\nℹ skipped 1\n✖ one\nnot ok 3 - two\n';
-  assert.equal(testSummary(log), 'ℹ tests 10 ℹ pass 8 ℹ fail 1 ℹ skipped 1');
+  const log = 'x\nℹ tests 10\nℹ suites 2\nℹ pass 7\nℹ fail 1\nℹ cancelled 0\nℹ skipped 1\nℹ todo 1\n✖ one\nnot ok 3 - two\n';
+  assert.equal(testSummary(log), 'ℹ tests 10 ℹ pass 7 ℹ fail 1 ℹ cancelled 0 ℹ skipped 1 ℹ todo 1');
   assert.deepEqual(testFailures(log), ['✖ one', 'not ok 3 - two']);
   assert.deepEqual(checkRed('ok\n[RÖD] a\nGUL b\n✖ c\n'), ['[RÖD] a', '✖ c']);
   assert.equal(testFailures(Array(30).fill('✖ x').join('\n')).length, 20);
+});
+
+test('an unreadable remote stops before testing or pushing; a different final SHA never reports completion', () => {
+  for (const answer of [{code: 1}, {out: 'not-a-sha\trefs/heads/main\n'}, {out: ''}]) {
+    const w = world({'repo: git ls-remote': answer});
+    assert.equal(w.go(), 1);
+    assert.match(w.text(), /fjärrens main kunde inte verifieras/);
+    assert.ok(!w.calls.some(c => c.includes('npm test') || c.includes('git push')));
+  }
+  const raced = world({'tree: git ls-remote': {out: `${OLD}\trefs/heads/main\n`}});
+  assert.equal(raced.go(), 1);
+  assert.match(raced.text(), /fjärrens main motsvarar inte den pushade committen/);
+  assert.doesNotMatch(raced.text(), /\nklart /);
 });
