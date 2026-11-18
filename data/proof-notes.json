@@ -23,10 +23,10 @@
       "text": "Kanek är bra, ne typ spelkortet vrids aningen konstigt runt ruta 59, men det kaske inte är så noga?",
       "at": "2026-11-17T23:55:12.843Z",
       "answer": {
-        "text": "Skickat till 3D-banan: kortets vridning runt ruta 59 i dockans film ses över i nästa förlaga. Tagningen som gjordes med filmen (C3) fick 4/5 av granskaragenten.",
-        "at": "2026-11-17T23:59:20.658Z"
+        "text": "Rättat i dockan: kortet vänds nu i en enda vridning (se svaret under C2:s docka). En tagning med den nya filmen är beställd (C5).",
+        "at": "2026-11-18T00:16:41.212Z"
       },
-      "read": "2026-11-17T23:59:20.658Z"
+      "read": "2026-11-18T00:16:41.212Z"
     },
     {
       "id": 3,
@@ -114,10 +114,10 @@
       "text": "Ja, runt ruta 55 görs en konstig halvrotation, alltså 50 grader av kortet. Kanske är det vad som krävs för att AI-modeller inte ska förstå att ett kort kan vridas över sin egen axel. Jag vet inte.",
       "at": "2026-11-17T23:59:14.315Z",
       "answer": {
-        "text": "Skickat till 3D-banan tillsammans med din rad om ruta 59: kortets halvvridning (cirka 50 grader) runt ruta 55 i dockans film. Rörelsen är avläst ur Pamelas hand; 3D-banan ser efter om det är hennes rörelse eller dockans kort som gör det.",
-        "at": "2026-11-17T23:59:32.952Z"
+        "text": "Svar från 3D-banan: det var dockans kort, inte Pamelas rörelse. Kortet rullade över sin långsida och snurrade sedan 53 grader i sitt eget plan på en enda ruta (ruta 57): det är halvrotationen du såg. Nu vänds kortet i en enda vridning i jämn takt, ruta 51 till 59, som när handleden vrids. En tagning med den nya filmen är beställd (C5). Se bild 11 och 12 i provet dealer-3d-vinkel-stol-1.",
+        "at": "2026-11-18T00:16:41.000Z"
       },
-      "read": "2026-11-17T23:59:32.952Z"
+      "read": "2026-11-18T00:16:41.000Z"
     },
     {
       "id": 10,
@@ -127,10 +127,10 @@
       "text": "Ja, runt ruta 55 görs en konstig halvrotation, alltså 50 grader av kortet. Kanske är det vad som krävs för att AI-modeller inte ska förstå att ett kort kan vridas över sin egen axel. Jag vet inte.",
       "at": "2026-11-18T00:00:03.621Z",
       "answer": {
-        "text": "Samma som under C2:s docka: skickat till 3D-banan, som ser efter om halvvridningen är Pamelas rörelse eller dockans kort.",
-        "at": "2026-11-18T00:04:41.316Z"
+        "text": "Rättat i dockan: se svaret under C2:s docka. Filmerna till plats 3 och 5 är också gjorda om med den nya vändningen.",
+        "at": "2026-11-18T00:16:41.418Z"
       },
-      "read": "2026-11-18T00:04:41.316Z"
+      "read": "2026-11-18T00:16:41.418Z"
     },
     {
       "id": 11,
@@ -140,10 +140,10 @@
       "text": "Ja, runt ruta 55 görs en konstig halvrotation, alltså 50 grader av kortet. Kanske är det vad som krävs för att AI-modeller inte ska förstå att ett kort kan vridas över sin egen axel. Jag vet inte.",
       "at": "2026-11-17T23:59:49.546Z",
       "answer": {
-        "text": "Samma som under C2:s docka: skickat till 3D-banan.",
-        "at": "2026-11-18T00:04:41.511Z"
+        "text": "Rättat i dockan: se svaret under C2:s docka.",
+        "at": "2026-11-18T00:16:41.620Z"
       },
-      "read": "2026-11-18T00:04:41.511Z"
+      "read": "2026-11-18T00:16:41.620Z"
     },
     {
       "id": 12,
@@ -153,10 +153,10 @@
       "text": "Handen vriden ut led i slutet",
       "at": "2026-11-18T00:01:38.457Z",
       "answer": {
-        "text": "Skickat till 3D-banan: handen ur led i modellens sista ruta rättas innan bilden används som råbild.",
-        "at": "2026-11-18T00:04:40.682Z"
+        "text": "Meshy-modellen används inte: råbilderna är vita dockans egna rutor (bild 8 och 9 i provet), där handen ligger rätt på kortet.",
+        "at": "2026-11-18T00:16:42.040Z"
       },
-      "read": "2026-11-18T00:04:40.682Z"
+      "read": "2026-11-18T00:16:42.040Z"
     },
     {
       "id": 13,
@@ -179,10 +179,10 @@
       "text": "Det beror på. Om en dealer ska kunna vända kortet med handleden eller flippa runt kortet med fingrarna, så kan det fungera. Här syns kortet åka runt på ett sätt som kan vara svårt att förstå. Men så länge videon i slutändan blir bra kanske det inte är så noga, jag är osäker.",
       "at": "2026-11-18T00:02:58.989Z",
       "answer": {
-        "text": "Skickat till 3D-banan. Provet du sa ja till i Beslut får visa om vändningen går att läsa i en riktig film från stol 1; annars ändras dockans vändning.",
-        "at": "2026-11-18T00:04:41.109Z"
+        "text": "3D-banan har rättat vändningen till en enda vridning (film 5 i provet). Provet från stol 1 som du sa ja till görs nu med den filmen och vita dockans rutor som råbilder.",
+        "at": "2026-11-18T00:16:41.829Z"
       },
-      "read": "2026-11-18T00:04:41.109Z"
+      "read": "2026-11-18T00:16:41.829Z"
     },
     {
       "id": 15,
