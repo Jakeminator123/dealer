@@ -13,8 +13,9 @@ och Trailer lämnade. Här står bara det som gäller nu; kontraktet står i `do
 - Läpparna: sättet för munnen i realtid har Jakobs ja (provet `paow-realtid-mun-6`: storlek F, bara läpparna, mindre
   öppning i vanligt tal med dagens som tak, hakan följer mjukt). Den egna köraren går lokalt med 12–13 rutor per
   sekund mot 24 för realtid. I spelet är receptet lyftet med ritad underläpp (`src/speech-plan.ts`).
-- Kopian på nätet är sekundär på Jakobs ord: inget arbete läggs där, den står på `aee87ca`, och `cloud/` står orörd
-  tills han säger att den ska bort. Den publiceras bara på hans uttryckliga ord.
+- Kopian på nätet är sekundär på Jakobs ord: inget arbete läggs där, den står på `2e3967c` (publicerad 2026-11-18 på
+  hans ja, med nytt lösenord), och `cloud/` står orörd tills han säger att den ska bort. Nästa publicering kräver hans
+  ord igen.
 - Filmen till hans chef ligger på hans skrivbord (`paow-runda-6-till-chefen-spelet.mp4` och `-scenen.mp4`, 124 s,
   blint granskad 3,75/5). Ingen granskare har hört ljudet, och `paow-runda-2-` till `-5-` ska inte skickas.
 - Filmen före spelet (`/trailer`) är `assets/films/intro/noir-3/film-2.mp4`.
@@ -28,8 +29,8 @@ och Trailer lämnade. Här står bara det som gäller nu; kontraktet står i `do
    avgjord, är uppfyllt sedan hans ja 2026-11-17.
 4. En ny runda till chefen när läpparna är inne (`node alla.mjs <namn>`, blind granskning mot `chef-jakob-1-1x-v10`);
    Jakob lyssnar innan han skickar.
-5. När Jakob säger till: nytt ord för kopian och en publicering. Efter varje publicering frågas kopian som en ny
-   besökare i telefonstorlek.
+5. Kopian publiceras igen först när Jakob säger till. Efter varje publicering frågas den som en ny besökare i
+   telefonstorlek (kontrollen efter 2026-11-18: [BRISTER](../BRISTER.md), "Labbet och verktygen").
 
 **Väntar på Jakob.** Inget utanför Beslut.
 

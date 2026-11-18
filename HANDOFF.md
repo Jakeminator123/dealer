@@ -12,9 +12,8 @@ Git, och en rad som inte längre gäller ersätts.
 - Filmstandardens första del (mall 10) är inne, och den tatuerade uppsättningen är hans förstahandsval. Nya ankare
   (2.3, sedan 2.2) tas ur en film som 3D-banans docka styr.
 - Kortplanen ritar verkliga kort genom en lins; spelets liggande kort följer den inte än.
-- Kopian på nätet är sekundär och publiceras bara på hans ord; hans ja från 2026-11-18 utförs nu (nytt lösenord,
-  kortet `kopians-losenord`).
-- GitHubs betalning är löst; vad som kostar där utreds på hans ord.
+- Kopian på nätet är sekundär och publiceras bara på hans ord; senast 2026-11-18 från `2e3967c`, med nytt lösenord.
+- GitHubs kontroll nekas än av kontots betalningslås, fast han har betalat ([BRISTER](docs/BRISTER.md)).
 
 ## Nästa steg
 
@@ -26,7 +25,7 @@ Git, och en rad som inte längre gäller ersätts.
 3. Filmerna först: ankare 2.3 (MODEL:s tagning är levererad; kandidaten läggs som Prov för honom), sedan given från
    2.3 på 3 s och filmen med kort ett till alla platser (3D gör dockfilmerna), sedan ankare 2.2
    ([film](docs/lage/film.md)).
-4. Fråga kopian som en ny besökare efter publiceringen (skillen `publicera-kopian`).
+4. Läs vad besökarkontrollen av kopian fann (BRISTER), och för förslagen som sänker GitHubs kostnad till honom.
 5. Utför de besvarade korten i Beslut och ta ut dem. Låt en oberoende granskare ge sitt omdöme om tagningarna som
    väntar i Prov, eller märk avgjorda prov som avgjorda ([labbet](docs/lage/labbet-och-studion.md)).
 

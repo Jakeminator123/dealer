@@ -181,16 +181,15 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 - **Testerna utan FFmpeg:** elva hoppas över där FFmpeg saknas, tre i `tools/order-images.test.ts` kräver bankens filmer
   och ett i `tools/card-overlay.test.ts` kortspåren. Syns: GitHubs kontroll kör dem inte; den här datorn gör det.
   Prövat: inget. Stänger: ingen väg vald.
-- **GitHubs kontroll går inte** sedan 2026-11-17 kl. 16.48 ("The job was not started because your account is locked due
-  to a billing issue"). Syns: GitHubs bock är röd på varje push; kontrollen går grön på datorn, så inget är stoppat.
-  Prövat: inget, det kan bara han. Stänger: han reder ut betalningen (Settings, Billing).
-- **Kopians lösenord har stått i det publika repot** (utskrivet i dokument till och med `dfe29c4`). Syns: i Gits
-  historik; ordet är borta ur dokumenten (`c82bda4`) och ur testernas exempel (`aa5f7e7`). Prövat: inget mer. Stänger:
-  ett nytt ord och en ny publicering, som kräver hans ord; boten och önskemålslådan är det ordet skyddar, och boten
-  kostar per fråga.
-- **Kopian på nätet är inte sedd med den nya menyn.** Syns: kopian står på `aee87ca` och visar Scen och Placering;
-  Bordet för kopian är bara byggt, inte sett i en webbläsare. Prövat: inget. Stänger: en publicering på hans ord, och
-  sedan frågas kopian som en ny besökare i telefonstorlek.
+- **GitHubs kontroll går inte** ("The job was not started because your account is locked due to a billing issue").
+  Syns: GitHubs bock är röd på varje push; kontrollen går grön på datorn, så inget är stoppat. Kontot låstes mellan
+  2026-11-14 och 2026-11-15 (mätt på ett annat repos körningar), och det märktes här först 2026-11-17. Prövat: Jakob
+  svarade "Fixat" 2026-11-18 kl. 01.47, men pushen kl. 02.19 och en omkörning kl. 02.20 nekades med samma ord. Det här
+  repot är publikt och kostar inget; vad som kostar på kontot står i `D:/dealer-scratch/tmp/github-kostnad/siffror.txt`.
+  Stänger: kontot låses upp hos GitHub (Settings, Billing and licensing); kör sedan om kontrollen med `gh run rerun`.
+- **Kopian på nätet är inte sedd av en människa med den nya menyn.** Syns: kopian är publicerad från `2e3967c`
+  (2026-11-18, med nytt lösenord) och öppnar på Bordet; publiceringens egen kontroll gick igenom. Prövat: en underagent
+  frågar den som ny besökare i telefonstorlek. Stänger: det den hittar rättas, eller punkten stryks.
 
 ## Pamela
 
