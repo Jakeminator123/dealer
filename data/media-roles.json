@@ -3916,6 +3916,32 @@
             "from": "dealer3d: giv-fran-2-3-p4-grepp-pilot-h-cykel.json; renderkvitto.json och receipt.json bredvid filmen",
             "when": "2026-11-18"
           }
+        },
+        {
+          "id": "docka-2-3-p4c2-h24-cykel",
+          "role": "referens",
+          "name": "Docka H24 · P4.C2 · giv och retur",
+          "path": "assets/references/docka/docka-2-3-p4c2-h24-cykel/source.mp4",
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Egen andrakortscykel, fyra sekunder i 24 bilder/s. Stillgranskad oberoende och uppspelad i studion. Endast kandidat för ett pilotprov; C1-kortets kvarvaro återstår. Väljs uttryckligen; förvalet ändras inte. Rörelse, plan, renderkvitto och granskning ligger bredvid filmen.",
+          "source": {
+            "from": "dealer3d: H24-giv till P4.C2 + reproducerbar return-cycle; renderkvitto.json och receipt.json bredvid filmen",
+            "when": "2026-11-18"
+          }
+        },
+        {
+          "id": "paow-fork-round-review-20261118",
+          "role": "referens",
+          "name": "3D-Dealer · hela given · jämförelse",
+          "path": "assets/proofs/paow-fork-round-review-20261118/runda.mp4",
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Byteidentisk granskningskopia av 3D-Dealers 14-kortsfilm. Separat kamera/redo-ställning; inte en ersättare i Dealer 2.3. Källa och SHA står i proof.json bredvid filmen.",
+          "source": {
+            "from": "3d-dealer: cykel-nyp-1-0-spelaren-t1-och-13-till_spelaren_balsal_runda-paulina.mp4",
+            "when": "2026-11-18"
+          }
         }
       ]
     },

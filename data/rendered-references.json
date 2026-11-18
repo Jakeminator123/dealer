@@ -69,6 +69,15 @@
       }
     },
     {
+      "id": "docka-2-3-p4c2-h24-cykel",
+      "edge": "READY-C>P4.C2",
+      "path": "assets/references/docka/docka-2-3-p4c2-h24-cykel/source.mp4",
+      "sha256": "587d1ebadaaec339859cbbf575e243db16ff71b4437d1b12ec22bd679366f1e5",
+      "seconds": 4,
+      "lays": "RH",
+      "check": null
+    },
+    {
       "id": "docka-2-3-p4c1-h24-cykel",
       "edge": "READY-C>P4.C1",
       "path": "assets/references/docka/docka-2-3-p4c1-h24-cykel/source.mp4",

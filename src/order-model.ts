@@ -239,13 +239,17 @@ export type Generation = {
  * How the card moves in a deal. hand: the hand that takes it from the shoe; pass: it is handed over to the other hand,
  * which lays it (handbyte; only from left to right). side: how it lands (BACK closed, FRONT open); turn: it is turned on
  * the way (every card leaves the shoe closed). fromPlan: hand, pass and side are what Placering says for the card.
- * Orders made before 2026-11-13 lack pass (read as false). cardScale: the card's size on the last picture as a factor of the
+ * A GIV-2.3 with TWO_HANDS always hands off from LH to RH. Some historical files stored pass=false for that grip;
+ * frozen files retain their original encoding. Orders made before 2026-11-13 lack pass (read as false).
+ * cardScale: the card's size on the last picture as a factor of the
  * plan's (CARD_SCALES), a trial; absent: the plan's size. planned: what Placering said for the card when the draft was made,
  * its grip and its turn in the order's words (defaultFlip of the plan's turnAt and flipAxis; null where the plan lays it
  * closed). The grip of an order is its step's (GIV-2.2 drags), so where the plan said otherwise this is where that stays
  * said, also after the plan changes (PlannedMotion, plannedDiffers). Absent on orders made before 2026-11-17.
  */
 export type Motion = { grip: Grip; hand: 'LH' | 'RH'; pass: boolean; turn: boolean; flipAxis: FlipAxis | null; target: string | null; side: 'FRONT' | 'BACK'; fromPlan: boolean; cardScale?: number; planned?: PlannedMotion };
+export const twoHandMotion = (step: StepKey, grip: Motion['grip'] | undefined) =>
+  step === 'GIV-2.3' && grip === 'TWO_HANDS' ? { hand: 'LH', pass: true } as const : null;
 export type PlannedMotion = { grip: 'PINCH' | 'DRAG'; flipAxis: FlipAxis | null };
 /** What Placering says for a card, as an order stores it (Motion.planned): its grip and how it turns, null where it lands closed. */
 export const plannedOf = (seat: Pick<SeatPlan, 'grip' | 'turnAt' | 'flipAxis' | 'side'>): PlannedMotion => ({ grip: seat.grip, flipAxis: seat.side === 'FRONT' ? defaultFlip('', seat.turnAt, seat.flipAxis) : null });
@@ -1050,6 +1054,13 @@ export function twoHandDealSideProblem({ step, motion }: Pick<Order, 'step' | 'm
   return 'GIV-2.3 börjar med ett gult kort i skon. Vändningen stämmer inte med sidan i slutbilden. Gör ett nytt utkast.';
 }
 
+export function twoHandDraftProblem({ status, approval, step, motion }: Pick<Order, 'status' | 'approval' | 'step' | 'motion'>): string | null {
+  if (status !== 'UTKAST' || approval || !motion) return null;
+  const hands = twoHandMotion(step.key, motion.grip);
+  if (!hands || (motion.hand === hands.hand && motion.pass === hands.pass)) return null;
+  return 'GIV-2.3 har ett handbyte från vänster till höger. Uppdatera utkastet med Hämta bilderna före godkännande.';
+}
+
 export function draftProblems(order: Order): string[] {
   const out: string[] = [];
   if (order.step.key === 'RETUR-2.3') out.push(RETURN_23_BLOCK);
@@ -1057,6 +1068,8 @@ export function draftProblems(order: Order): string[] {
     const problem = twoHandDealSideProblem(order) ?? shortTwoHandTurnProblem(order.step.key, order.prompt.style, order.motion?.turn, order.motion?.flipAxis);
     if (problem) out.push(problem);
   }
+  const hands = twoHandDraftProblem(order);
+  if (hands) out.push(hands);
   const waits = waitingOf(order);
   if (waits.length) out.push(`Väntar på ${waitWords(waits)}.`);
   for (const p of order.pictures) if (!p.waits && (!p.path || !p.sha256)) out.push(`${p.label} saknas.`);

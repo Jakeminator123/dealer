@@ -3,9 +3,10 @@
 import test, {type TestContext} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile, readdir} from 'node:fs/promises';
-import {sceneOf, restingQuad, restOf, poseAt, returnCardAt, returnAfterFilmLanding, cardToImage, projectionOf, regionOf, readMatte, filmZone, shiftShare, placedCard, landing, leakCount, strayBoxes, ranges, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, MARGIN, STRAY, type CardRecord, overridesOf, cardInFront, describeTrack, RIM, plausible, keystone, skirtSound, turnOf, restFade, restShare, PLAUSIBLE, HOLD, REST_FADE, type CardTrack, type Scene} from '../src/card-overlay.ts';
-import {signedArea, centre, dist, sound, type Pt} from '../src/card-track.ts';
+import {sceneOf, restingQuad, restingFilmPaperZone, restOf, poseAt, returnCardAt, returnAfterFilmLanding, cardToImage, projectionOf, regionOf, readMatte, filmZone, shiftShare, placedCard, landing, leakCount, strayBoxes, ranges, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, MARGIN, STRAY, type CardRecord, overridesOf, cardInFront, describeTrack, RIM, plausible, keystone, skirtSound, turnOf, restFade, restShare, PLAUSIBLE, HOLD, REST_FADE, type CardTrack, type Scene} from '../src/card-overlay.ts';
+import {signedArea, centre, dist, inside, sound, type Pt} from '../src/card-track.ts';
 import {cameraFromContract, solveCamera, squareToQuad, onSquare, filmToScene} from '../src/scene3d-geometry.ts';
+import {backZone, darkBackOf} from '../src/scene3d-matte.ts';
 import {filmCarryProtection, frameCardsForView, placedCardsForView, protectFilmPixels} from '../src/card-overlay-view.ts';
 import {cardOptions} from '../src/game-film.ts';
 import {createLayout, slotOf} from '../src/game-table.ts';
@@ -251,6 +252,36 @@ test('film carry follows the measured landing across an early cut into the same 
     assert.equal(returnAfterFilmLanding(track, cut, {...returning, carry: 'object'}), true);
     assert.equal(returnAfterFilmLanding({...track, restFrom: null}, cut, returning), true, 'an unmeasured landing does not delay a return');
   }
+});
+
+test('at P1 rest the paper tint covers the blue card while preserving green shadow and skin', () => {
+  // Quad and RGB samples from frame 114 of paow-giv-2-1-p1-06-01, with its last moving quad at 113.
+  const rest = 114, cutQuad = [[235.7, 1002.8], [172.3, 999.4], [237.1, 959.6], [313.9, 955.1]];
+  const restQuad = [[235.7, 1002.8], [173.7, 998.7], [239.9, 957.9], [302.2, 959.4]];
+  const track: CardTrack = {...deal(), restFrom: rest, restQuad, frames: Array.from({length: rest + 1}, (_, frame) => ({
+    frame, side: frame < 80 ? 'BACK' : 'FRONT', quad: frame < rest - 1 ? null : frame < rest ? cutQuad : restQuad, edge: null,
+  }))};
+  assert.equal(restingFilmPaperZone(track, rest - 1, true), undefined, 'the moving card keeps the broad search zone');
+  const wide = pts(backZone(track, rest)!), zone = restingFilmPaperZone(track, rest, true);
+  assert.ok(zone);
+  const unitRgb = (rgb: number[]) => rgb.map(x => x / 255), key = unitRgb([0, 237, 41]);
+  const shadow = unitRgb([4, 196, 54]), card = unitRgb([1, 137, 182]), finger = unitRgb([226, 156, 132]);
+  // These samples are clear of the shader's soft boundary, so the tint is fully on or off.
+  const paper = (polygon: Pt[], x: number, y: number, rgb: number[]) => inside(polygon, x, y) ? darkBackOf(rgb, key, {side: 'face'}).colour : rgb;
+  assert.notDeepEqual(paper(wide, 312, 968, shadow), shadow, 'the old zone bleaches the shadow');
+  assert.deepEqual(paper(zone, 312, 968, shadow), shadow);
+  assert.notDeepEqual(paper(zone, 252, 972, card), card, 'the blue film face still becomes paper');
+  assert.deepEqual(paper(zone, 281, 938, finger), finger);
+  const inferred = {...track, restFrom: null, restQuad: null};
+  assert.deepEqual(restingFilmPaperZone(inferred, rest, true), zone);
+  const lost = {...track, frames: [...track.frames.slice(0, rest), {...track.frames[rest], quad: null}]};
+  assert.equal(restingFilmPaperZone(lost, rest, true), null, 'a missing resting sample supplies no guessed tint region');
+  const gone = {...track, frames: [...track.frames, {frame: rest + 1, side: 'NONE' as const, quad: null, edge: null}]};
+  assert.equal(restingFilmPaperZone(gone, rest + 1, true), null);
+  assert.equal(restingFilmPaperZone(track, rest, false), undefined, 'dark back alone keeps the broad search zone');
+  const closed = {...gone, frames: gone.frames.map(f => f.frame === rest ? {...f, side: 'BACK' as const} : f)};
+  assert.equal(restingFilmPaperZone(closed, rest, true), undefined, 'a back-up landing keeps the broad search zone even when paper is on');
+  assert.equal(restingFilmPaperZone(closed, rest + 1, true), undefined, 'a missing sample after a back-up landing keeps the previous policy');
 });
 
 test('a continuous return waits for inferred rest when a deal has no measured rest', () => {

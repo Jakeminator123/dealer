@@ -27,7 +27,7 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
   visar det som en bricka ("äldre plan", "annan kamera", "avviker").
 
 **Nästa steg.**
-1. Cykel02 och P1→P7 är synprovade ([bevis](../BRISTER.md#kortet)); P1 har dubbelkant vid landning. Andrakort/split återbrukar
+1. Cykel02 och P1→P7 är synprovade ([bevis](../BRISTER.md#kortet)); P1:s blekta skugga är rättad. Andrakort/split återbrukar
    fel landningsplats när egen film saknas. Eget C2-par prioriteras; P4.C2:s dockcykel finns i Prov `paow-c2-rig-cycle-20261118`.
    Dealerfilmen och hålkortets vändning återstår före kortförvalet. Linsförvalet kräver hans ja.
 2. När hans sparade plan checkas in, skriv om `data/media-fit.json` med `node tools/media-audit.ts --fit --write`.

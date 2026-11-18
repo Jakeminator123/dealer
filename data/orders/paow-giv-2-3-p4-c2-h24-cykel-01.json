@@ -1,0 +1,178 @@
+{
+  "schemaVersion": 1,
+  "title": "Paow · P4.C2 · egen H24-cykel",
+  "summary": "Gör en film av Paow: ett kort från ankare 2.3 till plats 4, kort 2, tur och retur.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "GIV-2.3",
+    "label": "Två händer, ett kort till platsen",
+    "edge": "READY-C>P4.C2",
+    "shape": "ROUND_TRIP",
+    "cutInto": [
+      "READY-C>P4.C2",
+      "P4.C2>READY-C"
+    ],
+    "makes": null
+  },
+  "motion": {
+    "grip": "TWO_HANDS",
+    "hand": "LH",
+    "pass": true,
+    "turn": true,
+    "flipAxis": "LONG_EDGE",
+    "target": "P4.C2",
+    "side": "FRONT",
+    "fromPlan": false,
+    "planned": {
+      "grip": "PINCH",
+      "flipAxis": "FREE"
+    }
+  },
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows ankare 2.3",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-giv-2-3-p4-c2-h24-cykel-01/first.png",
+      "sha256": "340842ba3b6af20bdf36646b517d20501163496b426c154d1dd798b488f75542",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-ankare-2-3-a",
+        "path": "assets/anchors/paow-ankare-2-3-a/anchor.png",
+        "note": "Ankare 2.3, båda händerna vid skon före första kortet (A) (gäller)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Sista bild · samma + kortet öppet på plats 4, kort 2",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-giv-2-3-p4-c2-h24-cykel-01/last.png",
+      "sha256": "62424d2be79a2a37ab7524c9319f1d048e19486e1ea96f903ddc50d620f8f1ce",
+      "from": {
+        "built": "första bilden + kortet P4.C2 där planen säger"
+      },
+      "waits": null,
+      "width": 1764,
+      "height": 1174,
+      "drawn": {
+        "target": "P4.C2",
+        "side": "FRONT",
+        "as": "verkligt perspektiv: ett verkligt kort genom bordets lins, formen 87 % (src/card-plan.ts)",
+        "plan": {
+          "path": "placements/default.json",
+          "sha256": "dbb558211411ad4a2a45ee1047e9794ab39912084a0ad6717a020e443d2f7e7c",
+          "updatedAt": "2026-11-18T00:35:37.644Z"
+        },
+        "texture": {
+          "video": "assets/motions/pamela-p4-c1-plan-return-idle-01/source.mp4",
+          "frame": 89,
+          "sha256": "0b3cba9be4a969334bf1ba23623b80be6d0bd119a3c4dd8236db27145d479aa7",
+          "quadFrom": "assets/anchors/pamela-idle-p4-c1-plan-01/receipt.json"
+        },
+        "quad": [
+          [
+            869.3,
+            1055.9
+          ],
+          [
+            942.4,
+            1055.9
+          ],
+          [
+            948.9,
+            1126.9
+          ],
+          [
+            865,
+            1126.9
+          ]
+        ],
+        "centre": [
+          906.4,
+          1091.4
+        ],
+        "measured": {
+          "centre": [
+            906.5,
+            1092.9
+          ],
+          "area": 6048,
+          "box": [
+            84,
+            74
+          ],
+          "changedElsewhere": 0
+        },
+        "measuredOffsetPx": 1.5
+      }
+    }
+  ],
+  "reference": {
+    "status": "FINNS",
+    "clips": [
+      "docka-2-3-p4c2-h24-cykel"
+    ],
+    "path": "assets/orders/paow-giv-2-3-p4-c2-h24-cykel-01/reference.mp4",
+    "sha256": "587d1ebadaaec339859cbbf575e243db16ff71b4437d1b12ec22bd679366f1e5",
+    "seconds": 4,
+    "goesTo": "P4.C2",
+    "approvedStraight": false,
+    "dealer": "docka",
+    "from": {
+      "film": "docka-2-3-p4c2-h24-cykel",
+      "path": "assets/references/docka/docka-2-3-p4c2-h24-cykel/source.mp4",
+      "sha256": "587d1ebadaaec339859cbbf575e243db16ff71b4437d1b12ec22bd679366f1e5",
+      "edge": "READY-C>P4.C2",
+      "verdict": "EJ_DÖMD",
+      "words": null,
+      "frames": null,
+      "also": []
+    }
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "kling-4",
+    "params": {
+      "resolution": "1080p",
+      "duration": 4
+    }
+  },
+  "prompt": {
+    "template": "film-giv-minimal@11",
+    "style": "MINIMAL",
+    "text": "Locked camera. Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing. The card is blank, solid yellow on one side and solid blue on the other, each colour reaching right out to its corners, and the next card in the window is the same blank yellow. One card goes from the shoe to where the last frame shows it, and the hand comes back to its pose in the first frame. After the handoff, her left hand rests at the shoe. Her right fingertip stays on the blue card until it lies flat, pauses briefly, then lifts away. Her right hand returns low and calmly to its pose in the first frame. The blue card stays still on the table. The next card visible inside the shoe stays saturated yellow throughout the shot. The dealt card keeps its solid yellow back and saturated blue face through the entire motion. The blue face keeps the same color from approach to placement and return.",
+    "sha256": "cbbfae61c01c8a16f6987ca64020006002c8fa9ac3ef152f0cdbe535f651e5e3",
+    "extra": "After the handoff, her left hand rests at the shoe. Her right fingertip stays on the blue card until it lies flat, pauses briefly, then lifts away. Her right hand returns low and calmly to its pose in the first frame. The blue card stays still on the table. The next card visible inside the shoe stays saturated yellow throughout the shot. The dealt card keeps its solid yellow back and saturated blue face through the entire motion. The blue face keeps the same color from approach to placement and return.",
+    "middle": false
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 86,
+    "total": 86,
+    "worstPerTake": 94,
+    "worstTotal": 94,
+    "basis": "21,3 krediter per s × 4 s. Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12."
+  },
+  "limits": {
+    "maxCredits": 94,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Ett avgränsat pilotprov till P4.C2 med egen dockcykel, inte en flyttad C1-film. Referensen har granskats i stillbilder av oberoende agent och spelats i studion av huvudagenten; dealerfilmen återstår.",
+    "Avsiktligt metodavsteg från fryst kortplan: LH till RH, fysiskt DRAG-grepp och LONG_EDGE/AIR; planen anger pass=false, PINCH och FREE. Referensens actualIntent och planIntent finns bevarade i rörelsefilen.",
+    "A2.3 i första bilden och samma pose med bara det nya C2-kortet i sista bilden. C1 ritas separat i spelet; dess kvarvaro, överlappning och handocklusion måste granskas med C2-filmen innan metoden kan godkännas.",
+    "Ingen aktivering som Primär eller serieproduktion. Jakobs stående genereringstillstånd gäller, men detta är endast ett utkast: separat giltigt mandat, färskt saldo och fungerande Kling 4-MCP krävs före ett betalt anrop.",
+    "Recept giv-2.3 (prov) ur data/order-methods.json.",
+    "Undantag från receptet: tur och retur i stället för bara dit; texten MINIMAL i stället för KORT; vändningen LONG_EDGE i stället för FREE."
+  ],
+  "createdBy": "Jakob, studions vy Beställ",
+  "approval": null,
+  "status": "UTKAST",
+  "id": "paow-giv-2-3-p4-c2-h24-cykel-01",
+  "created": "2026-11-18T14:58:52.537Z"
+}

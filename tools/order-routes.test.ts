@@ -14,7 +14,7 @@ import sharp from 'sharp';
 import { orderRoutes } from './order-routes.ts';
 import { committedText } from './committed.ts';
 import { ARM_ALONE, ARM_AT_SHOE, POSE_ARM_WHAT, POSE_WHAT, SHOE_AT_ANCHOR, SLEEVE_AT_SHOE, orderStore, orderHash } from './order-store.ts';
-import { promptFor } from '../src/order-prompts.ts';
+import { orderPrompt, promptFor } from '../src/order-prompts.ts';
 import { mediaRoles } from './media-roles.ts';
 import { replacedBy, allowed, isDecidable } from '../studio/components/material/state.ts';
 
@@ -648,7 +648,7 @@ test('a legacy incompatible KORT two-hand deal cannot be revised or frozen until
     assert.equal(made.status, 201, made.json.error);
     const { order } = made.json;
     const address = `/api/orders/${order.id}`, file = path.join(root, 'data/orders', `${order.id}.json`);
-    const legacy = { ...order, motion: { ...order.motion, ...motion } };
+    const legacy = { ...order, motion: { ...order.motion, ...motion, pass: false } };
     const before = JSON.stringify(legacy);
     await writeFile(file, before);
     const opened = await call('GET', address);
@@ -684,7 +684,37 @@ test('a legacy incompatible KORT two-hand deal cannot be revised or frozen until
     assert.equal(history.status, 200, history.json.error);
     assert.deepEqual(history.json.order, frozen);
     assert.deepEqual(history.json.problems, []);
+    assert.equal(orderHash(history.json.order), frozen.approval.orderSha256);
+    assert.equal((await call('PUT', address, { match: history.json.revision, body: { pass: true } })).status, 409);
     assert.equal(await readFile(file, 'utf8'), frozenText);
+  }
+
+  for (const hand of ['LH', 'RH'] as const) {
+    const made = await call('POST', '/api/orders', { body: input });
+    assert.equal(made.status, 201, made.json.error);
+    const { order } = made.json, address = `/api/orders/${order.id}`, file = path.join(root, 'data/orders', `${order.id}.json`);
+    const oldDraft = JSON.stringify({ ...order, motion: { ...order.motion, hand, pass: false } });
+    await writeFile(file, oldDraft);
+    const opened = await call('GET', address);
+    assert.equal(opened.status, 200, opened.json.error);
+    const refused = await call('POST', `${address}/approve`, { match: opened.json.revision });
+    const problem = /GIV-2\.3.*Hämta bilderna/;
+    assert.equal(refused.status, 409, `legacy ${hand}/false cannot freeze`);
+    assert.match(refused.json.error, problem);
+    assert.match(opened.json.problems.join(' '), problem);
+    assert.match(opened.json.refresh, problem);
+    assert.equal(await readFile(file, 'utf8'), oldDraft);
+
+    const refreshed = await call('POST', `${address}/refresh`, { match: opened.json.revision });
+    assert.equal(refreshed.status, 200, refreshed.json.error);
+    assert.deepEqual([refreshed.json.order.motion.hand, refreshed.json.order.motion.pass], ['LH', true]);
+    assert.equal(refreshed.json.order.prompt.sha256, order.prompt.sha256);
+    const current = await call('GET', address);
+    assert.deepEqual(current.json.problems, []);
+    assert.equal(current.json.refresh, null);
+    const approved = await call('POST', `${address}/approve`, { match: current.json.revision });
+    assert.equal(approved.status, 200, approved.json.error);
+    assert.equal(approved.json.order.approval.orderSha256, orderHash(refreshed.json.order));
   }
 });
 
@@ -712,6 +742,59 @@ test('the MINIMAL two-hand deal accepts the H24 long-edge reference', async (t) 
   assert.deepEqual([order.prompt.style, order.motion.flipAxis, order.reference.clips, order.reference.sha256], ['MINIMAL', 'LONG_EDGE', [id], sha(film)]);
   assert.doesNotMatch(order.prompt.text, /short end/);
   assert.deepEqual(await readFile(path.join(root, order.reference.path)), film);
+});
+
+test('C2 two-hand drafts store the actual handoff and retain the legacy prompt', async (t) => {
+  const { root, call, request } = await lab(t);
+  const planPath = path.join(root, 'placements/default.json'), plan = JSON.parse(await readFile(planPath, 'utf8'));
+  Object.assign(plan.targets['P4.C2'].intent, { takeHand: 'LH', pass: false, endSide: 'FRONT', grip: 'PINCH', turnAt: 'AIR', flipAxis: 'FREE' });
+  await writeFile(planPath, JSON.stringify(plan));
+  const reference = 'docka-2-3-p4c2-h24-cykel';
+  const ref = `assets/references/docka/${reference}/source.mp4`;
+  const film = Buffer.from('four seconds of own C2 motion');
+  await mkdir(path.dirname(path.join(root, ref)), { recursive: true });
+  await writeFile(path.join(root, ref), film);
+  await writeFile(path.join(root, 'data/rendered-references.json'), JSON.stringify({
+    schemaVersion: 1, films: [{ id: reference, edge: 'READY-C>P4.C2', path: ref, sha256: sha(film), seconds: 4, lays: 'RH', check: null }],
+  }));
+  const input = { dealer: 'paow', step: 'GIV-2.3', target: 'P4.C2', style: 'MINIMAL', flipAxis: 'LONG_EDGE',
+    shape: 'ROUND_TRIP', model: 'kling-4', duration: 4, takes: 1, reference };
+  const preview = await request('POST', '/api/orders/preview', { body: input });
+  assert.equal(preview.status, 200, preview.json.error);
+  const shown = preview.json.orders[0];
+  const hands = (order: typeof shown) => [order.motion.grip, order.motion.hand, order.motion.pass, order.motion.fromPlan];
+  assert.deepEqual(hands(shown), ['TWO_HANDS', 'LH', true, false]);
+  assert.deepEqual(shown.step.cutInto, ['READY-C>P4.C2', 'P4.C2>READY-C']);
+  assert.deepEqual([shown.motion.flipAxis, shown.motion.planned], ['LONG_EDGE', { grip: 'PINCH', flipAxis: 'FREE' }]);
+  assert.doesNotMatch(shown.notes.join(' '), /handbyte i stället för/);
+  const dealer = (await call('GET', '/api/orders')).json.dealers.find((d: { id: string }) => d.id === 'paow');
+  const legacyMotion = { ...shown.motion, pass: false, fromPlan: true };
+  const legacyText = orderPrompt({ ...shown, motion: legacyMotion }, dealer, null, { asStored: true });
+  assert.deepEqual([shown.prompt.template, shown.prompt.text, shown.prompt.sha256], [legacyText.template, legacyText.text, sha(Buffer.from(legacyText.text))]);
+
+  const saved = await request('POST', '/api/orders', { body: input, match: preview.json.revision });
+  assert.equal(saved.status, 201, saved.json.error);
+  const { order, revision } = saved.json, address = `/api/orders/${order.id}`;
+  const file = path.join(root, 'data/orders', `${order.id}.json`);
+  assert.deepEqual([order.motion, order.prompt], [shown.motion, shown.prompt]);
+  assert.deepEqual(JSON.parse(await readFile(file, 'utf8')).motion, shown.motion);
+
+  const changed = await call('PUT', address, { match: revision, body: { hand: 'RH', pass: false } });
+  assert.equal(changed.status, 200, changed.json.error);
+  assert.deepEqual(hands(changed.json.order), ['TWO_HANDS', 'LH', true, false]);
+  assert.equal(changed.json.order.prompt.sha256, shown.prompt.sha256);
+  const legacy = { ...order, motion: legacyMotion };
+  await writeFile(file, JSON.stringify(legacy));
+  const reopened = await call('GET', address);
+  assert.deepEqual(hands(reopened.json.order), ['TWO_HANDS', 'LH', false, true]);
+  const renamed = await call('PUT', address, { match: reopened.json.revision, body: { title: 'C2 · prov' } });
+  assert.equal(renamed.status, 200, renamed.json.error);
+  assert.deepEqual(hands(renamed.json.order), ['TWO_HANDS', 'LH', true, false]);
+  await writeFile(file, JSON.stringify(legacy));
+  const refreshed = await call('POST', `${address}/refresh`, { match: reopened.json.revision });
+  assert.equal(refreshed.status, 200, refreshed.json.error);
+  assert.deepEqual(hands(refreshed.json.order), ['TWO_HANDS', 'LH', true, false]);
+  assert.equal(refreshed.json.order.prompt.sha256, shown.prompt.sha256);
 });
 
 test('the return to 2.3 copies the preceding deal’s RH ending and cannot be approved', async (t) => {

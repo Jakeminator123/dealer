@@ -42,7 +42,7 @@ import { mediaRoles } from './media-roles.ts';
 import { readMandateBudget } from './order-mandate.ts';
 import {
   ANCHOR_NODE, ANCHOR_ROLE, CARD_SCALES, EXTRA_LIMIT, MODELS, FILE_NAME, FLIP_AXES, ORDER_ID, RETURN_23_BLOCK, SEAT_TARGETS, SHORT_TWO_HAND_TURN_HELP, TAKES_MAX, scaleWords, shortTwoHandTurnProblem,
-  bodyLine, canonical, checkPolicy, costOf, crossesBody, cutFrameOf, cutFrameWords, cutIntoOf, tidyMotion, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, hashInput, landingMissing, landingOf, a3Candidates, a3Name, archivedReferenceIds, isArchived, modelFor, modelsFor, paramsOf, plannedOf, readCutChecks, referenceCandidates, seatEndMissing, seatList, seatWords, secondsWords, shownOf, spentOn, stepOf, stylesFor, summaryOf, twoHandDealSideProblem, validateOrder, waitingOf,
+  bodyLine, canonical, checkPolicy, costOf, crossesBody, cutFrameOf, cutFrameWords, cutIntoOf, tidyMotion, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, hashInput, landingMissing, landingOf, a3Candidates, a3Name, archivedReferenceIds, isArchived, modelFor, modelsFor, paramsOf, plannedOf, readCutChecks, referenceCandidates, seatEndMissing, seatList, seatWords, secondsWords, shownOf, spentOn, stepOf, stylesFor, summaryOf, twoHandDealSideProblem, twoHandDraftProblem, twoHandMotion, validateOrder, waitingOf,
   type Anchor, type BankFacts, type CutFrame, type Drawn, type FlipAxis, type Motion, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Policy, type PoseAnswer, type Receipt, type RefCandidate, type Reference, type RenderedReference, type SeatPlan, type Shape, type StepDef, type StepKey, type TextStyle, type Waits,
 } from '../src/order-model.ts';
 import { readMethods, recipeFor, recipeHands, referenceByRule, referenceWaits, secondsOf, type MethodRegister } from '../src/order-methods.ts';
@@ -183,7 +183,7 @@ export function planAnswerOf(plan: PlacementPlan, file: { path: string; sha256: 
   }
   return { path: file.path, sha256: file.sha256, updatedAt: plan.updatedAt, ...line, seats };
 }
-/** Whether a deal's hand and side are what Placering says for its card. */
+/** Whether a deal's taking hand, handover and side are what Placering says for its card. */
 const fromPlanOf = (plan: PlacementPlan, m: Pick<Motion, 'target' | 'hand' | 'pass' | 'side'>) => {
   const i = m.target ? plan.targets[m.target]?.intent : null;
   return !!i && i.takeHand === m.hand && i.pass === !!m.pass && i.endSide === m.side;
@@ -659,17 +659,16 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     if (input.shape !== undefined && !deal && input.shape !== 'ONE_WAY') throw new StoreError(400, 'Bara en giv kan gå tur och retur.');
     // A deal is bara dit unless the recipe or the order says tur och retur (the trials hold only for bara dit, handbook §5).
     const shape: Shape | null = step.kind !== 'FILM' ? null : deal ? (input.shape ?? recipe?.shape ?? 'ONE_WAY') : 'ONE_WAY';
-    // The hands of a deal: the order's, else the recipe's (the hand at the shoe all the way, as the trials that held), else
-    // what Placering says for the card. A handbyte is never a default, also where the plan says it for the card: it is an
-    // exception a draft has to say. From anchor 2.3 the hand at the shoe strokes the card out and the other hand lays it.
-    const twoHands = step.grip === 'TWO_HANDS';
+    // For ordinary deals an optional handover is an explicit exception. From anchor 2.3 the hand at the shoe
+    // strokes the card out and the other hand always lays it.
+    const twoHands = twoHandMotion(step.key, step.grip);
     // Nothing said: the one rule Bordet's row and the production list take too (recipeHands).
     const said = input.pass !== undefined || input.hand !== undefined;
     const byLine = recipeHands(step, recipe, intent ? { hand: intent.takeHand, pass: intent.pass } : null);
-    const pass = returnStart ? false : !said ? byLine.pass : !step.card || !intent || twoHands ? false : (input.pass ?? false);
-    const hand: 'LH' | 'RH' = returnStart ? 'RH' : !said ? byLine.hand : pass || twoHands ? 'LH' : (input.hand ?? intent?.takeHand ?? 'LH');
-    if (pass && input.hand === 'RH') throw new StoreError(400, 'Handbyte går från vänster hand till höger: vänster tar kortet ur skon.');
-    const lays: 'LH' | 'RH' = twoHands ? 'RH' : handsIn({ hand, pass }).lays;
+    const pass = twoHands?.pass ?? (returnStart ? false : !said ? byLine.pass : !step.card || !intent ? false : (input.pass ?? false));
+    const hand: 'LH' | 'RH' = twoHands?.hand ?? (returnStart ? 'RH' : !said ? byLine.hand : pass ? 'LH' : (input.hand ?? intent?.takeHand ?? 'LH'));
+    if (!twoHands && pass && input.hand === 'RH') throw new StoreError(400, 'Handbyte går från vänster hand till höger: vänster tar kortet ur skon.');
+    const lays: 'LH' | 'RH' = handsIn({ hand, pass }).lays;
     const bank = step.kind === 'FILM' ? await readBank(watch) : null;
     // A deal bara dit ends on the seat's own end picture: its landing picture where one holds, else the cut frame of the
     // bank's own film to the seat. A seat with neither says so.
@@ -726,7 +725,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       if (input.duration !== undefined && input.duration !== secondsOf(model, recipe.seconds, chosen)) exceptions.push(`${input.duration} s i stället för ${secondsOf(model, recipe.seconds, chosen)} s`);
       if (takes !== recipe.takes) exceptions.push(`${takes} tagningar i stället för ${recipe.takes}`);
       if (named) exceptions.push(`med kandidaten som sista bild: ${named.name} (${named.id}), en kandidat som Jakob inte har gjort gällande`);
-      if (deal && recipe.hand && (pass || hand !== recipe.hand)) exceptions.push(`${pass ? 'handbyte' : hand === 'RH' ? 'höger hand hela vägen' : 'vänster hand hela vägen'} i stället för ${recipe.hand === 'LH' ? 'handen vid skon hela vägen' : 'andra handen hela vägen'}`);
+      if (deal && !twoHands && recipe.hand && (pass || hand !== recipe.hand)) exceptions.push(`${pass ? 'handbyte' : hand === 'RH' ? 'höger hand hela vägen' : 'vänster hand hela vägen'} i stället för ${recipe.hand === 'LH' ? 'handen vid skon hela vägen' : 'andra handen hela vägen'}`);
     }
 
     const files = new Map<string, Buffer>();
@@ -1059,7 +1058,9 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       const next: Order = structuredClone(order);
       if (changes.title !== undefined) next.title = changes.title.trim();
       if (changes.takes !== undefined) next.takes = changes.takes;
-      const editsPose = changes.hand !== undefined || changes.pass !== undefined || changes.side !== undefined;
+      const twoHands = twoHandMotion(next.step.key, next.motion?.grip);
+      const editsPose = changes.side !== undefined || (!twoHands && (changes.hand !== undefined || changes.pass !== undefined));
+      const oldHands = twoHands && (next.motion?.hand !== twoHands.hand || next.motion?.pass !== twoHands.pass);
       // In a return the card lies where it was laid and is not turned.
       const turn = editsPose
         ? stepOf(next.step.key)?.start !== 'LAND' && (changes.side ?? next.motion?.side) !== 'BACK'
@@ -1067,17 +1068,17 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       const fixedAxis = fixedTwoHandTurn(next.step.key, next.prompt.style, turn, changes.flipAxis ?? next.motion?.flipAxis);
       if (changes.flipAxis !== undefined) { if (!next.motion?.turn) throw new StoreError(400, 'Kortet vänds inte i det här utkastet.'); next.motion.flipAxis = changes.flipAxis; }
       if (changes.duration !== undefined) { if (next.kind !== 'FILM') throw new StoreError(400, 'En bild har ingen längd.'); next.generation.params.duration = changes.duration; }
-      if (editsPose) {
+      if (editsPose || oldHands) {
         if (!next.motion) throw new StoreError(400, 'Steget har ingen hand eller sida att välja.');
         // The last picture of a deal bara dit is the seat's end picture, which shows a hand and a side: they follow it.
-        if (next.step.shape === 'ONE_WAY' && !next.pictures.some((p) => p.goesAs === 'endFrame' && p.from?.built)) throw new StoreError(400, 'Sista bilden är platsens slutbild, som visar handen och kortets sida: de ändras inte i utkastet. Gör ett nytt utkast.');
-        const pass = changes.pass ?? (changes.hand !== undefined ? false : !!next.motion.pass);
-        const hand = changes.hand ?? (pass ? 'LH' : next.motion.hand);
+        if (editsPose && next.step.shape === 'ONE_WAY' && !next.pictures.some((p) => p.goesAs === 'endFrame' && p.from?.built)) throw new StoreError(400, 'Sista bilden är platsens slutbild, som visar handen och kortets sida: de ändras inte i utkastet. Gör ett nytt utkast.');
+        const pass = twoHands?.pass ?? changes.pass ?? (changes.hand !== undefined ? false : !!next.motion.pass);
+        const hand = twoHands?.hand ?? changes.hand ?? (pass ? 'LH' : next.motion.hand);
         if (pass && hand !== 'LH') throw new StoreError(400, 'Handbyte går från vänster hand till höger: vänster tar kortet ur skon.');
         const side = changes.side ?? next.motion.side, redraw = side !== next.motion.side;
-        const intent = next.motion.target ? (await readPlan(root)).plan.targets[next.motion.target]?.intent : null;
-        Object.assign(next.motion, { hand, pass, side, turn, flipAxis: turn ? (fixedAxis ?? next.motion.flipAxis ?? defaultFlip(next.step.key, intent?.turnAt, intent?.flipAxis)) : null });
         const { plan } = await readPlan(root);
+        const intent = next.motion.target ? plan.targets[next.motion.target]?.intent : null;
+        Object.assign(next.motion, { hand, pass, side, turn, flipAxis: turn ? (fixedAxis ?? next.motion.flipAxis ?? defaultFlip(next.step.key, intent?.turnAt, intent?.flipAxis)) : null });
         next.motion.fromPlan = fromPlanOf(plan, next.motion);
         await labelLast(next);
         if (redraw) await drawLast(id, next, null);
@@ -1124,7 +1125,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       const register = await readRegister(), dealer = (await readDealers()).find((d) => d.id === order.dealer);
       if (!dealer) throw new StoreError(500, 'Dealern saknas i data/dealers.json.');
       const next: Order = structuredClone(order);
-      const { file: planFile } = await readPlan(root);
+      const { plan, file: planFile } = await readPlan(root);
       let firstBytes: Buffer | null = null;
       // A step whose cards are drawn on its anchor (the hole card's turn) is drawn anew from the anchor that holds now.
       const drawnStep = stepOf(next.step.key);
@@ -1162,7 +1163,13 @@ export function orderStore(root: string, options: StoreOptions = {}) {
         const made = await cutPose(register, source, { bytes: await readFile(path.join(root, ...anchor.path!.split('/'))), sha256: anchor.sha256! });
         Object.assign(pose, await put(id, pose.name, made.bytes), { cut: made.cut });
       }
-      if (next.motion && next.motion.pass === undefined) next.motion.pass = false;
+      if (next.motion) {
+        const twoHands = twoHandMotion(next.step.key, next.motion.grip);
+        if (twoHands) {
+          Object.assign(next.motion, twoHands);
+          next.motion.fromPlan = fromPlanOf(plan, next.motion);
+        } else next.motion.pass ??= false;
+      }
       const last = next.pictures.find((p) => p.goesAs === 'endFrame' && p.from?.built);
       if (last && (firstBytes || !last.path || last.drawn?.plan.sha256 !== planFile.sha256 || (last.drawn && last.drawn.side !== next.motion?.side))) await drawLast(id, next, firstBytes);
       await labelLast(next);
@@ -1184,6 +1191,8 @@ export function orderStore(root: string, options: StoreOptions = {}) {
   function refreshReason(order: Order, register: Register | null, dealer: DealerInfo | undefined, planSha: string | null): string | null {
     if (order.approval || order.status !== 'UTKAST') return null;
     const reasons: string[] = [];
+    const hands = twoHandDraftProblem(order);
+    if (hands) reasons.push(hands);
     if (register && waitingOf(order).some((w) => resolveWaits(register, w))) reasons.push('Det utkastet väntar på finns nu i Material.');
     for (const p of order.pictures) {
       const f = register && dealer ? followOf(register, order.dealer, p, dealer.name) : null;

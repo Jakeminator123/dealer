@@ -22,12 +22,12 @@ Rädda befintligt repo till en sammanhängande lokal väg från underlag till sp
 Kodens samband och verifiering rättas parallellt; filmproduktionen börjar med EN trovärdig giv ([film](docs/lage/film.md)).
 
 1. Bevara Jakobs ändrade kortplan och oincheckade orderutkast. Läs nya anteckningar med `node tools/proof-notes.ts`.
-2. Eget C2-par prioriteras nu före C1-återbruk. P4.C2:s dockcykel är synprovad, dealerfilmen saknas. Lös övriga
-   andrakort och hålkortets vändning före kortförvalet ([kort](docs/lage/kort.md)); P1 har en dubbelkant vid landningen.
+2. Eget C2-par prioriteras före C1-återbruk. P4.C2:s granskade cykel har ett obetalt utkast; dealerfilmen saknas.
+   Lös övriga andrakort och hålkortets vändning före kortförvalet ([kort](docs/lage/kort.md)); P1:s landningsslöja är rättad.
 3. Använd automatiska testkvitton och det återbyggbara SQLite-indexet ([evidens](tools/evidence.md)); inga medieblobs.
 4. Munproven är lokala jämförelser; inget byte i banken före Jakobs val i Beslut. Körarens kod finns nu i repot.
 5. Testa, pusha och verifiera fjärrens SHA. Sessionens tio GPT-meddelanden är förbrukade; färdiga granskningsfynd är
-   rättade. Tre Runway-filmer kostade 234 krediter; inga beställningar eller giltiga KÖR återstår.
+   rättade. Tre Runway-filmer kostade 234 krediter; C2-utkastet väntar på fungerande MCP och förnyad policy, inget KÖR gäller.
 
 Äldre frågor till honom som inte är kort än: `D:/dealer-scratch/tmp/handoff-nytt/forslag-kort.md`.
 
@@ -36,9 +36,8 @@ Kodens samband och verifiering rättas parallellt; filmproduktionen börjar med 
 - **Huvudagentens adress: `/root`.** Codex-chatten `01a1edac-d516-70e2-8aef-64bcf687f6d5` samordnar arbetet.
   Kontrollera med ListAgents före meddelanden. Huvudagenten äger commits, taggar och push, studion,
   labbservern, spelet och 3D-scenens filmlager, `src/clip-graph.ts` och styrdokumenten.
-- **Avgränsade uppdrag:** `/root/geometry`, `/root/order_snapshot` och `/root/evidence_audit` har lämnat över
-  C2-valet, egen C2-landning och reproducerbar cykelretur. Huvudagenten äger nu integration, register och körjournal;
-  nya underagentuppdrag måste ange egna filer innan någon skriver.
+- **Avgränsade uppdrag:** underagenterna har lämnat över landningsmasken, orderns handbyte och forkens bildgranskning.
+  Huvudagenten äger nu integration, register och körjournal; nya uppdrag anger egna filer före skrivning.
 - **Jakob talar bara med huvudagenten**, som håller ihop sessionerna. Varje bana får sin kö av huvudagenten och säger
   till när ett steg är grönt, med en fillista. Ingen bana skriver i en annans filer.
 - **Huvudagentens banor:** film, kort, labbet och studion, och spelet. Filerna de äger står under Var saker ligger i varje lägesfil.

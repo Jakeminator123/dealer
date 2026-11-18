@@ -28,13 +28,13 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
 1. Huvudagenten styr en granskad pilot enligt räddningsmandatet i BESKED. Anslutning och workspace verifieras med
    Runway-MCP; egen kostnad bokförs per order och samordnas i skrivbordets DISKMASKIN.TXT.
 2. H24-03 och Cykel01 är dömda med bevis vid tagningarna. Cykel02: giv Variant 3/5, retur 4/5.
-   Cykel02:s framsida bleknar. P4.C2:s dockcykel finns i Prov `paow-c2-rig-cycle-20261118`. Inga fler order; Kling 4-skrivschema/inloggning återstår.
+   Cykel02:s framsida bleknar. C2-utkast `paow-giv-2-3-p4-c2-h24-cykel-01`: granskad referens, obetalt. Kling 4-MCP återstår.
 3. Alternativet med plant kort och vändning först efter släpp är fortfarande ett separat förslag i Beslut;
    det är inte en godkänd metod. En godkänd kodkontroll gör inte en film visuellt godkänd.
 4. Plats 1 (hans ord i Prov): A3 · P1 görs om med modellen som lämnar ansiktet orört, och vägen tillbaka från den
    framåtlutade slutbilden kräver en egen idé. Ingången till 2.3 ligger klippt i Prov `ingang-2-3-klippt` (1,9 och
    1,7 s, mätt stilla från ruta 42): hans Bra för in den som ett utsnitt (derived) av samma film, utan omkodning.
-5. Väntar tills en giv har hans ja: resten av bordet, fem kameravinklar (`/vinklar.html`), ankare 2.1 och 2.2 med
+5. Efter en visuellt godkänd pilot enligt mandatet: resten av bordet, fem kameravinklar (`/vinklar.html`), ankare 2.1 och 2.2 med
    tatuerade händer, hålkortet, andra kortet (`yt-referens/ut/giv-resten.md`), returer och dealerns tredje kort.
 
 **Väntar på Jakob.** Aktuella frågor finns i Beslut; filmdomar lämnas i Granska.

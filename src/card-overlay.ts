@@ -239,6 +239,17 @@ export function filmLandingFrame(track: CardTrack | null): number | null {
   return rest ? (rest.assumed ? rest.from : track!.restFrom ?? rest.from) : null;
 }
 
+/** On a paper face at rest, colour the measured film card and rim. Undefined keeps the broad search zone. */
+export function restingFilmPaperZone(track: CardTrack, frame: number, paper: boolean): Pt[] | null | undefined {
+  if (!paper) return undefined;
+  const landing = filmLandingFrame(track);
+  if (landing === null || frame < landing) return undefined;
+  const side = track.frames[frame]?.side;
+  if (side === 'BACK' || (side !== 'FRONT' && track.frames[landing]?.side === 'BACK')) return undefined;
+  const marker = returnMarkerAt(track, frame);
+  return marker?.side === 'FRONT' ? grown(marker.quad, RIM) : null;
+}
+
 /** Only a return cut from adjacent frames of the deal can keep that deal's film card until it rests. */
 export function returnAfterFilmLanding(track: CardTrack | null, frame: number, options: {carry?: 'object' | 'film' | 'matte'; returning?: boolean; filmContinuesDeal?: boolean}, fadeEnd?: number): boolean {
   if (!options.returning) return false;
