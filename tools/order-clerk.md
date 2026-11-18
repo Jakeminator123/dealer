@@ -19,14 +19,17 @@ from a picture to a finished dealer, with every format and name: `tools/dealer-l
 - The rules for the queue: `data/order-policy.json` (`enabled`, caps, `minBalance`). The approval already checked the caps.
 
 ## Tools
-Load the Runway tools with ToolSearch:
-`select:mcp__runway__generate_video,mcp__runway__generate_image,mcp__runway__get_task,mcp__runway__init_upload,mcp__runway__complete_upload`.
-If they are not available, stop at once and say so. No API keys, no other services, no browser, no subagents (ask the main
+Discover the connected Runway MCP tools: `whoami`, `generate_video`, `generate_image`, `get_task`, `init_upload` and
+`complete_upload`. Their namespace depends on the client; use the available tool's schema and verify the workspace
+against DRIFT before an upload or generation. If a required capability is unavailable, report that limitation.
+No API keys, no other services, no browser, no subagents (ask the main
 agent for an independent reviewer instead).
 
-The shell rewrites commands: an argument with `>` becomes a redirect and `&` cuts a command, also inside quotes. Every
-command with a signed address goes in a script file (Write tool) under `D:/dealer-scratch/tmp/bestall/<id>/` and is run
-with `bash <script>`. Never `node -e`. At most two ffmpeg processes at a time. Run everything from the repo root.
+Keep signed addresses as private data under `D:/dealer-scratch/tmp/bestall/<id>/`, never in inline shell commands,
+Git or logs shown to the user. Pass them verbatim through a script with the shell's proper quoting, or read them from
+private JSON into a request; do not build executable command strings from addresses. The curl example below uses Bash;
+PowerShell may use an equivalent script with `curl.exe`. Never `node -e`. At most two ffmpeg processes at a time.
+Run everything from the repo root.
 
 ## 1. Read the queue
 1. List the approved orders: the files in `data/orders/` with `"status": "GODKÄND"`, oldest `approval.at` first.

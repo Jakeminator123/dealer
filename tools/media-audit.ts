@@ -25,6 +25,8 @@ import {planCardQuad, planToFilm} from '../src/card-plan.ts';
 import {classify, blobs, outline, centre, YELLOW, BLUE, SHADE, TABLE, TINT, SKIN, type Pt} from '../src/card-track.ts';
 import type {PlacementPlan} from '../src/placement-model.ts';
 import {execFileSync} from 'node:child_process';
+import {stat} from 'node:fs/promises';
+import {mediaFileSha256, mediaFileStamp} from './media-roles.ts';
 import {writeFileSync} from 'node:fs';
 
 export type Use = 'spelas' | 'visas' | 'referens' | 'bara registrerad' | 'okänd';
@@ -265,7 +267,8 @@ export function audit(repo: string): {items: Item[]; judged: Map<string, string>
 // node tools/media-audit.ts --fit [--write]: for every landing and every anchor with a card at a seat, the card found in the
 // picture by the films' colours (src/card-track.ts classify) against planCardQuad (src/card-plan.ts, the one rule; never its
 // numbers copied); for every deal of the bank with a card track, the track's lying card (restQuad) against the same; for an
-// anchor of rest, the hands and the shoe's card against data/dealer-standard.json; for a reference, which camera (the bank's
+// anchor of rest, the hands and the shoe's card against the dealer's held rest image, using data/dealer-standard.json to find them;
+// for a reference, which camera (the bank's
 // frame size and table edge row of data/scene-contract.json) and so what it can be a reference for. --write keeps the
 // answer in data/media-fit.json, which Material reads (tools/media-roles.ts). Jakob's states are never touched.
 export type Verdict = 'stämmer' | 'äldre plan' | 'annan kamera' | 'går inte att mäta' | 'avviker';
@@ -312,6 +315,31 @@ export function skinBox(cls: Uint8Array, w: number, h: number, box: number[], gr
 }
 export const boxOff = (a: number[], b: number[]) => Math.max(...a.map((v, i) => Math.abs(v - b[i])));
 
+function validBox(value: unknown): value is [number, number, number, number] {
+  return Array.isArray(value) && value.length === 4 && value.every(Number.isInteger)
+    && value[0] <= value[2] && value[1] <= value[3];
+}
+
+type HandRegions = {leftInPicture?: {box?: unknown}; rightInPicture?: {box?: unknown}};
+type RestHands = [number[], number[]];
+
+function restHandsOf(cls: Uint8Array, w: number, h: number, regions: HandRegions | undefined): RestHands | null {
+  const leftBox = regions?.leftInPicture?.box, rightBox = regions?.rightInPicture?.box;
+  if (!validBox(leftBox) || !validBox(rightBox)) return null;
+  const left = skinBox(cls, w, h, leftBox), right = skinBox(cls, w, h, rightBox);
+  return left && right ? [left, right] : null;
+}
+
+function shoeCardOf(cls: Uint8Array, w: number, h: number, box: unknown): number[] | null {
+  if (!validBox(box)) return null;
+  const mask = new Uint8Array(w * h);
+  for (let y = Math.max(0, box[1]); y <= Math.min(h - 1, box[3]); y++) {
+    for (let x = Math.max(0, box[0]); x <= Math.min(w - 1, box[2]); x++) if (cls[y * w + x] === YELLOW) mask[y * w + x] = 1;
+  }
+  const [card] = blobs(mask, w, h, 100);
+  return card ? [card.x0, card.y0, card.x1, card.y1] : null;
+}
+
 type Fit = {verdict: Verdict; words: string; measured?: Record<string, unknown>; for?: 'utseende' | 'rörelse' | 'kontroll' | null; usedBy?: string[]};
 async function pixels(repo: string, file: string, frame?: number): Promise<{rgb: Uint8Array; w: number; h: number} | null> {
   const abs = path.join(repo, file); if (!existsSync(abs)) return null;
@@ -322,7 +350,7 @@ async function pixels(repo: string, file: string, frame?: number): Promise<{rgb:
   return raw.length >= w * h * 3 ? {rgb: new Uint8Array(raw.buffer, raw.byteOffset, w * h * 3), w, h} : null;
 }
 
-export async function fitAll(repo: string): Promise<{rule: FitRule; entries: Record<string, Fit>; takes: Record<string, Fit & {approved: boolean; played: boolean}>}> {
+export async function fitAll(repo: string, loadPixels = pixels): Promise<{rule: FitRule; entries: Record<string, Fit>; takes: Record<string, Fit & {approved: boolean; played: boolean}>}> {
   const read = (f: string) => { try { return readFileSync(path.join(repo, f), 'utf8'); } catch { return ''; } }, json = (f: string) => { try { return JSON.parse(read(f)); } catch { return null; } };
   const plan = json('placements/default.json') as PlacementPlan, roles = json('data/media-roles.json'), standard = json('data/dealer-standard.json');
   const BANK = {width: 1764, height: 1174, edgeRow: 831.5};
@@ -342,15 +370,23 @@ export async function fitAll(repo: string): Promise<{rule: FitRule; entries: Rec
     takes[clip] = {verdict: cardVerdict(mm, rule), words: cardWords(mm), measured: mm, approved, played: playedFolders.has(clip)};
   }
   // Material's pictures.
-  const anchorOneShoe = new Map<string, number[]>(), handsZero = new Map<string, number[]>();
   const users = referenceUsers(repo, read);
   for (const [dealer, d] of Object.entries(roles?.dealers ?? {}) as [string, {entries: {id: string; role: string; path?: string; frame?: number; still?: number; card?: string; node?: string; state?: string}[]}][]) {
-    const order = [...d.entries].sort((a, b) => (a.role === 'ankare-1' && a.state === 'gäller' ? -1 : 0) - (b.role === 'ankare-1' && b.state === 'gäller' ? -1 : 0));
+    const held = d.entries.filter(e => e.role === 'ankare-1' && !e.card && e.state === 'gäller');
+    const reference = held.length === 1 ? held[0] : undefined;
+    const order = reference ? [reference, ...d.entries.filter(e => e !== reference)] : d.entries;
+    let rest: {hands: RestHands | null; shoe: number[] | null; sha256: string} | undefined;
     for (const e of order) {
-      if (!e.path || !['landning', 'ankare-1', 'ankare-2.1', 'ankare-2.2', 'referens', 'arbetsmaterial', 'film'].includes(e.role)) continue;
+      if (!['landning', 'ankare-1', 'ankare-2.1', 'ankare-2.2', 'referens', 'arbetsmaterial', 'film'].includes(e.role)) continue;
+      if (!e.path) {
+        if (e.role.startsWith('ankare')) entries[e.id] = {verdict: 'går inte att mäta', words: 'Ankaret saknar sökväg.'};
+        continue;
+      }
       if (e.role === 'film') { const clip = /^assets\/motions\/([^/]+)\//.exec(e.path)?.[1], t = clip ? takes[clip] : undefined; if (t) entries[e.id] = {verdict: t.verdict, words: t.words, measured: t.measured}; continue; }
       if (e.role === 'arbetsmaterial') { entries[e.id] = {verdict: 'går inte att mäta', words: 'Övrigt: inget att mäta mot planen.', usedBy: users(e.path)}; continue; }
-      const px = await pixels(repo, e.path, e.frame ?? e.still).catch(() => null);
+      const referenceFile = e === reference ? path.join(repo, e.path) : null;
+      const referenceStat = referenceFile ? await stat(referenceFile).catch(() => null) : null;
+      const px = await loadPixels(repo, e.path, e.frame ?? e.still).catch(() => null);
       if (!px) { entries[e.id] = {verdict: 'går inte att mäta', words: existsSync(path.join(repo, e.path)) ? 'Bilden gick inte att läsa.' : 'Filen finns inte här.', ...(e.role === 'referens' ? {for: null, usedBy: users(e.path)} : {})}; continue; }
       const cls = classify(px.rgb, px.w * px.h), edge = edgeRowOf(cls, px.w, px.h), camera = cameraOf(px.w, px.h, BANK);
       if (e.role === 'referens') {
@@ -361,28 +397,52 @@ export async function fitAll(repo: string): Promise<{rule: FitRule; entries: Rec
         continue;
       }
       if (camera === 'annan') { entries[e.id] = {verdict: 'annan kamera', words: `Inte bankens ruta (${px.w} × ${px.h}, bordskanten på rad ${edge ?? '?'}).`, measured: {width: px.w, height: px.h, edgeRow: edge}}; continue; }
-      const parts: string[] = [], measured: Record<string, unknown> = {}; let verdict: Verdict = 'stämmer';
+      const parts: string[] = [], measured: Record<string, unknown> = {}; let verdict: Verdict = 'går inte att mäta';
       if (e.card && /^P[1-7]\.C|^D\.C/.test(e.card)) {
         const want = ruleCard(e.card), found = want ? findCard(cls, px.w, px.h, want) : null;
         if (!want || !found) { verdict = 'går inte att mäta'; parts.push(!want ? `Planen har ingen plats ${e.card}.` : `Inget gult eller blått kort nära ${e.card}.`); }
         else { const mm = measureCard(found, want, e.card); measured.card = mm; verdict = cardVerdict(mm, rule); parts.push(cardWords(mm)); }
       }
-      if (e.role.startsWith('ankare') && !e.card) {
-        const shoeBox = standard?.shoe?.box as number[] | undefined;
-        const shoe = shoeBox ? (() => { const mask = new Uint8Array(px.w * px.h); for (let y = shoeBox[1]; y <= shoeBox[3]; y++) for (let x = shoeBox[0]; x <= shoeBox[2]; x++) if (cls[y * px.w + x] === YELLOW) mask[y * px.w + x] = 1; const [b] = blobs(mask, px.w, px.h, 100); return b ? [b.x0, b.y0, b.x1, b.y1] : null; })() : null;
-        if (e.role === 'ankare-1' && e.state === 'gäller' && shoe) anchorOneShoe.set(dealer, shoe);
-        const ref = anchorOneShoe.get(dealer);
-        // The shoe's card only at rest (in 2.1 and 2.2 the hand is over it), against the dealer's own anchor 1 that holds (one shoe per dealer).
-        if (e.role === 'ankare-1' && shoe && ref && e.state !== 'gäller') { const off = boxOff(shoe, ref); measured.shoeOffPx = off; if (off > rule.handsPx) { verdict = verdict === 'stämmer' ? 'avviker' : verdict; parts.push(`Skons kort ligger ${off} px från ankare 1:s.`); } }
-        // The hands: the skin's box measured the same way on the standard's own frame (Pamela's anchor 1 that holds, the rest film's
-        // first frame) is the zero; the standard's boxes say where to look, its fitTolerancePx how far a hand may lie.
-        if (e.role === 'ankare-1') for (const side of ['leftInPicture', 'rightInPicture'] as const) {
-          const box = standard?.hands?.[side]?.box as number[] | undefined, got = box ? skinBox(cls, px.w, px.h, box) : null;
-          if (dealer === 'pamela' && e.state === 'gäller' && got) handsZero.set(side, got);
-          const zero = handsZero.get(side);
-          if (got && zero) { const off = boxOff(got, zero); measured[side] = off; if (off > rule.handsPx) { verdict = verdict === 'stämmer' ? 'avviker' : verdict; parts.push(`${side === 'leftInPicture' ? 'Vänster' : 'Höger'} hand (i bild) ${off} px från standardens.`); } }
+      if (e.role === 'ankare-1' && !e.card) {
+        const hands = restHandsOf(cls, px.w, px.h, standard?.hands);
+        const shoe = shoeCardOf(cls, px.w, px.h, standard?.shoe?.box);
+        if (referenceFile && referenceStat?.isFile()) {
+          const sha256 = await mediaFileSha256(referenceFile, mediaFileStamp(referenceStat));
+          if (sha256) rest = {hands, shoe, sha256};
         }
-        if (verdict === 'stämmer') parts.push('Skons kort och händerna som standarden (data/dealer-standard.json).');
+        // The standard supplies search areas and tolerance. Only this dealer's own held rest image supplies zero.
+        if (!reference || !rest) {
+          parts.push('Handmått saknas för dealerns gällande ankare 1.');
+        } else {
+          measured.calibration = {
+            dealer, role: reference.role, entry: reference.id, path: reference.path,
+            frame: reference.frame ?? reference.still ?? null, sha256: rest.sha256,
+          };
+          const against = `gällande ankare 1 (${reference.id})`;
+          if (hands && rest.hands) {
+            const left = boxOff(hands[0], rest.hands[0]), right = boxOff(hands[1], rest.hands[1]);
+            measured.leftInPicture = left;
+            measured.rightInPicture = right;
+            verdict = left > rule.handsPx || right > rule.handsPx ? 'avviker' : 'stämmer';
+            parts.push(e === reference
+              ? `Båda händerna mätta i ${against}, dealerns kalibreringsbild.`
+              : `Mätt mot ${against}. Skillnaden i bilden är ${left} px för vänster hand och ${right} px för höger.`);
+          } else if (!rest.hands) {
+            parts.push(`Båda händerna gick inte att mäta i ${against}.`);
+          } else {
+            parts.push(`Båda händerna gick inte att mäta mot ${against}.`);
+          }
+          if (e !== reference && shoe && rest.shoe) {
+            const off = boxOff(shoe, rest.shoe);
+            measured.shoeOffPx = off;
+            if (off > rule.handsPx) {
+              if (verdict === 'stämmer') verdict = 'avviker';
+              parts.push(`Skons kort ligger ${off} px från kalibreringsbildens.`);
+            }
+          }
+        }
+      } else if (e.role.startsWith('ankare') && !e.card) {
+        parts.push('Handmått saknas för den här ankarrollen.');
       }
       entries[e.id] = {verdict, words: parts.join(' ') || 'Inget kort på en plats att mäta.', measured};
     }
@@ -410,7 +470,7 @@ if (process.argv.includes('--fit') && process.argv[1] && path.resolve(process.ar
   const args = process.argv.slice(2), at = args.indexOf('--repo'), repo = path.resolve(at >= 0 ? args[at + 1] : path.join(path.dirname(fileURLToPath(import.meta.url)), '..'));
   const res = await fitAll(repo);
   if (args.includes('--write')) {
-    const out = {schemaVersion: 1, about: 'Whether each picture and film fits today\'s rules: written by node tools/media-audit.ts --fit --write; Material shows it. The card against planCardQuad (src/card-plan.ts), an anchor against data/dealer-standard.json, a reference by its camera. Jakob\'s states are not touched.',
+    const out = {schemaVersion: 2, about: 'Whether each picture and film fits today\'s rules: written by node tools/media-audit.ts --fit --write; Material shows it. The card against planCardQuad (src/card-plan.ts), rest hands against the dealer\'s held rest image (search areas in data/dealer-standard.json), a reference by its camera. Jakob\'s states are not touched.',
       made: new Date().toISOString(), rule: res.rule, entries: res.entries, takes: res.takes};
     // --out <file> writes elsewhere (a worktree measuring the main checkout's media); without it, the measured checkout's own data/.
     const target = args.includes('--out') ? path.resolve(args[args.indexOf('--out') + 1]) : path.join(repo, 'data/media-fit.json');

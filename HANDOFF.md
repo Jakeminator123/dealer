@@ -22,11 +22,11 @@ Rädda befintligt repo till en sammanhängande lokal väg från underlag till sp
 Kodens samband och verifiering rättas parallellt; filmproduktionen börjar med EN trovärdig giv ([film](docs/lage/film.md)).
 
 1. Bevara Jakobs ändrade kortplan och oincheckade orderutkast. Läs nya anteckningar med `node tools/proof-notes.ts`.
-2. Rätta geometrival genom vybyten och lås beställningens visade underlag mot det som sparas.
-3. Samla körningars underlag och verifiering lokalt, utan att dubblera domar eller lagra media i databasen.
+2. Verifiera geometrival och scenens förval genom vybyten; lås beställningens visade underlag mot det som sparas.
+3. Använd automatiska testkvitton och det återbyggbara SQLite-indexet ([evidens](tools/evidence.md)); inga medieblobs.
 4. Verifiera en pilot från referens och giv till retur och spelmotor; redovisa visuella luckor separat från tester.
 5. Testa, pusha och begär avgränsad GPT Pro-granskning av exakt pushad commit. Läs svaret efter 5–10 minuter och
-   kontrollera fynden lokalt. Jakobs mandat gäller denna arbetsomgång; nya Runway-anrop får totalt kosta 1 000 krediter.
+   kontrollera fynden lokalt. Nya Runway-anrop får kosta högst 800 krediter per rullande timme och 2 500 totalt.
 
 Äldre frågor till honom som inte är kort än: `D:/dealer-scratch/tmp/handoff-nytt/forslag-kort.md`.
 
@@ -35,14 +35,14 @@ Kodens samband och verifiering rättas parallellt; filmproduktionen börjar med 
 - **Huvudagentens adress: `/root`.** Codex-chatten `01a1edac-d516-70e2-8aef-64bcf687f6d5` samordnar arbetet.
   Kontrollera med ListAgents före meddelanden. Huvudagenten äger commits, taggar och push, studion,
   labbservern, spelet och 3D-scenens filmlager, `src/clip-graph.ts` och styrdokumenten.
-- **Avgränsade uppdrag:** `/root/geometry` äger geometrilänkar i Casino och deras tester; `/root/order_snapshot` äger
-  beställningens förhandsvisning, lagring och tester. Båda arbetar i egna träd. `/root/evidence_audit` läser enbart
-  register och kontrollernas täckning. Huvudagenten integrerar deras namngivna filer och äger testlistorna.
+- **Avgränsade uppdrag i egna träd:** `/root/geometry` äger dockans rendering och scenens förval;
+  `/root/order_snapshot` beställningens förhandsvisning/lagring och typvakten; `/root/evidence_audit` kalibrering
+  och medietesternas täckning. Huvudagenten integrerar namngivna filer och äger körjournalen och testlistorna.
 - **Jakob talar bara med huvudagenten**, som håller ihop sessionerna. Varje bana får sin kö av huvudagenten och säger
   till när ett steg är grönt, med en fillista. Ingen bana skriver i en annans filer.
 - **Huvudagentens banor:** film, kort, labbet och studion, och spelet. Filerna de äger står under Var saker ligger i varje lägesfil.
   Banorna Scen, Tal och Trailer är stängda; deras filer hålls av huvudagenten ([spelet](docs/lage/spelet.md)).
-- **3D-banan** (`dealer3d/`, dockan som styr filmerna; grenen `dealer-3d`) och **mätning och ankare 2.3** är sedan
+- **3D-banan** (`dealer3d/`, dockan som styr filmerna) och **mätning och ankare 2.3** är sedan
   2026-11-18 underagenter till huvudagenten (hans ord). De börjar från [dealer3d/LASMIG.md](dealer3d/LASMIG.md) och
   [docs/lage/matning.md](docs/lage/matning.md).
 - **Jakobs egna:** planen `placements/default.json` och hans domar i `motions/` (`review`), som skrivs från Granska och
@@ -77,9 +77,9 @@ ett kort där (skillen `visa-for-jakob`), och kortet tas ut när svaret är utf�
 
 Rutinen står i skillen `avsluta-arbete`. I korthet:
 
-1. Vänta in eller stoppa egna underagenter. Inget ocommittat får ligga kvar utom `placements/default.json`.
+1. Vänta in eller stoppa egna underagenter. Checka in färdigt eget arbete; bevara Jakobs plan och befintliga orderutkast.
 2. `npm test`, uttrycklig staging av egna filer, commit, `npm run check`, push, och kontrollera fjärrens SHA.
 3. Skriv läget där det hör hemma, och ersätt i stället för att lägga till: banans läge i lägesfilen, ett nytt besked
    i BESKED, en ny brist i BRISTER, en fråga till Jakob som kort i Beslut. Den här sidan ändras bara där en rad inte
    längre gäller.
-4. Städa `D:/dealer-scratch` med `npm run stada` från huvudträdet, läs rapporten och kör `npm run stada -- --kor`.
+4. Läs `npm run stada` som rapport. Utför bara ett kontrollerat eget mål åt gången enligt DRIFT; inga andra sessioners rester.

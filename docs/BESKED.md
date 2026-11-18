@@ -160,8 +160,10 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 
 ## Domar, beställningar och pengar
 
-- **Denna räddningsomgångs budget** (2026-11-18, Codex): "Högst 1 000 krediter totalt" för nya betalda Runway-försök
-  under femtimmarsarbetet. Det är ett totalt tak för omgången, även om orderpolicyn medger mer per order och dag.
+- **Denna räddningsomgångs budget** (2026-11-18, Codex): "du har totalt 800 krediter per timme och 2500 krediter för att generera filmer."
+  Taket ersätter tidigare 1 000 totalt. Codex använder en rullande timme och högst 2 500 för omgången, även om
+  orderpolicyn medger mer. "Kvalitet före kvantitet, men om allt sitter, får du gärna gå vidare och skapa mycket material så länge det är bra."
+  En granskad pilot föregår serien. 3D-Dealer har ett eget repo; det gemensamma saldot samordnas i skrivbordets DISKMASKIN.TXT.
 
 - **Domar åt honom, och ingen kö** (2026-11-13): "jag måste sova och du får granska och godkänna alla klipp", och kl.
   15.50, på väg ut: "jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna
@@ -492,6 +494,9 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   (`docs/DRIFT.md`).
 
 ## Ersatta besked
+
+- **Räddningsomgångens första budget** (2026-11-18, Codex): "Högst 1 000 krediter totalt" för nya betalda Runway-försök
+  under femtimmarsarbetet. Ersatt samma dag av 800 per timme och 2 500 totalt (Domar, beställningar och pengar).
 
 - **Publicering efter varje färdig del** (hans stående ord enligt den gamla överlämningen, som inte återgav det som
   citat: kopian publiceras ur `main` efter varje färdig del, push och publicering, så att det syns på Vercel). Ersatt

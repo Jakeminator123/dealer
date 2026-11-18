@@ -1,10 +1,10 @@
 // Keeps D:/dealer-scratch in order. It deletes what can be made again and that nobody uses, moves old screenshots and
 // finished work folders to D:/dealer-archive/slask with a ledger (arkiv.json) from which every move can be undone, and
-// keeps everything else. A dry run is the default; --kor acts, and --kor --tyst acts without a person watching and then
-// only on rules that need no judgment. The rules are data just below; the protections after them cannot be switched off.
+// keeps everything else. A dry run is the default. An actual change requires an exact path, its rule and its verified owner.
+// --tyst keeps the output short and applies only to rules that need no judgment. Protections cannot be switched off.
 // Sizes come from lstat. The only files read are the steering documents, data/*.json and the agents' memory, because
 // they name the folders that are alive; links and junctions are never followed.
-import {readdirSync,lstatSync,readFileSync,writeFileSync,renameSync,rmSync,mkdirSync,existsSync,realpathSync,openSync,closeSync,unlinkSync} from 'node:fs';
+import {readdirSync,lstatSync,readFileSync,writeFileSync,renameSync,rmSync,mkdirSync,existsSync,realpathSync,openSync,closeSync,unlinkSync,type Stats} from 'node:fs';
 import {execFileSync} from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
@@ -46,26 +46,48 @@ const DAY=864e5;
 const posix=(p:string)=>p.replaceAll('\\','/');
 const key=(rel:string)=>rel.toLowerCase(); // Windows paths compare without case
 const inside=(child:string,parent:string)=>{const r=path.relative(parent,child);return r!==''&&!r.startsWith('..')&&!path.isAbsolute(r);};
+// A missing target is safe to create only when its closest existing parent is its actual path.
+function checkPath(file:string){
+ let existing=file;
+ while(true){
+  const st=lstatSync(existing,{throwIfNoEntry:false});
+  if(st){
+   if(st.isSymbolicLink()||key(realpathSync(existing))!==key(existing))throw Error(`Sökvägen går genom en länk eller junction: ${existing}. Inget flyttat.`);
+   return;
+  }
+  const parent=path.dirname(existing);
+  if(parent===existing)throw Error('Ingen befintlig förälder för '+file+'.');
+  existing=parent;
+ }
+}
+
+function entryStamp(st:Stats){
+ return `${st.dev}:${st.ino}:${st.size}:${st.mtimeMs}:${st.ctimeMs}`;
+}
+
+function sameTree(before:Entry,after:Entry):boolean{
+ return before.rel===after.rel&&before.stamp===after.stamp&&before.children.length===after.children.length
+  &&before.children.every((child,i)=>sameTree(child,after.children[i]));
+}
+
 const gb=(bytes:number)=>(bytes/1e9).toFixed(2).replace('.',',')+' GB';
 const when=(ms:number)=>new Date(ms).toLocaleString('sv-SE',{dateStyle:'short',timeStyle:'short'});
 
 // --- The tree, measured with lstat only -----------------------------------------------------------------------------
-export type Entry={rel:string;abs:string;name:string;dir:boolean;link:boolean;size:number;files:number;newest:number;children:Entry[];
+export type Entry={rel:string;abs:string;name:string;dir:boolean;link:boolean;stamp:string;size:number;files:number;newest:number;children:Entry[];
  ledgers:string[];odd:string;hasMedia:boolean;profile:boolean;venv:boolean;never:boolean};
 
-function walk(abs:string,rel:string,deadline:number,ignore:Set<string>=new Set()):Entry{
+function walk(abs:string,rel:string,deadline:number):Entry{
  const st=lstatSync(abs),name=rel?path.posix.basename(rel):'';
- const e:Entry={rel,abs,name,dir:st.isDirectory()&&!st.isSymbolicLink(),link:st.isSymbolicLink(),size:0,files:0,newest:st.mtimeMs,children:[],ledgers:[],odd:'',hasMedia:false,profile:false,venv:false,never:NEVER.some(n=>n.name.test(name))};
+ const e:Entry={rel,abs,name,dir:st.isDirectory()&&!st.isSymbolicLink(),link:st.isSymbolicLink(),stamp:entryStamp(st),size:0,files:0,newest:st.mtimeMs,children:[],ledgers:[],odd:'',hasMedia:false,profile:false,venv:false,never:NEVER.some(n=>n.name.test(name))};
  if(e.link){e.odd='länk';return e;}
  if(!e.dir){e.size=st.size;e.files=1;e.hasMedia=MEDIA.test(name);return e;}
- // A folder whose entries this run removed has a new time of its own; that is not someone else's work.
- if(ignore.has(key(rel)))e.newest=0;
  if(Date.now()>deadline)throw Error('Genomgången tog för lång tid; inget är ändrat.');
  let names:string[];
- try{names=readdirSync(abs);}catch{e.odd='oläsbar';return e;}
+ try{names=readdirSync(abs).sort();}catch{e.odd='oläsbar';return e;}
  for(const child of names){
   let c:Entry;
-  try{c=walk(path.join(abs,child),rel?rel+'/'+child:child,deadline,ignore);}catch(error){if(error instanceof Error&&error.message.startsWith('Genomgången'))throw error;e.odd||='oläsbar';continue;}
+  try{c=walk(path.join(abs,child),rel?rel+'/'+child:child,deadline);}catch(error){if(error instanceof Error&&error.message.startsWith('Genomgången'))throw error;e.odd||='oläsbar';continue;}
   e.children.push(c);e.size+=c.size;e.files+=c.files;e.newest=Math.max(e.newest,c.newest);e.hasMedia||=c.hasMedia;
   if(c.odd&&!e.odd)e.odd=c.odd;
   if(!c.dir&&!c.link&&LEDGER.test(child))e.ledgers.push(c.rel);
@@ -145,12 +167,12 @@ function processAnchors(procs:Proc[],root:string,map:Map<string,Entry>):Anchor[]
  const rootLower=posix(root).replace(/\/+$/,'').toLowerCase(),out:Anchor[]=[];
  for(const p of procs){
   if(p.pid===process.pid||p.pid===process.ppid)continue;
-  const cmd=posix(p.cmd).replace(/\/{2,}/g,'/').toLowerCase();
-  let at=cmd.indexOf(rootLower);
-  while(at>=0){
-   const tail=cmd.slice(at+rootLower.length),m=/^(\/[^\s"'`;|<>]*)?/.exec(tail);
-   if(m&&(tail===''||/^[\/\s"'`;]/.test(tail)))out.push(...anchorFor(segments(m[1]??''),map,'process',`process ${p.pid}: ${p.cmd.trim().slice(0,90)}`,true));
-   at=cmd.indexOf(rootLower,at+1);
+  for(const token of p.cmd.match(/"[^"]*"|'[^']*'|[^\s"']+/g)??[]){
+   const arg=posix(token.replace(/^["']|["']$/g,'')).replace(/\/{2,}/g,'/').toLowerCase();
+   const at=arg.indexOf(rootLower);
+   if(at<0)continue;
+   const tail=arg.slice(at+rootLower.length);
+   if(tail.startsWith('/'))out.push(...anchorFor(segments(tail),map,'process',`process ${p.pid}: sökvägen används`,true));
   }
  }
  return out;
@@ -183,7 +205,7 @@ function protections(e:Entry,rule:Rule|null,ctx:Ctx):Why[]{
  if(rule?.action==='RADERA'&&e.hasMedia)why.push({kind:'media',text:'innehåller film eller ljud, som aldrig raderas'});
  return why;
 }
-const matches=(r:Rule,e:Entry)=>(r.profile?e.dir&&e.profile:r.dir?e.dir&&r.dir.test(e.name):r.file?!e.dir&&r.file.test(e.name):r.session?e.dir&&e.rel.split('/').length===2:false);
+const matches=(r:Rule,e:Entry)=>(r.profile?e.dir&&e.profile:r.dir?e.dir&&r.dir.test(e.name):r.file?!e.dir&&r.file.test(e.name):r.session?e.dir&&/^(?:tmp|review)\/[^/]+$/i.test(e.rel):false);
 
 export function plan(tree:Entry,ctx:Ctx):Item[]{
  const status=(rule:Rule,why:Why[]):Item['status']=>why.length?'skyddat':ctx.selected?(ctx.selected.has(rule.name)?'utförs':'ej vald'):rule.safe?'utförs':'kräver dom';
@@ -222,18 +244,26 @@ export function plan(tree:Entry,ctx:Ctx):Item[]{
 }
 
 // --- Ledger and execution ---------------------------------------------------------------------------------------------
-export type Post={post:number;atgard:Action;regel:string;fran:string;till?:string;tid:string;byte:number;filer:number;status:'flyttar'|'arkiverad'|'raderad'|'misslyckad'|'aterstalld';aterstalld?:string;fel?:string};
+export type Post={post:number;atgard:Action;regel:string;fran:string;till?:string;tid:string;byte:number;filer:number;agare?:string;status:'flyttar'|'arkiverad'|'raderad'|'misslyckad'|'aterstalld';aterstalld?:string;fel?:string};
 type Ledger={beskrivning:string;poster:Post[]};
 const ledgerPath=(archive:string)=>path.join(archive,'arkiv.json');
 function readLedger(archive:string):Ledger{
  const f=ledgerPath(archive);
- if(!existsSync(f))return {beskrivning:'Liggare för städningen av D:/dealer-scratch (tools/scratch-clean.ts). ARKIVERA-poster flyttas tillbaka med: npm run stada -- --aterstall <post>.',poster:[]};
+ checkPath(f);
+ if(!existsSync(f))return {beskrivning:'Liggare för städningen av D:/dealer-scratch (tools/scratch-clean.ts). ARKIVERA-poster flyttas tillbaka med: npm run stada -- --kor --aterstall <post>.',poster:[]};
  return JSON.parse(readFileSync(f,'utf8')) as Ledger;
 }
-function writeLedger(archive:string,ledger:Ledger){mkdirSync(archive,{recursive:true});const f=ledgerPath(archive);writeFileSync(f+'.tmp',JSON.stringify(ledger,null,1)+'\n');renameSync(f+'.tmp',f);}
+function writeLedger(archive:string,ledger:Ledger){
+ const f=ledgerPath(archive),temporary=f+'.'+process.pid+'.tmp';
+ checkPath(f);
+ try{writeFileSync(temporary,JSON.stringify(ledger,null,1)+'\n',{flag:'wx'});}
+ catch(error){throw Error('Städliggaren kunde inte skrivas.',{cause:error});}
+ try{renameSync(temporary,f);}finally{if(existsSync(temporary))unlinkSync(temporary);}
+}
 
 function lock(archive:string,hours:number){
- mkdirSync(archive,{recursive:true});const f=path.join(archive,'.stada.lock');
+ checkPath(archive);mkdirSync(archive,{recursive:true});const f=path.join(archive,'.stada.lock');
+ checkPath(f);
  for(let attempt=0;attempt<2;attempt++){
   try{const fd=openSync(f,'wx');writeFileSync(fd,JSON.stringify({pid:process.pid,tid:new Date().toISOString()}));closeSync(fd);return ()=>{try{unlinkSync(f);}catch{}};}
   catch{let stale=false;try{stale=Date.now()-lstatSync(f).mtimeMs>hours*3600e3;}catch{}if(!stale)break;try{unlinkSync(f);}catch{}}
@@ -241,8 +271,8 @@ function lock(archive:string,hours:number){
  throw Error('En annan städning pågår (arkivets .stada.lock); inget är ändrat.');
 }
 
-export type Env={root?:string;archive?:string;repo?:string;memory?:string|null;processes?:Proc[];now?:number;maxSeconds?:number;out?:(line:string)=>void;err?:(line:string)=>void};
-const FLAGS=new Set(['--kor','--tyst','--lista','--regler','--hjalp']),VALUED=new Set(['--regel','--dygn','--nu','--forklara','--aterstall']);
+export type Env={root?:string;archive?:string;repo?:string;memory?:string|null;processes?:Proc[]|(()=>Proc[]);now?:number;maxSeconds?:number;out?:(line:string)=>void;err?:(line:string)=>void};
+const FLAGS=new Set(['--kor','--tyst','--lista','--regler','--hjalp']),VALUED=new Set(['--regel','--dygn','--nu','--forklara','--aterstall','--sokvag','--agare']);
 
 function parse(argv:string[]){
  const flags=new Set<string>(),values=new Map<string,string>();
@@ -257,7 +287,7 @@ function parse(argv:string[]){
 
 function checkRoots(root:string,archive:string,repo:string){
  if(path.parse(root).root===root)throw Error('Roten får inte vara en hel disk.');
- for(const [a,b] of [[archive,root],[root,archive],[repo,root],[root,repo]])if(a===b||inside(a,b))throw Error(`Roten, arkivet och repot måste ligga isär: ${a} / ${b}`);
+ for(const [a,b] of [[archive,root],[root,archive],[repo,root],[root,repo],[archive,repo],[repo,archive]])if(a===b||inside(a,b))throw Error(`Roten, arkivet och repot måste ligga isär: ${a} / ${b}`);
 }
 
 export function run(argv:string[],env:Env={}):number{
@@ -267,23 +297,36 @@ export function run(argv:string[],env:Env={}):number{
 
 function runInner(argv:string[],env:Env,out:(l:string)=>void):number{
  const {flags,values}=parse(argv);
- if(flags.has('--hjalp')){out('npm run stada [-- --kor] [--tyst] [--regel a,b] [--dygn N] [--lista] [--regler] [--nu ÅÅÅÅ-MM-DD] [--forklara <sökväg>] [--aterstall <post>]');return 0;}
+ if(flags.has('--hjalp')){out('npm run stada [-- --lista|--regler|--forklara <sökväg>] [--dygn N] [--nu ÅÅÅÅ-MM-DD]\nUtför ett beslut: npm run stada -- --kor --regel <regel> --sokvag <sökväg> --agare <verifierad ägare>\nÅterställ: npm run stada -- --kor --aterstall <post>');return 0;}
  if(flags.has('--regler')){for(const r of RULES)out(`${r.name.padEnd(17)} ${r.action.padEnd(8)} ${String(r.days).padStart(2)} dygn  ${r.safe?'säker  ':'kräver dom'}  ${r.reason}`);return 0;}
  const root=path.resolve(env.root??DEFAULTS.root),archive=path.resolve(env.archive??DEFAULTS.archive);
  const repo=path.resolve(env.repo??path.join(path.dirname(fileURLToPath(import.meta.url)),'..'));
  checkRoots(root,archive,repo);
  const act=flags.has('--kor'),quiet=flags.has('--tyst');
  if(quiet&&!act)throw Error('--tyst gäller bara tillsammans med --kor.');
- if(values.has('--aterstall'))return restore(values.get('--aterstall')!,root,archive,out);
+ const configuredProcesses=env.processes;
+ const listProcesses=typeof configuredProcesses==='function'?configuredProcesses:()=>configuredProcesses??runningCommands();
+ if(values.has('--aterstall')){
+  if(!act)throw Error('Återställning kräver --kor.');
+  if(quiet||[...values.keys()].some(value=>value!=='--aterstall'))throw Error('Använd bara --kor --aterstall <post> för en återställning.');
+  return restore(values.get('--aterstall')!,root,archive,listProcesses,out);
+ }
  const days=values.has('--dygn')?Number(values.get('--dygn')):DEFAULTS.days;
- if(!Number.isFinite(days)||days<1)throw Error('--dygn måste vara minst 1: det nyss ändrade skyddas alltid.');
+ if(!Number.isFinite(days)||days<DEFAULTS.days)throw Error('--dygn måste vara minst '+DEFAULTS.days+'.');
  let now=env.now??Date.now();
  if(values.has('--nu')){if(act)throw Error('--nu gäller bara torrkörning.');now=Date.parse(values.get('--nu')!);if(!Number.isFinite(now))throw Error('--nu: ange ett datum, till exempel 2026-11-26.');}
  const selected=values.has('--regel')?new Set(values.get('--regel')!.split(',').map(s=>s.trim()).filter(Boolean)):null;
  for(const name of selected??[]){const r=RULES.find(x=>x.name===name);if(!r)throw Error(`Ingen regel heter ${name}.`);if(quiet&&!r.safe)throw Error(`--tyst utför aldrig en regel som kräver dom (${name}).`);}
+ const requested=values.get('--sokvag'),owner=values.get('--agare')?.trim();
+ if(act&&(!requested||!owner||selected?.size!==1||values.has('--forklara')))throw Error('Utför ett ägarverifierat beslut med --kor --regel <regel> --sokvag <sökväg> --agare <verifierad ägare>.');
+ if(!act&&(requested||owner))throw Error('Använd --forklara för en viss sökväg i rapportläge.');
+ if(owner&&(owner.length>80||/[\r\n\t]/.test(owner)))throw Error('--agare ska vara det korta namnet på den verifierade ägaren.');
+ const targeted=requested?path.resolve(root,requested):null;
+ if(targeted&&!inside(targeted,root))throw Error('Sökvägen måste ligga under slasken.');
  if(!existsSync(root))throw Error(`Slasken finns inte: ${root}`);
  if(!existsSync(path.join(repo,'HANDOFF.md')))throw Error(`HANDOFF.md saknas i ${repo}; utan styrdokumenten vet verktyget inte vad som lever.`);
 
+ checkPath(root);
  const started=Date.now(),deadline=started+(env.maxSeconds??DEFAULTS.maxSeconds)*1000;
  const tree=walk(root,'',deadline),{map,all}=indexOf(tree);
  const sessions=new Set(all.filter(e=>e.dir&&e.rel.split('/').length===2&&e.rel.toLowerCase().startsWith('tmp/')).map(e=>e.name));
@@ -302,8 +345,8 @@ function runInner(argv:string[],env:Env,out:(l:string)=>void):number{
   if(e.never&&e.dir)anchors.push({segs:e.rel.split('/').map(segRegex),kind:'aldrig',text:NEVER.find(n=>n.name.test(e.name))!.reason});
  }
  // Running processes. Without them nothing is done: a folder in use must not go.
- let procs=env.processes,procNote='';
- if(!procs){try{procs=runningCommands();}catch{procs=[];procNote='processlistan gick inte att läsa';if(act)throw Error('Processlistan gick inte att läsa; inget är ändrat.');}}
+ let procs:Proc[],procNote='';
+ try{procs=listProcesses();}catch{procs=[];procNote='processlistan gick inte att läsa';if(act)throw Error('Processlistan gick inte att läsa; inget är ändrat.');}
  const procAnchors=processAnchors(procs,root,map);anchors.push(...procAnchors);
  const ctx:Ctx={root,map,anchors,now,days,selected};
  const items=plan(tree,ctx);
@@ -314,37 +357,44 @@ function runInner(argv:string[],env:Env,out:(l:string)=>void):number{
  if(!act){report(items,{root,all:tree,seconds,days,named,sources:sources.length,procs:new Set(procAnchors.map(a=>a.text)).size,ledgers:anchors.filter(a=>a.kind==='liggare').length,procNote,now,list:flags.has('--lista')},out);return 0;}
 
  // Acting: each folder is measured again just before it goes, and left if anything about it has changed.
+ const candidate=items.find(item=>key(path.join(root,item.rel))===key(targeted!)&&selected!.has(item.rule.name));
+ if(!candidate)throw Error('Sökvägen matchar ingen vald regel; inget är ändrat.');
+ if(candidate.status!=='utförs'){out('Lämnad '+candidate.rel+' ('+(candidate.why[0]?.text??candidate.status)+').');return 0;}
  const release=lock(archive,DEFAULTS.lockHours);
- const done={deleted:[] as Item[],moved:[] as Item[],failed:[] as Array<{item:Item;why:string}>},touched=new Set<string>();
+ const done={deleted:[] as Item[],moved:[] as Item[],failed:[] as Array<{item:Item;why:string}>};
  try{
-  const ledger=readLedger(archive);let next=Math.max(0,...ledger.poster.map(p=>p.post))+1;
+  const ledger=readLedger(archive),next=Math.max(0,...ledger.poster.map(p=>p.post))+1;
   const month=(()=>{const d=new Date(now);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;})();
-  const realRoot=realpathSync(root);
-  for(const item of items.filter(i=>i.status==='utförs')){
+  for(const item of [candidate]){
    const abs=path.join(root,...item.rel.split('/'));
    const fail=(why:string)=>{done.failed.push({item,why});};
-   if(!existsSync(abs)){fail('finns inte längre');continue;}
    let fresh:Entry;
-   try{fresh=walk(abs,item.rel,Date.now()+60_000,touched);}catch{fail('gick inte att mäta igen');continue;}
-   const real=realpathSync(abs);
-   if(!inside(real,realRoot)){fail('ligger inte längre i slasken');continue;}
+   try{
+    checkPath(abs);
+    const live=processAnchors(listProcesses(),root,map).find(a=>related(item.rel,a.segs));
+    if(live){fail(live.text);continue;}
+    fresh=walk(abs,item.rel,Date.now()+60_000);
+    checkPath(abs);
+    const scanned=map.get(key(item.rel));
+    if(!scanned||!sameTree(scanned,fresh)){fail('ändrades efter genomgången');continue;}
+   }catch{fail('kunde inte verifieras igen');continue;}
    const again=protections(fresh,item.rule,ctx).filter(w=>w.kind==='ålder'||w.kind==='länk'||w.kind==='media');
    const anyLedger=(x:Entry):boolean=>x.ledgers.length>0||x.children.some(anyLedger);
    if(anyLedger(fresh)||again.length){fail(again[0]?.text??'en liggare har tillkommit');continue;}
-   const post:Post={post:next++,atgard:item.rule.action,regel:item.rule.name,fran:posix(abs),tid:new Date().toISOString(),byte:fresh.size,filer:fresh.files,status:'flyttar'};
+   const post:Post={post:next,atgard:item.rule.action,regel:item.rule.name,fran:posix(abs),tid:new Date().toISOString(),byte:fresh.size,filer:fresh.files,agare:owner,status:'flyttar'};
    if(item.rule.action==='RADERA'){
     try{rmSync(abs,{recursive:true,force:false,maxRetries:2});post.status='raderad';done.deleted.push(item);}
     catch(error){post.status='misslyckad';post.fel=String(error instanceof Error?error.message:error).slice(0,200);fail('kunde inte raderas helt');}
     ledger.poster.push(post);
    }else{
     const target=path.join(archive,month,...item.rel.split('/'));
-    if(existsSync(target)){fail('arkivet har redan en mapp med samma sökväg denna månad');next--;continue;}
+    try{checkPath(target);}catch{fail('arkivmålet går genom en länk eller kan inte verifieras');continue;}
+    if(existsSync(target)){fail('arkivet har redan en mapp med samma sökväg denna månad');continue;}
     post.till=posix(target);ledger.poster.push(post);writeLedger(archive,ledger); // the intent is written before the move
-    try{mkdirSync(path.dirname(target),{recursive:true});renameSync(abs,target);post.status='arkiverad';done.moved.push(item);}
+    try{mkdirSync(path.dirname(target),{recursive:true});checkPath(abs);checkPath(target);if(existsSync(target))throw Error('Arkivmålet har tagits i bruk.');renameSync(abs,target);post.status='arkiverad';done.moved.push(item);}
     catch(error){post.status='misslyckad';post.fel=String(error instanceof Error?error.message:error).slice(0,200);fail('kunde inte flyttas');}
    }
    writeLedger(archive,ledger);
-   const parts=item.rel.split('/');for(let n=parts.length-1;n>=1;n--)touched.add(key(parts.slice(0,n).join('/')));
   }
  }finally{release();}
  const sum=(list:Item[])=>list.reduce((s,i)=>s+i.size,0);
@@ -359,25 +409,36 @@ function runInner(argv:string[],env:Env,out:(l:string)=>void):number{
  return done.failed.some(f=>f.why.startsWith('kunde inte'))?1:0;
 }
 
-function restore(which:string,root:string,archive:string,out:(l:string)=>void):number{
- const ledger=readLedger(archive),post=ledger.poster.find(p=>String(p.post)===which);
- if(!post)throw Error(`Ingen post ${which} i ${posix(ledgerPath(archive))}.`);
- if(post.atgard!=='ARKIVERA'||!post.till)throw Error(`Post ${which} är en radering; den går inte att återställa.`);
- if(post.status!=='arkiverad')throw Error(`Post ${which} har status ${post.status}.`);
- const from=path.resolve(post.fran),to=path.resolve(post.till);
- if(!inside(from,root))throw Error(`Post ${which} pekar utanför slasken (${post.fran}); inget flyttat.`);
- if(!inside(to,archive))throw Error(`Post ${which} pekar utanför arkivet (${post.till}); inget flyttat.`);
- if(!existsSync(to))throw Error(`Det arkiverade finns inte: ${post.till}`);
- if(existsSync(from))throw Error(`Platsen är upptagen: ${post.fran}; inget flyttat.`);
- if(lstatSync(to).isSymbolicLink())throw Error('Det arkiverade är en länk; inget flyttat.');
- // The way back may not run through a link that has appeared in the scratch folder since.
- let near=path.dirname(from);while(!existsSync(near))near=path.dirname(near);
- if(near!==root&&!inside(realpathSync(near),realpathSync(root)))throw Error(`Vägen tillbaka går genom en länk ut ur slasken (${posix(near)}); inget flyttat.`);
+function restore(which:string,root:string,archive:string,listProcesses:()=>Proc[],out:(l:string)=>void):number{
+ checkPath(root);checkPath(archive);
+ if(!existsSync(root)||!existsSync(archive))throw Error('Slasken eller arkivet saknas; inget flyttat.');
  const release=lock(archive,DEFAULTS.lockHours);
- try{mkdirSync(path.dirname(from),{recursive:true});renameSync(to,from);post.status='aterstalld';post.aterstalld=new Date().toISOString();writeLedger(archive,ledger);}
- finally{release();}
- out(`Återställd post ${which}: ${post.till} → ${post.fran}`);
- return 0;
+ try{
+  const ledger=readLedger(archive),post=ledger.poster.find(p=>String(p.post)===which);
+  if(!post)throw Error(`Ingen post ${which} i ${posix(ledgerPath(archive))}.`);
+  if(post.atgard!=='ARKIVERA'||!post.till)throw Error(`Post ${which} är en radering; den går inte att återställa.`);
+  if(post.status!=='arkiverad')throw Error(`Post ${which} har status ${post.status}.`);
+  const from=path.resolve(post.fran),to=path.resolve(post.till);
+  if(!inside(from,root))throw Error(`Post ${which} pekar utanför slasken (${post.fran}); inget flyttat.`);
+  if(!inside(to,archive))throw Error(`Post ${which} pekar utanför arkivet (${post.till}); inget flyttat.`);
+  checkPath(to);checkPath(from);
+  if(!existsSync(to))throw Error(`Det arkiverade finns inte: ${post.till}`);
+  if(existsSync(from))throw Error(`Platsen är upptagen: ${post.fran}; inget flyttat.`);
+
+  const procs=listProcesses();
+  for(const [file,base] of [[from,root],[to,archive]]){
+   const rel=posix(path.relative(base,file));
+   if(processAnchors(procs,base,new Map()).some(a=>related(rel,a.segs)))throw Error('Sökvägen används av en process; inget flyttat.');
+   checkPath(file);
+  }
+  if(existsSync(from))throw Error(`Platsen är upptagen: ${post.fran}; inget flyttat.`);
+  mkdirSync(path.dirname(from),{recursive:true});
+  checkPath(from);checkPath(to);
+  renameSync(to,from);
+  post.status='aterstalld';post.aterstalld=new Date().toISOString();writeLedger(archive,ledger);
+  out(`Återställd post ${which}: ${post.till} → ${post.fran}`);
+  return 0;
+ }finally{release();}
 }
 
 function explain(arg:string,root:string,map:Map<string,Entry>,items:Item[],ctx:Ctx,out:(l:string)=>void):number{
@@ -403,7 +464,7 @@ function explain(arg:string,root:string,map:Map<string,Entry>,items:Item[],ctx:C
 
 function report(items:Item[],o:{root:string;all:Entry;seconds:string;days:number;named:number;sources:number;procs:number;ledgers:number;procNote:string;now:number;list:boolean},out:(l:string)=>void){
  const sum=(list:Item[])=>list.reduce((s,i)=>s+i.size,0),cell=(list:Item[])=>list.length?`${String(list.length).padStart(3)} st ${gb(sum(list)).padStart(9)}`:''.padStart(16);
- out(`Städning av ${posix(o.root)}: torrkörning, inget ändras${o.now<Date.now()-6e4||o.now>Date.now()+6e4?` (räknat som om det vore ${when(o.now)})`:''}. Utför med: npm run stada -- --kor`);
+ out(`Städning av ${posix(o.root)}: torrkörning, inget ändras${o.now<Date.now()-6e4||o.now>Date.now()+6e4?` (räknat som om det vore ${when(o.now)})`:''}. Utför en verifierad träff med --kor --regel <regel> --sokvag <sökväg> --agare <verifierad ägare>`);
  out(`Genomgånget ${o.all.files} filer, ${gb(o.all.size)} på ${o.seconds} s. Skydd: ändrat senaste ${o.days} dygn; ${o.named} sökvägar i ${o.sources} dokument; ${o.procs} processer; ${o.ledgers} mappar med liggare eller kvitto${o.procNote?`; OBS ${o.procNote}`:''}.`);
  out('');
  out(`${'regel'.padEnd(17)} ${'åtgärd'.padEnd(8)} ${'utförs'.padEnd(16)} ${'kräver dom'.padEnd(16)} ${'skyddat'.padEnd(16)}`);

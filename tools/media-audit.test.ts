@@ -1,7 +1,11 @@
 // tools/media-audit.ts: what a folder of the ignored media is, and whether anything uses it. Pure logic only; no media is read.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {unitOf, unitsOf, rank, roleClaims, playedTakes, judgedBy, pathsIn, idsNamed, whatOf, measureCard, cardVerdict, cardWords, cameraOf, findCard, edgeRowOf, boxOff, type Claim, type FitRule} from './media-audit.ts';
+import {createHash} from 'node:crypto';
+import {mkdirSync, mkdtempSync, rmSync, writeFileSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import path from 'node:path';
+import {unitOf, unitsOf, rank, roleClaims, playedTakes, judgedBy, pathsIn, idsNamed, whatOf, measureCard, cardVerdict, cardWords, cameraOf, findCard, edgeRowOf, boxOff, fitAll, type Claim, type FitRule} from './media-audit.ts';
 import {classify} from '../src/card-track.ts';
 
 test('a unit is the folder that is one thing, at its top folder\'s depth', () => {
@@ -118,4 +122,63 @@ test('the card is found by the films\' colours near the rule\'s card, and the ta
   assert.equal(edgeRowOf(cls, w, h), 120);
   assert.equal(findCard(cls, w, h, square(10, 10, 20), 5), null, 'no card there');
   assert.equal(boxOff([700, 780, 836, 872], [703, 781, 836, 872]), 3);
+});
+
+test('rest hands use the held image for each dealer and require a measurable reference', async t => {
+  const root = mkdtempSync(path.join(tmpdir(), 'dealer-fit-'));
+  t.after(() => rmSync(root, {recursive: true, force: true}));
+  for (const dir of ['data/orders', 'motions', 'src', 'evidence', 'placements']) mkdirSync(path.join(root, dir), {recursive: true});
+  const entry = (id: string, state: string, role = 'ankare-1', frame?: number) => ({id, state, role, frame, path: `assets/anchors/${id}/image.png`});
+  writeFileSync(path.join(root, 'data/media-roles.json'), JSON.stringify({dealers: {
+    pamela: {entries: [entry('pamela-proposal', 'kandidat'), entry('pamela-holds', 'gäller')]},
+    paow: {entries: [entry('paow-too-far', 'kandidat'), entry('paow-holds', 'gäller', 'ankare-1', 17), entry('paow-good', 'kandidat'),
+      entry('paow-one-hand', 'kandidat'), entry('paow-at-shoe', 'gäller', 'ankare-2.1')]},
+    missing: {entries: [entry('missing-holds', 'gäller'), entry('missing-proposal', 'kandidat')]},
+  }}));
+  writeFileSync(path.join(root, 'data/dealer-standard.json'), JSON.stringify({
+    hands: {leftInPicture: {box: [300, 300, 329, 329]}, rightInPicture: {box: [410, 300, 439, 329]}, fitTolerancePx: {hands: 8}},
+    shoe: {box: [500, 300, 580, 340]},
+  }));
+  const sourceBytes = Buffer.from('synthetic reference source');
+  for (const id of ['pamela-holds', 'paow-holds']) {
+    const folder = path.join(root, 'assets/anchors', id);
+    mkdirSync(folder, {recursive: true});
+    writeFileSync(path.join(folder, 'image.png'), sourceBytes);
+  }
+  const poses: Record<string, number[]> = {
+    'pamela-holds': [300, 410], 'pamela-proposal': [303, 413], 'paow-holds': [325, 435], 'paow-good': [329, 439],
+    'paow-too-far': [343, 453], 'paow-one-hand': [329], 'paow-at-shoe': [325, 435], 'missing-proposal': [302, 412],
+  };
+  const {entries} = await fitAll(root, async (_repo, file, frame) => {
+    const name = file.split('/')[2], hands = poses[name];
+    if (!hands) return null;
+    if (name === 'paow-holds') assert.equal(frame, 17);
+    const w = 1764, h = 1174, rgb = new Uint8Array(w * h * 3);
+    for (const left of hands) for (let y = 300; y < 325; y++) for (let x = left; x < left + 25; x++) {
+      const i = (y * w + x) * 3;
+      rgb[i] = 200; rgb[i + 1] = 140; rgb[i + 2] = 115;
+    }
+    const shoe = name === 'paow-one-hand' ? 512 : 500;
+    for (let y = 300; y < 311; y++) for (let x = shoe; x < shoe + 11; x++) {
+      const i = (y * w + x) * 3;
+      rgb[i] = 232; rgb[i + 1] = 208; rgb[i + 2] = 8;
+    }
+    return {rgb, w, h};
+  });
+
+  assert.equal(entries['pamela-proposal'].measured?.leftInPicture, 3);
+  assert.equal(entries['paow-good'].verdict, 'stämmer');
+  assert.equal(entries['paow-good'].measured?.leftInPicture, 4);
+  assert.equal(entries['paow-good'].measured?.rightInPicture, 4);
+  assert.deepEqual(entries['paow-good'].measured?.calibration, {
+    dealer: 'paow', role: 'ankare-1', entry: 'paow-holds', path: 'assets/anchors/paow-holds/image.png', frame: 17,
+    sha256: createHash('sha256').update(sourceBytes).digest('hex'),
+  });
+  assert.match(entries['paow-holds'].words, /kalibreringsbild/);
+  assert.equal(entries['paow-too-far'].verdict, 'avviker');
+  assert.equal(entries['paow-too-far'].measured?.leftInPicture, 18);
+  for (const id of ['paow-one-hand', 'paow-at-shoe', 'missing-proposal']) assert.equal(entries[id].verdict, 'går inte att mäta', id);
+  assert.equal(entries['paow-one-hand'].measured?.shoeOffPx, 12);
+  assert.match(entries['missing-proposal'].words, /gällande ankare 1/);
+  assert.equal(entries['missing-proposal'].measured?.calibration, undefined);
 });

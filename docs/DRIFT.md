@@ -49,7 +49,7 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   läser bankens filmer och kortspår (`tools/order-images.test.ts`, `tools/card-overlay.test.ts`). Studions tester
   behöver inte `studio/node_modules`. Före PR kör agenten `npm run check`.
 - **Push medan andra skriver** (2026-11-13). I huvudträdet stoppar kontrollen så länge någon sessions testindata
-  skiljer sig från HEAD eller en ospårad `.ts`-fil ligger där, och det gör den nästan alltid en dag med flera
+  skiljer sig från HEAD eller en ospårad fil ligger där, och det gör den nästan alltid en dag med flera
   sessioner. Huvudagenten pushar då från ett eget rent arbetsträd på slaskdisken med `node tools/push-clean.ts
   [<commit>] [--trad <mapp>] [--dry-run]`: trädet ställs detached på commiten (förval `main`) och måste vara rent, `npm
   ci` körs om paketlistan har ändrats eller `node_modules` saknas, sedan `npm test`, `npm run check` och `git push
@@ -134,7 +134,9 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   huvudträdets `studio/out` först när bygget har lyckats: kopian läggs bredvid som `out.ny`, den gamla mappen flyttas
   undan och den nya in. Ett bygge eller en flytt som faller lämnar det som visas orört, och `studio/out/bygge.json`
   säger vilken commit som visas. Trädet görs en gång med `git worktree add --detach <mapp på D:> main`; det som finns
-  och används är `D:/dealer-scratch/tmp/granska-prov/trad`, verktygets förval (`--trad` ger ett annat). Loggarna ligger i `studio-logg` bredvid. Servern startas inte om.
+  och används är `D:/dealer-scratch/tmp/huvudagent11/push-trad`, verktygets förval (`--trad` ger ett annat).
+  Push och bygge använder trädet i turordning. Loggarna ligger i `studio-logg` bredvid; ett körkvitto med full SHA
+  sparas i huvudträdets journal efter varje påbörjat bygge. Servern startas inte om.
 - **En titt på labbsidor** (2026-11-17): `node tools/lab-look.ts <lista.json> <utmapp> [--vad "<vad>"] [--vem <namn>]`
   tar en skärmbild per sida i listan (`[{name, url, wait, width, height, clicks, facts}]`, adresserna efter
   `http://127.0.0.1:4319`) i en egen headless Chrome (egen profil, port 9591), aldrig i Jakobs flik: varje adress får
@@ -450,13 +452,15 @@ process räcker inte. Osäkert material stannar för granskning.
 
 **Städverktyget.** `npm run stada` (`tools/scratch-clean.ts`) är en torrkörning: rapport per regel, inget ändras. Det
 körs från huvudträdet; ett arbetsträd på slaskdisken vägras, eftersom slasken, arkivet och repot måste ligga isär.
-`-- --lista` visar varje träff och `-- --forklara <sökväg>` varför något lämnas. `-- --kor` utför. RADERA tar
+`-- --lista` visar varje träff och `-- --forklara <sökväg>` varför något lämnas. En åtgärd utförs först med
+`-- --kor --regel <regel> --sokvag <exakt relativ sökväg> --agare <verifierad ägare>`. Kontrollera ägarskap,
+referenser och aktuell processidentitet före kommandot; namnet i flaggan är operatörens redovisning. RADERA tar
 bara det som går att göra om: headless Chrome-profiler, `node_modules`, Nodes och Pythons cacher, Chromes `scoped_dir*`,
 lösa `*.tmp` och loggar äldre än en vecka. ARKIVERA flyttar skärmbilder och rutdumpar äldre än en vecka till
 `D:/dealer-archive/slask/<år-månad>/<samma sökväg under dealer-scratch>`. Varje flytt och radering skrivs i
-`D:/dealer-archive/slask/arkiv.json`, och `-- --aterstall <post>` flyttar tillbaka. Kontaktark och sessionsmappar som
-ingen ändrat på två veckor kräver dom och flyttas bara med `-- --kor --regel kontaktark` (eller `avslutad-session`);
-`--tyst` gör aldrig det. Reglerna står som data överst i verktyget.
+`D:/dealer-archive/slask/arkiv.json`. `-- --kor --aterstall <post>` flyttar tillbaka; utan `--kor` avvisas återställningen.
+Kontaktark och avslutade mappar under `tmp/` eller `review/` kräver ett uttryckligt mål och dom efter två
+veckor. Reglerna står som data överst i verktyget. Radera betyder ta bort; arkivera betyder bevara på arkivplatsen.
 
 Skydden går inte att slå av. Verktyget rör aldrig: det som ändrats de senaste tre dygnen; mappar som HANDOFF, README,
 AGENTS, `docs/*.md`, `docs/lage/*.md`, `data/*.json` eller agenternas minne namnger med sökväg (`SOURCES` i verktyget;
@@ -464,12 +468,14 @@ en arbetsmapp på slaskdisken som ska leva kvar namnges därför i banans läges
 fil direkt i en sessionsmapp skyddar bara sig själv. Namnge därför undermappen, inte hela sessionen, när bara den ska
 leva kvar; mappar med beställningsliggare eller kvitto (`bestallningar*`, `order-*`, `uploads-*`, `tasks-*`, `*kvitto*`,
 `request.lock`); `chrome-meshy`, Python-miljöer, mappar som en körande process namnger och mappar med länkar; film och
-ljud, som aldrig raderas, och allt utanför `D:/dealer-scratch`. Labbservern kör `--kor --tyst` en gång per start;
+ljud, som aldrig raderas, och allt utanför `D:/dealer-scratch`. Labbservern gör bara en torrkörning per start;
 utfallet står i `.runtime/stada.log`. Vad som låg kvar på D: när bilder och filmer kopierades till `assets/` 2026-11-12
 säger rapporten `D:/dealer-scratch/tmp/huvudagent/import/RAPPORT.md`.
 
-Registren är JSON-filer. [Lagringsbedömningen](../evidence/storage-choice-review.json) anger Scouts befintliga
-Postgres-adapter som nästa steg först när delade skrivare och atomisk historik behövs; ingen databas är skapad.
+Registren och små körkvitton är JSON-filer. Ett lokalt, återbyggbart SQLite-index samlar sökning och spårbarhet utan
+medieblobs eller egna användardomar ([evidens](../tools/evidence.md)). Den tidigare
+[lagringsbedömningen](../evidence/storage-choice-review.json) om Scouts Postgres-adapter gäller först när delade
+skrivare och atomisk historik behövs; ingen produktionsdatabas är skapad här.
 
 ## Molnmiljö
 

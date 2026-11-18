@@ -195,6 +195,11 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 
 ## Labbet och verktygen
 
+- **En ordergrupp är inte en filsystemtransaktion.** Förhandsvisningens källor valideras före första skrivningen,
+  labbets Material- och orderskrivningar delar kö och sparomtag returnerar samma ID:n. Ett processavbrott mitt i
+  gruppen kan lämna några utkast på disk; externa skribenter efter sista källkontrollen omfattas inte av kön.
+  Stänger: en återhämtningsbar gruppjournal om flera samtidiga skribenter eller avbrott ska stödjas.
+
 - **Städningen av slaskdisken ser inget gammalt före 2026-11-20.** Syns: `npm run stada` skyddar 26,75 GB som
   nyändrat, och den säkra körningen 2026-11-18 tog 0,4 MB. 221 mappar fick sin egen tid satt 2026-11-17 kl. 23.13
   (samma minut som den kvällens stora rensning tog bort filer i dem), och verktyget räknar mappens tid, så regeln om
@@ -213,9 +218,10 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   Chrome, och "Skapa utkast" är tryckt en gång. Stänger: var och en prövas i en webbläsare.
 - **Filmer kan se utfrätta ut i Jakobs flik.** Syns: hos honom, troligen på hans skärm och inte i filerna. Prövat:
   inget. Stänger: lägg alltid en stillbild bredvid en film han ska döma.
-- **Testerna utan FFmpeg:** elva hoppas över där FFmpeg saknas, tre i `tools/order-images.test.ts` kräver bankens filmer
-  och ett i `tools/card-overlay.test.ts` kortspåren. Syns: en ren checkout utan media kör dem inte; den här datorn
-  gör det. Prövat: inget. Stänger: ingen väg vald.
+- **Tester som kräver lokal media eller FFmpeg:** en ren checkout kan inte verifiera bankens filmer och kortspår.
+  Mediedelarna i `tools/card-overlay.test.ts` redovisas nu separat som överhoppade när underlaget saknas; trasiga
+  befintliga spår ger fel. Körkvittot visar utfallet per körning. Stänger: visuell och mediebaserad verifiering
+  på den verkliga banken; gröna kodtester ensamma täcker inte filmerna.
 - **Jakobs GitHub-konto är låst av en betalningsfråga** ("your account is locked due to a billing issue"), sedan
   mellan 2026-11-14 och 2026-11-15; ännu 2026-11-18 kl. 02.46 efter hans två svar att det är ordnat. Syns: inte i det
   här repot längre, som inte kör något hos GitHub (DRIFT, "Git och kontroller"). Felet är varken en licens eller

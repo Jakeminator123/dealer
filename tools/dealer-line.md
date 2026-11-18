@@ -120,9 +120,10 @@ och vad den ändrade står bara i handboken §2 och §5. En order lagrad med en 
 texten och bilderna väljs: handboken §2–3.
 
 **9. Godkänn.** Jakobs "Godkänn och lägg i kön" i Beställ, eller `node tools/order-approve.ts <id> --mandate "<vems ord
-och när>"`. Prövas mot `data/order-policy.json`: taket per order (2 000 krediter sedan 2026-11-17), golvet på saldot och dagstaket. Båda sätts av
-Jakobs ord för dagen och står med hans ord i `docs/BESKED.md` ("Domar, beställningar och pengar"): sedan 2026-11-13
-kl. 15:13 gäller "obegränsat", så taket och golvet stoppar inget (V). Hashen fryses i `approval.orderSha256`, och en godkänd order ändras aldrig (V).
+och när>"`. Prövas mot `data/order-policy.json`: taket per order, golvet på saldot och dagstaket. Ett snävare aktuellt
+mandat gäller dessutom; huvudagenten kontrollerar sessionens reserverade och använda krediter före varje anrop.
+Jakobs gällande ord står i `docs/BESKED.md`, "Domar, beställningar och pengar"; ett högt tak i JSON är inte tillåtelse
+att överskrida dem. Hashen fryses i `approval.orderSha256`, och en godkänd order ändras aldrig (V).
 
 **10. Lägg och hämta.** Beställningsagenten enligt [order-clerk.md §1–4](order-clerk.md):
 `node tools/order-put.ts check|begin|placed|failed|status`, uppladdning med `init_upload` och `complete_upload`,

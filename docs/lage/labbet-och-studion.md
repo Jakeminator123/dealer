@@ -8,9 +8,9 @@ Beslut, labbservern och rutinverktygen. Här står bara det som gäller nu; det 
   Efterarbete. `/`, `/scen/`, `/placering/`, `/bestall/` och `/lab.html` leder dit; gamla labbet är borttaget. Menyn:
   Bordet, Karta (med Primära), Granska (med Prov), Material, Lipsync, Casino, och i foten Beslut, Ordlista, Ljud och
   Modeller.
-- Beställ är en rak linje (`babd05d`): plats och kort, sedan steget; receptet ger resten och visas ord för ord, och
-  avsteg ligger under "Receptet · gör ett undantag" ([film.md](film.md)). Material visar ankare 2.3 och en bricka per plats
-  för landningar. Studion Jakob ser är byggd ur `39e05a0`; provsidan `/vinklar.html` binder två kameravinklar i en scen.
+- Beställ är en rak linje: plats och kort, sedan steget. Förhandsvisa visar serverns text, medier, pris och värden före
+  sparning; ändrat underlag kräver ny förhandsvisning. Avsteg görs i Receptet ([film.md](film.md)). Material visar ankare 2.3 och en bricka per plats
+  för landningar. Studiobyggets fulla SHA står i `studio/out/bygge.json`; `/vinklar.html` binder två kameravinklar i en scen.
 - Material för hand (`da339a5`): Jakob kan göra vilken bild som helst gällande, lägga den åt sidan, arkivera den och ta
   tillbaka den, och klipp byggda på en äldre bild mörkas. I Karta (`9a09570`) arkiveras ett klipp för hand och tas
   tillbaka; ett arkiverat klipp spelas inte.
@@ -22,6 +22,8 @@ Beslut, labbservern och rutinverktygen. Här står bara det som gäller nu; det 
   flyttad, och allt går att ta tillbaka.
 - `placements/default.json` är Jakobs plan. Bara Bordet skriver den: Kortplan med Spara i kortplanen, och Efterarbete
   med Spara till planen.
+- Test och publiceringskontroll skriver lokala körkvitton; [evidensverktyget](../../tools/evidence.md) återbygger ett
+  SQLite-index för körningar och materialets ursprung. Saknade mediespår redovisas som överhoppade tester.
 
 **Nästa steg.**
 1. En oberoende granskares omdöme om de 96 tagningarna som väntar (listan `waiting-list.txt`), eller märk avgjorda
@@ -38,7 +40,7 @@ Beslut, labbservern och rutinverktygen. Här står bara det som gäller nu; det 
 
 **Var saker ligger.** Studions kod i `studio/`, labbserverns adresser i `tools/lab-routes.ts`, sidorna bredvid studion
 (`/scene3d.html`, `/sound.html`, `/props.html`) i `pages/`. Rutinverktygen: `node tools/studio-from-commit.ts --trad
-D:/dealer-scratch/tmp/granska-prov/trad` (studion Jakob ser byggs ur en commit i ett rent träd), `node
+D:/dealer-scratch/tmp/huvudagent11/push-trad` (studion byggs ur en commit i ett rent träd), `node
 tools/lab-look.ts` (skärmbilder av labbsidor under låset), `node tools/push-clean.ts` (pushen från ett rent träd),
 `node tools/proof-notes.ts` (hans anteckningar i Prov) och `node tools/media-audit.ts` (vad en mapp i `assets/` är och
 vad som använder den). På slaskdisken, under `D:/dealer-scratch/tmp/`: `labbgrund/` (utredningarna

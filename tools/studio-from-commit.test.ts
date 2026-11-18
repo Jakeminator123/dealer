@@ -5,11 +5,12 @@ import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {parseArgs, studioFromCommit, swapInto, DEFAULT_TREE, type Options} from './studio-from-commit.ts';
 import type {Exec} from './clean-tree.ts';
+import type {RunReceiptInput} from './evidence-store.ts';
 
 const ROOT = 'C:/repo', TREE = 'D:/scratch/studio-trad', SHA = 'c'.repeat(40);
 type Answer = {code?: number; out?: string};
-function world(answers: Record<string, Answer> = {}, present = (_: string) => true) {
-  const calls: string[] = [], said: string[] = [], swaps: Array<[string, string]> = [];
+function world(answers: Record<string, Answer> = {}, present = (_: string) => true, installed = (_: string): string | null => SHA) {
+  const calls: string[] = [], said: string[] = [], swaps: Array<[string, string]> = [], receipts: {root: string; outcome: RunReceiptInput}[] = [];
   const run: Exec = (cmd, args, cwd) => {
     const key = `${cmd} ${args.join(' ')}`, where = `${cwd === ROOT ? 'repo' : 'tree'}: ${key}`;
     calls.push(where);
@@ -22,15 +23,21 @@ function world(answers: Record<string, Answer> = {}, present = (_: string) => tr
     return {code: 0, out: ''};
   };
   const go = (options: Partial<Options> = {}) => studioFromCommit(ROOT, {commit: 'main', tree: TREE, ...options}, {
-    run, say: l => said.push(l), log: () => {}, exists: present, swap: (built, target) => { swaps.push([built, target]); return 7; },
+    run,
+    say: l => said.push(l),
+    log: () => {},
+    exists: present,
+    swap: (built, target) => { calls.push('swap'); swaps.push([built, target]); return 7; },
+    installedRevision: target => { calls.push('verify-output'); return installed(target); },
+    receipt: (root, outcome) => { calls.push('receipt'); receipts.push({root, outcome}); },
   });
-  return {calls, said, swaps, go, text: () => said.join('\n')};
+  return {calls, said, swaps, receipts, go, text: () => said.join('\n')};
 }
 const posix = (p: string) => p.replaceAll('\\', '/');
 
 test('the arguments, with the documented default tree and no target until the main checkout is known', () => {
   assert.deepEqual(parseArgs([]), {commit: 'main', tree: DEFAULT_TREE});
-  assert.equal(DEFAULT_TREE, 'D:/dealer-scratch/tmp/granska-prov/trad', 'the tree that exists and is used (docs/DRIFT.md)');
+  assert.equal(DEFAULT_TREE, 'D:/dealer-scratch/tmp/huvudagent11/push-trad', 'the tree that exists and is used (docs/DRIFT.md)');
   assert.deepEqual(parseArgs(['abc', '--trad', 'D:/t', '--ut', 'D:/o']), {commit: 'abc', tree: 'D:/t', out: 'D:/o'});
   assert.throws(() => parseArgs(['--ut']), /--ut kräver en mapp/);
   assert.throws(() => parseArgs(['--snabbt']), /okänd flagga/);
@@ -43,6 +50,15 @@ test('a build that succeeds is swapped into the main checkout\'s studio/out, bui
   assert.ok(w.calls.includes('tree: npm --prefix studio run build'));
   assert.ok(w.calls.filter(c => c.startsWith('tree: npm') || c.includes('checkout')).length >= 2 && !w.calls.some(c => c.startsWith('repo: npm')), 'nothing is built in the repo');
   assert.match(w.text(), /studio[\\/]out bytt: 7 filer från ccccccc/);
+  assert.deepEqual(w.calls.slice(-3), ['swap', 'verify-output', 'receipt']);
+  const [{root, outcome}] = w.receipts;
+  assert.equal(posix(root), ROOT);
+  const {startedAt, finishedAt, ...payload} = outcome;
+  assert.ok(Date.parse(startedAt) <= Date.parse(finishedAt));
+  assert.deepEqual(payload, {
+    kind: 'studio-build', status: 'pass', revision: SHA, studioRevision: SHA,
+    inputs: [], dirtyInputs: [], counts: {pass: 0, fail: 0, skip: 0, todo: 0, cancelled: 0}, notes: ['verified-output'],
+  });
 });
 
 test('a failed build, a dirty tree or a build without index.html never swaps the served folder', () => {
@@ -56,6 +72,33 @@ test('a failed build, a dirty tree or a build without index.html never swaps the
   assert.equal(empty.go(), 1);
   assert.match(empty.text(), /bygget gav ingen/);
   for (const w of [failed, dirty, empty]) assert.deepEqual(w.swaps, []);
+  assert.deepEqual(dirty.receipts, [], 'npm build was never started');
+  for (const [attempt, note] of [[failed, 'npm-build'], [empty, 'missing-build-index']] as const) {
+    const [{outcome}] = attempt.receipts;
+    assert.deepEqual([outcome.status, outcome.revision, outcome.studioRevision, outcome.notes, outcome.log], ['fail', SHA, null, [note], undefined]);
+  }
+});
+
+test('a wrong build tree stops before npm and an unverified swap records a failure', () => {
+  const wrongTree = world({'tree: git rev-parse --verify --quiet HEAD': {out: 'e'.repeat(40)}});
+  assert.equal(wrongTree.go(), 1);
+  assert.ok(!wrongTree.calls.some(c => c.includes('run build')));
+  assert.deepEqual(wrongTree.receipts, []);
+
+  const wrongStamp = world({}, () => true, () => 'e'.repeat(40));
+  assert.equal(wrongStamp.go(), 1);
+  assert.match(wrongStamp.text(), /kunde inte verifieras/);
+  assert.deepEqual(wrongStamp.calls.slice(-3), ['swap', 'verify-output', 'receipt']);
+  const [{outcome}] = wrongStamp.receipts;
+  assert.deepEqual([outcome.status, outcome.revision, outcome.studioRevision, outcome.notes], ['fail', SHA, null, ['verify-output']]);
+});
+
+test('a verified trial output is journaled in the main checkout without claiming it is served', () => {
+  const w = world();
+  assert.equal(w.go({out: 'D:/o'}), 0);
+  const [{root, outcome}] = w.receipts;
+  assert.equal(posix(root), ROOT);
+  assert.deepEqual([outcome.status, outcome.revision, outcome.studioRevision, outcome.notes], ['pass', SHA, null, ['verified-output', 'trial-output']]);
 });
 
 test('npm ci runs per package where node_modules is missing or the list changed', () => {

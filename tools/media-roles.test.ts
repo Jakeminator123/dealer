@@ -3,6 +3,7 @@
 // and the store that adds a picture, which only ever writes into a temporary copy. No media is needed.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
 import {mkdtemp, mkdir, readFile, writeFile, rm, readdir} from 'node:fs/promises';
 import {existsSync} from 'node:fs';
 import os from 'node:os';
@@ -136,6 +137,69 @@ test('answer: found on disk, its size, the films that start or end on it, and on
  assert.equal(await store.servable('assets/secret.png'), false, 'a file the register does not name');
  assert.equal(await store.servable('assets/anchors/pamela-a/../../secret.png'), false);
  assert.equal(await store.servable('Q:/nowhere/at/all.png'), false);
+});
+
+
+test('answer only presents hand measurements against the unique readable anchor that holds', async t => {
+ const held = entry({id: 'paow-held', role: 'ankare-1', path: 'assets/held.mp4', frame: 17, state: 'gäller'});
+ const other = entry({id: 'paow-other', path: 'assets/other.png', state: 'kandidat'});
+ const card = entry({id: 'paow-card', role: 'landning', path: 'assets/land.png', card: 'P4.C1'});
+ const camera = entry({id: 'paow-camera', path: 'assets/old.png'});
+ const register = {...small([]), dealers: {paow: {name: 'Paow', entries: [held, other, card, camera]}}};
+ const root = await temp(t, register);
+ await mkdir(path.join(root, 'assets'));
+ const heldFile = path.join(root, 'assets/held.mp4');
+ const original = moov(1764, 1174, 30000, 1000, 90);
+ const hash = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
+ await writeFile(heldFile, original);
+ await writeFile(path.join(root, 'assets/other.png'), png(1764, 1174));
+ const store = mediaRoles(root), resultFile = path.join(root, 'data/media-fit.json');
+ const calibration = {dealer: 'paow', role: 'ankare-1', entry: 'paow-held', path: 'assets/held.mp4', frame: 17, sha256: hash(original)};
+ const oldMeasure = {verdict: 'avviker', words: 'Vänster hand (i bild) 11 px från standardens.'};
+ const newMeasure = (identity: Record<string, unknown>) => ({
+  verdict: 'stämmer', words: 'Mätt mot gällande ankare 1 (paow-held).',
+  measured: {calibration: identity, leftInPicture: 3, rightInPicture: 4},
+ });
+ const fits = async (schemaVersion: number, rest: unknown) => {
+  await writeFile(resultFile, JSON.stringify({schemaVersion, entries: {
+   'paow-other': rest,
+   'paow-card': {verdict: 'äldre plan', words: 'Kortet är mindre än dagens.'},
+   'paow-camera': {verdict: 'annan kamera', words: 'Bredare kamera.'},
+  }}));
+  const answer = await store.answer();
+  assert.equal(answer.readable, true);
+  return Object.fromEntries(answer.dealers[0].entries.map(e => [e.id, e.fit]));
+ };
+
+ const historical = await fits(1, oldMeasure);
+ assert.equal(historical['paow-other']?.verdict, 'går inte att mäta');
+ assert.doesNotMatch(historical['paow-other']?.words ?? '', /11 px/);
+ assert.equal(historical['paow-card']?.verdict, 'äldre plan');
+ assert.equal(historical['paow-camera']?.verdict, 'annan kamera');
+ assert.equal((await fits(2, newMeasure(calibration)))['paow-other']?.verdict, 'stämmer');
+
+ for (const [key, stale] of Object.entries({dealer: 'pamela', role: 'ankare-2.1', entry: 'old-held', path: 'assets/older.mp4', frame: 16})) {
+  assert.equal((await fits(2, newMeasure({...calibration, [key]: stale})))['paow-other']?.verdict, 'går inte att mäta', key);
+ }
+ assert.equal((await fits(2, {verdict: 'stämmer', measured: {calibration}}))['paow-other']?.verdict, 'går inte att mäta');
+ const registerFile = path.join(root, 'data/media-roles.json');
+ const duplicate = entry({id: 'paow-also-held', path: 'assets/other.png', state: 'gäller'});
+ await writeFile(registerFile, JSON.stringify({...register, dealers: {paow: {name: 'Paow', entries: [held, duplicate, other]}}}));
+ assert.equal((await fits(2, newMeasure(calibration)))['paow-other']?.verdict, 'går inte att mäta', 'more than one reference');
+ await writeFile(registerFile, JSON.stringify(register));
+ const changed = moov(1764, 1174, 24000, 1000, 90);
+ assert.equal(changed.length, original.length);
+ await writeFile(heldFile, changed);
+ assert.equal((await fits(2, newMeasure(calibration)))['paow-other']?.verdict, 'går inte att mäta', 'content changed at the same path and frame');
+ const current = {...calibration, sha256: hash(changed)};
+ assert.equal((await fits(2, newMeasure(current)))['paow-other']?.verdict, 'stämmer');
+ const unreadable = Buffer.from('bad moov');
+ await writeFile(heldFile, unreadable);
+ const unreadableCalibration = {...calibration, sha256: hash(unreadable)};
+ assert.equal((await fits(2, newMeasure(unreadableCalibration)))['paow-other']?.verdict, 'går inte att mäta');
+
+ await writeFile(resultFile, '{malformed');
+ assert.equal((await store.answer()).dealers[0].entries.find(e => e.id === 'paow-other')?.fit, null);
 });
 
 test('add: a new folder with the picture and its receipt, a candidate in the register; never over an existing one', async t => {

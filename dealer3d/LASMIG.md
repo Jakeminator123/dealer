@@ -34,19 +34,15 @@ förblir vänd tills kortet ligger); ingen ring som kortet rullar i, och inga fi
 
 **Väntar på Jakob.** Inget utanför Beslut.
 
-**Var saker ligger.** Koden här, grenen `dealer-3d` i arbetsträdet `D:/dealer-scratch/tmp/dealer-3d/trad` (huvudagenten slår
-ihop den). En dockfilm görs i två steg från arbetsträdet; exakt kommando per film står i dess `KLAR-f.txt`:
+**Var saker ligger.** Koden och renderkommandot finns i repots `dealer3d/`. En dockfilm görs i två steg från repot;
+parametrarna för äldre filmer står i deras `KLAR-f.txt` på slaskdisken:
 1. `node dealer3d/tools/deal-film.ts --to P4.C1 --seconds 3 --right-at 1180,887,83 --beats 4,15,20,36,22,45,58,66 --meet 1
    --single 1 --roll 1 --hand-over-yaw 180 --carry 0.045 --turned-at 0.01 --tuck 300 --push 0.004 --out dealer3d/data/<namn>.json`
    (`--beats`: rutor från 0 för ut, ute, höger tar, kant, vänster släpper, framsidan, i filten, ligger; plats 1–3 även
    `--real-take 1 --body <sida,vridning,framåt>`). Ruta för ruta: `node dealer3d/tools/deal-check.ts dealer3d/data/<namn>.json`.
-2. `bash D:/dealer-scratch/tmp/dealer-3d/under-las.sh 4 "<vad>" env SUF=-f NB="<rutor>" NBCROP=b:h:x:y NBNAME=narbild-vandningen-f
-   bash D:/dealer-scratch/tmp/dealer-3d/spela-in-giv23.sh <namn> 3 <utmapp> <filnamn> 4x4 <16 rutor till arket>`.
-Inspelningen är INTE flyttad in i repot (punkt 7 väntar). Skripten på slaskdisken: `under-las.sh` väntar tills låsfilen
-`D:/dealer-scratch/tmp/gpu-och-headless.lock` är fri eller äldre än 20 min, tar den, kör kommandot och släpper den;
-`spela-in-giv23.sh` spelar in sidan med `tools/shoot.ts` (headless Chrome med egen profil, 30 rutor/s, 1764 × 1174, vit
-docka) och gör mp4 (ffmpeg), arket, närbilden, slutrutan, sha256 och längden; `spela-in-f.sh` kör den för flera platser i
-följd; `ogon-matt.ts` skriver ut stolarnas och bankens ögon som tal.
+2. `node dealer3d/tools/render-reference.ts --motion dealer3d/data/<namn>.json --out D:/dealer-scratch/tmp/dealer-3d/ut/<ny-mapp>`.
+   Kommandot tar det delade GPU-låset och spelar in 30 rutor/s i 1764 × 1174. Det ger MP4, ark, slutruta och ett
+   kvitto med frysta indata, kodens SHA, kamera, verktygsversioner och uppmätt filmformat. Se **Köra** för närbild.
 
 **Fällor.**
 - Headless Chrome bara under låset, en körning i taget. Banan skriver bara i `dealer3d/` och på slaskdisken.
@@ -198,8 +194,17 @@ node dealer3d/tools/shoot.ts --out <mapp> --eyes 1,4 --times 1.25,1.9,3.5 --size
 node dealer3d/tools/shoot.ts --out <mapp> --eyes film --look plain --tags 0 --film 24 0 4 --size 1764x1174
 ```
 
-Inspelningen körs under det delade låset för grafikkortet och headless Chrome (DRIFT), en körning i taget; skriptet
-stänger sin Chrome och sin filserver själv. En hel omgång (stillbilder, två filmer) tar cirka en minut på Jakobs dator.
+Filma en vit docka från bankens kamera i en ny utdatamapp med installerade Chrome, FFmpeg och ffprobe:
+
+```powershell
+node dealer3d/tools/render-reference.ts --motion dealer3d/data/giv-fran-2-3-p4-f.json --out D:/dealer-scratch/tmp/dealer-3d/ut/p4-referens-ny --closeup 17,20,22,24 --crop 560:440:760:560
+```
+
+Inspelningen tar och släpper det delade låset för grafikkortet och headless Chrome. Den äger sin Chrome-profil och filserver.
+`--eye 1` väljer stol 1, `--seconds` ersätter rörelsens längd och `--sheet` väljer arkets rutnummer från 1.
+För att upprepa en körning, använd `rorelse.json` med `--motion`, `kortplan.json` med `--plan` och inställningarna
+i `renderkvitto.json` med samma kod och verktyg. Kvittot anger de färdiga filernas SHA-256. `ofullstandig.txt` markerar
+en avbruten eller misslyckad körning. En vidare körning behöver en ny mapp. Lås först vid direkt användning av `shoot.ts`.
 
 ## Kvar
 

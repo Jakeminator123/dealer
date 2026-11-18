@@ -29,7 +29,8 @@ Rutinen står i [`AGENTS.md`](../../../AGENTS.md), "Git och samarbete", och i
    inget läggs till som dagbok. Det som väntar på Jakob blir ett kort i Beslut, ett nytt besked av honom en punkt i
    `docs/BESKED.md`, en ny brist en punkt i `docs/BRISTER.md`; vad som hände och varför står i commitmeddelandet
    (AGENTS, "Var kunskap står"; HANDOFF, "Före avslut").
-8. **Städa i samma ändring:** kod som inget anropar, ersatt status och döda sökvägar tas bort, och det nya beteendet
-   beskrivs där det hör hemma (AGENTS, "Städa löpande").
+8. **Städa efter den egna ändringen:** kod som den gör överflödig, ersatt status och döda sökvägar tas bort, och det nya
+   beteendet beskrivs där det hör hemma (AGENTS, "Städa löpande"). Detta ger inget mandat att rensa andra sessioners
+   grenar, arbetsträd eller arbetsfiler. Slaskverktyget används först som rapport; åtgärder följer DRIFT:s ägarkontroll.
 9. **Media och hemligheter stannar utanför Git** (`assets/`, `output/`, `.runtime/`, `.env*`, `private/`); repot är
    publikt (AGENTS, "Det som skyddar Jakob").

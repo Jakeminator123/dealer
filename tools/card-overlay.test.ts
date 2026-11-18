@@ -1,14 +1,27 @@
-// Offline tests for the rendered-card overlay model. No media, WebGL or network: tracks are made up
-// here and the only file read is the tracked scene contract.
-import test from 'node:test';
+// Offline tests for the rendered-card overlay model. Synthetic cases always run. Cases using
+// local tracking files report an explicit skip when the file is missing.
+import test, {type TestContext} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile, readdir} from 'node:fs/promises';
-import fs from 'node:fs';
 import {sceneOf, restingQuad, restOf, poseAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, shiftShare, placedCard, landing, leakCount, strayBoxes, ranges, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, MARGIN, STRAY, type CardRecord, overridesOf, cardInFront, describeTrack, RIM, plausible, keystone, skirtSound, turnOf, restFade, restShare, PLAUSIBLE, HOLD, REST_FADE, type CardTrack, type Scene} from '../src/card-overlay.ts';
 import {signedArea, centre, dist, sound, type Pt} from '../src/card-track.ts';
 import {cameraFromContract, solveCamera, squareToQuad, onSquare, filmToScene} from '../src/scene3d-geometry.ts';
 
 const contract = JSON.parse(await readFile('data/scene-contract.json', 'utf8')), scene = sceneOf(contract)!;
+async function mediaTrack(clip: string, t: TestContext): Promise<CardTrack | null> {
+  const file = `assets/tracking/${clip}/card-track.json`;
+  let text: string;
+  try { text = await readFile(file, 'utf8'); }
+  catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+    t.skip(`missing card track: ${file}`);
+    return null;
+  }
+  const track = JSON.parse(text) as CardTrack | null;
+  assert.ok(track && Array.isArray(track.frames), `invalid card track: ${file}`);
+  return track;
+}
+
 const P4_FILM = [[817.5, 1069.5], [887.2, 1069.5], [891, 1133.5], [817.5, 1133.5]]; // resting quad of pamela-p4-c1-plan-deal-02
 const pts = (q: number[][]): Pt[] => q.map(([x, y]) => ({x, y})), area = (q: Pt[]) => Math.abs(signedArea(q));
 const shift = (q: number[][], dx: number, dy: number, s = 1) => { const c = centre(pts(q)); return q.map(([x, y]) => [c.x + (x - c.x) * s + dx, c.y + (y - c.y) * s + dy]); };
@@ -333,7 +346,7 @@ test('Paow\'s tracked takes, every frame: what is drawn is a card, and a bent ca
   assert.ok(frames > 1000);
 });
 
-test('the turn of a card carried face up: the frames between the last back that is a card and the first face; none when it is not turned', async () => {
+test('the turn of a card carried face up: the frames between the last back that is a card and the first face; none when it is not turned', () => {
   const q = (x: number) => [[x, 500], [x + 60, 500], [x + 60, 590], [x, 590]];
   const frame = (i: number, side: string, quad: number[][] | null, edge: number[][] | null = null) => ({frame: i, side, quad, edge, confidence: 1}) as never;
   const track = (frames: unknown[]) => ({width: 1764, height: 1174, edgeWindow: null, leavesShoe: 2, frames}) as unknown as CardTrack;
@@ -343,12 +356,16 @@ test('the turn of a card carried face up: the frames between the last back that 
   assert.deepEqual(turnOf(turned), {from: 4, to: 7});
   assert.equal(turnOf(track([frame(0, 'BACK', q(100)), frame(1, 'BACK', q(110)), frame(2, 'BACK', q(120)), frame(3, 'BACK', q(130))])), null, 'dealt face down: no turn');
   assert.equal(turnOf(track([frame(0, 'BACK', q(100)), frame(1, 'BACK', q(110)), frame(2, 'BACK', q(120)), frame(3, 'FRONT', q(130))])), null, 'turned between two frames: nothing between');
-  // seat 4's take, as the scene session filmed it at both speeds: the turn is frames 45-52 (short lines across the fingers, then no quad)
-  const file = 'assets/tracking/paow-giv-2-1-p4-04-01/card-track.json';
-  if (fs.existsSync(file)) assert.deepEqual(turnOf(JSON.parse(await readFile(file, 'utf8'))), {from: 45, to: 52});
-  // the dealer's hole card is dealt face down and never turns in the hand
-  const hole = 'assets/tracking/paow-giv-2-1-d-c2-03-01/card-track.json';
-  if (fs.existsSync(hole)) assert.equal(turnOf(JSON.parse(await readFile(hole, 'utf8'))), null);
+});
+
+test('the recorded seat 4 turn spans frames 45–52', async t => {
+  const track = await mediaTrack('paow-giv-2-1-p4-04-01', t);
+  if (track) assert.deepEqual(turnOf(track), {from: 45, to: 52});
+});
+
+test('the recorded hole card is dealt face down and never turns in the hand', async t => {
+  const track = await mediaTrack('paow-giv-2-1-d-c2-03-01', t);
+  if (track) assert.equal(turnOf(track), null);
 });
 
 test('a card lying since an earlier film is laid in the size and place the dealt card came to rest in, at every card size', () => {
@@ -388,11 +405,6 @@ test('under the line the drawn card takes over at rest by a fade: from the still
   for (let i = 4; i <= 9; i++) assert.ok(cards[i] >= cards[i - 1] && keys[i] >= keys[i - 1] && keys[i] - keys[i - 1] < 0.35, `frame ${21 + i}: no more than 35 % of the key between two frames`);
   assert.ok(keys[5] > 0 && keys[8] > 0.8 && keys[8] < 1, 'the key over most of the fade');
   assert.deepEqual(shares.slice(9), [{card: 1, key: 1}, {card: 1, key: 1}, {card: 1, key: 1}]); assert.deepEqual(restShare(null, 0), {card: 1, key: 1});
-  // the proof's takes, measured on their tracks 2026-11-13 (skipped without them): seat 4 7 still frames, seat 7 9, the dealer's first
-  // card 15, the hole card's turn 2, seat 3 none; the hole card's deal rests back up and is swapped in one frame
-  const measured: [string, {from: number; to: number} | null][] = [['paow-giv-2-1-p4-04-01', {from: 111, to: 118}], ['paow-giv-2-1-p7-06-01', {from: 82, to: 90}], ['paow-giv-2-1-p3-02-01', {from: 121, to: 127}],
-    ['paow-giv-2-1-d-01-01', {from: 173, to: 181}], ['paow-giv-2-1-d-c2-03-01', null], ['paow-halkort-02-01', {from: 121, to: 127}]];
-  for (const [clip, want] of measured) { const file = `assets/tracking/${clip}/card-track.json`; if (fs.existsSync(file)) assert.deepEqual(restFade(JSON.parse(await readFile(file, 'utf8'))), want, clip); }
   // the scene: only under the line, the drawn card lying under the film's card from the fade's first frame, the key's strength the share;
   // in the film's shader the strength scales everything the key does to the dealt card, the seated card's in full
   const deal3 = await readFile('src/scene3d-deal.ts', 'utf8'), film = await readFile('src/scene3d-film.ts', 'utf8');
@@ -402,12 +414,28 @@ test('under the line the drawn card takes over at rest by a fade: from the still
   assert.ok(film.includes('float zone = smoothstep(-2., 2., quadIn(px, zoneQ)) * strength; if (zone <= 0.) return o;') && film.includes('cardHeld, cardStrength);') && film.includes('seatCore, 0., 1.);'), 'the shader scales the key of the dealt card');
 });
 
+// The proof's tracks as measured on 2026-11-13. The hole card's deal rests back up and is swapped in one frame.
+const measured: [string, {from: number; to: number} | null][] = [
+  ['paow-giv-2-1-p4-04-01', {from: 111, to: 118}],
+  ['paow-giv-2-1-p7-06-01', {from: 82, to: 90}],
+  ['paow-giv-2-1-p3-02-01', {from: 121, to: 127}],
+  ['paow-giv-2-1-d-01-01', {from: 173, to: 181}],
+  ['paow-giv-2-1-d-c2-03-01', null],
+  ['paow-halkort-02-01', {from: 121, to: 127}],
+];
+for (const [clip, want] of measured) {
+  test(`the recorded rest fade of ${clip}`, async t => {
+    const track = await mediaTrack(clip, t);
+    if (track) assert.deepEqual(restFade(track), want, clip);
+  });
+}
+
 test('the hole card\'s deal, as mended 2026-11-14: the whole card slides on under her hand and rests where the film\'s card stops', async t => {
   // the tracker held only the part of the card left of her fingers from frame 44 (half the card, 36 px to the left in one frame) and had
   // it at rest from 57, while the film's card slid on under her hand until 79: the drawn card shrank, smeared and lay still beside her
   // moving hand, with the film's card dark and yellow beside it (granskning 6, 99.6-100.3 s). Skipped while the tracker's own file is in place.
-  const file = 'assets/tracking/paow-giv-2-1-d-c2-03-01/card-track.json'; if (!fs.existsSync(file)) return t.skip('no track');
-  const track: CardTrack = JSON.parse(await readFile(file, 'utf8'));
+  const track = await mediaTrack('paow-giv-2-1-d-c2-03-01', t);
+  if (!track) return;
   if (!String((track.frames[41] as {note?: string}).note ?? '').startsWith('mended')) return t.skip('the tracker\'s own track: the mended one is not installed');
   assert.equal(restOf(track)!.from, 80); assert.equal(turnOf(track), null); assert.equal(restFade(track), null);
   const sizes = Array.from({length: 41}, (_, i) => poseAt(track, scene, 40 + i, 1.2)!.quad!).map(q => Math.sqrt(area(q)));

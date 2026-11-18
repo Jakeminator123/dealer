@@ -6,6 +6,7 @@
 // disk at that moment, through a temporary file renamed into place; Jakob's Godkänn and Underkänn on a candidate are
 // written the same way (setState, rules in studio/components/material/state.ts). The shapes and the pure rules are
 // studio/lib/media.ts; the readers of picture and film headers here are pure too. Tests: tools/media-roles.test.ts.
+import {createReadStream, type Stats} from 'node:fs';
 import {readFile, open, stat, realpath, mkdir, writeFile, rename, rm, readdir} from 'node:fs/promises';
 import {createHash, randomUUID} from 'node:crypto';
 import path from 'node:path';
@@ -22,6 +23,42 @@ import {ANCHOR_NODE} from '../src/order-model.ts';
 
 /** The node an anchor stands for (ankare-2.1 → READY); an order finds the anchor that holds by role and node. */
 export const nodeOfRole = (role: string): string | undefined => role.startsWith('ankare-') ? ANCHOR_NODE[role.slice(7) as keyof typeof ANCHOR_NODE] : undefined;
+
+
+
+/** Used to detect changes during a streamed media hash and to keep repeated reads inexpensive. */
+export function mediaFileStamp(file: Pick<Stats, 'size' | 'mtimeMs' | 'ctimeMs'>): string {
+ return `${file.size}:${file.mtimeMs}:${file.ctimeMs}`;
+}
+
+export async function mediaFileSha256(file: string, stamp: string): Promise<string | null> {
+ try {
+  const hash = createHash('sha256');
+  for await (const chunk of createReadStream(file)) hash.update(chunk);
+  const after = await stat(file);
+  return after.isFile() && mediaFileStamp(after) === stamp ? hash.digest('hex') : null;
+ } catch { return null; }
+}
+
+type FitReport = {schemaVersion?: unknown; entries?: Record<string, unknown>};
+
+function fitFor(report: FitReport | null, dealer: string, entry: EntryAnswer, reference: EntryAnswer | undefined, referenceSha: string | null): Fit | null {
+ const value = report?.entries?.[entry.id], fit = readFit(value);
+ if (!fit || entry.card || !entry.role.startsWith('ankare-') || (fit.verdict !== 'stämmer' && fit.verdict !== 'avviker')) return fit;
+
+ // Older anchor reports could mark a hand against a different dealer, or mark an anchor without hand measurements as a fit.
+ const measured = (value as {measured?: {leftInPicture?: unknown; rightInPicture?: unknown; calibration?: Record<string, unknown>}}).measured;
+ const calibration = measured?.calibration;
+ const distance = (n: unknown) => typeof n === 'number' && Number.isFinite(n) && n >= 0;
+ if (report?.schemaVersion === 2 && entry.role === 'ankare-1' && entry.exists && entry.width && entry.height
+  && reference?.exists && reference.width && reference.height
+  && calibration?.dealer === dealer && calibration.role === reference.role
+  && calibration.entry === reference.id && calibration.path === reference.path
+  && calibration.frame === (reference.frame ?? reference.still ?? null)
+  && referenceSha !== null && calibration.sha256 === referenceSha
+  && distance(measured?.leftInPicture) && distance(measured?.rightInPicture)) return fit;
+ return {...fit, verdict: 'går inte att mäta', words: 'Aktuella handmått saknas för dealerns gällande ankare 1.'};
+}
 
 // ── Headers of pictures and films (pure) ────────────────────────────────────
 /** PNG or JPEG by its first bytes. */
@@ -183,26 +220,27 @@ export function mediaRoles(root: string) {
   for (const name of await readdir(dir).catch(() => [] as string[])) if (name.endsWith('.json')) { try { const o = JSON.parse(await readFile(path.join(dir, name), 'utf8')); if (Array.isArray(o?.pictures)) out.push(...o.pictures); } catch {} }
   return out;
  }
- /** The sha256 of an entry's own picture (not a frame of a film), kept while its size and time are the same. */
+ /** Keep the SHA-256 only while the file's size and modification times agree. */
  const hashes = new Map<string, {stamp: string; sha256: string}>();
- async function hashOf(entry: Entry): Promise<string | null> {
-  if (!entry.path || entry.frame !== undefined || kindOfPath(entry.path) !== 'image' || !isInside(entry.path)) return null;
-  const file = path.join(root, ...entry.path.split('/')), s = await stat(file).catch(() => null);
+ async function hashPath(file: string): Promise<string | null> {
+  const s = await stat(file).catch(() => null);
   if (!s?.isFile()) return null;
-  const stamp = `${s.size}:${s.mtimeMs}`, known = hashes.get(file);
+  const stamp = mediaFileStamp(s), known = hashes.get(file);
   if (known?.stamp === stamp) return known.sha256;
-  const sha256 = createHash('sha256').update(await readFile(file)).digest('hex');
-  hashes.set(file, {stamp, sha256});
+  const sha256 = await mediaFileSha256(file, stamp);
+  if (sha256) hashes.set(file, {stamp, sha256});
   return sha256;
  }
 
- /** How each entry fits today's card plan and standard (data/media-fit.json, tools/media-audit.ts); a missing or unreadable file is no fit data, never an error. */
- async function readFits(): Promise<Record<string, Fit>> {
-  try {
-   const file = JSON.parse(await readFile(path.join(root, 'data/media-fit.json'), 'utf8')), out: Record<string, Fit> = {};
-   for (const [id, value] of Object.entries((file?.entries ?? {}) as Record<string, unknown>)) { const fit = readFit(value); if (fit) out[id] = fit; }
-   return out;
-  } catch { return {}; }
+ /** Lineage uses a whole image's hash, treating individual video frames as separate sources. */
+ async function hashOf(entry: Entry): Promise<string | null> {
+  if (!entry.path || entry.frame !== undefined || kindOfPath(entry.path) !== 'image' || !isInside(entry.path)) return null;
+  return hashPath(path.join(root, entry.path));
+ }
+
+ /** Keep the raw measurement identity until it can be checked against the current Material register. */
+ async function readFits(): Promise<FitReport | null> {
+  try { return JSON.parse(await readFile(path.join(root, 'data/media-fit.json'), 'utf8')); } catch { return null; }
  }
 
  /** The file lies where its name says, inside the repo: no link or junction leads out of it. */
@@ -219,7 +257,7 @@ export function mediaRoles(root: string) {
   if (!s?.isFile()) return {...none, inside};
   const ok = inside ? await confined(entry.path) : true;
   if (!ok) return {...none, inside};
-  const stamp = `${s.size}:${s.mtimeMs}`;
+  const stamp = mediaFileStamp(s);
   let known = facts.get(file);
   if (known?.stamp !== stamp) {
    const kind = kindOfPath(entry.path);
@@ -244,8 +282,13 @@ export function mediaRoles(root: string) {
    const entries: EntryAnswer[] = await Promise.all(dealer.entries.map(async entry => {
     const found = await look(entry), key = entryKey(entry);
     const usedBy = (key ? uses.get(key) ?? [] : []).map(u => ({...u, edge: edgeOf(u.from, u.to)}));
-    return {...entry, ...found, fps: found.fps ?? entry.fps ?? null, usedBy, fit: fits[entry.id] ?? null};
+    return {...entry, ...found, fps: found.fps ?? entry.fps ?? null, usedBy, fit: null};
    }));
+   const held = entries.filter(e => e.role === 'ankare-1' && !e.card && e.state === 'gäller');
+   const reference = held.length === 1 ? held[0] : undefined;
+   const referenceSha = fits?.schemaVersion === 2 && reference?.exists && reference.inside && reference.path && reference.width && reference.height
+    ? await hashPath(path.join(root, reference.path)) : null;
+   for (const entry of entries) entry.fit = fitFor(fits, id, entry, reference, referenceSha);
    const prefix = dealer.films?.prefix, mine = (list: {id: string}[]) => prefix ? list.filter(j => j.id.startsWith(prefix)).length : 0;
    dealers.push({...dealer, id, entries, bank: {jobs: mine(jobs), derived: prefix ? derived : 0, edits: prefix ? edits : 0}});
   }
