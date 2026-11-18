@@ -365,6 +365,9 @@ ett spärrat namn, om klippbanken ändras under bygget eller om Blob-delen går 
 publicering tar cirka 40 minuter, mest uppladdningen (1,7 GB); en senare med få nya filmer cirka 6, varav 3 för
 studions npm-paket.
 
+`--worktree <absolut sökväg>` återanvänder ett befintligt rent arbetsträd av Dealer. Huvudträdet och andra repos
+nekas. Använd samma val för planen och körningen; kör inget annat bygge i det trädet under publiceringen.
+
 **Det som ska finnas på plats** innan `--kor` (verktyget stannar med ett besked om något saknas):
 
 - Körningen görs från Jakobs utcheckning (`C:/Users/jakem/dev/super-feature-sg/dealer`), med koden som ska ut pushad till
@@ -382,8 +385,8 @@ studions npm-paket.
 
 **När ett steg stannar halvvägs** står kopian på nätet kvar som den var, utom om det är kontrollen efter deployen:
 
-- *Arbetskopian är inte ren:* `git -C D:/dealer-scratch/tmp/publiceringsagent/kopia status`. Ändra eller committa aldrig
-  där; ta bort ändringen (`git -C … checkout -- <fil>`) och kör igen.
+- *Arbetskopian är inte ren:* kontrollera `git status` i det valda trädet. Identifiera ändringarnas ägare och bevara
+  arbetet innan något flyttas eller återställs. Använd vid behov ett annat rent arbetsträd; kassera aldrig okända ändringar.
 - *npm ci eller bygget stannar:* läs beskedet. En modul med en maskinsökväg eller ett spärrat namn rättas av den som äger
   filen och pushas; "Klippbanken ändrades medan kopian byggdes" betyder kör igen; taket för Blob, se nedan.
 - *Uppladdningen bryts:* kör igen. Ett objekt som redan ligger i storen känns igen på namn och storlek och skickas inte

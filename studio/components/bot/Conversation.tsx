@@ -7,6 +7,8 @@
 import { ArrowRight, Check, CircleAlert, Copy, Eye, FilePlus2, MessagesSquare, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { studioLoginHref } from "../../lib/bot-client.ts";
+import { useRequests } from "../requests/RequestsProvider";
 import { cn } from "../ui/cn";
 import { AnswerText, CiteMark } from "./AnswerText";
 import { useBot } from "./BotProvider";
@@ -125,11 +127,13 @@ function Answer({ line, last }: { line: BotLine; last: boolean }) {
         <div role="alert" className="flex items-start gap-2.5 rounded-md border border-underkand/30 bg-underkand/8 px-3 py-2.5 text-sm text-[#efa3a3]">
           <CircleAlert className="mt-0.5 size-4 shrink-0 text-underkand" />
           <span className="min-w-0 flex-1">{line.fel.text}</span>
-          {line.fel.kod !== "utloggad" ? (
+          {line.fel.kod === "utloggad" || line.fel.kod === "spelbehorighet" ? (
+            <a href={studioLoginHref()} className="shrink-0 text-xs font-medium text-ink underline underline-offset-4">Logga in</a>
+          ) : (
             <button type="button" onClick={() => bot.retry(line.id)} disabled={bot.busy} className="-my-0.5 inline-flex shrink-0 items-center gap-1 rounded-sm px-1.5 py-0.5 text-xs font-medium text-ink hover:bg-underkand/15 disabled:opacity-45">
               <RotateCcw className="size-3.5" /> Försök igen
             </button>
-          ) : null}
+          )}
         </div>
       ) : null}
       {shown.length && line.status !== "fel" ? (
@@ -216,6 +220,7 @@ const scroller = (el: HTMLElement | null): HTMLElement | null => {
 
 export function Conversation({ lines }: { lines: Line[] }) {
   const bot = useBot()!;
+  const { access } = useRequests();
   const end = useRef<HTMLDivElement>(null);
   const stick = useRef(true);
   const count = lines.length;
@@ -240,6 +245,13 @@ export function Conversation({ lines }: { lines: Line[] }) {
     stick.current = true;
   }, [count]);
 
+  if (!lines.length && (access === "none" || access === "game"))
+    return (
+      <div className="flex flex-1 flex-col justify-center gap-3 py-6 text-sm text-dim">
+        <p>{access === "game" ? "Din inloggning gäller spelet. Boten kräver studions lösenord." : "Logga in med studions lösenord för att prata med boten."}</p>
+        <a href={studioLoginHref()} className="self-start font-medium text-brass-hi underline underline-offset-4">Logga in</a>
+      </div>
+    );
   if (!lines.length) return <Empty onAsk={(q) => bot.ask(q)} />;
   const lastBot = [...lines].reverse().find((l) => l.roll === "bot")?.id;
   return (

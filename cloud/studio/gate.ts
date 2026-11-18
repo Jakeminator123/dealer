@@ -1,6 +1,6 @@
-// What the middleware does with one request (cloud/studio/middleware.ts is only its entry). Everything but the login page,
-// the login route and robots.txt needs the signed cookie; without it the answer is the login page itself, whatever was
-// asked for: a page, a film or /api/clip-bank. With it, a film is fetched from its object in Vercel Blob by this function,
+// What the middleware does with one request (cloud/studio/middleware.ts is only its entry). Login, session status and
+// robots.txt allow anonymous requests. Protected pages, films and API reads lead to login when the copy is closed.
+// An authorized film is fetched from its object in Vercel Blob by this function,
 // with the Range asked for, and answered as private (the browser keeps the site's own address, so films stay same-origin for
 // the 3D scene and stay behind the password), and everything else goes on to the static files. A rewrite to Blob would cost
 // less, but Vercel's CDN keeps the first answer of a rewritten film for its address whatever Range is asked later (measured on
@@ -121,6 +121,12 @@ export async function gate(request: Request, ctx: GateContext): Promise<Response
   // itself compares; with the cookie, every method of the bot's addresses goes on to the function, which allows its own.
   if (isAdminCall(path, request.headers)) return passOn();
   const scope = await cookieScope(s, readCookies(request.headers.get('cookie')).get(COOKIE), Math.floor(now / 1000));
+  if (path === '/api/session' || path === '/api/session/') {
+    if (request.method !== 'GET' && request.method !== 'HEAD') return text('Bara GET.', 405, {Allow: 'GET, HEAD'});
+    // Server-side authentication for the inbox and bot remains on each of their own requests.
+    const headers = {'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', ...ROBOTS};
+    return new Response(request.method === 'HEAD' ? null : JSON.stringify({access: scope ?? 'none'}), {headers});
+  }
   // What this visitor may read: what the cookie gives, or what the copy is open for without one (openOf), whichever is more.
   const open = openOf(ctx.env), reach = scope === 'all' || open === 'all' ? 'all' : scope ?? open;
   // The doors for someone who is only to play: the game's own address, with or without the film before it, behind the same lock.

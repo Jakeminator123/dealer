@@ -5,6 +5,7 @@
 //   node tools/publish-studio.ts                    plan: which commit, which worktree, what would run; nothing is sent
 //   node tools/publish-studio.ts --kor              build that commit, upload new media, build again, deploy, check
 //   … --commit <ref>                                another commit than origin/main (fetched first)
+//   … --worktree <absolute path>                     reuse another clean worktree of this repository
 //   … --utan-deploy                                 stop after the upload and the second build
 //
 // The code is never this checkout's working tree, where other sessions have unfinished files: the commit is checked out,
@@ -34,7 +35,12 @@ if (path.resolve(process.cwd()) !== home) throw Error('Kör från dealer-katalog
 const args = process.argv.slice(2), run = args.includes('--kor'), noDeploy = args.includes('--utan-deploy');
 const option = (name: string) => { const at = args.indexOf(name); if (at < 0) return null; const v = args[at + 1]; if (!v || v.startsWith('--')) throw Error(`${name} saknar värde.`); return v; };
 
-export const WORKTREE = 'D:/dealer-scratch/tmp/publiceringsagent/kopia';
+const suppliedWorktree = option('--worktree');
+if (suppliedWorktree && !path.isAbsolute(suppliedWorktree)) throw Error('--worktree kräver en absolut sökväg.');
+export const WORKTREE = suppliedWorktree ?? 'D:/dealer-scratch/tmp/publiceringsagent/kopia';
+if (path.resolve(WORKTREE).toLowerCase() === home.toLowerCase()) throw Error('--worktree får inte vara huvudträdet.');
+if (suppliedWorktree && !existsSync(WORKTREE)) throw Error('--worktree måste vara ett befintligt rent arbetsträd.');
+if (existsSync(WORKTREE) && realpathSync(WORKTREE).toLowerCase() === realpathSync(home).toLowerCase()) throw Error('Arbetskopian får inte peka på huvudträdet.');
 export const LAB_PORT = 4341;
 const TEAM = 'jakeminator123s-projects', PROJECT = 'dealer-studio';
 const deployDir = path.join(home, '.runtime', 'studio-deploy');
@@ -176,6 +182,13 @@ for (const domain of domains) {
   }
   if (open) { const bot = await fetch(`${site}/api/bot`, {method: 'POST', redirect: 'manual', headers: {'content-type': 'application/json'}, body: '{}'}).catch(() => null);
     check('utan kaka: botten kräver lösenordet', bot?.status === 401, String(bot?.status ?? 'inget svar')); }
+  if (open === 'allt') {
+    const meta = await fetch(`${site}/meta.json`, {cache: 'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null) as {sourceCommit?: string} | null;
+    check('öppen kopia säger rätt commit', meta?.sourceCommit === commit, meta?.sourceCommit?.slice(0, 7));
+    const range = await fetch(`${site}/${film}`, {headers: {range: 'bytes=0-1023'}}).catch(() => null);
+    const bytes = range ? Buffer.from(await range.arrayBuffer()) : Buffer.alloc(0);
+    check('öppen film svarar med MP4 och Range', range?.status === 206 && bytes.subarray(4, 8).toString() === 'ftyp', String(range?.status ?? 'inget svar'));
+  }
   if (!password) { say('   (DEALER_LOSEN_PROV är inte satt: inloggningen prövas inte)'); continue; }
   const login = await fetch(`${site}/api/login`, {method: 'POST', redirect: 'manual', headers: {'content-type': 'application/x-www-form-urlencoded'}, body: new URLSearchParams({losen: password, next: '/studio/'})});
   const cookie = (login.headers.get('set-cookie') ?? '').split(';')[0];

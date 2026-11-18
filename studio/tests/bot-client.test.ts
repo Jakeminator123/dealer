@@ -2,7 +2,7 @@
 // server's answers. Run from the repo root: node --test "studio/tests/bot-client.test.ts"
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { createSseParser, fakeAnswer, fakeDraft, httpProblem, readDraft, readFel, readPost, type SseEvent } from "../lib/bot-client.ts";
+import { BotError, createSseParser, fakeAnswer, fakeDraft, httpProblem, readDraft, readFel, readPost, readRequestsSession, studioLoginHref, type SseEvent, type StudioAccess } from "../lib/bot-client.ts";
 
 function collect(pieces: string[]) {
   const events: SseEvent[] = [];
@@ -49,12 +49,87 @@ test("errors in plain Swedish: the server's own words first", () => {
   assert.equal(readFel(null), null);
   assert.equal(httpProblem(429, { kod: "for_manga", text: "Vänta." }).text, "Vänta.");
   assert.equal(httpProblem(401, null).kod, "utloggad");
+  assert.match(httpProblem(401, null).text, /^Logga in/);
+  assert.equal(httpProblem(403, null).kod, "spelbehorighet");
   assert.equal(httpProblem(405, "Kopian går inte att ändra.").kod, "saknas");
   assert.equal(httpProblem(404, null).kod, "saknas");
   assert.equal(httpProblem(413, null).kod, "for_stor");
   assert.equal(httpProblem(0, null).kod, "natverk");
   assert.equal(httpProblem(502, null).kod, "server");
   for (const status of [0, 401, 404, 413, 429, 500]) assert.match(httpProblem(status, null).text, /^[A-ZÅÄÖ].+\.$/);
+});
+
+test("the inbox is requested only after session status grants full studio access", async (t) => {
+  const original = globalThis.fetch, calls: string[] = [];
+  let access: unknown = "none";
+  t.after(() => { globalThis.fetch = original; });
+  globalThis.fetch = async (url, options) => {
+    const path = String(url);
+    calls.push(path);
+    assert.equal(options?.cache, "no-store");
+    assert.equal(options?.credentials, "same-origin");
+    if (path === "/api/session") return Response.json({ access });
+    assert.equal(path, "/api/onskemal");
+    return Response.json({ poster: [{ id: "test" }] });
+  };
+  for (const scope of ["none", "game"] as const) {
+    access = scope;
+    assert.deepEqual(await readRequestsSession(), { access: scope, posts: null });
+    assert.deepEqual(calls.splice(0), ["/api/session"]);
+  }
+  access = "all";
+  const full = await readRequestsSession();
+  assert.equal(full.access, "all");
+  assert.deepEqual(full.posts?.map(p => p.id), ["test"]);
+  assert.deepEqual(calls.splice(0), ["/api/session", "/api/onskemal"]);
+  access = undefined;
+  await assert.rejects(readRequestsSession());
+  assert.deepEqual(calls, ["/api/session"], "unknown status cannot open the inbox");
+});
+
+test("the login link goes to the gate and preserves the studio return address", () => {
+  const next = "/studio/onskemal/?filter=ny&visa=alla";
+  const link = new URL(studioLoginHref(next), "https://kopia.example");
+  assert.equal(link.pathname, "/login");
+  assert.deepEqual([...link.searchParams], [["next", next]]);
+});
+
+test("a temporary inbox outage preserves verified access for polling and recovery", async (t) => {
+  const original = globalThis.fetch, accessAtInbox: (StudioAccess | null)[] = [];
+  let access: StudioAccess | null = null;
+  const setAccess = (scope: StudioAccess) => { access = scope; };
+  t.after(() => { globalThis.fetch = original; });
+  globalThis.fetch = async (url) => {
+    if (url === "/api/session") return Response.json({ access: "all" });
+    assert.equal(url, "/api/onskemal");
+    accessAtInbox.push(access);
+    if (accessAtInbox.length === 1) return new Response(null, { status: 503 });
+    return Response.json({ poster: [{ id: "recovered" }] });
+  };
+  await assert.rejects(readRequestsSession(setAccess), (error) => error instanceof BotError && error.fel.kod === "server");
+  assert.deepEqual(accessAtInbox, ["all"], "access has already enabled polling before the inbox request");
+  assert.equal(access, "all", "an inbox error does not undo the verified session");
+  const recovered = await readRequestsSession(setAccess);
+  assert.deepEqual(recovered.posts?.map(({ id }) => id), ["recovered"]);
+  assert.deepEqual(accessAtInbox, ["all", "all"]);
+});
+
+test("the lab's fake inbox stays local without a session endpoint", async (t) => {
+  const originalFetch = globalThis.fetch;
+  const originalWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
+  t.after(() => {
+    globalThis.fetch = originalFetch;
+    if (originalWindow) Object.defineProperty(globalThis, "window", originalWindow);
+    else Reflect.deleteProperty(globalThis, "window");
+  });
+  Object.defineProperty(globalThis, "window", {
+    configurable: true,
+    value: { location: { search: "?fejk=1" }, localStorage: { getItem: () => null } },
+  });
+  globalThis.fetch = async () => { throw new Error("a fake inbox must not fetch"); };
+  const result = await readRequestsSession();
+  assert.equal(result.access, "all");
+  assert.ok(result.posts?.some(({ id }) => id.startsWith("fejk-")));
 });
 
 test("a draft is made safe to show", () => {

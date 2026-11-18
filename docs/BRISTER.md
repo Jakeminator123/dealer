@@ -11,8 +11,10 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 
 - **Ritat kort fryser och hoppar i handen.** P7 ruta 74–75 återanvänder ruta 73; vid 76 hoppar ritad mittpunkt
   29,48 filmpixlar mot spårets 9,17. Prov `paow-carry-jitter-20261118` visar bättre greppföljning med filmkort,
-  men silvergrå yta och färgrester kvarstår; landad sexa ser lika ut. Stänger: ren färg, överlämning ruta 82–90,
-  övriga egna mål och hålkortet granskade i rörelse. Ordinarie förval är oförändrat.
+  men silvergrå yta och färgrester kvarstår. Lokal pappersåtervinning ökar ljus kortyta 20,8/36,9 % i ruta 73/74,
+  med samma yttergränser och orörda kontrollområden för hud, filt och sko. Elva native-stills täcker 73–119;
+  överlämning 82–90 visar ett kort men mjuk fingerkant kvarstår. Landad sexa är oförändrad. Stänger: ren färg,
+  överlämningen, övriga egna mål och hålkortet granskade i rörelse. Ordinarie förval är oförändrat.
 - **Återbrukade andrakort/split kräver fortfarande ritade kort.** `kort=liggande` behåller filmkort vid eget mål men
   ritar återbruket till spelplatsen; tidiga returskarvar följs fram till uppmätt vila. Bankprov `paow-game-carry-20261118`
   visar en färdig native splitrunda och C2-kant högst 1 px vid två gränser; full rörelsedom återstår. `paow-game-frame-20261118/coverage.json` ger 9/16 egna

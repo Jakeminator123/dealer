@@ -21,7 +21,7 @@
 import { Play, RotateCcw, Save, Square, Undo2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { FLIP_LABEL, LANDS_LABEL, type BankFacts, type OrdersAnswer } from "../../../src/order-model.ts";
 import { SHOE, VIEWS, type Place } from "../../../src/placement-model.ts";
 import type { Ledger } from "../../lib/ledger.ts";
@@ -254,9 +254,9 @@ export function BordetView() {
         draft.status === "error" ? (
           <ErrorState title="Kortplanen kunde inte läsas" error={draft.error ?? "Okänt fel"} onRetry={() => void draftActions.load()} />
         ) : !d || !plan ? (
-          <div className="flex h-full gap-4 p-5">
-            <Skeleton className="h-full flex-1 rounded-md" />
-            <Skeleton className="h-full w-[380px] rounded-md" />
+          <div className="flex h-full flex-col gap-4 p-5 lg:flex-row">
+            <Skeleton className="aspect-[3/2] shrink-0 rounded-md lg:aspect-auto lg:h-full lg:flex-1" />
+            <Skeleton className="h-36 shrink-0 rounded-md lg:h-full lg:w-[380px]" />
           </div>
         ) : (
           <TableBody
@@ -342,8 +342,8 @@ function TableBody({
   const stageArea = useRef<HTMLDivElement>(null);
   usePlanKeys({ place, editable, dirty: draft.dirty, showing: draft.showing, area: stageArea, onEscape: paths.stop });
 
-  // The stage takes the picture's own shape when the column is taller than that (no bands above and below); the list of
-  // films takes the height that is left under it.
+  // On a wide screen the stage and film list share the left column's height.
+  // On a narrow screen the board follows the image's aspect ratio and the panel follows in the same scroll area.
   const column = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
   useEffect(() => {
@@ -356,8 +356,10 @@ function TableBody({
   }, []);
   const film = under.film;
   const bars = 44 + (film ? 44 : 0);
+  const stageAspect = VIEWS[view].width / VIEWS[view].height;
   // the copy has no list of films under the picture
-  const stageHeight = size.w ? Math.max(240, Math.min(size.h - bars - (isSnapshot ? 0 : 120), size.w / (VIEWS[view].width / VIEWS[view].height))) : 0;
+  const stageHeight = size.w ? Math.max(240, Math.min(size.h - bars - (isSnapshot ? 0 : 120), size.w / stageAspect)) : 0;
+  const stageSize = { "--stage-aspect": stageAspect, "--stage-height": `${stageHeight}px` } as CSSProperties;
 
   const intent = place !== SHOE ? plan.targets[place]?.intent : null;
   const target = place !== SHOE ? plan.targets[place] : null;
@@ -382,7 +384,8 @@ function TableBody({
   );
 
   return (
-    <div className={cn("grid h-full", mode === "bestall" ? "grid-cols-[minmax(0,1fr)_460px]" : "grid-cols-[minmax(0,1fr)_380px]")}>
+    <div className={cn("grid h-full min-h-0 grid-cols-1 content-start overflow-y-auto lg:content-stretch lg:overflow-hidden",
+      mode === "bestall" ? "lg:grid-cols-[minmax(0,1fr)_460px]" : "lg:grid-cols-[minmax(0,1fr)_380px]")}>
       <section ref={column} className="flex min-h-0 min-w-0 flex-col">
         <div className="flex h-11 shrink-0 items-center gap-3 overflow-x-auto border-b border-line px-3">
           {menu}
@@ -397,7 +400,7 @@ function TableBody({
           <Switch size="sm" checked={grid} onChange={setGrid} label="Rutnät" />
         </div>
         {draft.conflict ? <p className="shrink-0 border-b border-underkand/30 bg-underkand/8 px-4 py-1.5 text-xs text-[#ef8b8b]">Planen har ändrats på annat håll sedan den lästes.</p> : null}
-        <div ref={stageArea} className="relative shrink-0" style={{ height: stageHeight }}>
+        <div ref={stageArea} className="relative aspect-[var(--stage-aspect)] shrink-0 lg:aspect-auto lg:h-[var(--stage-height)]" style={stageSize}>
           {stageHeight ? (
             <Board
               plan={plan}
@@ -422,7 +425,7 @@ function TableBody({
         {film ? <FilmBar key={film.id} videoRef={under.videoRef} fps={film.fps} frames={film.frames} onFrame={under.setFrame} /> : null}
         {isSnapshot ? null : <FilmStrip rows={rows} dealer={dealer} chosen={chosenRow} made={made} blocked={blocked} onChoose={chooseRow} onRemove={onRemove} onCreate={onCreate} onClear={onClear} />}
       </section>
-      <aside className="flex min-h-0 flex-col border-l border-line bg-surface" data-nudge>
+      <aside className="flex min-h-0 min-w-0 flex-col border-t border-line bg-surface lg:border-l lg:border-t-0" data-nudge>
         <div className="flex flex-col gap-2.5 border-b border-line px-4 pb-3 pt-3.5">
           <div className="flex items-center gap-2">
             <h2 className="truncate text-base font-semibold text-ink">{placeName(place)}</h2>
@@ -436,7 +439,7 @@ function TableBody({
             </p>
           ))}
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">
+        <div className="lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:[scrollbar-gutter:stable]">
           {mode === "bestall" ? (
             <Step n={3} title="Beställ" summary={null} open onToggle={() => {}}>
               <div className="px-4 pb-4">{addFilms}</div>

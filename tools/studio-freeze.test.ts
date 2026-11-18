@@ -5,9 +5,42 @@ import {createHash} from 'node:crypto';
 import {buildGraph, resolveRound, type BankData} from '../src/clip-graph.ts';
 import {GAME_VOICE} from '../src/speech-lines.ts';
 import {readRelease, releaseDealers, gameTakes, namedAssets, engineSource, forEngine, copyGamePage, ENGINE_ENTRY, ENGINE_CRYPTO, blockedName, blockedPath, redactText, scrub, findLeaks, findTextLeaks, pickTakes, pickProofs, freezeBank, graphShape, roundShape, safeRelative, prefetchAlias, objectName, type Proof, type Release} from './studio-freeze.ts';
+import {snapshotMaterial} from './studio-material.ts';
 
 const release: Release = readRelease(JSON.parse(readFileSync(new URL('../data/studio-release.json', import.meta.url), 'utf8')));
 const digest = (text: string) => createHash('sha256').update(text).digest('hex');
+
+test('the frozen Material view only names published stills and explicitly selected proof files', () => {
+  const first = 'assets/motions/paow-a/first.webp', last = 'assets/motions/paow-a/last.webp';
+  const video = 'assets/motions/paow-a/source.mp4', local = 'D:/private/unreleased.png';
+  const proofVideo = 'assets/proofs/paow-prov/compare.mp4', omitted = 'assets/proofs/paow-prov/hidden.png';
+  const privateProof = 'assets/proofs/private-other/available.png', shared = 'assets/proofs/common/table.png';
+  const cut = (id: string, dealer = 'paow') => ({id, from: 'IDLE', to: 'READY', clip: id, frames: [0, 12] as [number, number], dealer});
+  const bank: BankData = {
+    derived: [cut('paow-a'), cut('paow-duplicate'), cut('pamela-local', 'pamela')],
+    media: {'paow-a': {first, last, video, track: local}, 'paow-duplicate': {first}, 'pamela-local': {first: local}},
+  };
+  const proof = (id: string, files: Proof['files']): Proof => ({id, files, title: local, description: local,
+    labels: {}, verdicts: {}, updatedAt: null, chapters: null, fps: 24});
+  const proofs = [proof('paow-prov', [
+    {name: 'compare.mp4', path: proofVideo, kind: 'video', bytes: 2},
+    {name: 'hidden.png', path: omitted, kind: 'image', bytes: 2},
+    {name: 'available.png', path: privateProof, kind: 'image', bytes: 2},
+  ]), proof('common', [{name: 'table.png', path: shared, kind: 'image', bytes: 2}])];
+  const published = new Map([first, video, local, proofVideo, privateProof, shared].map(path => [path, 64]));
+  const answer = snapshotMaterial(bank, proofs, ['paow', 'pamela'], published);
+  assert.deepEqual(answer.dealers.map(d => d.entries.map(e => [e.served, e.role, e.bytes])), [
+    [[first, 'arbetsmaterial', 64], [proofVideo, 'referens', 64], [shared, 'arbetsmaterial', 64]],
+    [[shared, 'arbetsmaterial', 64]],
+  ]);
+  assert.equal(answer.dealers[0].films?.from, 'api/clip-bank');
+  assert.equal(answer.dealers[1].films, undefined, 'a machine path does not count as published bank media');
+  assert.equal(answer.dealers[0].entries[1].fps, 24);
+  assert.equal(answer.revision, null);
+  assert.ok(answer.dealers.flatMap(d => d.entries).every(e => e.usedBy.length === 0 && e.fit === undefined && e.source === undefined));
+  assert.ok([last, omitted, privateProof, local].every(path => !JSON.stringify(answer).includes(path)));
+  assert.deepEqual(findLeaks(answer, release, 'api/media.json'), []);
+});
 
 test('the register is read strictly', () => {
   assert.equal(release.paow, true);

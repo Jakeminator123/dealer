@@ -42,6 +42,7 @@ import {PRESET_NAME} from '../studio/lib/scene-presets.ts';
 import type {MediaMap} from '../cloud/studio/gate.ts';
 import {buildKnowledge, BOT_FUNCTION_FILES} from './build-knowledge.ts';
 import {knowledgeLeaks} from './knowledge.ts';
+import {snapshotMaterial} from './studio-material.ts';
 import {isBotPath} from '../cloud/studio/bot-routes.ts';
 
 const root = path.resolve(fileURLToPath(new URL('../', import.meta.url)));
@@ -375,13 +376,15 @@ for (const name of asked) {
   if (name.startsWith('data/') && !(name in dataFiles)) {
     if (/^data\/(?:scene-[a-z-]+|props)\.json$/.test(name) && await localFile(name)) dataFiles[name] = await frozenJson(name);
     else notInCopy.push(name);
-  } else if (name.startsWith('api/') && !['api/clip-bank', 'api/proofs', 'api/proof-notes', 'api/placements', 'api/library', ...(release.presets ? ['api/scene-presets'] : [])].includes(name.replace(/\?.*$/, '')) && !isBotPath(`/${name.replace(/\?.*$/, '')}`)) notInCopy.push(name);
+  } else if (name.startsWith('api/') && !['api/clip-bank', 'api/proofs', 'api/proof-notes', 'api/placements', 'api/library', 'api/media', 'api/session', ...(release.presets ? ['api/scene-presets'] : [])].includes(name.replace(/\?.*$/, '')) && !isBotPath(`/${name.replace(/\?.*$/, '')}`)) notInCopy.push(name);
 }
 
 // ── The frozen answers of the read routes ───────────────────────────────────
 const placements = scrub(JSON.parse((await lab('/api/placements')).toString('utf8')), release);
+const publishedMedia = new Map([...written, ...blob.values()].map(({path, bytes}) => [path, bytes]));
 const answers: Record<string, unknown> = {
   'api/clip-bank.json': frozenBank,
+  'api/media.json': snapshotMaterial(frozenBank, proofs.proofs, dealers, publishedMedia),
   'api/proofs.json': {schemaVersion: 1, proofs: proofs.proofs},
   // Jakob's word on the proofs that go up (shown, never written, in the copy).
   'api/proof-notes.json': pickNotes(JSON.parse((await lab('/api/proof-notes')).toString('utf8')), proofs.proofs),
@@ -490,7 +493,7 @@ const config = {
     {src: '^/$', status: 308, headers: {Location: '/studio/'}},
     {src: '^/studio$', status: 308, headers: {Location: '/studio/'}},
     {src: '^/lab\\.html$', status: 308, headers: {Location: '/studio/'}},
-    {src: '^/api/(clip-bank|proofs|proof-notes|placements|library)$', dest: '/api/$1.json'},
+    {src: '^/api/(clip-bank|proofs|proof-notes|placements|library|media)$', dest: '/api/$1.json'},
     // The scene's presets: the list, and one by name as the game page asks for it (api/scene-presets/<name>).
     {src: '^/api/scene-presets/?$', dest: '/api/scene-presets.json'},
     {src: '^/api/scene-presets/([a-z0-9]+(?:-[a-z0-9]+)*)$', dest: '/api/scene-presets/$1.json'},

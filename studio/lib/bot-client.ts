@@ -4,6 +4,7 @@
 // Pure where it can be: the stream reader and the error words are tested in studio/tests/bot-client.test.ts.
 //
 // The routes (fixed):
+//   GET  /api/session   → {access}, the signed cookie's scope on the online copy
 //   POST /api/bot       {fraga, niva, trad, vy, bild} → text/event-stream: kallor, text (many), klar, fel; ":" lines beat
 //   POST /api/utkast    {trad, vy} → {rubrik, typ, sammanfattning, forslag}
 //   GET  /api/onskemal  → {poster}; POST /api/onskemal {vem, typ, rubrik, text, vy, sammanfattning, forslag, bild} → {id}
@@ -19,9 +20,10 @@ export type BotQuestion = { fraga: string; niva: Niva; trad: TradLine[]; vy: Vy 
 export type Kalla = { id: string; titel: string };
 export type BotDone = { modell: string; niva: Niva; tokensIn: number; tokensUt: number; kallor: string[] };
 export type ServerFelKod = "tak" | "for_manga" | "modell" | "indata" | "ingen_nyckel";
-/** The server's own codes, and the client's: no network, logged out, no bot in this copy, too big, cut off, server. */
-export type FelKod = ServerFelKod | "natverk" | "utloggad" | "saknas" | "for_stor" | "avbrutet" | "server";
+/** The server's own codes and the client's network, access and stream errors. */
+export type FelKod = ServerFelKod | "natverk" | "utloggad" | "spelbehorighet" | "saknas" | "for_stor" | "avbrutet" | "server";
 export type BotFel = { kod: FelKod; text: string };
+export type StudioAccess = "none" | "game" | "all";
 
 export type RequestKind = "fel" | "onskemal" | "fraga" | "ide";
 export type RequestStatus = "ny" | "sedd" | "planerad" | "pagar" | "klar" | "avbojd" | "fraga_tillbaka";
@@ -113,7 +115,8 @@ const FALLBACK: Record<FelKod, string> = {
   indata: "Frågan gick inte att läsa. Skriv om den och försök igen.",
   ingen_nyckel: "Boten är inte påslagen i den här kopian ännu.",
   natverk: "Kunde inte nå boten. Kontrollera nätet och försök igen.",
-  utloggad: "Du har loggats ut. Ladda om sidan och logga in igen.",
+  utloggad: "Logga in med studions lösenord för att fortsätta.",
+  spelbehorighet: "Spellösenordet ger tillgång till spelet. Här krävs studions lösenord.",
   saknas: "Boten finns inte i den här kopian ännu.",
   for_stor: "Bilden är för stor. Ta en mindre bild och försök igen.",
   avbrutet: "Svaret bröts innan det var klart. Försök igen.",
@@ -132,7 +135,8 @@ export function readFel(value: unknown): BotFel | null {
 export function httpProblem(status: number, body: unknown): BotFel {
   const own = readFel(body);
   if (own) return own;
-  if (status === 401 || status === 403) return { kod: "utloggad", text: FALLBACK.utloggad };
+  if (status === 401) return { kod: "utloggad", text: FALLBACK.utloggad };
+  if (status === 403) return { kod: "spelbehorighet", text: FALLBACK.spelbehorighet };
   if (status === 404 || status === 405 || status === 501) return { kod: "saknas", text: FALLBACK.saknas };
   if (status === 413) return { kod: "for_stor", text: FALLBACK.for_stor };
   if (status === 429) return { kod: "for_manga", text: FALLBACK.for_manga };
@@ -148,6 +152,11 @@ export class BotError extends Error {
     this.name = "BotError";
     this.fel = fel;
   }
+}
+
+/** Login is served by the gate at the site root, outside the studio's Next.js base path. */
+export function studioLoginHref(next = typeof window === "undefined" ? "/studio/" : window.location.pathname + window.location.search): string {
+  return `/login?next=${encodeURIComponent(next)}`;
 }
 
 async function bodyOf(response: Response): Promise<unknown> {
@@ -530,6 +539,26 @@ export async function listRequests(): Promise<Post[]> {
   if (!response.ok) throw new BotError(httpProblem(response.status, value));
   const list = (value as { poster?: unknown } | null)?.poster;
   return Array.isArray(list) ? list.map(readPost).filter((p): p is Post => !!p) : [];
+}
+
+/** Report verified access before reading the protected list, so an inbox outage can be retried. */
+export async function readRequestsSession(onAccess?: (access: StudioAccess) => void): Promise<{ access: StudioAccess; posts: Post[] | null }> {
+  if (fakeOn()) {
+    onAccess?.("all");
+    return { access: "all", posts: await listRequests() };
+  }
+  let response: Response;
+  try {
+    response = await fetch("/api/session", { cache: "no-store", credentials: "same-origin" });
+  } catch {
+    throw new BotError(httpProblem(0, null));
+  }
+  const value = await bodyOf(response);
+  if (!response.ok) throw new BotError(httpProblem(response.status, value));
+  const access = (value as { access?: unknown } | null)?.access;
+  if (access !== "all" && access !== "game" && access !== "none") throw new BotError(httpProblem(500, null));
+  onAccess?.(access);
+  return { access, posts: access === "all" ? await listRequests() : null };
 }
 
 /** Sends one request to Jakob; only ever called from his press on "Skicka till Jakob". */

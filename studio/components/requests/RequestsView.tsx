@@ -6,7 +6,7 @@
 import { ArrowUpRight, ChevronRight, ImageOff, Inbox, Sparkles, SquarePen } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { requestPictureUrl, type Post } from "../../lib/bot-client.ts";
+import { requestPictureUrl, studioLoginHref, type Post } from "../../lib/bot-client.ts";
 import { formatDay } from "../../lib/names.ts";
 import { useBot } from "../bot/BotProvider";
 import { contextLine } from "../bot/describe";
@@ -134,7 +134,7 @@ function PostCard({ post, seen, onPicture }: { post: Post; seen: Seen; onPicture
 
 export function RequestsView() {
   const bot = useBot();
-  const { enabled, posts, error, reload, seen, markAllSeen } = useRequests();
+  const { enabled, access, posts, error, reload, seen, markAllSeen } = useRequests();
   const [filter, setFilter] = useState<Filter>("alla");
   const [picture, setPicture] = useState<string | null>(null);
   // What was new when the list opened stays marked while it is open; the rail's count goes after a moment.
@@ -155,7 +155,7 @@ export function RequestsView() {
   const shown = useMemo(() => applyFilter(sorted, filter), [sorted, filter]);
   const unseen = sorted.filter((p) => unseenAnswer(p, shownSeen ?? seen)).length;
 
-  const action = bot?.enabled ? (
+  const action = access === "all" && bot?.enabled ? (
     <Button variant="secondary" icon={<SquarePen />} onClick={() => bot.startRequest(null)}>
       Nytt önskemål
     </Button>
@@ -166,6 +166,19 @@ export function RequestsView() {
       <Page title="Önskemål">
         <EmptyState icon={<Inbox />} title="Önskemål finns i kopian på nätet" className="pb-[10vh]">
           Där kan den som tittar fråga boten och skicka önskemål till Jakob. Här i labbet finns inga.
+        </EmptyState>
+      </Page>
+    );
+
+  if (access === "none" || access === "game")
+    return (
+      <Page title="Önskemål">
+        <EmptyState icon={<Inbox />} title="Logga in för att läsa Önskemål" action={
+          <a href={studioLoginHref("/studio/onskemal/")} className="text-sm font-medium text-brass-hi underline underline-offset-4">
+            Logga in
+          </a>
+        }>
+          {access === "game" ? "Spellösenordet ger tillgång till spelet. Önskemål kräver studions lösenord." : "Använd studions lösenord."}
         </EmptyState>
       </Page>
     );

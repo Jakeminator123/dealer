@@ -291,6 +291,28 @@ test('with a game password the game and what it loads pass; the studio and every
 });
 
 // Jakob 2026-11-14: "Se till att den inte är lösenordsskyddad", "ta bort lösenordet "ordet" för sidan nu".
+test('the session status reports only cookie access and leaves the inbox protected', async () => {
+  const ctx = context({env: {...gameEnv, DEALER_OPPEN: 'allt'}});
+  const game = cookieOf(await gate(login('spela'), ctx))!, all = cookieOf(await gate(login(env.DEALER_LOSEN), ctx))!;
+  for (const [cookie, access, status] of [[null, 'none', 401], ['invalid', 'none', 401], [game, 'game', 403], [all, 'all', 200]] as const) {
+    const headers = cookie ? {cookie: `${COOKIE}=${cookie}`} : undefined;
+    const response = await gate(ask('/api/session', {headers}), ctx);
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get('cache-control'), 'no-store');
+    assert.equal(response.headers.get('set-cookie'), null);
+    assert.deepEqual(await response.json(), {access});
+    const inbox = await gate(ask('/api/onskemal', {headers}), ctx);
+    assert.equal(inbox.status, status);
+    assert.equal(inbox.headers.get('x-middleware-next'), status === 200 ? '1' : null);
+  }
+  const anonymous = await gate(ask('/api/session'), context());
+  assert.deepEqual(await anonymous.json(), {access: 'none'}, 'the status works on the locked copy too');
+  const head = await gate(ask('/api/session', {method: 'HEAD'}), ctx);
+  assert.equal(head.status, 200);
+  assert.equal(await head.text(), '');
+  assert.equal((await gate(ask('/api/session', {method: 'POST'}), ctx)).status, 405);
+});
+
 test('a copy the project has opened is read without a password: the game alone or all of it; the bot and every write stay locked', async () => {
   assert.equal(openOf({}), null); assert.equal(openOf({DEALER_OPPEN: 'allt'}), 'all'); assert.equal(openOf({DEALER_OPPEN: ' Spel '}), 'game');
   for (const word of ['', '1', 'ja', 'true', 'all', 'open']) assert.equal(openOf({DEALER_OPPEN: word}), null, `"${word}" opens nothing`);
