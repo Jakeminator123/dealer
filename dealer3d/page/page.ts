@@ -1,5 +1,6 @@
 // The page: one deal, seen through the eyes named in the address.
-//   ?eyes=1,4      which views, from the left: a seat 1-7, or "film" for the bank's camera (seat 4 is the same eye)
+//   ?eyes=1,4      which views, from the left: a seat 1-7, "film" for the bank's camera (seat 4 is the same eye), or "runt-59" for the
+//                  bank's camera carried 59 degrees round the dealer toward seat 1's side ("runt59": toward seat 7's)
 //   ?to=P4.C1      the card place dealt to
 //   ?motion=giv-pamela-p4   a deal read off a film (dealer3d/data/<name>.json) instead of the one drawn by hand; ?to= is then the film's own place
 //   ?look=room     room (felt table) or plain (white figure on grey, for a reference film)
@@ -11,7 +12,7 @@ import {createStage, type Look, type View} from '../src/stage.ts';
 import {DEAL_VERSION, sideSeen} from '../src/deal.ts';
 
 const q = new URLSearchParams(location.search), canvas = document.getElementById('stage') as HTMLCanvasElement;
-const views: View[] = (q.get('eyes') ?? '1,4').split(',').map(s => s.trim() === 'film' ? 'film' : Number(s)).filter(v => v === 'film' || (Number.isInteger(v) && v >= 1 && v <= 7));
+const views: View[] = (q.get('eyes') ?? '1,4').split(',').map(s => s.trim()).map((s): View => s === 'film' ? 'film' : /^runt-?\d+(\.\d+)?$/.test(s) ? {round: Number(s.slice(4))} : Number(s)).filter(v => v === 'film' || typeof v === 'object' || (Number.isInteger(v) && v >= 1 && v <= 7));
 const tags = q.get('tags') !== '0', plan = await (await fetch('/placements/default.json')).json();
 canvas.width = innerWidth; canvas.height = innerHeight;
 const motion = /^[\w-]+$/.test(q.get('motion') ?? '') ? q.get('motion') : null, read = motion ? await (await fetch(`/dealer3d/data/${motion}.json`)).json() : null;
@@ -23,7 +24,7 @@ function draw() {
   const boxes = stage.render(views), shown = stage.state();
   if (!tags) { clock.style.display = 'none'; return; }
   host.replaceChildren(...boxes.map((b, i) => { const view = views[i], tag = document.createElement('div'); tag.className = 'tag'; tag.style.left = `${b.left}px`; tag.style.top = `${b.top}px`;
-    tag.textContent = view === 'film' ? 'Bankens kamera' : view === 4 ? 'Stol 4 (bankens kamera)' : `Stol ${view}`;
+    tag.textContent = view === 'film' ? 'Bankens kamera' : typeof view === 'object' ? `Bankens kamera ${Math.abs(view.round)}° runt dealern` : view === 4 ? 'Stol 4 (bankens kamera)' : `Stol ${view}`;
     if (shown) { const small = document.createElement('small'); small.textContent = names[sideSeen(shown.card, stage.eyeOf(view).position)]; tag.append(small); }
     return tag; }));
   clock.textContent = `${stage.time().toFixed(2).replace('.', ',')} s`;

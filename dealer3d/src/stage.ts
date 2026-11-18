@@ -3,7 +3,7 @@
 // it shape and light. Two looks: 'room' (a felt table, for looking at the geometry from the seats) and 'plain' (a white
 // figure and a grey table on a flat ground, for a reference film a video model can follow).
 import * as T from 'three';
-import {CARD, FILM, filmEye, fovYDeg, type Eye, type Vec3} from './camera.ts';
+import {CARD, FILM, filmEye, fovYDeg, orbit, type Eye, type Vec3} from './camera.ts';
 import {SHOE, dealerEdge, filmLens, realCardAt, seatEye, shoeCard, shoePose, spots, type Plan} from './world.ts';
 import {HAND, MOMENTS, planDeal, type CardPose} from './deal.ts';
 import {restingHand, solveBody, standing, type Body} from './body.ts';
@@ -13,8 +13,8 @@ import type {Figure} from './figure-model.ts';
 export type Look = 'room' | 'plain';
 type Limb = {s: number[]; e: number[]; w: number[]; k: number; p: number[][]};
 /** A deal read off a film and laid into the room by dealer3d/tools/lift.ts (dealer3d/data/*.json). */
-export type Read = {film: string; fps: number; frameCount: number; leavesShoe: number; edge: number[]; folds: number; rests: number; hip: number[]; frames: {card: {c: number[]; l: number[]; n: number[]}; L: Limb; R: Limb; h: number[]; g?: number[]}[]}; // g: where she looks in that frame, if the film says (dealer3d/tools/pose-film.ts); without it her eyes follow the card
-export type View = 'film' | number; // the bank's camera, or a seat 1-7 (seat 4 is the bank's camera)
+export type Read = {film: string; fps: number; frameCount: number; leavesShoe: number; edge: number[]; folds: number; rests: number; hip: number[]; laid?: {from: number; c: number[]; l: number[]; n: number[]}[]; frames: {card: {c: number[]; l: number[]; n: number[]; id?: number}; L: Limb; R: Limb; h: number[]; g?: number[]}[]}; // g: where she looks in that frame, if the film says (dealer3d/tools/pose-film.ts); without it her eyes follow the card. card.id and laid: a film of several cards (dealer3d/tools/deal-film.ts) says which card is in play and which lie, each from its frame
+export type View = 'film' | number | {round: number}; // the bank's camera, a seat 1-7 (seat 4 is the bank's camera), or the bank's camera carried that many degrees round the dealer
 const COLOUR = {
   room: {ground: 0x101214, felt: 0x1f7045, rail: 0x3a2417, wood: 0x2a1a10, figure: 0xe6e1d8, shoe: 0x1b1c1f, mark: 0xd8c27a, fog: 0x101214},
   plain: {ground: 0x767d84, felt: 0xb4b9bd, rail: 0xb4b9bd, wood: 0x9aa0a5, figure: 0xf3f1ec, shoe: 0x2a2c30, mark: 0xb4b9bd, fog: 0x767d84},
@@ -107,6 +107,8 @@ export function createStage(canvas: HTMLCanvasElement, plan: Plan, options: {loo
   place(shoe, pose.back, [0, 1, 0], sideways, sameWay ? pose.front : [pose.front[0] + pose.far[0] * SHOE.width, 0, pose.front[2] + pose.far[2] * SHOE.width]); scene.add(shoe);
   const next = cardMesh(), start = deal.card(0); placeCard(next, {...start, centre: [start.centre[0] - start.normal[0] * 0.0006, start.centre[1] - start.normal[1] * 0.0006, start.centre[2] - start.normal[2] * 0.0006]}); scene.add(next);
   const card = cardMesh(); scene.add(card);
+  // The cards a film of several has laid: each lies where the film says from its frame on.
+  const lying = (options.read?.laid ?? []).map(l => { const m = cardMesh(), long = l.l as Vec3, normal = l.n as Vec3; placeCard(m, {centre: l.c as Vec3, long, normal, across: [normal[1] * long[2] - normal[2] * long[1], normal[2] * long[0] - normal[0] * long[2], normal[0] * long[1] - normal[1] * long[0]]}); m.visible = false; scene.add(m); return {from: l.from, mesh: m}; });
 
   // The figure.
   const skin = matte(C.figure, 0.85), torso = ball(skin, 1), yoke = limb(skin, 0.052, 0.052), neck = limb(skin, 0.04, 0.036), head = new T.Group();
@@ -127,7 +129,9 @@ export function createStage(canvas: HTMLCanvasElement, plan: Plan, options: {loo
   let now = 0, shown: {card: CardPose} | null = null;
   function setTime(t: number) {
     now = Math.max(0, Math.min(duration, t)); let c: CardPose, body: Pick<Body, 'hip' | 'shoulders' | 'neck' | 'head'> & {arms: {shoulder: Vec3; elbow: Vec3; wrist: Vec3}[]};
-    if (read) { const at = Math.min(read.frameCount - 1, now * read.fps), i = Math.min(read.frameCount - 2, Math.floor(at)), k = at - i, a = read.frames[i], b = read.frames[i + 1];
+    if (read) { const at = Math.min(read.frameCount - 1, now * read.fps), i = Math.min(read.frameCount - 2, Math.floor(at)), k = at - i; let a = read.frames[i], b = read.frames[i + 1];
+      for (const l of lying) l.mesh.visible = at >= l.from - 0.5;
+      if (a.card.id !== b.card.id) { const whole = k < 0.5 ? a : b; a = {...a, card: whole.card}; b = {...b, card: whole.card}; } // between two frames of two different cards there is no card half way
       const long = norm(mix(a.card.l, b.card.l, k)), toward = mix(a.card.n, b.card.n, k), d = toward[0] * long[0] + toward[1] * long[1] + toward[2] * long[2], normal = norm([toward[0] - long[0] * d, toward[1] - long[1] * d, toward[2] - long[2] * d]);
       c = {centre: mix(a.card.c, b.card.c, k), long, normal, across: cross(normal, long)};
       const limbOf = (side: 'L' | 'R') => ({shoulder: mix(a[side].s, b[side].s, k), elbow: mix(a[side].e, b[side].e, k), wrist: mix(a[side].w, b[side].w, k)}), R = limbOf('R'), L = limbOf('L');
@@ -160,7 +164,10 @@ export function createStage(canvas: HTMLCanvasElement, plan: Plan, options: {loo
     }
   }
   const cameraOf = (eye: Eye) => { const cam = new T.PerspectiveCamera(fovYDeg(eye.focalPx), FILM.width / FILM.height, 0.2, 30); cam.position.copy(v3(eye.position)); cam.lookAt(v3(eye.position).add(v3(eye.forward))); cam.updateMatrixWorld(); return cam; };
-  const eyeOf = (view: View): Eye => view === 'film' ? filmEye(lens) : seatEye(view, plan, lens);
+  // A seat's eye aims at the seat's own card, so the dealer stands off the picture's middle and a little farther away. The bank's camera carried round the
+  // dealer herself (about the plumb line through her middle) keeps its height, its steepness and its distance to her: she is drawn where the bank has her and
+  // as large, only seen from the side (Jakob 2026-11-18: "kameran i mitten flyttad åt sidan"). Negative degrees: toward seat 1's side.
+  const eyeOf = (view: View): Eye => view === 'film' ? filmEye(lens) : typeof view === 'number' ? seatEye(view, plan, lens) : orbit(filmEye(lens), [frame.hip[0], 0, frame.hip[2]], view.round * Math.PI / 180);
   /** Draws the present moment once per view, side by side from the left; each view keeps the bank's shape (1764 : 1174) inside its share of the canvas. */
   function render(views: View[]): {left: number; top: number; width: number; height: number}[] {
     const W = canvas.width, H = canvas.height, share = W / views.length, boxes: {left: number; top: number; width: number; height: number}[] = [];

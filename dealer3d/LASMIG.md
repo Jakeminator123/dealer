@@ -5,51 +5,59 @@ egen vinkel, "avskilt i en egen undermapp" tills delarna är värda att lyfta in
 
 ## Överlämning (läs det här först; resten av sidan är uppslagsverk)
 
-Skriven 2026-11-18 kl. 01.30 av sessionen som startade banan, som avslutar sitt pass. Högst en skärm: det som inte
-ryms här står i avsnitten nedan, i commitmeddelandena eller i proven.
+Skriven 2026-11-18 kl. 03.28 av sessionen som gjorde tvåhandsgiven (underagent åt huvudagenten). Högst en skärm: det som
+inte ryms här står i avsnitten nedan, i commitmeddelandena och i varje filmmapps LASMIG.txt på slasket.
 
 **Läget.**
-- Vita dockan delar ut ett kort som en människa: händer och kropp avlästa ur Pamelas godkända giv till plats 4, alla
-  leder inom vad en arm klarar (test), kortet ett verkligt kort. Den går att se från vilken stol som helst.
-- Som förlaga åt Kling 4 (dockans film + första och sista bild) håller den på plats 4: 4/5 två gånger. Plats 5 är
-  oavgjord (3/5), plats 3 föll (1/5, en tagning). Kling tar handens och kortets rörelse ur dockan, och den vilande
-  handens liv, men inte huvudet: blicken måste stå i bilderna.
-- Jakob 2026-11-18: ja till blicken och den friare högerhanden; NEJ till att bygga vidare på Meshy-modellen (kortets
-  val "Nej, vita dockan räcker"; koden ligger kvar, lägg inget arbete där); ja till ett betalt prov från stol 1.
-- Kortets vändning är sedan kl. 01.10 EN vridning kring en axel (Jakob såg en "konstig halvrotation" i de äldre
-  filmerna). Förlagorna "-2" och "-3" har den äldre vändningen; "-4" är den som gäller från nu. Två betalda prov på
-  den beställdes kl. 01.30 av huvudagenten. C5 (plats 4, bankens kamera; Prov `giv-forlagefilm-2`, c5-*) är läst: 3/5.
-  Vändningen blev nattens renaste (en kantruta, ingen snurr i kortets plan; C3 snurrade 40° och C4 53°) och det gula
-  kortet bärs bara 8 % längre än dockans (C3 16 %, C4 22 %), men kortet hålls upprätt till ruta 67 och ligger platt i
-  ruta 68 utan någon ruta emellan. Stol 1 (Prov `dealer-fran-stol-1`) var inte läst när det här skrevs.
+- Dockan delar på två sätt. (1) Den avlästa given från ankare 2.1 (Pamelas hand, nyckelvridning; `capture.ts`,
+  `data/giv-pamela-*.json`): som förlaga åt Kling 4 höll den på plats 4 (4/5 två gånger), plats 5 oavgjord, plats 3
+  föll; förlagan "-4" gav i C5 en ren vändning men kortet hoppade från upprätt till liggande (3/5). (2) **Tvåhandsgiven
+  från pose 2.3** (`two-hand.ts`), nattens arbete på Jakobs beställning: en riktig dealers giv i hennes egen takt.
+  Vänster hand stryker ut kortet och för det till höger hand, som griper om kortets långsida; båda reser det på
+  kortsidan; höger bär det och låter det falla framåt, ÄNDE ÖVER ÄNDE; fingertopparna kvar på hörnet närmast henne.
+  Tiderna och handbytets punkter är MODEL:s avläsning (`real-deal.ts`); vägen, greppet och kroppen är en modell.
+- Jakob 2026-11-18: ja till ankare 2.3 (`assets/anchors/paow-ankare-2-3-a/`; filmerna börjar på dess händer,
+  `--right-at 1180,887,83`); "se bara till att alla vridningar blir bra", vilken vändning är mindre viktigt; sidan ska
+  vara "kameran i mitten flyttad åt sidan", cirka 35 grader (`?eyes=runt35`); NEJ till Meshy-modellen.
+- Filmerna, alla 1764 x 1174 och 30 rutor/s, i `D:/dealer-scratch/tmp/dealer-3d/ut/` (varje mapp: film, ark, närbild av
+  vändningen, slutläge, LASMIG.txt med tider, slutläge i meter, leder, vad som är avläst och modell, kommandot):
+  - `giv-fran-2-3-p5/`: plats 5, 3,0 s. Film b (hennes takt, klar ruta 32), film c (långsam, klar ruta 68, kortet står
+    aldrig stilla mellan uppresning och fall; samma första och sista bild), från sidan 35 grader och från stol 1:s öga,
+    stillbilder från båda, och jämförelsen av ögonen (stol 1:s öga har bankens höjd, lutning och lins). KLAR-*.txt
+    säger vad som lämnades när.
+  - `giv-fran-2-3-p4/`: plats 4, 3,0 s, hennes takt.
+  - `giv-fran-2-3-alla/`: svepet plats 7-1 och dealerns kort, 8,0 s, hennes takt. Plats 6 och 7, som föll med
+    enhandsgiven, håller: höger hand går framför skon och kroppen lutar sig dit (test).
+- Betalt (huvudagenten, Kling 4, plats 5): Kling följer tvåhandsgiven och tog greppet efter film b, men i hennes takt
+  stannar den med kortet stående och gör vändningen på två-tre rutor. Film c är gjord för det; utfallet var inte läst
+  när det här skrevs.
 
 **Nästa steg, i ordning.**
-1. Läs utfallet av stol 1 (`D:/dealer-scratch/tmp/stol-1/RAPPORT.md`) mot dockans film innan något mer görs för andra
-   stolar: höll hennes utseende från sidan, och följde filmen dockans rörelse?
-2. Nästa förlaga, "-5": behåll den enda vridningen men sänk kortet jämnt mot filten ruta 60–80, som i Pamelas film
-   (hon håller det uppifrån i bortre kanten och sänker det snett ned mot platsen). I dag står dockans kort lutat efter
-   vändningen och fälls plant först ruta 90–96 (`folds` till `rests` i `perform`, `capture.ts`), och Kling tar efter:
-   därav hoppet i C5. Mätt med `vridning.ts` på slasket: dockans kort ritas 96–100 bildpunkter långt ruta 76–91 där
-   filmens är 68–72. Rapporten: `D:/dealer-scratch/tmp/giv-experiment-2/c5/RAPPORT.md`.
-3. Ankare 2.3 (Jakobs beställning hos sessionen MODEL, som är öppen igen sedan kl. 01.40 och lovar händernas bana i
-   meter i `yt-referens/ut/givens-slag.json`): dockfilmen finns (`tools/pose-film.ts --pose 2.3`,
-   `data/till-ankare-2-3.json`, prov `dealer-3d-till-ankare-2-3`; filen och en LASMIG.txt med alla tal i
-   `D:/dealer-scratch/tmp/dealer-3d/ut/ankare-2-3/`). Vad som görs med den står i
-   `D:/dealer-scratch/tmp/yt-referens/LASMIG-OVERLAMNING-2026-11-18.md`, avsnitt 2. Öppet: tummen pekar ned mot filten,
-   inte upp (min läsning av närbilden), och filmen har inget test än.
-4. Släpet (ankare 2.2) ur `pamela-p4-c1-drawn-deal-01`: påbörjat, se "Släpet" under Kvar.
+1. Läs tagningen på film c mot `narbild-fallet-c.png`: höll vändningen när kortet aldrig står stilla? Om ja: gör
+   plats 4 och svepet i samma takt (`deal-film.ts --beats` tar i dag ETT kort; svepet behöver att varje korts tider
+   dras ut, det vill säga `paced` i verktyget för alla platser).
+2. Det som ser fel ut i dockan och som Kling kan ta efter: fingrarna byter sida om kortets kant på två rutor (ritat,
+   inte löst; tummen når kortets plan men trycker inte); dockans hand är kupad och 4-5 cm kortare i bild än ankarets
+   platta hand; i svepet lutar hon sig långt för plats 7, och underarmen pekar mot kameran i ett par rutor för plats
+   3-1. Bankens sko håller kortet stående där den riktiga håller det liggande, så kortet svängs 30 grader på filten.
+3. Den äldre vägen: stol 1 (`D:/dealer-scratch/tmp/stol-1/RAPPORT.md`), förlagan "-5" för nyckelvridningen (sänk kortet
+   jämnt ruta 60-80; `folds` till `rests` i `perform`) och släpet (ankare 2.2, se "Släpet" under Kvar) är inte rörda i natt.
 
-**Väntar på Jakob.** Inget utanför Beslut.
+**Väntar på Jakob.** Vilken vändning banken ska ha (ände över ände eller nyckelvridningen): hans val, när han har sett tagningarna.
 
 **Var saker ligger.** Koden här; grenen `dealer-3d` i arbetsträdet `D:/dealer-scratch/tmp/dealer-3d/trad` (huvudagenten
-slår ihop den i `main`); inspelningsskript, förlagor och mellanlager i `D:/dealer-scratch/tmp/dealer-3d/` (`ut/forlagor-4/`,
-`ut/vinkel-stol-1-b/`, `rorelse/`); proven i `assets/proofs/dealer-3d-*`.
+slår ihop den i `main`); inspelningsskript (`spela-in-giv23.sh`, `prov-giv23.sh`), ögats mätning (`ogon-matt.ts`,
+`ogon-jamfor-3.ts`), filmer och mellanlager i `D:/dealer-scratch/tmp/dealer-3d/`; proven i `assets/proofs/dealer-3d-*`.
 
 **Fällor.**
 - Headless Chrome bara under låset: `bash D:/dealer-scratch/tmp/dealer-3d/under-las.sh <minuter> "<vad>" <kommando>`.
-- Banan skriver bara i `dealer3d/` och i sina provmappar; betalt beställer huvudagenten.
-- Titta på bilden innan ett tal skickas vidare: spårets fyrhörn är brus när kortet är en strimma, och en hel arm kan
-  vara "inom gränserna" och ändå se ur led ut om överarmens rullning är fel.
+- Banan skriver bara i `dealer3d/` och i sina mappar på slasket; betalt beställer huvudagenten.
+- Titta på bilden innan ett tal skickas vidare. "Inom gränserna" räckte inte två gånger i natt: kortet stod för sig
+  självt intill en platt hand, och armbågen gick genom bröstet där ingen led var utanför sin gräns (nu säger verktyget
+  till: "ARMBÅGEN HAR INGEN FRI PLATS").
+- En levererad film ska gå att göra om: `giv-fran-2-3-p5.json` och `-p4.json` är ruta för ruta det som film b och
+  plats 4-filmen spelades in från; ändra modellen bakom en växel (som `Pace`) hellre än för alla filmer.
+- Verktyget räknar rutor från 0, arken från 1 (ruta 1 är filmens första bild).
 
 Mappen rör inget annat i repot. Den läser `placements/default.json` (aldrig skriver) och `src/placement-model.ts`, och
 använder repots låsta `three` och `sharp`.
@@ -63,11 +71,17 @@ använder repots låsta `three` och `sharp`.
 | `src/world.ts` | Det filmen visar (`MEASURED`) och det som antas (`ASSUMED`); `filmLens()`, passningen som väljer den lins som ritar dealerns kropp i verklig storlek (ett test håller den lika med `TABLE_LENS`); planens kortplatser på filten; stolarnas ögon (`seatEye`: varje stols öga står till stolens eget första kort som bankens kamera står till plats 4:s, lika högt, lika brant och lika långt bakom, så det egna kortet landar på samma bildpunkt från varje stol; buret runt dealerkantens mitt, som först, hamnade plats 1:s kort under bildkanten). Ren räkning. |
 | `src/capture.ts` | **En verklig giv lagd i rummet:** händernas 21 punkter och kroppens leder, avlästa ur en film, sätts under linsen punkt för punkt (varje punkt på siktlinjen genom sin egen bildpunkt), kortet följer filmens eget kortspår med sin hållna ände vid fingrarna, och `joints` och `LIMITS` säger vad en arm och en hand kan göra. Ren räkning. |
 | `data/giv-pamela-p4.json`, `-p1`, `-p3`, `-p5` | Given lagd i rummet som tal: `pamela-p4-c1-plan-deal-02`, 120 rutor, per ruta kortet, båda armarna och händernas punkter i meter; och samma giv flyttad till plats 1, 3 och 5 (`--to P3.C1`). Skrivna av `tools/lift.ts`; sidan och testerna läser dem. Plats 6 och 7 finns inte: där går handen genom skon. `giv-pamela-p4-los.json` och `-p1-los.json` är samma två med högerhanden släppt fri (`--loose 1`, en modell). |
+| `src/real-deal.ts` | **En riktig dealers tvåhandsgiv som tal:** åtta kort (sju platser och hennes eget), för varje kort tio ögonblick i sekunder och de två punkter på filten där händerna byter, avlästa av sessionen MODEL ur en film av ett riktigt bord. Bara tal lämnar den filmen. |
+| `src/two-hand.ts` | **Tvåhandsgiven från pose 2.3**, lagd för hand i den riktiga dealerns takt: kortet ut ur skon som en stege från en vägg, fört på filten till höger hand, rest på kortsidan av båda händerna, fällt framåt i luften (ände över ände), sänkt, skjutet de sista 4 cm; händerna omlott, huvudet följer platsen, kroppen lutar sig dit armen inte når. `startOnAnchor` lägger höger hand där en ankarbild har den. Huvudet på filen säger vad som är avläst och vad som är modell. Ren räkning. |
+| `src/hand-pose.ts` | En hand som stel form i sina egna axlar, och hur en modellerad film rör den: ställd någonstans, vriden i en enda vridning, fingrarna böjda i sina egna leder (varje ben behåller sin längd), tummen förd mot en punkt, och `track` (ett värde genom givna nycklar utan översläng). Ren räkning. |
+| `data/giv-fran-2-3-p5.json`, `-p5-langsam.json`, `-p4.json`, `-alla.json` | Tvåhandsgiven som tal sidan spelar: ett kort till plats 5 (i hennes takt, och långsamt med `pace`), ett till plats 4 (90 rutor, 3,0 s: given i hennes takt, sedan stilla) och svepet till plats 7–1 och dealerns kort (240 rutor, 8,0 s). `card.id` säger vilket kort som är i spel, `laid` vilka som ligger, `beats` varje korts ögonblick i rutor. Skrivna av `tools/deal-film.ts`. |
+| `tools/deal-film.ts` | Lägger tvåhandsgiven (`--to P5.C1` eller `--to all`, `--seconds`, `--lead`, `--right-at` för ankarets högerhand, `--beats` för en film i egen, långsammare takt), skriver datafilen och skriver ut slagen, vad lederna får göra, om en hand går genom skon, och vad bankens kamera ser av kortet. |
+| `tests/two-hand.test.ts` | 64 tester av de fyra filerna (plats 5 i hennes takt och långsamt, plats 4, svepet): de är vad koden lägger i dag, börjar i pose 2.3, varje led inom gränserna i varje ruta, händerna lika stora, inget under filten eller i skon, kortet rest kring kortsidan och sedan en vridning kring en axel, aldrig en ruta från upprätt till liggande, höger hand sluten om kortets långsida medan det står och aldrig mer än 30 mm från kortet, armbågen aldrig utan fri plats, fingertopparna på hörnet närmast henne, stilla slut; den långsamma filmen är samma giv utdragen och kortet står aldrig stilla. |
 | `src/deal.ts` | Den första given, ritad för hand, som tidslinje: kortets läge och vridning och handens grepp för varje tidpunkt, till vilken kortplats som helst. Bana och tempo ur Paows giv till plats 4. Jakob dömde ut handens rörelse (2026-11-17); den avlästa given ersätter den i proven, och den här står kvar för jämförelse och för platser som ingen film går till. Ren räkning. |
 | `src/body.ts` | Den handritade givens skelett, löst ur var händerna ska vara: hon böjer sig från höften och vrider fram axeln så långt armen behöver. Ren räkning. |
 | `src/stage.ts` | Ritningen i three.js: bord, sko, ett kort med två sidor och provdockan, sedda genom flera ögon samtidigt. Två utseenden: `room` (filtbord) och `plain` (vit docka på grått, för en förlagefilm). Två källor för rörelsen: en avläst giv (handen ritas av sina 21 punkter) eller den handritade. |
 | `src/figure-model.ts` | En riggad modell (GLB med skelett, som Meshy riggar) på dockans plats, ställd ur samma leder; hämtas bara när sidan ber om den. Se "Kvar". |
-| `page/` | Sidan. `?motion=giv-pamela-p4` väljer en avläst giv; `?model=1` sätter den riggade modellen (`/model.glb`, som inspelaren serverar med `--model`) på dockans plats; `?eyes=1,4` ögon (en stol 1–7 eller `film` för bankens kamera), `?to=P4.C1` kortplatsen för den handritade given, `?look=plain`, `?tags=0`, `?t=1.9`, `?play=1`. |
+| `page/` | Sidan. `?motion=giv-pamela-p4` väljer en avläst giv; `?model=1` sätter den riggade modellen (`/model.glb`, som inspelaren serverar med `--model`) på dockans plats; `?eyes=1,4` ögon (en stol 1–7, `film` för bankens kamera, eller `runt35` för bankens kamera buren 35° runt dealern åt hennes vänster, `runt-35` åt hennes höger), `?to=P4.C1` kortplatsen för den handritade given, `?look=plain`, `?tags=0`, `?t=1.9`, `?play=1`. |
 | `../tools/python/landmarks.py` (repots Python-mapp) | Läser en film ruta för ruta med MediaPipe och skriver händernas och kroppens punkter som JSON. Resultatet är mellanlager utanför Git. |
 | `tools/lift.ts` | Lägger en films punkter i rummet (`capture.ts`) med filmens kortspår, skriver `data/<namn>.json` och skriver ut vad som mättes: handens storlek, varje leds omfång, och hur kortet stämmer med filmens. |
 | `tools/measure.ts` | Kalibreringen som tal: linsfamiljen, den valda linsen, ett verkligt kort på planens platser mot planens kontur, kortet i skon, stolarnas ögon. |
