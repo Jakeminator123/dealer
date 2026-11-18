@@ -6,7 +6,7 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
 **Läget.**
 - Spelets underlägg (`UNDER` i `src/card-overlay.ts`) är förval sedan 2026-11-14. Kortens fjärde steg (`33b164a`) fick 3,75/5 blint.
 - Provet `kort=liggande&cardMethod=film` behåller filmkortet i 2D; `scene` färgar med `cardBack=dark&cardFace=paper`, även i Bordets giv–retur-par.
-- Om samma film fortsätter efter givens klippgräns väntar det liggande kortet till uppmätt vila/färdig toning, även i RETURN.
+- Vid uppmätt vila består kortet och senaste belagda sida även utan markör; masken kräver aktuell ruta. Toning börjar bara på FRONT.
 - P4.C2 har egna filmer/spår: vila55, släpp64 i Cykel01/65 i Cykel02. Det svagare omtaget är arkiverat med bevis kvar.
 - Kortplanen ritas i verkligt perspektiv (`918e7f4`): där planen säger Plant bord ritas varje kort som ett verkligt
   kort (63 × 88 mm, storlek 1,00) genom linsen som ger dealern människostorlek (`src/table-lens.ts`). `planCardQuad` i
@@ -29,7 +29,7 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
 
 **Nästa steg.**
 1. C1 ligger kvar genom P4.C2. `paow-c2-paper-rim-20261118` och `paow-c2-contact-20261118` visar mindre blåspill
-   med P1/P7 intakta. Blå restkant, övriga andrakort/split, hålkort och Jakobs linsval återstår.
+   med P1/P7 intakta. Helgiven har 9/16 egna målfilmer; blå restkant, övriga andrakort/split, hålkortets mask och linsval återstår.
 2. När hans sparade plan checkas in, skriv om `data/media-fit.json` med `node tools/media-audit.ts --fit --write`.
    Gör samma mätning när planens regel, linsen eller ett ankare ändras.
 3. Kortets sidor i efterarbetet, efter filmerna: gul rygg (SG får stå kvar) och blå framsida, lika i labbet och spelet.

@@ -40,7 +40,7 @@ export function filmModel(take: Take | null | undefined, takes: Record<string, T
   return (typeof rest === 'string' ? own(takes[rest]) : null) ?? own(take);
 }
 export type FilmPlayers = {
-  play(parts: FilmPart[], options?: {loop?: boolean; cut?: boolean; onPart?(index: number): void; onEnd?(): void}): unknown;
+  play(parts: FilmPart[], options?: {loop?: boolean; cut?: boolean; onPart?(index: number): void; onFrame?(index: number, sourceFrame: number): void; onEnd?(): void}): unknown;
   hurry(rate: number): void; preload?(paths: string[]): void;
   /** Stops the film on screen where it stands (true) or lets it run on (false); the next play() lets it run by itself. */
   toggle?(force?: boolean): void;
@@ -241,7 +241,9 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
       const cards = cardOptions(beat, table, i < turn ? closed : records, layout, carry, words);
       if (filmContinuesDeal) cards.filmContinuesDeal = true;
       // the hole card's turn lands (its value and the dealer's total are shown) when its face shows in the film, not when the film ends
-      const face = beat.kind === 'REVEAL' ? faceFrame(loaded[i]) : null; shows.push(face !== null && face > s.start && (s.end === null || face < s.end) ? (face - s.start) / (s.fps || 30) : null); parts.push({path: s.video, start: s.start, end: s.end, track: loaded[i], cards, frame: frameOf(s.take), ...fpsOf(s.take), ...modelOf(s.take)}); });
+      const face = beat.kind === 'REVEAL' ? faceFrame(loaded[i]) : null;
+      shows.push(face !== null && (s.end === null || face < s.end) ? Math.max(face, s.start) : null);
+      parts.push({path: s.video, start: s.start, end: s.end, track: loaded[i], cards, frame: frameOf(s.take), ...fpsOf(s.take), ...modelOf(s.take)}); });
     let done = 0; // beats landed so far, in order
     const land = (upTo: number) => { for (; done < upTo; done++) { const beat = beats[done]; if (beat.own && beat.kind !== 'DEAL' && !lying.includes(beat.own.shoeDraw)) lying = [...lying, beat.own.shoeDraw]; landed(beat, done); } };
     // What she says before the cards and after them: the talk films around the chain, each line begun as its film begins.
@@ -271,12 +273,17 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
       // A calm rest clip is cut at once; a gesture is played out faster, so that it lands, and the chain starts after it.
       const cut = !leaving || idleExit(leaving) === 'CUT'; if (!cut) players.hurry(IDLE_RULE.exitRate);
       players.preload?.(all.map(p => p.path));
-      let afterBegun = false;
-      players.play(all, {cut, onPart: index => { if (mine !== token) return;
+      let afterBegun = false, showing = -1;
+      players.play(all, {cut, onPart: index => { if (mine !== token) return; showing = index;
         if (index < lead) { talkBefore[index].begin(); return; }
-        if (index < lead + parts.length) { land(beatOf[index - lead]); const at = shows[index - lead], beat = beatOf[index - lead] + 1; if (at !== null) setTimeout(() => { if (mine === token) land(beat); }, at * 1000); return; }
+        if (index < lead + parts.length) { land(beatOf[index - lead]); return; }
         land(beats.length); if (!afterBegun) { afterBegun = true; silentAfter(); } talkAfter[index - lead - parts.length].begin(); },
-      onEnd: () => { if (mine === token) { land(beats.length); if (!afterBegun) silentAfter(); } resolve(); }});
+      onFrame: (index, frame) => {
+        if (mine !== token || index !== showing || index < lead || index >= lead + parts.length || !Number.isFinite(frame)) return;
+        const at = shows[index - lead];
+        if (at !== null && frame >= at) land(beatOf[index - lead] + 1);
+      },
+      onEnd: () => { showing = -1; if (mine === token) { land(beats.length); if (!afterBegun) silentAfter(); } resolve(); }});
     });
     if (mine === token) rest();
     return {gaps, beats};

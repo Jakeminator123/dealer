@@ -16,7 +16,7 @@
 // no card object is drawn while a film shows its card; the passes that make the matte run here, on targets of the film's size.
 // The cards lying since earlier films are drawn as objects either way: a film lays one card, and later films do not show it.
 import * as T from 'three';
-import {poseAt, restOf, restFade, restShare, restingQuad, restingFilmPaperZone, returnCardAt, returnAfterFilmLanding, sceneOf, planScene, cardRecord, cardFace, overridesOf, cardInFront, plausible, skirtSound, firstDrawn, turnOf, BACK, CARRY, FACE, UNDER, RIM, MARGIN, PLAUSIBLE, EASE, HOLD, type CardTrack, type CardRecord} from './card-overlay.ts';
+import {poseAt, restOf, restFade, restShare, restingQuad, restingFilmPaperZone, returnCardAt, returnAfterFilmLanding, filmMarkerAt, sceneOf, planScene, cardRecord, cardFace, overridesOf, cardInFront, plausible, skirtSound, firstDrawn, turnOf, BACK, CARRY, FACE, UNDER, RIM, MARGIN, PLAUSIBLE, EASE, HOLD, type CardTrack, type CardRecord} from './card-overlay.ts';
 import {centre, clockwise, grown, signedArea, sound, type Pt} from './card-track.ts';
 import {FILM, edgeQuad, heldScale, solveCamera, squareToQuad, type FilmCamera} from './scene3d-geometry.ts';
 import type {TableGeometry} from './card-plan.ts';
@@ -290,9 +290,9 @@ export function createDealLayer(o: Options) {
   }
   // The quad drawn in a frame: the overlay's pose at the held size in the hand, or a thin quad along an edge-on card's line.
   type Drawn = {pose: NonNullable<ReturnType<typeof poseAt>>; q: number[][]; line: number[][] | null};
-  const drawnAt = (track: CardTrack, frame: number, choice: Choice, extra: Extra): Drawn | null => {
+  const drawnAt = (track: CardTrack, frame: number, choice: Choice, extra: Extra, videoFrame = frame): Drawn | null => {
     if (frame < 0 || frame >= track.frames.length) return null;
-    const pose = poseAt(track, scene, frame, choice.scale, 12, extra.shift ?? null, extra.land ?? null);
+    const pose = poseAt(track, scene, videoFrame, choice.scale, 12, extra.shift ?? null, extra.land ?? null);
     // one size all the way: the film's card, made the size of ours. How much larger the film draws its card than ours is measured
     // where both lie flat in the same place (the film's resting card against ours); the card in the hand is the film's card made
     // smaller or larger by that much, about the point where the fingers hold it (the track's grip point, else its middle), so it
@@ -416,14 +416,15 @@ export function createDealLayer(o: Options) {
   // away, 0 to 1 each; posed: the frame whose pose is drawn, when it is not `at`: in the still frames before the rest the card is drawn
   // as it lies (the track's card is within two pixels of its resting place there), and only what is keyed (the film's card, its colour
   // and light) is this frame's.
-  function dealCard(track: CardTrack | null, at: number, choice: Choice, extra: Extra, share = {card: 1, key: 1}, posed = at) {
+  function dealCard(track: CardTrack | null, at: number, choice: Choice, extra: Extra, share = {card: 1, key: 1}, posed = at, videoFrame = at) {
     // A shoe model stands where the film's shoe stands (the 3D shoe trial: its box of the film is left undrawn). The film's shoe then
     // no longer lies over the card still in the shoe, which was drawn over the model like a sticker: the card is drawn from two frames
     // after it has left the shoe (the track's leavesShoe), out of the model's mouth. The seated card stays, the next card in the window.
     // Without the model the same holds, and the window's card is the film's own (filmSeat).
     const model = shoeModel(), early = (model || filmSeat(extra)) && inShoe(track, at);
     const returning = returnCardAt(track, at, extra);
-    const drawn = !returning && at >= 0 && !early ? drawnAt(track!, posed, choice, extra) : null, now = drawn && (drawn.line || !turning(track, at, extra)) ? drawn : null, pose = now?.pose ?? null, f = pose ? track!.frames[pose.frame] : null;
+    const drawn = !returning && at >= 0 && !early ? drawnAt(track!, posed, choice, extra, posed === at ? videoFrame : posed) : null;
+    const now = drawn && (drawn.line || !turning(track, at, extra)) ? drawn : null, pose = now?.pose ?? null, f = pose ? track!.frames[pose.frame] : null;
     const shown = pose && posed !== at ? track!.frames[at] : f; // the film's card in this frame, for what is keyed
     // the next card, seated in the shoe window: its back, lit by the film's light on the film's seated card. Only the window
     // shows it: the shoe around it is film and lies over it.
@@ -452,7 +453,10 @@ export function createDealLayer(o: Options) {
       const inHand = typeof f.held === 'number' ? Math.max(0, Math.min(1, f.held)) : 1 - pose.resting, measured = typeof f.held === 'number';
       const out = track!.leavesShoe == null ? 1 : Math.max(0, Math.min(1, (pose.frame - track!.leavesShoe + 4) / 6)), held = inHand * out;
       // the film's own card, for its light and for what is keyed: the track's film quad where it has one, else the quad the card is drawn by
-      const own4 = shown!.film?.length === 4 ? shown!.film : shown!.quad, q = now.q, core = own4?.length === 4 ? own4 : null;
+      const settled = pose.resting === 1, sample = settled ? filmMarkerAt(track, videoFrame) : null;
+      const marker = sample?.side === side ? sample : null;
+      const own4 = settled ? marker?.quad.map(({x, y}) => [x, y]) : shown?.film?.length === 4 ? shown.film : shown?.quad;
+      const q = now.q, core = own4?.length === 4 ? own4 : null;
       // the back's print comes in over PRINT.in frames from the first frame the card is drawn after the shoe (inShoe), smoothly
       const since = filmSeat(extra) && typeof track!.leavesShoe === 'number' ? at - (track!.leavesShoe + 2) + 1 : Infinity, t = Math.max(0, Math.min(1, since / (PRINT.in + 1)));
       lay(dealt, q, {print: face.back ? print() : print(face.art), edge, printIn: t * t * (3 - 2 * t), bend: (material?.bend ?? BEND) * held, tilt: TILT * held, gloss: extra.gloss ?? material?.gloss,
@@ -464,16 +468,17 @@ export function createDealLayer(o: Options) {
       depth.visible = true;
       // the film's own card goes: its zone is the overlay's (card-overlay.ts filmZone: the film's card and rim grown by 10 px
       // and an eighth of its size, room for motion blur), or a band along the line of an edge-on card
-      const line = pose.at ?? pose.edge, film = shown !== f && core ? clockwise(grown(core.map(([x, y]) => ({x, y})), RIM)) : pose.film ? clockwise(pose.film) : null;
-      const zone = film ? grown(film, 10 + 0.12 * Math.sqrt(Math.abs(signedArea(film)))).map(p => [p.x, p.y]) : (() => { const [a, b] = line!, l = Math.hypot(b.x - a.x, b.y - a.y) || 1, ex = (b.x - a.x) / l * 16, ey = (b.y - a.y) / l * 16; return edgeQuad([a.x - ex, a.y - ey], [b.x + ex, b.y + ey], 16); })();
-      const own = core ?? (() => { const [a, b] = line!; return edgeQuad([a.x, a.y], [b.x, b.y], 2); })();
-      // the shoe window's own card is keyed by the seated card's zone, so the dealt card's zone needs no exception there
-      // around a card in the hand both colours count as card (a card bending over shows both); a card lying on the felt shows only
-      // its upper side, and the other colour's rules would only catch skin (P1's warm knuckles as the back's cream). The fingers
-      // lose the shown side's tint.
-      const sides = pose.resting >= 0.5 ? (side === 'BACK' ? 0 : 1) : 2;
-      key = {...key, zone, core: clockwise(own.map(([x, y]) => ({x, y}))).map(p => [p.x, p.y]), colour: COLOUR[side], sides, tint: edge ? 2 : side === 'FRONT' ? 1 : 0,
-        trust: edge ? 0 : Math.max(0, Math.min(1, ((shown!.confidence ?? 1) - 0.3) / 0.4)), rim: edge ? 7 : RIM, drawn: edge ? null : q, held: inHand, strength: share.key, over: cardInFront(overridesOf(track), pose.frame) && !edge ? q : null};
+      const line = pose.at ?? pose.edge;
+      const film = settled ? marker && clockwise(grown(marker.quad, RIM))
+        : shown !== f && core ? clockwise(grown(core.map(([x, y]) => ({x, y})), RIM)) : pose.film ? clockwise(pose.film) : null;
+      if (at === Math.round(videoFrame) && (film || line) && (core || line)) {
+        const zone = film ? grown(film, 10 + 0.12 * Math.sqrt(Math.abs(signedArea(film)))).map(p => [p.x, p.y]) : (() => { const [a, b] = line!, l = Math.hypot(b.x - a.x, b.y - a.y) || 1, ex = (b.x - a.x) / l * 16, ey = (b.y - a.y) / l * 16; return edgeQuad([a.x - ex, a.y - ey], [b.x + ex, b.y + ey], 16); })();
+        const own = core ?? (() => { const [a, b] = line!; return edgeQuad([a.x, a.y], [b.x, b.y], 2); })();
+        // The shoe's card has its own key. At rest the dealing key uses only the visible side, to avoid catching skin.
+        const sides = pose.resting >= 0.5 ? (side === 'BACK' ? 0 : 1) : 2;
+        key = {...key, zone, core: clockwise(own.map(([x, y]) => ({x, y}))).map(p => [p.x, p.y]), colour: COLOUR[side], sides, tint: edge ? 2 : side === 'FRONT' ? 1 : 0,
+          trust: edge ? 0 : Math.max(0, Math.min(1, ((marker?.confidence ?? shown?.confidence ?? 1) - 0.3) / 0.4)), rim: edge ? 7 : RIM, drawn: edge ? null : q, held: inHand, strength: share.key, over: cardInFront(overridesOf(track), pose.frame) && !edge ? q : null};
+      }
     } else { hide(dealt); depth.visible = false; }
     o.film.setCards(key);
   }
@@ -505,7 +510,7 @@ export function createDealLayer(o: Options) {
         // film's card, which is keyed away a little more each frame, so it comes up under the film's card and under her fingers.
         const fade = carry === 'film' && landed ? restFade(track!) : null, before = !!fade && at >= fade.from && at < landed!.from;
         if (extra.returning) dealCard(track, frame, choice, extra);
-        else dealCard(drawn, at, choice, extra, restShare(fade, at), before ? landed!.from : at);
+        else dealCard(drawn, at, choice, extra, restShare(fade, at), before ? landed!.from : at, frame);
         // in the turn of a card drawn before and after it, the film's back takes the drawn back's black field (it lies between two black cards)
         const inHand = late && carry !== 'film' && at >= 0 && at < firstDrawn(drawn!);
         if (inHand || turning(track, at, extra)) drawMatte(track, at, choice, extra, false, false, !inHand);
@@ -520,8 +525,9 @@ export function createDealLayer(o: Options) {
         // card seated in the shoe window.
         const dark = backOf(choice, extra, carry) === 'dark', paper = faceOf(choice, extra, carry) === 'paper';
         if ((dark || paper) && !shoeModel()) { const first = track?.frames?.[0], seat = first?.quad?.length === 4 && (first.shoeShare ?? 0) >= 0.9 ? first.quad : SEATED;
-          const restingZone = at >= 0 && track && carry === 'film' ? restingFilmPaperZone(track, at, paper) : undefined;
-          const zone = restingZone === undefined ? (at >= 0 ? backZone(track as unknown as MatteTrack, at) : null) : restingZone && pts(restingZone);
+          const current = at >= 0 && at === Math.round(frame);
+          const restingZone = current && track && carry === 'film' ? restingFilmPaperZone(track, at, paper) : undefined;
+          const zone = restingZone === undefined ? (current ? backZone(track as unknown as MatteTrack, at) : null) : restingZone && pts(restingZone);
           o.film.setBack({zone, seat: grown(clockwise(seat.map(([x, y]) => ({x, y}))), 2).map(p => [p.x, p.y]), shoe: track?.shoeWindow?.box ?? SHOE_BOX,
             back: dark ? DARK_BACK.field : null, face: paper ? PAPER_FACE.field : null, lying: [LYING.BACK, LYING.FRONT], under: carry !== 'film'}); }
         else o.film.setBack(null);

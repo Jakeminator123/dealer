@@ -98,6 +98,56 @@ test('in the hand the card follows the film, at rest it has its own size, and th
   assert.equal(poseAt({...track, frames: []}, scene, 0, 2), null);
 });
 
+test('a measured landing keeps its place and side through missing markers', () => {
+  const scale = 1.2, land = pts(shift(P4_FILM, 85, -13)), actual = shift(P4_FILM, 9, -6);
+  for (const side of ['FRONT', 'BACK'] as const) {
+    const track = deal(), opposite = side === 'BACK' ? 'FRONT' : 'BACK';
+    for (const f of track.frames.slice(30)) f.side = side;
+    track.frames[31] = {...track.frames[31], side: 'NONE', quad: null, film: P4_FILM};
+    track.frames[32] = {...track.frames[32], side: opposite, quad: null};
+    track.frames[33] = {...track.frames[33], side: opposite, quad: P4_FILM, shoeShare: 1};
+    track.frames[34] = {...track.frames[34], quad: [P4_FILM[0], P4_FILM[2], P4_FILM[1], P4_FILM[3]]};
+    track.frames[35] = {...track.frames[35], quad: null, film: actual};
+    track.frames[36] = {...track.frames[36], side: opposite};
+    track.frames[37] = {...track.frames[37], side: 'NONE', quad: null};
+    track.frames[38] = {...track.frames[38], side: 'EDGE', quad: null, edge: null};
+    track.frames[39] = {...track.frames[39], side: 'EDGE', quad: null, edge: [[900, 900], [500, 930]]};
+    track.frames.push({frame: 40, side: 'EDGE', quad: null, edge: [[900, 900], [840, 930]]});
+    track.frames.push({frame: 41, side: 'EDGE', quad: null, edge: [[900, 900], [900, 900]]});
+    const pose = (frame: number) => poseAt(track, scene, frame, scale, undefined, null, land)!;
+    const settled = pose(30);
+    assert.ok(settled.quad && settled.film);
+    assert.equal(settled.side, side);
+    assert.ok(dist(centre(settled.quad), centre(land)) < 5);
+    for (const frame of [31, 32, 33, 34, 37, 38, 39, 41, 42]) {
+      const current = pose(frame);
+      assert.deepEqual(current.quad, settled.quad, `frame ${frame}: the game card holds the plan position`);
+      assert.equal(current.side, frame < 36 ? side : opposite, `frame ${frame}: keep the last measured side`);
+      assert.equal(current.resting, 1);
+      assert.equal(current.film, null);
+      assert.equal(current.edge, null);
+      assert.equal(current.kept, undefined);
+      assert.equal(filmZone(current)(actual[0][0], actual[0][1]), false);
+    }
+    const view = frameCardsForView(track, 31, scene, {carry: 'film', scale, land});
+    assert.deepEqual(view.pose, pose(31));
+    assert.equal(view.keepFilmCard, false);
+    const resumed = pose(35);
+    assert.deepEqual(resumed.quad, settled.quad);
+    assert.equal(resumed.side, side);
+    assert.ok(resumed.film && dist(centre(resumed.film), centre(pts(actual))) < 1);
+    assert.equal(pose(36).side, opposite, 'a measured side change is preserved');
+    assert.ok(pose(40).edge, 'a measured edge is preserved in its own frame');
+  }
+  const missingRest = deal();
+  missingRest.frames[30] = {...missingRest.frames[30], side: 'NONE', quad: null};
+  missingRest.frames[31] = {...missingRest.frames[31], side: 'BACK'};
+  const missing = poseAt(missingRest, scene, 30, scale, undefined, null, land)!;
+  assert.deepEqual(missing.quad, poseAt(deal(), scene, 30, scale, undefined, null, land)?.quad);
+  assert.equal(missing.side, 'FRONT', 'use the last actual side, not the future back');
+  assert.equal(missing.film, null, 'the earlier face was evidence for the side only');
+});
+
 test('a return keeps the game card at its landing when the measured film marker goes away', () => {
   const actual = shift(P4_FILM, 9, -6);
   const first = {frame: 0, side: 'FRONT' as const, quad: P4_FILM, film: actual, edge: null, confidence: 0.85};
@@ -596,6 +646,14 @@ test('under the line the drawn card takes over at rest by a fade: from the still
   // a short still run goes on past the rest, so that no fade is quicker than six frames; a card 3 px off is still moving
   assert.deepEqual(restFade(settle(28)), {from: 28, to: 34});
   assert.deepEqual(restFade(settle(20, 3)), {from: 30, to: 36});
+  // A back that occupies the same quad cannot start the fade to the future face.
+  const turning = settle(24);
+  turning.frames[27] = {...turning.frames[27], side: 'BACK'};
+  assert.deepEqual(restFade(turning), {from: 28, to: 34});
+  turning.frames[29] = {...turning.frames[29], side: 'BACK'};
+  assert.deepEqual(restFade(turning), {from: 30, to: 36});
+  turning.frames[30] = {...turning.frames[30], side: 'NONE', quad: null};
+  assert.equal(restFade(turning), null, 'no measured face to fade from at the rest');
   // nothing fades where the card lies from the clip's first frame (a return: drawn in full since the deal before it), or never lies
   const back: CardTrack = {width: 1764, height: 1174, edgeWindow: null, restFrom: 4, restQuad: P4_FILM, frames: Array.from({length: 10}, (_, i) => ({frame: i, side: 'FRONT' as const, quad: i < 4 ? shift(P4_FILM, 3 - i, 2) : P4_FILM, edge: null}))};
   assert.equal(restFade(back), null); assert.equal(restFade({...track, restFrom: null, restQuad: null, frames: track.frames.slice(0, 14)}), null);
@@ -615,7 +673,7 @@ test('under the line the drawn card takes over at rest by a fade: from the still
   // the scene: only under the line, the drawn card lying under the film's card from the fade's first frame, the key's strength the share;
   // in the film's shader the strength scales everything the key does to the dealt card, the seated card's in full
   const deal3 = await readFile('src/scene3d-deal.ts', 'utf8'), film = await readFile('src/scene3d-film.ts', 'utf8');
-  assert.ok(deal3.includes("const fade = carry === 'film' && landed ? restFade(track!) : null, before = !!fade && at >= fade.from && at < landed!.from;") && deal3.includes('dealCard(drawn, at, choice, extra, restShare(fade, at), before ? landed!.from : at);'), 'the deal fades under the line only');
+  assert.ok(deal3.includes("const fade = carry === 'film' && landed ? restFade(track!) : null, before = !!fade && at >= fade.from && at < landed!.from;") && deal3.includes('dealCard(drawn, at, choice, extra, restShare(fade, at), before ? landed!.from : at, frame);'), 'the deal fades under the line only, with the current video frame for the key');
   assert.ok(deal3.includes('held: inHand, strength: share.key, over:') && deal3.includes('contact: share.card * (') && deal3.includes('shown: share.card});'), 'the key takes its share, the drawn card and its contact shadow theirs');
   assert.ok(deal3.includes('vec4(col * grade * fanShade(vWorld), shown)') && deal3.includes('u.shown.value = how.shown ?? 1;'), 'the opacity of the drawn card in its shader');
   assert.ok(film.includes('float zone = smoothstep(-2., 2., quadIn(px, zoneQ)) * strength; if (zone <= 0.) return o;') && film.includes('cardHeld, cardStrength);') && film.includes('seatCore, 0., 1.);'), 'the shader scales the key of the dealt card');

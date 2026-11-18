@@ -4,9 +4,9 @@ import assert from 'node:assert/strict';
 import {buildGraph, effectOf, type BankData, type BankJob, type MotionRecord} from '../src/clip-graph.ts';
 import {defaultPlan} from '../src/placement-model.ts';
 import {createLayout} from '../src/game-table.ts';
-import {cardOptions, cardsChoice, cardWords, createFilm, effectPart, faceFrame, filmModel, type FilmPart} from '../src/game-film.ts';
+import {cardOptions, cardsChoice, cardWords, createFilm, effectPart, faceFrame, filmModel, type FilmPart, type FilmPlayers} from '../src/game-film.ts';
 import {returnCardAt} from '../src/card-overlay.ts';
-import {judgedBank} from '../src/game-director.ts';
+import {judgedBank, REVEAL_NODE} from '../src/game-director.ts';
 import {partPlaybackRate} from '../src/scene3d-film.ts';
 import type {MouthPatch} from '../src/speech-patch.ts';
 
@@ -261,6 +261,39 @@ test('the hole card\'s turn is shown when its face shows in the film: the first 
   assert.equal(faceFrame(sides('BBBBEEEFFFF')), 7);
   assert.equal(faceFrame(sides('BBFBBEEFFF')), 7, 'a face glimpsed before the last back frame is not the turn');
   assert.equal(faceFrame(sides('BBBBNN')), null); assert.equal(faceFrame(null), null); assert.equal(faceFrame({}), null);
+});
+
+test('a paused or stalled reveal hides the total until its displayed source frame, after any spoken lead-in', async () => {
+  for (const tracked of [true, false]) {
+    const data = bank(), reveal = job('turn', 'IDLE', REVEAL_NODE, 'wan3', {kind: 'REVEAL'});
+    data.jobs!.push(reveal);
+    data.motions!.turn = record('wan3', {source: {fps: 24, frames: 120, sha256: sha}} as never);
+    data.receipts!.turn = {status: 'SUCCEEDED'};
+    data.media!.turn = {video: video('turn'), track: 'turn-track.json'};
+    const calls: {parts: FilmPart[]; options: NonNullable<Parameters<FilmPlayers['play']>[1]>}[] = [];
+    const shown: string[] = [];
+    const track = tracked ? {frames: Array.from({length: 120}, (_, i) => ({side: i < 2 ? 'BACK' : i < 6 ? 'EDGE' : 'FRONT'}))} : null;
+    const film = createFilm({play(parts, options = {}) { calls.push({parts, options}); }, hurry() {}}, buildGraph(data, {dealer: 'paow'}), createLayout(defaultPlan()), async () => track, () => 0);
+    const round = film.play([{type: 'reveal', shoeDraw: 2}], {
+      table: {hands: [], dealer: [1, 2]},
+      records: [{shoeDraw: 1, target: 'D.C1', r: '6', s: 'hearts'}, {shoeDraw: 2, target: 'D.C2', r: 'K', s: 'spades', faceDown: false}],
+    }, beat => shown.push(beat.kind), {before: [{part: {path: 'spoken-lead.mp4', sound: true}, begin() {}}]});
+    await new Promise(resolve => setImmediate(resolve));
+    const {parts, options} = calls[0], index = parts.findIndex(part => part.path === video('turn'));
+    assert.equal(index, 1); assert.equal(parts[index].fps, 24);
+    options.onPart?.(0);
+    options.onFrame?.(index, 6);
+    assert.deepEqual(shown, [], 'preloaded reveal cannot expose a card during the spoken lead-in');
+    options.onPart?.(index);
+    if (tracked) await new Promise(resolve => setTimeout(resolve, 300)); // longer than the old 6/24-second wall-clock timer
+    assert.deepEqual(shown, [], 'no presented frame: pause or decoder stall cannot reveal the total');
+    options.onFrame?.(index, 5); options.onFrame?.(index, Number.POSITIVE_INFINITY);
+    assert.deepEqual(shown, [], 'edge-on and invalid frames keep it hidden');
+    options.onFrame?.(index, 6); options.onFrame?.(index, 6); options.onFrame?.(index, 7);
+    assert.deepEqual(shown, tracked ? ['REVEAL'] : [], 'a real face frame reveals once; unknown tracking waits for the part to end');
+    options.onEnd?.(); await round;
+    assert.deepEqual(shown, ['REVEAL'], 'end-of-part fallback still completes the engine beat exactly once');
+  }
 });
 
 test('while calm is asked for the rest rotation picks only calm rests, and the gestures come again afterwards', async () => {

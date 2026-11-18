@@ -19,7 +19,8 @@ och Trailer lämnade. Här står bara det som gäller nu; kontraktet står i `do
 - `dealTempo` är ett prov med standard 1 och intervallet 1–1,15. Bara tysta givar och returer ändrar takt efter
   munlappsvalet. I Chrome verifierades tredje P6-kortet vid filmruta 86 och 1,12×, samt tre P6-kort och två
   dealerkort efter returen. Mjukhet och övergång i rörelse återstår att bedöma.
-- `diagnos=1` ger paus och stegning ±1 ruta. Chrome visade sökstatus, sedan ruta 128→129 med bordskorten kvar.
+- `diagnos=1` på `/game.html` ger paus/stegning. Hålkortets värde följer visad ruta: native-provet
+  `paow-game-frame-20261118` höll 8 i över 22 s paus; ruta 60 visade 8, ruta 61 visade 13. Maskens kvalitet bedöms separat.
 - Kopian på nätet är sekundär och står på `2e3967c` (publicerad 2026-11-18 på Jakobs ja, med nytt lösenord).
   `cloud/` bevaras tills Jakob säger annat.
 - Filmen till hans chef ligger på hans skrivbord (`paow-runda-6-till-chefen-spelet.mp4` och `-scenen.mp4`, 124 s,

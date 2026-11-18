@@ -135,6 +135,40 @@ test('every frame start in whole microseconds reads as its own frame, by the one
   players.dispose();
 });
 
+test('game frame events follow the visible source frame and cut, including paused stepping, never a preloaded or retired part', async t => {
+  const {players} = queue(), observed: [number, number][] = [], order: string[] = [];
+  t.after(() => players.dispose());
+  players.play([{path: 'a.mp4', start: 12, end: 30, fps: 24}, {path: 'b.mp4', start: 4, end: 20}], {
+    cut: true, onPart: index => order.push(`part ${index}`),
+    onFrame: (index, frame) => { observed.push([index, frame]); order.push(`frame ${index}:${frame}`); },
+  });
+  await settle();
+  assert.deepEqual(order.slice(0, 2), ['part 0', 'frame 0:12']);
+  const a = made.find(v => v.src === 'a.mp4')!, b = made.find(v => v.src === 'b.mp4')!;
+  b.present(4 / 30);
+  assert.deepEqual(observed, [[0, 12]], 'the next decoded film is not yet on screen');
+  const stepped = players.step(1);
+  assert.equal(a.currentTime, (13 + 0.5) / 24);
+  a.seeking = true; a.present(13 / 24);
+  assert.deepEqual(observed, [[0, 12]], 'the target cannot reveal anything while the seek is in flight');
+  a.seeking = false; a.dispatchEvent(new Event('seeked'));
+  await stepped; // No further presentation: seek must deliver the already decoded target.
+  assert.deepEqual(observed.at(-1), [0, 13]);
+  a.currentTime = 25 / 24; a.present(13 / 24);
+  assert.deepEqual(observed.at(-1), [0, 13], 'the video clock may run ahead of the presented picture');
+  players.toggle(true); a.currentTime = 14 / 24; a.present(14 / 24);
+  assert.deepEqual(observed.at(-1), [0, 14], 'a decoded paused step may reveal its frame');
+  const count = observed.length;
+  a.seeking = true; a.present(20 / 24); a.seeking = false; a.present(11 / 24); a.present(30 / 24);
+  assert.equal(observed.length, count, 'seeking and frames outside the cut are not game events');
+  players.toggle(false); a.present(30 / 24);
+  assert.equal(players.path, 'b.mp4'); assert.deepEqual(observed.at(-1), [1, 4]);
+  const switched = observed.length; a.present(20 / 24);
+  assert.equal(observed.length, switched, 'the retired film cannot reveal a later card');
+  players.dispose(); b.present(12 / 30);
+  assert.equal(observed.length, switched, 'disposing releases pending frame events');
+});
+
 test('a seek holds the drawn cards through decoding only for the same player and card settings', async t => {
   const {players} = queue(); t.after(() => players.dispose());
   const part = {path: 'a.mp4'}, select = createFilmTextureSelector(), texture = new Texture();

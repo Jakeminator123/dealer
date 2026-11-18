@@ -10,7 +10,9 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 ## Kortet
 
 - **Filmkort som förval kan flytta återbrukade andrakort.** `kort=liggande` låter filmens kort nå filmens egen plats;
-  C2/C3 och split kan ha ett annat spelmål. Scenproven `paow-cycle02-scene-20261118` och `paow-outer-filmcard-20261118`
+  Faktisk bankmätning `paow-game-frame-20261118/coverage.json` ger 9/16 egna målfilmer i helgiven; sju C2 återbrukar C1
+  med 39–51 px förskjutning. Extra kort/split når cirka 100 px, och D.C3+ saknar filmhand. Scenproven
+  `paow-cycle02-scene-20261118` och `paow-outer-filmcard-20261118`
   visar kvarliggande kort mellan två olika platser, men inte detta återbruk. P1:s blekta skugga vid ruta 114 är rättad:
   Prov `paow-rest-paper-zone-20261118` visar före/efter och P7. Eget kompatibelt C2-par prioriteras före C1-delning,
   även via ett komplett godkänt ankare. `paow-giv-2-3-p4-c2-h24-cykel-01` har egen film och eget spår, Variant giv 3/5,
@@ -27,7 +29,8 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   abrupt till tryckt kort och P2 har dubbelkontur i luften. Filmen kan inte ersätta bankens klipp direkt.
 - **Filmcarry behöver ett giltigt kortspår för full markörrensning.** Syns i 2D-provet `cardMethod=film` när ett
   givspår saknas eller är ogiltigt: filmkortet skyddas, men äldre färgmarkörer kan också synas. Med giltigt spår
-  skyddas bara aktivt kort och sko; övriga markörer rensas. Stänger: verifierade spår och synprov i rörelse.
+  skyddas bara aktivt kort och sko; övriga markörer rensas. Vid vila håller bortfall nu spelkortets plats/sida utan gammal mask,
+  med regressioner för trasig EDGE och sidbyte. Stänger: verifierade spår och synprov i båda renderlägena och i rörelse.
 - **Det ritade kortet i spelet** (Jakob 2026-11-13: "Det lixom kletar fast sig på korten", "linjer flyger dit och dit").
   Syns: i spelet, som ritar kortet hela vägen med underlägget under (`UNDER` i `src/card-overlay.ts`): hålkortet är dolt
   under hennes fingertoppar cirka 0,6 s innan det glider på plats, kortets högra ände har en svag gulaktig kant, en tunn

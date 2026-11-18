@@ -528,7 +528,7 @@ export function roomFlashAt(t: number, seconds: number): {flash: number; on: boo
   const up = seconds - F.backHold - F.back, back = t < up ? 0 : t < seconds - F.backHold ? F.backPeak * (t - up) / F.back : t < seconds ? F.backPeak : F.backPeak * (1 - smooth(0, F.backFall, t - seconds));
   return {flash: Math.min(1, Math.max(first, back)), on: t >= F.rise && t < seconds};
 }
-export type PlayOptions = {loop?: boolean; cut?: boolean; onPart?: (index: number, part: Part) => void; onEnd?: () => void; onError?: (error: Error) => void};
+export type PlayOptions = {loop?: boolean; cut?: boolean; onPart?: (index: number, part: Part) => void; onFrame?: (index: number, sourceFrame: number) => void; onEnd?: () => void; onError?: (error: Error) => void};
 type Player = {part: Part; path: string; start: number; end: number | null; fps: number; video: HTMLVideoElement; texture: T.VideoTexture};
 const FPS = 30;
 /**
@@ -631,6 +631,10 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
       if (Math.abs(v.currentTime - seconds) < 1e-4 && v.readyState >= 2) done(); else { listen(v, 'seeked', done, true); moveTo(v, seconds); } });
     if (gone || players[i] !== player) return;
     player.texture.needsUpdate = true; show(i);
+    // The decoder may have presented the target while seeking was still true.
+    // Deliver that frame once the paused image is shown; never infer it from elapsed time.
+    const decoded = typeof v.requestVideoFrameCallback === 'function' ? presented.get(v) : v.currentTime;
+    if (players[i] === player && shown?.video === v && !v.seeking && decoded !== undefined && frameAtTime(decoded, player.fps) === frameAtTime(seconds, player.fps)) shown.hook?.(decoded);
   }
 
   // ---- a queue for a game: chains that follow each other without a blank frame -----------------------------------
@@ -692,15 +696,22 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
       // after the last frame arrived, a few ms early so that it lands before the rendering step that frame would have had
       // (the clip's own last frame has no frame after it, and a frame past the end may be late). Whichever comes first.
       let done = false, due: ReturnType<typeof setTimeout> | null = null;
+      // Game events follow the decoded source frame, including a paused single-step.
+      // A seek in flight, the preloaded next part and frames outside this cut cannot reveal a card.
+      const reportFrame = (at: number) => {
+        if (my === token && shown === m && chain === c && !v.seeking && v.readyState >= 2 && at >= (part.start ?? 0) && at <= last) c.options.onFrame?.(i, at);
+      };
       const end = () => { if (done || my !== token || paused) return; done = true; if (due !== null) { clearTimeout(due); timers.delete(due); } finish(c, i); };
-      m.hook = time => { if (my !== token || paused) return; const at = time === null ? Infinity : frameOf(time, part);
+      m.hook = time => { if (my !== token) return; const at = time === null ? Infinity : frameOf(time, part);
+        if (time !== null) reportFrame(at);
+        if (paused) return;
         if (at > last) end();
         else if (at === last) { if (due === null) due = later(() => { due = null; end(); }, Math.max(0, 1000 / ((part.fps ?? FPS) * v.playbackRate) - LEAD_MS)); }
         // A hurried part slows to normal speed for its last frames, so it stops on its end frame and not a few frames past it.
         else if (v.playbackRate > 1 && last - at <= 2 * v.playbackRate) v.playbackRate = 1; };
       // what comes next is decoded before it is needed
       if (waiting) prime(waiting, 0); else if (i + 1 < c.parts.length) prime(c, i + 1); else if (c.options.loop) prime(c, 0);
-      note('visas', v); c.options.onPart?.(i, part); onShow(m.texture, m.path); onChange();
+      note('visas', v); c.options.onPart?.(i, part); onShow(m.texture, m.path); reportFrame(frameOf(shownAt(v), part)); onChange();
     };
     // A film that cannot be read (taken away, or missing in a store) is a gap, not a stop: the page is told, the element goes, and
     // the queue goes on as if the part had played, to the next part or to the chain's end, so that a round is never left waiting.

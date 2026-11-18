@@ -99,8 +99,12 @@ export function skirtSound(q: readonly Pt[], reach: number, least = 0.3): boolea
   const top = Math.max(...w.corners), lo = -reach, hi = 1 + reach;
   return [w.at(lo, lo), w.at(hi, lo), w.at(hi, hi), w.at(lo, hi)].every(v => v >= least * top);
 }
-/** Whether an edge-on card's line can be drawn: finite, and no longer than a card. */
-export const plausibleEdge = (line: readonly Pt[] | null | undefined): boolean => !!line && line.length === 2 && line.every(p => Number.isFinite(p.x) && Number.isFinite(p.y)) && Math.hypot(line[1].x - line[0].x, line[1].y - line[0].y) <= PLAUSIBLE.edge;
+/** Whether an edge-on card's line can be drawn: finite, nonzero, and no longer than a card. */
+export function plausibleEdge(line: readonly Pt[] | null | undefined): boolean {
+  if (!line || line.length !== 2 || !line.every(p => Number.isFinite(p.x) && Number.isFinite(p.y))) return false;
+  const length = Math.hypot(line[1].x - line[0].x, line[1].y - line[0].y);
+  return length > 0 && length <= PLAUSIBLE.edge;
+}
 const apply = (h: number[], p: Pt): Pt => { const w = h[6] * p.x + h[7] * p.y + 1; return {x: (h[0] * p.x + h[1] * p.y + h[2]) / w, y: (h[3] * p.x + h[4] * p.y + h[5]) / w}; };
 const smooth = (t: number) => t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t);
 const size = (q: Pt[]) => Math.sqrt(Math.abs(signedArea(q)));
@@ -189,8 +193,12 @@ export function restOf(track: CardTrack): {from: number; quad: Pt[]; assumed: bo
 export const REST_FADE = {still: 2, before: 8, after: 6, card: 0.3};
 /** The frames over which the film's lying card is keyed away (restShare), or null where nothing fades: no rest, a card that lies from the clip's first frame (a return, drawn in full since the deal before it), or a card that comes to rest back up. */
 export function restFade(track: CardTrack): {from: number; to: number} | null {
-  const rest = restOf(track); if (!rest || rest.from <= 0 || track.frames[rest.from]?.side === 'BACK') return null;
-  const near = (i: number) => { const q = track.frames[i]?.quad; return q?.length === 4 && q.reduce((sum, p, k) => sum + Math.hypot(p[0] - rest.quad[k].x, p[1] - rest.quad[k].y), 0) / 4 <= REST_FADE.still; };
+  const rest = restOf(track); if (!rest || rest.from <= 0 || filmMarkerAt(track, rest.from)?.side !== 'FRONT') return null;
+  const near = (i: number) => {
+    const q = track.frames[i]?.quad;
+    return q?.length === 4 && filmMarkerAt(track, i)?.side === 'FRONT'
+      && q.reduce((sum, p, k) => sum + Math.hypot(p[0] - rest.quad[k].x, p[1] - rest.quad[k].y), 0) / 4 <= REST_FADE.still;
+  };
   let from = rest.from; while (from > 0 && rest.from - from < REST_FADE.before && near(from - 1)) from--;
   return {from, to: Math.min(Math.max(rest.from, from + REST_FADE.after), Math.max(rest.from, track.frames.length - 1))};
 }
@@ -217,7 +225,7 @@ export type Pose = {
   kept?: number;          // set when this is an earlier frame's pose kept for frame `kept`, whose own card was not plausible
 };
 
-function returnMarkerAt(track: CardTrack | null, frame: number): {frame: number; side: 'FRONT' | 'BACK'; quad: Pt[]; confidence: number} | null {
+export function filmMarkerAt(track: CardTrack | null, frame: number): {frame: number; side: 'FRONT' | 'BACK'; quad: Pt[]; confidence: number} | null {
   const at = Math.round(frame), item = track?.frames?.[at];
   if (!item || (item.side !== 'FRONT' && item.side !== 'BACK') || (item.shoeShare ?? 0) >= 0.9) return null;
   const quad = pts(item.film?.length === 4 ? item.film : item.quad ?? []);
@@ -229,7 +237,7 @@ export function returnCardAt(track: CardTrack | null, frame: number, options: {r
   if (!options.returning || options.land?.length !== 4) return null;
   return {
     card: {quad: options.land, back: false, target: options.target, shoeDraw: options.shoeDraw, gloss: options.gloss},
-    marker: returnMarkerAt(track, frame),
+    marker: filmMarkerAt(track, frame),
   };
 }
 
@@ -246,7 +254,7 @@ export function restingFilmPaperZone(track: CardTrack, frame: number, paper: boo
   if (landing === null || frame < landing) return undefined;
   const side = track.frames[frame]?.side;
   if (side === 'BACK' || (side !== 'FRONT' && track.frames[landing]?.side === 'BACK')) return undefined;
-  const marker = returnMarkerAt(track, frame);
+  const marker = filmMarkerAt(track, frame);
   return marker?.side === 'FRONT' ? grown(marker.quad, RIM) : null;
 }
 
@@ -265,9 +273,11 @@ export function returnAfterFilmLanding(track: CardTrack | null, frame: number, o
  * hand and shrinks it in the last two frames; the shape settles over the last three.
  * Whatever the data, what is drawn is a plausible card (plausible, plausibleEdge): a frame whose card is not keeps the last
  * plausible pose of the same side for at most HOLD frames (`kept` says so), and after that draws nothing.
+ * Once the card lies at a measured rest, a missing marker leaves the game card at its place with no film footprint.
  */
 export function poseAt(track: CardTrack, scene: Scene | null, frame: number, scale: number, ease = EASE, shift: {x: number; y: number} | null = null, land: Pt[] | null = null): Pose | null {
-  const at = Math.max(0, Math.min(track.frames.length - 1, Math.round(frame))), pose = rawPose(track, scene, at, scale, ease, shift, land);
+  const requested = Math.round(frame), at = Math.max(0, Math.min(track.frames.length - 1, requested));
+  const pose = rawPose(track, scene, at, scale, ease, shift, land, requested);
   if (!pose || (pose !== BAD && drawable(pose))) return pose;
   const f = track.frames[at];
   for (let back = 1; back <= HOLD && at - back >= 0; back++) { const kept = rawPose(track, scene, at - back, scale, ease, shift, land);
@@ -277,26 +287,42 @@ export function poseAt(track: CardTrack, scene: Scene | null, frame: number, sca
 const drawable = (p: Pose) => (!p.quad || plausible(p.quad)) && (!p.edge || plausibleEdge(p.edge));
 // rawPose's answer for a frame whose tracked card is no card at all: poseAt keeps an earlier pose for it, or draws nothing.
 const BAD: Pose = {frame: -1, side: 'NONE', quad: null, edge: null, film: null, resting: 0, turned: false};
-function rawPose(track: CardTrack, scene: Scene | null, at: number, scale: number, ease: number, shift: {x: number; y: number} | null, land: Pt[] | null): Pose | null {
+function rawPose(track: CardTrack, scene: Scene | null, at: number, scale: number, ease: number, shift: {x: number; y: number} | null, land: Pt[] | null, requested = at): Pose | null {
   const f = track.frames[at];
   if (!f) return null;
   const none: Pose = {frame: at, side: f.side, quad: null, edge: null, film: null, resting: 0, turned: false};
   const landed = restOf(track);
+  const from = landed?.from ?? Infinity;
   if (at < firstDrawn(track)) return none; // not drawn in the hand: see CardTrack.hand and drawnFrom
   const goal = land?.length === 4 && landed ? sameStart(land, landed.quad) : null;
   // The film's card is only a marker. Where the rendered card must end is the plan's place (land), or the place of the seat's
   // second card (shift). Either way the move grows from nothing at the shoe to all of it at the landing, so the card never jumps.
   const d = goal ? {x: centre(goal).x - centre(landed!.quad).x, y: centre(goal).y - centre(landed!.quad).y} : shift ?? {x: 0, y: 0};
   const k = d.x || d.y ? shiftShare(track, at) : 0, move = (p: Pt): Pt => ({x: p.x + d.x * k, y: p.y + d.y * k});
-  if (f.side === 'EDGE' && f.edge?.length === 2) { const line: [Pt, Pt] = [{x: f.edge[0][0], y: f.edge[0][1]}, {x: f.edge[1][0], y: f.edge[1][1]}];
-    return k ? {...none, edge: [move(line[0]), move(line[1])], at: line} : {...none, edge: line}; }
-  if ((f.side !== 'BACK' && f.side !== 'FRONT') || f.quad?.length !== 4) return none;
-  const film = grown(pts(f.film?.length === 4 ? f.film : f.quad), RIM);
+  if (f.side === 'EDGE' && f.edge?.length === 2) {
+    const line: [Pt, Pt] = [{x: f.edge[0][0], y: f.edge[0][1]}, {x: f.edge[1][0], y: f.edge[1][1]}];
+    if (at < from || (at === requested && plausibleEdge(line))) {
+      return k ? {...none, edge: [move(line[0]), move(line[1])], at: line} : {...none, edge: line};
+    }
+  }
   // At rest it is the constant-size card on the table: at the plan's place and direction, else where the film laid it (moved by the
   // shift). Its shape is the table's, whatever the film's card looks like under the hand.
-  const from = landed?.from ?? Infinity, rest = landed ? goal ?? landed.quad.map(p => ({x: p.x + d.x, y: p.y + d.y})) : null;
+  const rest = landed ? goal ?? landed.quad.map(p => ({x: p.x + d.x, y: p.y + d.y})) : null;
   const still = rest ? restingQuad(scene, rest, scale) : null;
-  if (still && at >= from) return {...none, quad: still.quad, film, resting: 1, turned: still.turned};
+  if (still && landed && at >= from) {
+    const marker = at === requested ? filmMarkerAt(track, at) : null;
+    let side = marker?.side;
+    if (!side && plausible(landed.quad)) {
+      // The last visible side is evidence for the game card's print only. The key always uses the current marker.
+      const last = at === requested ? at - 1 : Math.min(at, requested), first = landed.assumed ? from : 0;
+      for (let i = last; i >= first && !side; i--) side = filmMarkerAt(track, i)?.side;
+    }
+    if (side) return {...none, side, quad: still.quad,
+      film: marker ? grown(marker.quad, RIM) : null, resting: 1, turned: still.turned};
+    return none;
+  }
+  if ((f.side !== 'BACK' && f.side !== 'FRONT') || f.quad?.length !== 4) return none;
+  const film = grown(pts(f.film?.length === 4 ? f.film : f.quad), RIM);
   // A quad in the hand that is no card (crossed, folded, empty, larger than any card a film holds, a sliver or a wedge: plausible)
   // is not drawn: one bad quad must never smear the card across the picture.
   // The size only starts to settle once the card shows the side it will lie on.

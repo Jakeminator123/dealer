@@ -20,15 +20,15 @@ Läs AGENTS.md, den här sidan och EN lägesfil för din bana. Ersätt inaktuell
 Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-18), med EN trovärdig giv först ([film](docs/lage/film.md)).
 
 1. Bevara Jakobs ändrade kortplan och oincheckade orderutkast. Läs nya anteckningar med `node tools/proof-notes.ts`.
-2. P4.C2 Cykel01 väljs; det svagare omtaget är arkiverat med bevis kvar. Inget Primär-byte.
-   Lös övriga andrakort och hålkortets vändning före kortförvalet ([kort](docs/lage/kort.md)).
+2. P4.C2 Cykel01 väljs i provet; ordinarie helgiv har egna målfilmer för 9/16 kort. Inget Primär-byte.
+   Lös övriga andrakort och synkontroll av hålkortet före kortförvalet ([kort](docs/lage/kort.md)).
 3. Använd automatiska testkvitton och det återbyggbara SQLite-indexet ([evidens](tools/evidence.md)); inga medieblobs.
 4. Munproven är lokala jämförelser; inget byte i banken före Jakobs val i Beslut. Körarens kod finns nu i repot.
 5. Testa, pusha och verifiera fjärrens SHA. Sessionens tio GPT-meddelanden är förbrukade; färdiga granskningsfynd är
    rättade. Fem Runway-filmer kostade 404 krediter; lokal Claude-MCP fungerar. Inget anrop eller KÖR pågår.
-6. C1 ligger kvar genom C2. `paow-c2-contact-20261118` visar mindre blåspill vid fingret.
-   Kanten finns kvar; `paow-c2-film-regrip-20261118` visar fortsatt tvekan och längre blekning.
-   Grepp, tempo och godkänt READY-C-inpass/utpass återstår.
+6. Hålkortets värde följer visad filmruta, även pausat: native-provet `paow-game-frame-20261118` visar gränsen 60→61.
+   Landade kort behåller senaste belagda sida vid spårbortfall. Full mask- och rörelsedom återstår,
+   liksom blå restkant, grepp, tempo och godkänt READY-C-inpass/utpass.
 
 Äldre frågor till honom som inte är kort än: `D:/dealer-scratch/tmp/handoff-nytt/forslag-kort.md`.
 

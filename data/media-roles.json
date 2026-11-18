@@ -4087,6 +4087,19 @@
             "from": "Lokal Dealer-studio · native skärmbilder",
             "when": "2026-11-18"
           }
+        },
+        {
+          "id": "paow-game-frame-20261118",
+          "role": "arbetsmaterial",
+          "name": "Hålkort · värde på visad filmruta",
+          "path": "assets/proofs/paow-game-frame-20261118/frame-61.png",
+          "pattern": "assets/proofs/paow-game-frame-20261118/*",
+          "state": "kandidat",
+          "note": "Native pausprov: dolt värde på ruta 60, synligt på 61. Lokal filmvalstäckning 9/16. Detta bedömer tidpunkt, inte mask eller rörelsekvalitet.",
+          "source": {
+            "from": "Lokal Dealer · native Chrome",
+            "when": "2026-11-18"
+          }
         }
       ]
     },
