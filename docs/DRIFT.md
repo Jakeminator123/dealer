@@ -61,6 +61,13 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   och ett utkast i `data/orders/` som inte är incheckat ändras när han sparar i labbet. Ett test som behöver dem tar
   dem ur HEAD med `tools/committed.ts`, så att `npm test` säger samma sak i huvudträdet som i ett rent träd. Rött i
   huvudträdet är därmed ett verkligt fel, inte hans osparade arbete.
+- **Claude Codes inställningar för repot** (2026-11-18, `.claude/settings.json`; Jakob: "glb-modeller och andra stora
+  filer ignoreras för att spara pengar"). Fyra saker står där. Läsning av modeller, film, ljud, arkiv och låsfiler
+  nekas. Läsvakten (`.claude/hooks/read-guard.mjs`) nekar en hel läsning av ett dokument eller register över 32 KB
+  och av en kodfil över 100 KB; en del läses med `offset` och `limit`, högst 400 rader. En chatt komprimeras vid
+  300 000 tokens (`autoCompactWindow`) i stället för vid fönstrets slut, eftersom varje tur läser om hela kontexten.
+  Kontorsskillerna listas bara med namn (`skillOverrides`). En ändring gäller nya sessioner; i en pågående session
+  läses den in med `/hooks`. Sökningens motsvarighet är `.ignore` och `.cursorignore`.
 - **Rött:** stoppa, undersök orsak och rätta innan nytt försök. **Gult:** granska och åtgärda eller förklara kvarvarande
   begränsning kort i `docs/BRISTER.md` före push/PR. Varningarna visas i agentens terminal och som CI-annoteringar. Granska även
   hook/testens relevans och falsklarm; vid verkligt kontrollfel, rätta med ett avgränsat regressionstest. Hoppa inte

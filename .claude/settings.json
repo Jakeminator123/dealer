@@ -1,4 +1,17 @@
 {
+  "autoCompactWindow": 300000,
+  "skillOverrides": {
+    "anthropic-skills:docx": "name-only",
+    "anthropic-skills:pptx": "name-only",
+    "anthropic-skills:xlsx": "name-only",
+    "anthropic-skills:pdf": "name-only",
+    "anthropic-skills:docs": "name-only",
+    "anthropic-skills:google-workspace": "name-only",
+    "anthropic-skills:import-memory": "name-only",
+    "anthropic-skills:morning": "name-only",
+    "anthropic-skills:deep-research": "name-only",
+    "anthropic-skills:skill-creator": "name-only"
+  },
   "permissions": {
     "deny": [
       "Read(**/*.glb)",
