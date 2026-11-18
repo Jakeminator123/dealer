@@ -3765,6 +3765,20 @@
           }
         },
         {
+          "id": "paow-film-giv-2-3-p4-h24-cykel-02-t1",
+          "role": "film",
+          "name": "H24 cykel02 – gult skokort, blåton under prov",
+          "path": "assets/films/paow/giv-2-3-p4-h24-cykel-02-t1/source.mp4",
+          "still": 53,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Huvudagent + oberoende granskare: Variant, given 3/5 och returen 4/5. Skokortet håller gult; blåframsidan förblir blå men tappar mättnad f46–51. Handbyte, långkantsvändning, kontakt till plant kort och låg retur håller. Split65, första säkra glipa. Spelmaskning, rörelsejämnhet och upprepad skarv återstår. Ingen Jakobsdom eller Primär.",
+          "source": {
+            "from": "beställningen paow-giv-2-3-p4-h24-cykel-02, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-18"
+          }
+        },
+        {
           "id": "paow-film-intro-noir-3-startruta",
           "role": "arbetsmaterial",
           "name": "Startrutan till filmen före spelet",
