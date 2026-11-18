@@ -76,7 +76,7 @@ export function ProofRoom({ proof, file, named, notes, onFile }: { proof: Proof;
           </Fold>
         ) : null}
         <div className="mt-1 flex flex-wrap items-start gap-x-3 gap-y-1">
-          <span className="pt-1 text-2xs font-medium text-faint">Om hela provet</span>
+          <span className="pt-1 text-2xs font-medium text-faint">Din åsikt om hela provet (frivilligt)</span>
           <NoteBar notes={notes} proof={proof.id} file={null} className="min-w-0 flex-1" />
         </div>
         <WaitingLink proof={proof} named={named} />

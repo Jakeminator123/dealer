@@ -756,7 +756,7 @@ IDLE>READY | READY>P1.C1 | P1.C1>READY | READY>D.C1 | D.C1>READY | READY>P1.C2 |
   får bära `title`, `description`, `labels`, `chapters`, `verdicts` (per fil: `ok`, `remarks`, `failed` eller
   `unreviewed`) och `takes`: listan över provets tagningar, de filer som är en gjord film eller bild som kan användas;
   allt annat (det som skickades, referenser, mätark, en titt på en sida) är underlag. Bara en tagning bär en
-  omdömesbricka: granskarens (Användbar, Med anmärkningar, Underkänd), annars "Väntar på granskare", streckad, som
+  omdömesbricka: granskarens (Användbar, Med anmärkningar, Underkänd), annars "Väntar på granskaragenten", streckad, som
   är granskarens arbete och aldrig Jakobs. Underlag bär ingen bricka, och ett prov utan `takes` räknar bara de filer en
   granskare har dömt som tagningar (`proofVerdict` i `studio/lib/verdict.ts`). Ett nytt prov skriver `takes` från
   början. En etikett skrivs som ett kort namn följt av allt annat (delas vid första parentes, punkt eller kolon):

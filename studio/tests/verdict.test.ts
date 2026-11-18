@@ -119,7 +119,7 @@ test("proof files: a takes list says which files carry a chip; a take nobody jud
     takes: ["f.mp4", "h.mp4", "v.mp4", "n.mp4"],
   };
   assert.deepEqual(["f.mp4", "h.mp4", "v.mp4", "n.mp4"].map((f) => proofVerdict(words, f)), ["failed", "ok", "remarks", "unreviewed"], "a reviewer's word first in a parenthesis (over a stated unreviewed), not the same word in a sentence");
-  assert.equal(PROOF_VERDICT_LABEL.unreviewed, "Väntar på granskare");
+  assert.equal(PROOF_VERDICT_LABEL.unreviewed, "Väntar på granskaragenten");
   assert.doesNotMatch(Object.values(PROOF_VERDICT_LABEL).join(" "), /Inte granskad/);
 });
 

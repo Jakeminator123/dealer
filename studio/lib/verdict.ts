@@ -145,10 +145,10 @@ export function primarCount(graph: Graph): { set: number; total: number } {
 // A proof's files are takes (produced films or pictures that may be used: proof.json takes, a list of file names) or
 // underlag (what was sent, a reference film, a measuring sheet, a look at a page). Only a take carries a review chip: the
 // reviewer's verdict (proof.json verdicts[file] = ok | remarks | failed, or read from the words of its label), else
-// "Väntar på granskare", which is the reviewer's work, never Jakob's. A proof without a takes list counts as takes only the
+// "Väntar på granskaragenten", which is the reviewer's work, never Jakob's. A proof without a takes list counts as takes only the
 // files a reviewer has judged; every other file carries no chip.
 export type ProofVerdict = "ok" | "remarks" | "failed" | "unreviewed";
-export const PROOF_VERDICT_LABEL: Record<ProofVerdict, string> = { ok: "Användbar", remarks: "Med anmärkningar", failed: "Underkänd", unreviewed: "Väntar på granskare" };
+export const PROOF_VERDICT_LABEL: Record<ProofVerdict, string> = { ok: "Användbar", remarks: "Med anmärkningar", failed: "Underkänd", unreviewed: "Väntar på granskaragenten" };
 
 type ProofLike = Pick<Proof, "labels" | "verdicts"> & { takes?: readonly string[] | null };
 
@@ -180,7 +180,7 @@ export function isProofTake(proof: ProofLike, file: string): boolean {
   return v !== null && v !== "unreviewed";
 }
 
-/** A file's review chip: a take's verdict, "unreviewed" (Väntar på granskare) for a take without one, null for underlag. */
+/** A file's review chip: a take's verdict, "unreviewed" (Väntar på granskaragenten) for a take without one, null for underlag. */
 export function proofVerdict(proof: ProofLike, file: string): ProofVerdict | null {
   return isProofTake(proof, file) ? (statedVerdict(proof, file) ?? "unreviewed") : null;
 }

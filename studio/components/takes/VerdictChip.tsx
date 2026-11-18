@@ -104,7 +104,7 @@ const PROOF_TONE: Record<ProofVerdict, { tone: Tone; sign: string }> = {
 
 /**
  * A take's review in a proof (lib/verdict.ts proofVerdict): Användbar ✓ · Med anmärkningar ! · Underkänd ✕, a reviewer's;
- * Väntar på granskare ○, dashed: the reviewer's work, not Jakob's. Underlag carries no chip.
+ * Väntar på granskaragenten ○, dashed: the reviewer's work, not Jakob's. Underlag carries no chip.
  */
 export function ProofChip({ verdict, size = "md", className }: { verdict: ProofVerdict; size?: "sm" | "md"; className?: string }) {
   const { tone, sign } = PROOF_TONE[verdict];

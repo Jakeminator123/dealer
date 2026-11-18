@@ -105,6 +105,8 @@ export function NoteBar({ notes, proof, file, className }: { notes: ProofNotes; 
   return (
     <div className={cn("flex min-w-0 flex-col gap-1.5", className)}>
       <div role="group" aria-label={file ? "Ditt ord om filen" : "Ditt ord om provet"} className="flex flex-wrap items-center gap-1">
+        {/* Jakob 2026-11-18: "Jag förstår inte riktigt vilket alternativ jag ska välja": the buttons are his own opinion, never a task. */}
+        {file ? <span className="mr-1 text-2xs text-dim">Din åsikt (frivilligt)</span> : null}
         {CHOICES.map(({ value, icon: Icon }) => {
           const on = note?.choice === value;
           return (

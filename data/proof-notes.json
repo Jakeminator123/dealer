@@ -1,5 +1,139 @@
 {
   "schemaVersion": 1,
   "about": "Jakobs egna ord om proven i studions Granska, del Prov: hans val och text per fil eller prov. Bara sidan skriver hans ord; huvudagentens svar skrivs med tools/proof-notes.ts.",
-  "notes": []
+  "notes": [
+    {
+      "id": 1,
+      "proof": "giv-forlagefilm-2",
+      "file": "c3-t1.mp4",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-17T23:53:49.295Z",
+      "answer": {
+        "text": "Noterat. C3 är måttstocken för plats 4 tills något bättre finns.",
+        "at": "2026-11-17T23:59:20.859Z"
+      },
+      "read": "2026-11-17T23:59:20.859Z"
+    },
+    {
+      "id": 2,
+      "proof": "giv-forlagefilm-2",
+      "file": "c3-referens-dockan-2.mp4",
+      "choice": null,
+      "text": "Kanek är bra, ne typ spelkortet vrids aningen konstigt runt ruta 59, men det kaske inte är så noga?",
+      "at": "2026-11-17T23:55:12.843Z",
+      "answer": {
+        "text": "Skickat till 3D-banan: kortets vridning runt ruta 59 i dockans film ses över i nästa förlaga. Tagningen som gjordes med filmen (C3) fick 4/5 av granskaragenten.",
+        "at": "2026-11-17T23:59:20.658Z"
+      },
+      "read": "2026-11-17T23:59:20.658Z"
+    },
+    {
+      "id": 3,
+      "proof": "giv-forlagefilm-2",
+      "file": "a-t1.mp4",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-17T23:56:12.988Z",
+      "answer": {
+        "text": "Noterat. Granskaragenten gav 4/5; släpet från ankare 2.2 till plats 4 står som en metod som håller.",
+        "at": "2026-11-17T23:59:21.109Z"
+      },
+      "read": "2026-11-17T23:59:21.109Z"
+    },
+    {
+      "id": 4,
+      "proof": "giv-forlagefilm-2",
+      "file": null,
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-17T23:58:20.258Z",
+      "answer": {
+        "text": "Du tryckte både Bra och Inte bra här när du prövade knapparna. Skriv en kommentar om du menar något särskilt med hela provet.",
+        "at": "2026-11-17T23:59:21.790Z"
+      },
+      "read": "2026-11-17T23:59:21.790Z"
+    },
+    {
+      "id": 5,
+      "proof": "giv-forlagefilm-2",
+      "file": "a-t2.mp4",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-17T23:57:46.500Z",
+      "answer": {
+        "text": "Noterat. Granskaragenten gav 3/5 (kortet växer lite på släpet).",
+        "at": "2026-11-17T23:59:21.345Z"
+      },
+      "read": "2026-11-17T23:59:21.345Z"
+    },
+    {
+      "id": 6,
+      "proof": "giv-forlagefilm-2",
+      "file": "b-referens.mp4",
+      "choice": "inte-bra",
+      "text": "",
+      "at": "2026-11-17T23:58:04.754Z",
+      "answer": {
+        "text": "Noterat. Pamelas film till plats 1 används inte som förlaga; den faller också i den automatiska kontrollen.",
+        "at": "2026-11-17T23:59:21.571Z"
+      },
+      "read": "2026-11-17T23:59:21.571Z"
+    },
+    {
+      "id": 7,
+      "proof": "giv-forlagefilm-2",
+      "file": "c-referens-dockan.mp4",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-17T23:58:15.535Z",
+      "answer": {
+        "text": "Noterat.",
+        "at": "2026-11-17T23:59:33.431Z"
+      },
+      "read": "2026-11-17T23:59:33.431Z"
+    },
+    {
+      "id": 8,
+      "proof": "giv-forlagefilm-2",
+      "file": "c2-t1.mp4",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-17T23:58:28.762Z",
+      "answer": {
+        "text": "Noterat. Granskaragenten gav 4/5.",
+        "at": "2026-11-17T23:59:33.175Z"
+      },
+      "read": "2026-11-17T23:59:33.175Z"
+    },
+    {
+      "id": 9,
+      "proof": "giv-forlagefilm-2",
+      "file": "c2-referens-dockan-rattad.mp4",
+      "choice": null,
+      "text": "Ja, runt ruta 55 görs en konstig halvrotation, alltså 50 grader av kortet. Kanske är det vad som krävs för att AI-modeller inte ska förstå att ett kort kan vridas över sin egen axel. Jag vet inte.",
+      "at": "2026-11-17T23:59:14.315Z",
+      "answer": {
+        "text": "Skickat till 3D-banan tillsammans med din rad om ruta 59: kortets halvvridning (cirka 50 grader) runt ruta 55 i dockans film. Rörelsen är avläst ur Pamelas hand; 3D-banan ser efter om det är hennes rörelse eller dockans kort som gör det.",
+        "at": "2026-11-17T23:59:32.952Z"
+      },
+      "read": "2026-11-17T23:59:32.952Z"
+    },
+    {
+      "id": 10,
+      "proof": "giv-forlagefilm-2",
+      "file": "e-referens-dockan.mp4",
+      "choice": null,
+      "text": "Ja, runt ruta 55 görs en konstig halvrotation, alltså 50 grader av kortet. Kanske är det vad som krävs för att AI-modeller inte ska förstå att ett kort kan vridas över sin egen axel. Jag vet inte.",
+      "at": "2026-11-18T00:00:03.621Z"
+    },
+    {
+      "id": 11,
+      "proof": "giv-forlagefilm-2",
+      "file": "d-referens-dockan.mp4",
+      "choice": null,
+      "text": "Ja, runt ruta 55 görs en konstig halvrotation, alltså 50 grader av kortet. Kanske är det vad som krävs för att AI-modeller inte ska förstå att ett kort kan vridas över sin egen axel. Jag vet inte.",
+      "at": "2026-11-17T23:59:49.546Z"
+    }
+  ]
 }
