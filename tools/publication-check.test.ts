@@ -4,6 +4,7 @@ import {mkdtempSync,writeFileSync,mkdirSync,rmSync,readFileSync,readdirSync,exis
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {execFileSync} from 'node:child_process';
+import {stripTypeScriptTypes} from 'node:module';
 import {inspectBlob,parsePush,dirtyTestInputs,scanRange,TESTS,CANONICAL} from './publication-check.ts';
 
 function fixture(t:TestContext){
@@ -89,4 +90,22 @@ test('the two lists of tests agree, and every test file is in them',()=>{
   const onDisk=readdirSync('tools').filter(name=>name.endsWith('.test.ts')).map(name=>'tools/'+name).sort();
   assert.deepEqual(onDisk.filter(name=>!listed.includes(name)),[],'a test file in tools/ that no list names');
   assert.deepEqual(listed.filter(name=>name.startsWith('tools/')&&!onDisk.includes(name)),[],'a listed test that is not there');
+});
+
+test('every TypeScript file that Node runs directly parses',()=>{
+  // A script that nothing imports is in no test, so a broken one is found only when someone runs it:
+  // tools/build-studio-snapshot.ts lay in main unable to parse from e2a95ae until the copy was to be published
+  // (2026-11-18), after a text replacement whose new text held $' had pasted the rest of the file into one of its lines.
+  // The studio's own files are built and type-checked by Next.js and are not read here.
+  const files:string[]=[];
+  const walk=(dir:string)=>{for(const entry of readdirSync(dir,{withFileTypes:true})){
+    if(entry.name==='node_modules'||entry.name.startsWith('.'))continue;
+    const rel=dir+'/'+entry.name;
+    if(entry.isDirectory())walk(rel);else if(/\.m?ts$/.test(entry.name)&&!entry.name.endsWith('.d.ts'))files.push(rel);
+  }};
+  for(const folder of ['tools','src','cloud','game','dealer3d','pages','materials'])if(existsSync(folder))walk(folder);
+  assert.ok(files.length>100,'the folders with code were read');
+  const broken:string[]=[];
+  for(const file of files){try{stripTypeScriptTypes(readFileSync(file,'utf8'));}catch(error){broken.push(file+': '+String((error as Error).message).split('\n')[0]);}}
+  assert.deepEqual(broken,[],'files that do not parse');
 });
