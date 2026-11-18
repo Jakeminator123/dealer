@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-utgang-2-3-trim-reverse-prov",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-utgang-2-3-trim-reverse-prov/source.mp4",
+    "sha256": "b69906a1f9dc6744242daa76795b34774c6cc91b5be2c47fe6dc9eaf0f74e903",
+    "bytes": 1893558,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 40,
+    "provider": "Local derived preview; no paid generation",
+    "model": "Kling 4 source reversed locally"
+  },
+  "motion": {
+    "kind": "EXIT",
+    "from": "READY-C",
+    "to": "IDLE",
+    "basis": "LOCAL_REVERSE_PREVIEW",
+    "segment": {
+      "clip": "paow-utgang-2-3-trim-reverse-prov",
+      "frames": [
+        0,
+        39
+      ]
+    }
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Main agent and independent geometry reviewer; source trim and six native stills. Explicit lab-only variant.",
+    "limitations": "Locally reversed reserve, not a naturally filmed exit. Two cards persist in reviewed stills; continuous motion unverified.",
+    "userAccepted": false,
+    "productionReady": false,
+    "labOnly": true,
+    "acceptedAs": "VARIANT",
+    "provisional": {
+      "by": "Codex huvudagent + oberoende geometry-granskare",
+      "at": "2026-11-18T19:01:58.460Z",
+      "mandate": "Jakob 2026-11-18: fria privilegier att fortsätta; självständig granskning av avgränsade lokala prov.",
+      "note": "Endast labbprov: lokalt omvänd reserv, 1,667 s. Två kort består i skarv- och slutbilder, uppmätta kortkanter 0 px. Inte en naturligt filmad exit; kontinuerlig rörelse ej slutdömd."
+    }
+  },
+  "localDerivation": {
+    "sourceClip": "paow-ingang-2-3-01-01",
+    "sourceSha256": "a5be64eec91ff6f2e177776d2d2a59613f2f850f368a49248cd407078d9f44dc",
+    "inclusiveSourceFrames": [
+      3,
+      42
+    ],
+    "createdAt": "2026-11-18T18:51:06.662Z",
+    "credits": 0,
+    "operation": "trim then reverse; reserve candidate, not a naturally filmed exit"
+  },
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

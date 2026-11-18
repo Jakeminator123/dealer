@@ -161,6 +161,8 @@ Spelet med flera dealers (2026-11-13):
   utan dom finns inte i spelets bank. Undantaget är en talfilm, en vilotagning på begäran (`motion.idle.onRequest`), som
   slumpen aldrig väljer. En nödlösning (`motion.stopgap`, som `paow-utgang-baklanges-01`) spelas bara där samma dealer
   saknar annan dömd tagning på kanten.
+- Ett granskat labbprov kan ha `review.labOnly: true`: det går att spela i labbet men ingår aldrig i spelets bank,
+  inte heller som tal på begäran. En preliminär dom bevarar gränsen; Jakobs eget godkännande, Variant eller Primär häver den.
 - En retur till vila som saknar film spelas som returen till skon och utgången (`READY>IDLE`). Ett kort vars giv saknar
   film ges med filmen i `STAND_IN_FILM` (per dealer, i dag bara Paows; hålkortet med hennes första korts film, kortet
   ritat på sin egen plats med baksidan upp); ersättaren viker när kortets egen film finns. Dealerns tredje och fjärde kort

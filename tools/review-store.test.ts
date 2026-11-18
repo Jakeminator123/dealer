@@ -53,6 +53,21 @@ test('each decision sets decision, acceptedAs, userAccepted and a dated note', (
     assert.throws(() => validateChange(bad), fails(400));
 });
 
+test('a lab-only verdict stays out of the game until Jakob approves the take', () => {
+  const provisional = applyProvisional({decision: 'PENDING', labOnly: true, inbox: true},
+    {decision: 'VARIANT', by: 'reviewer', mandate: 'local trial', note: 'limited to the lab'}, '2026-11-18');
+  assert.equal(provisional.labOnly, true);
+  assert.equal(provisional.inbox, undefined);
+  for (const decision of ['ACCEPTED', 'VARIANT', 'MAIN'] as const) {
+    const approved = applyChange(provisional, {decision, note: ''}, '2026-11-18');
+    assert.equal(approved.labOnly, undefined, decision);
+    assert.equal(approved.provisional, undefined, decision);
+    assert.equal(approved.userAccepted, true, decision);
+  }
+  for (const decision of ['REJECTED', 'SECONDARY', 'PENDING'] as const)
+    assert.equal(applyChange(provisional, {decision, note: ''}, '2026-11-18').labOnly, true, decision);
+});
+
 test('nothing is written without the revision that was read, for an unknown clip or a bad request', async t => {
   const root = await temp(t), before = await put(root), store = reviewStore(root, () => '2026-11-11'), file = path.join(root, 'motions/pamela-test-01.json');
   const {revision} = await store.load('pamela-test-01');

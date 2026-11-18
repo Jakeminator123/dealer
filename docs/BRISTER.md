@@ -97,6 +97,10 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 - **H24-P4 är en Variant, ingen färdig helkedja.** Given fick 4/5 av huvudagent och oberoende granskare; en rosa fläck
   intill skon finns även i det frysta A3-slutankaret. Lokal lagning blev inte säker. Ingång, retur och nycklad spelbild
   är inte godkända som kedja. Bevis: `assets/orders/paow-giv-2-3-p4-h24-03/take-1/review/review.md`.
+- **READY-C-kedjan har ett tonhopp vid första given.** Kort inpass (källruta 3–42), egen C1/C2 och omvänd reservutgång
+  når slutet i scenen. Sex native pausbilder visar två kvarliggande kort med 0 px mätt kantändring genom utpasset,
+  men skons fönster ljusnar cirka 37 luminansnivåer vid C1. Inpass/utpass är bara labbvarianter; kontinuerlig rörelse
+  och naturlig utgång återstår. Bevis: `assets/proofs/paow-ready-c-chain-20261118/native-review.md`.
 
 - **Arkiveringens knappar och visning behöver handprovas.** Urvalet spärrar arkiverad referensfilm och snittruta,
   även när en aktiv del annars skulle skicka hela filmen med en arkiverad systerdel. Sparade utkast kontrolleras igen

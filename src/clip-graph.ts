@@ -25,8 +25,9 @@ export type MotionRecord = {
   // decision takes it away.
   // archived: Jakob archived the take by hand (who, when and from where; tools/review-store.ts saveArchive). It is out of play and
   // out of the lists, with its film, its record and his verdict kept; taking it back removes the field.
+  // labOnly: the trial's playback scope. The film's quality verdict remains in decision and acceptedAs.
   review?: {decision?: string; acceptedAs?: string; basis?: string; limitations?: string; userReview?: string; userAccepted?: boolean; inbox?: boolean; provisional?: {by?: string; at?: string; mandate?: string; note?: string};
-    archived?: {by?: string; at?: string; where?: string}};
+    archived?: {by?: string; at?: string; where?: string}; labOnly?: boolean};
 };
 export type Receipt = {status?: string; estimatedCredits?: number; requestedAt?: string; completedAt?: string; output?: {bytes?: number; fps?: number; frames?: number; width?: number; height?: number} | null};
 // track and overrides: the card track from tools/track-card.ts and hand-written occlusion overrides, when they exist locally.
@@ -238,14 +239,13 @@ export const clipOfVideo = (video: unknown): string | null => typeof video === '
 // Nothing is chosen in its place: an archived Primär leaves the step without a Primär.
 export const playable = (take: Take) => take.stage === 'DONE' && take.decision !== 'REJECTED' && !take.archived;
 /**
- * The one rule for what may be played has two steps, and this is the second: of what playable allows, the game plays only a take
- * with a verdict (not waiting in the inbox, not PENDING), or a talk film played on request (src/game-director.ts judgedBank keeps
- * the bank's takes by it, and the game's graph then applies playable). The lab's graph (Bordet's Scen, the 3D page, the production
- * list) applies playable alone, so that a delivery waiting for Jakob can be seen there before it is judged; it never becomes the
- * game's. Takes a take's record (Take.motion, or the bank's motions[id]).
+ * The game first checks the record's playback scope, then allows judged takes and talk films played on request
+ * (src/game-director.ts judgedBank). Its graph also applies playable. The lab's graph applies playable alone,
+ * so a delivery waiting for Jakob or a lab-only trial can be played there.
  */
 export const judgedRecord = (record: Pick<MotionRecord, 'review' | 'motion'> | null | undefined): boolean =>
-  (record?.review?.inbox !== true && String(record?.review?.decision ?? 'PENDING').toUpperCase() !== 'PENDING') || record?.motion?.idle?.onRequest === true;
+  record?.review?.labOnly !== true && (
+    (record?.review?.inbox !== true && String(record?.review?.decision ?? 'PENDING').toUpperCase() !== 'PENDING') || record?.motion?.idle?.onRequest === true);
 // Does this return continue that deal take without a jump? A return cut from a frame fits the clip it was cut
 // from. A return from a landing anchor fits every deal that ends on that same anchor image: variant B deals
 // end on their own anchor, so their returns do not fit the model's deals and the other way round.

@@ -8691,6 +8691,36 @@
         "id": "paow-giv-2-3-p4-c2-h24-cykel-02",
         "take": 1
       }
+    },
+    {
+      "id": "paow-ingang-2-3-01-01-trim-3-42",
+      "kind": "ENTRY",
+      "from": "IDLE",
+      "to": "READY-C",
+      "clip": "paow-ingang-2-3-01-01",
+      "frames": [
+        3,
+        42
+      ],
+      "dealer": "paow",
+      "model": "local trim preview",
+      "duration": 1.6666666666666667,
+      "purpose": "Explicit Studio trial: source frames3–42 without re-encoding. Original user rejection unchanged; excluded from the game."
+    },
+    {
+      "id": "paow-utgang-2-3-trim-reverse-prov",
+      "kind": "EXIT",
+      "from": "READY-C",
+      "to": "IDLE",
+      "clip": "paow-utgang-2-3-trim-reverse-prov",
+      "frames": [
+        0,
+        39
+      ],
+      "dealer": "paow",
+      "model": "local reversed reserve preview",
+      "duration": 1.6666666666666667,
+      "purpose": "Explicit Studio trial: reversed source frames42–3. Not a naturally filmed exit, no generation cost; excluded from the game."
     }
   ],
   "edits": [

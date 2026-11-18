@@ -26,10 +26,9 @@ Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-
 4. Munproven är lokala jämförelser; inget byte i banken före Jakobs val i Beslut. Körarens kod finns nu i repot.
 5. Testa, pusha och verifiera fjärrens SHA. Sessionens tio GPT-meddelanden är förbrukade; färdiga granskningsfynd är
    rättade. Fem Runway-filmer kostade 404 krediter; lokal Claude-MCP fungerar. Inget anrop eller KÖR pågår.
-6. Hålkortets värde följer visad filmruta, även pausat: native-provet `paow-game-frame-20261118` visar gränsen 60→61.
-   Filmkortsprovet använder ritade kort vid återbruk till C2/split och följer spåret genom tidiga returskarvar.
-   Native splitrunda är klar; kortkanterna hoppar högst 1 px vid två mätta gränser. Blå restkant, grepp, tempo,
-   full mask- och rörelsedom samt godkänt READY-C-inpass/utpass är fortfarande öppna.
+6. Hålkortets värde följer visad ruta (60→61). Filmkortsprovet använder ritade kort vid återbruk till C2/split.
+   Native split är klar; mätta kortkanter hoppar högst 1 px. READY-C:s lokala tvåkortsprov har kvarliggande kort
+   men tonhopp vid C1. Grepp, tempo, mask och rörelse återstår ([film](docs/lage/film.md)).
 
 Äldre frågor till honom som inte är kort än: `D:/dealer-scratch/tmp/handoff-nytt/forslag-kort.md`.
 

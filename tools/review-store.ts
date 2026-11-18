@@ -26,11 +26,12 @@ export function validateChange(value: unknown): ReviewChange {
   return {decision: value.decision as Decision, note: note.replace(/\s+/g, ' ').trim()};
 }
 
-/** The review block after a decision. Only decision, acceptedAs, userReview, userAccepted, inbox and provisional are touched. */
+/** The review block after Jakob's decision. An approval also lifts a trial's lab-only playback scope. */
 export function applyChange(review: unknown, change: ReviewChange, date: string, reviewer = 'Jakob'): Record<string, unknown> {
   const next: Record<string, unknown> = {...(object(review) ? review : {})};
   delete next.provisional; // his decision, a reset too, replaces a provisional verdict
   const accepted = change.decision === 'ACCEPTED' || change.decision === 'VARIANT' || change.decision === 'MAIN';
+  if (accepted) delete next.labOnly;
   next.decision = accepted ? 'ACCEPTED' : change.decision;
   // "VARIANT" is an accepted take used now and then; "MAIN" (Primär in the lab) is the take played first on its edge.
   // Only those two choices set the marker: a plain approval, like every other decision, takes it away.
@@ -73,7 +74,7 @@ export function refusesProvisional(review: unknown): string | null {
 /**
  * The review block after a provisional verdict: decision (ACCEPTED, with acceptedAs VARIANT for a variant, or REJECTED),
  * userAccepted false, no userReview, the inbox flag gone as with his decision (so an approved take from an order plays as
- * his approval would, src/clip-graph.ts), and provisional {by, at, mandate, note}. Refuses a block with his verdict.
+ * his approval would unless labOnly limits its playback scope), and provisional {by, at, mandate, note}. Refuses a block with his verdict.
  */
 export function applyProvisional(review: unknown, change: ProvisionalChange, at: string): Record<string, unknown> {
   const refused = refusesProvisional(review);

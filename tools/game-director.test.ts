@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {parseEdge, formatEdge, buildGraph, resolveRound, playable, judgedRecord} from '../src/clip-graph.ts';
+import {parseEdge, formatEdge, buildGraph, resolveRound, playable, judgedRecord, type BankData} from '../src/clip-graph.ts';
 import {defaultPlan} from '../src/placement-model.ts';
 import {slotOf, slotFilm, slotLabel, slotImprovised, createLayout, FAN, FAN_AT, SPLIT, DEALER_THIRD, type TableCards} from '../src/game-table.ts';
 import {planBeats, lyingAfter, cardRecords, judgedBank, unjudgedTakes, speakMoments, talkOn, REVEAL_NODE, SEAT_HUB, STAND_IN_FILM} from '../src/game-director.ts';
@@ -237,6 +237,36 @@ test('the game\'s bank: takes without a verdict are left out, except a talk film
   // An exit from the other pose at the shoe (READY-B>IDLE) is another film: judged, it leaves the stopgap from READY where it is.
   const other = {...gap, derived: [...gap.derived, {...exit('paow-exit-2-2'), from: 'READY-B'}], motions: {...gap.motions, 'paow-exit-2-2': {review: {decision: 'ACCEPTED'}}}};
   assert.deepEqual(judgedBank(other).derived!.map(t => t.id), ['baklanges', 'pamela-exit', 'paow-exit-2-2']);
+});
+
+test('lab-only takes stay playable in the lab without replacing the game’s reserve exit', () => {
+  const cut = (id: string, from: string, to: string) => ({id, from, to, clip: id, frames: [0, 40] as [number, number], dealer: 'paow'});
+  const derived = [
+    cut('lab-entry', 'IDLE', 'READY-C'),
+    cut('lab-exit', 'READY-C', 'IDLE'),
+    cut('reserve-exit', 'READY-C', 'IDLE'),
+    cut('lab-talk', 'IDLE', 'IDLE'),
+    cut('game-talk', 'IDLE', 'IDLE'),
+  ];
+  const bank: BankData = {
+    derived,
+    motions: {
+      'lab-entry': {review: {decision: 'ACCEPTED', acceptedAs: 'VARIANT', labOnly: true, provisional: {by: 'huvudagenten'}}},
+      'lab-exit': {review: {decision: 'ACCEPTED', acceptedAs: 'VARIANT', labOnly: true}},
+      'reserve-exit': {review: {decision: 'ACCEPTED'}, motion: {stopgap: true} as never},
+      'lab-talk': {review: {decision: 'PENDING', inbox: true, labOnly: true}, motion: {idle: {onRequest: true}}},
+      'game-talk': {review: {decision: 'PENDING', inbox: true, labOnly: false}, motion: {idle: {onRequest: true}}},
+    },
+    media: Object.fromEntries(derived.map(({id}) => [id, {video: `assets/motions/${id}/source.mp4`}])),
+  };
+  const lab = buildGraph(bank, {dealer: 'paow'}), game = buildGraph(judgedBank(bank), {dealer: 'paow'});
+  for (const {id, from, to} of derived.filter(({id}) => id.startsWith('lab-'))) {
+    assert.ok(playable(lab.takes[id]));
+    assert.equal(resolveRound(lab, [{from, to, take: id}])[0].take?.id, id);
+    assert.equal(game.takes[id], undefined, id);
+  }
+  assert.ok(playable(game.takes['game-talk']), 'the usual on-request talk still plays');
+  assert.equal(resolveRound(game, [{from: 'READY-C', to: 'IDLE'}])[0].take?.id, 'reserve-exit');
 });
 
 test('what she says in a step: the lines before its first card and after its last', () => {

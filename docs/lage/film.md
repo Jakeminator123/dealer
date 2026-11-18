@@ -23,17 +23,17 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
   träffas inte exakt.
 - Den tatuerade uppsättningen är förstahandsvalet (keystone, ankare 1 och 2.3); ankare 2.1 och 2.2 och hela banken
   har de äldre händerna och spelas än. Ankare 2.2 föll i tre försök i bildmodellen och görs om som 2.3.
-- Jakob har tillåtit arbete tills kontot nästan är tomt. Orderpolicyn gäller 18 november till kl. 17.30 UTC med 800
-  krediter per rullande timme och en konservativ totalgräns på 2 500. Dealer har använt 404 på fem filmer. Senaste
-  delade saldot var 1 921 (16.36 UTC). Läs aktuellt saldo före beställning.
+- Jakob har tillåtit arbete tills kontot nästan är tomt. Den tidsbundna orderpolicyn löpte ut kl. 17.30 UTC; förnya
+  den före nya köp inom 800 krediter per rullande timme och konservativt 2 500 totalt. Dealer: 404 på fem filmer.
+  Senaste delade saldo enligt 3D-dealers kvitto: 1 475 (17.37 UTC). Läs aktuellt saldo före beställning.
 
 **Nästa steg.** Ett mål i taget: EN dokumenterat granskad giv enligt Jakobs mandat.
 1. Före nästa beställning, verifiera arbetsytan med Runway-MCP och samordna kostnaden i DISKMASKIN.TXT.
 2. C1 ligger kvar genom C2. Omgreppsprovet i `paow-c2-film-regrip-20261118` förbättrade inte tempot eller färgen:
-   ingen serie på detta underlag. READY-C saknar godkänt inpass/utpass. Vändning efter släpp ligger i Beslut.
-3. Plats 1 (hans ord i Prov): A3 · P1 görs om med modellen som lämnar ansiktet orört, och vägen tillbaka från den
-   framåtlutade slutbilden kräver en egen idé. Ingången till 2.3 ligger klippt i Prov `ingang-2-3-klippt` (1,9 och
-   1,7 s, mätt stilla från ruta 42): hans Bra för in den som ett utsnitt (derived) av samma film, utan omkodning.
+   ingen serie på detta underlag. READY-C-provet nedan är begränsat till labbet. Vändning efter släpp ligger i Beslut.
+3. Plats 1 kräver nytt A3 med ansiktet orört och retur från framåtlutad pose. Prov `paow-ready-c-chain-20261118`
+   kedjar 1,667 s inpass, egen C1/C2 och omvänd reserv. Två kort består genom utpasset, men tonen hoppar vid C1.
+   Bara labbvarianter, utan väntkö eller nytt spelval. Full rörelsedom återstår; originalets nej består.
 4. Efter en visuellt godkänd pilot enligt mandatet: resten av bordet, fem kameravinklar (`/vinklar.html`), ankare 2.1 och 2.2 med
    tatuerade händer, hålkortet, andra kortet (`yt-referens/ut/giv-resten.md`), returer och dealerns tredje kort.
 
