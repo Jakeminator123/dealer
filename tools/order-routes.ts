@@ -2,7 +2,9 @@
 // handleOrders(req, res, url) before its own routes; it answers true when the request was one of these.
 //   GET  /api/orders                    every order with its state, the day's credits and the balance
 //   GET  /api/orders/<id>               one order
-//   POST /api/orders                    a new draft from a few choices (dealer, step, place, hand, how the card lands and
+//   POST /api/orders/preview            prepare the exact drafts and their media, returning a revision (no files written)
+//   POST /api/orders                    save the previewed drafts (If-Match), from a few choices (dealer, step, place, hand,
+//                                       how the card lands and
 //                                       turns, the text's style, tur och retur or bara dit, a reference film from the
 //                                       bank, model, length, takes), or with seats one draft per seat sharing a group
 //   PUT  /api/orders/<id>               change a draft: title, takes, hand, side, turn, free addition, length (If-Match)
@@ -34,6 +36,13 @@ export function orderRoutes(options: { root: string; origin: string } & StoreOpt
   const { root, origin } = options;
   const store = orderStore(root, { now: options.now, poses: options.poses, frame: options.frame });
   const media = mediaRoles(root);
+  // Material and the order store have separate queues. Hold this queue across Material's write and follow as one operation.
+  let mutations: Promise<unknown> = Promise.resolve();
+  function serial<T>(work: () => Promise<T>): Promise<T> {
+    const task = mutations.then(work);
+    mutations = task.then(() => {}, () => {});
+    return task;
+  }
 
   const json = (res: ServerResponse, status: number, value: unknown) => { res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }).end(JSON.stringify(value)); };
   const fail = (res: ServerResponse, error: unknown) => json(res, error instanceof StoreError ? error.status : 500, { error: error instanceof StoreError ? error.message : 'Något gick fel i labbet.' });
@@ -48,8 +57,8 @@ export function orderRoutes(options: { root: string; origin: string } & StoreOpt
     try { return JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch { throw new StoreError(400, 'Frågan är inte giltig JSON.'); }
   }
 
-  async function serve(req: IncomingMessage, res: ServerResponse, file: string) {
-    const size = (await stat(file)).size, type = file.endsWith('.mp4') ? 'video/mp4' : file.endsWith('.png') ? 'image/png' : 'image/jpeg';
+  async function serve(req: IncomingMessage, res: ServerResponse, file: string, bytes?: Buffer) {
+    const size = bytes ? bytes.length : (await stat(file)).size, type = file.endsWith('.mp4') ? 'video/mp4' : file.endsWith('.png') ? 'image/png' : 'image/jpeg';
     let start = 0, end = size - 1;
     const headers: Record<string, string | number> = { 'Content-Type': type, 'Accept-Ranges': 'bytes', 'Cache-Control': 'no-store' };
     if (req.headers.range) {
@@ -60,6 +69,7 @@ export function orderRoutes(options: { root: string; origin: string } & StoreOpt
       res.writeHead(206, { ...headers, 'Content-Range': `bytes ${start}-${end}/${size}`, 'Content-Length': end - start + 1 });
     } else res.writeHead(200, { ...headers, 'Content-Length': size });
     if (req.method === 'HEAD') { res.end(); return; }
+    if (bytes) { res.end(bytes.subarray(start, end + 1)); return; }
     const stream = createReadStream(file, { start, end });
     stream.on('error', () => res.destroy());
     stream.pipe(res);
@@ -87,6 +97,15 @@ export function orderRoutes(options: { root: string; origin: string } & StoreOpt
       } catch (error) { fail(res, error); }
       return true;
     }
+    const previewFile = /^\/api\/orders\/preview\/([a-f0-9]{64})\/(\d+)\/([a-z0-9-]+\.(?:png|mp4))$/.exec(p);
+    if (previewFile) {
+      if (method !== 'GET' && method !== 'HEAD') { res.writeHead(405).end(); return true; }
+      const [, key, index, name] = previewFile;
+      const bytes = store.previewAsset(key, Number(index), name);
+      if (!bytes) { res.writeHead(404, { 'Cache-Control': 'no-store' }).end(); return true; }
+      await serve(req, res, name, bytes);
+      return true;
+    }
     const mediaState = /^\/api\/media\/([^/]+)\/state$/.exec(p);
     if (p !== '/api/orders' && !p.startsWith('/api/orders/') && !mediaState && p !== '/api/production' && p !== '/api/production/draft') return false;
     try {
@@ -104,36 +123,48 @@ export function orderRoutes(options: { root: string; origin: string } & StoreOpt
         const value = (await body(req, true)) as { dealer?: unknown } | null;
         if (!value || typeof value !== 'object' || Object.keys(value).some((k) => k !== 'dealer') || typeof value.dealer !== 'string') throw new StoreError(400, 'Frågan ska bara innehålla dealer.');
         const read = () => readProduction(root, value.dealer as string, { store, createdBy: 'Produktionslistan i Beställ (Jakobs knapp "Skapa utkast för det som kan beställas")' });
-        const result = await makeDrafts(productionList((await read()).input), store);
-        const { input, problems } = await read();
-        json(res, result.made.length ? 201 : 200, { ...result, list: productionList(input), problems });
+        await serial(async () => {
+          const result = await makeDrafts(productionList((await read()).input), store);
+          const { input, problems } = await read();
+          json(res, result.made.length ? 201 : 200, { ...result, list: productionList(input), problems });
+        });
         return true;
       }
       if (mediaState) {
         if (method !== 'PUT') throw new StoreError(405, 'Bara PUT.');
         const value = (await body(req, true)) as { state?: unknown } | null;
         if (!value || typeof value !== 'object' || Object.keys(value).some((k) => k !== 'state')) throw new StoreError(400, 'Ändringen ska bara innehålla state.');
-        const decided = await media.setState({ id: decodeURIComponent(mediaState[1]), state: value.state, expected: ifMatch(req) });
-        // The dealer's drafts follow what holds now; a draft that cannot is left as it is and says why in Beställ.
-        const dealers = (await media.readRegister()).register?.dealers ?? {};
-        const dealer = Object.entries(dealers).find(([, d]) => d.entries.some((e) => e.id === decided.entry.id))?.[0];
-        const followed = dealer ? await store.follow(dealer).catch(() => [] as string[]) : [];
-        json(res, 200, { ...decided, followed });
+        await serial(async () => {
+          const decided = await media.setState({ id: decodeURIComponent(mediaState[1]), state: value.state, expected: ifMatch(req) });
+          // The dealer's drafts follow what holds now. A draft that cannot follow is left as it is.
+          const dealers = (await media.readRegister()).register?.dealers ?? {};
+          const dealer = Object.entries(dealers).find(([, d]) => d.entries.some((e) => e.id === decided.entry.id))?.[0];
+          const followed = dealer ? await store.follow(dealer).catch(() => [] as string[]) : [];
+          json(res, 200, { ...decided, followed });
+        });
         return true;
       }
-      if (p === '/api/orders') {
-        if (method === 'GET') { json(res, 200, await store.list()); return true; }
-        if (method !== 'POST') throw new StoreError(405, 'Bara GET och POST.');
-        const value = (await body(req, true)) as Record<string, unknown>;
-        if (!value || typeof value !== 'object' || Array.isArray(value)) throw new StoreError(400, 'Beställningen ska vara ett objekt.');
-        for (const key of Object.keys(value)) if (!NEW_KEYS.includes(key)) throw new StoreError(400, `${key} kan inte sättas från sidan.`);
-        if (value.seats !== undefined) {
-          const { orders } = await store.createMany(value as unknown as NewOrder);
-          json(res, 201, { ...(await store.one(orders[0].id)), made: orders.map((o) => o.id) });
-          return true;
+      if (p === '/api/orders' || p === '/api/orders/preview') {
+        if (method === 'GET' && p === '/api/orders') { json(res, 200, await store.list()); return true; }
+        if (method !== 'POST') throw new StoreError(405, 'Bara POST för en förhandsvisning eller ett nytt utkast.');
+        const value = await body(req, true);
+        const batch = Array.isArray(value);
+        const inputs: unknown[] = batch ? value : [value];
+        if (!inputs.length || inputs.length > 80) throw new StoreError(400, 'Välj mellan 1 och 80 filmer.');
+        for (const input of inputs) {
+          if (!input || typeof input !== 'object' || Array.isArray(input)) throw new StoreError(400, 'Beställningen ska vara ett objekt.');
+          for (const key of Object.keys(input)) {
+            if (!NEW_KEYS.includes(key) || (batch && key === 'seats')) throw new StoreError(400, `${key} kan inte sättas för den här beställningen.`);
+          }
         }
-        const { order } = await store.create(value as unknown as NewOrder);
-        json(res, 201, { ...(await store.one(order.id)), made: [order.id] });
+        await serial(async () => {
+          if (p === '/api/orders/preview') {
+            json(res, 200, await store.preview(inputs as NewOrder[]));
+            return;
+          }
+          const { orders } = await store.savePreview(inputs as NewOrder[], ifMatch(req));
+          json(res, 201, { ...(await store.one(orders[0].id)), made: orders.map((order) => order.id) });
+        });
         return true;
       }
       const m = /^\/api\/orders\/([a-z0-9]+(?:-[a-z0-9]+)*)(\/approve|\/refresh)?$/.exec(p);
@@ -142,15 +173,20 @@ export function orderRoutes(options: { root: string; origin: string } & StoreOpt
       if (!action) {
         if (method === 'GET') { json(res, 200, await store.one(id)); return true; }
         if (method !== 'PUT') throw new StoreError(405, 'Bara GET och PUT.');
-        await store.change(id, await body(req, true), ifMatch(req));
-        json(res, 200, await store.one(id));
+        const value = await body(req, true);
+        await serial(async () => {
+          await store.change(id, value, ifMatch(req));
+          json(res, 200, await store.one(id));
+        });
         return true;
       }
       if (method !== 'POST') throw new StoreError(405, 'Bara POST.');
       await body(req, false);
-      if (action === '/approve') await store.approve(id, ifMatch(req));
-      else await store.refresh(id, ifMatch(req));
-      json(res, 200, await store.one(id));
+      await serial(async () => {
+        if (action === '/approve') await store.approve(id, ifMatch(req));
+        else await store.refresh(id, ifMatch(req));
+        json(res, 200, await store.one(id));
+      });
       return true;
     } catch (error) {
       fail(res, error);

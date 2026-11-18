@@ -45,11 +45,19 @@ async function lab(t: { after(fn: () => Promise<void> | void): void }) {
   origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
   handle.fn = orderRoutes({ root, origin, now: () => new Date("2026-11-17T21:00:00Z"), poses: {} as never });
   t.after(() => new Promise<void>((done) => server.close(() => done())));
-  const call = async (method: string, address: string, body?: unknown) => {
-    const response = await fetch(origin + address, { method, headers: { origin, ...(body === undefined ? {} : { "content-type": "application/json" }) }, body: body === undefined ? undefined : JSON.stringify(body) });
+  const request = async (method: string, address: string, body?: unknown, match?: string) => {
+    const response = await fetch(origin + address, { method, headers: { origin, ...(match ? { "if-match": match } : {}), ...(body === undefined ? {} : { "content-type": "application/json" }) }, body: body === undefined ? undefined : JSON.stringify(body) });
     return { status: response.status, json: await response.json() };
   };
-  return { call, plan };
+  async function call(method: string, address: string, body?: unknown) {
+    if (method === "POST" && address === "/api/orders") {
+      const preview = await request(method, "/api/orders/preview", body);
+      if (preview.status !== 200) return preview;
+      return request(method, address, body, preview.json.revision);
+    }
+    return request(method, address, body);
+  }
+  return { call, request, plan };
 }
 
 type Stored = { order: { group: { id: string } | null; motion: { target: string; flipAxis: string | null } } };
@@ -92,12 +100,10 @@ test("the card's part of a body: tur och retur or bara dit only for a deal, the 
 
 // (the hole card is left out: its pictures are drawn from a bank film that the temporary lab does not have)
 test("what a row of Bordet shows as the text is, word for word, the text the store writes into the draft", async (t) => {
-  const { call } = await lab(t);
-  const { readMethods } = await import("../../src/order-methods.ts");
-  const { filmRow, sendsOf } = await import("../lib/bordet.ts");
-  const register = readMethods(JSON.parse(await readFile(path.join(repo, "data/order-methods.json"), "utf8"))).register!;
-  const before = (await call("GET", "/api/orders")).json as { dealers: { id: string; name: string; look: string }[]; plan: Parameters<typeof sendsOf>[0]["plan"] };
-  const paow = before.dealers.find((d) => d.id === "paow")!;
+  const { call, request } = await lab(t);
+  const { filmRow } = await import("../lib/bordet.ts");
+  const before = (await call("GET", "/api/orders")).json as import("../../src/order-model.ts").OrdersAnswer;
+  const register = before.methods!;
   // The lab has no end pictures and no reference films: a deal is ordered here as the exception that needs neither.
   const round = { shape: "ROUND_TRIP", reference: null, duration: 7 };
   const cases: { step: string; target: string | null; choice?: Record<string, unknown> }[] = [
@@ -113,14 +119,16 @@ test("what a row of Bordet shows as the text is, word for word, the text the sto
   let compared = 0;
   for (const c of cases) {
     const wish = { step: c.step as never, target: c.target }, choice = (c.choice ?? {}) as never;
-    const row = filmRow("paow", wish, register, null, { bank: null, choice, entries: [], plan: before.plan });
+    const row = filmRow("paow", wish, register, null, { bank: null, choice, entries: [], plan: before.plan ?? null });
     assert.ok(row.body, `${c.step} ${c.target}: a body (${row.why})`);
     if (!c.choice) assert.deepEqual(row.body, { dealer: "paow", step: c.step }, "the line: the dealer and the step, nothing else");
-    const shown = sendsOf({ dealer: { id: "paow", name: paow.name, look: paow.look }, wish, line: row.resolved, choice, entries: [], plan: before.plan })!;
-    const made = await call("POST", "/api/orders", row.body);
+    const preview = await request("POST", "/api/orders/preview", row.body);
+    assert.equal(preview.status, 200);
+    const shown = preview.json.orders[0];
+    const made = await request("POST", "/api/orders", row.body, preview.json.revision);
     assert.equal(made.status, 201, `${c.step} ${c.target}: ${JSON.stringify(made.json).slice(0, 300)}`);
-    assert.equal(shown.prompt!.text, made.json.order.prompt.text, `${c.step} ${c.target}: the text shown is the text stored`);
-    assert.deepEqual([shown.seconds, shown.takes, shown.resolution], [made.json.order.generation.params.duration, made.json.order.takes, made.json.order.generation.params.resolution], `${c.step} ${c.target}: length, takes and resolution too`);
+    assert.equal(shown.prompt.text, made.json.order.prompt.text, `${c.step} ${c.target}: the text shown is the text stored`);
+    assert.deepEqual([shown.generation.params.duration, shown.takes, shown.generation.params.resolution], [made.json.order.generation.params.duration, made.json.order.takes, made.json.order.generation.params.resolution], `${c.step} ${c.target}: length, takes and resolution too`);
     compared++;
   }
   assert.equal(compared, cases.length);

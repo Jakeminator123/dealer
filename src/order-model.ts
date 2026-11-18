@@ -1091,6 +1091,8 @@ export type OrdersAnswer = {
   poses?: PoseAnswer[];
   /** The dummy's rendered reference films (data/rendered-references.json), which the lab's clip bank does not list. */
   rendered?: RenderedReference[];
+  methods?: import('./order-methods.ts').MethodRegister | null;
+  cutChecks?: BankFacts['cutChecks'];
 };
 
 /** Words for a credit sum: "1 000". */

@@ -1,14 +1,8 @@
 "use client";
 
 // "Det här skickas" for one film of Bordet's list, in one glance (Jakob 2026-11-17: "Vad är det som skickas till Runway?"):
-// exactly what goes and nothing else. Before a draft exists: the first picture, the last picture (the anchor with the card
-// drawn where the plan lays it, marked so), the reference film by whose film it is or "ingen referensfilm", the text word for
-// word (promptFor, the function the store writes the draft's text with) and model, length and takes: all of it the step's one
-// recipe as the store will resolve it (lib/bordet.ts lineOf). Under it, folded, the exceptions he can make against the recipe,
-// by name only (no descriptions that never go to Runway); how the card turns is not among them: the recipe says it (Jakob
-// 2026-11-18: "litew skitsamma vilken vridning som gjörs", as long as every turn is a good one). After the draft is made: the same from the
-// stored order (its pictures, its reference film, its text, the call's values), and the way to its "Det här skickas" with
-// the approval. No card path and no JSON of the plan is ever sent.
+// The choices against its recipe are folded. Förhandsvisa opens the server's finished pictures, references, text and values
+// before saving. Once the draft is made the same panel shows the stored order and the way to approve it.
 // Granska filmen (the sketch's step 4): where the film has been ordered before, its last order with the takes that came of
 // it (the protocol, lib/ledger.ts: the film, Jakob's verdict, the reviewer's score, the way to Granska) beside everything
 // that was sent for it.
@@ -16,19 +10,17 @@ import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import {
-  CARD_SCALES, HAND_CHOICES, HAND_LABEL, LANDS_LABEL, SHAPE_LABEL, STYLE_LABEL, TAKES_MAX, credits, handChoiceOf, modelsFor, referenceCandidates, scaleWords, stepOf, stylesFor,
+  CARD_SCALES, HAND_CHOICES, HAND_LABEL, LANDS_LABEL, SHAPE_LABEL, STYLE_LABEL, TAKES_MAX, handChoiceOf, modelsFor, referenceCandidates, scaleWords, stepOf, stylesFor,
   type BankFacts, type PlanAnswer, type RefCandidate,
 } from "../../../src/order-model.ts";
-import { referenceName, type FilmRow, type RowChoice, type Sends } from "../../lib/bordet.ts";
+import { referenceName, type FilmRow, type RowChoice } from "../../lib/bordet.ts";
 import { labUrl } from "../../lib/lab.ts";
 import { scoreWords, verdictWords, type LedgerRow } from "../../lib/ledger.ts";
 import { paramRows, picturesInOrder, storedParts, type OrderAnswer, type OrdersAnswer } from "../../lib/orders.ts";
-import { PictureCard, PreviewPicture, StatusChip } from "../order/Pictures";
+import { PictureCard, StatusChip } from "../order/Pictures";
 import { PromptText } from "../order/PromptText";
-import { Badge, SegmentedControl, Select, TextArea, buttonClasses, cn } from "../ui";
+import { Badge, Button, SegmentedControl, Select, TextArea, buttonClasses, cn } from "../ui";
 
-const served = (e: Sends["first"]["entry"]) => (e?.served && !e.served.endsWith(".mp4") ? labUrl(e.served) : null);
-const frameOf = (e: Sends["first"]["entry"]) => (e?.served?.endsWith(".mp4") && e.frame !== undefined ? { video: labUrl(e.served), time: (e.frame + 0.5) / (e.fps ?? 24) } : null);
 
 function Part({ title, aside, children }: { title: string; aside?: ReactNode; children: ReactNode }) {
   return (
@@ -56,10 +48,10 @@ function Reference({ film, wanted, names }: { film: { path: string; dealer: stri
 }
 
 export function RowSends({
-  row, sends, names, plan, bank, dealer, choice, onChoice, made, all, last,
+  row, onPreview, names, plan, bank, dealer, choice, onChoice, made, all, last,
 }: {
   row: FilmRow;
-  sends: Sends | null;
+  onPreview?: () => void;
   names: Record<string, string>;
   plan: PlanAnswer | null;
   bank: BankFacts | null;
@@ -83,8 +75,6 @@ export function RowSends({
   const candidates: RefCandidate[] = model?.videos && bank ? referenceCandidates(bank, { dealer, step, target: row.wish.target, model }).filter((c) => c.fits) : [];
   const side = line.side;
   const hand = handChoiceOf(line.hands);
-  // the pictures are the dealer's own: her anchors (a picture of another dealer never goes in a draft)
-  const own = { dealer, name: names[dealer] ?? dealer, part: "whole" as const };
   return (
     <div data-sends={row.key} className="flex flex-col gap-4">
       <div className="flex items-baseline gap-2">
@@ -100,28 +90,7 @@ export function RowSends({
           Kan inte beställas än: {row.why}.
         </p>
       ) : null}
-      {sends ? (
-        <>
-          <div className="grid grid-cols-2 gap-2">
-            <PreviewPicture src={served(sends.first.entry)} frame={frameOf(sends.first.entry)} name={sends.first.name} owner={own} dealer={dealer} waiting={sends.first.waiting} cards={sends.first.cards} drawn={sends.first.cards.length > 0} />
-            <PreviewPicture src={served(sends.last.entry)} frame={frameOf(sends.last.entry)} name={sends.last.name} owner={own} dealer={dealer} waiting={sends.last.waiting} cards={sends.last.cards} drawn={sends.last.cards.length > 0} />
-          </div>
-          {sends.drawn ? <p className="-mt-2 text-xs text-brass-hi">Kortet i sista bilden ritas från kortplanen, i filmernas gula eller blå.</p> : null}
-          <Part title="Referensfilm">
-            <Reference film={row.reference} wanted={row.wanted} names={names} />
-          </Part>
-          <Part title="Texten" aside={sends.prompt ? `${STYLE_LABEL[sends.prompt.style]} · ${sends.prompt.text.split(/\s+/).filter(Boolean).length} ord` : undefined}>
-            {sends.prompt ? <PromptText text={sends.prompt.text} parts={sends.prompt.parts} /> : <p className="text-sm text-[#f0b07a]">Dealerns utseende saknas i svaret: texten kan inte visas.</p>}
-          </Part>
-          <p data-values className="text-sm tabular-nums text-ink">
-            {sends.model} · {sends.seconds ? `${sends.seconds} s · ` : ""}
-            {sends.resolution} · {sends.takes} {sends.takes === 1 ? "tagning" : "tagningar"}
-            {row.cost !== null ? ` · ${credits(row.cost)} krediter` : ""}
-          </p>
-        </>
-      ) : row.why ? null : (
-        <p className="text-sm text-dim">Inget skickas för den här.</p>
-      )}
+      {onPreview ? <Button variant="secondary" className="self-start" onClick={onPreview}>Förhandsvisa filmen</Button> : null}
       {last && all ? (
         <details data-last={last.answer.order.id} className="rounded-md border border-line px-3 py-2" open={last.takes.some((t) => !!t.see.film)}>
           <summary className="cursor-pointer text-sm text-ink">

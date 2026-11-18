@@ -20,7 +20,7 @@ import { casinoAddress } from "../../lib/casino.ts";
 import { isSnapshot } from "../../lib/mode.ts";
 import { placesOf } from "../../lib/rounds.ts";
 import { BUILT_BLUR, sameValue, type GroupId, type SceneKey } from "../../lib/scene-keys.ts";
-import { BASE, SHIPPED, differences, effective, isShipped, matchPreset, patchOf, scenePageAddress, slotLabel, slotOf } from "../../lib/scene-presets.ts";
+import { BASE, SHIPPED, differences, effective, initialSceneState, isShipped, matchPreset, patchOf, scenePageAddress, slotLabel, slotOf } from "../../lib/scene-presets.ts";
 import type { Scene } from "../stage";
 import { SegmentedControl, Skeleton, Switch, useToast } from "../ui";
 import { askedPart, lookPart, type LookAsk } from "./address.ts";
@@ -102,12 +102,8 @@ export function useSceneEditor(firstLook: () => LookAsk) {
   const patcher = useMemo(() => createPatcher(() => sceneRef.current), []);
   useEffect(() => () => patcher.dispose(), [patcher]);
 
-  // What the scene is built with: the address over its shipped preset (one of his own is read from the lab first: until
-  // then basgrund, and the address's keys wait for it).
-  const shippedAsked = SHIPPED.find((p) => p.name === asked.forval);
-  const initial: Partial<SceneState> = shippedAsked ? { ...shippedAsked.state, ...asked.patch } : { ...SHIPPED[0].state };
-
   const baseline = useMemo(() => (defaults ? effective(defaults, presetOf(BASE)?.state ?? SHIPPED[0].state) : null), [defaults, presetOf]);
+  const initial = initialSceneState({ asked, current, comparison: comparing ? baseline : null, needApply });
   const originState = useMemo(() => (defaults ? effective(defaults, (presetOf(origin) ?? presetOf(BASE))?.state ?? {}) : null), [defaults, presetOf, origin]);
   const differ = useMemo(() => new Set(current && baseline ? differences(current, baseline) : []), [current, baseline]);
   const active = current && defaults ? (matchPreset(current, defaults, presets)?.name ?? null) : null;

@@ -12,6 +12,7 @@ import {
   SLOTS,
   differences,
   effective,
+  initialSceneState,
   isShipped,
   matchPreset,
   scenePageAddress,
@@ -97,6 +98,19 @@ test("which preset a state is, and what differs", () => {
   assert.deepEqual(differences(changed, levande), ["dust"]);
   assert.deepEqual(differences(changed, basgrund), ["clock", "dust", "mode", "focus"]); // in the catalogue's order
   assert.deepEqual(patchOf(basgrund, changed), { dust: 0, clock: false, mode: "look", focus: "off" });
+});
+
+test("a rebuilt renderer keeps the editor's active look until a new address asks for another", () => {
+  const earlierAddress = { forval: BASE, patch: {} };
+  const current: SceneState = { ...levande, felt: "vin", zoom: 1.1 };
+  const rebuilding = { asked: earlierAddress, current, comparison: null, needApply: false };
+  assert.deepEqual(effective(DEFAULTS, initialSceneState(rebuilding)), current, "Levande with the editor's changes survives a geometry remount");
+  assert.deepEqual(initialSceneState({ ...rebuilding, comparison: basgrund }), { ...basgrund, roomShift: "cut" });
+
+  const asked = { forval: "rumsstudien", patch: { zoom: 0.95 } };
+  const incoming = { ...rebuilding, asked, comparison: basgrund, needApply: true };
+  assert.deepEqual(effective(DEFAULTS, initialSceneState(incoming)), { ...rumsstudien, zoom: 0.95 });
+  assert.deepEqual(effective(DEFAULTS, initialSceneState({ ...incoming, asked: { ...asked, forval: "profilval-1" } })), basgrund);
 });
 
 test("the address: the preset and the keys that differ from it, and back", () => {

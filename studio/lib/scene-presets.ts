@@ -150,6 +150,22 @@ export function slotToSave(origin: string, slots: readonly unknown[]): number | 
 /** The whole state a preset gives: the scene's defaults with the preset's keys over them. */
 export const effective = (defaults: SceneState, state: Partial<SceneState>): SceneState => ({ ...defaults, ...state });
 
+/** A replacement renderer starts with the visible look unless a new address still needs to be applied. */
+export function initialSceneState({ asked, current, comparison, needApply }: {
+  asked: { forval: string; patch: Partial<SceneState> };
+  current: SceneState | null;
+  comparison: SceneState | null;
+  needApply: boolean;
+}): Partial<SceneState> {
+  if (!needApply) {
+    if (comparison) return { ...comparison, roomShift: "cut" };
+    if (current) return current;
+  }
+  const preset = SHIPPED.find((p) => p.name === asked.forval);
+  // An address naming a custom preset starts on Basgrund until the lab has supplied that preset.
+  return preset ? { ...preset.state, ...asked.patch } : { ...SHIPPED[0].state };
+}
+
 /** The keys whose values differ between two states, in the catalogue's order. */
 export const differences = (a: SceneState, b: SceneState): SceneKey[] => SCENE_KEYS.filter((s) => !sameValue(a[s.key], b[s.key])).map((s) => s.key);
 

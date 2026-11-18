@@ -76,8 +76,12 @@ export type NewOrderInput = {
   /** A deal bara dit: an A3 candidate of the seat as its last picture, a named exception (tools/order-store.ts NewOrder.end). */
   end?: string;
 };
-/** The first draft made, and every draft made (seven for "Alla sju"). */
-export const createOrder = (input: NewOrderInput) => call<OrderAnswer & { made?: string[] }>("api/orders", "Utkastet", send("POST", input));
+export type OrderPreviewInput = NewOrderInput | readonly NewOrderInput[];
+export type OrderPreview = import("../../tools/order-store.ts").OrderPreview;
+export type CreatedOrders = OrderAnswer & { made: string[] };
+export const previewOrder = (input: OrderPreviewInput) => call<OrderPreview>("api/orders/preview", "Förhandsvisningen", send("POST", input));
+/** The first draft and the ids of all drafts, in the same order as the preview. */
+export const createOrder = (input: OrderPreviewInput, revision: string) => call<CreatedOrders>("api/orders", "Utkastet", send("POST", input, revision));
 export type OrderChange = { title?: string; takes?: number; extra?: string | null; duration?: number; hand?: "LH" | "RH"; pass?: boolean; side?: "FRONT" | "BACK" };
 export const changeOrder = (id: string, change: OrderChange, revision: string) => call<OrderAnswer>(`api/orders/${id}`, "Ändringen", send("PUT", change, revision));
 export const approveOrder = (id: string, revision: string) => call<OrderAnswer>(`api/orders/${id}/approve`, "Godkännandet", send("POST", undefined, revision));

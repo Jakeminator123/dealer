@@ -5,7 +5,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
-import { mkdtemp, mkdir, readFile, writeFile, rm, copyFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, readdir, writeFile, rm, copyFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import os from 'node:os';
@@ -70,17 +70,143 @@ async function lab(t: { after(fn: () => Promise<void> | void): void }) {
   const frames = { of: null as null | ((source: { path: string; frame?: number }) => Promise<Buffer>) };
   handle.fn = orderRoutes({ root, origin, now: () => new Date('2026-11-12T21:00:00Z'), poses, frame: (source) => (frames.of ? frames.of(source) : Promise.reject(new Error('no film'))) });
   t.after(() => new Promise<void>((done) => server.close(() => done())));
-  const call = async (method: string, address: string, options: { body?: unknown; match?: string; from?: string | null } = {}) => {
+  const request = async (method: string, address: string, options: { body?: unknown; match?: string; from?: string | null } = {}) => {
     const headers: Record<string, string> = {};
     if (options.from !== null) headers.origin = options.from ?? origin;
     if (options.body !== undefined) headers['content-type'] = 'application/json';
     if (options.match) headers['if-match'] = options.match;
     const response = await fetch(origin + address, { method, headers, body: options.body === undefined ? undefined : JSON.stringify(options.body) });
     const type = response.headers.get('content-type') ?? '';
-    return { status: response.status, json: type.includes('json') ? await response.json() : null, bytes: type.includes('json') ? null : Buffer.from(await response.arrayBuffer()) };
+    return { status: response.status, cache: response.headers.get('cache-control'), json: type.includes('json') ? await response.json() : null, bytes: type.includes('json') ? null : Buffer.from(await response.arrayBuffer()) };
   };
-  return { root, origin, call, files, frames };
+  async function call(method: string, address: string, options: Parameters<typeof request>[2] = {}) {
+    if (method === 'POST' && address === '/api/orders') {
+      const preview = await request(method, '/api/orders/preview', options);
+      if (preview.status !== 200) return preview;
+      return request(method, address, { ...options, match: preview.json.revision });
+    }
+    return request(method, address, options);
+  }
+  return { root, origin, call, request, files, frames };
 }
+
+test('a stale studio or preview cannot write anything, and the current preview is stored byte for byte', async (t) => {
+  const { root, request } = await lab(t);
+  const input = [{ dealer: 'paow', step: 'INGANG-2.1' }, { dealer: 'paow', step: 'VILA' }];
+  const reg = register();
+  reg.dealers.paow.entries[0].state = 'gäller';
+  reg.dealers.paow.entries[3].state = 'gäller';
+  await writeFile(path.join(root, 'data/media-roles.json'), JSON.stringify(reg));
+  const prepared = await request('POST', '/api/orders/preview', { body: input });
+  assert.equal(prepared.status, 200);
+  assert.equal(prepared.json.orders[0].takes, 2);
+  assert.match(prepared.json.revision, /^"[a-f0-9]{64}"$/);
+  assert.equal(existsSync(path.join(root, 'assets/orders')), false);
+  const stale = await request('POST', '/api/orders', { body: input[0] });
+  assert.equal(stale.status, 428);
+  assert.match(stale.json.error, /Ladda om studion/);
+
+  const file = path.join(root, 'data/order-methods.json');
+  const methods = JSON.parse(await readFile(file, 'utf8'));
+  methods.methods.find((m: { step: string }) => m.step === 'INGANG-2.1').takes = 3;
+  await writeFile(file, JSON.stringify(methods));
+  const conflict = await request('POST', '/api/orders', { body: input, match: prepared.json.revision });
+  assert.equal(conflict.status, 409);
+  assert.match(conflict.json.error, /har ändrats/);
+  assert.equal(existsSync(path.join(root, 'data/orders')), false);
+
+  const current = await request('POST', '/api/orders/preview', { body: input });
+  assert.equal(current.status, 200);
+  assert.equal(current.json.orders[0].takes, 3);
+  assert.notEqual(current.json.revision, prepared.json.revision);
+  const previousImage = await request('GET', '/' + current.json.orders[0].pictures[1].path);
+  assert.equal(previousImage.status, 200);
+  const changed = await picture(0, 232, 42);
+  await writeFile(path.join(root, 'assets/anchors/paow-nyp-ny/anchor.png'), changed);
+  const staleMedia = await request('POST', '/api/orders', { body: input, match: current.json.revision });
+  assert.equal(staleMedia.status, 409);
+  assert.equal(existsSync(path.join(root, 'assets/orders')), false);
+  assert.deepEqual((await request('GET', '/' + current.json.orders[0].pictures[1].path)).bytes, previousImage.bytes);
+
+  const latest = await request('POST', '/api/orders/preview', { body: input });
+  const pictured: Buffer[][] = [];
+  for (const order of latest.json.orders) {
+    const images: Buffer[] = [];
+    for (const pic of order.pictures) {
+      const wire = await request('GET', '/' + pic.path);
+      assert.equal(wire.status, 200);
+      images.push(wire.bytes!);
+    }
+    pictured.push(images);
+  }
+  const saved = await request('POST', '/api/orders', { body: input, match: latest.json.revision });
+  assert.equal(saved.status, 201);
+  assert.equal(saved.json.made.length, 2);
+  for (const [i, id] of saved.json.made.entries()) {
+    const shown = latest.json.orders[i];
+    const { order } = (await request('GET', '/api/orders/' + id)).json;
+    assert.deepEqual([shown.generation, shown.prompt, shown.takes, shown.cost, shown.reference], [order.generation, order.prompt, order.takes, order.cost, order.reference]);
+    for (const [index, pic] of shown.pictures.entries()) {
+      const final = await readFile(path.join(root, order.pictures[index].path));
+      assert.deepEqual(pictured[i][index], final);
+      assert.equal(pic.sha256, sha(final));
+    }
+  }
+});
+
+test('retrying a successful save returns the same order IDs without writing more drafts', async (t) => {
+  const { root, request } = await lab(t);
+  const film = { dealer: 'pamela', step: 'VILA' };
+  for (const input of [film, [film, { ...film, takes: 2 }]]) {
+    const shown = await request('POST', '/api/orders/preview', { body: input });
+    assert.equal(shown.status, 200);
+    const image = '/' + shown.json.orders[0].pictures[0].path;
+    assert.equal((await request('GET', image)).status, 200);
+
+    const options = { body: input, match: shown.json.revision };
+    const first = await request('POST', '/api/orders', options);
+    assert.equal(first.status, 201);
+    const files = (await readdir(path.join(root, 'data/orders'))).sort();
+    const folders = (await readdir(path.join(root, 'assets/orders'))).sort();
+
+    const retry = await request('POST', '/api/orders', options);
+    assert.equal(retry.status, 201);
+    assert.deepEqual(retry.json.made, first.json.made);
+    assert.deepEqual((await readdir(path.join(root, 'data/orders'))).sort(), files);
+    assert.deepEqual((await readdir(path.join(root, 'assets/orders'))).sort(), folders);
+    assert.equal((await request('POST', '/api/orders', { ...options, body: { ...film, takes: 5 } })).status, 409);
+
+    const released = await request('GET', image);
+    assert.equal(released.status, 404);
+    assert.equal(released.cache, 'no-store');
+  }
+});
+
+test('an evicted preview cannot be saved or served, and a new preview can be saved', async (t) => {
+  const { root, request } = await lab(t);
+  const input = { dealer: 'pamela', step: 'VILA' };
+  const shown = await request('POST', '/api/orders/preview', { body: input });
+  assert.equal(shown.status, 200);
+  const media = '/' + shown.json.orders[0].pictures[0].path;
+  assert.equal((await request('GET', media)).status, 200);
+  assert.equal((await request('POST', '/api/orders', { body: { ...input, takes: 3 }, match: shown.json.revision })).status, 409);
+  for (let i = 0; i < 16; i++) {
+    assert.equal((await request('POST', '/api/orders/preview', { body: input })).status, 200);
+  }
+  const gone = await request('GET', media);
+  assert.equal(gone.status, 404);
+  assert.equal(gone.cache, 'no-store');
+  const refused = await request('POST', '/api/orders', { body: input, match: shown.json.revision });
+  assert.equal(refused.status, 409);
+  assert.match(refused.json.error, /Förhandsvisningen finns inte kvar/);
+  assert.equal(existsSync(path.join(root, 'assets/orders')), false);
+  assert.equal(existsSync(path.join(root, 'data/orders')), false);
+
+  const current = await request('POST', '/api/orders/preview', { body: input });
+  assert.notEqual(current.json.revision, shown.json.revision);
+  const made = await request('POST', '/api/orders', { body: input, match: current.json.revision });
+  assert.equal(made.status, 201);
+});
 
 test('drafts, changes and approval go through the routes with their guards', async (t) => {
   const { root, call, files } = await lab(t);
@@ -421,7 +547,7 @@ test('a film made with another model: the 4K model for the entry, its parameters
 });
 
 test('the line: a deal says its anchor, its seat and its card, and the recipe gives the rest; the seat ends on its own picture; every exception is said', async (t) => {
-  const { root, call, files, frames } = await lab(t);
+  const { root, call, request, files, frames } = await lab(t);
   // Paow's anchor 2.1 and a landing picture for seat 4 hold; the bank has Pamela's approved deal to seat 4, which is the deal alone.
   const register = JSON.parse(await readFile(path.join(root, 'data/media-roles.json'), 'utf8'));
   register.dealers.paow.entries.find((e: { id: string }) => e.id === 'paow-nyp-ny').state = 'gäller';
@@ -551,13 +677,53 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   const cut = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1' } });
   assert.equal(cut.status, 201);
   const c = cut.json.order;
-  assert.deepEqual(asked, ['assets/motions/paow-giv-2-1-p4-04-01/source.mp4@108', 'assets/motions/paow-giv-2-1-p4-08-01/source.mp4@133'], 'the first frame lies 40 px off the plan and is passed over');
+  const candidates = ['assets/motions/paow-giv-2-1-p4-04-01/source.mp4@108', 'assets/motions/paow-giv-2-1-p4-08-01/source.mp4@133'];
+  assert.deepEqual(asked, candidates, 'the preview passes over the frame 40 px off the plan, and save reuses the selected frame');
   const last = c.pictures[1];
   assert.deepEqual([last.label, last.from.path, last.from.frame, last.from.cut], ['Sista bild · platsens slutbild: ruta 133 ur paow-giv-2-1-p4-08-01', 'assets/motions/paow-giv-2-1-p4-08-01/source.mp4', 133, { clip: 'paow-giv-2-1-p4-08-01', frame: 133, ret: 'paow-giv-2-1-p4-08-01-return', shoeFrom: 'paow-vila-ung-2' }]);
   assert.match(last.from.note, /^ruta 133 ur paow-giv-2-1-p4-08-01, där returen börjar \(Jakob: ”Bra retur\.”\); skon och kortet i fönstret ur ankare 1$/);
   assert.equal(cut.json.owners['last.png'].dealer, 'paow', 'the frame is the dealer\'s own');
   assert.deepEqual(cut.json.problems, []);
   assert.equal(cut.json.shown, 'KLAR_ATT_TRYCKA');
+
+  const batch = [{ dealer: 'paow', step: 'VILA' }, { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1' }];
+  const orderFiles = (await readdir(path.join(root, 'data/orders'))).sort();
+  const assetFolders = (await readdir(path.join(root, 'assets/orders'))).sort();
+  const good = await request('POST', '/api/orders/preview', { body: batch });
+  assert.equal(good.status, 200);
+  const original = frames.of!;
+  const idle = path.join(root, 'assets/anchors/paow-vila-ung-2/anchor.png');
+  frames.of = async (source) => {
+    // Row 1 has finished reading the idle image. Row 2 uses its own cut frame.
+    await writeFile(idle, await picture(5, 231, 41));
+    return original(source);
+  };
+  const mixed = await request('POST', '/api/orders/preview', { body: batch });
+  assert.equal(mixed.status, 409, 'changing the first row while preparing the second rejects the mixed snapshot');
+  assert.equal((await request('POST', '/api/orders', { body: batch, match: good.json.revision })).status, 409);
+
+  const entered = Promise.withResolvers<void>(), resume = Promise.withResolvers<void>();
+  frames.of = async (source) => {
+    entered.resolve();
+    await resume.promise;
+    return original(source);
+  };
+  const concurrent = request('POST', '/api/orders/preview', { body: batch });
+  await Promise.race([entered.promise, concurrent.then(() => assert.fail('preview ended before reaching row 2'))]);
+  const registerBefore = await readFile(path.join(root, 'data/media-roles.json'));
+  const change = request('PUT', '/api/media/paow-vila-ung-1/state', { body: { state: 'gäller' }, match: `"${sha(registerBefore)}"` });
+  const materialFinishedEarly = await Promise.race([change.then(() => true), new Promise<false>((resolve) => setTimeout(() => resolve(false), 75))]);
+  const whilePreparing = await readFile(path.join(root, 'data/media-roles.json'));
+  resume.resolve();
+  const [preview, changedMaterial] = await Promise.all([concurrent, change]);
+  assert.equal(materialFinishedEarly, false, 'Material waits for the entire preview');
+  assert.deepEqual(whilePreparing, registerBefore);
+  assert.equal(preview.status, 200);
+  assert.equal(changedMaterial.status, 200);
+  assert.equal((await request('POST', '/api/orders', { body: batch, match: preview.json.revision })).status, 409, 'Material invalidates the previously displayed batch');
+  assert.deepEqual((await readdir(path.join(root, 'data/orders'))).sort(), orderFiles);
+  assert.deepEqual((await readdir(path.join(root, 'assets/orders'))).sort(), assetFolders);
+
   // Where no cut frame holds as a picture, the draft is refused with what each lacks; and an archived take gives none.
   frames.of = async () => frame(40);
   assert.match((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1' } })).json.error, /^Plats 4 har ingen slutbild som håller: paow-giv-2-1-p4-04-01 ruta 108: kortet ligger 40 px från planens; paow-giv-2-1-p4-08-01 ruta 133: kortet ligger 40 px från planens\.$/);

@@ -3,8 +3,7 @@
 // Bordet's step 3, Beställ (lib/bordet.ts): the films to order as a list. AddFilms is the one-click choice of films for the
 // chosen card (its deal from the anchor the game deals it from, the returns) and of the films without a card; FilmStrip is the
 // list itself, under the picture: one row per film in his notation, with the method of record's recipe and price, its card
-// ringed on the stage, and the sum. "Skapa utkast" makes each film a draft through the order path every draft takes
-// (POST /api/orders, the body the production list would send); approval and sending stay in Beställ's "Det här skickas".
+// ringed on the stage, and the sum. "Förhandsvisa" opens the lab server's proposed drafts before saving.
 // One line over the list says what never goes to Runway: the card path drawn in the lab is a sketch.
 // "Beställ" on a row opens Ny beställning with the film chosen instead, to change it there.
 import { ExternalLink, Plus, X } from "lucide-react";
@@ -50,14 +49,13 @@ export type Made = Record<string, string>;
 
 /** The list under the picture: a row per film, the sum, and the drafts made from it. */
 export function FilmStrip({
-  rows, dealer, chosen, made, busy, blocked, onChoose, onRemove, onCreate, onClear,
+  rows, dealer, chosen, made, blocked, onChoose, onRemove, onCreate, onClear,
 }: {
   rows: readonly FilmRow[];
   dealer: string;
   chosen: string | null;
   /** The drafts made from rows: the row's key → the order's id. */
   made: Made;
-  busy: boolean;
   /** Why no draft can be made now (the plan is not saved, the dealer cannot be ordered for), or null. */
   blocked: string | null;
   onChoose: (row: FilmRow) => void;
@@ -81,8 +79,8 @@ export function FilmStrip({
               Töm
             </Button>
           ) : null}
-          <Button size="sm" variant="primary" loading={busy} disabled={!ready.length || !!blocked} onClick={onCreate} title="Utkasten godkänns i Beställ, Det här skickas">
-            {ready.length > 1 ? `Skapa ${ready.length} utkast` : "Skapa utkast"}
+          <Button size="sm" variant="primary" disabled={!ready.length || !!blocked} onClick={onCreate} title="Läs text, bilder och värden som kommer att sparas">
+            {ready.length > 1 ? `Förhandsvisa ${ready.length} filmer` : "Förhandsvisa"}
           </Button>
         </div>
       </header>

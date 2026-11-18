@@ -4,17 +4,16 @@
 // zoom towards the pointer, pan, the close-up on a card), the one card shape every card on the stage is drawn with, and the
 // list of films to order (step 3): which steps a card can have, each in his notation, with its step's one recipe
 // (data/order-methods.json), what the store will resolve for it (lineOf, from the same pure functions the store uses), its
-// price, and the body of POST /api/orders: the dealer, the step and the card, and over them only his deliberate exceptions.
+// estimated price and the choices sent for a server preview: the dealer, the step and the card, and over them only his deliberate exceptions.
 // Nothing here composes an order: the store does, as for every draft. No DOM, no network; tests in studio/tests/bordet.test.ts.
 import {
-  ANCHOR_NODE, a3Candidates, a3Name, costOf, credits, defaultFlip, genitive, handsOf, landingOf, modelFor, paramsOf, referenceCandidates, scaleQuad, seatEndOf, seatWords, stepOf,
+  ANCHOR_NODE, a3Candidates, a3Name, costOf, credits, defaultFlip, genitive, handsOf, landingOf, modelFor, paramsOf, referenceCandidates, seatEndOf, seatWords, stepOf,
   type Anchor, type BankFacts, type FlipAxis, type HandChoice, type ModelDef, type PlanAnswer, type Policy, type RefCandidate, type SeatEnd, type Shape, type StepDef, type StepKey, type TextStyle,
 } from "../../src/order-model.ts";
 import { methodFor, recipeFor, recipeHands, recipeWords, referenceByRule, referenceWaits, secondsOf, type Method, type MethodRegister, type Recipe } from "../../src/order-methods.ts";
-import { promptFor, type Prompt } from "../../src/order-prompts.ts";
 import type { Place, Side } from "../../src/placement-model.ts";
 import { SHOE } from "../../src/placement-model.ts";
-import { anchorFor, dealAnchor, type NewOrderInput } from "./orders.ts";
+import { dealAnchor, type NewOrderInput } from "./orders.ts";
 import { SCENE_KEYS } from "./scene-keys.ts";
 import { nodeCode } from "./names.ts";
 
@@ -274,65 +273,6 @@ export function referenceName(c: Pick<RefCandidate, "dealer" | "edge" | "goesTo"
   const who = c.dealer === "docka" ? "Dockans" : genitive(names[c.dealer] ?? c.dealer);
   const back = !/^(READY(?:-[A-Z])?|DRAWN|IDLE)>/.test(c.edge);
   return `${who} ${back ? "retur från" : "giv till"} ${seatWords(c.goesTo)}`;
-}
-
-// ── What goes to Runway for a row ───────────────────────────────────────────
-// Exactly what the store will make of the row, from the same functions (lineOf above, anchorFor, seatEndOf, promptFor): the
-// first picture, the last picture (the seat's own end picture for a deal bara dit; the anchor with the card drawn where the
-// plan lays it for a round trip; an anchor otherwise), the reference film or none, the text word for word, and model, length
-// and takes. Nothing else is sent: no card path, no JSON.
-export type Shot = { entry: EntryLike | null; name: string; waiting: string | null; cards: { quad: [number, number][]; side: Side }[] };
-export type Sends = { first: Shot; last: Shot; drawn: boolean; prompt: Prompt | null; model: string; seconds: number | null; takes: number; resolution: string };
-
-export function sendsOf(input: { dealer: { id: string; name: string; look: string | null }; wish: FilmWish; line: Line; choice?: RowChoice; entries: readonly EntryLike[]; plan: Pick<PlanAnswer, "seats"> | null; bank?: BankFacts | null }): Sends | null {
-  const { wish, line, entries, plan, dealer } = input, c = input.choice ?? {};
-  const step = stepOf(wish.step);
-  if (!step || step.kind !== "FILM" || !line.model) return null;
-  const model = line.model;
-  const target = step.card ? (wish.target ?? null) : null;
-  const seat = target ? (plan?.seats[target] ?? null) : null;
-  const deal = step.card && step.start !== "LAND";
-  const oneWay = deal && line.shape === "ONE_WAY";
-  const flipAxis: FlipAxis = line.flipAxis ?? defaultFlip(wish.step, seat?.turnAt, seat?.flipAxis);
-  const scale = c.cardScale ?? 1;
-  const start = anchorFor(entries, step.from);
-  const end = !step.card || step.start === "LAND" ? (step.to ? anchorFor(entries, step.to).holds : null) : null;
-  const landing = target ? landingOf(entries, target) : null;
-  const anchorName = (e: EntryLike | null, at: string) => `${genitive(dealer.name)} ankare ${at}${e && e.state && e.state !== "gäller" ? ` · ${e.state}` : ""}`;
-  const shot = (e: EntryLike | null, name: string, waiting: string, cards: Shot["cards"] = []): Shot => ({ entry: e, name, waiting: e ? null : waiting, cards });
-  let first: Shot, last: Shot, drawn = false;
-  if (step.cards?.length) {
-    const cards = (when: "before" | "after") => step.cards!.flatMap((x) => (plan?.seats[x.target] ? [{ quad: plan.seats[x.target].quad, side: x[when] }] : []));
-    first = shot(start.holds, `Första bild · ${anchorName(start.holds, step.from)} + hålkortet stängt`, `ankare ${step.from}`, cards("before"));
-    last = shot(start.holds, "Sista bild · samma + hålkortet öppet", `ankare ${step.from}`, cards("after"));
-    drawn = true;
-  } else if (step.start === "LAND") {
-    first = shot(landing, `Första bild · ${genitive(dealer.name)} landning på ${seatWords(target)}`, "landningsbilden");
-    last = shot(end, `Sista bild · ${anchorName(end, step.to ?? step.from)}`, `ankare ${step.to}`);
-  } else if (step.card) {
-    first = shot(start.holds, `Första bild · ${anchorName(start.holds, step.from)}`, `ankare ${step.from}`);
-    if (oneWay) {
-      // The seat's own end picture: its landing picture, else the cut frame of the bank's film to the seat, shown as that frame.
-      const e = line.end;
-      const fps = e?.kind === "SNITTRUTA" ? (input.bank?.motions?.[e.cut.clip]?.source?.fps ?? input.bank?.motions?.[e.cut.ret]?.source?.fps ?? 24) : null;
-      const picture: EntryLike | null = !e ? null : e.kind === "LANDNING" ? e.entry : { id: e.cut.clip, role: "film", served: e.cut.path, frame: e.cut.frame, fps };
-      last = shot(picture, !e ? `Sista bild · ${seatWords(target)} har ingen slutbild` : e.kind === "LANDNING" ? (e.candidate ? `Sista bild · ${e.entry.name ?? a3Name(target!)}, kandidat (inte gällande)` : `Sista bild · ${genitive(dealer.name)} landning på ${seatWords(target)}`) : `Sista bild · platsens slutbild: ruta ${e.cut.frame} ur ${e.cut.clip}`, "platsens slutbild");
-    } else {
-      last = shot(start.holds, `Sista bild · samma + kortet ${line.side === "BACK" ? "stängt" : "öppet"} på ${seatWords(target)}`, `ankare ${step.from}`, seat ? [{ quad: scaleQuad(seat.quad, scale).quad, side: line.side }] : []);
-      drawn = true;
-    }
-  } else {
-    first = shot(start.holds, `Första bild · ${anchorName(start.holds, step.from)}`, `ankare ${step.from}`);
-    last = shot(end, `Sista bild · ${anchorName(end, step.to ?? step.from)}`, `ankare ${step.to}`);
-  }
-  const motion = target ? { grip: step.grip ?? ("PINCH" as const), ...line.hands, turn: line.side === "FRONT", flipAxis, side: line.side, target } : null;
-  const place = seat ?? (step.target ? (plan?.seats[step.target] ?? null) : null);
-  const extra = (c.extra !== undefined ? c.extra : line.recipe?.extra)?.trim() || null;
-  const prompt = dealer.look
-    ? promptFor({ dealer: { name: dealer.name, look: dealer.look }, step: wish.step, model: model.id, motion, place: place ? { x: place.centre[0], y: place.centre[1] } : null, extra, style: line.style, oneWay, reference: !!line.reference, cardScale: deal && line.shape === "ROUND_TRIP" ? scale : 1 })
-    : null;
-  const params = paramsOf(step, model, { duration: line.seconds ?? undefined, resolution: line.recipe?.resolution });
-  return { first, last, drawn, prompt, model: model.label, seconds: line.seconds, takes: line.takes, resolution: String(params.resolution ?? "") };
 }
 
 /** "3 filmer · 640 krediter" (and how many have no price), for the foot of the list. */

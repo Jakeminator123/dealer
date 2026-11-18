@@ -7,8 +7,8 @@
 //   Kortplan     the plan on the picture (Siluett or a film of the chosen dealer's under the cards), with 1 Var kortet landar and
 //                2 Hur det kommer dit (Placering's Plats, Bordet and Rörelse panels) and 3 Beställ for the chosen card
 //   Beställ      the same picture, with step 3 in the column: the films to order for the chosen card and without a card,
-//                and for the chosen film exactly what goes to Runway (Sends.tsx: the two pictures, the reference film or none,
-//                the text word for word, model, length, takes) with Ny beställning's choices; and, behind "Kön", the whole of
+//                the choices for the selected film and what was sent before (Sends.tsx). Förhandsvisa fetches the exact
+//                order from the server for review and saving. Behind "Kön" is the whole of
 //                Beställ as it was (OrderView: the queue, "Det här saknas för en runda", Ny beställning, an order open with
 //                "Det här skickas" and its approval, the way to Protokoll); /bestall/ with its words leads there
 //   Scen, Råfilm, Efterarbete   the live picture (SceneBody: the 3D scene, the films on their green, what is laid over)
@@ -22,22 +22,19 @@ import { Play, RotateCcw, Save, Square, Undo2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import cutFramesFile from "../../../data/cut-frames.json";
-import methodsFile from "../../../data/order-methods.json";
-import { FLIP_LABEL, LANDS_LABEL, readCutChecks, type BankFacts, type OrdersAnswer } from "../../../src/order-model.ts";
-import type { MethodRegister } from "../../../src/order-methods.ts";
+import { FLIP_LABEL, LANDS_LABEL, type BankFacts, type OrdersAnswer } from "../../../src/order-model.ts";
 import { SHOE, VIEWS, type Place } from "../../../src/placement-model.ts";
-import { asApiError } from "../../lib/api.ts";
 import type { Ledger } from "../../lib/ledger.ts";
 import type { MediaAnswer } from "../../lib/media.ts";
 import { useBank } from "../../lib/bank.ts";
-import { cardWishes, filmRow, lastOrder, otherWishes, roundFor, sceneWords, sendsOf, sumWords, wishKey, type FilmRow, type FilmWish, type RowChoice } from "../../lib/bordet.ts";
+import { cardWishes, filmRow, lastOrder, otherWishes, roundFor, sceneWords, sumWords, wishKey, type FilmRow, type FilmWish, type RowChoice } from "../../lib/bordet.ts";
 import { useViewContext } from "../../lib/context.ts";
 import { isSnapshot, swedishMoment } from "../../lib/mode.ts";
-import { createOrder, getOrders } from "../../lib/orders.ts";
+import { getOrders, type CreatedOrders, type NewOrderInput } from "../../lib/orders.ts";
 import { GRIP_LABEL, PLAN_VIEW, changedPlaces, flipOf, gameDealNotes, placeCode, placeFromCode, placeName } from "../../lib/placement.ts";
 import { getMedia } from "../material/client.ts";
 import { getLedger } from "../ledger/LedgerView";
+import { OrderPreview } from "../order/OrderPreview";
 import { OrderView } from "../order/OrderView";
 import { Board } from "../placement/Board";
 import { FilmBar } from "../placement/FilmBar";
@@ -67,10 +64,6 @@ const SHOWN_MODES = isSnapshot ? MODES.filter((m) => m.value !== "bestall") : MO
 const isMode = (v: string | null): v is Mode => SHOWN_MODES.some((m) => m.value === v);
 const isScene = (m: Mode): m is SceneKind => m === "scen" || m === "rafilm" || m === "efterarbete";
 const START_PLACE: Place = "P4.C1";
-/** The register of how each step is ordered, as the studio was built with it (data/order-methods.json). */
-const METHODS = methodsFile as unknown as MethodRegister;
-/** The picture checks of cut frames, as the studio was built with them (data/cut-frames.json): which frames hold as a seat's end picture. */
-const CUT_CHECKS = readCutChecks(cutFramesFile);
 
 /** Beställ's own words in the address (OrderView: an order open, a new order asked for), which open Beställ's queue here. */
 const QUEUE_WORDS = ["ko", "order", "ny", "som", "dealer", "steg", "plats", "modell"] as const;
@@ -121,7 +114,7 @@ export function BordetView() {
   const [made, setMade] = useState<Made>({});
   const [chosenRow, setChosenRow] = useState<string | null>(null);
   const [orders, setOrders] = useState<OrdersAnswer | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [pending, setPending] = useState<{ keys: string[]; inputs: NewOrderInput[] } | null>(null);
   const draft = useDraft();
   const toast = useToast();
   const { dealer, dealers, bank } = useBank();
@@ -140,8 +133,8 @@ export function BordetView() {
   // The dealer's pictures in Material and the bank with the dummy's rendered films: what a film's recipe is resolved against
   // (its reference film by rule, the seat's own end picture), the same as the store resolves it when the draft is made.
   const entries = useMemo(() => media?.dealers.find((x) => x.id === dealer)?.entries ?? [], [media, dealer]);
-  const bankFacts = useMemo<BankFacts | null>(() => (bank ? { ...(bank as BankFacts), rendered: orders?.rendered ?? [], cutChecks: CUT_CHECKS } : null), [bank, orders]);
-  const rowOf = useCallback((w: FilmWish) => filmRow(dealer, w, METHODS, orders?.policy ?? null, { bank: bankFacts, choice: choices[wishKey(w)], entries, plan: orders?.plan ?? null }), [dealer, orders, bankFacts, choices, entries]);
+  const bankFacts = useMemo<BankFacts | null>(() => (bank ? { ...(bank as BankFacts), rendered: orders?.rendered ?? [], cutChecks: orders?.cutChecks } : null), [bank, orders]);
+  const rowOf = useCallback((w: FilmWish) => filmRow(dealer, w, orders?.methods ?? null, orders?.policy ?? null, { bank: bankFacts, choice: choices[wishKey(w)], entries, plan: orders?.plan ?? null }), [dealer, orders, bankFacts, choices, entries]);
   const rows = useMemo(() => wishes.map(rowOf), [wishes, rowOf]);
   const listed = useMemo(() => new Set(wishes.map(wishKey)), [wishes]);
   const marked = useMemo(() => new Set(wishes.flatMap((w) => (w.target ? [w.target] : []))), [wishes]);
@@ -153,25 +146,24 @@ export function BordetView() {
 
   const orderable = !orders?.dealers || orders.dealers.some((x) => x.id === dealer);
   const blocked = !orders ? "Beställningarna kunde inte läsas (labbservern)." : !orderable ? `${dealers.find((x) => x.id === dealer)?.name ?? dealer} kan inte beställas för (data/dealers.json).` : draft.dirty ? "Spara kortplanen först: utkastet ritar kortet där den sparade planen lägger det." : null;
-  const create = async () => {
-    setBusy(true);
-    const done: Made = {};
-    try {
-      for (const r of rows) {
-        if (made[r.key] || !r.body) continue;
-        const answer = await createOrder(r.body);
-        done[r.key] = answer.order.id;
-      }
-      const n = Object.keys(done).length;
-      toast({ tone: "ok", title: n === 1 ? "Ett utkast gjort" : `${n} utkast gjorda`, detail: "De godkänns i Beställ, Det här skickas. Inget är godkänt." });
-    } catch (error) {
-      toast({ tone: "bad", title: asApiError(error, "Utkastet").message });
-    } finally {
-      setMade((was) => ({ ...was, ...done }));
-      setBusy(false);
-      // the drafts as the store answers them, for their "Det här skickas"
-      void getOrders().then(setOrders, () => {});
+  const preview = (selectedRows: readonly FilmRow[]) => {
+    const keys: string[] = [], inputs: NewOrderInput[] = [];
+    for (const row of selectedRows) {
+      if (made[row.key] || !row.body) continue;
+      keys.push(row.key);
+      inputs.push(row.body);
     }
+    if (inputs.length) setPending({ keys, inputs });
+  };
+
+  const created = (answer: CreatedOrders) => {
+    if (!pending) return;
+    const done = Object.fromEntries(pending.keys.map((key, i) => [key, answer.made[i]]));
+    setMade((was) => ({ ...was, ...done }));
+    setPending(null);
+    const n = answer.made.length;
+    toast({ tone: "ok", title: n === 1 ? "Ett utkast gjort" : `${n} utkast gjorda`, detail: "Utkasten godkänns i kön under Det här skickas." });
+    void getOrders().then(setOrders, () => {});
   };
 
   const save = async () => {
@@ -187,17 +179,15 @@ export function BordetView() {
     ) : null;
   // What goes to Runway for the chosen film of the list, before and after its draft is made.
   const names = Object.fromEntries((orders?.dealers ?? []).map((x) => [x.id, x.name]));
-  const look = orders?.dealers?.find((x) => x.id === dealer) ?? null;
   const chosen = rows.find((r) => r.key === chosenRow) ?? null;
   const madeAnswer = chosen && made[chosen.key] ? (orders?.orders.find((a) => a.order.id === made[chosen.key]) ?? null) : null;
   // Granska filmen: the film's last order (the same dealer, step and card, not set aside), with the takes that came of it.
   const lastAnswer = chosen ? lastOrder(orders?.orders ?? [], dealer, chosen.wish, (id) => !!ledger?.rows.some((r) => r.order === id && r.see.film)) : null;
   const last = lastAnswer ? { answer: lastAnswer, takes: (ledger?.rows ?? []).filter((r) => r.order === lastAnswer.order.id) } : null;
-  const sends = chosen ? sendsOf({ dealer: { id: dealer, name: look?.name ?? dealer, look: look?.look ?? null }, wish: chosen.wish, line: chosen.resolved, choice: choices[chosen.key], entries, plan: orders?.plan ?? null, bank: bankFacts }) : null;
   const sendsPanel = chosen ? (
     <RowSends
       row={chosen}
-      sends={sends}
+      onPreview={blocked || !chosen.body ? undefined : () => preview([chosen])}
       names={names}
       plan={orders?.plan ?? null}
       bank={bankFacts}
@@ -283,7 +273,6 @@ export function BordetView() {
             chosenRow={chosenRow}
             setChosenRow={setChosenRow}
             made={made}
-            busy={busy}
             blocked={blocked}
             dealer={dealer}
             onAdd={add}
@@ -292,18 +281,19 @@ export function BordetView() {
               setWishes([]);
               setMade({});
             }}
-            onCreate={() => void create()}
+            onCreate={() => preview(rows)}
           />
         )
       ) : (
         <SceneBody kind={mode as SceneKind} toolbar={menu} roundText={roundFor(pathCard(place), dealer)} />
       )}
+      {pending ? <OrderPreview input={pending.inputs} onClose={() => setPending(null)} onCreated={created} /> : null}
     </Page>
   );
 }
 
 function TableBody({
-  mode, menu, sub, sends, place, setPlace, rows, rowOf, listed, marked, chosenRow, setChosenRow, made, busy, blocked, dealer, onAdd, onRemove, onClear, onCreate,
+  mode, menu, sub, sends, place, setPlace, rows, rowOf, listed, marked, chosenRow, setChosenRow, made, blocked, dealer, onAdd, onRemove, onClear, onCreate,
 }: {
   mode: "kortplan" | "bestall";
   menu: ReactNode;
@@ -319,7 +309,6 @@ function TableBody({
   chosenRow: string | null;
   setChosenRow: (k: string | null) => void;
   made: Made;
-  busy: boolean;
   blocked: string | null;
   dealer: string;
   onAdd: (w: FilmWish) => void;
@@ -431,7 +420,7 @@ function TableBody({
           ) : null}
         </div>
         {film ? <FilmBar key={film.id} videoRef={under.videoRef} fps={film.fps} frames={film.frames} onFrame={under.setFrame} /> : null}
-        {isSnapshot ? null : <FilmStrip rows={rows} dealer={dealer} chosen={chosenRow} made={made} busy={busy} blocked={blocked} onChoose={chooseRow} onRemove={onRemove} onCreate={onCreate} onClear={onClear} />}
+        {isSnapshot ? null : <FilmStrip rows={rows} dealer={dealer} chosen={chosenRow} made={made} blocked={blocked} onChoose={chooseRow} onRemove={onRemove} onCreate={onCreate} onClear={onClear} />}
       </section>
       <aside className="flex min-h-0 flex-col border-l border-line bg-surface" data-nudge>
         <div className="flex flex-col gap-2.5 border-b border-line px-4 pb-3 pt-3.5">

@@ -19,10 +19,10 @@ import os from "node:os";
 import path from "node:path";
 import sharp from "sharp";
 import { orderRoutes } from "../../tools/order-routes.ts";
-import { STEPS, readCutChecks, type BankFacts } from "../../src/order-model.ts";
+import { STEPS, readCutChecks, type BankFacts, type OrdersAnswer } from "../../src/order-model.ts";
 import { productionList, readProduction } from "../../tools/produce.ts";
-import { readMethods, recipeFor } from "../../src/order-methods.ts";
-import { filmRow, sendsOf } from "../lib/bordet.ts";
+import { recipeFor } from "../../src/order-methods.ts";
+import { filmRow } from "../lib/bordet.ts";
 
 const repo = path.resolve(import.meta.dirname, "../..");
 const base = existsSync("D:/dealer-scratch/tmp") ? "D:/dealer-scratch/tmp" : os.tmpdir();
@@ -103,15 +103,15 @@ test("Bordet's row and the store make the same order of the same line, for every
   origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
   handle.fn = orderRoutes({ root, origin, now: () => new Date("2026-11-18T02:00:00Z"), poses: {} as never });
   t.after(() => new Promise<void>((done) => server.close(() => done())));
-  const call = async (method: string, address: string, body?: unknown) => {
-    const response = await fetch(origin + address, { method, headers: { origin, ...(body === undefined ? {} : { "content-type": "application/json" }) }, body: body === undefined ? undefined : JSON.stringify(body) });
+  const call = async (method: string, address: string, body?: unknown, match?: string) => {
+    const response = await fetch(origin + address, { method, headers: { origin, ...(match ? { "if-match": match } : {}), ...(body === undefined ? {} : { "content-type": "application/json" }) }, body: body === undefined ? undefined : JSON.stringify(body) });
     return { status: response.status, json: await response.json() };
   };
 
   // The studio's side: the same facts as the page has them (the bank, Material's entries, the plan and the rendered films
-  // from GET /api/orders, the method register as the studio is built with it).
-  const register = readMethods(JSON.parse(await readFile(path.join(repo, "data/order-methods.json"), "utf8"))).register!;
-  const all = (await call("GET", "/api/orders")).json as { dealers: { id: string; name: string; look: string }[]; plan: Parameters<typeof sendsOf>[0]["plan"]; policy: { prices: never[] }; rendered: BankFacts["rendered"] };
+  // from GET /api/orders, including the current method register).
+  const all = (await call("GET", "/api/orders")).json as OrdersAnswer;
+  const register = all.methods!;
   assert.deepEqual(all.rendered!.map((r) => r.id), rendered.map((r) => r.id));
   const motions: NonNullable<BankFacts["motions"]> = {};
   for (const id of [...jobs.map((j) => j.id), ...derived.map((d) => d.id)]) motions[id] = JSON.parse(await readFile(path.join(root, "motions", `${id}.json`), "utf8"));
@@ -121,14 +121,13 @@ test("Bordet's row and the store make the same order of the same line, for every
   const production = productionList((await readProduction(root, "paow")).input);
   let listed = 0;
   const shown = entries.map((e) => ({ ...e, served: e.path }));
-  const paow = all.dealers.find((d) => d.id === "paow")!;
 
   const made: Record<string, string | null> = {}, refused: Record<string, string> = {};
   let compared = 0;
   // The hole card's turn is left out: its pictures are drawn from a bank film that the temporary lab does not have.
   for (const step of STEPS.filter((s) => s.kind === "FILM" && !s.cards?.length)) for (const target of step.card ? SEATS : [null]) {
     const wish = { step: step.key, target }, key = `${step.key}${target ? ` ${target}` : ""}`;
-    const row = filmRow("paow", wish, register, all.policy, { bank, entries: shown, plan: all.plan });
+    const row = filmRow("paow", wish, register, all.policy, { bank, entries: shown, plan: all.plan ?? null });
     // The production list's row for the same step and card says the same: it can be ordered exactly where the row can be
     // sent, and with the same reference film.
     const inList = production.rows.find((r) => r.step === step.key && r.target === target);
@@ -137,17 +136,20 @@ test("Bordet's row and the store make the same order of the same line, for every
       assert.equal(inList.orderable !== null, !row.why, `${key}: the row says "${row.why ?? "it can be sent"}", the production list says "${inList.words}"`);
       if (!row.why) assert.equal(inList.method?.reference ?? null, row.reference?.take ?? null, `${key}: the production list's reference film`);
     }
-    const answer = await call("POST", "/api/orders", { dealer: "paow", step: step.key, ...(target ? { target } : {}) });
+    const input = { dealer: "paow", step: step.key, ...(target ? { target } : {}) };
+    const preview = await call("POST", "/api/orders/preview", input);
     if (row.why) {
       // What the row cannot send, the store refuses, and for the same reason.
-      assert.equal(answer.status, 400, `${key}: the row says "${row.why}", and the store made a draft`);
+      assert.equal(preview.status, 400, `${key}: the row says "${row.why}", and the store made a draft`);
       assert.equal(row.body, null, key);
       // A return from a card without a landing picture: the store names the missing picture before the missing method.
       const words = row.why.startsWith("ingen metod") ? (step.start === "LAND" && target === "D.C1" ? /Ingen landningsbild gäller/ : /har ingen metod än/) : row.why.startsWith("väntar på") ? new RegExp(row.why.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")) : row.why.startsWith("ingen landningsbild") ? /Ingen landningsbild gäller/ : /har ingen slutbild/;
-      assert.match(answer.json.error, words, key);
+      assert.match(preview.json.error, words, key);
       refused[key] = row.why;
       continue;
     }
+    assert.equal(preview.status, 200, `${key}: no preview`);
+    const answer = await call("POST", "/api/orders", input, preview.json.revision);
     assert.equal(answer.status, 201, `${key}: the row can be sent, and the store refused: ${JSON.stringify(answer.json).slice(0, 300)}`);
     assert.deepEqual(row.body, { dealer: "paow", step: step.key, ...(target ? { target } : {}) }, `${key}: the row sends the line and nothing else`);
     const o = answer.json.order;
@@ -157,8 +159,10 @@ test("Bordet's row and the store make the same order of the same line, for every
     const line = row.resolved;
     assert.deepEqual([line.model?.id, line.seconds, line.takes, line.shape, line.style], [o.generation.model, o.generation.params.duration, o.takes, o.step.shape, o.prompt.style], `${key}: model, length, takes, shape and style`);
     assert.equal(row.cost, o.cost.total, `${key}: the price`);
-    const sends = sendsOf({ dealer: { id: "paow", name: paow.name, look: paow.look }, wish, line, entries: shown, plan: all.plan, bank })!;
-    assert.equal(sends.prompt!.text, o.prompt.text, `${key}: the text`);
+    const shownOrder = preview.json.orders[0];
+    assert.deepEqual(shownOrder.prompt, o.prompt, `${key}: the exact text`);
+    assert.deepEqual(shownOrder.pictures.map((p: { sha256: string }) => p.sha256), o.pictures.map((p: { sha256: string }) => p.sha256), `${key}: the same image bytes`);
+    assert.equal(shownOrder.reference.sha256, o.reference.sha256, `${key}: the same reference bytes`);
     assert.deepEqual(o.notes, [`Recept ${recipeFor(register, step.key, target)!.method.id} (${recipeFor(register, step.key, target)!.method.status}) ur data/order-methods.json.`], `${key}: the recipe and no exception`);
     made[key] = stored;
     compared++;
