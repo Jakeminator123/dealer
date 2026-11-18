@@ -125,7 +125,12 @@
       "file": "e-referens-dockan.mp4",
       "choice": null,
       "text": "Ja, runt ruta 55 görs en konstig halvrotation, alltså 50 grader av kortet. Kanske är det vad som krävs för att AI-modeller inte ska förstå att ett kort kan vridas över sin egen axel. Jag vet inte.",
-      "at": "2026-11-18T00:00:03.621Z"
+      "at": "2026-11-18T00:00:03.621Z",
+      "answer": {
+        "text": "Samma som under C2:s docka: skickat till 3D-banan, som ser efter om halvvridningen är Pamelas rörelse eller dockans kort.",
+        "at": "2026-11-18T00:04:41.316Z"
+      },
+      "read": "2026-11-18T00:04:41.316Z"
     },
     {
       "id": 11,
@@ -133,7 +138,51 @@
       "file": "d-referens-dockan.mp4",
       "choice": null,
       "text": "Ja, runt ruta 55 görs en konstig halvrotation, alltså 50 grader av kortet. Kanske är det vad som krävs för att AI-modeller inte ska förstå att ett kort kan vridas över sin egen axel. Jag vet inte.",
-      "at": "2026-11-17T23:59:49.546Z"
+      "at": "2026-11-17T23:59:49.546Z",
+      "answer": {
+        "text": "Samma som under C2:s docka: skickat till 3D-banan.",
+        "at": "2026-11-18T00:04:41.511Z"
+      },
+      "read": "2026-11-18T00:04:41.511Z"
+    },
+    {
+      "id": 12,
+      "proof": "dealer-3d-vinkel-stol-1",
+      "file": "4-modellen-sista-rutan.png",
+      "choice": null,
+      "text": "Handen vriden ut led i slutet",
+      "at": "2026-11-18T00:01:38.457Z",
+      "answer": {
+        "text": "Skickat till 3D-banan: handen ur led i modellens sista ruta rättas innan bilden används som råbild.",
+        "at": "2026-11-18T00:04:40.682Z"
+      },
+      "read": "2026-11-18T00:04:40.682Z"
+    },
+    {
+      "id": 13,
+      "proof": "dealer-3d-vinkel-stol-1",
+      "file": "3-modellen-forsta-rutan.png",
+      "choice": null,
+      "text": "kan vara bra.. men det beror vad vi ska med denna meshybild till att göra..",
+      "at": "2026-11-18T00:02:08.289Z",
+      "answer": {
+        "text": "Meshybilden är bara en råbild: den visar bildmodellen var hon sitter och hur hon ses från stol 1, och bildmodellen gör den riktiga bilden av Paow. Meshybilden syns aldrig i spelet.",
+        "at": "2026-11-18T00:04:40.907Z"
+      },
+      "read": "2026-11-18T00:04:40.907Z"
+    },
+    {
+      "id": 14,
+      "proof": "dealer-3d-vinkel-stol-1",
+      "file": "2-dockan-kortet-vands.png",
+      "choice": null,
+      "text": "Det beror på. Om en dealer ska kunna vända kortet med handleden eller flippa runt kortet med fingrarna, så kan det fungera. Här syns kortet åka runt på ett sätt som kan vara svårt att förstå. Men så länge videon i slutändan blir bra kanske det inte är så noga, jag är osäker.",
+      "at": "2026-11-18T00:02:58.989Z",
+      "answer": {
+        "text": "Skickat till 3D-banan. Provet du sa ja till i Beslut får visa om vändningen går att läsa i en riktig film från stol 1; annars ändras dockans vändning.",
+        "at": "2026-11-18T00:04:41.109Z"
+      },
+      "read": "2026-11-18T00:04:41.109Z"
     }
   ]
 }
