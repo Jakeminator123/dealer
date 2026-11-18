@@ -70,6 +70,60 @@ export function tableView(snapshot: Snapshot, page: PageState): TableView {
   const affordable = (bets: Record<number, number[]>) => betTotal(bets) > 0 && betTotal(bets) <= page.balance && Object.values(bets).every(chips => !sum(chips) || (sum(chips) >= snapshot.limits.min && sum(chips) <= snapshot.limits.max));
   const message = page.error ?? (phase === 'BETTING' ? `Tryck på en ring eller dra en marker dit · ${snapshot.limits.min}–${snapshot.limits.max} per plats` : phase === 'TURN' ? `Din tur · <b>plats ${round!.activeSeat}</b>` : phase === 'INSURANCE' ? 'Dealern visar <b>ess</b>'
     : phase === 'SETTLED' ? `${page.line ?? 'Rundan är klar'}${page.settled && !page.settled.dealerBlackjack ? ` · dealern ${page.settled.dealerTotal}` : ''}` : '');
-  return {phase, balance: page.balance, staked, seats, dealer, chipValues: CHIP_VALUES, chip: page.chip, canDeal: betting && !page.busy && affordable(page.bets), canUndo: betting && betTotal(page.bets) > 0,
-    canRebet: betting && !!page.last && betTotal(page.bets) === 0 && affordable(page.last), actions: phase === 'TURN' ? [...snapshot.legalActions] as Action[] : [], message};
+  // While the deal is sent and its answer awaited (betting, busy) the chips stay as they were sent: Ångra and Rensa wait too.
+  return {phase, balance: page.balance, staked, seats, dealer, chipValues: CHIP_VALUES, chip: page.chip, canDeal: betting && !page.busy && affordable(page.bets), canUndo: betting && !page.busy && betTotal(page.bets) > 0,
+    canRebet: betting && !page.busy && !!page.last && betTotal(page.bets) === 0 && affordable(page.last), actions: phase === 'TURN' ? [...snapshot.legalActions] as Action[] : [], message};
+}
+
+/** The stage of a page opened on the engine's state (a reload, a second tab): a round under way, a settled round not yet collected, or bets. */
+export const stageOf = (snapshot: Snapshot): Stage => !snapshot.view.round ? 'BETTING' : snapshot.view.round.phase === 'settled' ? 'SETTLED' : 'ROUND';
+
+// ── What the page may ask, and when ──
+// The page's controls (src/game-page.ts) are the overlay's buttons, and also window.game.controls, which the proof recorder presses.
+// Each control asks here first, so a press that comes another way than its button (the recorder, a press that lands after the picture
+// changed) can do nothing the player could not: before 2026-11-18 each control had its own check, and a deal pressed on a settled
+// round started a new one with the old round's bets while the page still showed the old one, Ångra and Rensa changed the bets of a
+// round under way, and insurance or Ny runda were sent in any phase for the engine to refuse.
+export type Ask = 'bet' | 'take' | 'undo' | 'clear' | 'rebet' | 'deal' | 'insurance' | 'next' | Action;
+/** True when the overlay offers the control now: the chips while bets are laid and nothing is sent, the rest exactly as their buttons. */
+export function mayAsk(snapshot: Snapshot, page: PageState, ask: Ask): boolean {
+  const view = tableView(snapshot, page), chips = view.phase === 'BETTING' && !page.busy;
+  if (ask === 'bet' || ask === 'take' || ask === 'clear') return chips;
+  if (ask === 'undo') return view.canUndo;
+  if (ask === 'rebet') return view.canRebet;
+  if (ask === 'deal') return view.canDeal;
+  if (ask === 'insurance') return view.phase === 'INSURANCE';
+  if (ask === 'next') return view.phase === 'SETTLED';
+  return view.actions.includes(ask);
+}
+
+/**
+ * The totals the film has shown, carried from one step into the next (before: the engine's answer the page held, after: the new one).
+ * A total stays with its hand, found by the hand's first card (a split leaves a hand its first card and gives the new hand the
+ * other), and only while every card it was shown with still lies in that hand in the same order. A split takes a hand's second card
+ * away (8♠ 8♥ had shown 16 and now holds 8♠ alone), and a split to the left of other hands moves them one key along: before
+ * 2026-11-18 the keys were kept as they were, and during the split's film a hand showed the total of the hand that had held its key.
+ * A hand without a total shows none until a card of its own lands (shownBy); nothing here counts a card.
+ */
+export function shownFor(shown: Shown, before: Snapshot, after: Snapshot): Shown {
+  const out: Shown = shown[DEALER_KEY] ? {[DEALER_KEY]: shown[DEALER_KEY]} : {}; // the dealer's cards are only ever added to
+  const was = before.view.round?.hands ?? [];
+  for (const hand of after.view.round?.hands ?? []) {
+    const old = was.find(h => h.seat === hand.seat && h.cards[0]?.shoeDraw === hand.cards[0]?.shoeDraw), total = old && shown[handKey(old.seat, old.hand)];
+    if (old && total && old.cards.every((c, i) => hand.cards[i]?.shoeDraw === c.shoeDraw)) out[handKey(hand.seat, hand.hand)] = total;
+  }
+  return out;
+}
+
+/**
+ * The collect of a settled round, sent once however often it is asked for: the page asks when the round is settled, and Ny runda asks
+ * again when that answer has not come yet. Before 2026-11-18 Ny runda sent a second collect at the same version; the engine refused
+ * it as stale (it never paid twice) and the page showed the refusal. A collect that came back without an answer (null) is sent again.
+ */
+export function collector(send: (command: Record<string, unknown>) => Promise<Snapshot | null>): (roundId: string | null) => Promise<Snapshot | null> {
+  let asked: {roundId: string | null; answer: Promise<Snapshot | null>} | null = null;
+  return roundId => {
+    if (asked?.roundId !== roundId) { const answer = send({op: 'collect', roundId}).then(out => { if (out === null && asked?.answer === answer) asked = null; return out; }); asked = {roundId, answer}; }
+    return asked!.answer;
+  };
 }

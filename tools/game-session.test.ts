@@ -319,6 +319,135 @@ test('before the reveal nothing returned depends on the hole card: two shoes tha
   assert.deepEqual(b.at(-1)!.result.view.round!.dealer.map(c => c.r + c.s), ['6♦', '9♣', '2♦']);
 });
 
+// ── A whole round as the page plays it (src/game-page.ts: one command per press, a new requestId each time, the version of
+// the answer it holds), and the page's mistakes: a press twice, a press in the wrong phase, a reload in the middle. ──
+
+// Seat 6 is dealt 8♠ 8♥ and splits; its first hand draws 3♣ and doubles to 21 with K♦, the split-off hand draws 10♥ (18) and
+// stands. Seat 2 holds 6♦ 5♠ and doubles to 20 with 9♥. The dealer shows 9♣ over 7♦ and draws 2♣ to 18.
+const ROUND = '8♠ 6♦ 9♣ 8♥ 5♠ 7♦ 3♣ 10♥ K♦ 9♥ 2♣';
+const page = (s: Session) => {
+  let n = 0, held: Snapshot = s.state();
+  // As the page sends: a fresh requestId per press, expectedVersion from the answer it holds (not from the engine).
+  const press = (cmd: Record<string, unknown>, from: Snapshot = held) => { held = s.command({ ...cmd, requestId: `press-${++n}`, expectedVersion: from.ver }); return held; };
+  const act = (action: string, from: Snapshot = held) => press({ op: 'act', action, seat: from.view.round!.activeSeat, handIndex: from.view.round!.active, roundId: from.view.roundId, turnSeq: from.view.turnSeq }, from);
+  return { press, act, get held() { return held; }, reload() { held = s.state(); return held; } };
+};
+
+test('one whole round through the engine: bets, the deal, a split, two doubles, the dealer\'s turn, one settlement, rest', () => {
+  const s = stacked(ROUND), p = page(s), types: string[][] = [];
+  const dealt = p.press({ op: 'start', bets: [{ seat: 2, main: 10 }, { seat: 6, main: 10 }] });
+  types.push(dealt.events.map(e => e.type));
+  assert.equal(dealt.balance, 980, 'both stakes leave at the deal');
+  assert.deepEqual((dealt.events.filter(e => e.type === 'deal') as SeatDealEvent[]).map(e => [e.target, e.card && e.card.r + e.card.s]),
+    [['6', '8♠'], ['2', '6♦'], ['dealer', '9♣'], ['6', '8♥'], ['2', '5♠'], ['hole', null]], 'seat 6 first, the hole card closed');
+  assert.deepEqual(dealt.events.at(-1), { type: 'turn', seat: 6, handIndex: 1, legalActions: ['hit', 'stand', 'double', 'split'] });
+  const split = p.act('split'); types.push(split.events.map(e => e.type));
+  assert.equal(split.balance, 970, 'the split costs one more stake');
+  assert.deepEqual(split.view.round!.hands.map(h => [h.seat, h.hand, h.cards.map(c => c.r + c.s)]), [[2, 0, ['6♦', '5♠']], [6, 0, ['8♠', '3♣']], [6, 1, ['8♥', '10♥']]]);
+  assert.deepEqual([split.view.round!.activeSeat, split.view.round!.active], [6, 2], 'the split-off hand plays first');
+  const stood = p.act('stand'); types.push(stood.events.map(e => e.type));
+  assert.deepEqual(stood.legalActions, ['hit', 'stand', 'double'], 'double after split, no re-split of 8♠ 3♣');
+  const doubled = p.act('double'); types.push(doubled.events.map(e => e.type));
+  assert.equal(doubled.balance, 960);
+  assert.deepEqual(doubled.view.round!.activeSeat, 2);
+  const last = p.act('double'); types.push(last.events.map(e => e.type));
+  assert.equal(last.balance, 950, 'every stake, split and double debited, nothing paid yet');
+  assert.deepEqual(types, [
+    ['speak', 'deal', 'deal', 'deal', 'deal', 'deal', 'deal', 'turn'],
+    ['deal', 'deal', 'turn'],
+    ['turn'],
+    ['deal', 'speak', 'turn'],
+    ['deal', 'reveal', 'deal', 'speak', 'settle', 'speak'],
+  ], 'deal, turn, reveal before the dealer\'s draw, then settle');
+  assert.deepEqual(settleOf(last)!.hands.map(h => [h.seat, h.handIndex, h.stake, h.returned, h.outcome]), [[2, 0, 20, 40, 'win'], [6, 1, 20, 40, 'win'], [6, 2, 10, 10, 'push']]);
+  assert.equal(last.view.round!.dealerTotal, 18);
+  const paid = p.press({ op: 'collect', roundId: last.view.roundId });
+  assert.deepEqual(paid.events, [{ type: 'speak', line: 'placebets', family: 'speak.other/placebets' }, { type: 'idle', family: 'idle.ready/ready' }], 'back to rest');
+  assert.equal(paid.view.round, null);
+  assert.equal(paid.balance, 1040, '950 + 40 + 40 + 10, paid once at collect');
+  assert.deepEqual(s.ledger().map(e => [e.op, e.debit, e.credit]), [['start', 20, 0], ['act', 10, 0], ['act', 0, 0], ['act', 10, 0], ['act', 10, 0], ['collect', 0, 90]]);
+  // The same round once more is paid nowhere: a second collect is refused, the first one's resend answers from its receipt.
+  assert.throws(() => p.press({ op: 'collect', roundId: last.view.roundId }), err('NO_ACTIVE_ROUND', 409));
+  assert.deepEqual([s.state().balance, s.ledger().length], [1040, 6]);
+});
+
+test('a press twice (a double click), and a press that comes while the step before is still played, draw nothing more', () => {
+  // Seat 6: 5♠ 4♣ (9) against 6♦ over 9♥; a hit draws 2♣ (11) and the hand plays on.
+  const s = stacked('5♠ 6♦ 4♣ 9♥ 2♣ 3♦ 10♠'), p = page(s), before = s.state();
+  const first = p.press({ op: 'start', bets: [{ seat: 6, main: 10 }] }, before);
+  // The second click was built from the same picture as the first: the same version, a new requestId.
+  assert.throws(() => p.press({ op: 'start', bets: [{ seat: 6, main: 10 }] }, before), err('STALE_VERSION', 409));
+  assert.deepEqual([s.state().ver, s.state().balance, s.state().view.shoe!.dealt, s.ledger().length], [1, 990, first.view.shoe!.dealt, 1]);
+  // Hit pressed twice on the same picture: one card.
+  const picture = s.state(), hit = p.act('hit', picture);
+  assert.throws(() => p.act('hit', picture), err('STALE_VERSION', 409));
+  assert.equal(s.state().view.round!.hands[0].cards.length, 3);
+  assert.deepEqual(s.state(), { ...hit, events: [] }, 'the engine is where the first press left it');
+  // A press built from a picture the film has not caught up with (the right version, an old turn) is refused by the turn.
+  const v = picture.view;
+  assert.throws(() => s.command({ op: 'act', action: 'hit', seat: 6, handIndex: v.round!.active, roundId: v.roundId, turnSeq: v.turnSeq, requestId: 'old-turn', expectedVersion: s.state().ver }), err('STALE_COMMAND', 409));
+  assert.equal(s.state().view.round!.hands[0].cards.length, 3);
+});
+
+test('a press in the wrong phase is a clear no that changes nothing', () => {
+  const now = (s: Session) => ({ ...s.state(), ledger: s.ledger().length });
+  let n = 0;
+  const refused = (s: Session, cmd: Record<string, unknown>, code: string) => {
+    const before = now(s);
+    assert.throws(() => s.command({ ...cmd, requestId: `wrong-${++n}`, expectedVersion: before.ver }), err(code), `${cmd.op} ${cmd.action ?? ''}`);
+    assert.deepEqual(now(s), before, `${cmd.op}: nothing changed, no card drawn`);
+  };
+  // Insurance offered (an ace up): no action, no collect, no new round.
+  let s = stacked('10♠ A♦ 9♥ 6♣'); let d = drive(s); d.start([{ seat: 4, main: 10 }]);
+  let v = s.state().view;
+  refused(s, { op: 'act', action: 'hit', seat: 4, handIndex: 0, roundId: v.roundId, turnSeq: v.turnSeq }, 'ILLEGAL_ACTION');
+  refused(s, { op: 'collect', roundId: v.roundId }, 'ROUND_NOT_SETTLED');
+  refused(s, { op: 'start', bets: [{ seat: 4, main: 10 }] }, 'ROUND_IN_PROGRESS');
+  // Decisions: no insurance, no collect.
+  d.insurance({ take: false }); v = s.state().view;
+  refused(s, { op: 'insurance', roundId: v.roundId, take: true }, 'INSURANCE_UNAVAILABLE');
+  refused(s, { op: 'collect', roundId: v.roundId }, 'ROUND_NOT_SETTLED');
+  refused(s, { op: 'act', action: 'split', seat: 4, handIndex: 0, roundId: v.roundId, turnSeq: v.turnSeq }, 'ILLEGAL_ACTION');
+  // Settled, not yet collected: no action, no new round; collected: nothing but a new round.
+  s = stacked('10♠ 7♦ 9♥ 10♣'); d = drive(s); d.start([{ seat: 4, main: 10 }]); d.act('stand'); v = s.state().view;
+  refused(s, { op: 'act', action: 'hit', seat: 4, handIndex: 0, roundId: v.roundId, turnSeq: v.turnSeq }, 'ILLEGAL_ACTION');
+  refused(s, { op: 'start', bets: [{ seat: 4, main: 10 }] }, 'ROUND_IN_PROGRESS');
+  d.collect();
+  refused(s, { op: 'collect', roundId: v.roundId }, 'NO_ACTIVE_ROUND');
+  refused(s, { op: 'act', action: 'hit', seat: 4, handIndex: 0, roundId: v.roundId, turnSeq: v.turnSeq }, 'NO_ACTIVE_ROUND');
+  refused(s, { op: 'insurance', roundId: v.roundId, take: false }, 'NO_ACTIVE_ROUND');
+  assert.equal(s.state().balance, 1010, 'the one round was paid once');
+});
+
+test('a reload in the middle of a round: the page reads the engine\'s state and plays on; nothing is charged or paid twice', () => {
+  const s = stacked(ROUND), p = page(s);
+  const dealt = p.press({ op: 'start', bets: [{ seat: 2, main: 10 }, { seat: 6, main: 10 }] });
+  const split = p.act('split');
+  // A reload: the page forgets everything and reads GET /api/game (state()).
+  const read = p.reload();
+  assert.deepEqual(read, { ...split, events: [] }, 'a reload reads what the last answer said, without its signals');
+  assert.equal(read.balance, 970, 'the stakes and the split stay out, counted once');
+  assert.deepEqual(read.events, [], 'a reload replays no signal');
+  assert.deepEqual(read.view.round!.hands.map(h => h.cards.length), [2, 2, 2], 'the cards lie where they lay');
+  const hole = { serial: -1, shoeDraw: read.view.round!.holeDraw! };
+  assert.equal(read.view.round!.dealer.length, 1, 'the hole card is still closed after the reload');
+  assert.deepEqual(holeLeaks(read, hole), []);
+  // A request sent by the page before it was reloaded, and answered after: refused, the engine plays on from what the reload read.
+  assert.throws(() => p.act('stand', dealt), err('STALE_VERSION', 409));
+  p.act('stand'); p.act('double');
+  const settled = p.act('double');
+  assert.equal(settled.view.round!.phase, 'settled');
+  // A reload between the settlement and the collect: the round shows settled, its winnings not yet paid.
+  const again = p.reload();
+  assert.deepEqual([again.view.round!.phase, again.balance], ['settled', 950]);
+  const paid = p.press({ op: 'collect', roundId: again.view.roundId });
+  assert.equal(paid.balance, 1040, 'the same balance as the round without a reload');
+  // The page from before the reload asks for the collect too (its own press on Ny runda): refused, paid once.
+  assert.throws(() => p.press({ op: 'collect', roundId: settled.view.roundId }, settled), err('STALE_VERSION', 409));
+  assert.deepEqual(s.ledger().map(e => e.op), ['start', 'act', 'act', 'act', 'act', 'collect']);
+  assert.equal(s.ledger().reduce((a, e) => a - e.debit + e.credit, 1000), 1040);
+});
+
 test('the hole card (serial, or a rank at its shoe position) is in no result before its reveal', () => {
   for (const [cards, actions] of [['10♠ 7♦ 2♥ 10♣ 5♠', ['hit', 'stand']], ['10♠ A♦ 9♥ 6♣', ['ins', 'stand']], ['10♠ K♦ 9♥ A♣', []]] as Array<[string, string[]]>) {
     const s = stacked(cards), d = drive(s), results = [s.state(), d.start([{ seat: 4, main: 10 }])];

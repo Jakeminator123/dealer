@@ -142,6 +142,18 @@ aldrig servern före vändningen. Signalerna är Scouts: `speak`, `deal`, `revea
 räknar kortvärden. Vinsten når saldot vid `collect`. Känd egenhet i Scouts kärna: `outcome` i `settle` räknar in
 försäkringens utbetalning.
 
+**Gränsen mellan kärnan och presentationen.** Kärnan och sessionen äger regler, sko, slump, kortvärden, hålkortet och
+pengar: saldot ändras bara i `session.command`, ur kärnans effekter, och en runda avräknas en gång (en andra `collect`
+nekas). Presentationen (sidan, `src/game-view.ts`, overlayen, regissören, filmen och scenen) visar svaret och får inget
+annat: den räknar inga kortvärden, väljer inget utfall och ändrar inget saldo, och varje kort den ritar är motorns kort
+på sin `shoeDraw` (kortlagrets reservbild, labbets `cardRank`/`cardSuit`, används aldrig för ett kort i spelet). En
+summa visas först när dess kort har landat och följer sin hand genom en split (`shownFor`). Sidans kontroller frågar
+`mayAsk` och gör bara det overlayen erbjuder i fasen, hur de än trycks (också `window.game.controls`, som inspelaren
+trycker); rundans `collect` skickas en gång även om Ny runda trycks medan den är på väg (`collector`); en omladdad sida
+tar fasen ur motorns läge (`stageOf`). Sessionen är en spelare i minnet: flera platser är inte flera spelare. Prövat i
+`tools/game-session.test.ts` (en hel runda, dubbeltryck, fel fas, omladdning) och `tools/game-view.test.ts` (kortens
+identitet i 160 rundor, hålkortet genom filmmodulen, sidans regler).
+
 Spelet med flera dealers (2026-11-13):
 
 - Spelet spelar bara tagningar med dom, Jakobs eller en preliminär (`judgedBank` i `src/game-director.ts`); en tagning

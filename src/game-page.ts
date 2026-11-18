@@ -20,7 +20,7 @@ import {cardsChoice, cardWords, createFilm, type FilmPlayers, type Said} from '.
 import {chipsFor, mountOverlay, type Action, type Anchors} from './game-overlay.ts';
 import {mountPanel} from './game-panel.ts';
 import {EXIT_TRIAL, exitView, type ExitView} from './scene3d-exit.ts';
-import {tableView, tableCards, cardFaces, shownBy, lineOf, betTotal, handKey, CHIP_VALUES, DEALER_KEY, type PageState, type Settled} from './game-view.ts';
+import {tableView, tableCards, cardFaces, shownBy, shownFor, lineOf, betTotal, handKey, mayAsk, collector, stageOf, CHIP_VALUES, DEALER_KEY, type PageState, type Settled} from './game-view.ts';
 import type {Snapshot} from '../game/session.ts';
 import type {MouthPatch, PatchRegister} from './speech-patch.ts';
 
@@ -183,9 +183,10 @@ film.mouths = () => mouths.filter(m => m.patch.dealer === dealer && mouthLayer?.
 // ── state ──
 let snapshot: Snapshot = first, paid: Snapshot | null = null; // snapshot: the round on the table. paid: the engine's state after that round was collected.
 const page: PageState = {stage: 'BETTING', busy: false, dealerPlays: false, bets: {}, last: null, chip: 25, balance: snapshot.balance, shown: {}, settled: null, line: null, error: null};
-// A round found in progress when the page opens (the server keeps the session): its cards are laid out without film.
-if (snapshot.view.round && snapshot.view.round.phase !== 'settled') { page.stage = 'ROUND'; const table = tableCards(snapshot); film.set({table, records: cardRecords(table, cardFaces(snapshot)), lying: [...table.hands.flatMap(h => h.cards), ...table.dealer]}); }
-else if (snapshot.view.round) { page.stage = 'SETTLED'; const table = tableCards(snapshot); film.set({table, records: cardRecords(table, cardFaces(snapshot)), lying: [...table.hands.flatMap(h => h.cards), ...table.dealer]}); }
+// A round found in progress or settled when the page opens (the server keeps the session; a reload): its cards are laid out without
+// film, the hole card closed until the engine turns it, and the controls are those of the phase the engine is in (stageOf, mayAsk).
+page.stage = stageOf(snapshot);
+if (page.stage !== 'BETTING') { const table = tableCards(snapshot); film.set({table, records: cardRecords(table, cardFaces(snapshot)), lying: [...table.hands.flatMap(h => h.cards), ...table.dealer]}); }
 // Under a film before the game her rest stands on its first picture from the start (hold): that picture is the one the film ends
 // in, and standing, her film is not played under a film that covers it (on a phone three films ran at once, two of them unseen).
 else film.rest(introOn ? {hold: true} : {});
@@ -199,12 +200,15 @@ async function send(command: Record<string, unknown>): Promise<Snapshot | null> 
     return data as Snapshot;
   } catch (error) { page.error = (error as Error).message; render(); return null; }
 }
+// The settled round's collect, sent once: asked when the round is settled (present) and again by Ny runda if that answer has not come.
+const collect = collector(send);
 // Plays one answered step: film first, the totals as the cards land, then the engine's state as it is.
 async function present(next: Snapshot, dealerPlays: boolean) {
   const table = tableCards(next);
   const settle = next.events.find(e => e.type === 'settle') as Settled | undefined;
   // The stakes leave the balance at once; what the round pays back shows when its film has played.
   if (page.stage === 'BETTING') { page.balance -= betTotal(page.bets); page.stage = 'ROUND'; }
+  page.shown = shownFor(page.shown, snapshot, next); // a total stays with its own hand through a split (src/game-view.ts)
   snapshot = next; page.busy = true; page.dealerPlays = dealerPlays;
   // Her lines in this step (the engine's speak signals): each with its talk film when there is one, written in the chat as she begins it.
   spoken.clear();
@@ -229,7 +233,7 @@ async function present(next: Snapshot, dealerPlays: boolean) {
     page.stage = 'SETTLED'; page.settled = settle ?? page.settled; render();
     // What the round pays back reaches the balance when it is collected; the cards stay on the table until the next round.
     if (settle) settleChips(settle);
-    paid = await send({op: 'collect', roundId: next.view.roundId}); if (paid) page.balance = paid.balance;
+    paid = await collect(next.view.roundId); if (paid) page.balance = paid.balance;
   }
   render();
 }
@@ -242,11 +246,12 @@ function nearestSeat(clientX: number, clientY: number): number | null {
   for (const spot of scene.spots().bets) { const distance = Math.hypot(spot.x - at.x, spot.s - at.s); if (!best || distance < best.distance) best = {seat: Number(spot.id.slice(1)), distance}; }
   return best?.seat ?? null;
 }
+// Every control asks mayAsk (src/game-view.ts) first: it does only what the overlay offers it now, however it is pressed.
 const controls: Parameters<typeof mountOverlay>[1] = {
   aim: nearestSeat,
   chip(value) { page.chip = value; render(); },
   bet(seat, value = page.chip) {
-    if (page.stage !== 'BETTING' || page.busy) return;
+    if (!mayAsk(snapshot, page, 'bet')) return;
     const now = (page.bets[seat] ?? []).reduce((a, b) => a + b, 0);
     if (now + value > snapshot.limits.max || betTotal(page.bets) + value > page.balance) return;
     if (heard.table) sound?.chip(page.bets[seat]?.length ? 'stack' : 'felt', {height: page.bets[seat]?.length ?? 0, pan: panOf(seat)});
@@ -254,15 +259,15 @@ const controls: Parameters<typeof mountOverlay>[1] = {
   },
   // A chip picked up from a ring: the last one laid there. It leaves the order of laying too, so that Ångra still takes the latest.
   take(seat) {
-    if (page.stage !== 'BETTING' || page.busy || !page.bets[seat]?.length) return;
+    if (!mayAsk(snapshot, page, 'take') || !page.bets[seat]?.length) return;
     page.bets[seat] = page.bets[seat].slice(0, -1); if (!page.bets[seat].length) delete page.bets[seat];
     const at = order.lastIndexOf(seat); if (at >= 0) order.splice(at, 1); if (heard.table) sound?.chip('take', {pan: panOf(seat)}); render();
   },
-  undo() { const seat = order.pop(); if (seat === undefined) return; page.bets[seat] = page.bets[seat].slice(0, -1); if (!page.bets[seat].length) delete page.bets[seat]; render(); },
-  clear() { page.bets = {}; order.length = 0; render(); },
-  rebet() { if (!page.last) return; page.bets = Object.fromEntries(Object.entries(page.last).map(([seat, chips]) => [seat, [...chips]])); order.length = 0; for (const [seat, chips] of Object.entries(page.bets)) for (const _ of chips) order.push(Number(seat)); render(); },
+  undo() { if (!mayAsk(snapshot, page, 'undo')) return; const seat = order.pop(); if (seat === undefined) return; page.bets[seat] = page.bets[seat].slice(0, -1); if (!page.bets[seat].length) delete page.bets[seat]; render(); },
+  clear() { if (!mayAsk(snapshot, page, 'clear')) return; page.bets = {}; order.length = 0; render(); },
+  rebet() { if (!mayAsk(snapshot, page, 'rebet') || !page.last) return; page.bets = Object.fromEntries(Object.entries(page.last).map(([seat, chips]) => [seat, [...chips]])); order.length = 0; for (const [seat, chips] of Object.entries(page.bets)) for (const _ of chips) order.push(Number(seat)); render(); },
   async deal() {
-    if (page.busy || !betTotal(page.bets)) return;
+    if (!mayAsk(snapshot, page, 'deal')) return;
     panel.close(); // an open menu closes when the round begins
     const bets = Object.entries(page.bets).map(([seat, chips]) => ({seat: Number(seat), main: chips.reduce((a, b) => a + b, 0)}));
     page.busy = true; render();
@@ -271,19 +276,19 @@ const controls: Parameters<typeof mountOverlay>[1] = {
     await present(next, false);
   },
   async act(action: Action) {
-    const r = round(); if (page.busy || !r || r.activeSeat === null) return;
+    const r = round(); if (!mayAsk(snapshot, page, action) || !r || r.activeSeat === null) return;
     page.busy = true; render();
     const next = await send({op: 'act', seat: r.activeSeat, handIndex: r.active, action, roundId: snapshot.view.roundId, turnSeq: snapshot.view.turnSeq}); if (!next) { page.busy = false; render(); return; }
     await present(next, next.view.round?.phase === 'settled' || next.view.round?.phase === 'dealer');
   },
   async insurance(take: boolean) {
-    if (page.busy) return; page.busy = true; render();
+    if (!mayAsk(snapshot, page, 'insurance')) return; page.busy = true; render();
     const next = await send({op: 'insurance', roundId: snapshot.view.roundId, take}); if (!next) { page.busy = false; render(); return; }
     await present(next, next.view.round?.phase === 'settled');
   },
   async next() {
-    if (page.busy) return; page.busy = true; render();
-    const next = paid ?? await send({op: 'collect', roundId: snapshot.view.roundId}); page.busy = false; if (!next) { render(); return; }
+    if (!mayAsk(snapshot, page, 'next')) return; page.busy = true; render();
+    const next = paid ?? await collect(snapshot.view.roundId); page.busy = false; if (!next) { render(); return; }
     snapshot = next; paid = null; Object.assign(page, {stage: 'BETTING', bets: {}, shown: {}, settled: null, line: null, balance: next.balance}); order.length = 0; taken.clear(); chips?.clearWinnings();
     film.set({table: {hands: [], dealer: []}, records: [], lying: []}); render();
   },
@@ -348,7 +353,7 @@ else if (query.get('tray') !== 'built') void import('./game3d-props.ts').then(as
 // When a round is settled: a seat that got back less than it staked loses its chips to the tray, and what a seat got back
 // beyond its stake is carried out of the tray and set down beside the bet. Only in the trial with the house's tray.
 function settleChips(settle: Settled) {
-  const tray = houseTray; if (!tray || !chips) return;
+  const tray = houseTray; if (!tray || !chips || !settle) return;
   const seats = new Map<number, {stake: number; returned: number}>();
   for (const hand of settle.hands) { const s = seats.get(hand.seat) ?? {stake: 0, returned: 0}; s.stake += hand.stake; s.returned += hand.returned; seats.set(hand.seat, s); }
   const now = seconds(), into = (value: number) => tray.mouth(value, false), outOf = (value: number) => tray.mouth(value, true);
