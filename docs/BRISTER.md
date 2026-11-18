@@ -154,6 +154,13 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   och sidan slutar rita i 0,35–0,57 s; på en stående telefon syns filmens övre kant som en svag linje över hennes hjässa.
   Prövat: orsaken till uppehållet är inte funnen. Stänger: ingen väg vald. Filmen spelas in på nytt när spelets vilobild
   ändras ([SYSTEM.md](SYSTEM.md), "En film före spelet").
+- **Spelet säger inte när material saknas eller byts.** Syns: kort utan hand, nödlösningar och återgången via skon står
+  bara i `window.game.gaps` och `?diagnos=1`: varje sista kort går tillbaka via skon (ingen av Paows nio returer till
+  vila har film), dealerns tredje och fjärde kort läggs utan hand, och plats 4:s andra kort spelar första kortets film
+  med kortet flyttat. Det som gäller i Material blandar dessutom två par händer (tatuerade i keystone och ankare 1 och
+  2.3, otatuerade i 2.1, 2.2 och hela banken). Prövat: notiserna om skarv, hand och kortsida ligger nu också i gaps
+  (`ae9e4d9`), och ett test står som vakt för den dag filmer från 2.3 kommer in i spelet. Stänger: filmerna beställs;
+  att visa notiserna på sidan är Jakobs val. Alla fynd med status: `D:/dealer-scratch/tmp/raddning-kedja/FYND.md`.
 - **Ett svar som går förlorat på vägen låser spelet** (nätet, en omstartad server). Syns: sidan visar motorns engelska
   "The session is at version N; reload and resend", och varje nytt tryck nekas tills sidan laddas om; inget dras
   eller betalas två gånger. Prövat: motorn svarar en omsändning med samma `requestId` ur sitt kvitto (testat), men
