@@ -4,7 +4,7 @@ Kontrakt: koordinater, register, scen, spel och klippbank. Engelska systemord, s
 finns. Klippbankens rundor (`resolveRound` i `src/clip-graph.ts`) spelas i studion, i 3D-scenen och i spelet. V6:s
 bildrutetidslinje (`assets/timeline.json`, `tools/render.ts`) återskapar V6 byteidentiskt och används inte för andra
 filmer. Beslutet 2026-11-10 (med TILLBAKA-2) att V6:s tidslinje är enda uppspelningsgrund gäller inte längre i
-praktiken; vilken väg som ska gälla är ett öppet val hos Jakob (HANDOFF). Sekvenssträngar och nodvy är presentation av
+praktiken; vilken väg som ska gälla är ett öppet val hos Jakob. Sekvenssträngar och nodvy är presentation av
 samma metadata, aldrig en andra motor. Nodvyn visar planerad avsikt; den fastställer inte en källfilms händelser.
 
 ## V6: tre ytor, två format
@@ -228,7 +228,7 @@ Spelet med flera dealers (2026-11-13):
     än så länge"). Under det ritade kortet lämnas skons fönster åt matten och hud orörd. Adressorden `cardBack=film`
     och `cardFace=film` visar filmens färger bredvid det ritade kortet igen, och `cardBack=dark`, `cardFace=paper`
     slår på omfärgningen också där filmens eget kort är kortet i handen (`cardWords` i `src/game-film.ts`). Utredningen
-    och granskningarna ligger på slaskdisken (HANDOFF, "Kända brister").
+    och granskningarna ligger på slaskdisken (`docs/BRISTER.md`, Korten).
     `kort=liggande` finns kvar för hans eget öga. Där rörs filmens kort inte medan hon håller det, kortet i skons
     fönster lämnas som filmen har det i alla filmer, och det ritade kortet tonas fram under filmens när kortet lägger
     sig (`restFade`, `restShare` i `src/card-overlay.ts`): från första rutan där spårets kort ligger inom 2 px från sin

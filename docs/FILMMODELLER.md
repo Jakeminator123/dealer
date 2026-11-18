@@ -178,7 +178,7 @@ mellan två filmer från samma modell. Mätt i fem skarvar blev steg på 4–7 n
 orörda.
 
 **Inte avgjort:** om efterarbetet ska läsa Kling 4 med BT.709 för nya filmer, och om bankens filer ska märkas. Att
-efterarbetet läser Kling 4 som BT.601 står också under "Kända brister" i HANDOFF.
+efterarbetet läser Kling 4 som BT.601 står också i `docs/BRISTER.md`.
 
 ## Vad som håller och vad som faller, per sorts film
 
@@ -256,8 +256,7 @@ som väljer efter `source.model` behandlade dem därför som WAN 3. Posternas `s
 
 ## Det som inte är känt eller avgjort
 
-- Om efterarbetet ska läsa Kling 4 med BT.709 för nya filmer, och om bankens filer ska märkas (HANDOFF, "Kända
-  brister"). Hur webbläsaren läser filmerna är avgjort, se "Ljuset vid en skarv".
+- Om efterarbetet ska läsa Kling 4 med BT.709 för nya filmer, och om bankens filer ska märkas (`docs/BRISTER.md`). Hur webbläsaren läser filmerna är avgjort, se "Ljuset vid en skarv".
 - Varför WAN 3 ljusnar under en film. Efterarbetet lyfter henne bara efter första rutan.
 - Hur bytet mellan 30 och 24 bilder i sekunden ser ut för ögat i en runda: sett av granskaren, inte mätt.
 - Talfilmernas färg mot vilan: inte mätt här (scenbanan: som WAN 3). Pamelas skarvar: inte mätta (ändarna har olika

@@ -25,7 +25,7 @@ import { PictureCard, PreviewPicture, StatusChip } from "../order/Pictures";
 import { PromptText } from "../order/PromptText";
 import { Badge, SegmentedControl, Select, TextArea, buttonClasses, cn } from "../ui";
 
-/** The turn in his words (HANDOFF "Ankarmodellen"): Handleden, Långsidan, Vid platsen. */
+/** The turn in his words (docs/BESKED.md, "Filmerna och given"): Handleden, Långsidan, Vid platsen. */
 const FLIP_WORD: Record<FlipAxis, string> = { FREE: "Handleden", LONG_EDGE: "Långsidan", AT_PLACE: "Vid platsen" };
 const served = (e: Sends["first"]["entry"]) => (e?.served && !e.served.endsWith(".mp4") ? labUrl(e.served) : null);
 const frameOf = (e: Sends["first"]["entry"]) => (e?.served?.endsWith(".mp4") && e.frame !== undefined ? { video: labUrl(e.served), time: (e.frame + 0.5) / (e.fps ?? 24) } : null);

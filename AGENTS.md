@@ -7,17 +7,23 @@ Jakob äger projektet; han är inte programmerare, så förklara val i vanliga o
 ## Läs först
 
 1. `README.md`: vad repot är, mapparna och hur det körs.
-2. `HANDOFF.md`: läget nu, vem som äger vad, vad som väntar på Jakob och nästa steg.
-3. Det ämne du arbetar med: `docs/SYSTEM.md` (kontrakt: koordinater, register, notation, ordlista), `docs/DRIFT.md`
+2. `HANDOFF.md`: startsidan, en sida: läget i korthet, nästa steg, vem som äger vad och pekarna vidare.
+3. Din banas lägesfil, `docs/lage/<bana>.md` (3D-banan: `dealer3d/LASMIG.md`, "Överlämning"). En räcker.
+4. Det ämne du arbetar med: `docs/SYSTEM.md` (kontrakt: koordinater, register, notation, ordlista), `docs/DRIFT.md`
    (rutiner: Git, kontrollen, labbservern, Runway, publicering, slaskdisken) och arbetsinstruktionerna i `tools/*.md`
-   (`tools/dealer-line.md` är ingången för en ny dealer eller en filmbeställning).
-4. Ett arbetsmoment som återkommer (beställa eller granska en film, visa Jakob något, avsluta och pusha, arbeta bredvid
+   (`tools/dealer-line.md` är ingången för en ny dealer eller en filmbeställning). Jakobs besked slås upp per ämne i
+   `docs/BESKED.md` när ett besked är i fråga, kända brister i `docs/BRISTER.md`.
+5. Ett arbetsmoment som återkommer (beställa eller granska en film, visa Jakob något, avsluta och pusha, arbeta bredvid
    andra sessioner, en ny dealer, publicera kopian) har en skill i `.claude/skills/<namn>/SKILL.md`: läs den som gäller
    innan du börjar. Den säger vilka regler som oftast bryts och pekar på dokumentet med rutinen, som den aldrig skriver om.
 
 ## Var kunskap står
 
-- Läget nu, ägare och Jakobs gällande besked: `HANDOFF.md`. Ersätt det som inte längre gäller; ingen dagbok per körning.
+- Startsidan `HANDOFF.md` (läget, nästa steg, ägare, pekare) är högst 120 rader och 900 ord; `tools/handoff.test.ts`
+  håller taket. Ersätt det som inte längre gäller; ingen dagbok per körning.
+- Läget per bana: `docs/lage/<bana>.md` i fast form, högst 60 rader. Jakobs gällande besked med hans ord och datum:
+  `docs/BESKED.md` (ett ersatt besked flyttas till "Ersatta besked", aldrig bort). Kända brister: `docs/BRISTER.md`.
+- Det som väntar på Jakob står bara som kort i Beslut (`data/decisions.json`), aldrig som en lista i ett dokument.
 - Kontrakt och format: `docs/SYSTEM.md`. Rutiner, anslutningar och sådant som gäller en viss dator eller ett visst
   verktyg: `docs/DRIFT.md`.
 - Ett ämne som växer ur sitt avsnitt får en egen sida under `docs/`, länkad från README:s tabell.
@@ -35,7 +41,7 @@ Jakob äger projektet; han är inte programmerare, så förklara val i vanliga o
 - Bilder och filmer som används eller kan komma att användas ligger i `assets/` och har en roll i
   `data/media-roles.json`. Slaskdisken är bara för tillfälligt arbete, arkiv och säkerhetskopior (DRIFT).
 - Betald generering bara inom `data/order-policy.json` (huvudagenten godkänner beställningar på Jakobs uppdrag; se
-  HANDOFF, "Jakobs besked som gäller"). Betalda anrop utanför Beställ rapporteras till huvudagenten med belopp.
+  `docs/BESKED.md`, "Domar, beställningar och pengar"). Betalda anrop utanför Beställ rapporteras till huvudagenten med belopp.
 - Deploy, mediauppladdning, databasändring och integration i Scoutgaming bara på Jakobs uttryckliga ord.
 - Jakobs domar i Granska och Material, och valet av Primär, är hans: inget verktyg och ingen agent sätter eller skriver
   över dem. En agent eller granskare föreslår. Bara när han uttryckligen har lämnat över domen för vissa filmer kan
@@ -71,7 +77,7 @@ Jakob äger projektet; han är inte programmerare, så förklara val i vanliga o
   kontrollera fjärrens SHA och GitHub-kontrollen. Samma kontroll före en PR.
 - Ingen force-push, ingen `--no-verify`, ingen filbevakare och ingen automatisk commit av utkast.
 - Rött i kontrollen stoppar; utred orsaken och rätta den. Sänk aldrig en kontroll eller ändra en referens bara för att
-  få grönt. En verklig kvarvarande begränsning skrivs kort i HANDOFF.
+  få grönt. En verklig kvarvarande begränsning skrivs kort i `docs/BRISTER.md`.
 - Städa löpande: det som en ändring gör överflödigt (kod som inget anropar, ersatt status, döda sökvägar) tas bort i
   samma ändring, och det nya beteendet beskrivs där det hör hemma.
 

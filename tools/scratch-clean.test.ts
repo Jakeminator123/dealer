@@ -84,6 +84,21 @@ test('a folder a steering document, a data file or the memory names is kept, wri
  }finally{w.done();}
 });
 
+test('a pattern that begins with a bare wildcard names no session folder',()=>{
+ const w=world();
+ try{
+  // DRIFT names a program's path by a pattern; read as a path below tmp/ it named every session, and none could end.
+  const pattern='Välj `rg.exe` vars sökväg matchar `*\\OpenAI\\Codex\\bin\\*\\rg.exe`.\n';
+  assert.deepEqual(namedIn(pattern,posix(w.root),new Set(['o'])),[]);
+  w.put('tmp/o/notes.txt');
+  writeFileSync(path.join(w.repo,'docs','DRIFT.md'),pattern);
+  w.age(30);
+  const r=w.go(['--kor','--regel','avslutad-session']);
+  assert.equal(r.code,0,r.text);
+  assert.equal(w.exists('tmp/o'),false);
+ }finally{w.done();}
+});
+
 test('what has changed in the last days is kept, and that protection cannot be switched off',()=>{
  const w=world();
  try{

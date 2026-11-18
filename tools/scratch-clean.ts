@@ -26,7 +26,7 @@ export const RULES:Rule[]=[
  {name:'tmp-filer',action:'RADERA',file:/\.tmp$/i,days:1,safe:true,reason:'Lösa tillfälliga filer från Node och verktyg.'},
  {name:'loggar',action:'RADERA',file:/\.log$/i,days:7,safe:true,reason:'Körloggar; efter en vecka har de gjort sitt.'},
  {name:'skarmbilder',action:'ARKIVERA',dir:/^(shots|screenshots|frames|frames3d|dump\d*|previews)$/i,days:7,safe:true,reason:'Skärmbilder och rutdumpar. Ingen arbetar i dem efter en vecka, men de kan förklara ett beslut i efterhand, så de flyttas i stället för att raderas.'},
- {name:'kontaktark',action:'ARKIVERA',dir:/^(sheets|crops|look|granskning(-.*)?|claude-eyes-.*)$/i,days:7,safe:false,reason:'Kontaktark och granskningsunderlag. HANDOFF: behåll kontaktark som stöder beslut. Kräver dom.'},
+ {name:'kontaktark',action:'ARKIVERA',dir:/^(sheets|crops|look|granskning(-.*)?|claude-eyes-.*)$/i,days:7,safe:false,reason:'Kontaktark och granskningsunderlag. Kontaktark som stöder ett beslut behålls (DRIFT, "D: och städning"). Kräver dom.'},
  {name:'avslutad-session',action:'ARKIVERA',session:true,days:14,safe:false,reason:'En sessions arbetsmapp (tmp/<session> eller review/<mapp>) som ingen har ändrat på två veckor. Kräver dom: sessionen kan vara pausad.'},
 ];
 
@@ -39,7 +39,7 @@ export const LEDGER=/^(bestallningar.*\.json|order-.*\.json|uploads-.*\.json|tas
 // Films and sound are never deleted, whatever folder they are in.
 export const MEDIA=/\.(mp4|mov|webm|mkv|wav|mp3|m4a)$/i;
 // The documents read on every run for paths they name (relative to the repo), and the agents' memory beside them.
-export const SOURCES=['HANDOFF.md','README.md','AGENTS.md','docs/*.md','data/*.json'];
+export const SOURCES=['HANDOFF.md','README.md','AGENTS.md','docs/*.md','docs/lage/*.md','data/*.json'];
 export const DEFAULTS={root:'D:/dealer-scratch',archive:'D:/dealer-archive/slask',days:3,maxSeconds:90,lockHours:2};
 
 const DAY=864e5;
@@ -111,6 +111,7 @@ export function namedIn(text:string,root:string,sessions:Set<string>):Array<{seg
   for(const m of lineText.matchAll(/`([^`\s]+)`/g)){
    const token=posix(m[1]).replace(/^\.\//,'');if(!token.includes('/')||/^[a-z]:/i.test(token))continue;
    const first=token.split('/')[0];
+   if(/^\*+$/.test(first))continue; // a bare wildcard names no session folder (a pattern for a program's path once kept them all)
    const base=['tmp','review','renders'].includes(first.toLowerCase())?'':[...sessions].some(s=>segRegex(first).test(s))?'tmp/':null;
    if(base===null)continue;
    for(const t of expand(token)){const segs=segments(base+t);if(segs.length)found.push({segs,line:i+1,text:m[1]});}

@@ -18,16 +18,21 @@ ryms här står i avsnitten nedan, i commitmeddelandena eller i proven.
   dockan räcker"; koden ligger kvar, lägg inget arbete där); ja till ett betalt prov från stol 1.
 - Kortets vändning är sedan kl. 01.10 EN vridning kring en axel (Jakob såg en "konstig halvrotation" i de äldre
   filmerna). Förlagorna "-2" och "-3" har den äldre vändningen; "-4" är den som gäller från nu. Två betalda prov på
-  den beställdes kl. 01.30 av huvudagenten: C5 (plats 4, bankens kamera; Prov `giv-forlagefilm-2`, c5-*) och stol 1
-  (Prov `dealer-fran-stol-1`). Utfallet var inte läst när det här skrevs.
+  den beställdes kl. 01.30 av huvudagenten. C5 (plats 4, bankens kamera; Prov `giv-forlagefilm-2`, c5-*) är läst: 3/5.
+  Vändningen blev nattens renaste (en kantruta, ingen snurr i kortets plan; C3 snurrade 40° och C4 53°) och det gula
+  kortet bärs bara 8 % längre än dockans (C3 16 %, C4 22 %), men kortet hålls upprätt till ruta 67 och ligger platt i
+  ruta 68 utan någon ruta emellan. Stol 1 (Prov `dealer-fran-stol-1`) var inte läst när det här skrevs.
 
 **Nästa steg, i ordning.**
 1. Läs utfallet av stol 1 (`D:/dealer-scratch/tmp/stol-1/RAPPORT.md`) mot dockans film innan något mer görs för andra
    stolar: höll hennes utseende från sidan, och följde filmen dockans rörelse?
-2. Läs C5 (`D:/dealer-scratch/tmp/giv-experiment-2/c5/RAPPORT.md`): blev vändningen renare med "-4", och bärs det gula
-   kortet fortfarande längre än dockans (C3 16 %, C4 22 %)? Om "-4" är sämre än "-2": de äldre givarna finns i
-   commit cb403bc.
-3. Ankare 2.3 (Jakobs beställning hos MODEL, som är stängd): dockfilmen finns (`tools/pose-film.ts --pose 2.3`,
+2. Nästa förlaga, "-5": behåll den enda vridningen men sänk kortet jämnt mot filten ruta 60–80, som i Pamelas film
+   (hon håller det uppifrån i bortre kanten och sänker det snett ned mot platsen). I dag står dockans kort lutat efter
+   vändningen och fälls plant först ruta 90–96 (`folds` till `rests` i `perform`, `capture.ts`), och Kling tar efter:
+   därav hoppet i C5. Mätt med `vridning.ts` på slasket: dockans kort ritas 96–100 bildpunkter långt ruta 76–91 där
+   filmens är 68–72. Rapporten: `D:/dealer-scratch/tmp/giv-experiment-2/c5/RAPPORT.md`.
+3. Ankare 2.3 (Jakobs beställning hos sessionen MODEL, som är öppen igen sedan kl. 01.40 och lovar händernas bana i
+   meter i `yt-referens/ut/givens-slag.json`): dockfilmen finns (`tools/pose-film.ts --pose 2.3`,
    `data/till-ankare-2-3.json`, prov `dealer-3d-till-ankare-2-3`; filen och en LASMIG.txt med alla tal i
    `D:/dealer-scratch/tmp/dealer-3d/ut/ankare-2-3/`). Vad som görs med den står i
    `D:/dealer-scratch/tmp/yt-referens/LASMIG-OVERLAMNING-2026-11-18.md`, avsnitt 2. Öppet: tummen pekar ned mot filten,

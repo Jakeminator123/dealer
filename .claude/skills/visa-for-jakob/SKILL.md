@@ -19,16 +19,16 @@ för servern och för svaret i [`AGENTS.md`](../../../AGENTS.md), "Labbservern" 
    under `studio/` (DRIFT, "Labbservern och fliken", Studion byggd ur det incheckade).
 4. **Det han ska se ligger i repots media, inte på slaskdisken:** en provmapp `assets/proofs/<namn>/` med `proof.json`
    (titel, korta etiketter, omdömen), i Granska, Prov (`/studio/granska/?prov=<mapp>`). Lösa sidor under
-   `D:/dealer-scratch` visas inte för honom (HANDOFF, "Arbetsyta"; SYSTEM, vyn Prov; README, Studion).
+   `D:/dealer-scratch` visas inte för honom (SYSTEM, vyn Prov; README, Studion).
 5. **En stillbild bredvid varje film han ska döma,** och ett nytt utseende för alla visas i spelets storlek och i
-   rörelse innan det gäller (HANDOFF, "Jakobs besked som gäller", Beslut och svar och Läpparna).
+   rörelse innan det gäller (`docs/BESKED.md`, "Arbetet och dokumenten" och "Läpparna och talet").
 6. **Det som väntar på hans svar är ett kort i Beslut,** en post i `data/decisions.json` med en kort fråga (högst 14 ord) och
    en bild ur ett prov (`proof`, `file`); agenter lägger till och tar bort poster, bara sidan skriver hans svar (README, Register;
    reglerna i huvudet på `tools/decision-register.ts`). Läs hans svar och anteckningar där innan du svarar honom, och ta ut kortet när det är
    utfört. Hans ord i Prov (Bra, Inte bra, kommentarer) läses med `node tools/proof-notes.ts` före svaret och besvaras
    med `--answer` eller markeras med `--read` (README, Register).
-7. **Prov och effekter först i labbet;** spelet (`game.html`) får bara det han har godkänt där (HANDOFF, "Jakobs besked
-   som gäller", Labbet först).
+7. **Prov och effekter först i labbet;** spelet (`game.html`) får bara det han har godkänt där (`docs/BESKED.md`, "Labbet och
+   studion").
 8. **En headless-titt är inte hans skärm.** Sidorna ses under det delade låset med `node tools/lab-look.ts`; ett fel på
    hans telefon läses med `/trailer?diagnos=1` och hans skärmbild (DRIFT, "Labbservern och fliken", En titt på labbsidor; "Den
    låsta kopian på nätet").

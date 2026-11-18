@@ -7,7 +7,7 @@ description: Använd i dealer-repot när ett arbete är färdigt och ska in i Gi
 
 Rutinen står i [`AGENTS.md`](../../../AGENTS.md), "Git och samarbete", och i
 [`docs/DRIFT.md`](../../../docs/DRIFT.md), "Git och kontroller"; sessionens sista steg i
-[`HANDOFF.md`](../../../HANDOFF.md), "Före avslut av en session".
+[`HANDOFF.md`](../../../HANDOFF.md), "Före avslut".
 
 ## Reglerna som oftast bryts
 
@@ -20,12 +20,14 @@ Rutinen står i [`AGENTS.md`](../../../AGENTS.md), "Git och samarbete", och i
 4. **Ingen force-push, ingen `--no-verify`, ingen automatisk commit av utkast** (AGENTS). "Try running Pull first" i
    Cursor betyder att pre-push-kontrollen blev röd: läs varför, dra inte och kringgå inte.
 5. **Rött stoppar.** Utred orsaken och rätta den; sänk aldrig en kontroll och ändra aldrig en referens för att få grönt.
-   En verklig kvarvarande begränsning skrivs kort i HANDOFF (AGENTS; DRIFT, "Rött" och "Gult").
+   En verklig kvarvarande begränsning skrivs kort i `docs/BRISTER.md` (AGENTS; DRIFT, "Rött" och "Gult").
 6. **En ny testfil** ska in i både `test` i `package.json` och `TESTS` i `tools/publication-check.ts`; vakttestet fäller
    en testfil i `tools/` som ingen lista namnger (DRIFT, "Git och kontroller").
-7. **HANDOFF uppdateras på plats:** det som inte längre gäller ersätts, ingen dagbok; det som väntar på Jakob blir ett
-   kort i Beslut; vad som hände och varför står i commitmeddelandet (AGENTS, "Var kunskap står"; HANDOFF, "Före avslut
-   av en session").
+7. **HANDOFF är en startsida med tak** (högst 120 rader och 900 ord; `tools/handoff.test.ts` håller det): läget skrivs
+   i banans lägesfil (`docs/lage/<bana>.md`, fem delar, högst 60 rader), och i båda ersätts det som inte längre gäller;
+   inget läggs till som dagbok. Det som väntar på Jakob blir ett kort i Beslut, ett nytt besked av honom en punkt i
+   `docs/BESKED.md`, en ny brist en punkt i `docs/BRISTER.md`; vad som hände och varför står i commitmeddelandet
+   (AGENTS, "Var kunskap står"; HANDOFF, "Före avslut").
 8. **Städa i samma ändring:** kod som inget anropar, ersatt status och döda sökvägar tas bort, och det nya beteendet
    beskrivs där det hör hemma (AGENTS, "Städa löpande").
 9. **Media och hemligheter stannar utanför Git** (`assets/`, `output/`, `.runtime/`, `.env*`, `private/`); repot är

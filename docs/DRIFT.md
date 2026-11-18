@@ -1,7 +1,7 @@
 # Drift, anslutningar och återbruk
 
 Rutiner och anslutningar. Genomgånget 2026-11-12; avsnitten om arkiv, publicering och molnmiljö kontrollerades
-2026-11-10. Aktuell arbetsstatus och ägare står i HANDOFF, beslut per film i `motions/`.
+2026-11-10. Läget och ägare står i HANDOFF och i banornas lägesfiler (`docs/lage/`), beslut per film i `motions/`.
 
 ## Identitet och ansvar
 
@@ -18,8 +18,9 @@ Huvudagenten äger commits, taggar, push och styrdokumenten; vem det är och vem
 skribent per fil; samordna index och commit.
 
 Jakobs uppdrag 2026-11-10 godkänner publikt GitHub-upplägg, anslutningskontroller, nödvändig lokal env-återanvändning
-och D:-slask. Deploy, Scout-integration, databasändringar och betald generering är separata uppdrag. GitHub-repot är
-källförvaring, inte en publicerad studio eller webbplats.
+och D:-slask. Deploy, Scout-integration och databasändringar är separata uppdrag; för betald generering gäller AGENTS,
+"Det som skyddar Jakob" (huvudagenten godkänner inom `data/order-policy.json`). GitHub-repot är källförvaring, inte en
+publicerad studio eller webbplats.
 
 ## Git och kontroller
 
@@ -58,7 +59,7 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   och står kvar mellan pusharna; verktyget vägrar huvudträdet och ett träd ur ett annat repo. GitHub-kontrollen läses
   efteråt. Det som pushas är incheckade commits, aldrig någons öppna filer.
 - **Rött:** stoppa, undersök orsak och rätta innan nytt försök. **Gult:** granska och åtgärda eller förklara kvarvarande
-  begränsning kort i HANDOFF före push/PR. Varningarna visas i agentens terminal och som CI-annoteringar. Granska även
+  begränsning kort i `docs/BRISTER.md` före push/PR. Varningarna visas i agentens terminal och som CI-annoteringar. Granska även
   hook/testens relevans och falsklarm; vid verkligt kontrollfel, rätta med ett avgränsat regressionstest. Hoppa inte
   över kontrollen för att få grönt.
 - Känd Node-varning: `stripTypeScriptTypes` (`forBrowser` i `tools/lab-routes.ts`, som labbservern, kopians bygge och
@@ -87,7 +88,8 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   `aterstallningsbar-version-2`, `c9c3cf2`, 2026-11-13: 4 103 mediefiler, 10,7 GB, 0 avvikelser).
 - Fem kanoniska dokument måste finnas: README (start), AGENTS (arbetsregler), HANDOFF (läget nu, ansvar, hinder), SYSTEM
   (kontrakt) och DRIFT (rutiner, anslutningar). Saknas ett av dem stoppar kontrollen (rött; listan `CANONICAL` i
-  `tools/publication-check.ts`). Längden mäts inte, och en ny sida under `docs/` eller en arbetsinstruktion i `tools/`
+  `tools/publication-check.ts`). Längden mäts bara för HANDOFF och banornas lägesfiler i `docs/lage/`, som har tak
+  (`tools/handoff.test.ts`); en ny sida under `docs/` eller en arbetsinstruktion i `tools/`
   är välkommen när ett ämne behöver en egen (sedan 2026-11-13; förut gav riktvärden i rader och varje nytt dokument gul
   signal, och dokumenten höll gränsen genom allt längre rader). Uppdatera på plats när beteende eller ansvar ändras, och
   länka till befintliga JSON-register och kvitton i stället för att kopiera dem.
@@ -215,7 +217,7 @@ förs in i handbokens tabeller, inte här. Vad som skickades och hur det gick: s
 - **En väg: Beställ.** Utkast i Bordets Beställ (`data/orders/<id>.json`), godkänt med Jakobs klick eller av
   huvudagenten på hans uppdrag (`tools/order-approve.ts`) inom `data/order-policy.json`, lagt och hämtat av en
   beställningsagent genom Runways MCP-server på appkontot. Betalda anrop utanför Beställ rapporteras till huvudagenten
-  med belopp (HANDOFF, "Vem äger vad").
+  med belopp (AGENTS, "Det som skyddar Jakob").
 - **Kvitton från äldre vägar** (API-jobben i `data/clip-jobs.json`, orderfilerna och liggarna på D:) är källbevis och
   står kvar; ett osäkert anrop beställs aldrig om, och `request.lock` eller SUBMITTING tas aldrig bort. Pamelas ankare
   byggdes med `tools/build-anchor.ts` ur riktiga videorutor (bara kortpixlar ändrade, mot fryst plan). Bakgrund:
@@ -432,6 +434,10 @@ beställningar, scenen, och allt som Beslut, kopian, ett dokument eller en instr
 `evidence/`), `bara registrerad` eller `okänd`, med fil och fält som säger det. Det som varken spelas, visas eller är
 referens arkiveras till `D:/dealer-archive/`, raderas inte, om det är gjort med betalda krediter.
 
+**Arkivet av det oanvända, 2026-11-17** (`53dc116`): 367 enheter (1 073 filer, 3,96 GB) ligger med samma sökvägar i
+`D:/dealer-archive/dealer-ej-anvant-2026-11-17/`, varje fil kontrollerad på SHA-256. Planen, loggen och skriptet som tar
+tillbaka allt (`aterstall.mjs`) ligger i `D:/dealer-scratch/tmp/stadning/inventering-2026-11-17/`.
+
 **Om en bild eller film passar dagens regler:** `node tools/media-audit.ts --fit [--write]` mäter kortet i varje landning
 och i varje ankare med kort på en plats (gult eller blått som `src/card-track.ts` läser) och det liggande kortet i
 bankens kortspår (`assets/tracking/<tagning>/card-track.json`) mot `planCardQuad` (`src/card-plan.ts`), ett viloankare
@@ -476,7 +482,8 @@ ingen ändrat på två veckor kräver dom och flyttas bara med `-- --kor --regel
 `--tyst` gör aldrig det. Reglerna står som data överst i verktyget.
 
 Skydden går inte att slå av. Verktyget rör aldrig: det som ändrats de senaste tre dygnen; mappar som HANDOFF, README,
-AGENTS, `docs/*.md`, `data/*.json` eller agenternas minne namnger med sökväg. En namngiven mapp skyddar allt i den; en
+AGENTS, `docs/*.md`, `docs/lage/*.md`, `data/*.json` eller agenternas minne namnger med sökväg (`SOURCES` i verktyget;
+en arbetsmapp på slaskdisken som ska leva kvar namnges därför i banans lägesfil). En namngiven mapp skyddar allt i den; en
 fil direkt i en sessionsmapp skyddar bara sig själv. Namnge därför undermappen, inte hela sessionen, när bara den ska
 leva kvar; mappar med beställningsliggare eller kvitto (`bestallningar*`, `order-*`, `uploads-*`, `tasks-*`, `*kvitto*`,
 `request.lock`); `chrome-meshy`, Python-miljöer, mappar som en körande process namnger och mappar med länkar; film och

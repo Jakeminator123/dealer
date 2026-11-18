@@ -1,0 +1,58 @@
+# Läget: labbet och studion
+
+Huvudagentens bana: studion på `http://127.0.0.1:4319/studio/` med vyerna Bordet, Karta, Granska, Material, Lipsync och
+Beslut, labbservern och rutinverktygen. Här står bara det som gäller nu; det som hänt står i Git.
+
+**Läget.**
+- Bordet är den enda labbvyn och studion öppnar på den: lägena Kortplan, Beställ (Filmer och Kön), Scen, Råfilm och
+  Efterarbete. `/`, `/scen/`, `/placering/`, `/bestall/` och `/lab.html` leder dit; gamla labbet är borttaget. Menyn:
+  Bordet, Karta (med Primära), Granska (med Prov), Material, Lipsync, Casino, och i foten Beslut, Ordlista, Ljud och
+  Modeller.
+- Varje rad i Beställ visar exakt vad som går till Runway (första och sista bilden, referensfilmen, texten ord för
+  ord) och tagningarna som kom. Radens förval är ännu metodregistrets äldre recept för en giv (Kling 4, 7 s, tur och
+  retur, ingen referensfilm) tills filmstandardens andra del är inne ([film.md](film.md)).
+- Material för hand (`da339a5`): Jakob kan göra vilken bild som helst gällande, lägga den åt sidan, arkivera den och ta
+  tillbaka den, och klipp byggda på en äldre bild mörkas. I Karta (`9a09570`) arkiveras ett klipp för hand och tas
+  tillbaka; ett arkiverat klipp spelas inte.
+- Prov (`e2a95ae`, `79d1d4a`): bricka bara på tagningar, "Väntar på granskaragenten" där ett omdöme saknas, och Jakobs
+  egen åsikt och kommentar på varje film och bild (`data/proof-notes.json`). 96 tagningar i 18 prov saknar en
+  granskares omdöme.
+- Det oanvända i `assets/` är arkiverat (`53dc116`): 367 enheter, 3,96 GB, ligger med samma sökvägar i
+  `D:/dealer-archive/dealer-ej-anvant-2026-11-17/`. Inget Jakob har dömt, inget banken spelar och ingen referens är
+  flyttad, och allt går att ta tillbaka.
+- `placements/default.json` är Jakobs plan. Bara Bordet skriver den: Kortplan med Spara i kortplanen, och Efterarbete
+  med Spara till planen.
+
+**Nästa steg.**
+1. Granskare åt de 96 tagningarna som väntar (listan `waiting-list.txt`), så att inget ligger i Jakobs kö.
+2. Steget Granska filmen i Bordet, efter byggordningen i `labbgrund/grund/RAPPORT.md`.
+3. Ta bort beskrivningarna av rörelsen som inte skickas till Runway: `FLIP_ABOUT`, `HAND_ABOUT`, `SHAPE_ABOUT`,
+   `LANDS_ABOUT`, `startWords` och `dealWords` i `src/order-model.ts`, visade i `Choices.tsx`, `NewOrder.tsx`,
+   `SendScreen.tsx`, `OrderList.tsx` och `Stage.tsx` (Ny beställning ritar ännu sin egen bild där).
+4. Efterarbete, där Scen ligger: kortets förarbete per film och "Rå | renderad" på en tagning. Det kommer efter
+   filmerna. Panelen Vila saknas också sedan gamla labbet togs bort.
+5. Sidornas ord: 72 ställen säger annat än ordlistan (`stadning/ord/ORD.md`, del c, med fil, rad och förslag);
+   kontrollera radnumren, filerna har ändrats sedan listan skrevs.
+
+**Väntar på Jakob.** Inget utanför Beslut.
+
+**Var saker ligger.** Studions kod i `studio/`, labbserverns adresser i `tools/lab-routes.ts`, sidorna bredvid studion
+(`/scene3d.html`, `/sound.html`, `/props.html`) i `pages/`. Rutinverktygen: `node tools/studio-from-commit.ts --trad
+D:/dealer-scratch/tmp/granska-prov/trad` (studion Jakob ser byggs ur en commit i ett rent träd), `node
+tools/lab-look.ts` (skärmbilder av labbsidor under låset), `node tools/push-clean.ts` (pushen från ett rent träd),
+`node tools/proof-notes.ts` (hans anteckningar i Prov) och `node tools/media-audit.ts` (vad en mapp i `assets/` är och
+vad som använder den). På slaskdisken, under `D:/dealer-scratch/tmp/`: `labbgrund/` (utredningarna
+`placering/RAPPORT.md` och `grund/RAPPORT.md`), `prov-egna-ord/waiting-list.txt`, `stadning/` (`FORSLAG.md`,
+`ord/ORD.md`, och i `inventering-2026-11-17/` arkivets plan, logg och `aterstall.mjs`, som tar tillbaka allt) och
+huvudagentens egna skript i `huvudagent11/look/`.
+
+**Fällor.**
+- Läs Jakobs anteckningar med `node tools/proof-notes.ts` före varje svar till honom; han skriver dem i Prov och
+  väntar sig att de är lästa.
+- Bygg studion han ser ur en commit (`studio-from-commit`), aldrig ur ett träd där en underagent har halvfärdiga filer.
+- Ingen knapp raderar betald media: en bild eller ett klipp arkiveras och kan tas tillbaka.
+- Inte tryckt av en hand i en webbläsare: Godkänn i Bordet, och att dra Perspektiv och trycka Spara.
+- Lösa sidor under `D:/dealer-scratch` visas inte för Jakob; det han ska se är ett Prov eller en sida i labbet (skillen
+  `visa-for-jakob`).
+- Det han har sagt om labbet, menyn och efterarbetet står i [BESKED](../BESKED.md), "Labbet och studion"; läs det
+  före en ändring av en vy.

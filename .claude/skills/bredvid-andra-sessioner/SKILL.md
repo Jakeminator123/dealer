@@ -11,11 +11,12 @@ samarbete", "Labbservern" och "Kod"; rutinerna i [`docs/DRIFT.md`](../../../docs
 
 ## Reglerna som oftast bryts
 
-1. **Läs "Vem äger vad" först, och skriv till huvudagenten vilka filer du tar** innan du ändrar något. En skribent per
+1. **Läs "Vem äger vad" och din banas lägesfil (`docs/lage/<bana>.md`) först, och skriv till huvudagenten vilka filer du
+   tar** innan du ändrar något. En skribent per
    fil; allt in i repot går genom huvudagenten med en fillista (AGENTS; HANDOFF). Adressen kontrolleras med ListAgents
    före ett meddelande (HANDOFF).
 2. **Ett eget arbetsträd på en kort gren** för ett avgränsat arbete: `git worktree add D:/dealer-scratch/tmp/<bana>/trad
-   -b <gren> main`, och grenen lämnas till huvudagenten, som slår ihop den (HANDOFF, "Vem äger vad"; DRIFT, "Grenar").
+   -b <gren> main`, och grenen lämnas till huvudagenten, som slår ihop den (AGENTS, "Git och samarbete"; DRIFT, "Grenar").
 3. **Labbservern lämnar ut huvudträdets filer:** en halvfärdig fil där syns genast i Jakobs flik. En ny modul under
    `src/` görs i ordningen fil, rad i `SCRIPTS` (`tools/lab-routes.ts`), omstart av huvudagenten, import; kör `node
    --test tools/lab-modules.test.ts` efter en ny import (DRIFT, "Labbservern och fliken").

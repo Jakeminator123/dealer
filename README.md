@@ -23,7 +23,7 @@ data/         register: manifest.json (filernas SHA-256), klippjobb, scenkontrak
 motions/      en post per film med Jakobs dom
 placements/   Jakobs kortplan
 evidence/     verifieringskvitton
-docs/         SYSTEM, DRIFT, TAL och FILMMODELLER
+docs/         SYSTEM, DRIFT, TAL, FILMMODELLER, BESKED, BRISTER och läget per bana (lage/)
 assets/ output/ .runtime/        lokal media och lokala byggen, inte i Git
 ```
 
@@ -33,7 +33,10 @@ Arkivet är det tidigare projektet på D: (snyggare-dealer). Sidorna har kvar si
 | Läsning | Innehåll |
 | --- | --- |
 | [AGENTS](AGENTS.md) | Arbetsregler för agenter. |
-| [HANDOFF](HANDOFF.md) | Läget nu: ägare, banken, vad som väntar på Jakob, nästa steg. Läs den först. |
+| [HANDOFF](HANDOFF.md) | Startsidan, en sida (högst 120 rader och 900 ord, `tools/handoff.test.ts`): läget i korthet, nästa steg, vem som äger vad och pekarna vidare. Läs den först. |
+| [Läget per bana](docs/lage/) | En lägesfil per bana i fast form (Läget, Nästa steg, Väntar på Jakob, Var saker ligger, Fällor), högst 60 rader: [film](docs/lage/film.md), [kort](docs/lage/kort.md), [labbet och studion](docs/lage/labbet-och-studion.md), [spelet](docs/lage/spelet.md); 3D-banans är [dealer3d/LASMIG.md](dealer3d/LASMIG.md). |
+| [Jakobs besked](docs/BESKED.md) | Hans gällande besked per ämne, med datum och hans egna ord; ersatta besked står kvar sist. Slås upp när ett besked är i fråga. |
+| [Kända brister](docs/BRISTER.md) | Varje känd brist: var den syns, vad som är prövat och vad som stänger den. |
 | [SYSTEM](docs/SYSTEM.md) | Kontrakt: koordinater, register, 3D-scenen, spelet, klippbanken och ordlistan. |
 | [DRIFT](docs/DRIFT.md) | Rutiner och anslutningar: Git och kontroller, labbservern, Runway, publicering, D:-slask. |
 | [Löpande bandet](tools/dealer-line.md) | Den enda vägen från en bild av en person till en dealer som spelar en runda: femton rader först, sedan stationer, format, namn och kommandon. |
@@ -121,7 +124,8 @@ markerprov; TS-materialkällorna har inte återbyggts till de frysta JS-bundlarn
 kortmaterialets TS-källa direkt; det ändrar inte V6-filmen eller de historiska bundlarna.
 
 Publikt källrepo: [Jakeminator123/dealer](https://github.com/Jakeminator123/dealer). GitHub innehåller inte media eller
-hemligheter. Scout-integration, deploy och betald generering är separata uppdrag.
+hemligheter. Scout-integration och deploy görs bara på Jakobs uttryckliga ord, och betald generering bara inom
+`data/order-policy.json`: [AGENTS](AGENTS.md), "Det som skyddar Jakob".
 
 [Det publika labbet](https://dealer-delta-eosin.vercel.app/) visar gamla labbet som det var vid den senaste
 publiceringen (release i [evidence/public-release.json](evidence/public-release.json)) och byggs inte längre härifrån;

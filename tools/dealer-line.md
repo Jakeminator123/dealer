@@ -11,7 +11,7 @@ Detaljerna står där de hör hemma och kopieras inte hit:
 - [granskningen](film-review.md): hur en film granskas innan Jakob dömer;
 - `data/dealer-standard.json`: standarden varje ankare följer;
 - `data/order-methods.json`: metoden som beställs per steg;
-- `HANDOFF.md`: läget nu och vem som äger vad.
+- `HANDOFF.md` och `docs/lage/film.md`: vem som äger vad, och filmbanans läge nu.
 
 Skriven ur kod, register och kvitton. (V) = läst i kod, data eller kvitto; (S) = skattat.
 
@@ -110,8 +110,8 @@ och vad den ändrade står bara i handboken §2 och §5. En order lagrad med en 
 texten och bilderna väljs: handboken §2–3.
 
 **9. Godkänn.** Jakobs "Godkänn och lägg i kön" i Beställ, eller `node tools/order-approve.ts <id> --mandate "<vems ord
-och när>"`. Prövas mot `data/order-policy.json`: 400 krediter per order, golvet på saldot och dagstaket. Båda sätts av
-Jakobs ord för dagen och står med hans ord i HANDOFF ("Jakobs besked som gäller", Budgeten): sedan 2026-11-13
+och när>"`. Prövas mot `data/order-policy.json`: taket per order (2 000 krediter sedan 2026-11-17), golvet på saldot och dagstaket. Båda sätts av
+Jakobs ord för dagen och står med hans ord i `docs/BESKED.md` ("Domar, beställningar och pengar"): sedan 2026-11-13
 kl. 15:13 gäller "obegränsat", så taket och golvet stoppar inget (V). Hashen fryses i `approval.orderSha256`, och en godkänd order ändras aldrig (V).
 
 **10. Lägg och hämta.** Beställningsagenten enligt [order-clerk.md §1–4](order-clerk.md):
@@ -168,8 +168,8 @@ liggande korten.
 per tecken av det konto rösten ligger i; rösten namnger sin nyckelrad i `.env.local`) och munnen ritas lokalt (V). `src/speech-lines.ts` säger vilken
 talfilm som säger en replik i rundan eller svarar i chatten (V). Talfilmer spelas på begäran, inte i vilans slump.
 I spelet säger dealern sina fasta repliker med talfilm och ljud, och chatten svarar med fasta svar; nyckeln `tal`
-(`repliker` eller `av`) slår av talfilmerna. Hela ämnet: [docs/TAL.md](../docs/TAL.md). Ägs av banan Tal
-(HANDOFF).
+(`repliker` eller `av`) slår av talfilmerna. Hela ämnet: [docs/TAL.md](../docs/TAL.md). Banan Tal är stängd sedan 2026-11-17; dess filer hålls av huvudagenten tills en ny talsession finns
+(`docs/lage/spelet.md`).
 
 ### Ordningen per dealer, och när hon är färdig
 
@@ -200,9 +200,9 @@ långt en dealer har kommit, och vad som är kvar för en runda, räknar `node t
   tagningarna; en korrekt avkodning skulle flytta färgerna något, och det är inte avgjort (`tools/film-after.ts`) (V).
 - **Ett tryckt spelkort** kan spåraren inte följa; det renderade kortet kräver enfärgat gult eller blått (`is.yellow`,
   `is.blue`, `isPale` i `src/card-track.ts`) (V).
-- **Kön** läggs bara när en huvudagentchatt är öppen (HANDOFF) (V).
+- **Kön** läggs bara när en huvudagentchatt är öppen (`docs/BRISTER.md`) (V).
 - **GitHubs kontroll** hoppar över testerna som kräver FFmpeg (elva) och de tre i `tools/order-images.test.ts` som kräver
-  bankens filmer; de körs på den här datorn (DRIFT, HANDOFF) (V).
+  bankens filmer; de körs på den här datorn (DRIFT; `docs/BRISTER.md`) (V).
 
 ## Regler som kostar pengar när de bryts
 
@@ -212,7 +212,7 @@ långt en dealer har kommit, och vad som är kvar för en runda, räknar `node t
 - **En ändring per omgång, mot ett recept som har hållit,** med samma bilder och längd. Omgång 4 ändrade både plats och
   vändsätt, och fyra av fem fel gällde kortet i luften; omgång 6 ställde två mallar mot varandra i två par (handboken §5, V).
 - **Antalet tagningar** per metodprov och per klipp står i handboken §2; fler beställs bara när de som finns har fallit.
-- **Varje omgång granskas oberoende innan nästa bygger på den,** och kostnaden berättas efter omgången (HANDOFF).
+- **Varje omgång granskas oberoende innan nästa bygger på den,** och kostnaden berättas efter omgången (`docs/BESKED.md`, "Domar, beställningar och pengar").
 - **Det som föll beställs inte om:** hela rundan i en tagning (0 av 7, cirka 3 500 krediter), Motion Control, mellanbild i
   Kling 4, Aleph och video-till-video, 4K-filmmodell, bildmodellen som flyttar kameran, stängd giv till en spelares plats
   (handboken, "Det som föll").

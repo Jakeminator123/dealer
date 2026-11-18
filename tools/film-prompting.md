@@ -39,7 +39,7 @@ granskaren dömde annorlunda står båda.
 | 3 Inga förbud | Runway Gen-4: "Negative phrasing is not supported and may produce unpredictable or even opposite results" (V). Kling 4: "Negative prompts can increase the likelihood of errors" (V) | `paow-giv-p4`: åtta förbud, minst tre hände ändå (V). Jakobs godkända givar per stil: Utförlig (med förbud) 2 av 4, Kort 8 av 16, Minimal 1 av 2 (V): sambandet syns inte i våra domar |
 | 4 Bild eller film låser rörelsen | Kling 4: referensfilm för "moves and … timing in @Video1" (V). Alibaba WAN 3: referens "to replicate … action choreography" (V). Kling 4 kopierar referensens rörelse nästan bildpunkt för bildpunkt (DRIFT till `f6f68ef`) | Nyp-giv med Kling 4 och bankens tur och retur till samma plats höll i b6, b17 (P4), b19 (D) och b20 (P1, 2 av 2) (V). `p1-05` följer referensens väg och takt ut till P1 (mätt, V). Samma referens till fel plats: kortet läggs där referensen lägger det (b19 P7) (V) |
 | 5 Bilden följer med | Runway I2V: "Visual artifacts, such as blurry hands or faces, may be intensified" (V) | Ankare 2.2: posebilden visade Pamelas sko med öppen front, båda tagningarna ritade den (0/2) (V). Med Pamelas film som referens tappar Paows givande hand tatueringen i snabb rörelse (Prov `paow-plats-4-som-mall`) (V) |
-| 6 Två tagningar sållar | Jakob: två tagningar per klipp, en tredje om båda faller (HANDOFF) | Är två metoder lika bra med 50 % lyckade blir utfallet 2–0 mot 0–2 av slump i ungefär 1 fall av 8 (S) |
+| 6 Två tagningar sållar | Jakob: två tagningar per klipp, en tredje om båda faller (`docs/BESKED.md`, "Domar, beställningar och pengar") | Är två metoder lika bra med 50 % lyckade blir utfallet 2–0 mot 0–2 av slump i ungefär 1 fall av 8 (S) |
 
 **Där källorna säger emot varandra (V):** Klings egna exempel innehåller förbud ("Avoid duplicate limbs …") trots rådet.
 WAN:s promptomskrivare för första och sista bild säger både "emphasize potential changes … between the two frames" och
@@ -103,7 +103,7 @@ Orden står i `SAY`; här står vad som har hållit och varför.
 ### 3.1 Ingång: ankare 1 → 2.1 och → 2.2
 - Orden: `SAY.reach['2.1']` eller `['2.2']`, `SAY.eyes`, `SAY.otherRests`. WAN 3, 1080p, 4 s, två tagningar. Blicken är
   med för att Jakob sade om `paow-ingang-2-1-01`: "En bra variant! Men hon rör inte blicken filket är tråkigt" (V).
-- Har hållit: `paow-ingang-2-1-01` (WAN): granskaren 3,5/5 (HANDOFF), Jakob Variant; `-02` (Kling 3.0 4K, 172 krediter):
+- Har hållit: `paow-ingang-2-1-01` (WAN): granskaren 3,5/5 (äldre HANDOFF, i Git), Jakob Variant; `-02` (Kling 3.0 4K, 172 krediter):
   3/5, Jakob Godkänd, "bra men tråkig" (V, en tagning var). Kavajomgången: 1 → 2.2 gav en huvudtagning av två (V).
 - Har fallit: båda ingångarna rörde fönstrets ram före kortet (WAN ruta 44–59, 4K ruta 38–55) (V). Troligen geometrin:
   fingret kommer uppifrån och kortets kant sitter bakom ramen (S). Ordet "rim" är struket; att texten flyttar fingret är
@@ -130,8 +130,7 @@ Orden står i `SAY`; här står vad som har hållit och varför.
   ur bilderna (V, nio tagningar med referens). Handen lyfts eller släpper och läggs om i slutet i alla, eftersom sista
   bildens hand är bankens platta hand och referensens slutar med fingertoppen på kortet (V).
 - Risk: referensen är Pamelas, och hennes hand läcker in (tatueringen försvinner i snabb rörelse) (V). Studion stoppar
-  bara hela bilder av en annan dealer; en annan dealers film som referens tillåter Jakob (order-clerk §3; HANDOFF öppen
-  punkt 9 för varianter).
+  bara hela bilder av en annan dealer; en annan dealers film som referens tillåter Jakob (order-clerk §3).
 - **Utan referens:** `paow-giv-2-1-p4-04` (mall 3, rullas kring långsidan, Kling 4): Jakobs Primär, "Kanske den bästa!",
   fast kortet lyfts till brösthöjd och växer cirka 21 % och skjuts 160 px (mätt, inte granskad, V). `paow-giv-p4` (mall
   3, Kling 4): tagning 1 underkänd ("just denna omsvängning av kortet sista tredjedelen av videon som förstör.."),
@@ -187,7 +186,7 @@ handen på kant. En platt handrygg över kortet är aldrig slutet på en vändni
 texten* (Kling 4): 2 av 2 i `p1-08`, ledande. 1 *Text i en giv "bara dit"* från ankare 2.1 till landningsbilden, WAN 3
 och Kling 4, 7 s. 2 *Vändningen som egen film* mellan stillbilderna Före och Efter, 3 s (kräver en ny nod i banken,
 huvudagentens). 3 *Referensfilm av Jakobs egen hand* (3.8) med Kling 4, om 1 och 2 ger 0 av 4. 4 *Renderat kort*: rätt
-hand men fel kort ger målat kort (HANDOFF punkt 11); fel hand hjälper inget kort. En metod går vidare om minst 1 av 4
+hand men fel kort ger målat kort (äldre HANDOFF, i Git); fel hand hjälper inget kort. En metod går vidare om minst 1 av 4
 tagningar vänder kortet en gång vid platsen så som en hand kan, med kortet inom ±10 % (film-review §3–4).
 
 ### 3.4 Giv med släp från ankare 2.2 (stängt kort)
@@ -401,6 +400,20 @@ belägget.
 | Ankare 2.2 som redigerad stillbild | tre ordrar, sex tagningar, 1 användbar efter lagning: `paow-ankare-2-2` (Pamelas öppna sko kopierad i båda; t1 gäller efter skolagning, förpass och tre lokala lagningar, granskaren 3/5 för provfilmer, Jakob: gäller, 3.7; t2 två skofronter och två kort), `-01` (fönsterskon cirka 100 px åt vänster), `-02` ur ankare 2.1 (104 och 81 px åt vänster) | 1 av 6, och bara med lagning; oprövat: en ruta ur en film som börjar på ankare 2.1 |
 | 4K-filmmodell för skärpa | `paow-ingang-2-1-02`: ingen skärpevinst i bankens ruta, 172 mot 80 | faller |
 | Bildmodellen flyttar kameran (sidovy) | fyra försök, 160 krediter (`D:/dealer-scratch/tmp/dealer-bf/LASMIG.md`) | faller |
+
+**Regler för en giv med referensfilm, ur givproven 2026-11-17 och 2026-11-18** (raderna ovan; flyttade hit ur
+överlämningen, där de stod i lägesrapporter):
+
+1. Väg, takt, kortets storlek i handen och ögonblicket på kant kommer ur referensfilmen; vem hon är, skon och var kortet
+   ligger kommer ur bilderna (nio tagningar, 3.2). En referens väljs därför efter vad den visar, inte bara efter Jakobs
+   dom, och mäts själv innan den används (`D:/dealer-scratch/tmp/film-standard/referenskontroll.tsv`).
+2. Från ankare 2.1 är ordningen: nyp, bär i luften, nyckelvridning mitt på vägen, lägg, skjut sista biten under
+   fingertopparna, vila med fingertopparna kvar. Handen vänds en gång, i luften, och aldrig i slutet.
+3. Från ankare 2.2 släpas kortet plant, tas i kanten och vänds först nära platsen.
+4. Referensfilmen ska sluta som sista bilden (handens sida och fingrarna på kortet), annars hittar Kling på slutet.
+5. Blicken måste stå i ankaret och i sista bilden: referensfilmen styr den vilande handen men inte huvudet.
+6. Att kortet glider lite efter att fingrarna har släppt är en anmärkning och inget fall (Jakob godtog tagning C); det
+   den automatiska kontrollen fäller står i `src/deal-check.ts`.
 
 **Omgång 5, granskad och dömd 2026-11-13 (V, kvittona och `motions/`).** Granskaren (giv/retur): `p1-08` t1 4/3,5 och t2
 4/0,5 (ett andra gult kort stoppas in i skon i returen), `p2-03` 3,5/3,5 möjlig variant, `p1-07` t2 2/3 (kortet

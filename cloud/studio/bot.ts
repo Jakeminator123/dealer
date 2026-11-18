@@ -159,7 +159,7 @@ function fakeAnswer(q: Question, found: readonly Section[]): string {
     `- ${viewText(q.vy)}`,
     `- Närmast i materialet: ${near.length ? near.join(', ') : 'inget avsnitt matchade'}.`,
     `- Skärmbild: ${q.bild ? `med, ${Math.max(1, Math.round(q.bild.bytes.length / 1024))} kB` : 'ingen'}.`,
-    `- Ett riktigt svar sätter sin källa efter varje påstående, så här: ${near[0] ?? '[HANDOFF › Målet]'}.`,
+    `- Ett riktigt svar sätter sin källa efter varje påstående, så här: ${near[0] ?? '[HANDOFF › Läget]'}.`,
   ].join('\n');
 }
 const pieces = (text: string) => text.match(/[\s\S]{1,24}/g) ?? [];

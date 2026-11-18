@@ -3,7 +3,7 @@
 // studio uses for it (his most settled word where he has one), one line of what it is and where he sees it, the other words
 // he himself uses for the same thing (sager, shown as "Säger också"), and the names it has in code, files and documents
 // (aven, "Kallas också"). Every name leads to one entry only (studio/tests/words.test.ts). The anchors' settled words come
-// from HANDOFF "Ankarmodellen" and docs/SYSTEM.md "Ordlista och gräns mot Scout"; the rest is checked against the code and
+// from docs/BESKED.md "Dealern och ankarna" and docs/SYSTEM.md "Ordlista och gräns mot Scout"; the rest is checked against the code and
 // registers it names. The rail's "Ordlista" shows the table (components/shell/Glossary.tsx) and the bot reads it through
 // lib/guide.ts, so no text here may carry a machine path, a lab address or a name the copy blocks. Data and one search, no DOM.
 

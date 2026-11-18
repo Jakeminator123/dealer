@@ -25,8 +25,8 @@ ned; varje beställning på vägen följer skill `bestalla-film`, varje leverans
 7. **Metoden per steg** väljs efter Jakobs domar och skrivs i `data/order-methods.json` med belägg (bandet, station 7
    och 15).
 8. **Ett foto av en riktig person som förlaga** ligger i `private/` och läggs aldrig i Git, i ett prov eller på sajten;
-   det går bara till bildmodellen (AGENTS, "Det som skyddar Jakob"; HANDOFF, "Jakobs besked som gäller", Tatueringar
-   och händer).
+   det går bara till bildmodellen (AGENTS, "Det som skyddar Jakob"; `docs/BESKED.md`, "Dealern och
+   ankarna").
 
 ## Klar
 

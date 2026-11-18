@@ -1,4 +1,4 @@
-// The studio Jakob sees, built from the committed state (HANDOFF, "Arbetsyta"; DRIFT, "Labbservern och fliken"): the lab
+// The studio Jakob sees, built from the committed state (docs/lage/labbet-och-studion.md; DRIFT, "Labbservern och fliken"): the lab
 // server hands out the main checkout's studio/out, and a build there would carry every session's half-finished studio
 // file to his tab. This builds a commit in a clean worktree on the scratch disk (detached, `npm ci` when a package list
 // changed or node_modules is missing, `npm --prefix studio run build`) and only after a build that succeeded swaps the

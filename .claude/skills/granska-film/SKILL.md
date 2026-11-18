@@ -19,7 +19,7 @@ granskningsinstruktionen hel innan första rutan läggs ut.
    agent skriver hans dom i `motions/` (AGENTS, "Det som skyddar Jakob"; `film-review.md` punkt 0).
 4. **En preliminär dom bara där han uttryckligen har lämnat över domen,** med `node tools/review-put.ts`: den ser aldrig
    ut som hans, väntar inte i hans kö och ersätts av hans beslut; en tagning han själv har dömt rörs aldrig (AGENTS;
-   HANDOFF, "Jakobs besked som gäller", Domar åt honom).
+   `docs/BESKED.md`, "Domar, beställningar och pengar").
 5. **En naturlig avvikelse är en möjlig variant,** inte ett fel: säg som vad (`film-review.md` punkt 0). Mjuka aldrig
    upp domen för att ett fel är lagbart (`film-review.md`, "Mjuka aldrig upp domen").
 6. **Originalet ändras aldrig.** En lagning är `node tools/film-fix.ts <film> <fixes.json>` bredvid originalet, och den
@@ -27,8 +27,8 @@ granskningsinstruktionen hel innan första rutan läggs ut.
 7. **Domen in i kvittot** med poängen skriven "given 3/5, returen 1/5": `node tools/order-put.ts review <id> <n> --note
    "…"` (bandet, station 12; `film-review.md`, Sist).
 8. **Granskarna är inte hans öga.** Det han ska döma läggs fram med en stillbild bredvid filmen, och ett nytt utseende
-   som ska gälla överallt visas i spelets storlek och i rörelse och kräver hans ja (HANDOFF, "Jakobs besked som gäller",
-   Beslut och svar och Läpparna).
+   som ska gälla överallt visas i spelets storlek och i rörelse och kräver hans ja (`docs/BESKED.md`, "Arbetet och dokumenten"
+   och "Läpparna och talet").
 9. **Högst två ffmpeg-processer åt gången;** skript i filer i dumpmappen, aldrig `node -e`; utlagda rutor raderas efteråt
    (`film-review.md`, Metod).
 

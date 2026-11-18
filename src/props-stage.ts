@@ -119,7 +119,7 @@ export function createStage(contract: Parameters<typeof cameraFromContract>[0]) 
 // study, not a measured room. The casino is shown dim (its tables are lit and the hall is not); the penthouse and the forest are
 // lit by daylight, which falls on their floors as on the table, so they are shown nearly as bright as the table. Skyline is turned
 // so that its low sun comes from behind the camera and a little from the left, as the light on her in the film does; behind her
-// are its windows. The images are the scene's three panoramas (local media; their origin is in HANDOFF).
+// are its windows. The images are the scene's three panoramas (local media; each one's origin stands in data/scene-rooms.json).
 export type RoomId = 'vegas' | 'la' | 'skog';
 export type Room = {id: RoomId; label: string; file: string; shown: number; turn: number; ground: {eye: number; walls: number; ceiling: number}};
 export const ROOMS: Room[] = [

@@ -154,7 +154,7 @@ export function idsNamed(text: string, ids: string[]): string[] {
   return ids.filter(id => (id.length >= 6 || id.includes('-')) && new RegExp(`(?<![A-Za-z0-9_-])${id.replace(/[.*+?^${}()|[\]\\-]/g, '\\$&')}(?![A-Za-z0-9_-])`).test(text));
 }
 // The documents and instructions whose naming of a thing makes it living work (shown), whatever kind of unit it is.
-export const DOCUMENTS = ['HANDOFF.md', 'README.md', 'AGENTS.md', 'docs/*.md', 'tools/*.md', '.claude/skills/*/SKILL.md', 'dealer3d/LASMIG.md'];
+export const DOCUMENTS = ['HANDOFF.md', 'README.md', 'AGENTS.md', 'docs/*.md', 'docs/lage/*.md', 'tools/*.md', '.claude/skills/*/SKILL.md', 'dealer3d/LASMIG.md'];
 
 // ── Reading (not pure) ──────────────────────────────────────────────────────
 function filesUnder(root: string, rel: string, out: FileInfo[] = []): FileInfo[] {
@@ -224,7 +224,7 @@ export function audit(repo: string): {items: Item[]; judged: Map<string, string>
   // Anything Beslut, the release, a document or an instruction names by its exact id is living work; a proof also when it changed today.
   const list2 = (dir: string, test: (f: string) => boolean) => { try { return readdirSync(path.join(repo, dir)).filter(test).map(f => `${dir}/${f}`); } catch { return []; } };
   const skills = list2('.claude/skills', () => true).map(d => `${d}/SKILL.md`).filter(f => existsSync(path.join(repo, f)));
-  const docNames = ['data/decisions.json', 'data/studio-release.json', 'HANDOFF.md', 'README.md', 'AGENTS.md', ...list2('docs', f => f.endsWith('.md')), ...list2('tools', f => f.endsWith('.md')), ...skills, 'dealer3d/LASMIG.md'];
+  const docNames = ['data/decisions.json', 'data/studio-release.json', 'HANDOFF.md', 'README.md', 'AGENTS.md', ...list2('docs', f => f.endsWith('.md')), ...list2('docs/lage', f => f.endsWith('.md')), ...list2('tools', f => f.endsWith('.md')), ...skills, 'dealer3d/LASMIG.md'];
   const byId = new Map<string, string[]>();
   for (const u of units) { const id = u.path.split('/').at(-1)!; byId.set(id, [...(byId.get(id) ?? []), u.path]); }
   for (const name of docNames) { const text = read(name); if (!text) continue;
