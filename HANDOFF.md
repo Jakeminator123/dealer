@@ -21,10 +21,11 @@ Git, och en rad som inte längre gäller ersätts.
    och Runway ansluts på nytt (`/mcp`): allt som gäller står i repot. Starta vakten på hans kö i Beställ, och läs
    hans anteckningar (`node tools/proof-notes.ts`) och svaren i Beslut före första svaret till honom.
 2. Se att fjärren är i kapp med `main` och att inget arbetsträd bär arbete som inte är inne (`git worktree list`).
-3. Filmerna först ([film](docs/lage/film.md)): hans val av fart och tagning in i banken, dockans filmer som
-   referensfilmer så att stegen från 2.3 går att beställa, sedan en tagning per återstående plats.
-4. Fem kameravinklar är hans mål: provsidan `/vinklar.html` och det som återstår står i film-lägesfilen.
-5. Rätta kopians tre fel före nästa publicering ([BRISTER](docs/BRISTER.md)), och utför de besvarade korten i Beslut.
+3. Filmerna först ([film](docs/lage/film.md)): given från 2.3 till plats 4 och plats 1 (hans ord), ingången och den
+   bästa tagningen in i banken, och stegen från 2.3 beställbara genom Bordet.
+4. Räddningsuppdraget ([BESKED](docs/BESKED.md), "Räddningsuppdraget"): det som återstår av dess kontrollpunkter står
+   i [BRISTER](docs/BRISTER.md); störst är att spelet och labbet delar kortgeometri först bakom `geometri=lins`.
+5. Fem kameravinklar (`/vinklar.html`, film-lägesfilen), kopians tre fel före nästa publicering, och korten i Beslut.
 
 Äldre frågor till honom som inte är kort än: `D:/dealer-scratch/tmp/handoff-nytt/forslag-kort.md`.
 
@@ -38,11 +39,9 @@ Git, och en rad som inte längre gäller ersätts.
   till när ett steg är grönt, med en fillista. Ingen bana skriver i en annans filer.
 - **Huvudagentens banor:** film, kort, labbet och studion, och spelet. Filerna de äger står under Var saker ligger i varje lägesfil.
   Banorna Scen, Tal och Trailer är stängda; deras filer hålls av huvudagenten ([spelet](docs/lage/spelet.md)).
-- **3D-banan:** mappen `dealer3d/` (dockan som styr filmerna) på grenen `dealer-3d`, i arbetsträdet
-  `D:/dealer-scratch/tmp/dealer-3d/trad`. Sessionen avslutade sitt pass 2026-11-18; en ny börjar från
-  [dealer3d/LASMIG.md](dealer3d/LASMIG.md), där också räddningsuppdragets filer står.
-- **Mätning och ankare 2.3 (MODEL):** skriver bara på slaskdisken och i sina prov. Sessionen avslutade sitt pass
-  2026-11-18; en ny börjar från [docs/lage/matning.md](docs/lage/matning.md).
+- **3D-banan** (`dealer3d/`, dockan som styr filmerna; grenen `dealer-3d`) och **mätning och ankare 2.3** är sedan
+  2026-11-18 underagenter till huvudagenten (hans ord). De börjar från [dealer3d/LASMIG.md](dealer3d/LASMIG.md) och
+  [docs/lage/matning.md](docs/lage/matning.md).
 - **Jakobs egna:** planen `placements/default.json` och hans domar i `motions/` (`review`), som skrivs från Granska och
   aldrig skrivs över av ett verktyg. En dom som getts åt honom (`node tools/review-put.ts`) är aldrig hans.
 - **En ny session** arbetar i ett eget arbetsträd på en kort gren och skriver först till huvudagenten vilka filer den

@@ -366,7 +366,12 @@
       "file": "3c-filmen-1-till-2-3-fart-2.mp4",
       "choice": "bra",
       "text": "",
-      "at": "2026-11-18T02:29:50.947Z"
+      "at": "2026-11-18T02:29:50.947Z",
+      "answer": {
+        "text": "Läst. Ingångsfilmen går in i banken i 2 gånger farten; 1,5 gånger används inte.",
+        "at": "2026-11-18T03:11:05.751Z"
+      },
+      "read": "2026-11-18T03:11:05.751Z"
     },
     {
       "id": 33,
@@ -374,7 +379,8 @@
       "file": "3b-filmen-1-till-2-3-fart-1-5.mp4",
       "choice": null,
       "text": "hackar och långsam",
-      "at": "2026-11-18T02:30:06.080Z"
+      "at": "2026-11-18T02:30:06.080Z",
+      "read": "2026-11-18T03:11:05.972Z"
     },
     {
       "id": 34,
@@ -382,7 +388,12 @@
       "file": "0-giv-p5-tagning-3.mp4",
       "choice": null,
       "text": "Kan vara bra. men hon gör verkligen en konstig vridning med andra handen som tippar över kortet i mitten av videon. men kanske kan vi följa upp på detta och skapa två till voideos, en för kort plats nummer 1 och plats nummer 4. Men från samma ankare. men säg också, är detta ankare taget eller skapat från den youtube-video där kamperan är ännu mera ovan detn som vi använder?",
-      "at": "2026-11-18T02:40:11.044Z"
+      "at": "2026-11-18T02:40:11.044Z",
+      "answer": {
+        "text": "Läst. Två filmer till görs från samma ankare 2.3: till plats 4 och till plats 1, utan att den andra handen tippar kortet. Ankaret är inte taget ur YouTube-filmen: kameran är bankens egen, samma som i ankare 2.1 och 2.2, och bilden är en ruta ur en film som börjar på ankare 1. Bara posen och händerna kom från mätningen.",
+        "at": "2026-11-18T03:11:05.533Z"
+      },
+      "read": "2026-11-18T03:11:05.533Z"
     },
     {
       "id": 35,
@@ -390,7 +401,8 @@
       "file": "0-a-giv-p5-tagning-4.mp4",
       "choice": "bra",
       "text": "",
-      "at": "2026-11-18T02:55:52.247Z"
+      "at": "2026-11-18T02:55:52.247Z",
+      "read": "2026-11-18T03:11:06.211Z"
     }
   ]
 }

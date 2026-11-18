@@ -56,6 +56,14 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   par underagenter i arbete. Du ska mest orkestrera. Se till att du får en städagent som rensar upp, samt en agent som
   stramar upp så att allt följer en rak linje." och "Delegera och använd underagenter elelr sidocahttar". Huvudagenten
   delar ut arbetet till underagenter och sidochattar och gör själv granskningen, sammanslagningen och svaren till honom.
+- **Räddningsuppdraget, och banorna som underagenter** (2026-11-18, kl. 04.05, med uppdraget bifogat;
+  `D:/dealer-scratch/tmp/raddning/UPPDRAG.md`): "Också vill jag att du försöker se till det som nämnts ang kritik till
+  repot och att det behövs "räddas" i och med att saker blandats ihop (läs bifogat). Se om det behövs bättre rensning
+  och städning. mer av "en väg" ect", och om sidochattarna 3D och MODEL: "Sdan ska du stareta upp dessa men användas
+  som underagenter utifrån hur du vill använda dessa (jag kommer arkivera de sidochattarna nu)." Uppdragets fem
+  kontrollpunkter (en kortgeometri och kamera, ett referensval, ankare och nodkarta, spelkärnans gräns, samma väg i
+  labbet och Casinot) drivs av huvudagenten tills var och en är stängd eller står som en brist; 3D-banan och banan
+  mätning och ankare 2.3 är underagenter till huvudagenten.
 - **Spara tokens** (2026-11-18, kl. 03.42): "Kan du på något sätt se till att vi inte spenderar så mycket tokens? Det
   går snabbt med den här femtimmarsgrejen som körs". Kontots gräns delas av alla sessioner. En underagent startas bara
   för det han har beställt, en oberoende granskare bara för en tagning som den automatiska kontrollen släpper igenom,
@@ -311,6 +319,12 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   lixom upp i mitten typ. Sista videon är okej men hon har ett bord som ändrar färger och ett ort som visar textur av
   vitt". Filmen från vila till ankare 2.3 ska gå fortare. En giv är en sammanhängande rörelse, utan stopp med kortet
   rest. Bordets gröna är densamma genom hela filmen, och kortet är slätt, utan vitt eller mönster.
+- **Två givar till från ankare 2.3, och ingången i dubbel fart** (Prov 2026-11-18, kl. 03.30–03.55). Om tagning 3
+  till plats 5: "Kan vara bra. men hon gör verkligen en konstig vridning med andra handen som tippar över kortet i
+  mitten av videon. men kanske kan vi följa upp på detta och skapa två till voideos, en för kort plats nummer 1 och
+  plats nummer 4. Men från samma ankare." Tagning 4 märkte han Bra. Ingångsfilmen: 2 gånger farten Bra, 1,5 gånger
+  "hackar och långsam" (hans svar 1,5 på kortet i Beslut var ett misstag, sade han). Nästa filmer är given från 2.3
+  till plats 4 och till plats 1, utan att den andra handen tippar kortet; ingången går in i banken i dubbel fart.
 - **Flera kameravinklar ur samma film** (2026-11-18, kl. 03.10 och 03.25). Först: "Kna du itne bara prova att
   förenkla.. Typ skicka filemn för när PAOW dealar till P4C1 och sedan säger du att samma video ska genereras med säg
   35% från sida". Om provet `sidovinkel-ur-film`: "Det här är mycket bra, jag vet inte hur du gjorde. Det kanske är
