@@ -331,7 +331,8 @@
       "file": "last.png",
       "choice": "bra",
       "text": "",
-      "at": "2026-11-18T02:17:50.397Z"
+      "at": "2026-11-18T02:17:50.397Z",
+      "read": "2026-11-18T02:27:58.161Z"
     },
     {
       "id": 29,
@@ -339,7 +340,41 @@
       "file": "kortet-pa-platsen.png",
       "choice": null,
       "text": "Tagnig 2 är bra antar ajg",
-      "at": "2026-11-18T02:18:05.945Z"
+      "at": "2026-11-18T02:18:05.945Z",
+      "answer": {
+        "text": "Läst. Tagning 2 har kortet på rätt plats och i rätt storlek, men det läggs gult och blir blått först i sista rutan, utan att vändas. Därför föreslog granskaren underkänt; domen är din.",
+        "at": "2026-11-18T02:27:57.846Z"
+      },
+      "read": "2026-11-18T02:27:57.846Z"
+    },
+    {
+      "id": 30,
+      "proof": "sidovinkel-ur-film",
+      "file": "2-fran-sidan.mp4",
+      "choice": null,
+      "text": "Det här är mycket bra, jag vet inte hur du gjorde. Det kanske är exakt allt som behövs. Vi har med andra ord 35% framifrån, 35% åt sidan, och vi skulle kunna göra 70% åt sidan. Vi kan också spegelvända filmen till andra sidan, vilket ger oss fem olika kameravinklar. Utifrån det kan vi binda samman dessa vinklar för att titta åt ett visst håll. Innan vi gör det kanske vi kan göra ett prov där vi binder ihop de två videorna på bordet med en egen scen. Hon ser lite kantig ut, så jag kan generera en bild där hon är 35% åt sidan, som kan användas som ett alternativt ankare eller `keystone`-bild. Detta kan fungera som en testbild för att skapa en scen där jag kan titta åt sidan och se om det går att binda ihop.",
+      "at": "2026-11-18T02:25:31.738Z",
+      "answer": {
+        "text": "Läst. Provet där filmen rakt fram och filmen från sidan binds ihop i en scen byggs nu som en egen sida i labbet. Din bild av henne från sidan blir stillbilden som styr nästa film.",
+        "at": "2026-11-18T02:27:57.489Z"
+      },
+      "read": "2026-11-18T02:27:57.489Z"
+    },
+    {
+      "id": 32,
+      "proof": "paow-ankare-2-3",
+      "file": "3c-filmen-1-till-2-3-fart-2.mp4",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-18T02:29:50.947Z"
+    },
+    {
+      "id": 33,
+      "proof": "paow-ankare-2-3",
+      "file": "3b-filmen-1-till-2-3-fart-1-5.mp4",
+      "choice": null,
+      "text": "hackar och långsam",
+      "at": "2026-11-18T02:30:06.080Z"
     }
   ]
 }
