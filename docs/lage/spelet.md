@@ -13,13 +13,13 @@ och Trailer lämnade. Här står bara det som gäller nu; kontraktet står i `do
   hålls av huvudagenten tills en ny bana får dem.
 - Realtidsmunnen har Jakobs ja (`paow-realtid-mun-6`, storlek F, mindre öppning och mjuk haka). Köraren gör lokalt
   12–13 rutor/s mot 24 för realtid. Spelets repliker använder lyftet med ritad underläpp (`src/speech-plan.ts`).
-- Jakob såg clownmun 2026-11-18. Provet med `lips=null` på befintliga rådata till `paow-tal-placebets-sv-13` ligger i
-  `assets/proofs/paow-mouth-candidate-20261118`. Spelet använder fortfarande den tidigare repliken. Ljudets PCM är
-  byteidentiskt. HTML-videon ser överexponerad ut, medan avkodade bilder ser normala ut. Canvasverifiering pågår.
+- Jakob såg clownmun 2026-11-18. Tre neutrala `lips=null`-prov finns i `assets/proofs/paow-mouth-candidate-20261118`
+  och `paow-mouth-neutral-{hej09,goodluck14}-20261118`. Originalens ljud är byteidentiskt; aktiv bank är oförändrad.
+  Canvas visar normala färger under tal där HTML-video överexponeras. Mindre mungipor syns; samlad rörelsegranskning återstår.
 - `dealTempo` är ett prov med standard 1 och intervallet 1–1,15. Bara tysta givar och returer ändrar takt efter
   munlappsvalet. I Chrome verifierades tredje P6-kortet vid filmruta 86 och 1,12×, samt tre P6-kort och två
   dealerkort efter returen. Mjukhet och övergång i rörelse återstår att bedöma.
-- `diagnos=1` ger paus och stegning ±1 ruta. Blinket vid stegning är rättat i tester; bildkontroll återstår.
+- `diagnos=1` ger paus och stegning ±1 ruta. Långsam sökning märks tydligt; bildkontroll av blinkrättningen återstår.
 - Kopian på nätet är sekundär och står på `2e3967c` (publicerad 2026-11-18 på Jakobs ja, med nytt lösenord).
   `cloud/` bevaras tills Jakob säger annat.
 - Filmen till hans chef ligger på hans skrivbord (`paow-runda-6-till-chefen-spelet.mp4` och `-scenen.mp4`, 124 s,

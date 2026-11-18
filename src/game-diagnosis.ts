@@ -21,29 +21,30 @@ function playbackControls(panel: HTMLElement, options: DiagnosisControls, signal
   group.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;gap:4px;flex:none;pointer-events:auto';
   status.setAttribute('role', 'status');
   status.style.cssText = 'flex-basis:100%;font:inherit;overflow-wrap:anywhere';
-  let busy = false;
-  const button = (label: string, action: () => void | Promise<void>) => {
+  let busy = false, seeking = false;
+  const button = (label: string, action: () => void | Promise<void>, seeks = false) => {
     const el = doc.createElement('button'); el.type = 'button'; el.textContent = label;
     el.style.cssText = 'min-height:26px;padding:2px 6px;background:#182918;color:#edffe9;border:1px solid #8dba84;border-radius:4px;font:inherit;cursor:pointer';
     el.addEventListener('click', async () => {
       if (busy) return;
-      busy = true;
+      busy = true; seeking = seeks; update();
       try { await action(); } catch (error) { keep(String(error)); }
-      finally { busy = false; if (!signal.aborted) update(); }
+      finally { busy = false; seeking = false; if (!signal.aborted) update(); }
     }, {signal});
     return el;
   };
-  const toggle = button('Pausa', options.toggle), back = button('−1 ruta', () => options.step(-1)), next = button('+1 ruta', () => options.step(1));
+  const toggle = button('Pausa', options.toggle), back = button('−1 ruta', () => options.step(-1), true), next = button('+1 ruta', () => options.step(1), true);
   group.append(toggle, back, next, status); panel.append(group);
   function update() {
     let current: ReturnType<DiagnosisControls['playback']> = null;
     try { current = options.playback(); } catch (error) { keep(String(error)); }
     const label = current?.paused ? 'Fortsätt' : 'Pausa';
     if (toggle.textContent !== label) toggle.textContent = label;
-    toggle.disabled = back.disabled = next.disabled = !current;
+    toggle.disabled = back.disabled = next.disabled = !current || busy;
     // Announce the exact frame when paused or stepped, without a running stream of frame announcements.
-    status.setAttribute('aria-live', current && !current.paused ? 'off' : 'polite');
-    const text = current ? `${current.clip} · ruta ${current.frame} · ${current.rate.toLocaleString('sv-SE', {maximumFractionDigits: 2})}×` : 'Ingen film att stega i';
+    status.setAttribute('aria-live', current && !current.paused && !seeking ? 'off' : 'polite');
+    // A seek moves currentTime before the decoder replaces the held picture.
+    const text = current ? `${current.clip} · ${seeking ? 'söker filmruta…' : `ruta ${current.frame}`} · ${current.rate.toLocaleString('sv-SE', {maximumFractionDigits: 2})}×` : 'Ingen film att stega i';
     if (status.textContent !== text) status.textContent = text;
   }
   return update;

@@ -31,8 +31,12 @@ export type Plan = {clip: string; takes: Entry[]; records: Record<string, Record
 const json = async (file: string) => JSON.parse(await readFile(file, 'utf8'));
 const posix = (root: string, file: string) => path.relative(root, file).split(path.sep).join('/');
 async function writeAtomic(file: string, text: string) { await mkdir(path.dirname(file), {recursive: true}); const temporary = path.join(path.dirname(file), `.${randomUUID()}.tmp`); await writeFile(temporary, text, {flag: 'wx'}); await rename(temporary, file); }
-/** Jakob has decided on a take when its record carries his word, his acceptance or any decision but waiting. */
-export const decided = (record: {review?: {decision?: string; userReview?: string; userAccepted?: boolean}} | null) => !!record?.review && (!!record.review.userReview || record.review.userAccepted === true || (!!record.review.decision && record.review.decision !== 'PENDING'));
+/** Archive status protects a take even while its review decision is pending. */
+export function decided(record: {review?: {archived?: boolean; decision?: string; userReview?: string; userAccepted?: boolean}} | null): boolean {
+  const review = record?.review;
+  return !!review && (review.archived === true || !!review.userReview || review.userAccepted === true
+    || (!!review.decision && review.decision !== 'PENDING'));
+}
 
 /** The clip id of a take: the order's id (with the dealer first, as the bank names films) and the take's number. */
 export function clipIdOf(order: Pick<OrderLike, 'id' | 'dealer'>, take: number): string {

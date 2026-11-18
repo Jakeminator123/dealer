@@ -167,6 +167,28 @@ test('a take Jakob has decided on is never written over, and an order that is no
   assert.ok((await planRegistration(root, ORDER, 1, {split: 6}).catch(e => e)) instanceof OrderError);
 });
 
+test('an archived pending return blocks re-registering the entire round trip', needsFfmpeg, async t => {
+  const {root, film} = await bank(t);
+  await collectTake(root, ORDER, 1, {from: film});
+  const plan = await planRegistration(root, ORDER, 1, {split: 6});
+  await register(root, plan);
+
+  const returnId = `${plan.clip}-return-ready`;
+  const returnPath = `motions/${returnId}.json`;
+  const pending = await read(root, returnPath);
+  assert.equal(pending.review.decision, 'PENDING');
+  pending.review.archived = true;
+  await writeFile(path.join(root, returnPath), JSON.stringify(pending, null, 2) + '\n');
+
+  const files = [returnPath, `motions/${plan.clip}-deal.json`, `motions/${plan.clip}.json`,
+    `assets/motions/${plan.clip}/generation.json`, `assets/motions/${plan.clip}/source.mp4`, 'data/clip-jobs.json'];
+  const snapshot = () => Promise.all(files.map(file => readFile(path.join(root, file))));
+  const before = await snapshot();
+  await assert.rejects(async () => register(root, await planRegistration(root, ORDER, 1, {split: 7})),
+    new RegExp(`${returnId} har Jakobs beslut`));
+  assert.deepEqual(await snapshot(), before);
+});
+
 test('a fixed copy becomes a corrected copy of each of its take\'s takes, in the inbox, with the original\'s frame numbers', needsFfmpeg, async t => {
   const {root, film} = await bank(t);
   const {path: delivered} = await collectTake(root, ORDER, 1, {from: film});

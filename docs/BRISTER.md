@@ -9,6 +9,9 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 
 ## Kortet
 
+- **Filmcarry behöver ett giltigt kortspår för full markörrensning.** Syns i 2D-provet `cardMethod=film` när ett
+  givspår saknas eller är ogiltigt: filmkortet skyddas, men äldre färgmarkörer kan också synas. Med giltigt spår
+  skyddas bara aktivt kort och sko; övriga markörer rensas. Stänger: verifierade spår och synprov i rörelse.
 - **Det ritade kortet i spelet** (Jakob 2026-11-13: "Det lixom kletar fast sig på korten", "linjer flyger dit och dit").
   Syns: i spelet, som ritar kortet hela vägen med underlägget under (`UNDER` i `src/card-overlay.ts`): hålkortet är dolt
   under hennes fingertoppar cirka 0,6 s innan det glider på plats, kortets högra ände har en svag gulaktig kant, en tunn

@@ -56,9 +56,10 @@ test('diagnosis pauses, steps by one and ignores overlap and completion after cl
     toggle() { toggles++; playing.paused = !playing.paused; },
     async step(direction) {
       steps.push(direction);
-      if (hold) await hold.promise;
+      // currentTime already names the target while the old decoded picture is still shown.
       playing.frame += direction;
       playing.paused = true;
+      if (hold) await hold.promise;
     },
   });
   t.after(cleanup);
@@ -80,6 +81,8 @@ test('diagnosis pauses, steps by one and ignores overlap and completion after cl
   assert.equal(toggle.textContent, 'Pausa');
 
   await next.click();
+  t.mock.timers.tick(600);
+  assert.equal(status.textContent, 'P1 retur · söker filmruta… · 1,15×', 'a delayed seek must not label the old picture with its target frame');
   await back.click();
   await toggle.click();
   assert.deepEqual(steps, [1], 'a slow seek does not accept overlapping steps');

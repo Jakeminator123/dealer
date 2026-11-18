@@ -4,8 +4,9 @@
 // and how large comes from src/card-overlay.ts.
 import * as THREE from '../materials/source/references/card-materials/vendor/three.module.js';
 import {CARD, RANKS, SUITS, createCardGeometry, createCardPrint, paperMaterialParameters, applyCardLights, validateCard, type CardValue} from '../materials/source/src/card-material-study.ts';
-import {poseAt, restOf, restingQuad, returnCardAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, strayBoxes, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, BESIDE, RIM, type CardRecord, type CardTrack, type Scene, type Pose} from './card-overlay.ts';
+import {poseAt, restOf, restingQuad, returnCardAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, strayBoxes, plausible, plausibleEdge, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, BESIDE, RIM, type CardRecord, type CardTrack, type Scene, type Pose} from './card-overlay.ts';
 import {signedArea, inside, clockwise, grown, is, type Pt} from './card-track.ts';
+import {SHOE_BOX} from './scene3d-matte.ts';
 
 export {RANKS, SUITS};
 // The study lights its card for a dark room. Over the film the paper must read as white beside the film's own whites, so the same
@@ -17,6 +18,7 @@ const PAPER_EXPOSURE = 3;
 // land: the plan's quad for the card, in film pixels: the rendered card ends there, whatever the film's own landing; it replaces shift.
 // placed: cards dealt by earlier films of the round, which this film does not show; they lie where they landed.
 type PlacedCard = {quad: Pt[]; back: boolean; target?: string | null; shoeDraw?: number | null; gloss?: number};
+type FilmRegion = (x: number, y: number) => boolean;
 export type OverlayOptions = {scale: number; split: boolean; card: CardValue; side: 'TRACK' | 'BACK' | 'FRONT'; bend: number; gloss: number; inFront: boolean;
   shift?: Pt | null; land?: Pt[] | null; returning?: boolean; placed?: PlacedCard[]; carry?: 'object' | 'film' | 'matte';
   // A value per card (optional): the records of the dealt cards, and which of them the card of this film is, by draw number or by
@@ -32,16 +34,40 @@ export function placedCardsForView(placed: readonly PlacedCard[], returning: Pla
 /** In film carry, the moving card stays in the original pixels until the tracked landing. */
 export function frameCardsForView(track: CardTrack | null, frame: number, scene: Scene | null, options: Pick<OverlayOptions, 'carry' | 'scale' | 'shift' | 'land' | 'returning' | 'placed' | 'target' | 'shoeDraw' | 'gloss'>) {
   const returning = returnCardAt(track, frame, options), marker = returning?.marker;
-  const filmTrack = options.carry === 'film' && !options.returning ? track : null;
-  const rest = filmTrack && restOf(filmTrack);
+  const filmCarry = options.carry === 'film' && !options.returning && (!!track || options.land?.length === 4);
+  const rest = filmCarry && track && restOf(track);
   // A deal with a measured landing uses that frame. Bad quads near its centre must not move the handoff earlier.
-  const keepFilmCard = !!filmTrack && Math.round(frame) < (rest ? filmTrack.restFrom ?? rest.from : Infinity);
+  const keepFilmCard = filmCarry && Math.round(frame) < (rest ? track?.restFrom ?? rest.from : Infinity);
   // During a return only the marker is tracked. The game card is laid just as it will be in the next beat.
   const pose: Pose | null = returning
     ? marker ? {frame: marker.frame, side: marker.side, quad: null, edge: null, film: grown(marker.quad, RIM), resting: 1, turned: false} : null
     : track && !keepFilmCard ? poseAt(track, scene, frame, options.scale, 12, options.shift ?? null, options.land ?? null) : null;
   const placed = placedCardsForView(options.placed ?? [], returning?.card ?? null, scene, options.scale);
   return {pose, placed, returning: !!returning, keepFilmCard};
+}
+
+export function filmCarryProtection(track: CardTrack | null, frame: number): {canClean: boolean; shoe: number[]; keep: FilmRegion} {
+  const at = Math.round(frame), sample = track?.frames[at], shoe = track?.shoeWindow?.box ?? SHOE_BOX;
+  const unknown = {canClean: false, shoe, keep: () => true};
+  // Without current source geometry, old markers can remain visible. Keep ambiguous pixels so they cannot erase the moving card.
+  if (!sample || sample.frame !== at) return unknown;
+  const points = (q: number[][] | null) => q?.map(([x, y]) => ({x, y})) ?? null;
+  const card = sample.side === 'BACK' || sample.side === 'FRONT' ? points(sample.film ?? sample.quad) : null;
+  const line = sample.side === 'EDGE' ? points(sample.edge) : null;
+  const film = card && plausible(card) ? grown(clockwise(card), RIM) : null;
+  const edge = line && plausibleEdge(line) && (line[0].x !== line[1].x || line[0].y !== line[1].y) ? [line[0], line[1]] as [Pt, Pt] : null;
+  if (!film && !edge) return unknown;
+  const active = filmZone({frame: at, side: sample.side, quad: null, film, edge, resting: 0, turned: false});
+  const [x0, y0, x1, y1] = shoe;
+  return {canClean: true, shoe, keep: (x, y) => active(x, y) || (x >= x0 - 8 && x <= x1 + 8 && y >= y0 - 8 && y <= y1 + 8)};
+}
+
+/** Split the marker pixels between the parts to keep over the table cards and those to erase. */
+export function protectFilmPixels(matte: ReturnType<typeof readMatte>, x: number, y: number, keep: FilmRegion) {
+  for (let py = 0; py < matte.height; py++) for (let px = 0; px < matte.width; px++) {
+    const i = py * matte.width + px;
+    if (matte.card[i] && keep(x + px + 0.5, y + py + 0.5)) { matte.hand[i] = 1; matte.card[i] = 0; }
+  }
 }
 
 if (RANKS.join() !== CARD_RANKS.join() || SUITS.join() !== CARD_SUITS.join()) console.warn('Card values in src/card-overlay.ts differ from the card material study.');
@@ -101,7 +127,7 @@ export function createCardOverlay(canvas: HTMLCanvasElement) {
   // A card dealt by an earlier film: rendered once and kept, then only laid over the frame. Where the film shows anything but
   // table there (a hand or sleeve passing, or the film's own card), the hand matte of that spot keeps the film's hand in front.
   const lying = new Map<string, {image: HTMLCanvasElement; x: number; y: number}>(), peek = document.createElement('canvas'), pctx = peek.getContext('2d', {willReadFrequently: true})!;
-  function lay(video: HTMLVideoElement, card: PlacedCard, options: OverlayOptions, width: number, height: number, own: Pt[] | null, keepFilmCard = false) {
+  function lay(video: HTMLVideoElement, card: PlacedCard, options: OverlayOptions, width: number, height: number, own: Pt[] | null, keep?: FilmRegion) {
     const face = cardFace(cardRecord(options.cards, card), card.back, options.card, Array.isArray(options.cards)), gloss = card.gloss ?? options.gloss;
     const key = JSON.stringify([card.quad.map(p => [Math.round(p.x * 4), Math.round(p.y * 4)]), face.back, face.art, gloss]);
     let hit = lying.get(key);
@@ -121,17 +147,19 @@ export function createCardOverlay(canvas: HTMLCanvasElement) {
     read.width = w; read.height = h; rctx.drawImage(video, x, y, w, h, 0, 0, w, h);
     const matte = readMatte(rctx.getImageData(0, 0, w, h).data, w, h, own ? (px, py) => inside(own, x + px + 0.5, y + py + 0.5) : undefined);
     // In film carry, the source hand and card can pass over a card already on the table.
-    if (keepFilmCard) for (let i = 0; i < matte.card.length; i++) if (matte.card[i]) matte.hand[i] = 1;
+    if (keep) protectFilmPixels(matte, x, y, keep);
     layer.width = w; layer.height = h; lctx.drawImage(image, 0, 0); stamp(matte.hand, w, h, 'destination-out'); out.drawImage(layer, x, y);
   }
   // Every other card the film shows (one lying since an earlier deal, or the film's card where the track lost it) is painted with
   // the background around it; the film's hand stays in front. Found on a half-size copy of the frame, painted at full size.
   const half = document.createElement('canvas'), hctx = half.getContext('2d', {willReadFrequently: true})!;
-  function wipe(video: HTMLVideoElement, width: number, height: number, shoe: number[][]) {
+  function wipe(video: HTMLVideoElement, width: number, height: number, shoe: number[][], keep?: FilmRegion) {
     const hw = width >> 1, hh = height >> 1; half.width = hw; half.height = hh; hctx.drawImage(video, 0, 0, hw, hh);
     for (const b of strayBoxes(hctx.getImageData(0, 0, hw, hh).data, hw, hh, shoe.map(box => box.map(v => v)), 2)) {
       read.width = b.width; read.height = b.height; rctx.drawImage(video, b.x, b.y, b.width, b.height, 0, 0, b.width, b.height);
-      const matte = readMatte(rctx.getImageData(0, 0, b.width, b.height).data, b.width, b.height), f = matte.field, cells = fctx.createImageData(f.width, f.height);
+      const matte = readMatte(rctx.getImageData(0, 0, b.width, b.height).data, b.width, b.height);
+      if (keep) protectFilmPixels(matte, b.x, b.y, keep);
+      const f = matte.field, cells = fctx.createImageData(f.width, f.height);
       for (let k = 0; k < f.width * f.height; k++) { cells.data[k * 4] = f.rgb[k * 3]; cells.data[k * 4 + 1] = f.rgb[k * 3 + 1]; cells.data[k * 4 + 2] = f.rgb[k * 3 + 2]; cells.data[k * 4 + 3] = 255; }
       field.width = f.width; field.height = f.height; fctx.putImageData(cells, 0, 0);
       layer.width = b.width; layer.height = b.height; stamp(matte.card, b.width, b.height, 'source-over');
@@ -153,8 +181,10 @@ export function createCardOverlay(canvas: HTMLCanvasElement) {
     // Wipe strays found in this video frame before applying the finer tracked mask. Returns need the shoe window marked before
     // a frame-wide wipe, so the card in the shoe stays visible even when there is no usable marker track on the felt.
     const shoe = track?.shoeWindow?.box;
-    if (track && !keepFilmCard && (!returning || shoe)) wipe(video, width, height, shoe ? [shoe] : []);
-    if (!pose || !box) { for (const card of placed) lay(video, card, options, width, height, null, keepFilmCard); return pose; }
+    const protection = keepFilmCard ? filmCarryProtection(track, frame) : null;
+    if (protection?.canClean) wipe(video, width, height, [protection.shoe], protection.keep);
+    else if (!protection && track && (!returning || shoe)) wipe(video, width, height, shoe ? [shoe] : []);
+    if (!pose || !box) { for (const card of placed) lay(video, card, options, width, height, null, protection?.keep); return pose; }
     // What the film shows here: hand and sleeve stay in front, the film's own card must go.
     const bw = box.width, bh = box.height;
     read.width = bw; read.height = bh; rctx.drawImage(video, box.x, box.y, bw, bh, 0, 0, bw, bh);

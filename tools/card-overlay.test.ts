@@ -6,7 +6,7 @@ import {readFile, readdir} from 'node:fs/promises';
 import {sceneOf, restingQuad, restOf, poseAt, returnCardAt, cardToImage, projectionOf, regionOf, readMatte, filmZone, shiftShare, placedCard, landing, leakCount, strayBoxes, ranges, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, MARGIN, STRAY, type CardRecord, overridesOf, cardInFront, describeTrack, RIM, plausible, keystone, skirtSound, turnOf, restFade, restShare, PLAUSIBLE, HOLD, REST_FADE, type CardTrack, type Scene} from '../src/card-overlay.ts';
 import {signedArea, centre, dist, sound, type Pt} from '../src/card-track.ts';
 import {cameraFromContract, solveCamera, squareToQuad, onSquare, filmToScene} from '../src/scene3d-geometry.ts';
-import {frameCardsForView, placedCardsForView} from '../src/card-overlay-view.ts';
+import {filmCarryProtection, frameCardsForView, placedCardsForView, protectFilmPixels} from '../src/card-overlay-view.ts';
 import {cardOptions} from '../src/game-film.ts';
 import {createLayout, slotOf} from '../src/game-table.ts';
 import {defaultPlan} from '../src/placement-model.ts';
@@ -182,6 +182,46 @@ test('2D film carry ignores poor moving quads and keeps the settled card through
     assert.deepEqual(following.placed.map(p => p.shoeDraw), [1, 2]);
     assert.deepEqual([back.placed[1].quad, following.placed[1].quad], [landed.pose?.quad, landed.pose?.quad]);
   }
+});
+
+test('2D film carry clears the older blue and yellow markers while keeping the active card and shoe', () => {
+  const width = 128, height = 48, rgba = new Uint8ClampedArray(width * height * 4);
+  const table = [20, 150, 60], blue = [30, 60, 220], yellow = [230, 205, 8];
+  for (let i = 0; i < width * height; i++) rgba.set([...table, 255], i * 4);
+  for (const [left, right, colour] of [[8, 20, blue], [48, 60, yellow], [83, 95, yellow], [105, 118, blue]] as const) {
+    for (let y = 14; y < 28; y++) for (let x = left; x < right; x++) rgba.set([...colour, 255], (y * width + x) * 4);
+  }
+  const active = [[48, 14], [60, 14], [60, 28], [48, 28]], tracked: CardTrack = {width, height, edgeWindow: null, restFrom: null, restQuad: null,
+    shoeWindow: {box: [82, 13, 95, 28]}, frames: [{frame: 0, side: 'BACK', quad: active, edge: null}]};
+  const crossed = {...tracked, frames: [{...tracked.frames[0], quad: [active[0], active[2], active[1], active[3]]}]};
+  for (const [track, canClean] of [[tracked, true], [crossed, false], [null, false]] as const) {
+    const protection = filmCarryProtection(track, 0);
+    const matte = readMatte(rgba, width, height);
+    protectFilmPixels(matte, 0, 0, protection.keep);
+    const masks = (x: number) => [matte.hand[20 * width + x], matte.card[20 * width + x]];
+    assert.deepEqual(masks(13), canClean ? [0, 1] : [1, 0], 'the older marker cannot occlude the value where a game card lies');
+    assert.deepEqual(masks(110), canClean ? [0, 1] : [1, 0], 'another marker can be wiped even with no game card covering it');
+    assert.deepEqual(masks(54), [1, 0], 'the moving card stays above the placed value');
+    assert.deepEqual(masks(90), [1, 0], 'the shoe remains visible');
+    assert.deepEqual(masks(33), [0, 0], 'a laid game card remains visible outside marker pixels');
+    assert.equal(protection.canClean, canClean);
+  }
+  const crop = []; // Coordinates also apply when only the part over a laid game card was read.
+  const x0 = 40, y0 = 4, w = 26, h = 34;
+  for (let y = y0; y < y0 + h; y++) crop.push(...rgba.subarray((y * width + x0) * 4, (y * width + x0 + w) * 4));
+  const matte = readMatte(crop, w, h);
+  protectFilmPixels(matte, x0, y0, filmCarryProtection(tracked, 0).keep);
+  const overlap = (20 - y0) * w + 54 - x0;
+  assert.deepEqual([matte.hand[overlap], matte.card[overlap]], [1, 0]);
+});
+
+test('a deal without a track keeps the source card while laid game cards remain in the frame', () => {
+  const land = pts(P4_FILM), placed = [{quad: pts(shift(P4_FILM, -100, 0)), back: false, shoeDraw: 1}];
+  const view = frameCardsForView(null, 10, scene, {carry: 'film', scale: 1, land, placed});
+  assert.equal(view.keepFilmCard, true);
+  assert.equal(view.pose, null);
+  assert.equal(view.placed[0].shoeDraw, 1);
+  assert.equal(frameCardsForView(null, 10, scene, {carry: 'film', scale: 1, placed}).keepFilmCard, false, 'an idle beat has no moving card');
 });
 
 test('the projection puts the model card exactly on its quad', () => {
