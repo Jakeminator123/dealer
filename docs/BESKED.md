@@ -172,6 +172,10 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   göras lokalt gällande om det är för "dealer"", och på kortet om låset: "Vi ska inte behöva licens och radera massa
   skit om sådant finns". Det här repot kör därför ingen kontroll hos GitHub: kontrollen är pre-push och `push-clean`
   på datorn. Det som hör till ett annat repo eller till kontots inställningar föreslås för honom och ändras inte härifrån.
+  Undantaget han själv gav (Beslut 2026-11-18, kl. 03.05, om kontrollerna i `scoutgaming`): "ja stäng av dem i så fall
+  om elller oavsätt. Elelr ha dem på om jag pushar. men går dem nu om Kevin eller Emil pushar också?" Den stora
+  kontrollen där (`croupier.yml`) är avstängd hos GitHub, ingen fil är ändrad; vad som är gjort och hur det slås på igen
+  står i `D:/dealer-scratch/tmp/github-kostnad/FORSLAG-TILL-SCOUTGAMING.md`.
 - **Två tusen krediter för proven** (2026-11-18, cirka kl. 02.45, om provet från en annan vinkel och givarna från
   ankare 2.3): "du får 2000 krediter att använda om du vill.. Ändra där det står 260 krediter som gräns.." Taket för de
   proven är 2 000 krediter i stället för 260; varje anrop står i en liggare, och kostnaden berättas efter varje omgång.
@@ -231,8 +235,9 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   Prov `paow-ankare-2-3` 2026-11-18, kl. 02.24, och i Beslut kl. 02.39 svarade han "Ja, registrera" på bilden med
   omgjort efterarbete (`assets/anchors/paow-ankare-2-3-a/`).
 - **Dealern från en annan stol** (Prov `dealer-fran-stol-1`, 2026-11-18, kl. 02.46): första bilden "Ser "okej" ut som
-  referensmaterial till en tagning från första s isidan typ". Vägen med en stillbild från sidan och dockans film från
-  samma öga får fortsätta.
+  referensmaterial till en tagning från första s isidan typ", och om sista bilden: "tänk på att detta är ovanifrån och
+  inte från samam vinkel". Vägen med en stillbild från sidan och dockans film från samma öga får fortsätta, men sidans
+  kamera ska ha samma höjd och lutning som den i mitten, bara flyttad åt sidan.
 - **Landningar per plats, eller inga** (2026-11-18, kl. 01.54, om Materials station Landningar): "Jag undrar också om
   det som kallas landningar alltid har en referensbild för kortplats nummer ett och spelare fyra. Detta bör rimligtvis
   tas bort helt, eller så bör vi skapa nya bilder för respektive position." Huvudagentens val: en giv slutar på

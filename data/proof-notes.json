@@ -287,7 +287,12 @@
       "file": "2-sista-bild.png",
       "choice": null,
       "text": "Kanske kan funka som komplement förr att visa vilken sida som sllt ska vara från. Men tänk på att detta är ovanifrån och inte från samam vinkel, heller inte \"Första bilden\" i jämförelse med possitionen som används (tror jag i alla fakll) från \"mitten\"",
-      "at": "2026-11-18T01:47:30.573Z"
+      "at": "2026-11-18T01:47:30.573Z",
+      "answer": {
+        "text": "Läst. Bilderna från sidan i det provet är sedda för mycket ovanifrån och inte som kameran i mitten flyttad åt sidan. Nästa bilder från sidan görs från samma höjd och lutning som bankens kamera.",
+        "at": "2026-11-18T02:07:17.628Z"
+      },
+      "read": "2026-11-18T02:07:17.628Z"
     }
   ]
 }
