@@ -307,6 +307,17 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   lixom upp i mitten typ. Sista videon är okej men hon har ett bord som ändrar färger och ett ort som visar textur av
   vitt". Filmen från vila till ankare 2.3 ska gå fortare. En giv är en sammanhängande rörelse, utan stopp med kortet
   rest. Bordets gröna är densamma genom hela filmen, och kortet är slätt, utan vitt eller mönster.
+- **Flera kameravinklar ur samma film** (2026-11-18, kl. 03.10 och 03.25). Först: "Kna du itne bara prova att
+  förenkla.. Typ skicka filemn för när PAOW dealar till P4C1 och sedan säger du att samma video ska genereras med säg
+  35% från sida". Om provet `sidovinkel-ur-film`: "Det här är mycket bra, jag vet inte hur du gjorde. Det kanske är
+  exakt allt som behövs. Vi har med andra ord 35% framifrån, 35% åt sidan, och vi skulle kunna göra 70% åt sidan. Vi
+  kan också spegelvända filmen till andra sidan, vilket ger oss fem olika kameravinklar. Utifrån det kan vi binda
+  samman dessa vinklar för att titta åt ett visst håll. Innan vi gör det kanske vi kan göra ett prov där vi binder
+  ihop de två videorna på bordet med en egen scen. Hon ser lite kantig ut, så jag kan generera en bild där hon är 35%
+  åt sidan, som kan användas som ett alternativt ankare eller `keystone`-bild." En sidovinkel görs av bankens egen
+  film i Runways videoredigerare, inte av nya stillbilder och en ny tagning. Först ett prov i labbet där filmen
+  rakt fram och filmen från sidan binds ihop i en scen där man kan se åt sidan; hans egen bild från sidan blir
+  stillbilden som styr nästa film.
 - **Givens sex steg från ankare 2.1** (2026-11-13, hans skiss, inte underlag i repot): Nyp, Dra (ned på filten,
   baksidan upp), För fram (lågt längs filten, inte vänt i luften), Vrid (kortet reser sig på långsidan), Vänd upp,
   Lägg. Det är valet Vänd vid platsen (`AT_PLACE`), som planen väljer per kort i Bordets Kortplan; förvalet för en ny

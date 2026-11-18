@@ -17,15 +17,20 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   spelet; `kort=liggande` finns kvar för hans öga, och `cardBack=film&cardFace=film` visar filmens färger. Stänger:
   kortets efterarbete per film. Stegen ligger i `D:/dealer-scratch/tmp/kortbyggare/`, utredningen i
   `D:/dealer-scratch/tmp/kortutredning/RAPPORT.md`.
-- **Spelets liggande kort följer inte kortplanens regel.** Syns: i spelet och i 3D-scenen. Labbet ritar varje kort som
-  ett verkligt kort genom linsen (`planCardQuad`, `src/card-plan.ts:65`, och `src/table-lens.ts`), men spelet ritar med
-  `flatQuad` (`src/game-table.ts:59`), pålägget lägger kortet med `restingQuad` (`src/card-overlay.ts:124`: kontraktets
-  kort gånger `cardScale`, planen ger bara platsen), och 3D-scenen ställer korten med kontraktets kamera
-  (`cameraFromContract`, `src/scene3d-geometry.ts:23`), som är en annan kamera än linsen. En utomstående granskare mätte
-  att planens 43, 87 och 130 bildpunkter blir 91, 90 och 90 i spelet; talen är inte kontrollerade här. Prövat: labbets
-  alla ritningar följer regeln (`918e7f4`, `f8c637f`). Stänger: spelet och 3D-scenen läser samma regel, visat för Jakob i
-  labbet först. Med flit kvar på den gamla regeln: `tools/build-anchor.ts` (frysta hashar), `tools/card-coverage.ts` och
-  `tools/placement-backdrop.ts`.
+- **Spelets kort och scenens kamera följer kortplanens regel bara bakom ett val.** Syns: i spelet och i 3D-scenen
+  utan adressordet `geometri=lins`: liggande kort läggs med `flatQuad`, det ritade kortet vilar som kontraktets kort
+  gånger 1,2 (`restingQuad`), och scenens filmkamera är kontraktets (k = 2). Uppmätt 2026-11-18 på Jakobs sparade
+  plan, det spelet ritar mot kortplanen (nära kant × höjd i bild): plats 1 65 × 47 mot 78 × 62 (28 px i hörnen,
+  skjuvat), plats 4 90 × 74 mot 84,5 × 72, dealerns kort 61 × 35 mot 75 × 57; en marker (39 mm) är 106 px bred vid
+  plats 4, bredare än kortet. Prövat: med valet på ger kortplan, spel, vilande kort och scenens projektion samma
+  fyrhörning inom 0,01 px, också med annan lins och bildstorlek (`tools/card-plan.test.ts`); bilder utan webbläsare
+  i `D:/dealer-scratch/tmp/raddning-geometri/bilder/`. Inte sett i en webbläsare. Stänger: kontrollen i
+  webbläsaren, Jakobs ja i labbet, bytet av `TABLE_GEOMETRY` och borttagningen som `docs/SYSTEM.md`, "Ritade kort",
+  räknar upp. Med flit kvar på den gamla regeln: `tools/build-anchor.ts` (frysta hashar), `tools/card-coverage.ts`
+  och `tools/placement-backdrop.ts`.
+- **Dealerns två kort överlappar i kortplanen.** Syns: i Kortplan, och i spelet med `geometri=lins`: D.C1 och D.C2
+  ligger 62 px isär och ett verkligt kort är 75 px brett där, så de överlappar 13 px. Prövat: inget; platserna är
+  Jakobs, satta för den äldre planens mindre kort. Stänger: hans val i Kortplan.
 - **Kortet i nypet (ankare 2.1) är 8–13 % för långt.** Det Jakob såg som ett dubbelt så långt skokort (111 mot 55
   bildpunkter) kom mest ur den äldre planens krympning nära dealern, som är rättad i labbet (`918e7f4`, `f469450`).
   Syns: i bankens ankare 2.1 och givarna därifrån. Prövat: 3D-banans mätning (`D:/dealer-scratch/tmp/dealer-3d/kalibrering.txt`)

@@ -12,19 +12,23 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
   beställnings bild, "Det här skickas" och en ny beställnings sista bild.
 - Perspektiv ändrar bara kortens form (`f8c637f`): reglaget smalnar av den bortre kanten kring kortets egen mittlinje,
   ett värde för alla kort, 80–96 %, med märken vid Din plan (87 %) och Verkligt (96 %). Utan sparat värde ritas 87 %.
+- Spelet och scenen kan följa samma regel och lins bakom ett val (`geometri=lins`; `TABLE_GEOMETRY` i
+  `src/card-plan.ts`, förval `contract` = dagens bild): liggande kort, extra kort, split, det ritade kortets vila och
+  scenens filmkamera. Testerna håller kortplan = spel = scen inom 0,01 px; inget av det är sett i en webbläsare.
 - Kortplan har en vy: valet Dator | Mobil och adressordet `vy=mobil` är borta, eftersom inget som körs läste mobilvyn.
   Behövs en mobilvy härleds den ur samma kort och lins, aldrig som en andra inställning.
 - Labbet visar släta gula och blå kort (`CARD_COLOUR` i `src/placement-model.ts`), och spelets rygg med SG står kvar:
   inget trycks på korten före efterarbetet ([BESKED](../BESKED.md), "Kortets sidor"; kortet i Beslut är uttaget).
-- Jakob sparade planen från Bordet 2026-11-18 kl. 01.30 (handbyte på ett kort, avsmalning 0,90, ett mindre kort). Filen
-  ligger oincheckad i huvudträdet och checkas in på hans ord.
+- Jakob sparade planen från Bordet 2026-11-18 kl. 01.30. Den skiljer sig från den incheckade i handbytet på ett kort
+  och i P6.C1 (3 px); avsmalningen är 0,87 som förut (0,90 står bara som P6.C1:s eget fält, som regeln inte läser).
+  Filen ligger oincheckad i huvudträdet och checkas in på hans ord.
 - `data/media-fit.json` säger för varje bild, ankare, giv och referens om den stämmer med dagens kortplan, och Material
   visar det som en bricka ("äldre plan", "annan kamera", "avviker").
 
 **Nästa steg.**
-1. Spelets liggande kort ska följa `planCardQuad`: `src/game-table.ts` ritar med `flatQuad`, pålägget ligger i
-   `card-overlay-view`, och 3D-scenen ställer korten med kontraktets kamera (k = 2), som är en annan kamera än linsen.
-   Visa det för Jakob i labbet först.
+1. Kontrollera `game.html?geometri=lins` i webbläsaren och visa det för Jakob i rörelse. Bankens givar följer den
+   äldre planen, så det ritade kortet ligger inte på filmens eget vid ytterplatserna och hos dealern förrän givarna
+   är nya. Hans ja byter förvalet (en rad); `docs/SYSTEM.md`, "Ritade kort", säger vad som då tas bort.
 2. När hans sparade plan checkas in: skriv om `data/media-fit.json` med `node tools/media-audit.ts --fit --write`, och
    gör testerna i `tools/order-routes.test.ts` oberoende av vad han har sparat (tre faller i huvudträdet med hans plan).
    Samma mätning körs när planens regel, linsen eller ett ankare ändras; det sker inte automatiskt.
