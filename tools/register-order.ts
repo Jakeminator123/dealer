@@ -135,7 +135,9 @@ export async function planRegistration(root: string, id: string, take: number, o
   // The hands of a card's film, from the order: the hand at the shoe takes the card; with a hand switch (pass) the other hand lays
   // it. A return cut from a round trip carries its deal's releasing hand, as the hand that comes back (resolveRound matches them).
   const hand = order.motion?.hand === 'LH' || order.motion?.hand === 'RH' ? order.motion.hand as 'LH' | 'RH' : null;
-  const hands = hand ? {takeHand: hand, releaseHand: order.motion?.pass === true ? (hand === 'LH' ? 'RH' : 'LH') : hand} : {};
+  // From anchor 2.3 (grip TWO_HANDS) the hand at the shoe strokes the card out and the other hand lays it (recipeHands).
+  const other = (h: 'LH' | 'RH') => (h === 'LH' ? 'RH' : 'LH');
+  const hands = hand ? {takeHand: hand, releaseHand: order.motion?.pass === true || order.motion?.grip === 'TWO_HANDS' ? other(hand) : hand} : {};
   const record = (t: Entry, extra: Record<string, unknown> = {}) => ({schemaVersion: 1, id: t.id, dealer: order.dealer, source: facts2,
     motion: {kind: t.kind, from: t.from, to: t.to, ...hands, pass: false, basis: 'SOURCE_FRAME_REVIEW', ...(t.id !== target ? {segment: {clip: target, frames: t.frames}} : {}), ...extra},
     review, order: orderRef, ...(fix ? {fix} : {}), postProcessing: fix ? `tools/film-fix.ts, ${fix.receipt}` : 'none', generationRef: `assets/motions/${target}/generation.json`, jobRef: 'data/clip-jobs.json', scoutIntegrated: false, published: false});

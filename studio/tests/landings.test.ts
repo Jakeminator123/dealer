@@ -63,7 +63,10 @@ test("on the checkout: the cut frames are checked against the films, and only se
 test("on the checkout: no landing picture holds for Paow, the lone seat-4 picture is set aside with who and why, and no note says otherwise", () => {
   const register = JSON.parse(readFileSync(new URL("../../data/media-roles.json", import.meta.url), "utf8"));
   const paow = register.dealers.paow;
-  const landings = paow.entries.filter((e: { role: string }) => e.role === "landning");
+  const all = paow.entries.filter((e: { role: string }) => e.role === "landning");
+  // The landing pictures of the left hand; an A3 for the right hand (a deal from 2.3) is a candidate until Jakob makes it hold.
+  const landings = all.filter((e: { hand?: string }) => e.hand !== "RH");
+  for (const a3 of all.filter((e: { hand?: string }) => e.hand === "RH")) assert.ok(a3.state === "kandidat" || /^Jakob /.test(a3.stateBy ?? ""), `${a3.id}: a candidate, or his own choice`);
   assert.deepEqual(landings.map((e: { id: string; state: string }) => [e.id, e.state]), [["paow-landning-p4-giv-t2", "ersatt"]], "set aside, not deleted");
   assert.match(landings[0].stateBy, /gäller → ersatt \(huvudagentens beslut på Jakobs ord i huvudagentens chatt 2026-11-18/);
   assert.match(landings[0].stateBy, /^Jakob 2026-11-13 02:39: kandidat → gäller \(Material\); /, "what he did himself in Material stays said");

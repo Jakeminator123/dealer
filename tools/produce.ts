@@ -157,7 +157,7 @@ export function anchorHolding(entries: readonly Entry[], at: AnchorKey): Entry |
 }
 /** A seat's landing picture that holds, as the store takes it (landingEntry). */
 export function landingHolding(entries: readonly Entry[], target: string | null): Entry | null {
-  return target ? (entries.find((e) => e.role === LANDING_ROLE && e.node === landingNode(target) && e.state === 'gäller' && e.card === target && isPicture(e)) ?? null) : null;
+  return target ? (entries.find((e) => e.role === LANDING_ROLE && e.node === landingNode(target) && e.state === 'gäller' && e.card === target && (e as {hand?: string}).hand !== 'RH' && isPicture(e)) ?? null) : null;
 }
 
 /** The films a round plays, by the film each step plays in seat mode, and the rest between (the game plays it between deals). */

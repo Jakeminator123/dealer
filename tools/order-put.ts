@@ -14,6 +14,7 @@
 //   node tools/order-put.ts review <id> <take> --note "<verdict>"   the independent reviewer's verdict, beside the take
 //                                                            from HÄMTAD on, its state unchanged (the protocol reads it)
 //   node tools/order-put.ts show <id>                        the receipt
+// A take placed outside Beställ is recorded once with imported (tools/order-import.ts writes the order and calls it).
 import { readFile, writeFile, mkdir, rename, rm, open } from 'node:fs/promises';
 import { createHash, randomUUID } from 'node:crypto';
 import path from 'node:path';
@@ -154,7 +155,29 @@ export function receipts(root: string, options: { now?: () => Date } = {}) {
       return { ...t, review: { at: now(), note: text } };
     });
   }
-  return { read, check, begin, placed, failed, advance, review };
+  /**
+   * A take placed OUTSIDE Beställ (an agent's call through Runway's MCP server, written down in a ledger), recorded once, by
+   * tools/order-import.ts: the call's own time and task id, the film as it was fetched, and, where the film was after-worked
+   * already, that too. Only for an order that says it was placed outside (order.outside) and a take with no entry yet. Nothing
+   * is placed by it; the history says who placed it and when, so the receipt never looks like a call made from here.
+   */
+  async function imported(id: string, takeValue: unknown, call: { requestedAt: string; taskId: string; creditsRemainingAfter: number | null; file: string; placedBy: string; fetched: string; after?: string | null }) {
+    if (!/^[A-Za-z0-9-]{8,80}$/.test(call.taskId ?? '')) throw new StoreError(400, 'Ogiltigt task-id.');
+    if (!/^\d{4}-\d{2}-\d{2}T/.test(call.requestedAt ?? '')) throw new StoreError(400, 'requestedAt ska vara en tid (ISO).');
+    const fileBytes = await readFile(path.resolve(root, call.file));
+    return update(id, (receipt, order) => {
+      if (!(order as Order & { outside?: unknown }).outside) throw new StoreError(409, `${id} är beställd genom Beställ: dess kvitto skrivs med begin och placed, inte i efterhand.`);
+      const take = takeNumber(order, takeValue);
+      if (receipt.takes.some((t) => t.take === take)) throw new StoreError(409, `${id} tagning ${take} finns redan i kvittot.`);
+      const history = [
+        { at: call.requestedAt, status: 'LAGD' as TakeStatus, note: `lagd utanför Beställ av ${call.placedBy}: task ${call.taskId}` },
+        { at: now(), status: 'HÄMTAD' as TakeStatus, note: call.fetched },
+        ...(call.after ? [{ at: now(), status: 'EFTERARBETAD' as TakeStatus, note: call.after }] : []),
+      ];
+      return { take, status: call.after ? 'EFTERARBETAD' : 'HÄMTAD', requestedAt: call.requestedAt, taskId: call.taskId, creditsRemainingAfter: call.creditsRemainingAfter, error: null, file: path.relative(root, path.resolve(root, call.file)).split(path.sep).join('/'), sha256: sha(fileBytes), outside: true, history } as Take;
+    });
+  }
+  return { read, check, begin, placed, failed, advance, review, imported };
 }
 
 // ── On the command line ─────────────────────────────────────────────────────

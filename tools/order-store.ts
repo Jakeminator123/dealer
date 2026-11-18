@@ -41,7 +41,7 @@ import { StoreError } from './placement-store.ts';
 import { mediaRoles } from './media-roles.ts';
 import {
   ANCHOR_NODE, ANCHOR_ROLE, CARD_SCALES, EXTRA_LIMIT, MODELS, FILE_NAME, FLIP_AXES, ORDER_ID, SEAT_TARGETS, TAKES_MAX, scaleWords,
-  bodyLine, checkPolicy, costOf, crossesBody, cutFrameOf, cutFrameWords, cutIntoOf, tidyMotion, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, hashInput, landingMissing, landingOf, modelFor, modelsFor, paramsOf, plannedOf, readCutChecks, referenceCandidates, seatEndMissing, seatList, seatWords, secondsWords, shownOf, spentOn, stepOf, stylesFor, summaryOf, validateOrder, waitingOf,
+  bodyLine, checkPolicy, costOf, crossesBody, cutFrameOf, cutFrameWords, cutIntoOf, tidyMotion, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, hashInput, landingMissing, landingOf, a3Candidates, a3Name, modelFor, modelsFor, paramsOf, plannedOf, readCutChecks, referenceCandidates, seatEndMissing, seatList, seatWords, secondsWords, shownOf, spentOn, stepOf, stylesFor, summaryOf, validateOrder, waitingOf,
   type Anchor, type BankFacts, type CutFrame, type Drawn, type FlipAxis, type Motion, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Policy, type PoseAnswer, type Receipt, type RefCandidate, type Reference, type RenderedReference, type SeatPlan, type Shape, type StepDef, type StepKey, type TextStyle, type Waits,
 } from '../src/order-model.ts';
 import { readMethods, recipeFor, recipeHands, referenceByRule, referenceWaits, secondsOf, type MethodRegister } from '../src/order-methods.ts';
@@ -94,6 +94,12 @@ export type NewOrder = {
   reference?: string | null;
   /** The card's size on the last picture of a round trip, as a factor of the plan's (CARD_SCALES; a trial); absent: 1. */
   cardScale?: number;
+  /**
+   * A deal bara dit: the seat's A3 candidate (a landing picture for the seat and the laying hand that does not hold yet) named
+   * as its last picture, a deliberate exception ("med kandidaten som sista bild") said in the draft's notes; absent: the seat's
+   * own end picture (the A3 that holds, else the cut frame).
+   */
+  end?: string;
   id?: string;
   title?: string;
   group?: { id: string; label: string } | null;
@@ -188,9 +194,9 @@ export const noReferenceWhy = (model: string) => (MODELS[model]?.videos ? 'Ingen
 /** Only the dealers data/dealers.json knows can be ordered for (the register may hold others, such as a separate track). */
 export const unknownDealer = (id: unknown) =>
   `${typeof id === 'string' && id ? id.slice(0, 40) : 'Dealern'} finns inte i data/dealers.json, så inget kan beställas för henne här.`;
-/** A seat's landing picture that holds (role landning, LAND(<seat>), gäller, the card on that seat), as a picture. */
-export function landingEntry(register: Register, dealer: string, target: string | null): Entry | null {
-  const found = landingOf(register.dealers[dealer]?.entries ?? [], target);
+/** A seat's landing picture that holds for a hand (role landning, LAND(<seat>), gäller, the card on that seat, that hand at it), as a picture. */
+export function landingEntry(register: Register, dealer: string, target: string | null, hand: 'LH' | 'RH' = 'LH'): Entry | null {
+  const found = landingOf(register.dealers[dealer]?.entries ?? [], target, hand);
   return found && isPicture(found) ? found : null;
 }
 export function entryOf(register: Register, id: string): { dealer: string; entry: Entry } | null {
@@ -538,9 +544,13 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     // A deal bara dit ends on the seat's own end picture: its landing picture where one holds, else the cut frame of the
     // bank's own film to the seat. A seat with neither says so.
     const oneWayDeal = deal && shape === 'ONE_WAY';
-    const seatLanding = oneWayDeal ? landingEntry(register, dealer.id, target) : null;
+    // The seat's A3 for the hand that lays the card; or, as a named exception, an A3 candidate for that seat and hand.
+    if (input.end !== undefined && (typeof input.end !== 'string' || !oneWayDeal)) throw new StoreError(400, 'Sista bilden väljs bara för en giv bara dit, som en A3-kandidat för platsen.');
+    const named = input.end ? a3Candidates(register.dealers[dealer.id]?.entries ?? [], target, lays).find((e) => e.id === input.end && isPicture(e)) ?? null : null;
+    if (input.end && !named) throw new StoreError(400, `${input.end} är ingen A3-kandidat för ${seatWords(target)} med ${lays === 'RH' ? 'höger' : 'vänster'} hand vid kortet.`);
+    const seatLanding = named ?? (oneWayDeal ? landingEntry(register, dealer.id, target, lays) : null);
     const cuts = oneWayDeal && !seatLanding ? cutFrameOf(bank!, { dealer: dealer.id, step, target, hand: lays }) : [];
-    if (oneWayDeal && !seatLanding && !cuts.length) throw new StoreError(400, seatEndMissing(dealer.name, target, step.from));
+    if (oneWayDeal && !seatLanding && !cuts.length) throw new StoreError(400, `${seatEndMissing(dealer.name, target, step.from)}${lays === 'RH' && twoHands ? ` Från ankare 2.3 lägger höger hand kortet: platsen behöver sin A3 (${a3Name(target!)}) med höger hand vid kortet (node tools/landing-make.ts).` : ''}`);
     if (input.reference !== undefined && input.reference !== null && typeof input.reference !== 'string') throw new StoreError(400, 'Referensfilmen ska vara en tagnings id.');
     const cardScale = input.cardScale ?? 1;
     if (!(CARD_SCALES as readonly unknown[]).includes(cardScale)) throw new StoreError(400, `Kortets storlek ska vara ${CARD_SCALES.map((f) => scaleWords(f)).join(', ')}.`);
@@ -586,6 +596,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       if (recipe.reference === 'ingen' && chosen) exceptions.push('en referensfilm fast receptet inte har någon');
       if (input.duration !== undefined && input.duration !== secondsOf(model, recipe.seconds, chosen)) exceptions.push(`${input.duration} s i stället för ${secondsOf(model, recipe.seconds, chosen)} s`);
       if (takes !== recipe.takes) exceptions.push(`${takes} tagningar i stället för ${recipe.takes}`);
+      if (named) exceptions.push(`med kandidaten som sista bild: ${named.name} (${named.id}), en kandidat som Jakob inte har gjort gällande`);
       if (deal && recipe.hand && (pass || hand !== recipe.hand)) exceptions.push(`${pass ? 'handbyte' : hand === 'RH' ? 'höger hand hela vägen' : 'vänster hand hela vägen'} i stället för ${recipe.hand === 'LH' ? 'handen vid skon hela vägen' : 'andra handen hela vägen'}`);
     }
 
@@ -631,7 +642,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
           // What Placering said for the card's grip and turn, kept with a deal so that where it differs stays said.
           if (step.start !== 'LAND') motion.planned = plannedOf({ grip: intent.grip, turnAt: intent.turnAt, flipAxis: intent.flipAxis, side: intent.endSide });
           if (step.start === 'LAND') pictures.push((await anchorPicture('last.png', (w) => `Sista bild · ${w}`, 'endFrame', step.to ?? step.from)).picture);
-          else if (shape === 'ONE_WAY' && seatLanding) pictures.push(await landingPicture(seatLanding, 'last.png', `Sista bild · ${landingWords}`, 'endFrame'));
+          else if (shape === 'ONE_WAY' && seatLanding) pictures.push(await landingPicture(seatLanding, 'last.png', named ? `Sista bild · ${named.name}, kandidat (inte gällande)` : `Sista bild · ${landingWords}`, 'endFrame'));
           else if (shape === 'ONE_WAY') pictures.push(await cutPicture(id, cuts, target!, side, register, dealer));
           else {
             // Drawn on the dealer's own anchor only; while it waits, the picture shows that it waits (no other dealer stands in).

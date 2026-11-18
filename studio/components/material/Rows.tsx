@@ -226,7 +226,7 @@ const END_TONE = { landningsbild: "text-[#6cc595]", snittruta: "text-[#9db3f8]",
 
 /** One seat: its end picture as a still with one word under it, or an empty frame that says there is none. */
 function SeatEndTile({ row, bank, onOpen }: { row: SeatEndRow<EntryAnswer>; bank: BankFacts | null; onOpen: (entry: EntryAnswer) => void }) {
-  const end = row.pinch ?? row.drag;
+  const end = row.pinch ?? row.drag ?? row.two;
   const word = endWord(end) as keyof typeof END_TONE;
   const cover = !end ? null : end.kind === "LANDNING" ? coverOfEntry(end.entry) : ({ kind: "video", path: end.cut.path, frame: end.cut.frame } as const);
   const fps = end?.kind === "SNITTRUTA" ? (bank?.motions?.[end.cut.clip]?.source?.fps ?? 24) : end?.kind === "LANDNING" ? (end.entry.fps ?? 30) : 30;
@@ -239,7 +239,7 @@ function SeatEndTile({ row, bank, onOpen }: { row: SeatEndRow<EntryAnswer>; bank
         <span className={cn("text-xs", END_TONE[word])}>{word}</span>
       </span>
       {/* From anchor 2.2 (the drag) a seat ends on the drag's own film: said where it differs from the pinch. */}
-      <span className="text-2xs text-faint">{row.drag ? "från 2.1 och 2.2" : row.pinch ? "från 2.1" : " "}</span>
+      <span className="text-2xs text-faint">{[row.pinch || row.drag ? (row.drag ? (row.pinch ? "2.1 och 2.2" : "2.2") : "2.1") : null, row.two ? "2.3 (A3)" : row.candidates.length ? "A3 kandidat" : null].filter(Boolean).join(" · ") || " "}</span>
     </>
   );
   const frame = "flex h-full w-full flex-col gap-1 rounded-md border border-line bg-surface px-2 py-2 text-left";

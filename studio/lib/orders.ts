@@ -73,6 +73,8 @@ export type NewOrderInput = {
   reference?: string | null;
   /** The card's size on a round trip's last picture as a factor of the plan's (a trial); sent only when not 1. */
   cardScale?: number;
+  /** A deal bara dit: an A3 candidate of the seat as its last picture, a named exception (tools/order-store.ts NewOrder.end). */
+  end?: string;
 };
 /** The first draft made, and every draft made (seven for "Alla sju"). */
 export const createOrder = (input: NewOrderInput) => call<OrderAnswer & { made?: string[] }>("api/orders", "Utkastet", send("POST", input));

@@ -162,7 +162,8 @@ test('several cards drawn one after the other, each where the plan says; the hol
   const base = existsSync('D:/dealer-scratch/tmp') ? 'D:/dealer-scratch/tmp' : (await import('node:os')).tmpdir();
   const lab = await mkdtemp(path.join(base, 'order-images-'));
   t.after(() => rm(lab, { recursive: true, force: true }));
-  for (const f of ['data/order-policy.json', 'data/dealers.json', 'placements/default.json', TEXTURE.video, TEXTURE.quadFrom]) { await mkdir(path.dirname(path.join(lab, f)), { recursive: true }); await copyFile(f, path.join(lab, f)); }
+  // The step's recipe comes from the method register since the straight line (a step without one has no default).
+  for (const f of ['data/order-policy.json', 'data/order-methods.json', 'data/dealers.json', 'placements/default.json', TEXTURE.video, TEXTURE.quadFrom]) { await mkdir(path.dirname(path.join(lab, f)), { recursive: true }); await copyFile(f, path.join(lab, f)); }
   await mkdir(path.join(lab, 'assets/anchors/paow-vila'), { recursive: true });
   await writeFile(path.join(lab, 'assets/anchors/paow-vila/anchor.png'), await pngOf(green));
   await writeFile(path.join(lab, 'data/clip-jobs.json'), '{"jobs": []}');

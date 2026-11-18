@@ -388,9 +388,24 @@ export const ANCHOR_WORDS: Record<Anchor, string> = {
 /** The register's node and role of a seat's landing picture: LAND(P4.C1), role landning, with the card on the table. */
 export const landingNode = (target: string) => `LAND(${target})`;
 export const LANDING_ROLE = 'landning';
-/** The landing picture of a seat that holds: role landning, node LAND(<seat>), state gäller, the card on that seat. */
-export function landingOf<E extends { role: string; node?: string; state?: string; card?: string }>(entries: readonly E[], target: string | null | undefined): E | null {
-  return target ? (entries.find((e) => e.role === LANDING_ROLE && e.node === landingNode(target) && e.state === 'gäller' && e.card === target) ?? null) : null;
+/**
+ * Ankare 3, "A3" (Jakob 2026-11-18: "en bra och logisk slutbildsankare (A3P'n') för respektive possition"): a seat's landing
+ * picture is for ONE card place and ONE hand, the hand whose fingertips rest on the card (entry.hand; absent: the left, as
+ * every landing picture made before from the bank's one-hand deals). A deal from anchor 2.3 is laid by the right hand, so
+ * it ends on the seat's A3 for the right hand, and an A3 for one hand is never the end of a deal laid with the other.
+ */
+export type HandOf = { hand?: string };
+const handOf = (e: HandOf): 'LH' | 'RH' => (e.hand === 'RH' ? 'RH' : 'LH');
+/** "A3 · P4", "A3 · Dealer": what a seat's A3 is called. */
+export const a3Name = (target: string): string => `A3 · ${target === 'D.C1' ? 'Dealer' : target === 'D.C2' ? 'Hålkort' : target.replace(/\.C1$/, '').replace(/\.C2$/, ' kort 2')}`;
+const isLanding = <E extends { role: string; node?: string; card?: string } & HandOf>(e: E, target: string, hand: 'LH' | 'RH') => e.role === LANDING_ROLE && e.node === landingNode(target) && e.card === target && handOf(e) === hand;
+/** The landing picture of a seat that holds for a hand: role landning, node LAND(<seat>), state gäller, the card on that seat, that hand at it. */
+export function landingOf<E extends { role: string; node?: string; state?: string; card?: string } & HandOf>(entries: readonly E[], target: string | null | undefined, hand: 'LH' | 'RH' = 'LH'): E | null {
+  return target ? (entries.find((e) => isLanding(e, target, hand) && e.state === 'gäller') ?? null) : null;
+}
+/** A seat's A3 pictures for a hand that do not hold yet (kandidat): what a draft can take as its last picture only as a named exception. */
+export function a3Candidates<E extends { id: string; role: string; node?: string; state?: string; card?: string } & HandOf>(entries: readonly E[], target: string | null | undefined, hand: 'LH' | 'RH'): E[] {
+  return target ? entries.filter((e) => isLanding(e, target, hand) && e.state === 'kandidat') : [];
 }
 /** What a return lacks where no landing picture holds for the seat it starts from, in Jakob's words. */
 export const landingMissing = (dealerName: string, target: string | null | undefined) =>
@@ -460,9 +475,18 @@ export function endsOnOf(pictures: readonly { goesAs: string; from?: { cut?: { c
  * seat (SNITTRUTA, cutFrameOf); a seat with neither has none (null), and the deal cannot be ordered bara dit to it. One
  * seat's picture never stands in for another seat.
  */
-export type SeatEnd<E> = { kind: 'LANDNING'; entry: E } | { kind: 'SNITTRUTA'; cut: CutFrame };
-export function seatEndOf<E extends { role: string; node?: string; state?: string; card?: string }>(entries: readonly E[], bank: BankFacts | null, want: { dealer: string; step: Pick<StepDef, 'from' | 'card' | 'start' | 'kind'>; target: string | null; hand?: 'LH' | 'RH' | null }): SeatEnd<E> | null {
-  const landing = landingOf(entries, want.target);
+export type SeatEnd<E> = { kind: 'LANDNING'; entry: E; candidate?: boolean } | { kind: 'SNITTRUTA'; cut: CutFrame };
+/**
+ * want.hand: the hand that lays the card (the seat's A3 for that hand). want.chosen: an A3 candidate named as an exception
+ * ("med kandidaten som sista bild"): it is the end only where it is that seat's A3 for that hand and a candidate; then
+ * candidate is true, so that every view says it is not his choice.
+ */
+export function seatEndOf<E extends { id?: string; role: string; node?: string; state?: string; card?: string } & HandOf>(entries: readonly E[], bank: BankFacts | null, want: { dealer: string; step: Pick<StepDef, 'from' | 'card' | 'start' | 'kind'>; target: string | null; hand?: 'LH' | 'RH' | null; chosen?: string | null }): SeatEnd<E> | null {
+  if (want.chosen) {
+    const named = a3Candidates(entries as readonly (E & { id: string })[], want.target, want.hand ?? 'LH').find((e) => e.id === want.chosen);
+    return named ? { kind: 'LANDNING', entry: named, candidate: true } : null;
+  }
+  const landing = landingOf(entries, want.target, want.hand ?? 'LH');
   if (landing) return { kind: 'LANDNING', entry: landing };
   const cut = bank ? cutFrameOf(bank, want)[0] : null;
   return cut ? { kind: 'SNITTRUTA', cut } : null;
@@ -762,6 +786,8 @@ export function referenceCandidates(bank: BankFacts, want: { dealer: string; ste
   // A film whose reference check fails comes after every one that passes or is not checked, within its match.
   const key = (c: RefCandidate) => [c.match, c.verdict === 'UNDERKÄND' ? 1 : 0, c.check && !c.check.pass ? 1 : 0, c.dealer === want.dealer ? 0 : 1, VERDICT_RANK[c.verdict]];
   // The dummy's films for the step and seat, first within their match (they need no verdict: nothing of a dealer is in them).
+  // Of two films of the same edge the one listed later comes first: a film made again is listed after the one it replaces.
+  const listed = new Map((bank.rendered ?? []).map((r, i) => [r.id, i]));
   for (const r of bank.rendered ?? []) {
     const e = parseEdge(r.edge);
     if (!e) continue;
@@ -771,7 +797,7 @@ export function referenceCandidates(bank: BankFacts, want: { dealer: string; ste
       check: r.check ?? null, lays: r.lays ?? 'LH', seconds: r.seconds, frames: null, also: [], fits: !range || (r.seconds >= range[0] && r.seconds <= range[1]), sha256: r.sha256 });
   }
   const rank = (c: RefCandidate) => [c.match, c.kind === 'RENDERED' ? 0 : 1, ...key(c).slice(1)];
-  out.sort((a, b) => { const ka = rank(a), kb = rank(b); for (let i = 0; i < ka.length; i++) if (ka[i] !== kb[i]) return ka[i] - kb[i]; return a.take.localeCompare(b.take); });
+  out.sort((a, b) => { const ka = rank(a), kb = rank(b); for (let i = 0; i < ka.length; i++) if (ka[i] !== kb[i]) return ka[i] - kb[i]; if (a.kind === 'RENDERED' && b.kind === 'RENDERED') return (listed.get(b.take) ?? 0) - (listed.get(a.take) ?? 0); return a.take.localeCompare(b.take); });
   const films = new Set<string>();
   return out.filter((c) => (films.has(c.film) ? false : (films.add(c.film), true)));
 }

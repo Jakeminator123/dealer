@@ -154,7 +154,8 @@ const revisionOf = (text: string) => '"' + createHash('sha256').update(text).dig
 // READY>P4.C1), anything else as an experiment edge under its own notation.
 const edgeOf = (from: string, to: string) => parseEdge(`${from}>${to}`)?.base ?? formatEdge(nodeName(from), nodeName(to));
 
-export type AddInput = {dealer: string; role: string; name: string; title: string; filename: string; type: string; bytes: Uint8Array; who?: string; now?: Date};
+/** landing: an A3, a seat's landing picture for one hand (role landning; only from a tool, tools/landing-make.ts), with what made it for its receipt. */
+export type AddInput = {dealer: string; role: string; name: string; title: string; filename: string; type: string; bytes: Uint8Array; who?: string; now?: Date; landing?: {card: string; hand: 'LH' | 'RH'; made: Record<string, unknown>; builtOn?: string[]; note?: string}};
 
 export function mediaRoles(root: string) {
  const registerFile = path.join(root, 'data/media-roles.json'), jobFile = path.join(root, 'data/clip-jobs.json');
@@ -268,7 +269,9 @@ export function mediaRoles(root: string) {
  async function add(input: AddInput) {
   const {dealer, role, name, filename} = input, title = input.title.trim(), now = input.now ?? new Date();
   if (!/^[a-z0-9]+$/.test(dealer)) throw new StoreError(400, 'Okänd dealer.');
-  if (!isUploadRole(role)) throw new StoreError(400, 'Rollen ska vara ingångsbild, keystone eller ett ankare.');
+  const landing = role === 'landning' ? input.landing : undefined;
+  if (!isUploadRole(role) && !landing) throw new StoreError(400, 'Rollen ska vara ingångsbild, keystone eller ett ankare.');
+  if (landing && (!/^(?:P[1-7]|D)\.C[12]$/.test(landing.card) || !['LH', 'RH'].includes(landing.hand))) throw new StoreError(400, 'Ett A3 säger sitt kort (P4.C1) och handen vid det (LH eller RH).');
   if (!NAME.test(name) || name.length > NAME_LIMIT) throw new StoreError(400, `Namnet får bara ha a–z, 0–9 och bindestreck, högst ${NAME_LIMIT} tecken.`);
   if (!title || title.length > TITLE_LIMIT) throw new StoreError(400, `Skriv ett namn på bilden, högst ${TITLE_LIMIT} tecken.`);
   if (input.type !== 'png' && input.type !== 'jpeg') throw new StoreError(415, 'Bara PNG eller JPEG.');
@@ -278,7 +281,7 @@ export function mediaRoles(root: string) {
   const size = imageSize(input.bytes);
   if (!size || size.width < 16 || size.height < 16 || size.width > 20000 || size.height > 20000) throw new StoreError(415, 'Bildens storlek gick inte att läsa.');
   const original = path.basename(String(filename ?? '').replaceAll('\\', '/')).slice(0, 200) || 'okänd';
-  const target = uploadTarget(dealer, role as UploadRole, name, input.type);
+  const target = uploadTarget(dealer, (landing ? 'ankare-2.3' : role) as UploadRole, name, input.type);
   const task = queue.then(async () => {
    const {text, register, errors} = await readRegister();
    if (!register || !text) throw new StoreError(500, `Registret håller inte: ${errors.join('; ')}`);
@@ -298,10 +301,13 @@ export function mediaRoles(root: string) {
      schemaVersion: 1, id: target.id, dealer, role, name: title, createdAt: now.toISOString(), by: input.who ?? 'Jakob, studions vy Material',
      original: {fileName: original, bytes: input.bytes.length, sha256, width: size.width, height: size.height, type: input.type},
      output: {path: target.path, sha256},
-     note: 'Lagd till från studion. Kandidat tills Jakob säger annat.',
+     note: landing ? 'Gjord av ett verktyg (made). Kandidat tills Jakob gör den gällande i Material.' : 'Lagd till från studion. Kandidat tills Jakob säger annat.',
+     ...(landing ? {card: landing.card, hand: landing.hand, made: landing.made} : {}),
     };
     await writeFile(path.join(dir, 'receipt.json'), JSON.stringify(receipt, null, 2) + '\n', {flag: 'wx'});
-    const entry: Entry = {id: target.id, role: role as UploadRole, name: title, path: target.path, ...(nodeOfRole(role) ? {node: nodeOfRole(role)} : {}), state: 'kandidat', note: `${ROLE_LABEL[role as UploadRole]} lagd till i studion ${day}.`, source: {from: `uppladdad: ${original}`, when: day}};
+    const entry: Entry = landing
+     ? {id: target.id, role: 'landning', name: title, path: target.path, node: `LAND(${landing.card})`, card: landing.card, hand: landing.hand, state: 'kandidat', ...(landing.builtOn?.length ? {builtOn: landing.builtOn} : {}), note: (landing.note ?? `A3 gjord av ett verktyg ${day}.`).slice(0, 400), source: {from: `gjord: ${original}`, when: day}}
+     : {id: target.id, role: role as UploadRole, name: title, path: target.path, ...(nodeOfRole(role) ? {node: nodeOfRole(role)} : {}), state: 'kandidat', note: `${ROLE_LABEL[role as UploadRole]} lagd till i studion ${day}.`, source: {from: `uppladdad: ${original}`, when: day}};
     const next = structuredClone(register);
     next.dealers[dealer].entries.push(entry);
     const out = JSON.stringify(next, null, 2) + '\n';

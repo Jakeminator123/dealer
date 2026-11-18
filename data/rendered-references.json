@@ -1,5 +1,5 @@
 {
-  "about": "Rendered reference films: the 3D lane's dummy (dealer3d/) performing one step as the bank's camera sees it, its hands read off an approved deal of a real dealer. A recipe whose reference rule is renderad or renderad-eller-samma-plats (data/order-methods.json) takes the film for its step and seat from here before any take of the bank (src/order-model.ts referenceCandidates, src/order-methods.ts referenceByRule), and tools/order-store.ts copies it into the order's folder with its hash. One entry per film: id; edge (the step it shows in the graph's notation: READY>P4.C1 a pinch deal to seat 4, READY-B>P4.C1 a drag, READY-C>P4.C1 a deal with two hands, IDLE>READY-C the entry to anchor 2.3); path, always assets/references/docka/<id>/source.mp4 (media, outside Git); sha256 of that file; seconds; fromDeal (the take its hands are read off); lays (the hand that lays the card, absent: the left); check (the film's own reference check, src/deal-check.ts checkReference: pass, clean, codes). A film is listed only when its file lies there and it ends as the seat's last picture does (the hand's side and the fingers on the card; handbook, tools/film-prompting.md §5). The 3D lane makes the films on the scratch disk (D:/dealer-scratch/tmp/dealer-3d/ut/, with its LASMIG.txt and KLAR-*.txt); a film is copied here with its hash checked and a receipt.json beside it, and a film made again gets a new letter, never the same id. A film that deals no card (an entry to an anchor) has no check and no laying hand.",
+  "about": "Rendered reference films: the 3D lane's dummy (dealer3d/) performing one step as the bank's camera sees it, its hands read off an approved deal of a real dealer. A recipe whose reference rule is renderad or renderad-eller-samma-plats (data/order-methods.json) takes the film for its step and seat from here before any take of the bank (src/order-model.ts referenceCandidates, src/order-methods.ts referenceByRule), and tools/order-store.ts copies it into the order's folder with its hash. One entry per film: id; edge (the step it shows in the graph's notation: READY>P4.C1 a pinch deal to seat 4, READY-B>P4.C1 a drag, READY-C>P4.C1 a deal with two hands, IDLE>READY-C the entry to anchor 2.3); path, always assets/references/docka/<id>/source.mp4 (media, outside Git); sha256 of that file; seconds; fromDeal (the take its hands are read off); lays (the hand that lays the card, absent: the left); check (the film's own reference check, src/deal-check.ts checkReference: pass, clean, codes). A film is listed only when its file lies there and it ends as the seat's last picture does (the hand's side and the fingers on the card; handbook, tools/film-prompting.md §5). The 3D lane makes the films on the scratch disk (D:/dealer-scratch/tmp/dealer-3d/ut/, with its LASMIG.txt and KLAR-*.txt); a film is copied here with its hash checked and a receipt.json beside it, and a film made again gets a new letter, never the same id. Of two films of the same edge the one listed later is offered first: a film made again is listed after the one it replaces. A film that deals no card (an entry to an anchor) has no check and no laying hand.",
   "schemaVersion": 1,
   "films": [
     {
@@ -16,7 +16,122 @@
       "sha256": "050fcf8ada7e5b16d386e4e186800712d9aa903f151421fb2e13a5e0bd665a69",
       "seconds": 3,
       "lays": "RH",
-      "check": { "pass": true, "clean": true, "codes": [] }
+      "check": {
+        "pass": true,
+        "clean": true,
+        "codes": []
+      }
+    },
+    {
+      "id": "docka-vila-till-2-3-b",
+      "edge": "IDLE>READY-C",
+      "path": "assets/references/docka/docka-vila-till-2-3-b/source.mp4",
+      "sha256": "1e02c788707d2daaf48d6490ce95926148b55dc0037e1782c2586b992a4f6840",
+      "seconds": 3
+    },
+    {
+      "id": "docka-2-3-p1c1-f",
+      "edge": "READY-C>P1.C1",
+      "path": "assets/references/docka/docka-2-3-p1c1-f/source.mp4",
+      "sha256": "d8e1070d4a54447e3066bcf5d49c74d2c9680d9e709ddf918bd6ab7ee6914d21",
+      "seconds": 3,
+      "lays": "RH",
+      "check": {
+        "pass": true,
+        "clean": true,
+        "codes": []
+      }
+    },
+    {
+      "id": "docka-2-3-p2c1-f",
+      "edge": "READY-C>P2.C1",
+      "path": "assets/references/docka/docka-2-3-p2c1-f/source.mp4",
+      "sha256": "73595e2f12d963f0154649db281a290215e32431a2091c67577dc0b6e4cff1e3",
+      "seconds": 3,
+      "lays": "RH",
+      "check": {
+        "pass": true,
+        "clean": true,
+        "codes": []
+      }
+    },
+    {
+      "id": "docka-2-3-p3c1-f",
+      "edge": "READY-C>P3.C1",
+      "path": "assets/references/docka/docka-2-3-p3c1-f/source.mp4",
+      "sha256": "fd2ba271caaaacec301d93911fd20e2f2942fb31e5f9e0cb7038a276917a97dd",
+      "seconds": 3,
+      "lays": "RH",
+      "check": {
+        "pass": true,
+        "clean": true,
+        "codes": []
+      }
+    },
+    {
+      "id": "docka-2-3-p4c1-f",
+      "edge": "READY-C>P4.C1",
+      "path": "assets/references/docka/docka-2-3-p4c1-f/source.mp4",
+      "sha256": "1829812be7f41b1e49f8db1a23ceb8080e5a41793b9bd559b41e0641af6ce413",
+      "seconds": 3,
+      "lays": "RH",
+      "check": {
+        "pass": true,
+        "clean": true,
+        "codes": []
+      }
+    },
+    {
+      "id": "docka-2-3-p5c1-f",
+      "edge": "READY-C>P5.C1",
+      "path": "assets/references/docka/docka-2-3-p5c1-f/source.mp4",
+      "sha256": "c472aaaf06713cbe73f214f16ff71637f7fb6ecd7909f8a8026c03340bb828eb",
+      "seconds": 3,
+      "lays": "RH",
+      "check": {
+        "pass": true,
+        "clean": true,
+        "codes": []
+      }
+    },
+    {
+      "id": "docka-2-3-p6c1-f",
+      "edge": "READY-C>P6.C1",
+      "path": "assets/references/docka/docka-2-3-p6c1-f/source.mp4",
+      "sha256": "560305fdc67643d811915f8481855292ea8eb81224e4205001d3a2ef34c518ca",
+      "seconds": 3,
+      "lays": "RH",
+      "check": {
+        "pass": true,
+        "clean": true,
+        "codes": []
+      }
+    },
+    {
+      "id": "docka-2-3-p7c1-f",
+      "edge": "READY-C>P7.C1",
+      "path": "assets/references/docka/docka-2-3-p7c1-f/source.mp4",
+      "sha256": "a6b0a9ed67206afb17b819292392417e0d5ba9b1d9c30580ae9992681373e46e",
+      "seconds": 3,
+      "lays": "RH",
+      "check": {
+        "pass": true,
+        "clean": true,
+        "codes": []
+      }
+    },
+    {
+      "id": "docka-2-3-dc1-f",
+      "edge": "READY-C>D.C1",
+      "path": "assets/references/docka/docka-2-3-dc1-f/source.mp4",
+      "sha256": "713366e1c694ae249d0b4b3202af62124d4020929d848f25d2744baa64640853",
+      "seconds": 3,
+      "lays": "RH",
+      "check": {
+        "pass": true,
+        "clean": true,
+        "codes": []
+      }
     }
   ]
 }

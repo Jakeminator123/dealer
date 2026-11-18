@@ -165,6 +165,11 @@ export function RowSends({
               <Select size="sm" aria-label="Referensfilm" value={line.reference?.take ?? ""} onChange={(v) => onChoice({ reference: v || null })} options={[{ value: "", label: "Ingen" }, ...candidates.map((c) => ({ value: c.take, label: referenceName(c, names), hint: c.kind === "RENDERED" ? "dockan" : c.verdict === "GODKÄND" ? "godkänd" : c.verdict.toLowerCase() }))]} className="w-56" />
             </Row>
           ) : null}
+          {deal && line.shape === "ONE_WAY" && (line.endChoices.length || choice.end) ? (
+            <Row label="Sista bild">
+              <Select size="sm" aria-label="Sista bild" value={choice.end ?? ""} onChange={(v) => onChoice({ end: v || undefined })} options={[{ value: "", label: "Platsens egen (receptet)" }, ...line.endChoices.map((e) => ({ value: e.id, label: e.name ?? e.id, hint: "kandidat, undantag" }))]} className="w-56" />
+            </Row>
+          ) : null}
           {step.card ? (
             <>
               {step.grip !== "TWO_HANDS" ? (

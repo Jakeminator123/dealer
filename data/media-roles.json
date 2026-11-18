@@ -3681,6 +3681,62 @@
           }
         },
         {
+          "id": "paow-film-giv-2-3-p5-01-t1",
+          "role": "film",
+          "name": "Två händer, ett kort till platsen · plats 5 · beställd utanför Beställ (giv-p5-t",
+          "path": "assets/films/paow/giv-2-3-p5-01-t1/source.mp4",
+          "still": 40,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Oberoende granskare 2026-11-18 (prov giv-fran-2-3-p5): given 3/5, förslag Variant. En hel vändning, ingen glidning in, mjukt stopp, kortet håller storleken. Kvar: mitten är trög (kortet står vid skon cirka 0,6 s medan det reses), det gula kortet har en vit kant ruta 22–30. Automatiska kontrollen godkänd: kant 34–37, blått från 42, lagt från 45.",
+          "source": {
+            "from": "beställningen paow-giv-2-3-p5-01, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-18"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-3-p4-01-t1",
+          "role": "film",
+          "name": "Paow · Två händer, ett kort till platsen · plats 4, tagning 1",
+          "path": "assets/films/paow/giv-2-3-p4-01-t1/source.mp4",
+          "still": 40,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-giv-2-3-p4-01, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-18"
+          }
+        },
+        {
+          "id": "paow-film-ingang-2-3-01-t1",
+          "role": "film",
+          "name": "Paow · Ankare 1 → 2.3, tagning 1",
+          "path": "assets/films/paow/ingang-2-3-01-t1/source.mp4",
+          "still": 40,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-ingang-2-3-01, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-18"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-3-p1-01-t1",
+          "role": "film",
+          "name": "Paow · Två händer, ett kort till platsen · plats 1, tagning 1",
+          "path": "assets/films/paow/giv-2-3-p1-01-t1/source.mp4",
+          "still": 40,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställningen paow-giv-2-3-p1-01, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-18"
+          }
+        },
+        {
           "id": "paow-film-intro-noir-3-startruta",
           "role": "arbetsmaterial",
           "name": "Startrutan till filmen före spelet",
@@ -3738,6 +3794,60 @@
             "when": "2026-11-18"
           },
           "stateBy": "Jakob 2026-11-18 02:39: kandidat → gäller (hans ja i Beslut 2026-11-18, \"Ja, registrera\"; infört av huvudagenten genom dess underagent för beställningslinjen)"
+        },
+        {
+          "id": "paow-a3-p4",
+          "role": "landning",
+          "name": "A3 · P4",
+          "path": "assets/anchors/paow-a3-p4/anchor.png",
+          "node": "LAND(P4.C1)",
+          "card": "P4.C1",
+          "hand": "RH",
+          "state": "kandidat",
+          "builtOn": [
+            "paow-ankare-2-3-a"
+          ],
+          "note": "A3 för P4.C1 med höger hand vid kortet, gjord av tools/landing-make.ts.",
+          "source": {
+            "from": "gjord: a3-p4-ip.png",
+            "when": "2026-11-18"
+          }
+        },
+        {
+          "id": "paow-a3-p1",
+          "role": "landning",
+          "name": "A3 · P1",
+          "path": "assets/anchors/paow-a3-p1/anchor.png",
+          "node": "LAND(P1.C1)",
+          "card": "P1.C1",
+          "hand": "RH",
+          "state": "kandidat",
+          "builtOn": [
+            "paow-ankare-2-3-a"
+          ],
+          "note": "A3 för P1.C1 med höger hand vid kortet, gjord av tools/landing-make.ts trots: bildrutan är inte hållen: huvud och axlar täcker ankarets till 73 % (minst 75 %).",
+          "source": {
+            "from": "gjord: a3-p1-nb.png",
+            "when": "2026-11-18"
+          }
+        },
+        {
+          "id": "paow-a3-p5",
+          "role": "landning",
+          "name": "A3 · P5",
+          "path": "assets/anchors/paow-a3-p5/anchor.png",
+          "node": "LAND(P5.C1)",
+          "card": "P5.C1",
+          "hand": "RH",
+          "state": "kandidat",
+          "builtOn": [
+            "paow-ankare-2-3-a"
+          ],
+          "note": "A3 för P5.C1 med höger hand vid kortet, gjord av tools/landing-make.ts.",
+          "source": {
+            "from": "gjord: t4-slut.png",
+            "when": "2026-11-18"
+          }
         }
       ]
     },

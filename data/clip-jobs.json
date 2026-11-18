@@ -8305,6 +8305,142 @@
         "id": "paow-utgang-2-2-01",
         "take": 2
       }
+    },
+    {
+      "id": "paow-giv-2-3-p5-01-01",
+      "kind": "DEAL",
+      "from": "READY-C",
+      "to": "P5.C1",
+      "clip": "paow-giv-2-3-p5-01-01",
+      "frames": [
+        0,
+        72
+      ],
+      "purpose": "Beställning paow-giv-2-3-p5-01, tagning 1: Två händer, ett kort till platsen · plats 5 · beställd utanför Beställ (giv-p5-t4).",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 3,
+      "promptText": "Locked camera, one continuous shot. Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing. It is one continuous, unhurried motion from the shoe to the card's place, and the card never pauses on the way; it lies at its place a little more than two seconds after it leaves the shoe, and then she holds still as in the last frame. Her hand on the shoe slides the yellow card out of the window and pushes it flat along the felt, yellow side up, to her other hand in front of the shoe. Her other hand meets the card as it arrives and takes it by its long side while it is still moving, fingers on its yellow back and thumb on its face, and in that same moment the two hands together tip it up on one short edge; the hand from the shoe lets go and goes back to the next yellow card in the shoe's window, as in the last frame. In the same sweep, without stopping, her other hand carries the card low over the felt towards its place a little to the right of the middle of the picture, where the last frame shows it, and the card keeps turning as it travels: it passes through upright, yellow back towards the camera, and falls on forward, away from her, so that the blue face comes up. The card turns over once, end over end, yellow to blue, and never turns back. She lays it flat exactly at its place, blue side up, her palm down, without sliding it, and her fingertips come to rest on the card's near corner, as in the last frame. Her head stays bowed and her eyes follow the card to its place. Only one card moves, and her hand is on it the whole way: a small card, about half as long as her hand. It keeps the size it has in the last frame all the way from the shoe to its place: on its edge it is exactly as long as it is lying down. It is blank, solid yellow on one side and solid blue on the other, each colour reaching right out to its corners with no white border, and the next card in the window is the same blank yellow.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-3-p5-01/first.png",
+          "sha256": "340842ba3b6af20bdf36646b517d20501163496b426c154d1dd798b488f75542"
+        },
+        "note": "Första bilden i beställningen paow-giv-2-3-p5-01."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-3-p5-01/last.png",
+          "sha256": "91a2f1e05e694221fb4f2fa097605d745e640f35430d5cd778c3927d5dd71a26"
+        },
+        "note": "Sista bilden i beställningen paow-giv-2-3-p5-01."
+      },
+      "order": {
+        "id": "paow-giv-2-3-p5-01",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-3-p4-01-01",
+      "kind": "DEAL",
+      "from": "READY-C",
+      "to": "P4.C1",
+      "clip": "paow-giv-2-3-p4-01-01",
+      "frames": [
+        0,
+        72
+      ],
+      "purpose": "Beställning paow-giv-2-3-p4-01, tagning 1: Paow · Två händer, ett kort till platsen · plats 4.",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 3,
+      "promptText": "Locked camera, one continuous shot. Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing. Her hand at the shoe strokes the yellow card out of the window and slides it flat on the felt, its broad yellow side up, a short way out from the shoe, where her other hand meets it. There both hands tip the card up onto its short end, and her other hand, palm down, carries it on towards its place in the middle of the picture, where the last frame shows it; on that way the card goes on over the same short end, end over end, in one unbroken turn that begins with the yellow side up and ends with the blue side up. She lays the card flat at its place, blue side up, with her palm down, and her fingertips come to rest on it, as in the last frame. The hand from the shoe lets go once the card stands on its end and settles back at the shoe. Her head stays bowed and turns towards the place where the card will lie. Only one card moves: a small card, about half as long as her hand, which keeps the size it has in the last frame all the way from the shoe to its place. It is blank, solid yellow on one side and solid blue on the other, each colour reaching right out to its corners, and the next card in the window is the same blank yellow.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-3-p4-01/first.png",
+          "sha256": "340842ba3b6af20bdf36646b517d20501163496b426c154d1dd798b488f75542"
+        },
+        "note": "Första bilden i beställningen paow-giv-2-3-p4-01."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-3-p4-01/last.png",
+          "sha256": "2a70b556c6110db541c7f379a8b464fad1362ce16e694efb111977405565f8b6"
+        },
+        "note": "Sista bilden i beställningen paow-giv-2-3-p4-01."
+      },
+      "order": {
+        "id": "paow-giv-2-3-p4-01",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-ingang-2-3-01-01",
+      "kind": "ENTRY",
+      "from": "IDLE",
+      "to": "READY-C",
+      "clip": "paow-ingang-2-3-01-01",
+      "frames": [
+        0,
+        72
+      ],
+      "purpose": "Beställning paow-ingang-2-3-01, tagning 1: Paow · Ankare 1 → 2.3.",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 3,
+      "promptText": "Locked camera, one continuous shot. Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing. Both her hands rise calmly and go to the shoe: her hand nearest the shoe lays its fingertips on the yellow card in the window, ready to stroke it out, and her other hand comes to wait close beside the shoe, as in the last frame. Her eyes go down to her hand at the card and stay there, as in the last frame. One soft, unbroken movement from the first frame to the last, with no pause and no jerk, and she leans no further forward than in the last frame.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-ingang-2-3-01/first.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Första bilden i beställningen paow-ingang-2-3-01."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-ingang-2-3-01/last.png",
+          "sha256": "340842ba3b6af20bdf36646b517d20501163496b426c154d1dd798b488f75542"
+        },
+        "note": "Sista bilden i beställningen paow-ingang-2-3-01."
+      },
+      "order": {
+        "id": "paow-ingang-2-3-01",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-3-p1-01-01",
+      "kind": "DEAL",
+      "from": "READY-C",
+      "to": "P1.C1",
+      "clip": "paow-giv-2-3-p1-01-01",
+      "frames": [
+        0,
+        72
+      ],
+      "purpose": "Beställning paow-giv-2-3-p1-01, tagning 1: Paow · Två händer, ett kort till platsen · plats 1.",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 3,
+      "promptText": "Locked camera, one continuous shot. Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing. Her hand at the shoe strokes the yellow card out of the window and slides it flat on the felt, its broad yellow side up, to the middle in front of her, where her other hand meets it. There both hands tip the card up onto its short end, and her other hand, palm down, carries it on towards its place at the far left of the picture, where the last frame shows it; on that way the card goes on over the same short end, end over end, in one unbroken turn that begins with the yellow side up and ends with the blue side up. She lays the card flat at its place, blue side up, with her palm down, and her fingertips come to rest on it, as in the last frame. The hand from the shoe lets go once the card stands on its end and settles back at the shoe. Her head stays bowed and turns towards the place where the card will lie. Only one card moves: a small card, about half as long as her hand, which keeps the size it has in the last frame all the way from the shoe to its place. It is blank, solid yellow on one side and solid blue on the other, each colour reaching right out to its corners, and the next card in the window is the same blank yellow. To reach this far seat she rises a little from her seat and leans forward and to the left over the table, her arm lifted above the felt, as in the last frame.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-3-p1-01/first.png",
+          "sha256": "340842ba3b6af20bdf36646b517d20501163496b426c154d1dd798b488f75542"
+        },
+        "note": "Första bilden i beställningen paow-giv-2-3-p1-01."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-3-p1-01/last.png",
+          "sha256": "76f859b4de8690416ed66f6c2f946ace0f10206c1da70033dcdebff3bfbb83f6"
+        },
+        "note": "Sista bilden i beställningen paow-giv-2-3-p1-01."
+      },
+      "order": {
+        "id": "paow-giv-2-3-p1-01",
+        "take": 1
+      }
     }
   ],
   "edits": [

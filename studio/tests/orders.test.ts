@@ -248,7 +248,8 @@ test("an order stored in the long text (Utförlig) still shows its own text and 
   const { dealers } = JSON.parse(await readFile("data/dealers.json", "utf8"));
   const look = dealers.find((d: { id: string }) => d.id === "paow").look;
   // An approved still keeps a frozen text from an older wording (order-prompts.test.ts); every other long one reproduces.
-  const long = all.filter((o) => (o.prompt.style ?? "UTFÖRLIG") === "UTFÖRLIG" && !(o.kind === "STILL" && o.approval));
+  // An order placed outside Beställ (tools/order-import.ts) carries the text that was sent, never promptFor's: nothing to reproduce.
+  const long = all.filter((o) => (o.prompt.style ?? "UTFÖRLIG") === "UTFÖRLIG" && !(o.kind === "STILL" && o.approval) && !(o as { outside?: unknown }).outside);
   assert.ok(long.length >= 15, `${long.length} stored in the long text`);
   for (const order of long) {
     const parts = storedParts(order, look, planAnswerOf(plan, file), "Paow");

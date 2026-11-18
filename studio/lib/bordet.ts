@@ -7,7 +7,7 @@
 // price, and the body of POST /api/orders: the dealer, the step and the card, and over them only his deliberate exceptions.
 // Nothing here composes an order: the store does, as for every draft. No DOM, no network; tests in studio/tests/bordet.test.ts.
 import {
-  ANCHOR_NODE, costOf, credits, defaultFlip, genitive, handsOf, landingOf, modelFor, paramsOf, referenceCandidates, scaleQuad, seatEndOf, seatWords, stepOf,
+  ANCHOR_NODE, a3Candidates, a3Name, costOf, credits, defaultFlip, genitive, handsOf, landingOf, modelFor, paramsOf, referenceCandidates, scaleQuad, seatEndOf, seatWords, stepOf,
   type Anchor, type BankFacts, type FlipAxis, type HandChoice, type ModelDef, type PlanAnswer, type Policy, type RefCandidate, type SeatEnd, type Shape, type StepDef, type StepKey, type TextStyle,
 } from "../../src/order-model.ts";
 import { methodFor, recipeFor, recipeHands, recipeWords, referenceByRule, referenceWaits, secondsOf, type Method, type MethodRegister, type Recipe } from "../../src/order-methods.ts";
@@ -140,9 +140,9 @@ export const wishLine = (step: StepDef, target: string | null, shape: Shape | nu
  * the text's style, tur och retur, another reference film or none, the hand, the side, the turn, the trial card scale) and
  * his own addition. Only what is chosen is sent; everything else is the recipe's, which the store fills in.
  */
-export type RowChoice = Partial<{ model: string; duration: number; takes: number; style: TextStyle; shape: Shape; reference: string | null; hand: HandChoice; side: Side; cardScale: number; extra: string }>;
+export type RowChoice = Partial<{ model: string; duration: number; takes: number; style: TextStyle; shape: Shape; reference: string | null; hand: HandChoice; side: Side; cardScale: number; extra: string; /** A deal bara dit: an A3 candidate of the seat as its last picture (the exception "med kandidaten som sista bild"). */ end: string }>;
 
-type EntryLike = { id: string; role: string; state?: string; node?: string; card?: string; served: string | null; name?: string; frame?: number; fps?: number | null };
+type EntryLike = { id: string; role: string; state?: string; node?: string; card?: string; hand?: string; served: string | null; name?: string; frame?: number; fps?: number | null };
 
 /**
  * What the store makes of a film on the list, resolved the same way before a draft exists (tools/order-store.ts create, from
@@ -164,8 +164,10 @@ export type Line = {
   reference: RefCandidate | null;
   /** The recipe wants a reference film (and he has not said otherwise). */
   wanted: boolean;
-  /** Where a deal bara dit ends: the seat's own end picture, or null where the seat has none. */
+  /** Where a deal bara dit ends: the seat's own end picture (its A3 for the laying hand, else the cut frame), or the A3 candidate he named; null where the seat has none. */
   end: SeatEnd<EntryLike> | null;
+  /** The seat's A3 candidates for the laying hand: what the exception "med kandidaten som sista bild" can name. */
+  endChoices: EntryLike[];
   why: string | null;
 };
 export function lineOf(input: { dealer: string; wish: FilmWish; methods: Pick<MethodRegister, "methods"> | null; bank: BankFacts | null; entries: readonly EntryLike[]; plan: Pick<PlanAnswer, "seats"> | null; choice?: RowChoice }): Line {
@@ -183,7 +185,8 @@ export function lineOf(input: { dealer: string; wish: FilmWish; methods: Pick<Me
   const lays: "LH" | "RH" = twoHands || hands.pass ? "RH" : hands.hand;
   const side: Side = c.side ?? seat?.side ?? "FRONT";
   const oneWayDeal = deal && shape === "ONE_WAY";
-  const end = oneWayDeal ? seatEndOf(entries, bank, { dealer, step: def, target: wish.target, hand: lays }) : null;
+  const end = oneWayDeal ? seatEndOf(entries, bank, { dealer, step: def, target: wish.target, hand: lays, chosen: c.end ?? null }) : null;
+  const endChoices = oneWayDeal ? a3Candidates(entries, wish.target, lays) : [];
   const byRule = c.reference === undefined && !!recipe && recipe.reference !== "ingen" && !!model?.videos;
   const reference = c.reference
     ? ((bank && model ? referenceCandidates(bank, { dealer, step: def, target: wish.target, model }).find((x) => x.take === c.reference && x.fits) : null) ?? null)
@@ -193,10 +196,10 @@ export function lineOf(input: { dealer: string; wish: FilmWish; methods: Pick<Me
     !model ? "ingen metod än"
     : def.kind === "FILM" && seconds === null ? "ingen metod än: säg längden"
     : def.start === "LAND" && !landingOf(entries, wish.target) ? "ingen landningsbild gäller för platsen"
-    : oneWayDeal && !end ? `ingen slutbild för platsen${lays === "RH" ? " med höger hand vid kortet" : ""}`
+    : oneWayDeal && !end ? (c.end ? `${c.end} är ingen A3-kandidat för platsen` : `ingen slutbild för platsen${lays === "RH" ? ` med höger hand vid kortet (${a3Name(wish.target!)})${endChoices.length ? ": en kandidat finns, välj den som undantag" : ""}` : ""}`)
     : byRule && !reference ? `${referenceWaits(recipe!.reference, def)}${lays === "RH" && !twoHands ? ", lagd med höger hand" : ""}`
     : null;
-  return { recipe, model, seconds, takes: c.takes ?? recipe?.takes ?? 1, style: c.style ?? recipe?.style ?? "KORT", shape, flipAxis: recipe?.turn ?? null, hands, side, reference, wanted: byRule, end, why };
+  return { recipe, model, seconds, takes: c.takes ?? recipe?.takes ?? 1, style: c.style ?? recipe?.style ?? "KORT", shape, flipAxis: recipe?.turn ?? null, hands, side, reference, wanted: byRule, end, endChoices, why };
 }
 
 export type FilmRow = {
@@ -242,6 +245,7 @@ export function orderBody(dealer: string, wish: FilmWish, c: RowChoice = {}): Ne
   if (c.side !== undefined) out.side = c.side;
   if (c.cardScale !== undefined && c.cardScale !== 1) out.cardScale = c.cardScale;
   if (c.extra !== undefined) out.extra = c.extra.trim() || null;
+  if (c.end && def.card && def.start !== "LAND") out.end = c.end;
   return out;
 }
 
@@ -312,7 +316,7 @@ export function sendsOf(input: { dealer: { id: string; name: string; look: strin
       const e = line.end;
       const fps = e?.kind === "SNITTRUTA" ? (input.bank?.motions?.[e.cut.clip]?.source?.fps ?? input.bank?.motions?.[e.cut.ret]?.source?.fps ?? 24) : null;
       const picture: EntryLike | null = !e ? null : e.kind === "LANDNING" ? e.entry : { id: e.cut.clip, role: "film", served: e.cut.path, frame: e.cut.frame, fps };
-      last = shot(picture, !e ? `Sista bild · ${seatWords(target)} har ingen slutbild` : e.kind === "LANDNING" ? `Sista bild · ${genitive(dealer.name)} landning på ${seatWords(target)}` : `Sista bild · platsens slutbild: ruta ${e.cut.frame} ur ${e.cut.clip}`, "platsens slutbild");
+      last = shot(picture, !e ? `Sista bild · ${seatWords(target)} har ingen slutbild` : e.kind === "LANDNING" ? (e.candidate ? `Sista bild · ${e.entry.name ?? a3Name(target!)}, kandidat (inte gällande)` : `Sista bild · ${genitive(dealer.name)} landning på ${seatWords(target)}`) : `Sista bild · platsens slutbild: ruta ${e.cut.frame} ur ${e.cut.clip}`, "platsens slutbild");
     } else {
       last = shot(start.holds, `Sista bild · samma + kortet ${line.side === "BACK" ? "stängt" : "öppet"} på ${seatWords(target)}`, `ankare ${step.from}`, seat ? [{ quad: scaleQuad(seat.quad, scale).quad, side: line.side }] : []);
       drawn = true;

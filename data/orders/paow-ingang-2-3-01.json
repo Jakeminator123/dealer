@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-ingang-2-3-01",
+  "title": "Paow · Ankare 1 → 2.3",
+  "summary": "Gör en film av Paow: från ankare 1 till ankare 2.3.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "INGANG-2.3",
+    "label": "Ankare 1 → 2.3",
+    "edge": "IDLE>READY-C",
+    "shape": "ONE_WAY",
+    "cutInto": [],
+    "makes": null
+  },
+  "motion": null,
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows ankare 1",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-ingang-2-3-01/first.png",
+      "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-vila-tatuerad",
+        "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+        "note": "Vila, tatuerade händer (gäller)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Sista bild · Paows ankare 2.3",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-ingang-2-3-01/last.png",
+      "sha256": "340842ba3b6af20bdf36646b517d20501163496b426c154d1dd798b488f75542",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-ankare-2-3-a",
+        "path": "assets/anchors/paow-ankare-2-3-a/anchor.png",
+        "note": "Ankare 2.3, båda händerna vid skon före första kortet (A) (gäller)"
+      },
+      "waits": null
+    }
+  ],
+  "reference": {
+    "status": "FINNS",
+    "clips": [
+      "docka-vila-till-2-3-b"
+    ],
+    "path": "assets/orders/paow-ingang-2-3-01/reference.mp4",
+    "sha256": "1e02c788707d2daaf48d6490ce95926148b55dc0037e1782c2586b992a4f6840",
+    "seconds": 3,
+    "goesTo": "IDLE>READY-C",
+    "approvedStraight": false,
+    "dealer": "docka",
+    "from": {
+      "film": "docka-vila-till-2-3-b",
+      "path": "assets/references/docka/docka-vila-till-2-3-b/source.mp4",
+      "sha256": "1e02c788707d2daaf48d6490ce95926148b55dc0037e1782c2586b992a4f6840",
+      "edge": "IDLE>READY-C",
+      "verdict": "EJ_DÖMD",
+      "words": null,
+      "frames": null,
+      "also": []
+    }
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "kling-4",
+    "params": {
+      "resolution": "1080p",
+      "duration": 3
+    }
+  },
+  "prompt": {
+    "template": "film-ingang-kort@11",
+    "style": "KORT",
+    "text": "Locked camera, one continuous shot. Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing. Both her hands rise calmly and go to the shoe: her hand nearest the shoe lays its fingertips on the yellow card in the window, ready to stroke it out, and her other hand comes to wait close beside the shoe, as in the last frame. Her eyes go down to her hand at the card and stay there, as in the last frame. One soft, unbroken movement from the first frame to the last, with no pause and no jerk, and she leans no further forward than in the last frame.",
+    "sha256": "ed3887965f475c2a2048eee67ab946372de759f44f42fb177bac5a26d1f77a4a",
+    "extra": "One soft, unbroken movement from the first frame to the last, with no pause and no jerk, and she leans no further forward than in the last frame.",
+    "middle": false
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 64,
+    "total": 64,
+    "worstPerTake": 71,
+    "worstTotal": 71,
+    "basis": "21,3 krediter per s × 3 s. Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12."
+  },
+  "limits": {
+    "maxCredits": 71,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Recept ingang-2.3 (prov) ur data/order-methods.json."
+  ],
+  "created": "2026-11-18T03:56:15.308Z",
+  "createdBy": "underagenten mätning och ankare 2.3 på huvudagenten dealer-32:s uppdrag 2026-11-18 (Jakobs svar kl. 04.31 om ingången: för sakta, för hackig, lutar sig för mycket)",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-18T03:56:25.910Z",
+    "orderSha256": "24c72f9b2de927f508149d12e37cbabe96c3fe3e50138e9a44b2be15875a5856",
+    "mandate": "Huvudagenten dealer-32 2026-11-18 på Jakobs svar kl. 04.31 ('Det går för sakta, och är för hackigt och hon lutar sig för mkt'): ingången 1 → 2.3 beställs om genom linjen, Kling 4, 1080p, en tagning, högst 90 krediter"
+  },
+  "status": "GODKÄND"
+}

@@ -66,6 +66,8 @@ export type Entry = {
   still?: number;
   pattern?: string;
   card?: string;
+  /** A landing picture (A3): the hand whose fingertips rest on the card, LH or RH; absent: the left (src/order-model.ts landingOf). */
+  hand?: "LH" | "RH";
   node?: string;
   state?: State;
   /** The entries this picture was made from (a keystone, an anchor), by id, where a receipt says it; empty or missing where nothing does. */
@@ -147,6 +149,7 @@ export function validateRegister(value: unknown): { register: Register | null; e
       if (e.pattern !== undefined && (typeof e.pattern !== "string" || !isInside(e.pattern.replaceAll("*", "x")) || !e.path)) errors.push(`${where}: ett mönster ska ligga i repot och ha en bild (path) att visa.`);
       if ((e as { proof?: unknown }).proof !== undefined) errors.push(`${where}: proof hör inte hemma här: ett prov registreras av sitt proof.json.`);
       if (e.card !== undefined && (typeof e.card !== "string" || !CARD.test(e.card))) errors.push(`${where}: kortet skrivs som P4.C1 eller D.C2.`);
+      if (e.hand !== undefined && (!["LH", "RH"].includes(e.hand as string) || e.role !== "landning" || !e.card)) errors.push(`${where}: hand (LH eller RH) hör till en landningsbild med sitt kort.`);
       if (e.state !== undefined && !isState(e.state)) errors.push(`${where}: tillståndet ska vara gäller, kandidat, ersatt eller arkiverad.`);
       if (e.builtOn !== undefined && (!Array.isArray(e.builtOn) || e.builtOn.some((b) => typeof b !== "string" || !ID.test(b) || b === e.id))) errors.push(`${where}: builtOn är en lista med andra bilders id.`);
       if (e.note !== undefined && (typeof e.note !== "string" || e.note.length > 400)) errors.push(`${where}: noten är för lång.`);

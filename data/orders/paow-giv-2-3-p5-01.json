@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-giv-2-3-p5-01",
+  "title": "Två händer, ett kort till platsen · plats 5 · beställd utanför Beställ (giv-p5-t4)",
+  "summary": "Gör en film av Paow: två händer, ett kort till platsen till plats 5. Beställd utanför Beställ genom Runways MCP-server och införd i efterhand ur liggaren.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "GIV-2.3",
+    "label": "Två händer, ett kort till platsen",
+    "edge": "READY-C>P5.C1",
+    "shape": "ONE_WAY",
+    "makes": null
+  },
+  "motion": {
+    "grip": "TWO_HANDS",
+    "hand": "LH",
+    "pass": false,
+    "turn": true,
+    "flipAxis": "FREE",
+    "target": "P5.C1",
+    "side": "FRONT"
+  },
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · anchor.png",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-giv-2-3-p5-01/first.png",
+      "sha256": "340842ba3b6af20bdf36646b517d20501163496b426c154d1dd798b488f75542",
+      "from": {
+        "path": "assets/anchors/paow-ankare-2-3-a/anchor.png",
+        "note": "ur liggaren bestallningar.json (forsta, uppladdad som 5c09ebdd-cacb-496e-bb4c-809cd759abca)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Sista bild · tagning 1:s slutruta (f072): Klings blå kort borttaget, höger underarm och hand flyttade 5; 16 px (skript/sista-bild.py flytta), planens kort P5.C1 ritat med repots drawCard (fyrhörning 1034–1119 × 1024–1092, plan sha dbb55821…), handen ovanpå, bankens sko och gula kort tillbaka (skolag",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-giv-2-3-p5-01/last.png",
+      "sha256": "91a2f1e05e694221fb4f2fa097605d745e640f35430d5cd778c3927d5dd71a26",
+      "from": {
+        "path": "sista/b/sista-bild-t2.png",
+        "note": "ur liggaren bestallningar.json (sista-t2, uppladdad som 148383b1-ba5d-4d63-9ee9-2db9f5a0c544)"
+      },
+      "waits": null
+    }
+  ],
+  "reference": {
+    "status": "FINNS",
+    "clips": [
+      "docka-2-3-p5c1-d"
+    ],
+    "path": "assets/orders/paow-giv-2-3-p5-01/reference.mp4",
+    "sha256": "050fcf8ada7e5b16d386e4e186800712d9aa903f151421fb2e13a5e0bd665a69",
+    "seconds": 3,
+    "goesTo": "P5.C1",
+    "approvedStraight": false,
+    "dealer": "docka"
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "kling-4",
+    "params": {
+      "resolution": "1080p",
+      "duration": 3
+    }
+  },
+  "prompt": {
+    "template": null,
+    "text": "Locked camera, one continuous shot. Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing. It is one continuous, unhurried motion from the shoe to the card's place, and the card never pauses on the way; it lies at its place a little more than two seconds after it leaves the shoe, and then she holds still as in the last frame. Her hand on the shoe slides the yellow card out of the window and pushes it flat along the felt, yellow side up, to her other hand in front of the shoe. Her other hand meets the card as it arrives and takes it by its long side while it is still moving, fingers on its yellow back and thumb on its face, and in that same moment the two hands together tip it up on one short edge; the hand from the shoe lets go and goes back to the next yellow card in the shoe's window, as in the last frame. In the same sweep, without stopping, her other hand carries the card low over the felt towards its place a little to the right of the middle of the picture, where the last frame shows it, and the card keeps turning as it travels: it passes through upright, yellow back towards the camera, and falls on forward, away from her, so that the blue face comes up. The card turns over once, end over end, yellow to blue, and never turns back. She lays it flat exactly at its place, blue side up, her palm down, without sliding it, and her fingertips come to rest on the card's near corner, as in the last frame. Her head stays bowed and her eyes follow the card to its place. Only one card moves, and her hand is on it the whole way: a small card, about half as long as her hand. It keeps the size it has in the last frame all the way from the shoe to its place: on its edge it is exactly as long as it is lying down. It is blank, solid yellow on one side and solid blue on the other, each colour reaching right out to its corners with no white border, and the next card in the window is the same blank yellow.",
+    "sha256": "8a74f1b1a92a4b8ab12a3544056a4aa4f4486db646d08de78cfb740fffdbc511",
+    "extra": null,
+    "middle": false
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 64,
+    "total": 64,
+    "worstPerTake": 64,
+    "worstTotal": 64,
+    "basis": "saldot 5456 före (whoami) och creditsRemaining 5392 i anropets svar"
+  },
+  "limits": {
+    "maxCredits": 64,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Beställd utanför Beställ: sessionen MODEL på huvudagenten dealer-32:s uppdrag lade anropet genom Runways MCP-server (generate_video, kling-4) 2026-11-18T03:48 svensk tid, task 2a5d46d2-1cf5-4056-be61-8a0a39a75ffe, 64 krediter (saldot 5456 före, 5392 efter).",
+    "Texten är den som skickades, ord för ord (texter/giv-p5-t4.txt), inte promptFor:s. Vänster hand stryker ut kortet, höger lägger det.",
+    "Utfallet enligt den som beställde: Godkänd av den automatiska kontrollen. MODEL:s syn (varannan ruta): båda händerna på kortet när det reses ruta 25–29, höger hand om långsidan 29–31, fall 33, kant 35, blått 37–41, lagt 43–45; fönstret gult. Oberoende granskare startad kl. 03.56. I provet giv-fran-2-3-p5 (0-a-…)."
+  ],
+  "created": "2026-11-18T02:48:00.000Z",
+  "createdBy": "sessionen MODEL på huvudagenten dealer-32:s uppdrag",
+  "outside": {
+    "ledger": "D:/dealer-scratch/tmp/giv-fran-2-3-p5/bestallningar.json",
+    "ledgerSha256": "33e2f1c8a7aaa68e7a7b241679f36d3f53f27a1b1d17a5fcd01182f623bb07a7",
+    "entry": "giv-p5-t4",
+    "placedBy": "sessionen MODEL på huvudagenten dealer-32:s uppdrag",
+    "approvedBy": "huvudagenten dealer-32, meddelande 2026-11-18 cirka kl. 03.46: 'Ja till EN fjärde tagning; ramen för den här filmen höjs till 400 krediter'",
+    "mandate": "Jakob till huvudagenten 2026-11-18 kl. 02.45: \"du får 2000 krediter att använda om du vill\", \"Skapa en video när den här dealen går till plats nummer fem, kort ett. Jag vill ha en tagning från ankare 2.3 till den här positionen […] Jag vill se detta från en sidovinkel och en rakt fram.\" och \"SE BARA TILL ATT ALLA VRIDNINGAR BLIR BRA, LITEW SKITSAMMA VILKEN VRIDNING SOM GJÖRS i övrigt\".",
+    "importedAt": "2026-11-18T03:38:08.519Z",
+    "importedBy": "tools/order-import.ts",
+    "note": "Godkänd av huvudagenten före anropet, med orden i approvedBy; approval nedan är det godkännandet, skrivet när ordern fördes in, med hashen av ordern som den står här."
+  },
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-18T02:48:00.000Z",
+    "orderSha256": "1864a6c7c0596d4806fe1a24345a1c2c19ebf86784243cf0eb219473f378cd72",
+    "mandate": "huvudagenten dealer-32, meddelande 2026-11-18 cirka kl. 03.46: 'Ja till EN fjärde tagning; ramen för den här filmen höjs till 400 krediter'"
+  },
+  "status": "GODKÄND"
+}

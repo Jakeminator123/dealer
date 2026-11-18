@@ -193,7 +193,7 @@ test("the line as the store resolves it: the recipe, the reference film its rule
   assert.equal(of("P4.C1", {}, { entries: [landing] }).end?.kind, "SNITTRUTA");
   assert.equal(of("P6.C1", {}, { entries: [landing] }).end, null);
   // A handbyte (his exception, or the plan's): the hand at the card is the right one, and no cut frame or reference shows that.
-  assert.equal(of("P4.C1", { hand: "PASS" }).why, "ingen slutbild för platsen med höger hand vid kortet");
+  assert.equal(of("P4.C1", { hand: "PASS" }).why, "ingen slutbild för platsen med höger hand vid kortet (A3 · P4)");
   // His exceptions: no reference film (then the recipe's 3 s), another film, another model, tur och retur.
   assert.deepEqual([of("P4.C1", { reference: null }).reference, of("P4.C1", { reference: null }).seconds, of("P4.C1", { reference: null }).why], [null, 3, null]);
   assert.deepEqual([of("P4.C1", { model: "wan3" }).model?.id, of("P4.C1", { model: "wan3" }).reference, of("P4.C1", { model: "wan3" }).why], ["wan3", null, null]);

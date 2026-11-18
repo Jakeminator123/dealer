@@ -40,12 +40,14 @@ test("Bordet's row and the store make the same order of the same line, for every
   for (const [card, target] of Object.entries(plan.targets as Record<string, { intent: object }>)) target.intent = { takeHand: "LH", startSide: "BACK", endSide: card === "D.C2" ? "BACK" : "FRONT", pass: false, turn: card !== "D.C2", grip: "PINCH", turnAt: "AIR" };
   await writeFile(path.join(root, "placements/default.json"), JSON.stringify(plan, null, 2) + "\n");
   // Material: every anchor of Paow holds (2.3 too), and every seat but the dealer's first card has its own landing picture
-  // (one small file serves them all); the dealer's first card ends on a cut frame of Paow's own film, or on none.
+  // for the left hand (one small file serves them all), seat 4 also its A3 for the right hand, which a deal from 2.3 ends on;
+  // the dealer's first card ends on a cut frame of Paow's own film, or on none.
   const still = "assets/anchors/paow-bild/anchor.png";
   await writeFile(path.join(root, still), await sharp({ create: { width: 1764, height: 1174, channels: 3, background: { r: 0, g: 236, b: 45 } } }).png().toBuffer());
   const entries = [
     ...([["ankare-1", "IDLE"], ["ankare-2.1", "READY"], ["ankare-2.2", "READY-B"], ["ankare-2.3", "READY-C"]] as const).map(([role, node]) => ({ id: `paow-${role}`, role, name: role, path: still, node, state: "gäller" })),
     ...SEATS.filter((card) => card !== "D.C1").map((card) => ({ id:`paow-landning-${card.toLowerCase().replace(".", "-")}`, role: "landning", name: `Landning ${card}`, path: still, node: `LAND(${card})`, card, state: "gäller" })),
+    { id: "paow-a3-p4", role: "landning", name: "A3 · P4", path: still, node: "LAND(P4.C1)", card: "P4.C1", hand: "RH", state: "gäller" },
   ];
   await writeFile(path.join(root, "data/media-roles.json"), JSON.stringify({ schemaVersion: 1, dealers: { paow: { name: "Paow", entries } }, measures: [] }, null, 2) + "\n");
   // The bank: what a rule must tell apart.

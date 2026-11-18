@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-giv-2-3-p4-01",
+  "title": "Paow · Två händer, ett kort till platsen · plats 4",
+  "summary": "Gör en film av Paow: ett kort från ankare 2.3 till plats 4, bara dit.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "GIV-2.3",
+    "label": "Två händer, ett kort till platsen",
+    "edge": "READY-C>P4.C1",
+    "shape": "ONE_WAY",
+    "cutInto": [
+      "READY-C>P4.C1"
+    ],
+    "makes": null
+  },
+  "motion": {
+    "grip": "TWO_HANDS",
+    "hand": "LH",
+    "pass": false,
+    "turn": true,
+    "flipAxis": "FREE",
+    "target": "P4.C1",
+    "side": "FRONT",
+    "fromPlan": false,
+    "planned": {
+      "grip": "PINCH",
+      "flipAxis": "AT_PLACE"
+    }
+  },
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows ankare 2.3",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-giv-2-3-p4-01/first.png",
+      "sha256": "340842ba3b6af20bdf36646b517d20501163496b426c154d1dd798b488f75542",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-ankare-2-3-a",
+        "path": "assets/anchors/paow-ankare-2-3-a/anchor.png",
+        "note": "Ankare 2.3, båda händerna vid skon före första kortet (A) (gäller)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Sista bild · A3 · P4, kandidat (inte gällande)",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-giv-2-3-p4-01/last.png",
+      "sha256": "2a70b556c6110db541c7f379a8b464fad1362ce16e694efb111977405565f8b6",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-a3-p4",
+        "path": "assets/anchors/paow-a3-p4/anchor.png",
+        "note": "A3 · P4 (kandidat)"
+      },
+      "waits": null
+    }
+  ],
+  "reference": {
+    "status": "FINNS",
+    "clips": [
+      "docka-2-3-p4c1-f"
+    ],
+    "path": "assets/orders/paow-giv-2-3-p4-01/reference.mp4",
+    "sha256": "1829812be7f41b1e49f8db1a23ceb8080e5a41793b9bd559b41e0641af6ce413",
+    "seconds": 3,
+    "goesTo": "P4.C1",
+    "approvedStraight": false,
+    "dealer": "docka",
+    "from": {
+      "film": "docka-2-3-p4c1-f",
+      "path": "assets/references/docka/docka-2-3-p4c1-f/source.mp4",
+      "sha256": "1829812be7f41b1e49f8db1a23ceb8080e5a41793b9bd559b41e0641af6ce413",
+      "edge": "READY-C>P4.C1",
+      "verdict": "EJ_DÖMD",
+      "words": null,
+      "frames": null,
+      "also": []
+    }
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "kling-4",
+    "params": {
+      "resolution": "1080p",
+      "duration": 3
+    }
+  },
+  "prompt": {
+    "template": "film-giv-kort@11",
+    "style": "KORT",
+    "text": "Locked camera, one continuous shot. Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing. Her hand at the shoe strokes the yellow card out of the window and slides it flat on the felt, its broad yellow side up, a short way out from the shoe, where her other hand meets it. There both hands tip the card up onto its short end, and her other hand, palm down, carries it on towards its place in the middle of the picture, where the last frame shows it; on that way the card goes on over the same short end, end over end, in one unbroken turn that begins with the yellow side up and ends with the blue side up. She lays the card flat at its place, blue side up, with her palm down, and her fingertips come to rest on it, as in the last frame. The hand from the shoe lets go once the card stands on its end and settles back at the shoe. Her head stays bowed and turns towards the place where the card will lie. Only one card moves: a small card, about half as long as her hand, which keeps the size it has in the last frame all the way from the shoe to its place. It is blank, solid yellow on one side and solid blue on the other, each colour reaching right out to its corners, and the next card in the window is the same blank yellow.",
+    "sha256": "6ebe478568f557ac3edcf68a594968b862b0cb3ee0925220c45bbe2e26e1e197",
+    "extra": null,
+    "middle": false
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 64,
+    "total": 64,
+    "worstPerTake": 71,
+    "worstTotal": 71,
+    "basis": "21,3 krediter per s × 3 s. Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12."
+  },
+  "limits": {
+    "maxCredits": 71,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Recept giv-2.3 (prov) ur data/order-methods.json.",
+    "Undantag från receptet: med kandidaten som sista bild: A3 · P4 (paow-a3-p4), en kandidat som Jakob inte har gjort gällande."
+  ],
+  "created": "2026-11-18T03:54:27.747Z",
+  "createdBy": "underagenten mätning och ankare 2.3 på huvudagenten dealer-32:s uppdrag 2026-11-18 (given till plats 4, Jakobs ord)",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-18T03:54:38.666Z",
+    "orderSha256": "f69877d7ea9b55be84350510676c0ddbb8fe13eaa1f9267bacd71d883dec3821",
+    "mandate": "Huvudagenten dealer-32 2026-11-18 på Jakobs ord ('skapa två till voideos, en för kort plats nummer 1 och plats nummer 4'): givarna från 2.3 till P4.C1 och P1.C1, Kling 4, 1080p, 3 s, en tagning var, högst 70 krediter per order"
+  },
+  "status": "GODKÄND"
+}
