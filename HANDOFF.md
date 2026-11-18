@@ -31,7 +31,7 @@ Git, och en rad som inte längre gäller ersätts.
 
 ## Vem äger vad
 
-- **Huvudagentens adress: `dealer-32`.** Adressen är det andra sessioner skriver till med SendMessage, och den står bara
+- **Huvudagentens adress: `dealer-62`.** Adressen är det andra sessioner skriver till med SendMessage, och den står bara
   på den här raden; rubriken Jakob ser på chatten betyder inget. Byter rollen session, ändras den här raden och inget
   annat. Kontrollera med ListAgents före ett meddelande. Huvudagenten äger commits, taggar och push, studion,
   labbservern, spelet och 3D-scenens filmlager, `src/clip-graph.ts` och styrdokumenten.

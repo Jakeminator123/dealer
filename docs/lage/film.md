@@ -17,10 +17,10 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
   vändningen. Ingången (`paow-ingang-2-3-01`) underkände han: stilla från ruta 45. Tagning 4 till plats 5 är kandidat.
 - En sidovinkel görs av en färdig film i Runways videoredigerare (`edit_video`), inte av nya stillbilder: plats 4
   cirka 40° (Prov `sidovinkel-ur-film`, Jakob: "mycket bra") och plats 5 cirka 25–30°. Vinkeln och kortets plats
-  träffas inte exakt. Provsidan `/vinklar.html` binder ihop två vinklar i en scen.
+  träffas inte exakt.
 - Den tatuerade uppsättningen är förstahandsvalet (keystone, ankare 1 och 2.3); ankare 2.1 och 2.2 och hela banken
   har de äldre händerna och spelas än. Ankare 2.2 föll i tre försök i bildmodellen och görs om som 2.3.
-- Saldot var 5 105 den 2026-11-18 (`whoami` före en beställning); taket är 2 000 per order. Trailern är pausad.
+- Saldot var 5 105 den 2026-11-18 (`whoami` före en beställning); taket är 2 000 per order.
 
 **Nästa steg.**
 1. Starta vakten på Jakobs kö i Beställ (`vakta-kon.mjs`; den dör med chatten), och anslut Runway (`/mcp`) på ett
@@ -34,9 +34,9 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
    vägen tillbaka från den framåtlutade slutbilden kräver en egen idé. Resten av bordet först när en giv har hans ja.
 4. Fem kameravinklar ([BESKED](../BESKED.md)): hans bild 35° från sidan som styrande stillbild, och `/vinklar.html`.
 5. Senare: ankare 2.1 och 2.2 med tatuerade händer, hålkortet (vänds inte) och andra kortet ovanpå det första
-   (`yt-referens/ut/giv-resten.md`), returer till vila, dealerns tredje kort, och Jakobs önskemål i BESKED.
+   (`yt-referens/ut/giv-resten.md`), returer till vila och dealerns tredje kort.
 
-**Väntar på Jakob.** Inget utanför Beslut.
+**Väntar på Jakob.** I Beslut: får kortet ritas i 3D från en uppmätt släppruta, så att filmen slipper vända det? Ingen ny giv beställs före svaret. Granskningen av local-studio: `assets/references/local-studio-granskning.md`.
 
 **Var saker ligger.** Vägen för en ny dealer i [tools/dealer-line.md](../../tools/dealer-line.md), handboken i
 [tools/film-prompting.md](../../tools/film-prompting.md), granskningen i `tools/film-review.md`, läget per dealer med

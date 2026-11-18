@@ -8,6 +8,19 @@
 !/assets/**/*.txt
 !/assets/**/*.md
 
+# Machine data under assets/ that no search should wade through (7 of its 11.5 MB of text, 2026-11-18): the card
+# tracks per frame, the speech lane's receipts per line, the sequence dumps and the timeline. The files are still
+# there and are read by path by the tools that own them; a search simply does not list them.
+/assets/tracking/
+/assets/speech/
+/assets/sequences/
+/assets/timeline.json
+
+# Receipts of studies that are over (the p4 method studies, the archive move, the first public release). Nothing reads
+# them by name; tools/media-audit.ts reads the folder by path. Hidden from search until Jakob has said whether the
+# folder is to be taken out of Git (its history keeps it).
+/evidence/
+
 # Library code, not the project's own: three.js as brought in with the card material study, and the two built pages of
 # that study (three.js plus about 300 lines of ours each). 163 000 lines that no search should wade through.
 /materials/kortmaterial.js
