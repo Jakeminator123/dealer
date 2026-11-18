@@ -54,7 +54,7 @@ export const gameMay = (path: string): boolean => !otherPage(path) && !isBotPath
 const gameNext = (next: string): string => next.startsWith('/game.html') ? next : GAME_HOME;
 /**
  * What the copy shows without a password (DEALER_OPPEN in the project; Jakob 2026-11-14: "Se till att den inte är
- * lösenordsskyddad", "ta bort lösenordet \"john\" för sidan nu"): 'allt' the whole copy, 'spel' the game alone with its two doors;
+ * lösenordsskyddad", "ta bort lösenordet \"[ordet]\" för sidan nu"): 'allt' the whole copy, 'spel' the game alone with its two doors;
  * unset or any other word, nothing, as before. Only reading is opened: the bot and the request inbox write and cost, so they keep
  * needing the whole copy's password, and a login still gives the cookie for them.
  */

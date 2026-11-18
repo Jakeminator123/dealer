@@ -23,7 +23,7 @@ const DOC = [
   '- Boten kostar cirka 0,2 kr per fråga. Svaren är korta.',
   '- Material med Göran används inte. Pamela är kvar.',
   '- Reklamfilmen version 3 ligger i ett prov.',
-  '- Lösenordet "john" står aldrig i koden.',
+  '- Lösenordet "ordet" står aldrig i koden.',
   '- Projektet har ID `prj_7zd112w6MIX9YnpcR7Nj64Ke50yk` och lagringen store_qeojzIHuA5ewT4uO.',
   '- Runway-workspace Jakob, ID `67037521`.',
   '- Nyckeln ligger i OPENAI_API_KEY i Vercel. Studion visar filmerna.',
@@ -55,7 +55,7 @@ test('the cleaning keeps the facts and removes costs, blocked names, trailers, p
   const {sections, removed} = cleanDoc({kalla: 'HANDOFF', id: 'handoff', text: DOC, scout: false, dropHeadings: /^Före avslut av en session$/, prio: prioFrom(['Läget i banken'], 0)}, release);
   const all = sections.map(s => `${s.titel}\n${s.text}`).join('\n');
   for (const kept of ['Pamela är dealern.', '33 huvudfilmer.', 'Tjugo är godkända rakt av.', 'Svaren är korta.', 'Pamela är kvar.', 'Studion visar filmerna.', '| P1 | Godkänd |', 'Scout finns på https://www.scoutgaming.tech/', 'nodkartan (/studio/karta/?kant=READY%3EP4.C1) visar linjerna']) assert.ok(all.includes(kept), `kept: ${kept}`);
-  for (const gone of ['someone', 'dealer-scratch', 'Krediter', 'intecknat', 'saldo', '18 173', '0,2 kr', 'kostar', 'Göran', 'Reklamfilm', 'john', 'Lösenord', 'prj_', 'store_', '67037521', 'OPENAI_API_KEY', 'vercel.app', '127.0.0.1', 'Kevin', 'credits', 'node tools/secret.ts', 'Astrid', 'spärrad person', 'Rutiner för agenter']) assert.ok(!all.includes(gone), `gone: ${gone}`);
+  for (const gone of ['someone', 'dealer-scratch', 'Krediter', 'intecknat', 'saldo', '18 173', '0,2 kr', 'kostar', 'Göran', 'Reklamfilm', 'ordet" står', 'Lösenord', 'prj_', 'store_', '67037521', 'OPENAI_API_KEY', 'vercel.app', '127.0.0.1', 'Kevin', 'credits', 'node tools/secret.ts', 'Astrid', 'spärrad person', 'Rutiner för agenter']) assert.ok(!all.includes(gone), `gone: ${gone}`);
   assert.ok(all.includes(`${LOCAL}`), 'a path becomes the local token');
   assert.equal(sections[0].titel, 'HANDOFF › Inledning');
   assert.ok(sections.some(s => s.titel === 'HANDOFF › Läget i banken (räknat 2026-11-12)' && s.prio === 0), 'a heading with a note keeps its core priority');

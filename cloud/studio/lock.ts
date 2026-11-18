@@ -2,7 +2,7 @@
 // Only Web APIs (crypto.subtle, TextEncoder, URL), so the same file runs in Vercel's Edge runtime (the middleware), in Node
 // (the local rehearsal, tools/serve-studio-snapshot.ts) and in the tests. The password and the signing key are never in the
 // repo: they are the environment variables DEALER_LOSEN and DEALER_KAKNYCKEL, set in the Vercel project by the owner.
-// DEALER_LOSEN may name more than one password, separated by commas ("john,jon": the word Jakob decided and the one he wrote
+// DEALER_LOSEN may name more than one password, separated by commas (two today: the word Jakob decided and the one he wrote
 // later), each of which opens the lock; a password can then hold no comma. Spaces around each are not part of it.
 // DEALER_LOSEN_SPEL names, in the same way, passwords that open only the game (Jakob 2026-11-13: one for someone who is only
 // to play): such a cookie is another kind (signGameCookie), and the gate lets it reach the game page and what the game loads,

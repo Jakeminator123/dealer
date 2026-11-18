@@ -40,17 +40,17 @@ test('the password is compared whole', async () => {
 });
 
 test('DEALER_LOSEN may name several passwords, separated by commas; each opens, nothing else does', async () => {
-  assert.deepEqual(passwordsOf(' john, jon ,,john'), ['john', 'jon']);
+  assert.deepEqual(passwordsOf(' ordet, ordt ,,ordet'), ['ordet', 'ordt']);
   assert.deepEqual(passwordsOf(undefined), []);
   assert.equal(await secrets({DEALER_LOSEN: ' , ', DEALER_KAKNYCKEL: key}), null, 'only commas and spaces: the lock stays shut');
-  const s = (await secrets({DEALER_LOSEN: 'john,jon', DEALER_KAKNYCKEL: key}))!;
-  for (const right of ['john', 'jon']) assert.equal(await samePassword(s, right), true, right);
-  for (const wrong of ['', 'john,jon', 'jo', 'John', 'jon ', 'johnjon', ',']) assert.equal(await samePassword(s, wrong), false, JSON.stringify(wrong));
+  const s = (await secrets({DEALER_LOSEN: 'ordet,ordt', DEALER_KAKNYCKEL: key}))!;
+  for (const right of ['ordet', 'ordt']) assert.equal(await samePassword(s, right), true, right);
+  for (const wrong of ['', 'ordet,ordt', 'or', 'Ordet', 'ordt ', 'ordetordt', ',']) assert.equal(await samePassword(s, wrong), false, JSON.stringify(wrong));
   // one password signs as before; adding or taking one away makes every cookie worthless
   const one = (await secrets(env))!, value = await signCookie(one, now + 60);
   assert.equal(await verifyCookie((await secrets({...env, DEALER_LOSEN: ' prov-losen '}))!, value, now), true);
-  assert.equal(await verifyCookie((await secrets({...env, DEALER_LOSEN: 'prov-losen,jon'}))!, value, now), false);
-  assert.equal(await verifyCookie(s, await signCookie((await secrets({DEALER_LOSEN: 'jon', DEALER_KAKNYCKEL: key}))!, now + 60), now), false);
+  assert.equal(await verifyCookie((await secrets({...env, DEALER_LOSEN: 'prov-losen,ordt'}))!, value, now), false);
+  assert.equal(await verifyCookie(s, await signCookie((await secrets({DEALER_LOSEN: 'ordt', DEALER_KAKNYCKEL: key}))!, now + 60), now), false);
 });
 
 test('at most ten tries per address per ten minutes', () => {
@@ -224,7 +224,7 @@ test('with a game password the game and what it loads pass; the studio and every
   assert.equal((await gate(ask('/casino'), plain)).status, 401);
 });
 
-// Jakob 2026-11-14: "Se till att den inte är lösenordsskyddad", "ta bort lösenordet "john" för sidan nu".
+// Jakob 2026-11-14: "Se till att den inte är lösenordsskyddad", "ta bort lösenordet "ordet" för sidan nu".
 test('a copy the project has opened is read without a password: the game alone or all of it; the bot and every write stay locked', async () => {
   assert.equal(openOf({}), null); assert.equal(openOf({DEALER_OPPEN: 'allt'}), 'all'); assert.equal(openOf({DEALER_OPPEN: ' Spel '}), 'game');
   for (const word of ['', '1', 'ja', 'true', 'all', 'open']) assert.equal(openOf({DEALER_OPPEN: word}), null, `"${word}" opens nothing`);
