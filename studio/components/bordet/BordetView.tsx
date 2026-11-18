@@ -31,7 +31,7 @@ import { asApiError } from "../../lib/api.ts";
 import type { Ledger } from "../../lib/ledger.ts";
 import type { MediaAnswer } from "../../lib/media.ts";
 import { useBank } from "../../lib/bank.ts";
-import { cardWishes, filmRow, lastOrder, otherWishes, sceneWords, sendsOf, sumWords, wishKey, type FilmRow, type FilmWish, type RowChoice } from "../../lib/bordet.ts";
+import { cardWishes, filmRow, lastOrder, otherWishes, roundFor, sceneWords, sendsOf, sumWords, wishKey, type FilmRow, type FilmWish, type RowChoice } from "../../lib/bordet.ts";
 import { useViewContext } from "../../lib/context.ts";
 import { isSnapshot, swedishMoment } from "../../lib/mode.ts";
 import { createOrder, getOrders } from "../../lib/orders.ts";
@@ -147,7 +147,7 @@ export function BordetView() {
   const marked = useMemo(() => new Set(wishes.flatMap((w) => (w.target ? [w.target] : []))), [wishes]);
   const intent = plan && place !== SHOE ? plan.targets[place]?.intent : null;
   // The chosen card's deal in his notation, over the view.
-  const deal = intent ? cardWishes(place, intent)[0] : null;
+  const deal = intent ? cardWishes(place, intent, dealer)[0] : null;
   const dealLine = deal ? rowOf(deal).line : placeName(place);
   const add = (w: FilmWish) => setWishes((was) => (was.some((x) => wishKey(x) === wishKey(w)) ? was : [...was, w]));
 
@@ -296,17 +296,10 @@ export function BordetView() {
           />
         )
       ) : (
-        <SceneBody kind={mode as SceneKind} toolbar={menu} roundText={roundFor(place, intent?.grip ?? "PINCH")} />
+        <SceneBody kind={mode as SceneKind} toolbar={menu} roundText={roundFor(pathCard(place), dealer)} />
       )}
     </Page>
   );
-}
-
-/** The chosen card's deal and back in his round notation ("A2.1 - P4C1 - A2.1"), for the live picture to play. */
-export function roundFor(place: Place, grip: "PINCH" | "DRAG"): string {
-  const card = placeCode(pathCard(place));
-  const at = grip === "DRAG" ? "A2.2" : "A2.1";
-  return `${at} - ${card} - ${at}`;
 }
 
 function TableBody({
@@ -380,7 +373,7 @@ function TableBody({
   const intent = place !== SHOE ? plan.targets[place]?.intent : null;
   const target = place !== SHOE ? plan.targets[place] : null;
   const g = target?.geometry[view];
-  const wishesHere = cardWishes(place, intent);
+  const wishesHere = cardWishes(place, intent, dealer);
   const motion = intent ? `${GRIP_LABEL[intent.grip]} · ${intent.pass ? "Handbyte" : intent.takeHand === "LH" ? "Vänster" : "Höger"} · ${LANDS_LABEL[intent.endSide]}${intent.endSide === "FRONT" ? ` · ${FLIP_LABEL[flipOf(intent)]}` : ""}` : "Välj ett kort";
   const where = g ? `${placeCode(place)} · ${Math.round(g.angle)}° · perspektiv ${Math.round(g.taper * 100)} %` : placeName(place);
   const chooseRow = (r: FilmRow) => {

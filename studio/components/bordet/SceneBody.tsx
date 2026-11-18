@@ -10,9 +10,10 @@
 // stays when Scen and Efterarbete change places.
 // The address is Scen's: the round (?runda=<his notation>, ?kant=<edge>&tagning=<take> to play a take where it belongs)
 // and the look (?forval=levande&dust=0.8, components/scene-editor/address.ts), written beside Bordet's own words (lage,
-// plats). Without a round in the address it plays the chosen card's deal and back from the anchor the plan's grip says
-// ("A2.1 - P4C1 - A2.1"); without a look, Basgrund, what the game shows (Jakob 2026-11-17: "Spela i casino bör rimligtvis
-// vara samma som i casino, alltså som det är i runtime"), so "Spela i Casino" opens what the rail's Casino opens until a key
+// plats). Without a round in the address it plays the chosen card's deal and back from the anchor the game deals it from
+// ("A2.1 - P4C1 - A2.1"; Paow's seat 6 "A2.2 - P6C1 - A2.2", lib/bordet.ts roundFor); without a look, Basgrund, what the
+// game shows (Jakob 2026-11-17: "Spela i casino bör rimligtvis vara samma som i casino, alltså som det är i runtime"), so
+// "Spela i Casino" opens what the rail's Casino opens until a key
 // is changed. The round plays the chosen dealer's films (lib/bank.ts); a step without a film is a gap, shown as one.
 // Loaded only when one of the three is chosen (Bordet loads it on demand), so that Kortplan stays light.
 import { Copy, ExternalLink, Spade } from "lucide-react";

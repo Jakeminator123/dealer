@@ -67,13 +67,14 @@ test("one card shape: rounded corners a share of the card's own side, the same l
   assert.equal(big, d.replace(/\d+(\.\d+)?/g, (n) => String(Number(n) * 2)));
 });
 
-test("a card's films: the deal from the anchor the plan's grip says, its return, the return to rest, the deal with two hands; the shoe has none", () => {
-  const pinch = cardWishes("P4.C1", { grip: "PINCH" }).map((w) => w.step);
-  const drag = cardWishes("P6.C1", { grip: "DRAG" }).map((w) => w.step);
+test("a card's films: the deal from the anchor the game deals it from (Paow's seat 6 from 2.2), its return, the return to rest, the deal with two hands; the shoe has none", () => {
+  const pinch = cardWishes("P4.C1", { grip: "PINCH" }, "paow").map((w) => w.step);
+  const drag = cardWishes("P6.C1", { grip: "PINCH" }, "paow").map((w) => w.step);
   assert.deepEqual(pinch, ["GIV-2.1", "RETUR-2.1", "RETUR-1", "GIV-2.3"]);
   assert.deepEqual(drag, ["GIV-2.2", "RETUR-2.2", "RETUR-1", "GIV-2.3"]);
   assert.ok(OTHER_STEPS.includes("INGANG-2.3"), "the entry to anchor 2.3 is on the list of films without a card");
-  assert.deepEqual(cardWishes(SHOE, { grip: "PINCH" }), []);
+  assert.deepEqual(cardWishes(SHOE, { grip: "PINCH" }, "paow"), []);
+  assert.deepEqual(cardWishes("P6.C1", { grip: "DRAG" }, "pamela").map((w) => w.step)[0], "GIV-2.1", "the plan's grip is not the source: Pamela's game deals seat 6 from 2.1");
   // every film step of the model is offered somewhere in step 3
   const offered = new Set([...pinch, ...drag, ...OTHER_STEPS]);
   for (const s of STEPS.filter((x) => x.kind === "FILM" && !x.off)) assert.ok(offered.has(s.key), `${s.key} kan inte läggas till`);
@@ -98,7 +99,7 @@ test("a film in his notation", () => {
 
 test("the body sent for a film is the line: the dealer, the step and the card, as the production list drafts it", () => {
   assert.ok(register);
-  const wishes = [...cardWishes("P4.C1", { grip: "PINCH" }), ...cardWishes("P6.C1", { grip: "DRAG" }), ...cardWishes("D.C1", { grip: "PINCH" }), ...otherWishes()];
+  const wishes = [...cardWishes("P4.C1", { grip: "PINCH" }, "paow"), ...cardWishes("P6.C1", { grip: "PINCH" }, "paow"), ...cardWishes("D.C1", { grip: "PINCH" }, "paow"), ...otherWishes()];
   let compared = 0;
   for (const w of wishes) {
     const method = methodFor(register, w.step, w.target);

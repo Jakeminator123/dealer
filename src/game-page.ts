@@ -19,7 +19,7 @@ import {cardRecords, judgedBank, speakMoments, talkOn} from './game-director.ts'
 import {cardsChoice, cardWords, createFilm, type FilmPlayers, type Said} from './game-film.ts';
 import {chipsFor, mountOverlay, type Action, type Anchors} from './game-overlay.ts';
 import {mountPanel} from './game-panel.ts';
-import {EXIT_TRIAL, exitView, type ExitView} from './scene3d-exit.ts';
+import {exitView, type ExitView} from './scene3d-exit.ts';
 import {tableView, tableCards, cardFaces, shownBy, shownFor, lineOf, betTotal, handKey, mayAsk, collector, stageOf, CHIP_VALUES, DEALER_KEY, type PageState, type Settled} from './game-view.ts';
 import type {Snapshot} from '../game/session.ts';
 import type {MouthPatch, PatchRegister} from './speech-patch.ts';
@@ -314,8 +314,8 @@ const panel = mountPanel(overlay.root.querySelector<HTMLElement>('.go-bar')!, RO
     else scene.set({roomShift: 'shimmer', room: id, blur: next.blur} as never); // the background shimmers and changes under the shimmer
     if (heard.ambience) sound?.ambience(soundOf(id)); panel.set({room: id});
   },
-  // She leaves, the table stands empty, the dealer chosen comes in (the same one again when she is chosen). A dealer without a film
-  // for leaving or coming is cut out or in: Paow has neither yet.
+  // She leaves, the table stands empty, the dealer chosen comes in (the same one again when she is chosen). Only the bank's judged
+  // films play (src/game-film.ts swap): a dealer without one for leaving or coming is cut out or in, and the gap is kept with the others.
   async dealer(id) {
     const next = DEALERS.find(d => d.id === id) ?? DEALERS.find(d => d.id === dealer)!;
     if (page.busy || page.stage === 'ROUND') return;
@@ -324,10 +324,8 @@ const panel = mountPanel(overlay.root.querySelector<HTMLElement>('.go-bar')!, RO
     // away (its film begins with the empty table); before one that begins at the table the camera comes home.
     const away = (arrive: {frame?: unknown}[]) => new Promise<void>(resolve => { const whole = arrive.some(p => (p.frame as {layer?: string} | null | undefined)?.layer === 'BEHIND_TABLE');
       if (!whole) { comeHome = true; shot = null; } setTimeout(resolve, whole ? 700 : 1500); });
-    // Until the bank has approved films for the change, a stand-in: the first full-resolution exit (not a main take) and the older entrance.
-    const entrance = graphOf('pamela').edge['AWAY>IDLE']?.takes.find(t => t.media.video)?.media.video;
-    const standIn = {leave: dealer === 'pamela' ? [{...EXIT_TRIAL.lead, track: null}, {...EXIT_TRIAL.probe, track: null}] : [], arrive: next.id === 'pamela' && entrance ? [{path: entrance, track: null}] : []};
-    const changed = next.id !== dealer, played = await film.swap(away, standIn, changed ? graphOf(next.id) : null);
+    const changed = next.id !== dealer, change = await film.swap(away, changed ? graphOf(next.id) : null), played = change.played;
+    gaps.push(...change.gaps); gaps.splice(0, Math.max(0, gaps.length - 40));
     shot = null;
     if (changed && played) { dealer = next.id; chat?.dealer(next.label); panel.set({dealer});
       try { localStorage.setItem('dealer.dealer', dealer); } catch { /* a private window keeps nothing */ }

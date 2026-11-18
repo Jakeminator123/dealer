@@ -164,10 +164,15 @@ Spelet med flera dealers (2026-11-13):
 - En retur till vila som saknar film spelas som returen till skon och utgången (`READY>IDLE`). Ett kort vars giv saknar
   film ges med filmen i `STAND_IN_FILM` (per dealer, i dag bara Paows; hålkortet med hennes första korts film, kortet
   ritat på sin egen plats med baksidan upp); ersättaren viker när kortets egen film finns. Dealerns tredje och fjärde kort
-  läggs utan hand.
+  läggs utan hand. Det ett steg inte kan spela som banken har det (kortet utan hand, en film som saknas, ersättaren) och
+  det klippbanken säger om en film det spelar (en skarv, returen med den andra handen, fel kortsida) står i stegets `gaps`
+  (`play()` i `src/game-film.ts`, `window.game.gaps`); sidan visar dem inte än. Dealerbytet spelar bara bankens dömda filmer
+  (`swap()`): saknas en, spelas ingen i dess ställe, och luckan står i `gaps`.
 - **Giv från ankare 2.2 (släp).** `SEAT_HUB` i `src/game-director.ts` är en karta per dealer över vilka platser som
   ges från ankare 2.2 (noden `READY-B`: handen över kortet i skons fönster, kortet dras ut plant) i stället för från
-  ankare 2.1 (`READY`, nypet). I dag gäller den bara Paows plats 6 (`P6.C1`). Platsens första kort står för hela
+  ankare 2.1 (`READY`, nypet). I dag gäller den bara Paows plats 6 (`P6.C1`), på Jakobs ord 2026-11-13. Kartan är källan
+  för vilket ankare ett kort ges från också i Bordets förvalda runda och i Beställs rad för kortet (`dealPose`); planens
+  grepp är det inte. Platsens första kort står för hela
   platsen: andra kortet, och senare kort som spelar platsens film, går samma väg. Kartan gäller bara när dealerns bank
   har fyra dömda filmer (Jakobs dom eller en som getts åt honom, se `judgedBank`): ingången `IDLE>READY-B`, given
   `READY-B>P6.C1`, returen `P6.C1>READY-B` och utgången `READY-B>IDLE`. Saknas någon av dem ges platsen som förut:

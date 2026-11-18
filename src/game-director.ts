@@ -15,7 +15,7 @@
 // A card on the dealer's SEAT_HUB is dealt from that other pose at the shoe (READY-B) when the films for it can be played, and the
 // chain goes through rest around it: IDLE>READY-B, the deal, the return to READY-B and READY-B>IDLE (roundSequence in the clip bank
 // does the same).
-import {buildGraph, dealersOf, dealHub, parseEdge, resolveRound, type BankData, type Graph, type Segment, type Step, type Why} from './clip-graph.ts';
+import {REVEAL_NODE, buildGraph, dealersOf, dealHub, parseEdge, resolveRound, type BankData, type Graph, type Segment, type Step, type Why} from './clip-graph.ts';
 import {slotOf, slotFilm, slotLabel, type Slot, type TableCards} from './game-table.ts';
 
 // The signals this file reads; everything else in the engine's list is for the overlay.
@@ -26,8 +26,8 @@ export type BeatKind = 'ENTRY' | 'DEAL' | 'RETURN' | 'EXIT' | 'REVEAL' | 'PLACE'
 // it (none made yet, or the only one rejected): it has no step and is simply laid on its place when its turn comes.
 export type Beat = {kind: BeatKind; step: Step | null; own: {shoeDraw: number; slot: Slot; label: string} | null; lying: number[]};
 
-// The hole card has no model edge for its turn yet; the clip bank holds the film as an experiment under this name.
-export const REVEAL_NODE = 'REVEAL(D.C2)';
+// The hole card's turn is the clip bank's edge IDLE>REVEAL(D.C2); its node is passed on to those who read it here.
+export {REVEAL_NODE};
 
 // STOPGAP (huvudagenten 2026-11-13, for showing Paow's round): a card whose own deal has no film that can be played is dealt with
 // the film named here, the drawn card laid at its own place. The hole card: when READY>D.C2 has no film, the dealer's second card is
@@ -49,6 +49,12 @@ export const STAND_IN_FILM: Readonly<Record<string, Readonly<Record<string, stri
 // below); without them the card is dealt as before, from READY, with its stand-in, or laid without a hand. Pamela has none.
 export const SEAT_HUB: Readonly<Record<string, Readonly<Record<string, string>>>> = {paow: {'P6.C1': 'READY-B'}};
 
+/**
+ * The pose at the shoe the game deals a card from for a dealer: its seat's pose on SEAT_HUB ('READY-B' for Paow's seat 6), else
+ * READY. The game takes it when that pose's four films can be played (hubChain). The lab's default round and Beställ's row for a
+ * card ask it here too, as Karta does (hubDeals): the plan's grip is not the source (the rescue lane Kedjan, finding 1).
+ */
+export const dealPose = (dealer: string, card: string): string => dealHub(card, SEAT_HUB[dealer]);
 /** The four steps of a deal from another pose at the shoe: rest to the pose, the deal, back to the pose, and to rest. */
 export const hubSteps = (hub: string, film: string): Step[] => [{from: 'IDLE', to: hub}, {from: hub, to: film}, {from: film, to: hub}, {from: hub, to: 'IDLE'}];
 /**

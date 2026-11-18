@@ -9,8 +9,10 @@ import {judgedBank} from '../src/game-director.ts';
 
 const sha = 'a'.repeat(64), first = {file: {path: 'assets/anchors/paow-ready-01/anchor.png', sha256: sha}};
 const video = (id: string) => `assets/motions/${id}/source.mp4`;
+// A deal ends on the landing picture its returns start from, as a deal of the bank does (its last picture is the place's landing
+// picture, or a frame of its own film): without it the game would name a seam after every deal of the fixture.
 const job = (id: string, from: string, to: string, model: string, extra: Partial<BankJob> = {}): BankJob => ({id, kind: from === 'READY' ? 'DEAL' : to === 'IDLE' && from === 'IDLE' ? 'IDLE' : 'RETURN',
-  target: from === 'READY' ? to : null, from, to, model, duration: 4, ratio: 'auto_1080p', audio: false, promptText: 'fixture', first, purpose: 'fixture', dealer: 'paow', ...extra});
+  target: from === 'READY' ? to : null, from, to, model, duration: 4, ratio: 'auto_1080p', audio: false, promptText: 'fixture', first, ...(/^(P[1-7]|D)\.C\d$/.test(to) ? {last: first} : {}), purpose: 'fixture', dealer: 'paow', ...extra});
 const record = (model: string | null, extra: MotionRecord & Record<string, unknown> = {}): MotionRecord => ({source: {fps: 30, frames: 120, sha256: sha, ...(model ? {model} : {})} as MotionRecord['source'], review: {decision: 'ACCEPTED'}, motion: {physicalEndSide: 'FRONT'}, ...extra});
 // Paow at seat 4: a deal and its two returns made with WAN 3, a rest film made with Kling 4, a talk film made on that rest film, the way
 // in and out, and a cut take whose order says "utsnitt" while its film says wan3 (as Pamela's archive cuts do).
@@ -250,4 +252,57 @@ test('a round with an archived Primär plays the step\'s other take; with no tak
   assert.equal(silent.talkPart('tal'), null);
   silent.rest(); await new Promise(r => setTimeout(r, 0));
   assert.deepEqual(quiet.parts, [], 'no rest film is left to play (the fixture\'s other rest has weight 0)');
+});
+
+// FYND 2 of the rescue lane Kedjan: what the clip bank says about a step it plays (a seam, the other hand) reached nobody in the
+// game; it lay in the segment's notes. It is now one of the step's gaps, beside the films that are missing. Shown on the page: not yet.
+test('a seam and a return of the other hand reach the game\'s gaps, beside a card laid without a hand; the card\'s move to its place does not', async () => {
+  const four = {hands: [{seat: 4, cards: [2]}], dealer: []};
+  const clean = await playRound(judgedBank(bank()), four, [2]);
+  assert.deepEqual([clean.clips, clean.gaps], [['in', 'p4-deal', 'p4-rest'], []], 'a deal and the return that continues it: nothing to say');
+  // The deal ends on another landing picture than its return starts from, and lays the card with the left hand; the return comes back with the right.
+  const data = bank();
+  data.jobs = data.jobs!.map(j => j.id === 'p4-deal' ? {...j, last: {file: {path: 'assets/anchors/paow-landing-other/anchor.png', sha256: 'b'.repeat(64)}}} : j);
+  data.motions!['p4-deal'] = record('wan3', {motion: {physicalEndSide: 'FRONT', releaseHand: 'LH'}});
+  data.motions!['p4-rest'] = record('wan3', {motion: {physicalEndSide: 'FRONT', releaseHand: 'RH'}});
+  const seam = await playRound(judgedBank(data), four, [2]);
+  assert.deepEqual(seam.clips, ['in', 'p4-deal', 'p4-rest'], 'the films are the same: the game says what it plays, it plays nothing else');
+  assert.ok(seam.gaps.some(g => g.startsWith('P4.C1>IDLE: Skarv:')), JSON.stringify(seam.gaps));
+  assert.ok(seam.gaps.some(g => g.startsWith('P4.C1>IDLE: Fel hand:')), JSON.stringify(seam.gaps));
+  assert.ok(seam.gaps.every(g => !/Kortets flytt/.test(g)), 'where the drawn card is moved is the card layer\'s, not a gap');
+  // A second card to the seat plays the seat's film with the card moved: no gap of its own for that.
+  const two = await playRound(judgedBank(bank()), {hands: [{seat: 4, cards: [2, 3]}], dealer: []}, [2, 3]);
+  assert.deepEqual(two.gaps, []);
+});
+
+// FYND 5 of the rescue lane Kedjan: the dealer change stood in with films Jakob had rejected when the bank had none of its own (the page's
+// EXIT_TRIAL and the first entrance with a film). A film he has rejected is never played: without a judged film nothing is, and the gap is said.
+test('the dealer change plays only judged films: without one she is cut, nothing he rejected stands in, and the gap is said', async () => {
+  const away = () => {}, rejected = (id: string) => record('kling-4', {review: {decision: 'REJECTED', userAccepted: false, userReview: 'Jakob 2026-11-11: nej'}});
+  const withChange = (leave: 'ACCEPTED' | 'REJECTED' | null, arrive: 'ACCEPTED' | 'REJECTED' | null, dealer = 'paow') => {
+    const data = bank();
+    data.jobs = data.jobs!.map(j => ({...j, dealer}));
+    for (const [id, from, to, verdict] of [['leave', 'IDLE', 'AWAY', leave], ['arrive', 'AWAY', 'IDLE', arrive]] as const) {
+      if (!verdict) continue;
+      data.jobs!.push(job(id, from, to, 'kling-4', {kind: from === 'AWAY' ? 'ARRIVE' : 'LEAVE', dealer}));
+      data.motions![id] = verdict === 'REJECTED' ? rejected(id) : record('kling-4'); data.receipts![id] = {status: 'SUCCEEDED'}; data.media![id] = {video: video(id)};
+    }
+    return buildGraph(judgedBank(data), {dealer});
+  };
+  // Her own films, judged: she leaves and comes back, nothing to say.
+  const fine = players(), one = createFilm(fine.players, withChange('ACCEPTED', 'ACCEPTED'), createLayout(defaultPlan()), async () => null, () => 0);
+  const asked = one.swap(away); await new Promise(r => setTimeout(r, 0)); fine.end(); await new Promise(r => setTimeout(r, 0)); fine.end();
+  assert.deepEqual(await asked, {played: true, gaps: []});
+  assert.deepEqual(fine.parts.flat().map(p => p.path.split('/')[2]).filter(id => id === 'leave' || id === 'arrive'), ['leave', 'arrive']);
+  // The film she leaves with is one he rejected: it is not played, nothing is, and the page is told why.
+  const queue = players(), film = createFilm(queue.players, withChange('REJECTED', 'ACCEPTED'), createLayout(defaultPlan()), async () => null, () => 0);
+  const result = await film.swap(away);
+  assert.deepEqual(result, {played: false, gaps: ['IDLE>AWAY: ingen dömd film, dealerbytet spelas inte']});
+  assert.ok(queue.parts.flat().every(p => !p.path.includes('/leave/')), 'the rejected film is never handed to the scene');
+  // Another dealer comes in who has no judged film to arrive with: she is cut in, the gap is said, and no other film stands in.
+  const other = players(), change = createFilm(other.players, withChange('ACCEPTED', null), createLayout(defaultPlan()), async () => null, () => 0);
+  const next = withChange(null, 'REJECTED', 'pamela'), swapped = change.swap(away, next);
+  await new Promise(r => setTimeout(r, 0)); other.end();
+  assert.deepEqual(await swapped, {played: true, gaps: ['AWAY>IDLE: ingen dömd film, hon klipps in']});
+  assert.ok(other.parts.flat().every(p => !p.path.includes('/arrive/')), 'her rejected entrance is never played');
 });

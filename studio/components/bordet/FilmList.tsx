@@ -1,7 +1,7 @@
 "use client";
 
 // Bordet's step 3, Beställ (lib/bordet.ts): the films to order as a list. AddFilms is the one-click choice of films for the
-// chosen card (its deal from the anchor the plan's grip says, the returns) and of the films without a card; FilmStrip is the
+// chosen card (its deal from the anchor the game deals it from, the returns) and of the films without a card; FilmStrip is the
 // list itself, under the picture: one row per film in his notation, with the method of record's recipe and price, its card
 // ringed on the stage, and the sum. "Skapa utkast" makes each film a draft through the order path every draft takes
 // (POST /api/orders, the body the production list would send); approval and sending stay in Beställ's "Det här skickas".

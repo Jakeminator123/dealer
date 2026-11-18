@@ -7,7 +7,7 @@
 //
 // What she says: a talk film (a rest take on request, with sound) is played whole at rest, before a step's chain of cards or after
 // it (speakMoments), or between rounds (say). A line without a film is said at the same moment, in the chat only.
-import {resolveRound, pickIdle, idleRange, idleExit, effectOf, IDLE_RULE, type FilmEffect, type Graph, type Take, type Segment} from './clip-graph.ts';
+import {ARRIVE_EDGE, LEAVE_EDGE, resolveRound, pickIdle, idleRange, idleExit, effectOf, IDLE_RULE, type FilmEffect, type Graph, type Take, type Segment} from './clip-graph.ts';
 import {CARRY, type CardRecord} from './card-overlay.ts';
 import {slotOf, slotLabel, slotFilm, type Layout, type Pt, type TableCards} from './game-table.ts';
 import {hubChain, planBeats, SEAT_HUB, STAND_IN_FILM, type Beat, type FilmSignal} from './game-director.ts';
@@ -179,8 +179,12 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     // PLACE beats have no edge; the others are resolved as one chain, so each deal is cut where its return begins.
     const filmed = beats.map((b, i) => b.step ? i : -1).filter(i => i >= 0), resolved: Segment[] = resolveRound(graph, filmed.map(i => beats[i].step!), {places});
     const segments: (Segment | null)[] = beats.map(() => null); filmed.forEach((i, k) => { segments[i] = resolved[k]; });
-    const gaps = beats.flatMap((b, i) => b.kind === 'PLACE' ? [`${b.own!.label}: ingen spelbar film, kortet läggs utan hand`] : !segments[i]?.video ? [`${segments[i]?.id}: ${segments[i]?.gap ?? 'ingen film'}`]
-      : b.kind === 'DEAL' && b.own && b.step!.to !== slotFilm(b.own.slot) && standIn[slotFilm(b.own.slot)] === b.step!.to ? [`${b.own.label}: nödlösning, given med ${b.step!.to}s film, kortet ritat på sin egen plats`] : []);
+    // What the step could not play as the bank has it, beat by beat: a card laid without a hand, a film missing, a stand-in; and what
+    // the clip bank says of a film it does play (a seam, the other hand coming back, the other side of the card, a landing frame it
+    // does not know), which until 2026-11-18 lay only in the segment. Where the drawn card is moved to is the card layer's, not a gap.
+    const named = (s: Segment | null) => (s?.notes ?? []).filter(note => !note.startsWith('Kortets flytt')).map(note => `${s!.id}: ${note}`);
+    const gaps = beats.flatMap((b, i) => [...(b.kind === 'PLACE' ? [`${b.own!.label}: ingen spelbar film, kortet läggs utan hand`] : !segments[i]?.video ? [`${segments[i]?.id}: ${segments[i]?.gap ?? 'ingen film'}`]
+      : b.kind === 'DEAL' && b.own && b.step!.to !== slotFilm(b.own.slot) && standIn[slotFilm(b.own.slot)] === b.step!.to ? [`${b.own.label}: nödlösning, given med ${b.step!.to}s film, kortet ritat på sin egen plats`] : []), ...named(segments[i])]);
     const loaded = await Promise.all(segments.map(s => trackOf(s?.video ? s.take : null)));
     if (mine !== token) return {gaps, beats};
     // A hole card that is turned later in this chain stays closed and without a value until that beat.
@@ -224,26 +228,29 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
   }
   /**
    * The dealer is changed: she stands up and leaves, the table stands empty (away() is awaited then, and is given the film
-   * that comes next; the page may change what it shows), and a dealer comes in and sits down. True when rest has begun again; false when the bank has no film to
-   * leave with or to arrive with, and nothing is played then. Only between rounds: no card lies on the table. `own`: films
-   * the page brings itself, played instead of the bank's (a stand-in while the bank has no approved film for the change).
-   * next: another dealer comes in, with her own films (her graph); then a side without a film is a cut (she is cut out, or the
-   * table cut to her at rest), and true means she is at the table. Without next the same dealer leaves and comes back.
+   * that comes next; the page may change what it shows), and a dealer comes in and sits down. Only between rounds: no card lies on
+   * the table. Only the bank's films play, as the game's graph has them (judged, never rejected): a side without one plays nothing,
+   * and gaps says so. Without next the same dealer leaves and comes back, and nothing is played unless both films are there
+   * (played false). With next another dealer comes in, with her own films (her graph); a side without a film is then a cut (she is
+   * cut out, or the table cut to her at rest), and played true means she is at the table. Until 2026-11-18 the page brought films of
+   * its own where the bank had none, two of them films Jakob had rejected (the rescue lane Kedjan, finding 5).
    */
-  async function swap(away: (arrive: FilmPart[]) => void | Promise<void> = () => {}, own: {leave?: FilmPart[]; arrive?: FilmPart[]} | null = null, next: Graph | null = null): Promise<boolean> {
+  async function swap(away: (arrive: FilmPart[]) => void | Promise<void> = () => {}, next: Graph | null = null): Promise<{played: boolean; gaps: string[]}> {
     const part = (s: Segment | undefined): FilmPart[] => s?.video ? [{path: s.video, start: s.start, end: s.end, track: null, frame: frameOf(s.take), ...fpsOf(s.take), ...modelOf(s.take)}] : [];
-    const banked = (of: Graph, from: string, to: string) => part(resolveRound(of, [{from, to}], {places})[0]); // the bank's own film comes first; the page's stands in where the bank has none
-    let leave = banked(graph, 'IDLE', 'AWAY'), arrive = banked(next ?? graph, 'AWAY', 'IDLE'); if (!leave.length) leave = own?.leave ?? []; if (!arrive.length) arrive = own?.arrive ?? [];
-    if (!next && (!leave.length || !arrive.length)) return false;
+    const banked = (of: Graph, from: string, to: string) => part(resolveRound(of, [{from, to}], {places})[0]);
+    const leave = banked(graph, 'IDLE', 'AWAY'), arrive = banked(next ?? graph, 'AWAY', 'IDLE');
+    const without = (edge: string, then: string) => `${edge}: ingen dömd film, ${then}`;
+    if (!next && (!leave.length || !arrive.length)) return {played: false, gaps: [...(leave.length ? [] : [without(LEAVE_EDGE, 'dealerbytet spelas inte')]), ...(arrive.length ? [] : [without(ARRIVE_EDGE, 'dealerbytet spelas inte')])]};
+    const gaps = [...(leave.length ? [] : [without(LEAVE_EDGE, 'hon klipps ut')]), ...(arrive.length ? [] : [without(ARRIVE_EDGE, 'hon klipps in')])];
     const mine = ++token, leaving = resting; resting = null;
     const run = (parts: FilmPart[], cut: boolean) => parts.length ? new Promise<void>(resolve => players.play(parts, {cut, onEnd: resolve})) : Promise.resolve();
     const cut = !leaving || idleExit(leaving) === 'CUT'; if (!cut && leave.length) players.hurry(IDLE_RULE.exitRate);
     players.preload?.([...leave, ...arrive].map(p => p.path));
-    await run(leave, cut); if (mine !== token) return true;
-    if (leave.length) { await away(arrive); if (mine !== token) return true; } // without a film she leaves no empty table to wait at
+    await run(leave, cut); if (mine !== token) return {played: true, gaps};
+    if (leave.length) { await away(arrive); if (mine !== token) return {played: true, gaps}; } // without a film she leaves no empty table to wait at
     if (next) { graph = next; played.length = 0; }
     await run(arrive, true); if (mine === token) rest();
-    return true;
+    return {played: true, gaps};
   }
   /**
    * She says one line between steps: its talk film, whole and with sound, when she rests (no step is playing), then rest again.

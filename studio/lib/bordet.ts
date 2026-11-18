@@ -8,11 +8,12 @@
 // Nothing here composes an order: the store does, as for every draft. No DOM, no network; tests in studio/tests/bordet.test.ts.
 import {
   ANCHOR_NODE, STEPS, costOf, credits, defaultFlip, genitive, handsOf, landingOf, modelFor, paramsOf, referenceCandidates, scaleQuad, seatEndOf, seatWords, stepOf,
-  type BankFacts, type FlipAxis, type HandChoice, type ModelDef, type PlanAnswer, type Policy, type RefCandidate, type SeatEnd, type Shape, type StepDef, type StepKey, type TextStyle,
+  type Anchor, type BankFacts, type FlipAxis, type HandChoice, type ModelDef, type PlanAnswer, type Policy, type RefCandidate, type SeatEnd, type Shape, type StepDef, type StepKey, type TextStyle,
 } from "../../src/order-model.ts";
 import { methodFor, recipeFor, recipeWords, referenceByRule, referenceWaits, secondsOf, type Method, type MethodRegister, type Recipe } from "../../src/order-methods.ts";
 import { promptFor, type Prompt } from "../../src/order-prompts.ts";
-import type { Intent, Place, Side } from "../../src/placement-model.ts";
+import { dealPose } from "../../src/game-director.ts";
+import type { Place, Side } from "../../src/placement-model.ts";
 import { SHOE } from "../../src/placement-model.ts";
 import { anchorFor, type NewOrderInput } from "./orders.ts";
 import { SCENE_KEYS } from "./scene-keys.ts";
@@ -101,19 +102,28 @@ export function cardPath(quad: readonly { x: number; y: number }[], corner = COR
 /** One film on the list: a step, and the card it is about (null for a step without one). */
 export type FilmWish = { step: StepKey; target: string | null };
 export const wishKey = (w: FilmWish) => `${w.step}@${w.target ?? ""}`;
-/** The anchor a card's deal starts on: the plan's grip (A2.1 nyp, A2.2 släp). */
-const dealFrom = (intent: Pick<Intent, "grip">) => (intent.grip === "DRAG" ? "2.2" : "2.1");
+/**
+ * The anchor a card's deal starts on: the one the game deals it from for this dealer (src/game-director.ts dealPose, SEAT_HUB:
+ * Paow's seat 6 from anchor 2.2, Jakob 2026-11-13), as Karta and the game have it. Until 2026-11-18 it was the plan's grip, so the
+ * lab played seat 6 from anchor 2.1, where she has no film, while the game played it from 2.2 (the rescue lane Kedjan, finding 1).
+ */
+export const dealAnchor = (dealer: string, card: string): Anchor => (["2.1", "2.2", "2.3"] as const).find((a) => ANCHOR_NODE[a] === dealPose(dealer, card)) ?? "2.1";
 
 /**
- * The films a card can have, as one click each: its deal from the anchor the plan's grip says, the return to that anchor,
- * the return to rest, and the deal with two hands from anchor 2.3. The shoe has none. Steps that cannot be ordered here
- * (`off`) are left out.
+ * The films a card can have, as one click each: its deal from the anchor the game deals it from (dealAnchor), the return to that
+ * anchor, the return to rest, and the deal with two hands from anchor 2.3. The shoe and a place without a card in the plan
+ * (`planned` null) have none. Steps that cannot be ordered here (`off`) are left out.
  */
-export function cardWishes(place: Place, intent: Pick<Intent, "grip"> | null): FilmWish[] {
-  if (place === SHOE || !intent) return [];
-  const from = dealFrom(intent);
-  const keys: StepKey[] = [from === "2.2" ? "GIV-2.2" : "GIV-2.1", from === "2.2" ? "RETUR-2.2" : "RETUR-2.1", "RETUR-1", "GIV-2.3"];
+export function cardWishes(place: Place, planned: object | null, dealer: string): FilmWish[] {
+  if (place === SHOE || !planned) return [];
+  const from = dealAnchor(dealer, place), back = `RETUR-${from}`;
+  const keys = [...new Set<StepKey>([`GIV-${from}` as StepKey, ...(stepOf(back) ? [back as StepKey] : []), "RETUR-1", "GIV-2.3"])];
   return keys.filter((k) => !stepOf(k)?.off).map((step) => ({ step, target: place }));
+}
+/** The card's deal and back in his notation ("A2.2 - P6C1 - A2.2"), from the anchor the game deals it from: Bordet's default round. */
+export function roundFor(card: string, dealer: string): string {
+  const at = nodeCode(ANCHOR_NODE[dealAnchor(dealer, card)]);
+  return `${at} - ${nodeCode(card)} - ${at}`;
 }
 /** The films without a card, in the order a round meets them: the entries, the ways out, rest, the hole card's turn. */
 export const OTHER_STEPS: readonly StepKey[] = ["INGANG-2.1", "INGANG-2.2", "INGANG-2.3", "UTGANG", "UTGANG-2.2", "VILA", "HALKORT"];
