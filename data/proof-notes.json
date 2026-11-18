@@ -183,6 +183,32 @@
         "at": "2026-11-18T00:04:41.109Z"
       },
       "read": "2026-11-18T00:04:41.109Z"
+    },
+    {
+      "id": 15,
+      "proof": "paow-ankare-2-2-blick",
+      "file": "2-kandidat-a.png",
+      "choice": null,
+      "text": "Höjj upp hennes armboge eller liknande så kanske det kan bli bra dock!",
+      "at": "2026-11-18T00:05:09.520Z",
+      "answer": {
+        "text": "Skickat till agenten som gör ankaret: armbågen lyfts och förs ut från kroppen i nästa försök (C). Det är också så den riktiga dealern i Modells film håller armen.",
+        "at": "2026-11-18T00:07:04.558Z"
+      },
+      "read": "2026-11-18T00:07:04.558Z"
+    },
+    {
+      "id": 16,
+      "proof": "paow-ankare-2-2-blick",
+      "file": "3-kandidat-b.png",
+      "choice": null,
+      "text": "Hennes händer ser inte symmetriska ut. Hennes startpositionshand ser förstorad ut i förhållande till den nättare hand som hon har över skon, och man kanske vill se hennes tumme eftersom hon inte ska nypa fram något kort längre.",
+      "at": "2026-11-18T00:06:02.407Z",
+      "answer": {
+        "text": "Skickat till agenten som gör ankaret: händerna mäts och görs lika stora i nästa försök (C), och tummen på handen vid skon ska synas, utspärrad från kortet.",
+        "at": "2026-11-18T00:07:04.742Z"
+      },
+      "read": "2026-11-18T00:07:04.742Z"
     }
   ]
 }
