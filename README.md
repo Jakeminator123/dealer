@@ -42,6 +42,7 @@ Arkivet är det tidigare projektet på D: (snyggare-dealer). Sidorna har kvar si
 | [Löpande bandet](tools/dealer-line.md) | Den enda vägen från en bild av en person till en dealer som spelar en runda: femton rader först, sedan stationer, format, namn och kommandon. |
 | [Tal](docs/TAL.md) | Dealerns repliker med talfilm och ljud: hur en talfilm görs, hur spelet spelar den och vad som går i ett spel i rörelse. |
 | [Filmmodellerna](docs/FILMMODELLER.md) | Vad varje filmmodell används till och kostar, hur dess filmer ser ut i banken, vad som håller och faller, och kontrollen för en film från en ny modell. Läs den före ett modellval. |
+| [Filmhandbokens omgångar](tools/film-prov.md) | Protokollet bakom filmhandboken: omgångar, mallar och domar per metod. Slås upp med sökning, läses inte hel. |
 
 ## Register
 
