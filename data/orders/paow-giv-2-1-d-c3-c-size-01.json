@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-giv-2-1-d-c3-c-size-01",
+  "title": "Paow D.C3 · C · Äldre form, ny kortstorlek",
+  "summary": "Geometriprov enligt Jakob: samma P4-recept, endast sista bildens kortgeometri skiljer A/B/C.",
+  "group": {
+    "id": "paow-dc3-geometry-20261119",
+    "label": "D.C3 · tre geometrier"
+  },
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "GIV-2.1",
+    "label": "Nyp, ett kort till platsen och tillbaka",
+    "edge": "READY>D.C3",
+    "shape": "ROUND_TRIP",
+    "cutInto": [
+      "READY>D.C3",
+      "D.C3>READY"
+    ],
+    "makes": null
+  },
+  "motion": {
+    "grip": "PINCH",
+    "hand": "LH",
+    "pass": false,
+    "turn": true,
+    "flipAxis": "LONG_EDGE",
+    "target": "D.C3",
+    "side": "FRONT",
+    "fromPlan": false
+  },
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows ankare 2.1",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-giv-2-1-d-c3-c-size-01/first.png",
+      "sha256": "74eebfdc1388f8de362c0151546bbe08aeb1fed74fca097f8ca6999d833dc702",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-nyp-ung-1",
+        "path": "assets/anchors/paow-nyp-ung-1/anchor.png",
+        "note": "Nyp, yngre, tagning 1 (gäller)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Sista bild · C · Äldre form, ny kortstorlek",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-giv-2-1-d-c3-c-size-01/last.png",
+      "sha256": "d6331a1427fc09c4698f660859955d7a43d90119483f54289c8e2c6c3885fce5",
+      "from": {
+        "built": "P4-04:s startbild + D.C3, C · Äldre form, ny kortstorlek"
+      },
+      "waits": null,
+      "width": 1764,
+      "height": 1174,
+      "drawn": {
+        "target": "D.C3",
+        "side": "FRONT",
+        "as": "C · Äldre form, ny kortstorlek",
+        "plan": {
+          "path": "assets/orders/paow-giv-2-1-d-c3-c-size-01/plan.json",
+          "sha256": "dbb558211411ad4a2a45ee1047e9794ab39912084a0ad6717a020e443d2f7e7c",
+          "updatedAt": "2026-11-18T00:35:37.644Z"
+        },
+        "texture": {
+          "video": "assets/motions/pamela-p4-c1-plan-return-idle-01/source.mp4",
+          "frame": 89,
+          "sha256": "0b3cba9be4a969334bf1ba23623b80be6d0bd119a3c4dd8236db27145d479aa7",
+          "quadFrom": "assets/anchors/pamela-idle-p4-c1-plan-01/receipt.json"
+        },
+        "quad": [
+          [
+            1014.1552714378716,
+            901.6306902503993
+          ],
+          [
+            1093.4842557762813,
+            901.6306902503993
+          ],
+          [
+            1127.6725754799015,
+            950.3693097496007
+          ],
+          [
+            1040.6878973059463,
+            950.3693097496007
+          ]
+        ],
+        "centre": [
+          1069.0000000000002,
+          926
+        ],
+        "measured": {
+          "centre": [
+            1069.5,
+            926.6
+          ],
+          "area": 4340,
+          "box": [
+            115,
+            50
+          ],
+          "changedElsewhere": 0
+        },
+        "measuredOffsetPx": 0.7810249675905374
+      }
+    }
+  ],
+  "reference": {
+    "status": "INGEN",
+    "why": "Kontrollerad jämförelse med primär P4-04: två styrbilder, ingen referensfilm."
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "kling-4",
+    "params": {
+      "resolution": "1080p",
+      "duration": 7
+    }
+  },
+  "prompt": {
+    "template": "film-giv@3",
+    "text": "One continuous take with a locked-off camera and no cuts. The woman in the first frame is a young, slim, petite woman with a platinum-blonde chin-length bob, warm-coloured tattoos on her throat and upper chest and a small white flower pendant, in a black tailored blazer over a cream V-neck top; she sits at a green table, seen from the front, with the black card shoe fixed at the right of the picture and a yellow card in its window. She deals one card and comes back to the pose she started in. Her left hand, at the right of the picture, pinches the yellow card in the shoe's window between thumb and forefinger, the fingertips on the card's own upper edge and not on the shoe's rim, as in the first frame, and draws it out of the shoe: the card looks as it does in the shoe, the same size and shape, one plain rigid card. The same hand carries it low over the table towards the place where it will lie. On the way she rolls the card over about its long side: she turns her wrist once, the yellow back narrows to a thin pale edge along the card's long side, then the blue face comes up; the same hand holds the card the whole time. She lays it flat with her left hand, blue face up, exactly where the blue card lies in the last frame, close to her body, to the right of the middle of the picture, at the same size and angle, lets go of it, and the card stays there. Then her left hand returns to the shoe and pinches the next yellow card, exactly as in the first frame. Her right hand, at the left of the picture, rests on the table the whole time. Only one card moves; it is solid yellow on its back and solid blue on its face. She ends exactly as in the last frame. Nothing of this happens: a second card appears, her right hand lifts from the table or touches the card, a finger passes through the card, the card grows or shrinks on its way, a hand hovers in the air without holding or laying anything, the shoe changes, the picture cuts or the camera moves.",
+    "sha256": "d9a11dbe33931cb5fbbb4eebdb243b594388ae5e1c6a832714f0aae887954351",
+    "extra": null,
+    "middle": false,
+    "place": [
+      1069.0000000000002,
+      926
+    ]
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 150,
+    "total": 150,
+    "worstPerTake": 165,
+    "worstTotal": 165,
+    "basis": "21,3 krediter per s × 7 s. Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12."
+  },
+  "limits": {
+    "maxCredits": 165,
+    "stopBelowCredits": 2000
+  },
+  "notes": [
+    "Jakob 2026-11-19 beställer tre filmer för att jämföra äldre geometri, ny geometri och äldre geometri med ny storlek.",
+    "Avsiktligt återbruk av primär P4-04:s frysta recept: Kling4,1080p,7s,film-giv@3,LH,LONG_EDGE,tur och retur,ingen referensfilm. Ingen ändring av tid eller prompt mellan varianterna.",
+    "Äldre fyrhörning likformigt skalad 1.55273300 kring oförändrat centrum; samma yta som nya kortet, äldre form/perspektiv kvar.",
+    "Alla är jämförelseprov, inga automatiska Primär-val eller användardomar. Modellens slump skiljer tagningarna och är en begränsning i jämförelsen."
+  ],
+  "created": "2026-11-19T16:16:49.765Z",
+  "createdBy": "huvudagenten",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-19T16:23:26.348Z",
+    "orderSha256": "8f36e42f6d4d820ed6aa465545d360968e5b596a04a43b7bfa420145a8467f81",
+    "mandate": "Jakob 2026-11-19: Ja visst till startbild och tre granskade D.C3-slutbilder till Runway workspace67037521; tre jämförelsefilmer, högst495 krediter. Inget byte av standarder eller Primär."
+  },
+  "status": "GODKÄND"
+}

@@ -409,6 +409,7 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 
 ## Kortet
 
+- **Tre geometrier som jämförelse** (2026-11-19): "Skapa en film med den gamla spelgeometrin, en för den nya och en som den gamla geometrin med nya storleken på korten"; lägg också in det nya kortet redigerbart i labbet. Jakob godkände tre D.C3-prov och deras styrbilder till Runway, högst 495 krediter. Proven ersätter inga gällande ankare, Primär-val eller labbförval; uppladdade bilder blir inte automatiskt framtida standarder. Nästa order hämtar fortfarande uttryckliga referenser ur labbets materialregister.
 - **En linje för korten** (2026-11-13, kl. 15.47): "Angående förvalda och icke-förvalda kort, är jag osäker på vad som
   ska gälla. Jag vill bara att det ska bli en linje och att allt ska anpassas till en standard som passar med det som
   för närvarande finns i systemet, om det ens behövs. Jag har svårt att förstå vad som gäller för korten." Huvudagenten

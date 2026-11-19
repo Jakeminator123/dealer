@@ -6,14 +6,14 @@
   "mandate": {
     "id": "codex-dealer-20261118",
     "startsAt": "2026-11-18T08:01:31Z",
-    "endsAt": "2026-11-18T17:30:00Z",
+    "endsAt": "2026-11-19T18:00:00Z",
     "rollingHourCredits": 800,
     "totalCredits": 2500
   },
   "maxPerOrder": 2000,
   "minBalance": 0,
   "timeZone": "Europe/Stockholm",
-  "balance": { "credits": 2006, "at": "2026-11-18T16:33:35.019Z", "source": "Runway whoami: Jakob, workspace67037521. Kontrollerat C2-omtag med endast ändrad referens; en tagning, högst94. Samma mandat och förbrukning bevaras." },
+  "balance": { "credits": 3748, "at": "2026-11-19T16:23:01Z", "source": "Runway whoami: Jakob, workspace67037521. Jakob godkände D.C3 A/B/C inklusive bildöverföring, tre tagningar högst495. Mandatets identitet och tidigare förbrukning bevaras." },
   "prices": [
     { "model": "kling-4", "resolution": "1080p", "perSecond": 21.3, "listedPerSecond": 23.5, "source": "Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12." },
     { "model": "kling-4", "resolution": "720p", "perSecond": 15.7, "listedPerSecond": 15.7, "source": "Listpris i verktyget generate_video 2026-11-12; inte mätt i någon liggare." },

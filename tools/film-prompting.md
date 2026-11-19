@@ -271,6 +271,25 @@ This is an edit of the picture @anchor. Keep everything in @anchor exactly as it
   förslaget (S).
 
 ### 3.8 Referensfilm, Motion Control och Jakobs egen hand
+**Extern genomgång 2026-11-19, kontrollerad mot tillverkaren.** `RUNWAY_DEALER.md` från Jakob är råd, inte en ny
+orderinstruktion. Beställ, de versionsmärkta mallarna och Jakobs val gäller fortsatt. Modellstöd i dokumentationen
+är inte samma sak som ett fält i vår anslutning eller belägg för bättre dealerfilm.
+
+| Underlag/problem | Möjligt prov, inte nytt förval | Kontroll före provet |
+| --- | --- | --- |
+| Landning/släpp på fel plats | Kling 4: start, kontaktbild, slut | API `kling_4` har upp till åtta mellanbilder; vårt MCP `kling-4` exponerar ännu bara start/slut och referenser. Kontaktbilden kräver samma kamera, geometri och korrekt fingergrepp. |
+| Onaturlig handbana | Kort verklig giv som rörelsereferens; Kling 4 först mot befintligt recept | Bilden styr identitet/utsnitt, filmen handbana/grepp/tempo. Rätt spelarplats och samma kameraperspektiv; en referens garanterar inte exakt följsamhet. |
+| Alternativ rörelsemodell | Seedance 2.5, MCP `seedance-2.5`, API `seedance2_5` | Bild-/videoreferensläge och start/slut-läge är olika kontrakt. Be om exakt längd och en låst tagning. Prova inte genom att bara byta modell-ID i Kling-ordern. |
+| Enkel blick/vila | Gen-4.5, MCP `gen-4.5`, API `gen4.5` | Bilden bär utseende och utsnitt; texten rörelsen. Inte belagt bättre på kortgrepp. |
+
+Runways [Seedance-guide](https://runway.com/resources/seedance-2-5-prompt-guide) ger varje referens en uttrycklig roll
+och beskriver förloppets ordning. Ta den strukturen, inte dess långa flerscensupplägg, till ett kort dealerprov.
+[API-kontraktet](https://docs.dev.runwayml.com/api.md) och [OpenAPI](https://docs.dev.runwayml.com/openapi.json)
+styr tillåtna kombinationer; färsk `whoami` och verktygsschemat styr vad vår klient faktiskt kan skicka.
+Ändra en sak mot en känd giv. För ett tidsprov jämför kort och lång **helgiv inklusive retur** med samma mål och
+underlag. P6/P7 har både godkända och underkända sjusekundersprov: lång tid är en hypotes om extrarörelser, inte en
+fastställd ensam orsak. Mät grepp, kantvändning, kontakt, släpp och skarv enligt `film-review.md`.
+
 **Kling 3.0 Motion Control** (Runways hjälpsida, V): en karaktärsbild och en rörelsefilm, text valfri; 3–30 s; filmen
 ska visa "clear upper body … including all limbs and head", en person, obruten, inte snabb. Vårt verktyg: **ingen sista
 bild** (`kling-3-motion-control` står inte bland modellerna som tar `endFrame`). Om ett föremål i handen: "contact

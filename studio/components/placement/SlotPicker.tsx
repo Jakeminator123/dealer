@@ -1,7 +1,7 @@
 "use client";
 
 // The places to choose from, laid out as the table is seen: Plats 1–7 from the camera's left, then the dealer, each with its
-// two cards, and the shoe. A card's button carries its landing side (yellow: closed, blue: open, as the films colour them),
+// two player cards, three dealer cards, and the shoe. A card's button carries its landing side (yellow: closed, blue: open),
 // a brass dot when it differs from the saved plan, and a tick when it is checked (in the plan's one view, the bank's picture).
 import { Check } from "lucide-react";
 import { CARD_COLOUR, SHOE, type PlacementPlan, type Place } from "../../../src/placement-model.ts";
@@ -43,7 +43,7 @@ export function SlotPicker({ plan, selected, changed, onSelect }: { plan: Placem
       </div>
       <div className="grid grid-cols-8 gap-1">{SEATS.map((s) => button(`${s}.C1`, "1"))}</div>
       <div className="grid grid-cols-8 gap-1">{SEATS.map((s) => button(`${s}.C2`, "2"))}</div>
-      <div className="grid grid-cols-8 gap-1"><div className="col-span-2">{button(SHOE, "Sko", true)}</div><div className="col-start-8">{button("D.C3", "3")}</div></div>
+      <div className="grid grid-cols-8 gap-1"><div className="col-span-2">{button(SHOE, "Sko", true)}</div><div className="col-start-8 grid">{button("D.C3", "3")}</div></div>
     </div>
   );
 }

@@ -184,6 +184,17 @@ bilder och filmer som används eller kan användas ligger i `assets/` (AGENTS). 
 | Runway MCP-server | `https://mcp.runwayml.com/mcp`, appkontots krediter (workspace `Jakob`). Claude har servern som `runway`, Codex som `Runway`; inloggningen tillhör respektive klient och är inte gemensam. Kontrollera den aktuella sessionen före beställning. `https://dev.runwayml.com/mcp/claude` är en annan server (utvecklarportalen), inte för generering. |
 | Direkt API | Ingen kod anropar Runways API längre; allt beställs genom MCP-servern. `RUNWAY_API_KEY` ligger kvar i den Git-ignorerade `.env.local` och drar developer-projektets krediter, en annan pott än appkontots; API-svaret ger inget projekt- eller workspace-ID, så nyckeln bevisar inte samma saldo. Kvitto från 2026-11-10: `.runtime/connection-check.json`. |
 
+**Modellkunskap och API (kontrollerat 2026-11-19).** [Runway Dev-pluginen](https://docs.dev.runwayml.com/guides/plugin/)
+ger dokumentation, modellfält, priser och API-jobbdiagnostik; den genererar inte filmer. Cursor installerar med
+`/add-plugin runway-api`; Claude Code med `/plugin install runway-api@claude-plugins-official` och aktuell guides
+inloggning. Installera en gång, inte både plugin och dubbla skills. Detta är ett förslag, ingen utförd installation.
+API-projektet måste identifieras separat före aktivering. MCP-beställningen har redan frysta indata, hashkontroll,
+budgetreservation och jobb-ID; API ger främst en körbar produktionsintegration och fler exponerade fält, inte automatiskt
+bättre rörelser. En framtida API-transport ska använda samma order/kvitto och aldrig återförsöka ett osäkert köp.
+Codex skickade denna dag Kling 4 med start/slut direkt genom sin MCP. Mellanbilder finns i
+[Klings API-kontrakt](https://docs.dev.runwayml.com/openapi.json), men saknas i aktuellt `generate_video`-schema här.
+Skicka dem inte som vanliga referensbilder och påstå att de styr en viss tidpunkt. Modellråd: handbokens §3.8.
+
 Om Codex-klientens skrivschema saknar Kling 4 eller `referenceVideos` kan huvudagenten använda den befintliga,
 inloggade Claude-klientens `runway`-MCP. Kontrollera `claude mcp get runway`, därefter `whoami` och det faktiska schemat.
 Avgränsa hjälparen till Runway, `whoami` och ett enda godkänt genereringsanrop; fryst request går via stdin, privata
