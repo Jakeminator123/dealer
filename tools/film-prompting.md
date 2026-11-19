@@ -274,6 +274,7 @@ This is an edit of the picture @anchor. Keep everything in @anchor exactly as it
 **Extern genomgång 2026-11-19, kontrollerad mot tillverkaren.** `RUNWAY_DEALER.md` från Jakob är råd, inte en ny
 orderinstruktion. Beställ, de versionsmärkta mallarna och Jakobs val gäller fortsatt. Modellstöd i dokumentationen
 är inte samma sak som ett fält i vår anslutning eller belägg för bättre dealerfilm.
+Exemplets högerhand och grepp i kortsidan är inte Paows förval: hand, grepp och mål ska komma från den faktiska ordern.
 
 | Underlag/problem | Möjligt prov, inte nytt förval | Kontroll före provet |
 | --- | --- | --- |
