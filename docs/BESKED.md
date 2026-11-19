@@ -15,6 +15,12 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 
 ## Arbetet och dokumenten
 
+- **Projektmapp och städning** (2026-11-19): "Du ska jobba i projektet och i den mapp eller det arbetsträd som
+  `codebase` eller en annan IDE använder"; "Jag vill att det mesta som inte används ska raderas". Fria händer att
+  förbättra lokal struktur och rutiner. D: är inte arbetsförval. Kontrollera användning före radering; betalning
+  ensam är inget skäl att arkivera allt. Båda separata projekten får utveckla 3D; förslaget att frysa Dealer drogs
+  tillbaka i samtalet Jakob bifogade. Ingen hopslagning av projekten följer av detta.
+
 - **Sammanhängande lokal räddning** (2026-11-18, Codex): "Styr upp det här och gör det så bra som möjligt för att spela
   upp Black Jack"; "Samordna arbetet så att vi har kontroll, även med flera metoder." Jakob gav fria händer för lokala
   ändringar, underagenter efter behov, kompakt lagring (gärna SQLite) och smart dokumentation. Arbetet fortsätter i

@@ -50,13 +50,13 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   behöver inte `studio/node_modules`. Före PR kör agenten `npm run check`.
 - **Push medan andra skriver** (2026-11-13). I huvudträdet stoppar kontrollen så länge någon sessions testindata
   skiljer sig från HEAD eller en ospårad fil ligger där, och det gör den nästan alltid en dag med flera
-  sessioner. Huvudagenten pushar då från ett eget rent arbetsträd på slaskdisken med `node tools/push-clean.ts
-  [<commit>] [--trad <mapp>] [--dry-run]`: trädet ställs detached på commiten (förval `main`) och måste vara rent, `npm
+  sessioner. Huvudagenten pushar då från ett uttryckligen valt rent IDE-arbetsträd med `node tools/push-clean.ts
+  [<commit>] --trad <mapp> [--dry-run]`: trädet ställs detached på commiten (förval `main`) och måste vara rent, `npm
   ci` körs om paketlistan har ändrats eller `node_modules` saknas, sedan `npm test`, `npm run check` och `git push
   origin HEAD:main`, och sist lokal och fjärrens SHA. Verktyget stannar vid första steg som faller med en rad som börjar
-  STOPP och lägger varje stegs logg i `push-logg` bredvid trädet; `--dry-run` gör allt utom `git push`. Trädet görs en
-  gång med `git worktree add --detach <mapp på D:> main` (förvalet är `D:/dealer-scratch/tmp/huvudagent11/push-trad`)
-  och står kvar mellan pusharna; verktyget vägrar huvudträdet och ett träd ur ett annat repo. Det som pushas är
+  STOPP och lägger varje stegs logg i `push-logg` bredvid trädet; `--dry-run` gör allt utom `git push`. Återanvänd ett
+  lämpligt träd eller skapa det via IDE:n vid behov, och städa det när uppgiften är klar. Ingen disk väljs automatiskt;
+  verktyget vägrar huvudträdet och ett träd ur ett annat repo. Det som pushas är
   incheckade commits, aldrig någons öppna filer.
   Förkontrollen får fjärrens verifierade `main`-SHA som `--base`, så ett detached träd inte behöver granska hela
   historiken igen. Pre-push kontrollerar fortfarande Git:s verkliga pushintervall. Sammanfattningen skiljer
@@ -128,13 +128,13 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   --ensure` startar servern om den inte går, utan att öppna eller flytta någon flik. Stäng inte andra projekts
   servrar, och stoppa aldrig via processnamn eller port.
 - **Studion byggd ur det incheckade** (2026-11-17). Servern lämnar ut huvudträdets `studio/out`, och ett bygge där bär
-  med sig varje sessions halvfärdiga studiofiler till Jakobs flik. `node tools/studio-from-commit.ts [<commit>] [--trad
-  <mapp>] [--ut <mapp>]` bygger commiten (förval `main`) i ett rent arbetsträd på slaskdisken (detached, `npm ci` där en
+  med sig varje sessions halvfärdiga studiofiler till Jakobs flik. `node tools/studio-from-commit.ts [<commit>] --trad
+  <mapp> [--ut <mapp>]` bygger commiten (förval `main`) i ett uttryckligen valt rent IDE-arbetsträd (detached, `npm ci` där en
   paketlista har ändrats eller `node_modules` saknas, `npm --prefix studio run build`) och byter in resultatet i
   huvudträdets `studio/out` först när bygget har lyckats: kopian läggs bredvid som `out.ny`, den gamla mappen flyttas
   undan och den nya in. Ett bygge eller en flytt som faller lämnar det som visas orört, och `studio/out/bygge.json`
-  säger vilken commit som visas. Trädet görs en gång med `git worktree add --detach <mapp på D:> main`; det som finns
-  och används är `D:/dealer-scratch/tmp/huvudagent11/push-trad`, verktygets förval (`--trad` ger ett annat).
+  säger vilken commit som visas. Återanvänd ett lämpligt träd eller skapa det via IDE:n vid behov. `--trad` krävs;
+  verktyget väljer inte arbetsplats eller disk. Se [lokal arbetsplats](../tools/local-work.md).
   Push och bygge använder trädet i turordning. Loggarna ligger i `studio-logg` bredvid; ett körkvitto med full SHA
   sparas i huvudträdets journal efter varje påbörjat bygge. Renhet och indata kontrolleras direkt före och efter
   bygget; ändrade filer stoppar bytet även om HEAD är oförändrad. Servern startas inte om.
@@ -427,6 +427,11 @@ kopia. Därefter prövas sidor och filmsökning som förut; fel version efter ti
 
 ## D: och städning
 
+Sedan Jakobs besked 2026-11-19 sker arbetet i IDE:ns projektmapp eller arbetsträd och tillfälligt arbete i
+`.runtime/<uppgift>/`. D:-sökvägar nedan beskriver äldre material och delade tjänster, inte arbetsförval.
+Arbetsrutin, radering av verifierat oanvänt material och hashkontrollerad rensning av dubbla mediefiler:
+[Lokal arbetsplats och städning](../tools/local-work.md).
+
 Ändra inte global TEMP/PATH och skapa inga nya runtime-junctions. Tillfälliga jobb kan få processlokal `TEMP`/`TMP` mot
 `D:/dealer-scratch/tmp`. V6-renderern skriver till `output/v6` i repot; ingen miljövariabel flyttar det.
 
@@ -438,8 +443,9 @@ beslut hämtas från motions-registret.
 (bara läsning). Per film, ankare, beställning eller prov: vad det är, storlek, datum, vilket register som nämner det och
 användningen `spelas` (banken enligt `buildGraph`, talfilmer, munlappar, filmen före spelet), `visas` (Material,
 beställningar, scenen, och allt som Beslut, kopian, ett dokument eller en instruktion nämner med sitt exakta id), `referens` (V6, manifestet,
-`evidence/`), `bara registrerad` eller `okänd`, med fil och fält som säger det. Det som varken spelas, visas eller är
-referens arkiveras till `D:/dealer-archive/`, raderas inte, om det är gjort med betalda krediter.
+`evidence/`), `bara registrerad` eller `okänd`, med fil och fält som säger det. Klassningen är ett underlag:
+kontrollera även aktiva prov och användaranteckningar före radering. Det som verifierats oanvänt får raderas;
+den tidigare regeln att alltid arkivera betalda resultat är ersatt av Jakobs besked 2026-11-19.
 
 **Arkivet av det oanvända, 2026-11-17** (`53dc116`): 367 enheter (1 073 filer, 3,96 GB) ligger med samma sökvägar i
 `D:/dealer-archive/dealer-ej-anvant-2026-11-17/`, varje fil kontrollerad på SHA-256. Planen, loggen och skriptet som tar

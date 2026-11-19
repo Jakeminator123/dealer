@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {parseArgs, pushClean, testSummary, testFailures, checkRed, DEFAULT_TREE, type Options} from './push-clean.ts';
+import {parseArgs, pushClean, testSummary, testFailures, checkRed, type Options} from './push-clean.ts';
 import type {Exec} from './clean-tree.ts';
 
 const ROOT = 'C:/repo', TREE = 'D:/scratch/push-trad', SHA = 'a'.repeat(40), OLD = 'b'.repeat(40);
@@ -29,8 +29,9 @@ function world(answers: Record<string, Answer> = {}, present = (p: string) => tr
   return {calls, said, logs, go, text: () => said.join('\n')};
 }
 
-test('the arguments: a commit, the tree and the dry run, with the documented default tree', () => {
-  assert.deepEqual(parseArgs([]), {commit: 'main', tree: DEFAULT_TREE, dryRun: false});
+test('the arguments require an explicitly selected worktree', () => {
+  assert.throws(() => parseArgs([]), /välj ett rent IDE-arbetsträd/);
+  assert.deepEqual(parseArgs(['--trad', 'C:/chosen']), {commit: 'main', tree: 'C:/chosen', dryRun: false});
   assert.deepEqual(parseArgs(['abc123', '--trad', 'D:/x', '--dry-run']), {commit: 'abc123', tree: 'D:/x', dryRun: true});
   assert.throws(() => parseArgs(['--force']), /okänd flagga --force/);
   assert.throws(() => parseArgs(['--trad']), /--trad kräver en mapp/);
@@ -60,6 +61,14 @@ test('a real run pushes HEAD to main, without force or --no-verify', () => {
   assert.deepEqual(pushes, ['tree: git push origin HEAD:main']);
 });
 
+test('an occupied or unreadable worktree is rejected before checkout changes its HEAD', () => {
+  for (const status of [{out: ' M tools/draft.ts\n'}, {code: 1}]) {
+    const w = world({'git status --porcelain': status});
+    assert.equal(w.go(), 1);
+    assert.ok(!w.calls.some(c => c.includes('checkout') || c.includes('npm') || c.includes('git push')));
+  }
+});
+
 test('each stop stops before the next step, with the words the script printed', () => {
   const cases: Array<[string, Record<string, Answer>, RegExp, string]> = [
     ['checkout', {'git checkout': {code: 1}}, /^STOPP: checkout$/m, 'npm'],
@@ -81,7 +90,7 @@ test('each stop stops before the next step, with the words the script printed', 
 test('a missing tree, a tree of another repo and the tree the tool runs from all stop before checkout', () => {
   const missing = world({}, p => p !== TREE);
   assert.equal(missing.go(), 1);
-  assert.match(missing.text(), /STOPP: arbetsträdet saknas \(D:\/scratch\/push-trad\); gör det med: git worktree add --detach D:\/scratch\/push-trad main/);
+  assert.match(missing.text(), /STOPP: arbetsträdet saknas .*välj ett befintligt rent träd eller skapa det via IDE:n/);
   const other = world({'tree: git rev-parse --path-format': {out: 'E:/other/.git'}});
   other.go();
   assert.match(other.text(), /STOPP: D:\/scratch\/push-trad är inget arbetsträd i det här repot/);

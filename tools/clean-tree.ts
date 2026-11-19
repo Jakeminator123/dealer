@@ -46,11 +46,14 @@ export function commitOf(root: string, name: string, run: Exec = exec): string {
 
 /** Sets `tree` to `sha` detached and checks that it is clean; returns the commit it stood on before. */
 export function cleanAt(root: string, tree: string, sha: string, say: Say, run: Exec = exec, exists = existsSync): string {
-  if (!exists(tree)) throw new Stop(`STOPP: arbetsträdet saknas (${tree}); gör det med: git worktree add --detach ${tree} main`);
+  if (!exists(tree)) throw new Stop(`STOPP: arbetsträdet saknas (${tree}); välj ett befintligt rent träd eller skapa det via IDE:n`);
   const mine = commonDirOf(root, run), its = commonDirOf(tree, run);
   if (!its || !same(mine, its)) throw new Stop(`STOPP: ${tree} är inget arbetsträd i det här repot`);
   const top = run('git', ['rev-parse', '--show-toplevel'], tree).out.trim();
   if (same(top, root) || same(top, mainCheckout(mine))) throw new Stop('STOPP: arbetsträdet är huvudträdet eller det här trädet; ange ett eget rent träd');
+  const before = run('git', ['status', '--porcelain'], tree);
+  if (before.code !== 0) throw new Stop('STOPP: arbetsträdets status kunde inte läsas');
+  if (before.out.trim()) throw new Stop(`STOPP: arbetsträdet är inte rent\n${before.out.trimEnd()}`);
   const old = run('git', ['rev-parse', 'HEAD'], tree).out.trim();
   say(`från ${old} till ${sha} (${clock()})`);
   if (run('git', ['checkout', '-q', '--detach', sha], tree).code !== 0) throw new Stop('STOPP: checkout');

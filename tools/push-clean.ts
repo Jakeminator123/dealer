@@ -1,5 +1,5 @@
 // The push from a clean worktree (DRIFT, "Git och kontroller", "Push medan andra skriver"): main's commits are pushed from
-// a tree on the scratch disk, so other sessions' unfinished files in the main checkout cannot turn the publication check
+// an explicitly selected IDE worktree, so unfinished files in the main checkout cannot turn the publication check
 // red, and no one's open file goes out. The steps of the main agent's pusha-fran-rent-trad.sh (2026-11-13 to 11-17), the
 // same stops and words: the tree set to the commit and clean, npm ci when the package list changed (or node_modules is
 // missing), npm test, npm run check, git push origin HEAD:main, then the local and the remote SHA. Each step's log lies in
@@ -7,19 +7,17 @@
 //
 //   node tools/push-clean.ts [<commit>] [--trad <mapp>] [--dry-run]
 //     <commit>   what is pushed (default main)
-//     --trad     the clean tree (default D:/dealer-scratch/tmp/huvudagent11/push-trad; made once with
-//                git worktree add --detach <mapp> main)
+//     --trad     required: an existing clean worktree of this repository
 //     --dry-run  every step except git push; the remote SHA is still read
 import {mkdirSync, writeFileSync} from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {Stop, clock, cleanAt, commitOf, exec, needsCi, tail, type Exec, type Say} from './clean-tree.ts';
 
-export const DEFAULT_TREE = 'D:/dealer-scratch/tmp/huvudagent11/push-trad';
 export type Options = {commit: string; tree: string; dryRun: boolean};
 
 export function parseArgs(argv: string[]): Options {
-  const options: Options = {commit: 'main', tree: DEFAULT_TREE, dryRun: false};
+  const options: Options = {commit: 'main', tree: '', dryRun: false};
   const loose: string[] = [];
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -30,6 +28,7 @@ export function parseArgs(argv: string[]): Options {
   }
   if (loose.length > 1) throw new Stop('STOPP: högst en commit');
   if (loose[0]) options.commit = loose[0];
+  if (!options.tree) throw new Stop('STOPP: välj ett rent IDE-arbetsträd med --trad <mapp>; ingen disk eller arbetsmapp väljs automatiskt');
   return options;
 }
 

@@ -49,8 +49,8 @@ Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-
   [docs/lage/matning.md](docs/lage/matning.md).
 - **Jakobs egna:** planen `placements/default.json` och hans domar i `motions/` (`review`), som skrivs från Granska och
   aldrig skrivs över av ett verktyg. En dom som getts åt honom (`node tools/review-put.ts`) är aldrig hans.
-- **En ny session** arbetar i ett eget arbetsträd på en kort gren och skriver först till huvudagenten vilka filer den
-  tar (skillen `bredvid-andra-sessioner`).
+- **En ny session** använder den aktiva IDE:ns projektmapp eller arbetsträd och avgränsar sina filer först.
+  Extra arbetsträd bara vid isoleringsbehov (skillen `bredvid-andra-sessioner`).
 
 ## Väntar på Jakob
 

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, readdirSync, rmSync, renameSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
-import {parseArgs, studioFromCommit, swapInto, DEFAULT_TREE, type Options} from './studio-from-commit.ts';
+import {parseArgs, studioFromCommit, swapInto, type Options} from './studio-from-commit.ts';
 import type {Exec} from './clean-tree.ts';
 import type {RunReceiptInput} from './evidence-store.ts';
 import type {captureRunContext} from './evidence-context.ts';
@@ -38,9 +38,9 @@ function world(answers: Record<string, Answer> = {}, present = (_: string) => tr
 }
 const posix = (p: string) => p.replaceAll('\\', '/');
 
-test('the arguments, with the documented default tree and no target until the main checkout is known', () => {
-  assert.deepEqual(parseArgs([]), {commit: 'main', tree: DEFAULT_TREE});
-  assert.equal(DEFAULT_TREE, 'D:/dealer-scratch/tmp/huvudagent11/push-trad', 'the tree that exists and is used (docs/DRIFT.md)');
+test('the arguments require an explicitly selected worktree', () => {
+  assert.throws(() => parseArgs([]), /välj ett rent IDE-arbetsträd/);
+  assert.deepEqual(parseArgs(['--trad', 'C:/chosen']), {commit: 'main', tree: 'C:/chosen'});
   assert.deepEqual(parseArgs(['abc', '--trad', 'D:/t', '--ut', 'D:/o']), {commit: 'abc', tree: 'D:/t', out: 'D:/o'});
   assert.throws(() => parseArgs(['--ut']), /--ut kräver en mapp/);
   assert.throws(() => parseArgs(['--snabbt']), /okänd flagga/);

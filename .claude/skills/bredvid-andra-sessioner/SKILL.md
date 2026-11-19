@@ -15,8 +15,8 @@ samarbete", "Labbservern" och "Kod"; rutinerna i [`docs/DRIFT.md`](../../../docs
    tar** innan du ändrar något. En skribent per
    fil; allt in i repot går genom huvudagenten med en fillista (AGENTS; HANDOFF). Adressen kontrolleras med ListAgents
    före ett meddelande (HANDOFF).
-2. **Ett eget arbetsträd på en kort gren** för ett avgränsat arbete: `git worktree add D:/dealer-scratch/tmp/<bana>/trad
-   -b <gren> main`, och grenen lämnas till huvudagenten, som slår ihop den (AGENTS, "Git och samarbete"; DRIFT, "Grenar").
+2. **Använd den aktiva IDE:ns projektmapp eller arbetsträd.** Ett extra träd behövs bara när uppdrag måste isoleras:
+   återanvänd ett lämpligt träd eller skapa det via IDE:n. Ingen automatisk D:-mapp (AGENTS, "Git och samarbete").
 3. **Labbservern lämnar ut huvudträdets filer:** en halvfärdig fil där syns genast i Jakobs flik. En ny modul under
    `src/` görs i ordningen fil, rad i `SCRIPTS` (`tools/lab-routes.ts`), omstart av huvudagenten, import; kör `node
    --test tools/lab-modules.test.ts` efter en ny import (DRIFT, "Labbservern och fliken"). En rad i `SCRIPTS` för en
@@ -31,5 +31,5 @@ samarbete", "Labbservern" och "Kod"; rutinerna i [`docs/DRIFT.md`](../../../docs
 7. **Jakob talar bara med huvudagenten;** det som bara han kan svara på blir ett kort i Beslut genom huvudagenten
    (HANDOFF, "Vem äger vad").
 8. **Betalt utanför Beställ** rapporteras till huvudagenten med belopp (AGENTS; `docs/BESKED.md`, "Domar, beställningar och pengar").
-9. **Arbetsfiler på slaskdisken** under `D:/dealer-scratch/tmp/<bana>/`; bilder och filmer som kan användas hör hemma i
-   `assets/` med en roll (AGENTS, "Det som skyddar Jakob"; DRIFT, "Arbetsskript utanför repot").
+9. **Arbetsfiler i projektet** under `.runtime/<uppgift>/`; bilder och filmer som kan användas hör hemma i
+   `assets/` med en roll. Städa egna kopior efter avslutat arbete (`tools/local-work.md`).

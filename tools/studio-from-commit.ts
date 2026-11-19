@@ -1,6 +1,6 @@
 // The studio Jakob sees, built from the committed state (docs/lage/labbet-och-studion.md; DRIFT, "Labbservern och fliken"): the lab
 // server hands out the main checkout's studio/out, and a build there would carry every session's half-finished studio
-// file to his tab. This builds a commit in a clean worktree on the scratch disk (detached, `npm ci` when a package list
+// file to his tab. This builds a commit in an explicitly selected clean IDE worktree (detached, `npm ci` when a package list
 // changed or node_modules is missing, `npm --prefix studio run build`) and only after a build that succeeded swaps the
 // result into the main checkout's studio/out: copied beside it as out.ny, the old folder moved aside, the new one moved
 // in, the old one removed. A failed build or a failed move leaves the served folder as it was. bygge.json in the folder
@@ -8,8 +8,7 @@
 //
 //   node tools/studio-from-commit.ts [<commit>] [--trad <mapp>] [--ut <mapp>]
 //     <commit>   what is built (default main)
-//     --trad     the clean tree (default D:/dealer-scratch/tmp/huvudagent11/push-trad, the one in use; made once with
-//                git worktree add --detach <mapp> main)
+//     --trad     required: an existing clean worktree of this repository
 //     --ut       the folder swapped (default the main checkout's studio/out); a trial gives a folder of its own
 import {cpSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync} from 'node:fs';
 import path from 'node:path';
@@ -18,11 +17,10 @@ import {Stop, cleanAt, clock, commitOf, commonDirOf, exec, mainCheckout, needsCi
 import type {RunReceiptInput} from './evidence-store.ts';
 import {captureRunContext} from './evidence-context.ts';
 
-export const DEFAULT_TREE = 'D:/dealer-scratch/tmp/huvudagent11/push-trad';
 export type Options = {commit: string; tree: string; out?: string};
 
 export function parseArgs(argv: string[]): Options {
-  const options: Options = {commit: 'main', tree: DEFAULT_TREE};
+  const options: Options = {commit: 'main', tree: ''};
   const loose: string[] = [];
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -35,6 +33,7 @@ export function parseArgs(argv: string[]): Options {
   }
   if (loose.length > 1) throw new Stop('STOPP: högst en commit');
   if (loose[0]) options.commit = loose[0];
+  if (!options.tree) throw new Stop('STOPP: välj ett rent IDE-arbetsträd med --trad <mapp>; ingen disk eller arbetsmapp väljs automatiskt');
   return options;
 }
 
