@@ -126,9 +126,9 @@ const soundOf = (id: string) => ROOMS.find(r => r.id === id)?.sound ?? null;
 const remembered = (() => { try { return localStorage.getItem('dealer.room'); } catch { return null; } })();
 let room = ROOMS.find(r => r.id === (asked.room ?? query.get('room') ?? remembered))?.id ?? 'panorama';
 // The drawn cards and how the card in her hand is shown (cardsChoice in src/game-film.ts): the address's cards= and kort= first, then
-// the player's choice in the console's Miljö menu (remembered in the browser), then on. A look's preset has no say.
+// the saved scene preset, then the player's remembered choice, then on. A saved look must survive an old browser setting.
 const cardsMemory = (() => { try { return localStorage.getItem('dealer.cards'); } catch { return null; } })();
-const cardsNow = cardsChoice({address: (look?.keys as {cards?: boolean} | undefined)?.cards, kort: query.get('kort'), memory: cardsMemory, inHand: asked.cardInHand});
+const cardsNow = cardsChoice({address: (look?.keys as {cards?: boolean} | undefined)?.cards, preset: preset?.state.cards, kort: query.get('kort'), memory: cardsMemory, inHand: asked.cardInHand});
 scene.set({format: 'fill', room: room as never, blur: ROOMS.find(r => r.id === room)!.blur, tray: true, cards: true, pitch: Number(query.get('pitch') ?? FRAMING.wide.pitch), zoom: Number(query.get('zoom') ?? FRAMING.wide.zoom)});
 // The look over the game's own settings, before the first picture. A room of it that the menu does not offer (a built room
 // of the lab) is shown all the same, and the menu marks none. The table is built by now, so the room is changed with a cut,

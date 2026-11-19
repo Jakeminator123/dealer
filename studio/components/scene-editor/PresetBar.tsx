@@ -16,7 +16,7 @@ import { Eye, Plus, RotateCcw, Save, X } from "lucide-react";
 import { useState } from "react";
 import { asApiError } from "../../lib/api.ts";
 import { isSnapshot } from "../../lib/mode.ts";
-import { ABOUT_LIMIT, LABEL_LIMIT, isShipped, slotLabel, slotName, slotOf, slotToSave, slotsOf, slugOf } from "../../lib/scene-presets.ts";
+import { ABOUT_LIMIT, CASINO_PRESET, LABEL_LIMIT, isShipped, slotLabel, slotName, slotOf, slotToSave, slotsOf, slugOf } from "../../lib/scene-presets.ts";
 import { Button, Dialog, IconButton, Kbd, TextArea, TextField, Tooltip, cn, useToast } from "../ui";
 import type { Preset } from "./presetApi.ts";
 
@@ -83,7 +83,7 @@ export function PresetBar({
                       : from
                         ? "border-brass/35 border-dashed text-ink hover:bg-raised"
                         : "border-line-strong text-dim hover:border-[#3a4840] hover:text-ink",
-                    !p.shipped && canSave && "pr-7",
+                    !p.shipped && p.name !== CASINO_PRESET && canSave && "pr-7",
                   )}
                 >
                   {p.name === "basgrund" ? <span aria-hidden className="size-1.5 rounded-full bg-current opacity-70" /> : null}
@@ -91,7 +91,7 @@ export function PresetBar({
                   {from ? <span className="text-xs font-normal text-faint">· ändrad</span> : null}
                 </button>
               </Tooltip>
-              {!p.shipped && canSave ? (
+              {!p.shipped && p.name !== CASINO_PRESET && canSave ? (
                 <button
                   type="button"
                   aria-label={`Ta bort ${p.label}`}

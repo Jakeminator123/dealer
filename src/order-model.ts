@@ -271,6 +271,8 @@ export type Order = {
   title: string;
   /** One line in Jakob's words: what the order makes (summaryOf). */
   summary?: string;
+  /** Audited display-text corrections. Reconstructing each previous summary must reproduce its original order hash. */
+  summaryCorrections?: {before: string | null; orderSha256: string; at: string; reason: string}[];
   group?: { id: string; label: string } | null;
   dealer: string;
   kind: Kind;

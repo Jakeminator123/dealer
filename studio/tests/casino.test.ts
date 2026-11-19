@@ -47,11 +47,11 @@ test("Casino accepts supported playback choices and rejects unknown or out-of-ra
   assert.deepEqual(look.ignored, ["unknown"]);
   const scene = new URL(scenHref(look), "http://localhost");
   scene.searchParams.delete("lage");
-  assert.deepEqual(readAddress(scene.searchParams), {forval: "basgrund", patch: {}, ignored: []}, "game controls are not sent to a scene that does not implement them");
+  assert.deepEqual(readAddress(scene.searchParams), {forval: "casino", patch: {}, ignored: []}, "game controls are not sent to a scene that does not implement them");
 });
 
-test("the view's address: the preset, the keys, the table; basgrund and the Casino's own table when none is named", () => {
-  assert.deepEqual(readCasino(params("")), { forval: "basgrund", patch: {}, ignored: [], table: CASINO_TABLE });
+test("the view's address: the saved Casino preset and table when none is named", () => {
+  assert.deepEqual(readCasino(params("")), { forval: "casino", patch: {}, ignored: [], table: CASINO_TABLE });
   assert.deepEqual(readCasino(params("forval=levande&dust=0.8&sway=0&table=casino-k3x9qa")), { forval: "levande", patch: { dust: 0.8, sway: false }, ignored: [], table: "casino-k3x9qa" });
   // a table the lab server would refuse, an unknown word and a value out of range
   assert.deepEqual(readCasino(params("forval=rumsstudien&table=Mitt%20bord&glow=1&dust=4")), { forval: "rumsstudien", patch: {}, ignored: ["glow", "dust"], table: CASINO_TABLE });

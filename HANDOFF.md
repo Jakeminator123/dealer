@@ -11,7 +11,7 @@ Läs AGENTS.md, den här sidan och EN lägesfil för din bana. Ersätt inaktuell
 - Labbet är en vy, Bordet, där en film beställs längs en rak linje: steget och kortets plats, receptet ger resten.
 - Den tatuerade uppsättningen är hans förstahandsval, och ankare 2.3 gäller. Vägen från det finns (ett slutbildsankare,
   A3, per plats; beställt genom Bordet), men givarna till plats 4 och 1 fick hans Inte bra och ingången hans nej.
-- Kortplanen ritar verkliga kort genom en lins; spelet kan följa den bakom ett val som är av (`geometri=lins`).
+- Kortplan, spel och scen följer B-linsen. **Använd i Casino** sparar visningen; **Bred lins** är ett separat tillval.
 - Mobilkopian är publicerad på `1206c43` den 2026-11-19 efter Jakobs ja till sju filmer. Nätkontroll 19/19;
   åtkomsten är oförändrad. Fysisk telefon och ljud återstår ([spelet](docs/lage/spelet.md)).
 - Kontrollen före en push körs bara på datorn. Kontots tokengräns delas av alla sessioner: få underagenter.
@@ -20,14 +20,14 @@ Läs AGENTS.md, den här sidan och EN lägesfil för din bana. Ersätt inaktuell
 
 Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-18), med EN trovärdig giv först ([film](docs/lage/film.md)).
 
-1. Bevara Jakobs ändrade kortplan och oincheckade orderutkast. Läs nya anteckningar med `node tools/proof-notes.ts`.
+1. Jakobs sparade kortplan, domar och orderutkast ingår i avslutet. Läs anteckningar med `node tools/proof-notes.ts`.
    Arbeta i C:-projektet; [lokal rutin](tools/local-work.md): grenar, äldre träd och mediestädning.
-2. P4.C2 Cykel01 väljs i provet; ordinarie helgiv har egna målfilmer för 9/16 kort. Inget Primär-byte.
-   Lös övriga andrakort och synkontroll av hålkortet före kortförvalet ([kort](docs/lage/kort.md)).
+2. P4.C2 Cykel01 väljs i provet. Ordinarie spel återbrukar spelarnas C1 för C2/C3; egna filmer är nästa steg,
+   inte krav nu. Rundans 22 filmbehov täcks. Rundbyggarens P6 går via A2.2; DC3 är valfritt ([kort](docs/lage/kort.md)).
 3. Använd automatiska testkvitton och det återbyggbara SQLite-indexet ([evidens](tools/evidence.md)); inga medieblobs.
-4. Munproven är lokala jämförelser; inget byte i banken före Jakobs val i Beslut. Körarens kod finns nu i repot.
-5. Testa, pusha och verifiera fjärrens SHA. Sessionens tio GPT-meddelanden är förbrukade; färdiga granskningsfynd är
-   rättade. Fem Runway-filmer kostade 404 krediter; lokal Claude-MCP fungerar. Inget anrop eller KÖR pågår.
+4. Jakob har svarat ja till munbytet i Beslut; införandet återstår. Körarens kod finns i repot.
+5. D.C3 är redigerbart. Tre jämförelsefilmer: `paow-dc3-tre-geometrier-20261119`, 372 krediter, utanför banken.
+   Tre kort per plats: 9 egna givar, 14 återbruk, D.C3 utan bankfilm (valfritt). Se [kort](docs/lage/kort.md).
 6. Hålkort, native split och READY-C:s tvåkortsprov är kontrollerade inom sina avgränsade prov. Grepp, tempo,
    mask och hela rörelsen återstår ([film](docs/lage/film.md)).
 7. Mobilkopians tre kända fel är rättade och publicerade; underlag finns i spelets lägesfil.

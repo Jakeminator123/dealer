@@ -30,6 +30,8 @@ import {
   type Take,
   type Why,
 } from "../../src/clip-graph.ts";
+import { dealPose, hubChain } from "../../src/game-director.ts";
+import { verdictOf } from "./verdict.ts";
 import { TARGETS, toPixels, type PlacementPlan } from "../../src/placement-model.ts";
 import { labUrl } from "./lab.ts";
 import { edgeName, formatJakob, formatSeconds, nodeCode, nodeName, parseJakob, takeName } from "./names.ts";
@@ -176,14 +178,22 @@ const reference = (key: string, name: string, sub: string, film: ReferenceFilm):
  * The ready-made rounds, in the order of their chips: his favourite, seat 4 with two cards in V6's order (the bank's
  * films), every seat with the hole card, one per seat; then the references (isReference), listed apart.
  */
-export function readyRounds(): Round[] {
-  return [
+export function readyRounds(graph?: Graph | null): Round[] {
+  const rounds = [
     fromText("plats-4", "Plats 4", SEAT_FOUR),
     { ...fromText("plats-4-tva", "Plats 4 · två kort", V6_DEAL), sub: `${V6_DEAL} · bankens filmer` },
     fromSteps("alla", "Alla platser", plain(roundSequence({ seats: SEATS, reveal: true }))),
     ...SEATS.map((seat) => fromSteps(seat.toLowerCase(), seat, plain(roundSequence({ seats: [seat], dealer: false, cards: 1 })))),
     ...REFERENCE_FILMS.map((r) => reference(r.key, r.film.name, r.sub, r.film)),
   ];
+  return graph ? rounds.map((r) => {
+    if (isReference(r)) return r;
+    const steps = r.steps.flatMap((s) => playableRoute(graph, s));
+    // A one-seat example starting at rest goes straight to its alternate pose, without a redundant trip to READY.
+    if (r.steps[1]?.to !== 'IDLE' && steps[0]?.from === 'IDLE' && steps[0].to === 'READY' && !steps[0].take
+      && steps[1]?.from === 'READY' && steps[1].to === 'IDLE' && !steps[1].take) steps.splice(0, 2);
+    return { ...r, ...fromSteps(r.key, r.name, steps) };
+  }) : rounds;
 }
 
 /** A finished film rather than steps of the bank. */
@@ -270,14 +280,38 @@ export const followers = (graph: Pick<Graph, "edges"> | null, from: string): str
  * A node that can follow: the step to it and whether it plays. plays: the round player has a film for it, and take and why
  * (WHY_LABEL) say which and why; otherwise gap says why not (NO_FILM).
  */
-export type NextStep = { node: string; step: Step; plays: boolean; gap: Gap | null; take: Take | null; why: Why };
+export type NextStep = { node: string; step: Step; route: Step[]; via: string | null; plays: boolean; gap: Gap | null; take: Take | null; why: Why };
+
+/** The game's established alternate pose and return via rest, shown as real steps instead of a misleading missing film. */
+export function playableRoute(graph: Graph, step: Step): Step[] {
+  const direct = resolveRound(graph, [step], { holeCardDown: true })[0];
+  const edge = parseEdge(`${step.from}>${step.to}`);
+  if (step.take || !edge?.target) return [step];
+  const hub = dealPose(graph.dealer, edge.target);
+  const approved = (segments: Segment[]) => segments.every((s) => s.video && !s.gap && s.take && ['godkand', 'variant'].includes(verdictOf(s.take).verdict));
+  const chain = hub !== 'READY' ? hubChain(graph, hub, edge.target) : null;
+  // A return made after a different deal cannot replace the return from the established alternate pose.
+  const alternateReturn = edge.kind === 'RETURN' && step.to !== hub && chain && approved(chain);
+  if (!alternateReturn && direct?.video && !direct.gap) return [step];
+  let route: Step[] | null = null;
+  if (edge.kind === 'DEAL' && step.from === 'READY' && hub !== 'READY') {
+    if (chain && approved(chain)) route = [{from: 'READY', to: 'IDLE'}, {from: 'IDLE', to: hub}, {from: hub, to: step.to}];
+  } else if (edge.kind === 'RETURN' && step.to === 'IDLE') {
+    route = [{from: step.from, to: hub}, {from: hub, to: 'IDLE'}];
+  } else if (edge.kind === 'RETURN' && step.to === 'READY' && hub !== 'READY') {
+    route = [{from: step.from, to: hub}, {from: hub, to: 'IDLE'}, {from: 'IDLE', to: 'READY'}];
+  }
+  return route && approved(resolveRound(graph, route, {holeCardDown: true})) ? route : [step];
+}
 
 export function nextSteps(graph: Graph, from: string): NextStep[] {
   return followers(graph, from).map((to) => {
     const step = { from, to };
-    const [seg] = resolveRound(graph, [step], { holeCardDown: true });
-    const plays = !!seg.take && !seg.gap;
-    return { node: to, step, plays, gap: plays ? null : (seg.gap ?? "MISSING"), take: plays ? seg.take : null, why: seg.why };
+    const route = playableRoute(graph, step), segments = resolveRound(graph, route, { holeCardDown: true });
+    const seg = segments.at(-1)!, plays = segments.every((s) => !!s.take && !s.gap);
+    const shown = segments.find((s) => s.kind === 'DEAL') ?? segments[0];
+    const via = route.length > 1 ? (shown.kind === 'DEAL' ? shown.from : route[0].to) : null;
+    return { node: to, step, route, via, plays, gap: plays ? null : (seg.gap ?? "MISSING"), take: plays ? shown.take : null, why: shown.why };
   });
 }
 

@@ -11,7 +11,7 @@
 // The address is Scen's: the round (?runda=<his notation>, ?kant=<edge>&tagning=<take> to play a take where it belongs)
 // and the look (?forval=levande&dust=0.8, components/scene-editor/address.ts), written beside Bordet's own words (lage,
 // plats). Without a round in the address it plays the chosen card's deal and back from the anchor the game deals it from
-// ("A2.1 - P4C1 - A2.1"; Paow's seat 6 "A2.2 - P6C1 - A2.2", lib/bordet.ts roundFor); without a look, Basgrund, what the
+// ("A2.1 - P4C1 - A2.1"; Paow's seat 6 "A2.2 - P6C1 - A2.2", lib/bordet.ts roundFor); without a look, the saved Casino preset, what the
 // game shows (Jakob 2026-11-17: "Spela i casino bör rimligtvis vara samma som i casino, alltså som det är i runtime"), so
 // "Spela i Casino" opens what the rail's Casino opens until a key
 // is changed. The round plays the chosen dealer's films (lib/bank.ts); a step without a film is a gap, shown as one.
@@ -30,16 +30,16 @@ import { BANK_DEALER, filmsLine, openingRound, ownSteps, withDealer } from "../.
 import { isSnapshot } from "../../lib/mode.ts";
 import { formatJakob } from "../../lib/names.ts";
 import { addressOf, contextRound, isReference, no3d, readAddress, readyRounds, roundFacts, roundFromText, roundParts, viewFor, type Round } from "../../lib/rounds.ts";
-import { BASE } from "../../lib/scene-presets.ts";
+import { CASINO_PRESET } from "../../lib/scene-presets.ts";
 import { readSceneCardTrial, withSceneCardTrial } from "../../lib/scene-card-trial.ts";
 import { RoundPicker, RoundStrip } from "../round";
 import { joinParts, readLook, roundPart, useSceneEditor } from "../scene-editor";
 import { Stage, createClock, type StageHandle } from "../stage";
-import { ErrorState, IconButton, Skeleton, Tooltip, buttonClasses, cn, useToast } from "../ui";
+import { Button, ErrorState, IconButton, Skeleton, Tooltip, buttonClasses, cn, useToast } from "../ui";
 
 export type SceneKind = "scen" | "rafilm" | "efterarbete";
 
-/** Scen's words of an address (the round's and the look's), without Bordet's own; a look that names none is Basgrund here. */
+/** Scen's words of an address (the round's and the look's), without Bordet's own. */
 function scenePart(all: URLSearchParams): URLSearchParams {
   const p = new URLSearchParams();
   all.forEach((value, key) => {
@@ -56,8 +56,8 @@ export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: Scene
   const params = useMemo(() => new URLSearchParams(query), [query]);
   const toast = useToast();
   const { graph, status, error, reload, dealer, dealers, owners } = useBank();
-  const rounds = useMemo(() => readyRounds(), []);
-  const lookOf = (p: URLSearchParams) => readLook([...p.keys()].some((k) => k !== "runda" && k !== "kant" && k !== "tagning" && k !== "robot") ? p : new URLSearchParams({ forval: BASE }));
+  const rounds = useMemo(() => readyRounds(graph), [graph]);
+  const lookOf = (p: URLSearchParams) => readLook([...p.keys()].some((k) => k !== "runda" && k !== "kant" && k !== "tagning" && k !== "robot") ? p : new URLSearchParams({ forval: CASINO_PRESET }));
   const [address, setAddress] = useState(() => readAddress(params));
   // The round's words of the address as they stand, until a round is chosen here.
   const [roundText, setRoundText] = useState(() => new URLSearchParams(roundPart(params)).toString());
@@ -159,10 +159,24 @@ export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: Scene
             </span>
           ) : null}
           <div className="ml-auto flex shrink-0 items-center gap-1.5">
+            {kind !== "rafilm" && (
+              <div role="group" aria-label="Bordsperspektiv" className="flex items-center gap-0.5 rounded-md border border-line p-0.5">
+                {[["lins", "Standard"], ["kontrakt", "Bred lins"]].map(([word, label]) => (
+                  <Link key={word} href={withGeometry(`/bordet/?${searchText}`, word)} aria-current={(geometri === "kontrakt" ? "kontrakt" : "lins") === word ? "true" : undefined}
+                    title={word === "lins" ? "Gemensam geometri för kortplan, beställningar och Casino." : "Tidigare, bredare perspektiv med mer ovala ringar. Ett visningsalternativ; ändrar inte Casinos sparade grund."}
+                    className={buttonClasses({variant: (geometri === "kontrakt" ? "kontrakt" : "lins") === word ? "secondary" : "quiet", size: "sm"})}>{label}</Link>
+                ))}
+              </div>
+            )}
+            {!isSnapshot && kind !== "rafilm" && (
+              <Button size="sm" disabled={!editor.ready || editor.savingCasino || geometri === "kontrakt"} loading={editor.savingCasino} onClick={() => void editor.useInCasino()} title={geometri === "kontrakt" ? "Bred lins är ett separat visningsalternativ. Välj Standard för att spara Casinos gemensamma grund; Prova i Casino visar alternativet tillfälligt." : "Spara hela den här visningen som Casinos förval. Gäller även nästa gång du öppnar Casino."}>
+                Använd i Casino
+              </Button>
+            )}
             <Tooltip content="Spelet med spelmotorn och marker, i den här looken">
               <Link href={withGeometry(editor.casino, geometri)} className={buttonClasses({ variant: "secondary", size: "sm" })}>
                 <Spade />
-                Spela i Casino
+                Prova i Casino
               </Link>
             </Tooltip>
             <IconButton label="Kopiera länken: samma runda och look" icon={<Copy />} variant="quiet" size="sm" onClick={copyLink} />

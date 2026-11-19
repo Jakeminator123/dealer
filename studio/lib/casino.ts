@@ -5,7 +5,7 @@
 // Pure: no DOM, no network; tests in studio/tests/casino.test.ts.
 import type { SceneState } from "../../src/scene3d-view.ts";
 import { SCENE_KEYS, encodeValue } from "./scene-keys.ts";
-import { readAddress } from "./scene-presets.ts";
+import { CASINO_PRESET, readAddress } from "./scene-presets.ts";
 import { GEOMETRY_WORD, GEOMETRY_WORDS } from "../../src/card-plan.ts";
 
 /** A table name as the lab server takes it (tools/preview.ts tableName): one game session per name. */
@@ -38,6 +38,7 @@ export function readCasino(params: Params, rooms?: readonly string[]): CasinoLoo
   params.forEach((value, key) => {
     if (key !== "table" && key !== "robot" && key !== GEOMETRY_WORD && !Object.hasOwn(PLAYBACK_WORDS, key)) keys.append(key, value);
   });
+  if (!keys.has("forval")) keys.set("forval", CASINO_PRESET);
   const { forval, patch, ignored } = readAddress(keys, rooms);
   const asked = params.get("table") ?? "", geometri = readGeometryWord(params);
   const playback: CasinoPlayback = {};

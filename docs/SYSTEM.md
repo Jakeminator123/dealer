@@ -231,10 +231,9 @@ Spelet med flera dealers (2026-11-13):
     var i rutorna före.
   - Ett kort som ligger sedan en tidigare film ritas i samma storlek som det givna kortet vilade i (Kortens storlek
     gånger kontraktets kort, på planens plats), så att det inte krymper eller växer när nästa film börjar.
-  - **En geometri för bordet, bakom ett val** (`TABLE_GEOMETRY` i `src/card-plan.ts`; adressordet `geometri=lins` eller
-    `geometri=kontrakt` på `game.html` och på en sida som visar scenen). Förvalet är `contract`, dagens bild: spelets
-    liggande kort läggs med planens äldre plan (`flatQuad`), det ritade kortet vilar som kontraktets kort gånger Kortens
-    storlek (`restingQuad`), och scenens filmkamera är kontraktets (886 px, k = 2), en annan kamera än kortplanens lins.
+  - **En geometri för bordet, med historiska jämförelser** (`TABLE_GEOMETRY` i `src/card-plan.ts`; adressordet `geometri=lins` eller
+    `geometri=kontrakt` på `game.html` och på en sida som visar scenen). Förvalet är nu `lens`, valt efter prov B.
+    `contract` behålls uttryckligt för historiska referenser och jämförelser (äldre `flatQuad` och kamera, 886 px, k = 2).
     Med `lens` följer alla tre kortplanens regel och lins:
     - `planCardAt` (`src/card-plan.ts`): ett verkligt kort, 63 × 88 mm, genom `TABLE_LENS` i planens form. Samma regel
       för planens platser (`planCardQuad`) och för platserna spelet räknar fram (`src/game-table.ts`: tredje kort och
@@ -273,7 +272,9 @@ Spelet med flera dealers (2026-11-13):
     - Casinot bär `geometri` vidare till `game.html` i ramen (`studio/lib/casino.ts`).
     Oberoende av valet: ett kort som spelet inte har någon post för visar baksidan, aldrig labbets valda kort
     (`cardFace` i `src/card-overlay.ts`, `dealt`).
-    **När förvalet byts** (en rad, `TABLE_GEOMETRY`) blir detta över och tas bort: grenen `contract` i `createLayout`
+    **Historiska jämförelser behålls uttryckligen.** Scens val **Standard / Bred lins** visar B respektive äldre
+    perspektiv; Bred lins kan provas tillfälligt i Casino men skriver inte dess sparade grund. Gamla prov och V6
+    behöver fortfarande `geometri=kontrakt`. Innan den vägen kan avvecklas behöver följande ersättas: grenen `contract` i `createLayout`
     (`src/game-table.ts`, med importen av `flatQuad` och `quad`); `cameraFromContract` och `DEALER_LENS_ESTIMATE` i
     scenens `filmCamera` med nyckeln `lens` (`src/scene3d-view.ts`; `cameraFromContract` själv behålls så länge
     Modeller, `src/props-stage.ts`, och `tools/scene-material.ts` läser den); `viewUnder`, när spelets inramning

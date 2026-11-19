@@ -77,8 +77,10 @@ behöver veta och namnger högst tre filer eller avsnitt att läsa.
 ## Labbservern
 
 - En adress, `http://127.0.0.1:4319` (`START.cmd`, `STATUS.cmd`, `STOPP.cmd`), och en flik i Jakobs webbläsare.
-- Visa en sida för Jakob med `node tools/preview.ts --open "<sida>"`, som återanvänder den öppna fliken; öppna aldrig
-  en labbadress på annat sätt (äldre sessioner lämnade honom med ett tjugotal flikar som ingen agent kan stänga).
+- Återanvänd Codex webview; visar inventeringen ingen styrbar labbflik, öppna exakt en och behåll flik-ID.
+  I vanlig webbläsare används `node tools/preview.ts --open "<sida>"`.
+- Godkänd lokal testning omfattar omladdning, navigering och Dealer-skärmbilder utan upprepade frågor.
+  Systemets säkerhetsgranskning och kraven för externa överföringar och betalda jobb gäller fortsatt.
 - Före en länk till Jakob: `node tools/preview.ts --ensure`, så att servern går.
 - Stoppa servern bara med `STOPP.cmd` eller `node tools/preview.ts --stop`, aldrig via processnamn eller port, och rör
   inte andra projekts servrar.

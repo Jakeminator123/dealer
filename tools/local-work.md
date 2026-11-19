@@ -70,6 +70,11 @@ Nätkopian har inte denna lokala loggning; publicering och extern insamling är 
 
 ## Radera oanvänt material
 
+Efter varje avslutad filmbeställning: kör `npm run media:status`, kontrollera roller och referenser, rensa egna
+återskapbara mellanresultat och kör rapporten igen. Bevara källfilm, styrbilder, orderkvitto och valt granskningsbevis.
+Tillfälliga kopior ligger i `.runtime/<uppgift>/`; färdiga filmer och användbara prov ligger i `assets/` med en roll.
+Rapporten kan köras cykliskt utan radering; det finns ingen åldersregel som ensam får radera unika filmer.
+
 `media-audit.ts` visar användning men är inte ensam ett raderingstillstånd: exempelvis en gammal Prov-mapp
 kan fortfarande visas och ha anteckningar. Kontrollera spelbank, scen, Material, Prov/Beslut, användardomar,
 beställningar, referenser och pågående arbete. V6 och nu använda original skyddas. Spara skälet och exakta sökvägar.

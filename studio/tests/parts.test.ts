@@ -50,7 +50,7 @@ test("a pinned film carry trial uses the plan and keeps the same source handoff 
   const plan = defaultPlan(), parts = withSceneCardTrial(source, segments, plan, "contract", words!);
   const [,, deal, back] = parts;
   assert.deepEqual([deal.start, deal.end, back.start, back.end], [0, 65, 65, 97]);
-  assert.deepEqual(deal.cards?.land, createLayout(plan).quad({ owner: "P", seat: 4, hand: 0, hands: 1, index: 0 }));
+  assert.deepEqual(deal.cards?.land, createLayout(plan, {geometry: "contract"}).quad({ owner: "P", seat: 4, hand: 0, hands: 1, index: 0 }));
   assert.deepEqual([deal.cards?.carry, deal.cards?.back, deal.cards?.face], ["film", "dark", "paper"]);
   assert.equal(back.cards?.returning, true);
   assert.equal(back.cards?.filmContinuesDeal, true);

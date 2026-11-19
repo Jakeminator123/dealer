@@ -74,6 +74,25 @@ async function input(change: Partial<ProductionInput> = {}): Promise<ProductionI
 }
 const row = (list: ReturnType<typeof productionList>, edge: string) => list.rows.find((r) => r.edge === edge)!;
 
+test('a complete return via the shoe replaces the missing direct return in the round requirements', async () => {
+  const data = bank();
+  const extra = [job('hole-deal', 'READY', 'D.C2'), job('hole-back', 'D.C2', 'READY'), job('exit', 'READY', 'IDLE')];
+  data.jobs.push(...extra);
+  for (const j of extra) {
+    data.motions[j.id] = { source: { frames: 168, fps: 24, sha256: 'a'.repeat(64) }, review: accepted } as BankData['motions'][string];
+    data.media[j.id] = { video: `assets/motions/${j.id}/source.mp4` };
+  }
+  const list = () => productionList({ dealer: { id: 'paow', name: 'Paow' }, graph: buildGraph(data, { dealer: 'paow' }), bank: data as never, methods: METHODS, entries: [], orders: [] });
+  assert.equal(row(list(), 'D.C2>IDLE').needed, false);
+  assert.equal(row(list(), 'D.C2>READY').needed, true);
+  assert.equal(row(list(), 'READY>IDLE').needed, true);
+  delete data.media.exit;
+  assert.equal(row(list(), 'D.C2>IDLE').needed, true, 'one missing leg must not be reported as a complete route');
+  data.media.exit = { video: 'assets/motions/exit/source.mp4' };
+  data.motions.exit.review = { decision: 'PENDING', inbox: true } as never;
+  assert.equal(row(list(), 'D.C2>IDLE').needed, true, 'an unjudged exit must not count as playable');
+});
+
 test('every step of the graph, a round\'s first, each with one state in Jakob\'s words', async () => {
   const list = productionList(await input());
   assert.equal(list.rows.length, 33, 'the 33 films Karta counts');

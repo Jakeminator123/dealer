@@ -93,6 +93,9 @@ test("the ten places: place n is the preset profilval-<n>, what Spara som… mak
 
 test("which preset a state is, and what differs", () => {
   assert.equal(matchPreset(levande, DEFAULTS, SHIPPED)?.name, "levande");
+  const casino = { ...SHIPPED[0], name: "casino" };
+  assert.equal(matchPreset(basgrund, DEFAULTS, [...SHIPPED, casino], "casino")?.name, "casino", "keep the chosen preset when two looks match");
+  assert.equal(matchPreset(levande, DEFAULTS, [...SHIPPED, casino], "casino")?.name, "levande", "the chosen name cannot hide a different look");
   const changed: SceneState = { ...levande, dust: 0.8 };
   assert.equal(matchPreset(changed, DEFAULTS, SHIPPED), null);
   assert.deepEqual(differences(changed, levande), ["dust"]);

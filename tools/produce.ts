@@ -161,13 +161,27 @@ export function landingHolding(entries: readonly Entry[], target: string | null)
 }
 
 /** The films a round plays, by the film each step plays in seat mode, and the rest between (the game plays it between deals). */
-export function roundFilms(graph: Graph): string[] {
+export function roundFilms(graph: Graph, hubs: Hubs = {}): string[] {
   const films: string[] = [];
   const add = (id: string) => { if (!films.includes(id)) films.push(id); };
+  const available = (id: string) => {
+    if (!graph.edge[id]) return false;
+    const now = playing(graph, id, hubs);
+    const verdict = now.take ? verdictOf(now.take).verdict : null;
+    return !!now.take && !now.gap && (verdict === 'godkand' || verdict === 'variant');
+  };
   const seq = roundSequence({ seats: SEATS, reveal: true });
   add(seq[0].id);
   add('IDLE>IDLE');
-  for (const e of seq.slice(1)) add(graph.edge[e.base]?.shares ?? e.base);
+  for (const e of seq.slice(1)) {
+    const id = graph.edge[e.base]?.shares ?? e.base, edge = graph.edge[id];
+    // planBeats returns via the shoe when a direct return to rest is missing. Count that complete route;
+    // keep the direct gap visible when either leg is absent or unjudged, rather than inventing coverage.
+    const via = edge?.kind === 'RETURN' && edge.target && edge.to === 'IDLE' ? `${edge.from}>READY` : null;
+    if (via && !available(id) && available(via) && available('READY>IDLE')) {
+      add(via); add('READY>IDLE');
+    } else add(id);
+  }
   return films;
 }
 
@@ -192,7 +206,7 @@ export function draftOf(input: Pick<ProductionInput, 'dealer' | 'createdBy'>, ro
 /** Every step of the dealer's graph with what exists, what is in flight, what it needs, its method and its state. Pure. */
 export function productionList(input: ProductionInput): Production {
   const { graph, entries, dealer } = input;
-  const needed = new Set(roundFilms(graph));
+  const needed = new Set(roundFilms(graph, input.hubs));
   const seats = input.seats ?? {};
   const mine = input.orders.filter((o) => o.order.dealer === dealer.id && o.order.status !== 'AVBRUTEN');
   const flightOf = (o: OrderLike): InFlight => ({ id: o.order.id, title: o.order.title, shown: o.shown, approved: !!o.order.approval, delivered: DELIVERED.includes(o.shown) });
@@ -293,7 +307,8 @@ export function productionList(input: ProductionInput): Production {
   };
   const notes = [
     'Dealerns tredje kort (D.C3) är valfritt och räknas inte bland stegen: READY>D.C3 och D.C3>IDLE.',
-    'En plats andra kort spelar första kortets filmer med det ritade kortet flyttat, så det behöver ingen egen film.',
+    'En spelares andra, tredje och senare kort återbrukar första kortets filmer med kortet flyttat. Egna filmer är ett senare steg, inget krav nu.',
+    'En saknad direktretur till vila kräver ingen ny film när både returen till skon och utgången till vila är spelbara. Kartans alla filmkanter är fler än rundans nödvändiga filmer.',
   ];
   if (rows.some((r) => r.hub)) notes.push(`En plats som ges via ett annat ankare vid skon spelas i rundan med vila före och efter (src/game-director.ts SEAT_HUB): ${rows.filter((r) => r.hub && r.kind === 'DEAL').map((r) => `${cardWords(r.target!)} via ${hubAnchor(r.hub!)}`).join(', ')}.`);
   return { dealer, rows, anchors, landings, counts, karta: bankSummary(graph, input.hubs), notes };

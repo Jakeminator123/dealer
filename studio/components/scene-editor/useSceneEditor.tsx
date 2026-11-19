@@ -20,7 +20,7 @@ import { casinoAddress } from "../../lib/casino.ts";
 import { isSnapshot } from "../../lib/mode.ts";
 import { placesOf } from "../../lib/rounds.ts";
 import { BUILT_BLUR, sameValue, type GroupId, type SceneKey } from "../../lib/scene-keys.ts";
-import { BASE, SHIPPED, differences, effective, initialSceneState, isShipped, matchPreset, patchOf, scenePageAddress, slotLabel, slotOf } from "../../lib/scene-presets.ts";
+import { BASE, CASINO_PRESET, SHIPPED, differences, effective, initialSceneState, isShipped, matchPreset, patchOf, scenePageAddress, slotLabel, slotOf } from "../../lib/scene-presets.ts";
 import type { Scene } from "../stage";
 import { SegmentedControl, Skeleton, Switch, useToast } from "../ui";
 import { askedPart, lookPart, type LookAsk } from "./address.ts";
@@ -106,7 +106,7 @@ export function useSceneEditor(firstLook: () => LookAsk) {
   const initial = initialSceneState({ asked, current, comparison: comparing ? baseline : null, needApply });
   const originState = useMemo(() => (defaults ? effective(defaults, (presetOf(origin) ?? presetOf(BASE))?.state ?? {}) : null), [defaults, presetOf, origin]);
   const differ = useMemo(() => new Set(current && baseline ? differences(current, baseline) : []), [current, baseline]);
-  const active = current && defaults ? (matchPreset(current, defaults, presets)?.name ?? null) : null;
+  const active = current && defaults ? (matchPreset(current, defaults, presets, origin)?.name ?? null) : null;
   const changedFromOrigin = !!(current && originState && differences(current, originState).length);
 
   // The look the address asks for, once the scene is there and the preset it names is known.
@@ -229,6 +229,7 @@ export function useSceneEditor(firstLook: () => LookAsk) {
 
   // ── saving ──
   const canSave = !isSnapshot;
+  const [savingCasino, setSavingCasino] = useState(false);
   // A named preset or a place (name profilval-<n>): revision is the one last read when the name exists, null for a new one.
   const saveAs = async (name: string, label: string, about: string, revision: string | null) => {
     if (!current || !defaults) return;
@@ -244,6 +245,18 @@ export function useSceneEditor(firstLook: () => LookAsk) {
     toast(place ? { tone: "ok", title: `Sparat i ${slotLabel(place)}` } : { tone: "ok", title: `Sparat som ${label}`, detail: "Finns bland förvalen; adressen pekar på det." });
   };
   // A named preset or a place ("Töm"), against the revision last read.
+  const useInCasino = async () => {
+    if (!canSave || savingCasino || !presetsRead || !current || !defaults) return;
+    setSavingCasino(true);
+    try {
+      await saveAs(CASINO_PRESET, "Casino", "Casinos sparade visning, vald i Scen & bord.", presetOf(CASINO_PRESET)?.revision ?? null);
+      toast({ tone: "ok", title: "Casino använder den här visningen", detail: "Sparat för nästa gång du öppnar Casino." });
+    } catch (error) {
+      toast({ tone: "bad", title: "Casino-valet kunde inte sparas", detail: asApiError(error).message });
+    } finally {
+      setSavingCasino(false);
+    }
+  };
   const remove = async (p: Preset) => {
     if (!p.revision) return;
     try {
@@ -406,6 +419,8 @@ export function useSceneEditor(firstLook: () => LookAsk) {
     lookText: settled ? lookPart(forval, current!, originState!) : askedPart(asked),
     /** The Casino view with this look. */
     casino: casinoAddress(forval, keys),
+    savingCasino,
+    useInCasino,
     /** The same look on the 3D page (scene3d.html). */
     scenePage: current && defaults ? scenePageAddress(current, defaults, { shoe: want.shoe }) : null,
     /** Card places from Jakob's plan for the round; read: the plan has been read, or could not be. */

@@ -21,6 +21,15 @@ async function temp(t: {after(fn: () => Promise<void>): void}) {
 const fails = (status: number) => (error: unknown) => (error as {status?: number}).status === status;
 const mine = {label: 'Kväll i skogen', about: 'Prov', state: {room: 'skog', dust: 0.8, felt: 'vin', cards: true}};
 
+test('Casino is an editable saved look, protected against deletion and stale writes', async t => {
+  const store = scenePresetStore(await temp(t));
+  const first = await store.save('casino', mine, undefined);
+  const second = await store.save('casino', {...mine, state:{...mine.state,cards:false}}, first.preset.revision);
+  assert.equal((await store.load('casino')).preset.state.cards,false);
+  await assert.rejects(store.save('casino',mine,first.preset.revision),fails(409));
+  await assert.rejects(store.remove('casino',second.preset.revision),fails(403));
+});
+
 test('the three shipped presets: in the checkout, read-only, and exactly what the brief says', async () => {
   const store = scenePresetStore(process.cwd()), {presets, problems} = await store.list();
   assert.deepEqual(problems, []);

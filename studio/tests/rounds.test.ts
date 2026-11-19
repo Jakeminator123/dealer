@@ -26,6 +26,7 @@ import {
   lastNode,
   matchReady,
   nextSteps,
+  playableRoute,
   no3d,
   nodeOf,
   ownRound,
@@ -103,6 +104,32 @@ const bank: BankData = {
   media: Object.fromEntries(ids.map((id) => [id, { video: video(id) }])),
 };
 const graph = buildGraph(bank);
+
+test('P6 in the builder and examples uses the established A2.2 route, including the shared second card', () => {
+  const edges = [['IDLE', 'READY'], ['READY', 'IDLE'], ['IDLE', 'READY-B'], ['READY-B', 'P6.C1'], ['P6.C1', 'READY-B'], ['READY-B', 'IDLE'], ['P6.C1', 'READY']];
+  const jobs = edges.map(([from, to], i) => job(`paow-route-${i}`, '', from, to, {dealer: 'paow'}));
+  const data: BankData = {
+    jobs,
+    motions: Object.fromEntries(jobs.map((j) => [j.id, {source: {frames: 120, fps: 24}, review: {decision: 'ACCEPTED', userAccepted: true}}])),
+    media: Object.fromEntries(jobs.map((j) => [j.id, {video: video(j.id)}])),
+  };
+  const paow = buildGraph(data, {dealer: 'paow'});
+  for (const card of ['P6.C1', 'P6.C2']) {
+    const next = nextSteps(paow, 'READY').find((n) => n.node === card)!;
+    assert.equal(next.plays, true);
+    assert.equal(next.via, 'READY-B');
+    assert.deepEqual(next.route, [{from: 'READY', to: 'IDLE'}, {from: 'IDLE', to: 'READY-B'}, {from: 'READY-B', to: card}]);
+    assert.ok(resolveRound(paow, next.route).every((s) => s.video && !s.gap));
+  }
+  const six = readyRounds(paow).find((r) => r.name === 'P6')!;
+  assert.equal(six.steps.length, 4, 'rest to A2.2, deal, return, rest; no redundant trip to A2.1');
+  assert.ok(six.steps.some((s) => s.from === 'READY-B' && s.to === 'P6.C1'));
+  assert.ok(resolveRound(paow, six.steps).every((s) => s.video && !s.gap));
+  assert.deepEqual(playableRoute(paow, {from: 'P6.C1', to: 'READY'}), [{from: 'P6.C1', to: 'READY-B'}, {from: 'READY-B', to: 'IDLE'}, {from: 'IDLE', to: 'READY'}], 'return through the same pose as the deal, even when an older direct return exists');
+  assert.deepEqual(playableRoute(paow, {from: 'READY', to: 'D.C3'}), [{from: 'READY', to: 'D.C3'}], 'a missing dealer film stays missing');
+  delete data.media!['paow-route-5'];
+  assert.equal(nextSteps(buildGraph(data, {dealer: 'paow'}), 'READY').find((n) => n.node === 'P6.C1')!.plays, false, 'do not offer an incomplete alternate chain');
+});
 
 test("a take in its context: a deal with the return that continues it", () => {
   // deal 02 is continued only by the return to A1, so the pair goes there and the bank picks that return

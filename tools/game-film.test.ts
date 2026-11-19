@@ -449,6 +449,10 @@ test('who decides the drawn cards: the address, then the player\'s own menu, the
   // the address (a link, a recording) wins over what a browser remembers, both ways
   assert.equal(cardsChoice({address: true, memory: 'off'}).cards, true);
   assert.equal(cardsChoice({address: false, memory: 'on'}).cards, false);
+  assert.equal(cardsChoice({preset: false, memory: 'on'}).cards, false, 'the saved scene overrides stale browser memory');
+  assert.equal(cardsChoice({preset: true, memory: 'off'}).cards, true);
+  assert.equal(cardsChoice({address: false, preset: true}).cards, false, 'an explicit address still wins');
+  assert.equal(cardsChoice({kort: 'liggande', preset: false}).cards, true, 'an explicit playback word still wins');
   // nothing remembered: on
   assert.equal(cardsChoice({}).cards, true); assert.equal(cardsChoice({memory: 'on'}).cards, true);
   // how the card in her hand is shown is the address's kort word alone (and a kort word means the cards are on). Without one it is

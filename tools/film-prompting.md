@@ -85,7 +85,7 @@ rörelsen beskrivs bara av texten som skickas (Jakob 2026-11-17).
 |---|---|---|
 | Första bild | Steget: ankaret det börjar på (1, 2.1, 2.2 eller 2.3), det som gäller i Material; en retur börjar på platsens landningsbild | Hel verklig ruta i bankens format, samma grönt, sko och ton som sista bilden |
 | Sista bild | Receptets `lastPicture`. En giv bara dit slutar på PLATSENS EGEN slutbild (`seatEndOf` i `src/order-model.ts`): platsens landningsbild där en gäller, annars snittrutan, sista rutan i given i dealerns egen tur och retur från samma ankare till platsen, vars retur Jakob har godkänt rakt och som är lagd med samma hand (`cutFrameOf`; lagret tar rutan ur filmen, prövar att kortet ligger på planens och sätter tillbaka skon ur ankare 1 om fönstrets kort är tryckt; den nya given bär `endsOn`, och den returen följer den). En plats med ingetdera har ingen slutbild och kan inte beställas bara dit; en plats bild står aldrig för en annan plats. Övriga steg: ankaret de slutar på; ett undantag tur och retur: första bilden plus kortet där planen säger | Exakt samma kort som första bilden plus det enda som delas ut |
-| Mellanbild | Ingen | Kling 4 via Runway placerar den inte i tiden (räknas som referensbild); b1b och b4 läste extra bilder som start, slut eller följd (V). Gör mellanläget till ett eget ankare i stället |
+| Mellanbild | Ingen i vårt nuvarande MCP | Extra referensbild är inte en tidsatt mellanbild; b1b och b4 läste extra bilder som start, slut eller följd (V). Runways API för `kling_4` har nu uttryckliga mellanbilder (3.8); de kräver ett eget kontrollerat prov. |
 | Referensfilm | Receptets regel (`referenceByRule` i `src/order-methods.ts`, det enda stället som väljer): dockans renderade film till platsen först (`data/rendered-references.json`), annars en film ur banken av samma steg till samma plats | Bara `kling-4`; obruten, 3–30 s, samma kortföljd och samma plats som sista bilden, rakt godkänd av Jakob, lagd med samma hand, och för en giv bara dit given ensam (en tagning ur en tur och retur skickar hela filmen, som slutar vid skon); aldrig en arkiverad tagning; ytterplatserna tar bara dockans film; meningen `SAY.reference` ("video 1"). Den väljs också efter vad den visar: samma kontroll som en levererad giv körs på den (`checkReference` i `src/deal-check.ts`), och en film där kortet står på kant före vändningen eller är större än ett verkligt kort erbjuds inte först (givprov 2B) |
 | Text | Steg, plats; sidan ur planen; handen ur receptet (handen vid skon hela vägen, som proven som höll; planens handbyte för ett kort är ett undantag som måste sägas, eftersom handbytet föll i båda sina prov och ingen referensfilm eller slutbild visar det); vändningen ur receptet (ingen väljer den: Jakob 2026-11-18, "SE BARA TILL ATT ALLA VRIDNINGAR BLIR BRA") | Skelettet nedan |
 | Modell, längd | Receptet. Längden: med referensfilm filmens egen längd i hela sekunder (texten säger "with the same timing"), annars receptets; en giv bara dit 3 s, det kortaste Kling 4 tar (3–30 s; WAN 3 2–30 s). Den uppmätta riktiga dealern lägger ett kort var 0,75–0,9 s | Tabellen nedan |
@@ -290,6 +290,13 @@ styr tillåtna kombinationer; färsk `whoami` och verktygsschemat styr vad vår 
 Ändra en sak mot en känd giv. För ett tidsprov jämför kort och lång **helgiv inklusive retur** med samma mål och
 underlag. P6/P7 har både godkända och underkända sjusekundersprov: lång tid är en hypotes om extrarörelser, inte en
 fastställd ensam orsak. Mät grepp, kantvändning, kontakt, släpp och skarv enligt `film-review.md`.
+
+**Kort rörelse, stilla slut.** I ett nytt tidsprov kan prompten ange att hela rörelsen inklusive returen når
+slutankaret tidigt och därefter håller samma pose. Ändra inte receptet för befintliga order. `film-after.ts` föreslår
+en kortning i `after.json.stillAnchorTail` bara om minst 0,4 s i slutet ligger inom två färgsteg per kanal från både
+slutankaret och den första stilla rutan. Hela bilden jämförs, så en rörlig fingertopp inte döljs i ett medelvärde.
+Förslaget är inte en automatisk klippning: behåll originalet, gör en härledd film med dokumenterad rutmappning,
+uppdatera kortspår och domarrutor och granska skarven före införande. Att snabba upp hela filmen kan försämra greppet.
 
 **Kling 3.0 Motion Control** (Runways hjälpsida, V): en karaktärsbild och en rörelsefilm, text valfri; 3–30 s; filmen
 ska visa "clear upper body … including all limbs and head", en person, obruten, inte snabb. Vårt verktyg: **ingen sista

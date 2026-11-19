@@ -7,9 +7,6 @@
       "kind": "beslut",
       "question": "Ska de tre replikerna bytas till den neutrala munnen till höger?",
       "leads": "Ja byter munbilden i insatser, hej och lycka till efter jämförelsen, med samma ljud som nu.",
-      "proof": "paow-mouth-neutral-trio-20261118",
-      "file": "contact.png",
-      "page": "studio/granska/?prov=paow-mouth-neutral-trio-20261118&fil=comparison-game.mp4&canvas=1",
       "chips": [
         {
           "value": "ja",
@@ -22,14 +19,20 @@
       ],
       "asked": "2026-11-18",
       "from": "huvudagenten",
-      "answer": null
+      "answer": {
+        "value": "ja",
+        "note": "",
+        "at": "2026-11-19T12:33:23.328Z"
+      },
+      "proof": "paow-mouth-neutral-trio-20261118",
+      "file": "contact.png",
+      "page": "studio/granska/?prov=paow-mouth-neutral-trio-20261118&fil=comparison-game.mp4&canvas=1"
     },
     {
       "id": "giv-utan-vandning-i-handen",
       "kind": "beslut",
       "question": "Efter Görans runda: duger en giv där kortet vänds först efter släppet?",
       "leads": "Görans runda spelas från länken i huvudagentens svar, och Pröva ger sedan en film med Paow till plats 4 utan vändning i handen.",
-      "cost": "en film, cirka 64 krediter",
       "chips": [
         {
           "value": "prova",
@@ -42,7 +45,12 @@
       ],
       "asked": "2026-11-18",
       "from": "film",
-      "answer": null
+      "answer": {
+        "value": "prova",
+        "note": "",
+        "at": "2026-11-19T12:33:41.855Z"
+      },
+      "cost": "en film, cirka 64 krediter"
     },
     {
       "id": "repliker-som-munlappar",

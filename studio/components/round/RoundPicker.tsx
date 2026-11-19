@@ -173,7 +173,10 @@ export function RoundPicker({
             {note.text}
           </p>
         ) : null}
-        <NextNodes graph={graph} last={last} next={next} onAdd={(node) => edit(addNode(path, node))} onMissing={(text) => setSaid({ text, tone: "info" })} />
+        <NextNodes graph={graph} last={last} next={next} onAdd={(node) => {
+          const route = next.find((n) => n.node === node)?.route;
+          edit(route ? route.reduce((p, s) => addNode(p, s.to), path) : addNode(path, node));
+        }} onMissing={(text) => setSaid({ text, tone: "info" })} />
       </section>
 
       <section aria-label="Exempel" className="flex flex-col gap-1.5">
@@ -284,13 +287,14 @@ function NextNodes({
 }) {
   if (!graph) return <p className="text-xs text-faint">Läser banken…</p>;
   const start = !last;
-  const items: { node: string; plays: boolean; word: string; title: string; why?: string }[] = start
+  const items: { node: string; plays: boolean; word: string; title: string; why?: string; via?: string | null }[] = start
     ? startNodes(graph).map((node) => ({ node, plays: true, word: nodeName(node).replace(nodeCode(node), "").trim(), title: nodeName(node) }))
     : next.map((n) => ({
         node: n.node,
         plays: n.plays,
-        word: n.plays ? stepWord(n.step) : "ingen film",
-        title: n.plays ? playsTitle(graph, n) : `${edgeName(n.step)}: ${NO_FILM[n.gap ?? "MISSING"]}`,
+        via: n.via,
+        word: n.via ? `via ${nodeCode(n.via)}` : n.plays ? stepWord(n.step) : "ingen film",
+        title: n.plays ? `${playsTitle(graph, n)}${n.via ? ` · väg: ${formatJakob(n.route)}` : ''}` : `${edgeName(n.step)}: ${NO_FILM[n.gap ?? "MISSING"]}`,
         why: n.plays ? undefined : `${edgeName(n.step)}: ${NO_FILM[n.gap ?? "MISSING"]}.`,
       }));
   const anchors = items.filter((i) => !isCard(i.node));
@@ -333,6 +337,7 @@ function NextNodes({
                   key={node}
                   type="button"
                   aria-disabled={!item.plays || undefined}
+                  aria-label={`${nodeCode(node)}${item.via ? ` via ${nodeCode(item.via)}` : ''}`}
                   title={item.title}
                   onClick={() => press(item)}
                   className={cn(
@@ -341,14 +346,16 @@ function NextNodes({
                     item.plays ? "border-line-strong bg-raised text-ink hover:border-brass/50 hover:bg-overlay" : "cursor-not-allowed border-dashed border-line-strong text-faint/70",
                   )}
                 >
-                  {nodeCode(node)}
+                  {nodeCode(node)}{item.via ? " ↗" : ""}
                 </button>
               );
             }),
           )}
         </div>
       ) : null}
-      {items.some((i) => !i.plays) ? <p className="text-2xs text-faint">Streckad: ingen film än.</p> : null}
+      {items.some((i) => i.via) ? <p className="text-2xs text-dim">↗ Via annat ankare. Hela vägen läggs till när du väljer kortet.</p> : null}
+      {items.some((i) => !i.plays) ? <p className="text-2xs text-faint">Streckad: ingen spelbar väg från detta ankare.</p> : null}
+      {cards.get('D.C3') && !cards.get('D.C3')!.plays ? <p className="text-2xs text-faint">DC3: nästa steg, ingen ordinarie film ännu. Egna C2/C3-filmer för spelarna krävs inte nu.</p> : null}
     </div>
   );
 }

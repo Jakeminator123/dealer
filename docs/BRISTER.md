@@ -122,9 +122,9 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   Skälet "ingen slutbild" säger handen i lagret men inte i Ny beställning (`NewOrder.tsx` anropar `seatEndMissing`
   utan hand), och vänsterhandens text blir lika fel om bara ett A3 för höger hand gäller på platsen.
 - **Det bandet inte kan än** ([tools/dealer-line.md](../tools/dealer-line.md)). Syns: i Beställ. Ankare 2.1 och 2.2 är
-  steg (`STEPS` i `src/order-model.ts`), men landningsbild, keystone och ankare 1 är det inte, och ett tredje eller
-  fjärde dealerkort går inte att beställa, eftersom planen har sexton platser (`TARGETS` i `src/placement-model.ts`).
-  Prövat: förslaget `D.C3` och `D.C4` efter `D.C2`, inte byggt. Stänger: stegen läggs i ordermodellen; metoden per steg
+  steg (`STEPS` i `src/order-model.ts`), men landningsbild, keystone och ankare 1 är det inte. Tredje dealerkortet
+  D.C3 finns nu i planen och Beställ; D.C4 saknas fortfarande som eget beställningsmål.
+  Stänger: återstående steg läggs i ordermodellen; metoden per steg
   står i `data/order-methods.json`.
 - **Produktionslistan räknar en bortmätt tagning som på väg.** Syns: `node tools/produce.ts paow`: en tagning som
   beställaren mätte bort ligger kvar på MÄTT med domen i kvittots `review`, och ordern räknas som på väg tills varje
@@ -234,11 +234,14 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 
 ## Labbet och verktygen
 
-- **Codex-pluginets skrivschema saknar Kling 4 och `referenceVideos`** (kontrollerat 2026-11-18), trots inloggat konto.
-  Den lokala Claude-klientens Runway-MCP fungerar: C2-piloten levererades med exakt frysta argument, ett anrop och
-  85 krediter (orderns kvitto). Reservvägen står i DRIFT, Anslutningar och miljö. H24-02 fick inget taskId eller
-  debitering; dess reservation ligger kvar konservativt. Stänger: Codex-pluginets schema uppdateras. Ändra inte
-  modell eller parameterfält för att passa ett gammalt schema, och återförsök inte den avslutade tagningen.
+- **Kling-mellanbilder saknas i aktuellt Codex-MCP-schema** (2026-11-19), trots stöd i Runways API. Start/slut och
+  `referenceVideos` finns nu; D.C3 A/B/C levererades direkt genom Codex, 372 krediter. Tidigare brist på modellstöd
+  är därmed löst. En kontaktbild mellan start och slut kräver fortfarande en anslutning som exponerar fältet.
+  H24-02:s äldre reservation ligger kvar konservativt; ingen automatisk omtagning följer av det nya stödet.
+- **Startflaggan mäter genomsnittlig bildändring, inte stillastående hand.** D.C3-proven ger 125/25/168 flaggade
+  startrutor trots tidigare handrörelse. Texten är förtydligad; tröskeln och kontrollen är oförändrade. Använd
+  rutgranskning för tempo. Efterarbetets äldre planmått läser dessutom rå planfil: D.C3 kan saknas där tills kortet
+  sparats i labbet. `dealCheck` jämför det landade kortet mot orderns faktiska slutbild, även för D.C3.
 
 - **En ordergrupp är inte en filsystemtransaktion.** Förhandsvisningens källor valideras före första skrivningen,
   labbets Material- och orderskrivningar delar kö och sparomtag returnerar samma ID:n. Ett processavbrott mitt i

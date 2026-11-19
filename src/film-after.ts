@@ -379,6 +379,35 @@ export function edgeCheck(im: Uint8Array, w: number, h: number): EdgeCheck {
  * the mean change from frame to frame in the last 8 frames, each of those frames' mean difference to the end picture, the largest
  * change anywhere, and the warmth of her skin (red minus green, median) in the film against the picture. Fed frame by frame.
  */
+/** Conservative edit suggestion, never an automatic change to the original or its playback record.
+ * Every pixel must match the supplied end anchor and the first stable frame; a mean can hide moving fingertips.
+ * A quiet middle section, a brief stop, or a still but wrong pose cannot authorize a tail cut.
+ */
+export function stillAnchorTail(anchor: Uint8Array, fps: number, options: {maxDelta?: number; minSeconds?: number; keepSeconds?: number} = {}) {
+  const {maxDelta = 2, minSeconds = 0.4, keepSeconds = 0.125} = options;
+  if (!anchor.length || !(fps > 0) || !Number.isFinite(fps) || !(maxDelta >= 0 && maxDelta <= 2) || !(minSeconds >= 0.4) || !(keepSeconds > 0 && keepSeconds < minSeconds)) throw Error('Invalid still-anchor thresholds');
+  let count = 0, start = -1, stable: Uint8Array | null = null;
+  const matches = (a: Uint8Array, b: Uint8Array) => {
+    for (let i = 0; i < a.length; i++) if (Math.abs(a[i] - b[i]) > maxDelta) return false;
+    return true;
+  };
+  return {
+    add(frame: Uint8Array) {
+      if (frame.length !== anchor.length) throw Error('Anchor and frame sizes differ');
+      if (!matches(frame, anchor)) { start = -1; stable = null; }
+      else if (!stable || !matches(frame, stable)) { start = count; stable = frame.slice(); }
+      count++;
+    },
+    result() {
+      const keep = Math.max(1, Math.ceil(keepSeconds * fps)), length = start < 0 ? 0 : count - start;
+      const eligible = length >= Math.ceil(minSeconds * fps) && length > keep;
+      return {frames: count, fps, maxDelta, stableFrom: start < 0 ? null : start, stableFrames: length,
+        suggestedEndFrame: eligible ? start + keep - 1 : null, removeFrames: eligible ? length - keep : 0,
+        action: 'review-derived-cut' as const, applied: false as const};
+    },
+  };
+}
+
 export function endCheck(end: Uint8Array, w: number, h: number) {
   const n = w * h, body0 = new Uint8Array(n);
   for (let y = 0; y < h; y++) for (let x = 0; x < Math.min(w, PERSON_RIGHT); x++) body0[y * w + x] = isGreen(end, (y * w + x) * 3) ? 0 : 1;

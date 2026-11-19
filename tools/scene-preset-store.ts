@@ -11,7 +11,7 @@ import {createHash, randomUUID} from 'node:crypto';
 import path from 'node:path';
 import {StoreError} from './placement-store.ts';
 import {BUILT_ROOMS} from '../studio/lib/scene-keys.ts';
-import {OWN_LIMIT, PRESET_NAME, NAME_LIMIT, SHIPPED_NAMES, isShipped, validatePreset, type ScenePreset} from '../studio/lib/scene-presets.ts';
+import {CASINO_PRESET, OWN_LIMIT, PRESET_NAME, NAME_LIMIT, SHIPPED_NAMES, isShipped, validatePreset, type ScenePreset} from '../studio/lib/scene-presets.ts';
 
 export type StoredPreset = ScenePreset & {shipped: boolean; revision: string};
 
@@ -63,6 +63,7 @@ export function scenePresetStore(root: string) {
  /** Takes away one of his presets, against the revision last read. */
  async function remove(name:string,expected:string|undefined){
   const file=fileOf(name);
+  if(name===CASINO_PRESET)throw new StoreError(403,'Casinos förval kan ändras i Scen & bord men inte tas bort.');
   if(isShipped(name))throw new StoreError(403,'Förvalet följer med labbet och kan inte tas bort.');
   const task=queue.then(async()=>{
    const before=await readText(name);

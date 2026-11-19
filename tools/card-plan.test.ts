@@ -149,9 +149,9 @@ function ways(plan: PlacementPlan, id: string, lens: Lens = TABLE_LENS) {
   return {lab, game, rest, scene};
 }
 
-test('the default is the look Jakob has said yes to: the older rule, until he has seen the lens in the lab', () => {
+test('the default follows the lens Jakob chose in comparison B; the old geometry stays explicit', () => {
   // Changing this line of src/card-plan.ts is his yes. docs/SYSTEM.md, "Ritade kort", names the code that is then left over.
-  assert.equal(TABLE_GEOMETRY, 'contract');
+  assert.equal(TABLE_GEOMETRY, 'lens');
   assert.equal(tableGeometry(null), TABLE_GEOMETRY); assert.equal(tableGeometry(''), TABLE_GEOMETRY); assert.equal(tableGeometry('?kort=liggande'), TABLE_GEOMETRY);
   assert.equal(tableGeometry('?geometri=lins'), 'lens'); assert.equal(tableGeometry('?dealer=paow&geometri=lins&kort=hand'), 'lens');
   assert.equal(tableGeometry('?geometri=kontrakt'), 'contract'); assert.equal(tableGeometry('?geometri=annat'), TABLE_GEOMETRY);

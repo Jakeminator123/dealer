@@ -32,7 +32,7 @@ import path from 'node:path';
 import sharp from 'sharp';
 import {probe, sha256File, type Probe} from './film-fix.ts';
 import {orderTake, OrderError} from './order-collect.ts';
-import {BANK, TREATMENTS, resizeCubic, smoothGreen, toneLock, levelFrame, NO_TONE, cornerMean, endCheck, edgeCheck, filmMeasure, seam, round, cardBlobs, type Tone, type PlanTarget} from '../src/film-after.ts';
+import {BANK, TREATMENTS, resizeCubic, smoothGreen, toneLock, levelFrame, NO_TONE, cornerMean, endCheck, stillAnchorTail, edgeCheck, filmMeasure, seam, round, cardBlobs, type Tone, type PlanTarget} from '../src/film-after.ts';
 import {checkDeal, type DealCheck, type FrameCard} from '../src/deal-check.ts';
 
 const ROOT = process.cwd();
@@ -178,12 +178,13 @@ export async function afterWork(id: string, take: number, options: Options = {},
   // The measures, on the film as written (decoded again, as the scripts read after.mp4), and the comparison when asked.
   async function measures() {
   const out = probe(part), measure = filmMeasure(W, H, rate), endAfter = last ? endCheck(last.data, W, H) : null, plan = await planTargets(root);
+  const tail = last ? stillAnchorTail(last.data, rate) : null;
   let f0: Uint8Array | null = null, fl: Uint8Array | null = null, comparison: FilmComparison | null = null;
   const cmp = other ? comparer(other) : null;
   const otherFrames = other ? decode(other, W, H)[Symbol.asyncIterator]() : null;
   for await (const frame of decode(part, W, H)) {
     if (!f0) f0 = frame.slice(); fl = frame;
-    measure.add(frame); endAfter?.add(frame);
+    measure.add(frame); endAfter?.add(frame); tail?.add(frame);
     if (otherFrames && cmp) { const next = await otherFrames.next(); cmp.add(frame, next.done ? null : next.value); }
   }
   if (otherFrames && cmp) { for (let next = await otherFrames.next(); !next.done; next = await otherFrames.next()) cmp.add(null, next.value); comparison = await cmp.result(await sha256File(part)); }
@@ -203,6 +204,7 @@ export async function afterWork(id: string, take: number, options: Options = {},
     // As efterarbete.py printed it (gain and lift in OpenCV's B, G, R; greens R, G, B), for a line-by-line comparison with tonight's notes.
     efterarbete: {frames: written, gainBGR: t.gain.map(v => round(v, 3)), liftBGR: t.lift.map(v => round(v, 2)), greenBefore: {first: firstLevels?.[0], last: lastLevels?.[0]}, greenAfter: {first: firstLevels?.[1], last: lastLevels?.[1]}},
     slutkoll: {source: sourceEnd?.result() ?? null, after: endAfter?.result() ?? null},
+    stillAnchorTail: tail?.result() ?? null,
     kantkoll: {firstFrame: f0 ? edgeCheck(f0, W, H) : null, lastFrame: fl ? edgeCheck(fl, W, H) : null},
     filmmatt: {...measure.result(seats, plan), startSeam: f0 ? seam(f0, first.data) : null, endSeam: fl && last ? seam(fl, last.data) : null},
     ...(comparison ? {comparison} : {}),

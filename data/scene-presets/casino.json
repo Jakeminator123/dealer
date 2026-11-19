@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "name": "casino",
+  "label": "Casino",
+  "about": "Casinos sparade visning, vald i Scen & bord.",
+  "state": {
+    "room": "panorama",
+    "roomShift": "shimmer",
+    "blur": 5,
+    "tray": true,
+    "cards": true,
+    "pitch": -8,
+    "zoom": 0.84,
+    "format": "fill"
+  },
+  "updatedAt": "2026-11-19T17:14:04.461Z"
+}

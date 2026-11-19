@@ -89,9 +89,9 @@ export const cardWords = (q: {get(name: string): string | null}): CardWords => {
  * bli en linje"): without a kort word the scene's hand-overlay control decides (off by default). A browser that still
  * remembers 'lying', from the hours the menu had a second switch, reads as on.
  */
-export function cardsChoice(o: {address?: boolean; kort?: string | null; memory?: string | null; inHand?: boolean}): {cards: boolean; carry: Carry} {
+export function cardsChoice(o: {address?: boolean; preset?: boolean; kort?: string | null; memory?: string | null; inHand?: boolean}): {cards: boolean; carry: Carry} {
   const word = ({liggande: 'film', matt: 'matte', hand: 'object'} as Record<string, Carry>)[o.kort ?? ''], remembered = o.memory === 'off' ? false : o.memory === 'on' || o.memory === 'lying' ? true : undefined;
-  return {cards: o.address ?? (word ? true : undefined) ?? remembered ?? true, carry: word ?? (o.inHand ? 'object' : 'film')};
+  return {cards: o.address ?? (word ? true : undefined) ?? o.preset ?? remembered ?? true, carry: word ?? (o.inHand ? 'object' : 'film')};
 }
 /** What the card layer needs for one beat: the lying cards, every card's value, and for the film's own card where it lands and how it is carried. */
 export function cardOptions(beat: Pick<Beat, 'own' | 'lying'> & Partial<Pick<Beat, 'kind'>>, table: TableCards, records: CardRecord[], layout: Layout, carry: Carry = CARRY, words: CardWords = {}): GameCardOptions {

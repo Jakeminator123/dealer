@@ -11,7 +11,7 @@
 // The rule every drawing of the plan in the lab and in an order uses: Bordet's Kortplan and card path, Ny beställning's
 // picture, an order's last picture (tools/order-images.ts). The game's lying cards (src/game-table.ts), the resting card of
 // the drawn cards (src/card-overlay.ts) and the 3D scene's film camera (src/scene3d-view.ts) follow the same rule and lens
-// where TABLE_GEOMETRY below says 'lens'; until Jakob has seen that in the lab they keep the older rule ('contract').
+// by default since Jakob chose comparison B on 2026-11-19; explicit 'contract' preserves historical references.
 // Pure; tests in tools/card-plan.test.ts.
 import { TABLE_PERSPECTIVE, flatQuad, planQuad, quad, toPixels, type Geometry, type PlacementPlan, type View } from './placement-model.ts';
 import { FILM, TABLE_LENS, pixelToFelt, realCardQuad, type Lens, type Pixel } from './table-lens.ts';
@@ -23,12 +23,11 @@ import { FILM, TABLE_LENS, pixelToFelt, realCardQuad, type Lens, type Pixel } fr
  *   contract's (scene3d-geometry.ts cameraFromContract, k = 2), which is another camera than the lens;
  * - 'lens': all three follow the card plan's rule below through the table's lens, so the same plan and the same card give the
  *   same outline in the lab, in the game and in the scene.
- * The default is one line: change it to 'lens' when Jakob has said yes to the look in the lab (docs/SYSTEM.md, "Ritade kort",
- * names what is then left over). Until then the look is asked for by the address word geometri=lins on game.html and on a
- * page that shows the scene; geometri=kontrakt is the way back once the default has changed.
+ * Jakob chose 'lens' after comparison B (2026-11-19). Explicit geometri=kontrakt remains for old proofs and references;
+ * ordinary lab and Casino addresses need no geometry word. Camera/view variations are saved scene presets.
  */
 export type TableGeometry = 'contract' | 'lens';
-export const TABLE_GEOMETRY: TableGeometry = 'contract';
+export const TABLE_GEOMETRY: TableGeometry = 'lens';
 export const GEOMETRY_WORD = 'geometri', GEOMETRY_WORDS: Readonly<Record<string, TableGeometry>> = { lins: 'lens', kontrakt: 'contract' };
 /** The geometry a page follows: its address's word (geometri=lins or geometri=kontrakt), else TABLE_GEOMETRY. `search` is the address's query; left out, the page's own (there is none in Node). */
 export function tableGeometry(search: string | null = (globalThis as { location?: { search?: string } }).location?.search ?? null): TableGeometry {

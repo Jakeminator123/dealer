@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "pamela-table",
   "space": "image-normalized-bottom-up",
-  "updatedAt": "2026-11-11T14:46:38.185Z",
+  "updatedAt": "2026-11-18T00:35:37.644Z",
   "shoe": {
     "native": {
       "u": 0.733,
@@ -42,7 +42,8 @@
         "pass": false,
         "turn": true,
         "grip": "PINCH",
-        "turnAt": "AIR"
+        "turnAt": "AIR",
+        "flipAxis": "FREE"
       },
       "material": {
         "bend": 0.14,
@@ -77,7 +78,8 @@
         "pass": false,
         "turn": true,
         "grip": "PINCH",
-        "turnAt": "AIR"
+        "turnAt": "AIR",
+        "flipAxis": "FREE"
       },
       "material": {
         "bend": 0.14,
@@ -112,7 +114,8 @@
         "pass": false,
         "turn": true,
         "grip": "PINCH",
-        "turnAt": "AIR"
+        "turnAt": "AIR",
+        "flipAxis": "FREE"
       },
       "material": {
         "bend": 0.14,
@@ -147,7 +150,8 @@
         "pass": false,
         "turn": true,
         "grip": "PINCH",
-        "turnAt": "AIR"
+        "turnAt": "AIR",
+        "flipAxis": "FREE"
       },
       "material": {
         "bend": 0.14,
@@ -182,7 +186,8 @@
         "pass": false,
         "turn": true,
         "grip": "PINCH",
-        "turnAt": "AIR"
+        "turnAt": "AIR",
+        "flipAxis": "FREE"
       },
       "material": {
         "bend": 0.14,
@@ -217,7 +222,8 @@
         "pass": false,
         "turn": true,
         "grip": "PINCH",
-        "turnAt": "AIR"
+        "turnAt": "AIR",
+        "flipAxis": "FREE"
       },
       "material": {
         "bend": 0.14,
@@ -249,10 +255,11 @@
         "takeHand": "LH",
         "startSide": "BACK",
         "endSide": "FRONT",
-        "pass": false,
+        "pass": true,
         "turn": true,
         "grip": "PINCH",
-        "turnAt": "AIR"
+        "turnAt": "PLACE",
+        "flipAxis": "FREE"
       },
       "material": {
         "bend": 0.14,
@@ -287,7 +294,8 @@
         "pass": false,
         "turn": true,
         "grip": "PINCH",
-        "turnAt": "AIR"
+        "turnAt": "AIR",
+        "flipAxis": "FREE"
       },
       "material": {
         "bend": 0.14,
@@ -322,7 +330,8 @@
         "pass": false,
         "turn": true,
         "grip": "PINCH",
-        "turnAt": "AIR"
+        "turnAt": "AIR",
+        "flipAxis": "FREE"
       },
       "material": {
         "bend": 0.14,
@@ -357,7 +366,8 @@
         "pass": false,
         "turn": true,
         "grip": "PINCH",
-        "turnAt": "AIR"
+        "turnAt": "AIR",
+        "flipAxis": "FREE"
       },
       "material": {
         "bend": 0.14,
@@ -367,12 +377,12 @@
     "P6.C1": {
       "geometry": {
         "native": {
-          "u": 0.7282992580818827,
-          "v": 0.12998427842468396,
-          "width": 0.0492,
-          "height": 0.06119999999999999,
+          "u": 0.73,
+          "v": 0.13,
+          "width": 0.041,
+          "height": 0.051,
           "angle": 0,
-          "taper": 0.87,
+          "taper": 0.9,
           "reviewed": false
         },
         "portrait": {
@@ -392,7 +402,8 @@
         "pass": false,
         "turn": true,
         "grip": "PINCH",
-        "turnAt": "AIR"
+        "turnAt": "AIR",
+        "flipAxis": "FREE"
       },
       "material": {
         "bend": 0.14,
@@ -427,7 +438,8 @@
         "pass": false,
         "turn": true,
         "grip": "PINCH",
-        "turnAt": "AIR"
+        "turnAt": "AIR",
+        "flipAxis": "FREE"
       },
       "material": {
         "bend": 0.14,
@@ -459,10 +471,11 @@
         "takeHand": "LH",
         "startSide": "BACK",
         "endSide": "FRONT",
-        "pass": false,
+        "pass": true,
         "turn": true,
         "grip": "PINCH",
-        "turnAt": "AIR"
+        "turnAt": "AIR",
+        "flipAxis": "FREE"
       },
       "material": {
         "bend": 0.14,
@@ -497,7 +510,8 @@
         "pass": false,
         "turn": true,
         "grip": "PINCH",
-        "turnAt": "AIR"
+        "turnAt": "AIR",
+        "flipAxis": "FREE"
       },
       "material": {
         "bend": 0.14,
@@ -532,7 +546,8 @@
         "pass": false,
         "turn": true,
         "grip": "PINCH",
-        "turnAt": "AIR"
+        "turnAt": "AIR",
+        "flipAxis": "FREE"
       },
       "material": {
         "bend": 0.14,
@@ -567,7 +582,8 @@
         "pass": false,
         "turn": false,
         "grip": "PINCH",
-        "turnAt": "AIR"
+        "turnAt": "AIR",
+        "flipAxis": "FREE"
       },
       "material": {
         "bend": 0.14,

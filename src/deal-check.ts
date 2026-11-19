@@ -185,7 +185,7 @@ export function checkDeal(frames: readonly FrameCard[], ctx: DealContext): DealC
     const tail = change.slice(-3);
     if (tail.some((c) => c > T.lastStepRemark)) remarks.push({ code: 'hopp-sist', text: `Ett steg över ${T.lastStepRemark} i de sista rutorna: handen hoppar till sista bilden.` });
     let still = 0; while (still + 1 < change.length && change[still + 1] < T.stillStartChange) still++;
-    if (still >= T.stillStartFrames) remarks.push({ code: 'stilla-start', text: `Nästan stilla i början (${still} rutor).` });
+    if (still >= T.stillStartFrames) remarks.push({ code: 'stilla-start', text: `Liten genomsnittlig bildförändring de första ${still} rutorna; kontrollera handens rörelse manuellt.` });
   }
   return {
     pass: fails.length === 0, fails, remarks,

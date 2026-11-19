@@ -1,7 +1,7 @@
 {
-  "schemaVersion": 1,
-  "about": "Whether each picture and film fits today's rules: written by node tools/media-audit.ts --fit --write; Material shows it. The card against planCardQuad (src/card-plan.ts), an anchor against data/dealer-standard.json, a reference by its camera. Jakob's states are not touched.",
-  "made": "2026-11-17T23:29:59.067Z",
+  "schemaVersion": 2,
+  "about": "Whether each picture and film fits today's rules: written by node tools/media-audit.ts --fit --write; Material shows it. The card against planCardQuad (src/card-plan.ts), rest hands against the dealer's held rest image (search areas in data/dealer-standard.json), a reference by its camera. Jakob's states are not touched.",
+  "made": "2026-11-19T16:58:11.243Z",
   "rule": {
     "placePx": 15,
     "sizeShare": 0.12,
@@ -10,19 +10,45 @@
   "entries": {
     "pamela-vila": {
       "verdict": "stämmer",
-      "words": "Skons kort och händerna som standarden (data/dealer-standard.json).",
+      "words": "Båda händerna mätta i gällande ankare 1 (pamela-vila), dealerns kalibreringsbild.",
       "measured": {
+        "source": {
+          "path": "assets/motions/pamela-idle-ready-entry-01/source.mp4",
+          "frame": 0,
+          "sha256": "cbaf81cd79f53eafcc38891847151a1311e3ee94275abe10463674ae6a6f66f2"
+        },
+        "calibration": {
+          "dealer": "pamela",
+          "role": "ankare-1",
+          "entry": "pamela-vila",
+          "path": "assets/motions/pamela-idle-ready-entry-01/source.mp4",
+          "frame": 0,
+          "sha256": "cbaf81cd79f53eafcc38891847151a1311e3ee94275abe10463674ae6a6f66f2"
+        },
         "leftInPicture": 0,
         "rightInPicture": 0
       }
     },
     "pamela-vila-oppen-sko": {
       "verdict": "avviker",
-      "words": "Skons kort ligger 56 px från ankare 1:s. Höger hand (i bild) 56 px från standardens.",
+      "words": "Mätt mot gällande ankare 1 (pamela-vila). Skillnaden i bilden är 2 px för vänster hand och 56 px för höger. Skons kort ligger 56 px från kalibreringsbildens.",
       "measured": {
-        "shoeOffPx": 56,
+        "source": {
+          "path": "assets/motions/pamela-ready-b-shoe-plate-01/source.mp4",
+          "frame": 60,
+          "sha256": "a945396d1ae0ed736bc29f2cce72228619110a76715a76aa7bb920e0c06fc07e"
+        },
+        "calibration": {
+          "dealer": "pamela",
+          "role": "ankare-1",
+          "entry": "pamela-vila",
+          "path": "assets/motions/pamela-idle-ready-entry-01/source.mp4",
+          "frame": 0,
+          "sha256": "cbaf81cd79f53eafcc38891847151a1311e3ee94275abe10463674ae6a6f66f2"
+        },
         "leftInPicture": 2,
-        "rightInPicture": 56
+        "rightInPicture": 56,
+        "shoeOffPx": 56
       }
     },
     "pamela-idle-p1-c1-plan-01": {
@@ -82,10 +108,10 @@
     },
     "pamela-idle-p6-c1-plan-01": {
       "verdict": "äldre plan",
-      "words": "Kortet ligger 12 px från platsen P6.C1 och är 19 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "words": "Kortet ligger 14 px från platsen P6.C1 och är 19 % mindre än kortet dagens plan ritar (planCardQuad).",
       "measured": {
         "card": {
-          "distancePx": 12.2,
+          "distancePx": 14.1,
           "size": 0.813,
           "card": "P6.C1"
         }
@@ -148,10 +174,10 @@
     },
     "pamela-idle-p6-c1-std-01": {
       "verdict": "äldre plan",
-      "words": "Kortet ligger 8 px från platsen P6.C1 och är 20 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "words": "Kortet ligger 10 px från platsen P6.C1 och är 20 % mindre än kortet dagens plan ritar (planCardQuad).",
       "measured": {
         "card": {
-          "distancePx": 8.3,
+          "distancePx": 10.4,
           "size": 0.797,
           "card": "P6.C1"
         }
@@ -170,20 +196,46 @@
     },
     "pamela-idle-wink-01": {
       "verdict": "stämmer",
-      "words": "Skons kort och händerna som standarden (data/dealer-standard.json).",
+      "words": "Mätt mot gällande ankare 1 (pamela-vila). Skillnaden i bilden är 0 px för vänster hand och 0 px för höger.",
       "measured": {
-        "shoeOffPx": 0,
+        "source": {
+          "path": "assets/anchors/pamela-idle-wink-01/anchor.png",
+          "frame": null,
+          "sha256": "a722f8ec81347233d369f792140dfaa6ff98d805a21fb3f65c0cbeefd8271f51"
+        },
+        "calibration": {
+          "dealer": "pamela",
+          "role": "ankare-1",
+          "entry": "pamela-vila",
+          "path": "assets/motions/pamela-idle-ready-entry-01/source.mp4",
+          "frame": 0,
+          "sha256": "cbaf81cd79f53eafcc38891847151a1311e3ee94275abe10463674ae6a6f66f2"
+        },
         "leftInPicture": 0,
-        "rightInPicture": 0
+        "rightInPicture": 0,
+        "shoeOffPx": 0
       }
     },
     "pamela-idle-stern-02": {
       "verdict": "stämmer",
-      "words": "Skons kort och händerna som standarden (data/dealer-standard.json).",
+      "words": "Mätt mot gällande ankare 1 (pamela-vila). Skillnaden i bilden är 0 px för vänster hand och 0 px för höger.",
       "measured": {
-        "shoeOffPx": 0,
+        "source": {
+          "path": "assets/anchors/pamela-idle-stern-02/anchor.png",
+          "frame": null,
+          "sha256": "bd5d9d7bfb3fc1655124f2da6de5aa430ffc1f4f87cc08b2eb8800b821941ce0"
+        },
+        "calibration": {
+          "dealer": "pamela",
+          "role": "ankare-1",
+          "entry": "pamela-vila",
+          "path": "assets/motions/pamela-idle-ready-entry-01/source.mp4",
+          "frame": 0,
+          "sha256": "cbaf81cd79f53eafcc38891847151a1311e3ee94275abe10463674ae6a6f66f2"
+        },
         "leftInPicture": 0,
-        "rightInPicture": 0
+        "rightInPicture": 0,
+        "shoeOffPx": 0
       }
     },
     "pamela-gamla-vila-kort-p4": {
@@ -207,8 +259,8 @@
       }
     },
     "pamela-nyp": {
-      "verdict": "stämmer",
-      "words": "Skons kort och händerna som standarden (data/dealer-standard.json).",
+      "verdict": "går inte att mäta",
+      "words": "Handmått saknas för den här ankarrollen.",
       "measured": {}
     },
     "pamela-ready-p1-c1-plan-01": {
@@ -268,10 +320,10 @@
     },
     "pamela-ready-p6-c1-plan-01": {
       "verdict": "äldre plan",
-      "words": "Kortet ligger 12 px från platsen P6.C1 och är 19 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "words": "Kortet ligger 14 px från platsen P6.C1 och är 19 % mindre än kortet dagens plan ritar (planCardQuad).",
       "measured": {
         "card": {
-          "distancePx": 12.2,
+          "distancePx": 14.1,
           "size": 0.813,
           "card": "P6.C1"
         }
@@ -301,10 +353,10 @@
     },
     "pamela-ready-p6-c1-std-01": {
       "verdict": "äldre plan",
-      "words": "Kortet ligger 8 px från platsen P6.C1 och är 20 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "words": "Kortet ligger 10 px från platsen P6.C1 och är 20 % mindre än kortet dagens plan ritar (planCardQuad).",
       "measured": {
         "card": {
-          "distancePx": 8.3,
+          "distancePx": 10.4,
           "size": 0.797,
           "card": "P6.C1"
         }
@@ -342,13 +394,13 @@
       }
     },
     "pamela-slap": {
-      "verdict": "stämmer",
-      "words": "Skons kort och händerna som standarden (data/dealer-standard.json).",
+      "verdict": "går inte att mäta",
+      "words": "Handmått saknas för den här ankarrollen.",
       "measured": {}
     },
     "pamela-slap-bild": {
-      "verdict": "stämmer",
-      "words": "Skons kort och händerna som standarden (data/dealer-standard.json).",
+      "verdict": "går inte att mäta",
+      "words": "Handmått saknas för den här ankarrollen.",
       "measured": {}
     },
     "pamela-readyb-p4-c1-plan-01": {
@@ -639,10 +691,10 @@
     },
     "pamela-p6-c1-plan-land-01": {
       "verdict": "äldre plan",
-      "words": "Kortet ligger 12 px från platsen P6.C1 och är 19 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "words": "Kortet ligger 14 px från platsen P6.C1 och är 19 % mindre än kortet dagens plan ritar (planCardQuad).",
       "measured": {
         "card": {
-          "distancePx": 12.2,
+          "distancePx": 14.1,
           "size": 0.813,
           "card": "P6.C1"
         }
@@ -650,10 +702,10 @@
     },
     "pamela-p6-c1-std-land-02": {
       "verdict": "äldre plan",
-      "words": "Kortet ligger 10 px från platsen P6.C1 och är 22 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "words": "Kortet ligger 12 px från platsen P6.C1 och är 22 % mindre än kortet dagens plan ritar (planCardQuad).",
       "measured": {
         "card": {
-          "distancePx": 9.8,
+          "distancePx": 11.6,
           "size": 0.782,
           "card": "P6.C1"
         }
@@ -661,10 +713,10 @@
     },
     "pamela-p6-c1-k165-land-01": {
       "verdict": "äldre plan",
-      "words": "Kortet ligger 16 px från platsen P6.C1 och är 30 % större än kortet dagens plan ritar (planCardQuad).",
+      "words": "Kortet ligger 18 px från platsen P6.C1 och är 30 % större än kortet dagens plan ritar (planCardQuad).",
       "measured": {
         "card": {
-          "distancePx": 15.5,
+          "distancePx": 17.7,
           "size": 1.297,
           "card": "P6.C1"
         }
@@ -938,40 +990,79 @@
         "första eller sista bild i bankens jobb"
       ]
     },
-    "paow-vila-ung-2": {
+    "paow-vila-tatuerad": {
       "verdict": "stämmer",
-      "words": "Skons kort och händerna som standarden (data/dealer-standard.json).",
+      "words": "Båda händerna mätta i gällande ankare 1 (paow-vila-tatuerad), dealerns kalibreringsbild.",
       "measured": {
-        "leftInPicture": 4,
-        "rightInPicture": 5
+        "source": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "frame": null,
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "calibration": {
+          "dealer": "paow",
+          "role": "ankare-1",
+          "entry": "paow-vila-tatuerad",
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "frame": null,
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "leftInPicture": 0,
+        "rightInPicture": 0
       }
     },
-    "paow-vila-tatuerad": {
+    "paow-vila-ung-2": {
       "verdict": "avviker",
-      "words": "Vänster hand (i bild) 11 px från standardens.",
+      "words": "Mätt mot gällande ankare 1 (paow-vila-tatuerad). Skillnaden i bilden är 9 px för vänster hand och 9 px för höger.",
       "measured": {
-        "shoeOffPx": 0,
-        "leftInPicture": 11,
-        "rightInPicture": 8
+        "source": {
+          "path": "assets/anchors/paow-vila-ung-2/anchor.png",
+          "frame": null,
+          "sha256": "cdaa59756e2eb0f7b839f23254f9999f8c8da4c8eef0e37bf23e9643ba6586ee"
+        },
+        "calibration": {
+          "dealer": "paow",
+          "role": "ankare-1",
+          "entry": "paow-vila-tatuerad",
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "frame": null,
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "leftInPicture": 9,
+        "rightInPicture": 9,
+        "shoeOffPx": 0
       }
     },
     "paow-vila-linne": {
       "verdict": "avviker",
-      "words": "Vänster hand (i bild) 22 px från standardens. Höger hand (i bild) 21 px från standardens.",
+      "words": "Mätt mot gällande ankare 1 (paow-vila-tatuerad). Skillnaden i bilden är 33 px för vänster hand och 28 px för höger.",
       "measured": {
-        "shoeOffPx": 0,
-        "leftInPicture": 22,
-        "rightInPicture": 21
+        "source": {
+          "path": "assets/proofs/paow-profilbild-och-keystone/3-keystone-vila-linne.png",
+          "frame": null,
+          "sha256": "d69a1c041ff713fe642ffc69358f152474f7863cfb8c6eb9eb6d58dfbfaad300"
+        },
+        "calibration": {
+          "dealer": "paow",
+          "role": "ankare-1",
+          "entry": "paow-vila-tatuerad",
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "frame": null,
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "leftInPicture": 33,
+        "rightInPicture": 28,
+        "shoeOffPx": 0
       }
     },
     "paow-nyp-linne": {
-      "verdict": "stämmer",
-      "words": "Skons kort och händerna som standarden (data/dealer-standard.json).",
+      "verdict": "går inte att mäta",
+      "words": "Handmått saknas för den här ankarrollen.",
       "measured": {}
     },
     "paow-slap-linne": {
-      "verdict": "stämmer",
-      "words": "Skons kort och händerna som standarden (data/dealer-standard.json).",
+      "verdict": "går inte att mäta",
+      "words": "Handmått saknas för den här ankarrollen.",
       "measured": {}
     },
     "paow-landning-p4-giv-t2": {
@@ -996,13 +1087,13 @@
       "usedBy": []
     },
     "paow-nyp-ung-1": {
-      "verdict": "stämmer",
-      "words": "Skons kort och händerna som standarden (data/dealer-standard.json).",
+      "verdict": "går inte att mäta",
+      "words": "Handmått saknas för den här ankarrollen.",
       "measured": {}
     },
     "paow-nyp-ung-1-lagad": {
-      "verdict": "stämmer",
-      "words": "Skons kort och händerna som standarden (data/dealer-standard.json).",
+      "verdict": "går inte att mäta",
+      "words": "Handmått saknas för den här ankarrollen.",
       "measured": {}
     },
     "paow-film-intro-noir-3-startruta": {
@@ -1013,9 +1104,190 @@
       ]
     },
     "paow-ankare-2-2-t1": {
-      "verdict": "stämmer",
-      "words": "Skons kort och händerna som standarden (data/dealer-standard.json).",
+      "verdict": "går inte att mäta",
+      "words": "Handmått saknas för den här ankarrollen.",
       "measured": {}
+    },
+    "paow-ankare-2-2-blick-a": {
+      "verdict": "går inte att mäta",
+      "words": "Handmått saknas för den här ankarrollen.",
+      "measured": {}
+    },
+    "paow-a3-p4": {
+      "verdict": "stämmer",
+      "words": "Kortet ligger 9 px från platsen P4.C1 och är 2 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 8.8,
+          "size": 0.98,
+          "card": "P4.C1"
+        }
+      }
+    },
+    "paow-a3-p1": {
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 9 px från platsen P1.C1 och är 12 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 8.7,
+          "size": 0.879,
+          "card": "P1.C1"
+        }
+      }
+    },
+    "paow-a3-p5": {
+      "verdict": "stämmer",
+      "words": "Kortet ligger 8 px från platsen P5.C1 och är 1 % större än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 7.5,
+          "size": 1.015,
+          "card": "P5.C1"
+        }
+      }
+    },
+    "docka-2-3-p4c1-h24": {
+      "verdict": "stämmer",
+      "for": "rörelse",
+      "usedBy": [
+        "3 beställningar skickade den (paow-giv-2-3-p4-h24-01, paow-giv-2-3-p4-h24-02, paow-giv-2-3-p4-h24-03)",
+        "tools/verify.ts och tools/render.ts (V6)"
+      ],
+      "measured": {
+        "width": 1764,
+        "height": 1174,
+        "edgeRow": null
+      },
+      "words": "Bankens kamera (1764 × 1174, bordskanten på rad null): duger som referens för rörelse."
+    },
+    "docka-2-3-p4c1-h24-cykel": {
+      "verdict": "stämmer",
+      "for": "rörelse",
+      "usedBy": [
+        "2 beställningar skickade den (paow-giv-2-3-p4-h24-cykel-01, paow-giv-2-3-p4-h24-cykel-02)",
+        "tools/verify.ts och tools/render.ts (V6)"
+      ],
+      "measured": {
+        "width": 1764,
+        "height": 1174,
+        "edgeRow": null
+      },
+      "words": "Bankens kamera (1764 × 1174, bordskanten på rad null): duger som referens för rörelse."
+    },
+    "docka-2-3-p4c2-h24-cykel": {
+      "verdict": "stämmer",
+      "for": "rörelse",
+      "usedBy": [
+        "1 beställningar skickade den (paow-giv-2-3-p4-c2-h24-cykel-01)",
+        "tools/verify.ts och tools/render.ts (V6)"
+      ],
+      "measured": {
+        "width": 1764,
+        "height": 1174,
+        "edgeRow": null
+      },
+      "words": "Bankens kamera (1764 × 1174, bordskanten på rad null): duger som referens för rörelse."
+    },
+    "paow-fork-round-review-20261118": {
+      "verdict": "annan kamera",
+      "for": "utseende",
+      "usedBy": [],
+      "measured": {
+        "width": 1920,
+        "height": 1080,
+        "edgeRow": null
+      },
+      "words": "En annan kamera än bankens (1920 × 1080, bordskanten på rad ? mot 831.5): en referens för utseende, inte för mått eller platser."
+    },
+    "paow-c2-film-cycle-20261118": {
+      "verdict": "stämmer",
+      "for": "rörelse",
+      "usedBy": [],
+      "measured": {
+        "width": 1764,
+        "height": 1174,
+        "edgeRow": 411
+      },
+      "words": "Bankens kamera (1764 × 1174, bordskanten på rad 411): duger som referens för rörelse."
+    },
+    "paow-air-paper-chroma-verified-20261118": {
+      "verdict": "går inte att mäta",
+      "words": "Övrigt: inget att mäta mot planen.",
+      "usedBy": []
+    },
+    "paow-c1-c2-scene-20261118": {
+      "verdict": "går inte att mäta",
+      "words": "Övrigt: inget att mäta mot planen.",
+      "usedBy": []
+    },
+    "paow-c2-paper-rim-20261118": {
+      "verdict": "går inte att mäta",
+      "words": "Övrigt: inget att mäta mot planen.",
+      "usedBy": []
+    },
+    "paow-c2-rig-laydown-20261118-v2": {
+      "verdict": "går inte att mäta",
+      "words": "Övrigt: inget att mäta mot planen.",
+      "usedBy": []
+    },
+    "paow-c2-rig-regrip-20261118": {
+      "verdict": "går inte att mäta",
+      "words": "Övrigt: inget att mäta mot planen.",
+      "usedBy": []
+    },
+    "docka-2-3-p4c2-h24-omgrepp": {
+      "verdict": "stämmer",
+      "for": "rörelse",
+      "usedBy": [
+        "1 beställningar skickade den (paow-giv-2-3-p4-c2-h24-cykel-02)",
+        "tools/verify.ts och tools/render.ts (V6)"
+      ],
+      "measured": {
+        "width": 1764,
+        "height": 1174,
+        "edgeRow": null
+      },
+      "words": "Bankens kamera (1764 × 1174, bordskanten på rad null): duger som referens för rörelse."
+    },
+    "paow-c2-film-regrip-20261118": {
+      "verdict": "går inte att mäta",
+      "words": "Övrigt: inget att mäta mot planen.",
+      "usedBy": []
+    },
+    "paow-c2-contact-20261118": {
+      "verdict": "går inte att mäta",
+      "words": "Övrigt: inget att mäta mot planen.",
+      "usedBy": []
+    },
+    "paow-game-frame-20261118": {
+      "verdict": "går inte att mäta",
+      "words": "Övrigt: inget att mäta mot planen.",
+      "usedBy": []
+    },
+    "paow-game-carry-20261118": {
+      "verdict": "går inte att mäta",
+      "words": "Övrigt: inget att mäta mot planen.",
+      "usedBy": []
+    },
+    "paow-c2-continuous-clock-20261118": {
+      "verdict": "går inte att mäta",
+      "words": "Övrigt: inget att mäta mot planen.",
+      "usedBy": []
+    },
+    "paow-ready-c-chain-20261118": {
+      "verdict": "går inte att mäta",
+      "words": "Övrigt: inget att mäta mot planen.",
+      "usedBy": []
+    },
+    "paow-carry-jitter-20261118": {
+      "verdict": "går inte att mäta",
+      "words": "Övrigt: inget att mäta mot planen.",
+      "usedBy": []
+    },
+    "paow-mobile-studio-20261118": {
+      "verdict": "går inte att mäta",
+      "words": "Övrigt: inget att mäta mot planen.",
+      "usedBy": []
     }
   },
   "takes": {
@@ -1515,9 +1787,9 @@
     },
     "paow-giv-2-1-p6-03-01": {
       "verdict": "äldre plan",
-      "words": "Kortet ligger 0 px från platsen P6.C1 och är 15 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "words": "Kortet ligger 3 px från platsen P6.C1 och är 15 % mindre än kortet dagens plan ritar (planCardQuad).",
       "measured": {
-        "distancePx": 0.3,
+        "distancePx": 3,
         "size": 0.851,
         "card": "P6.C1"
       },
@@ -1526,9 +1798,9 @@
     },
     "paow-giv-2-1-p6-04-01": {
       "verdict": "äldre plan",
-      "words": "Kortet ligger 1 px från platsen P6.C1 och är 16 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "words": "Kortet ligger 3 px från platsen P6.C1 och är 16 % mindre än kortet dagens plan ritar (planCardQuad).",
       "measured": {
-        "distancePx": 0.8,
+        "distancePx": 2.7,
         "size": 0.843,
         "card": "P6.C1"
       },
@@ -1571,9 +1843,9 @@
     },
     "paow-giv-2-1-p6-07-02": {
       "verdict": "äldre plan",
-      "words": "Kortet ligger 1 px från platsen P6.C1 och är 15 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "words": "Kortet ligger 2 px från platsen P6.C1 och är 15 % mindre än kortet dagens plan ritar (planCardQuad).",
       "measured": {
-        "distancePx": 0.9,
+        "distancePx": 2.1,
         "size": 0.85,
         "card": "P6.C1"
       },
@@ -1582,9 +1854,9 @@
     },
     "paow-giv-2-1-p6-07-01": {
       "verdict": "äldre plan",
-      "words": "Kortet ligger 1 px från platsen P6.C1 och är 14 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "words": "Kortet ligger 4 px från platsen P6.C1 och är 14 % mindre än kortet dagens plan ritar (planCardQuad).",
       "measured": {
-        "distancePx": 0.8,
+        "distancePx": 3.5,
         "size": 0.859,
         "card": "P6.C1"
       },
@@ -1610,9 +1882,9 @@
     },
     "paow-giv-2-2-p6-02-01": {
       "verdict": "äldre plan",
-      "words": "Kortet ligger 1 px från platsen P6.C1 och är 13 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "words": "Kortet ligger 3 px från platsen P6.C1 och är 13 % mindre än kortet dagens plan ritar (planCardQuad).",
       "measured": {
-        "distancePx": 0.6,
+        "distancePx": 2.5,
         "size": 0.869,
         "card": "P6.C1"
       },
@@ -1621,11 +1893,84 @@
     },
     "paow-giv-2-2-p6-03-01": {
       "verdict": "äldre plan",
-      "words": "Kortet ligger 1 px från platsen P6.C1 och är 14 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "words": "Kortet ligger 2 px från platsen P6.C1 och är 14 % mindre än kortet dagens plan ritar (planCardQuad).",
       "measured": {
-        "distancePx": 1,
+        "distancePx": 2,
         "size": 0.863,
         "card": "P6.C1"
+      },
+      "approved": false,
+      "played": false
+    },
+    "paow-giv-2-3-p5-01-01": {
+      "verdict": "stämmer",
+      "words": "Kortet ligger 0 px från platsen P5.C1 och är lika stort som kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 0.4,
+        "size": 1.004,
+        "card": "P5.C1"
+      },
+      "approved": false,
+      "played": false
+    },
+    "paow-giv-2-3-p4-01-01": {
+      "verdict": "stämmer",
+      "words": "Kortet ligger 0 px från platsen P4.C1 och är 1 % mindre än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 0.4,
+        "size": 0.993,
+        "card": "P4.C1"
+      },
+      "approved": false,
+      "played": false
+    },
+    "paow-giv-2-3-p1-01-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": false
+    },
+    "paow-giv-2-3-p4-h24-03-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": true
+    },
+    "paow-giv-2-3-p4-h24-cykel-01-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": true
+    },
+    "paow-giv-2-3-p4-h24-cykel-02-01": {
+      "verdict": "stämmer",
+      "words": "Kortet ligger 0 px från platsen P4.C1 och är lika stort som kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 0.4,
+        "size": 0.998,
+        "card": "P4.C1"
+      },
+      "approved": false,
+      "played": true
+    },
+    "paow-giv-2-3-p4-c2-h24-cykel-01-01": {
+      "verdict": "stämmer",
+      "words": "Kortet ligger 0 px från platsen P4.C2 och är 1 % större än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 0.3,
+        "size": 1.013,
+        "card": "P4.C2"
+      },
+      "approved": false,
+      "played": true
+    },
+    "paow-giv-2-3-p4-c2-h24-cykel-02-01": {
+      "verdict": "stämmer",
+      "words": "Kortet ligger 0 px från platsen P4.C2 och är 2 % större än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 0.1,
+        "size": 1.019,
+        "card": "P4.C2"
       },
       "approved": false,
       "played": false

@@ -3,7 +3,19 @@
 // FFmpeg makes in a temporary folder, skipped where there is no FFmpeg (the hosted check has none). That the port gives tonight's
 // frames was shown on the real deliveries (byte-identical after.mp4 for WAN 3 and the 4K film), not here.
 import test from 'node:test';
+import {stillAnchorTail} from '../src/film-after.ts';
 import assert from 'node:assert/strict';
+
+test('tail suggestions require a sustained final anchor across every pixel and preserve a short hold', () => {
+  const anchor = new Uint8Array(300).fill(80), motion = anchor.slice(); motion[299] = 100;
+  const run = (frames: Uint8Array[]) => { const s = stillAnchorTail(anchor, 24); frames.forEach(f=>s.add(f)); return s.result(); };
+  assert.equal(run(Array(24).fill(motion)).removeFrames, 0, 'a still wrong pose is not an end anchor');
+  assert.equal(run([...Array(24).fill(anchor), motion]).removeFrames, 0, 'motion after a hold cancels it');
+  assert.equal(run(Array(8).fill(anchor)).removeFrames, 0, 'a brief pause is kept');
+  const result = run([motion, ...Array(24).fill(anchor)]);
+  assert.equal(result.suggestedEndFrame, 3); assert.equal(result.removeFrames, 21); assert.equal(result.applied, false);
+  assert.equal(run([motion,...Array.from({length:24},(_,i)=>{const f=anchor.slice();f[299]=i%2?100:80;return f;})]).removeFrames,0,'one moving fingertip cannot vanish in a mean');
+});
 import {mkdtemp, mkdir, readFile, rm, writeFile} from 'node:fs/promises';
 import {existsSync} from 'node:fs';
 import {spawnSync} from 'node:child_process';

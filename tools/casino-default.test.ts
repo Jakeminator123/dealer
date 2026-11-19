@@ -10,7 +10,7 @@ import {readFileSync} from 'node:fs';
 import {DEFAULTS} from '../src/scene3d-view.ts';
 import {lookState, presetFrom} from '../src/game-look.ts';
 import {CASINO_TABLE, casinoSearch, gameSrc, readCasino} from '../studio/lib/casino.ts';
-import {BASE, SHIPPED} from '../studio/lib/scene-presets.ts';
+import {BASE, CASINO_PRESET, SHIPPED} from '../studio/lib/scene-presets.ts';
 
 const page = readFileSync('src/game-page.ts', 'utf8');
 const rooms = JSON.parse(readFileSync('data/scene-rooms.json', 'utf8')).rooms as {id: string; blur?: number}[];
@@ -39,14 +39,14 @@ test('the Casino\'s default preset is the game\'s own look: basgrund holds exact
   assert.deepEqual(casino, {...DEFAULTS, ...own});
 });
 
-test('the Casino opens on basgrund, its own table and the rail\'s dealer when its address names nothing', () => {
+test('the Casino opens on its editable saved look, its own table and the rail\'s dealer', () => {
   const look = readCasino(new URLSearchParams(''));
-  assert.equal(look.forval, BASE);
+  assert.equal(look.forval, CASINO_PRESET);
   assert.deepEqual(look.patch, {});
   assert.equal(look.table, CASINO_TABLE);
   const src = new URL(gameSrc(look), 'http://lab');
   assert.equal(src.pathname, '/game.html');
-  assert.equal(src.searchParams.get('forval'), BASE);
+  assert.equal(src.searchParams.get('forval'), CASINO_PRESET);
   assert.equal(src.searchParams.get('inbaddad'), '1');
   assert.equal(src.searchParams.get('table'), CASINO_TABLE);
   assert.deepEqual([...src.searchParams.keys()].sort(), ['forval', 'inbaddad', 'table'], 'no key of an experiment rides along by default');
@@ -64,5 +64,5 @@ test('the Casino carries the geometry word on to the game in the frame, and keep
 });
 
 test('Bordet\'s Scen starts from the same preset as the Casino when its address names no look', () => {
-  assert.match(readFileSync('studio/components/bordet/SceneBody.tsx', 'utf8'), /: new URLSearchParams\(\{ forval: BASE \}\)\);/);
+  assert.match(readFileSync('studio/components/bordet/SceneBody.tsx', 'utf8'), /: new URLSearchParams\(\{ forval: CASINO_PRESET \}\)\);/);
 });

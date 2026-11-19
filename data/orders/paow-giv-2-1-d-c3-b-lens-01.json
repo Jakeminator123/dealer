@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "paow-giv-2-1-d-c3-b-lens-01",
   "title": "Paow D.C3 · B · Nya Kortplanens lins",
-  "summary": "Geometriprov enligt Jakob: samma P4-recept, endast sista bildens kortgeometri skiljer A/B/C.",
+  "summary": "Gör ett geometriprov enligt Jakob: samma P4-recept, endast sista bildens kortgeometri skiljer A/B/C.",
   "group": {
     "id": "paow-dc3-geometry-20261119",
     "label": "D.C3 · tre geometrier"
@@ -158,8 +158,16 @@
   "approval": {
     "by": "huvudagent",
     "at": "2026-11-19T16:23:25.540Z",
-    "orderSha256": "0c9793cae473ab3399ec2077bde6490bc71bf78b5c561b6a5a60d4b1fc682555",
+    "orderSha256": "91346500b8c26f4bef9b3418c0a2436cb32404a158d9563908c79afbc592d41c",
     "mandate": "Jakob 2026-11-19: Ja visst till startbild och tre granskade D.C3-slutbilder till Runway workspace67037521; tre jämförelsefilmer, högst495 krediter. Inget byte av standarder eller Primär."
   },
-  "status": "GODKÄND"
+  "status": "GODKÄND",
+  "summaryCorrections": [
+    {
+      "before": "Geometriprov enligt Jakob: samma P4-recept, endast sista bildens kortgeometri skiljer A/B/C.",
+      "orderSha256": "0c9793cae473ab3399ec2077bde6490bc71bf78b5c561b6a5a60d4b1fc682555",
+      "at": "2026-11-19T16:54:54.037Z",
+      "reason": "Huvudagenten rättar beskrivningens format vid avslut på Jakobs uppdrag 2026-11-19. Samma godkända bilder, prompt, modell, kostnad och tagningar; originalhashen och kvittot bevaras."
+    }
+  ]
 }

@@ -121,9 +121,10 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   adress (`filmEven`, `filmTempo`, `dealerLife`, `cups`, `cards`).
 - **En labbflik** (2026-11-12): varje labbsida håller en ström öppen mot servern (`src/preview-ui.ts`, `/tab/events`).
   Den nyaste sidan är labbfliken; en äldre stänger sig själv, eller blir tom där webbläsaren vägrar.
-  `node tools/preview.ts --open "<sida>"` visar en sida i den öppna fliken och öppnar en ny bara när ingen finns. Öppna
-  aldrig en labbadress med `Start-Process` eller `start` (AGENTS, "Labbservern": ingen agent kan stänga en flik i hans
-  webbläsare).
+  Codex webview föredras: inventera och återanvänd dess labbflik. Om ingen är åtkomlig öppnas exakt en via
+  datorverktyget, och dess ID behålls för fortsatt testning. Redan godkända lokala tester kräver inte nya frågor om
+  omladdning, navigering eller skärmbilder. I vanlig webbläsare återanvänder `node tools/preview.ts --open "<sida>"`
+  den öppna fliken. Öppna aldrig labbadressen med `Start-Process` eller `start` (AGENTS, "Labbservern").
 - Servern står kvar tills den stoppas med `STOPP.cmd` eller `--stop`. Före en länk till Jakob: `node tools/preview.ts
   --ensure` startar servern om den inte går, utan att öppna eller flytta någon flik. Stäng inte andra projekts
   servrar, och stoppa aldrig via processnamn eller port.

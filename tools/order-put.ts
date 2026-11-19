@@ -29,6 +29,20 @@ import { TAKE_FLOW, approvalWords, mandateRefusal, priceOf, requestOf, type Orde
 
 const sha = (b: Buffer | string) => createHash('sha256').update(b).digest('hex');
 type Take = Receipt['takes'][number];
+/** A receipt stays tied to the original submitted order. Only an audited summary correction may bridge hashes. */
+export function receiptMatchesOrder(order: Order, hash: string): boolean {
+  if (!order.approval || orderHash(order) !== order.approval.orderSha256) return false;
+  let prior = structuredClone(order);
+  const hashes = [orderHash(prior)];
+  while (prior.summaryCorrections?.length) {
+    const correction = prior.summaryCorrections.pop()!;
+    if (!prior.summaryCorrections.length) delete prior.summaryCorrections;
+    if (correction.before === null) delete prior.summary; else prior.summary = correction.before;
+    if (orderHash(prior) !== correction.orderSha256) return false;
+    hashes.push(correction.orderSha256);
+  }
+  return hashes.includes(hash);
+}
 const MIME: Record<string, string> = { png: 'image/png', jpg: 'image/jpeg', mp4: 'video/mp4' };
 
 function reservationCost(order: Order, policy: Policy): number {
@@ -104,7 +118,7 @@ export function receipts(root: string, options: { now?: () => Date } = {}) {
     try { handle = await open(lock, 'wx'); } catch { throw new StoreError(409, `${id}: kvittot skrivs redan av någon annan (${lock}). Vänta, eller ta bort låset bara om ingen annan kör.`); }
     try {
       const receipt: Receipt = (await read(id)) ?? { schemaVersion: 1, order: id, orderSha256: order.approval!.orderSha256, takes: [] };
-      if (receipt.orderSha256 !== order.approval!.orderSha256) throw new StoreError(409, `${id}: kvittot hör till en annan version av beställningen.`);
+      if (!receiptMatchesOrder(order, receipt.orderSha256)) throw new StoreError(409, `${id}: kvittot hör till en annan version av beställningen.`);
       const take = await change(receipt, order, policy);
       receipt.takes = [...receipt.takes.filter((t) => t.take !== take.take), take].sort((a, b) => a.take - b.take);
       const temporary = path.join(folderOf(id), `.${randomUUID()}.tmp`);
@@ -236,7 +250,35 @@ export function receipts(root: string, options: { now?: () => Date } = {}) {
       return { take, status: call.after ? 'EFTERARBETAD' : 'HÄMTAD', requestedAt: call.requestedAt, taskId: call.taskId, creditsRemainingAfter: call.creditsRemainingAfter, error: null, file: path.relative(root, path.resolve(root, call.file)).split(path.sep).join('/'), sha256: sha(fileBytes), outside: true, history } as Take;
     });
   }
-  return { read, check, begin, placed, failed, advance, review, imported };
+  /** Correct display wording only. Original approval hash and original receipt remain independently verifiable. */
+  async function amendSummary(id: string, summary: string, reason: string) {
+    if (!/^Gör .+/.test(summary) || summary.length > 500 || !reason.trim()) throw new StoreError(400, 'Rättningen kräver en kort Gör-beskrivning och en orsak.');
+    const {order} = await check(id), receipt = await read(id);
+    if (receipt && !receiptMatchesOrder(order, receipt.orderSha256)) throw new StoreError(409, 'Kvittot hör inte till beställningen.');
+    const folder = folderOf(id), lock = path.join(folder, '.receipt.lock');
+    await mkdir(folder, {recursive: true});
+    let handle;
+    try { handle = await open(lock, 'wx'); } catch { throw new StoreError(409, 'Beställningen skrivs av någon annan.'); }
+    try {
+      const file = path.join(root, 'data/orders', `${id}.json`);
+      const original = await readFile(file, 'utf8');
+      if (orderHash(JSON.parse(original)) !== orderHash(order)) throw new StoreError(409, 'Beställningen ändrades under rättningen.');
+      if (summary === order.summary) return order;
+      const next = structuredClone(order);
+      next.summaryCorrections = [...(order.summaryCorrections ?? []), {before: order.summary ?? null, orderSha256: orderHash(order), at: now(), reason}];
+      next.summary = summary;
+      next.approval!.orderSha256 = orderHash(next);
+      // The archive is written before the new display text; no request, take, cost, prompt or picture is rewritten.
+      const archived = path.join(folder, `order-${orderHash(order)}.json`);
+      try { await writeFile(archived, original, {flag: 'wx'}); }
+      catch (error) { if ((error as NodeJS.ErrnoException).code !== 'EEXIST' || await readFile(archived, 'utf8') !== original) throw error; }
+      const temporary = path.join(root, 'data/orders', `.${randomUUID()}.tmp`);
+      await writeFile(temporary, JSON.stringify(next, null, 2) + '\n', {flag: 'wx'});
+      await rename(temporary, file);
+      return next;
+    } finally { await handle.close(); await rm(lock, {force: true}); }
+  }
+  return { read, check, begin, placed, failed, advance, review, imported, amendSummary };
 }
 
 /** Pass only the task id and optional positional balance from the CLI. */

@@ -11,7 +11,8 @@ import path from 'node:path';
 import sharp from 'sharp';
 import { ARM_AT_SHOE, POSE_WHAT, orderStore } from './order-store.ts';
 import { committedText } from './committed.ts';
-import { placedFromCommand, receipts, reviewFromCommand } from './order-put.ts';
+import { placedFromCommand, receiptMatchesOrder, receipts, reviewFromCommand } from './order-put.ts';
+import {orderHash} from './order-store.ts';
 
 const base = existsSync('D:/dealer-scratch/tmp') ? 'D:/dealer-scratch/tmp' : os.tmpdir();
 
@@ -45,6 +46,27 @@ async function approved(t: { after(fn: () => Promise<void>): void }) {
   return { root, r, store, setTime, writeMandate };
 }
 
+
+test('a summary correction preserves submitted hashes and cannot disguise changed generation inputs', async t => {
+  const {root, r, store} = await approved(t);
+  const {order: before} = await store.load('prov-ett');
+  await r.begin('prov-ett', 1);
+  const receiptBefore = await r.read('prov-ett');
+  const next = await r.amendSummary('prov-ett', 'Gör en tydligare beskriven ankarebild.', 'Rätta visningstext utan att ändra beställningen.');
+  assert.notEqual(orderHash(next), orderHash(before));
+  assert.equal(receiptMatchesOrder(next, orderHash(before)), true);
+  assert.deepEqual(await r.read('prov-ett'), receiptBefore, 'submitted receipt is byte-equivalent data');
+  assert.deepEqual(next.prompt, before.prompt);
+  assert.deepEqual(next.pictures, before.pictures);
+  const corrupt = structuredClone(next);
+  corrupt.generation.params.resolution = 'changed';
+  corrupt.approval!.orderSha256 = orderHash(corrupt);
+  assert.equal(receiptMatchesOrder(corrupt, orderHash(before)), false, 'rehashing changed inputs is not a summary correction');
+  await r.placed('prov-ett', 1, 'original-task');
+  assert.equal((await r.read('prov-ett'))!.orderSha256, orderHash(before));
+  const original = JSON.parse(await readFile(path.join(root, 'assets/orders/prov-ett', `order-${orderHash(before)}.json`), 'utf8'));
+  assert.deepEqual(original, before);
+});
 
 type BeginResult =
   | {ok: true; status: string; credits: number}

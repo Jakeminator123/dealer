@@ -21,6 +21,8 @@ export const PRESET_BYTES = 16384;
 /** Presets of his own the server keeps at most. */
 export const OWN_LIMIT = 100;
 export const BASE = "basgrund";
+/** The editable look used when Casino or Scen & bord is opened without an explicit preset. */
+export const CASINO_PRESET = "casino";
 
 // What the game sets on the scene today (src/game-page.ts): room, blur, format, tray, cards and the framing on line 58 (the
 // room is Las Vegas when the player has chosen none, line 57; its blur 5 is its entry in data/scene-rooms.json; pitch −8 and
@@ -177,8 +179,9 @@ export function patchOf(to: SceneState, from: SceneState): Partial<SceneState> {
 }
 
 /** The preset whose whole state is exactly this one, if any (the first in the list wins). */
-export function matchPreset(state: SceneState, defaults: SceneState, presets: readonly ScenePreset[]): ScenePreset | null {
-  return presets.find((p) => differences(state, effective(defaults, p.state)).length === 0) ?? null;
+export function matchPreset(state: SceneState, defaults: SceneState, presets: readonly ScenePreset[], preferred?: string): ScenePreset | null {
+  const matches = (p: ScenePreset) => differences(state, effective(defaults, p.state)).length === 0;
+  return presets.find((p) => p.name === preferred && matches(p)) ?? presets.find(matches) ?? null;
 }
 
 // ── Addresses ──

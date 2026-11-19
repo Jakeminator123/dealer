@@ -409,6 +409,19 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 
 ## Kortet
 
+- **Återbruk före egna andrakortsfilmer** (2026-11-19): spelarnas C2, C3 och senare kort använder tills vidare
+  C1-rörelsen med en liten förskjutning av kortet. Egna filmer för dessa är nästa steg, inte nödvändiga luckor nu.
+- **Perspektivet som sparat val** (2026-11-19): Jakob gillar ovalerna och djupkänslan. Kamerans vinkel och avstånd
+  ska kunna ändras i Scen & bord och sparas för Casino. Ringar och kort följer samma bord och kamera; ingen separat
+  ovaleffekt för bara markeringarna. Han vill att Casino använder det som faktiskt ställts in där. Hans förtydligande:
+  det bredare, mer ovala perspektivet ska finnas som alternativ, inte automatiskt som grund (Scen: **Bred lins**).
+
+- **B-linsen som utgångspunkt nu** (2026-11-19): Jakob vill att nya filmer följer en överenskommen standard och
+  väljer tills vidare linsen i D.C3-prov B. Han bedömer B:s rörelse som rätt; kortet kan behöva granskas. C vänder
+  igen till fel fysisk sida trots rätt färg. A kan vara en variant, men det landade kortet är för litet. Detta är
+  inte ett Primär-val. Nya labbordrar använder redan linsen; befintliga filmer blir inte omgjorda av valet.
+  Casino och labbet använder samma geometri. Före massbeställning återstår en godkänd helgiv med rätt hand och tempo;
+  den matematiska perspektivkontrollen är inte ett godkännande av filmens grepp.
 - **Tre geometrier som jämförelse** (2026-11-19): "Skapa en film med den gamla spelgeometrin, en för den nya och en som den gamla geometrin med nya storleken på korten"; lägg också in det nya kortet redigerbart i labbet. Jakob godkände tre D.C3-prov och deras styrbilder till Runway, högst 495 krediter. Proven ersätter inga gällande ankare, Primär-val eller labbförval; uppladdade bilder blir inte automatiskt framtida standarder. Nästa order hämtar fortfarande uttryckliga referenser ur labbets materialregister.
 - **En linje för korten** (2026-11-13, kl. 15.47): "Angående förvalda och icke-förvalda kort, är jag osäker på vad som
   ska gälla. Jag vill bara att det ska bli en linje och att allt ska anpassas till en standard som passar med det som
