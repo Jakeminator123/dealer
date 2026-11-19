@@ -66,6 +66,23 @@
         "note": "",
         "at": "2026-11-17T16:58:48.987Z"
       }
+    },
+    {
+      "id": "forgrena-kortgeometrin",
+      "kind": "gora",
+      "question": "Förgrena geometrin efter jämförelsen",
+      "leads": "Jämför tre namngivna geometriförval i samma projekt och välj sedan gemensam regel för Kortplan, spel och nya filmer.",
+      "proof": "paow-kortgeometri-20261119",
+      "file": "3-hela-kortplanen.png",
+      "chips": [
+        {
+          "value": "klart",
+          "label": "Genomgånget"
+        }
+      ],
+      "asked": "2026-11-19",
+      "from": "Jakob via Codex",
+      "answer": null
     }
   ]
 }
