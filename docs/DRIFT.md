@@ -370,6 +370,11 @@ nekas. Använd samma val för planen och körningen; kör inget annat bygge i de
 `--kor --bara-bygge` gör bara det lokala snapshotbygget och dess medieplan. Inga media laddas upp och ingen deploy görs;
 använd planen för att granska exakt publiceringsinnehåll först. `--utan-deploy` laddar däremot fortfarande upp media.
 
+Efter deploy får varje domän och åtkomstläge högst 30 sekunder att växla version: två svar i följd från `/meta.json` måste bära hela
+den begärda commit-hashen och `sourceDirty: false`. Kontroll görs varannan sekund utan cache eller omdirigering;
+varje svar inklusive JSON har högst tre sekunder, begränsat av återstående tid. Det gäller både öppen och inloggad
+kopia. Därefter prövas sidor och filmsökning som förut; fel version efter tidsgränsen är fortfarande ett fel.
+
 **Det som ska finnas på plats** innan `--kor` (verktyget stannar med ett besked om något saknas):
 
 - Körningen görs från Jakobs utcheckning (`C:/Users/jakem/dev/super-feature-sg/dealer`), med koden som ska ut pushad till

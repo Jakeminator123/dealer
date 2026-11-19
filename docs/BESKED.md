@@ -478,6 +478,9 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 
 ## Kopian och nätet
 
+- **Sju filmer till mobilkopian** (2026-11-19, Codex): "Ja, publicera dessa sju filmer". Beskedet gäller exakt de
+  sju namngivna källfilmerna, 24,1 MB, till `dealer-lake.vercel.app`; befintligt inloggningsskydd bevaras.
+  Filförteckning och verifiering finns i `assets/proofs/paow-mobile-studio-20261118/publication-20261119.json`.
 - **Mobilkopia och slut på arbetspasset** (2026-11-18, senare på kvällen): "Skcika - bara om möjligt - ngonting till vercel
   som jag kan klla in från mobilen" och "Avsluta när du känner att det är nog bra. Eller om högst 4h."
   Det ger mandat att förbereda och publicera Dealer-kopian i detta arbetspass; den befintliga åtkomsten bevaras.

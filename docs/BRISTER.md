@@ -275,14 +275,13 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   stora filer här (repot är publikt och 16 MB): det som kostar på kontot är ett annat repos automatiska kontroller
   (`D:/dealer-scratch/tmp/github-kostnad/siffror.txt`, förslagen bredvid). Stänger: bara han, under Settings, Billing
   and licensing.
-- **Mobilkopian är byggd men ännu inte publicerad.** Nätet står på `2e3967c`: Material saknar `api/media`, Bordets
-  fasta panel skymmer bilden på telefon och bot/Önskemål saknar en tydlig inloggningsväg. Rättat i `9ffa4b0`:
-  fryst Material-register, staplat Bordet, sessionskontroll och inloggningslänkar; ett inboxfel stoppar inte senare försök.
-  Prövat: lokal snapshot 19/19 (även cookies, skyddad inbox och filmsökning), native Chrome 390 × 844 och 844 × 390,
-  hand 20 mot 17 och saldo 1005. Bevis: `assets/proofs/paow-mobile-studio-20261118`. En fysisk telefon och ljud är
-  inte prövade; stående spel beskär ytterplatserna. Automatisk granskning stoppade sju nya filmuppladdningar;
-  den konkreta frågan ligger i Beslut. Stänger: verifierad ny nätkopia och telefonprov. De äldre kontrollskripten
-  i `huvudagent11/look/` använder ett ersatt lösenord och ska inte köras.
+- **Mobilkopians telefonprov återstår.** Version `1206c43` publicerades 2026-11-19 på Jakobs ja till sju filmer.
+  Material-registret, Bordets staplade panel och inloggningslänkarna fungerar i nätkopian. Prövat: 19/19 nätkontroller,
+  alla sju filmer med Range vid början, mitten och slutet; IAB 390 × 844 och 844 × 390, hand 18 mot 19, saldo 995.
+  Bevis: `assets/proofs/paow-mobile-studio-20261118`. Fysisk telefon och ljud är inte prövade; stående spel beskär
+  ytterplatserna. Material kallar sex av åtta ankare saknade när de inte ingår i publiceringsurvalet, även om de finns
+  lokalt. Stänger: telefonprov och tydlig skillnad mellan opublicerat och saknat material. Äldre kontrollskript i
+  `huvudagent11/look/` använder ett ersatt lösenord och ska inte köras.
 
 ## Pamela
 

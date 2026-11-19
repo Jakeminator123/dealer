@@ -30,6 +30,7 @@ import {readFile, mkdir} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {waitForPublishedCommit} from './publish-ready.ts';
 
 const home = path.resolve(fileURLToPath(new URL('../', import.meta.url)));
 if (path.resolve(process.cwd()) !== home) throw Error('Kör från dealer-katalogen (Jakobs utcheckning).');
@@ -194,6 +195,21 @@ const check = (name: string, ok: boolean, detail = '') => { if (!ok) bad++; say(
 for (const domain of domains) {
   const site = `https://${domain}`;
   say(`\n── ${site}`);
+  if (open === 'allt') {
+    const ready = await waitForPublishedCommit(site, commit);
+    check('öppen kopia säger rätt commit', ready.ready, ready.detail);
+  }
+  let cookie = '';
+  if (password) {
+    const login = await fetch(`${site}/api/login`, {method: 'POST', redirect: 'manual', headers: {'content-type': 'application/x-www-form-urlencoded'}, body: new URLSearchParams({losen: password, next: '/studio/'})});
+    cookie = (login.headers.get('set-cookie') ?? '').split(';')[0];
+    const loggedIn = login.status === 303 && cookie.startsWith('dealer_studio=');
+    check('inloggning', loggedIn, String(login.status));
+    if (loggedIn) {
+      const ready = await waitForPublishedCommit(site, commit, {cookie});
+      check('kopian säger rätt commit', ready.ready, ready.detail);
+    } else check('kopian säger rätt commit', false, 'inloggningen misslyckades');
+  }
   // Without a cookie: the login page for everything, unless the copy is open (DEALER_OPPEN in the project; DEALER_OPPEN_PROV here says
   // what this run is to expect: 'allt', 'spel' or nothing). Open, a page answers, a door leads to the game, and the bot stays shut.
   for (const p of ['/studio/', '/studio/game/', '/api/clip-bank', '/game.html', '/casino', '/trailer', `/${film}`]) {
@@ -207,20 +223,13 @@ for (const domain of domains) {
   if (open) { const bot = await fetch(`${site}/api/bot`, {method: 'POST', redirect: 'manual', headers: {'content-type': 'application/json'}, body: '{}'}).catch(() => null);
     check('utan kaka: botten kräver lösenordet', bot?.status === 401, String(bot?.status ?? 'inget svar')); }
   if (open === 'allt') {
-    const meta = await fetch(`${site}/meta.json`, {cache: 'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null) as {sourceCommit?: string} | null;
-    check('öppen kopia säger rätt commit', meta?.sourceCommit === commit, meta?.sourceCommit?.slice(0, 7));
     const range = await fetch(`${site}/${film}`, {headers: {range: 'bytes=0-1023'}}).catch(() => null);
     const bytes = range ? Buffer.from(await range.arrayBuffer()) : Buffer.alloc(0);
     check('öppen film svarar med MP4 och Range', range?.status === 206 && bytes.subarray(4, 8).toString() === 'ftyp', String(range?.status ?? 'inget svar'));
   }
   if (!password) { say('   (DEALER_LOSEN_PROV är inte satt: inloggningen prövas inte)'); continue; }
-  const login = await fetch(`${site}/api/login`, {method: 'POST', redirect: 'manual', headers: {'content-type': 'application/x-www-form-urlencoded'}, body: new URLSearchParams({losen: password, next: '/studio/'})});
-  const cookie = (login.headers.get('set-cookie') ?? '').split(';')[0];
-  check('inloggning', login.status === 303 && cookie.startsWith('dealer_studio='), String(login.status));
   const page = await fetch(`${site}/studio/`, {headers: {cookie}});
   check('första sidan', page.status === 200 && (await page.text()).includes('/studio/game/'), String(page.status));
-  const meta = await (await fetch(`${site}/meta.json`, {headers: {cookie}})).json().catch(() => null) as {sourceCommit?: string} | null;
-  check('kopian säger rätt commit', meta?.sourceCommit === commit, meta?.sourceCommit?.slice(0, 7));
   const range = await fetch(`${site}/${film}`, {headers: {cookie, range: 'bytes=0-1023'}});
   const bytes = Buffer.from(await range.arrayBuffer());
   check(`film med Range /${film}`, range.status === 206 && bytes.subarray(4, 8).toString() === 'ftyp', `${range.status} ${range.headers.get('content-range')}`);
