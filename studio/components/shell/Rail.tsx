@@ -29,7 +29,7 @@ type View = { href: string; label: string; hint: string; icon: ComponentType<{ c
 export const VIEWS: readonly View[] = [
   // Bordet (2026-11-17): the one view of the table, in the lab and in the copy. Its parts hold what Placering (Kortplan), Scen
   // (Scen, Råfilm, Efterarbete) and Beställ were; their old addresses lead there (/, /scen/, /placering/, /bestall/).
-  { href: "/bordet/", label: "Bordet", hint: "Bordet: kortplan, beställning, scen, råfilm och efterarbete i en vy", icon: LayoutPanelLeft },
+  { href: "/bordet/", label: "Scen & bord", hint: "Ändra scen, bord, kortplan och utdelning; beställ och efterarbeta filmer", icon: LayoutPanelLeft },
   // Karta holds Primära too since 2026-11-17 (each step with its Primär and secondary films); /primara/ leads there.
   { href: "/karta/", label: "Karta", hint: "Nodträdet: Primär och sekundära filmer per steg, och hur spelet använder dem", icon: Workflow },
   // Granska holds the proofs too since 2026-11-17 (its part Prov); /prov/ leads there.
@@ -90,7 +90,7 @@ function RailItem({ view, href, active, count, tone }: { view: View; href?: stri
         {active ? <span aria-hidden className="absolute -left-2 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-r-full bg-brass" /> : null}
         <span className="relative">
           <Icon className={cn("size-5 transition-colors duration-150", active ? "text-brass" : "text-dim group-hover:text-ink")} />
-          {count ? (
+          {count && view.href !== "/karta/" ? (
             <span
               className={cn(
                 "absolute -top-1.5 left-3.5 h-4 min-w-4 rounded-full px-1 text-center text-[10px] font-semibold leading-4 tabular-nums ring-2",
@@ -103,6 +103,7 @@ function RailItem({ view, href, active, count, tone }: { view: View; href?: stri
           ) : null}
         </span>
         <span className="text-[11px] font-medium leading-4 tracking-[0.01em]">{view.label}</span>
+        {view.href === "/karta/" && count ? <span className="text-[10px] leading-3 text-dim">{count}</span> : null}
       </Link>
     </Tooltip>
   );
@@ -150,7 +151,7 @@ export function Rail() {
   const counts = useMemo(() => {
     if (!graph) return null;
     const p = primarCount(graph);
-    return { waiting: awaitingJakob(graph).length, primar: `${p.set}/${p.total}` };
+    return { waiting: awaitingJakob(graph).length, primar: `${p.set}/${p.total} primära` };
   }, [graph]);
   const offline = !!error;
 

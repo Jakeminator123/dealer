@@ -3,7 +3,7 @@
 // catalogues of the game and the studio hold the same ranges. No browser and no media.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {DEFAULTS} from '../src/scene3d-view.ts';
+import {DEFAULTS, createSceneCardOptions} from '../src/scene3d-view.ts';
 import {EVEN, FLASH, FRAME_FIX, LIFE, roomFlashAt, evenFor, lifeNow, lifeShiftAt, matchLeft, rematrix, toneMatch, toneOf, toneUnder} from '../src/scene3d-film.ts';
 import {SCENE_KEYS} from '../studio/lib/scene-keys.ts';
 import {KEYS as GAME_KEYS} from '../src/game-look.ts';
@@ -11,6 +11,18 @@ import {SMOKE, smokeMask} from '../src/scene3d-smoke.ts';
 import {TABLE} from '../src/scene3d-table.ts';
 
 const times = (m: readonly number[], v: number[]) => [0, 1, 2].map(r => m[r * 3] * v[0] + m[r * 3 + 1] * v[1] + m[r * 3 + 2] * v[2]);
+
+test('the default keeps table cards while the hand overlay can change independently', () => {
+  const select = createSceneCardOptions(), cards = {placed: [{target: 'P4.C1'}]} as never;
+  const base = select(cards, DEFAULTS.cardInHand);
+  assert.equal(DEFAULTS.cardInHand, false);
+  assert.equal(base?.carry, 'film');
+  assert.equal(base?.placed, (cards as {placed: unknown}).placed);
+  assert.equal(select(cards, false), base, 'reuse options until the part or control changes');
+  assert.equal(select(cards, true)?.carry, 'object');
+  assert.equal(select({carry: 'matte'}, false)?.carry, 'matte', 'an explicit film trial keeps its choice');
+  assert.deepEqual(GAME_KEYS.cardInHand, {kind: 'switch'});
+});
 
 test('the defaults are Jakob\'s standard of 2026-11-13, and both catalogues hold the three keys', () => {
   // the films evened, the cup holders in the rail and life in her upper body, all from the start. The deals play as filmed: at twice

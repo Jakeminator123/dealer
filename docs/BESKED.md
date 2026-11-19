@@ -78,6 +78,10 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 
 ## Labbet och studion
 
+- **Handöverlägget av i grunden** (2026-11-19): "Ta bort det svarta kortöverlägget som standard så jag slipper speciallänkar. Behåll korten som ligger på bordet."
+  Scen har separata reglage för Kort på bordet och Överlägg i handen. Det senare är av som standard, även i Casino;
+  filmens gula/blå originalkort kan synas under utdelningen. Huvudvyn heter Scen & bord; adressen `/bordet/` består.
+
 - **Labbet först** (2026-11-11): prov och effekter hör hemma i labbets sidor; spelet (`game.html`) är ett mellansteg
   mot Scout och får bara det han har godkänt i labbet.
 - **Ett labb** (2026-11-17, kväll): "Angående det gamla och nya labbet skulle jag vilja att du lyfter över relevanta

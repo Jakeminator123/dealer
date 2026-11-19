@@ -126,7 +126,7 @@ export const WORDS: readonly Word[] = [
   { grupp: "Labbet och vyerna", ord: "Önskemål", betyder: "På kopian: önskemål, frågor och felrapporter till Jakob, med status och hans svar.", sager: [], aven: [] },
   { grupp: "Labbet och vyerna", ord: "Scen", betyder: "Bordets del där en runda spelas i 3D-scenen och scenen ändras: rundorna och alla scenens reglage (rum, ljus, kort, kamera …) i kolumnen till höger.", sager: [], aven: [] },
   { grupp: "Labbet och vyerna", ord: "Förval", betyder: "En sparad look för 3D-scenen: Basgrund, Levande, Rumsstudien och egna, i raden Förval överst i Bordets Scen. I Beställ betyder förval det som är valt från början.", sager: ["profilval"], aven: ["preset", "forval="] },
-  { grupp: "Labbet och vyerna", ord: "Basgrund", betyder: "Förvalet med det spelet visar i dag: Las Vegas, hela bordet, ritade kort. Scen märker det som skiljer sig från det.", sager: [], aven: [] },
+  { grupp: "Labbet och vyerna", ord: "Basgrund", betyder: "Förvalet med det spelet visar i dag: Las Vegas, hela bordet, kvarliggande spelkort och filmens eget kort i handen. Scen märker det som skiljer sig från det.", sager: [], aven: [] },
   { grupp: "Labbet och vyerna", ord: "Levande", betyder: "Ett förval: Basgrund med kameran som lutar, skärpan som följer kortet, damm och klocka.", sager: [], aven: [] },
   { grupp: "Labbet och vyerna", ord: "3D", betyder: "Filmen spelad i 3D-scenen: keyad och lagd vid ett bord i ett rum, med ljus och kamera: Bordets Scen och Efterarbete.", sager: [], aven: ["scene3d", "3D-scenen"] },
   { grupp: "Labbet och vyerna", ord: "Råfilm", betyder: "Filmen som den är filmad, på sin gröna bakgrund och utan rum: Bordets del Råfilm.", sager: ["Inte 3D", "råfilmen"], aven: ["platt", "flat"] },

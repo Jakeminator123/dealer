@@ -122,6 +122,9 @@ test("a film carry round keeps the shoe's appearance through the entry without p
   assert.equal(trial[0].cards?.target, undefined);
   assert.equal(trial[0].cards?.land, undefined);
   assert.ok(source.every(p => p.cards === undefined), "the ordinary scene parts remain unchanged");
+  const live = withSceneCardTrial(source, segments, plan, "contract", {}, null);
+  assert.ok(live.every(p => p.cards?.carry === undefined), "the scene control supplies the carry mode");
+  assert.ok(live[1].cards?.land && live[2].cards?.returning, "the ordinary scene keeps landing and return metadata");
   const gapped = [{ ...source[0], path: null }, ...source.slice(1)];
   assert.equal(withSceneCardTrial(gapped, segments, plan, "contract", words)[0], gapped[0], "a missing film stays a gap");
 });

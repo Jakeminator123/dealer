@@ -73,7 +73,10 @@ function Stat({ sign, tone, children, title }: { sign?: string; tone: string; ch
 /** The header: steps with a Primär of the steps a round needs (the menu's count), and the steps the game has no film for. */
 function SummaryLine({ primar, s }: { primar: { set: number; total: number }; s: Summary }) {
   return (
-    <span className="flex items-center gap-3 text-sm text-dim">
+    <span className="flex flex-wrap items-center gap-3 text-sm text-dim">
+      <Stat tone="" title="Steg med spelbar film, inklusive återbruk och vägar via andra ankare; säger inget om enhetlig filmkvalitet">
+        <span className="font-medium text-ink tabular-nums">Spelbara steg {s.films - s.missing}/{s.films}</span>
+      </Stat>
       <Stat sign="★" tone="text-brass" title="Steg där du har valt en Primär, av stegen en runda behöver">
         <span className="font-medium text-ink tabular-nums">
           Primär {primar.set}/{primar.total}

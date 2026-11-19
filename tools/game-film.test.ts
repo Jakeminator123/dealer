@@ -192,7 +192,7 @@ test('a planned cut can match unloaded track paths without claiming a complete g
   assert.equal(continuesCardFilm(deal, back, path, path), false);
 });
 
-test('the film queue keeps the film card only at its filmed target and continues it only across an adjacent cut', async () => {
+test('the film queue keeps the chosen hand mode at borrowed targets and continues only across an adjacent cut', async () => {
   const table = {hands: [{seat: 4, cards: [1, 2, 3]}], dealer: []};
   const records = [1, 2, 3].map((shoeDraw) => ({shoeDraw, target: `P4.C${shoeDraw}`, r: 'A', s: 'spades'}));
   const clip = 'p4-shared-source', trackPath = `${clip}/card-track.json`;
@@ -222,24 +222,24 @@ test('the film queue keeps the film card only at its filmed target and continues
   assert.ok(same.every(p => p.path === video(clip)), 'all three slots use the same actual P4.C1 film');
   assert.deepEqual(same.map(p => [p.cards?.target, p.start, p.cards?.carry, p.cards?.filmContinuesDeal]), [
     ['P4.C1', 0, 'film', undefined], ['P4.C1', 110, 'film', true],
-    ['P4.C2', 0, 'object', undefined], ['P4.C2', 110, 'object', true],
-    ['P4.C3', 0, 'object', undefined], ['P4.C3', 110, 'object', true],
+    ['P4.C2', 0, 'film', undefined], ['P4.C2', 110, 'film', true],
+    ['P4.C3', 0, 'film', undefined], ['P4.C3', 110, 'film', true],
   ]);
   const ret = same[3];
   assert.equal(same[2].end, ret.start, 'the last displayed DEAL frame is 109, followed by RETURN frame 110');
   const view = (part: FilmPart, frame: number) => frameCardsForView(part.track as CardTrack, frame, null,
     {...part.cards, scale: 1} as Parameters<typeof frameCardsForView>[3]);
   const lastDeal = view(same[2], 109), firstReturn = view(ret, 110);
-  assert.ok(lastDeal.pose && lastDeal.pose.resting < 1);
-  assert.ok(firstReturn.pose && firstReturn.pose.resting < 1 && !firstReturn.returning, 'the object keeps moving during the first return frame');
-  assert.deepEqual(firstReturn.pose, view(same[2], 110).pose, 'render the same pose that the deal would have rendered on this source frame');
+  assert.equal(lastDeal.pose, null, 'no rendered card is placed over the hand');
+  assert.ok(lastDeal.keepFilmCard && firstReturn.keepFilmCard && !firstReturn.returning, 'the original card continues through the cut');
+  assert.equal(firstReturn.pose, null, 'the return does not switch the hand overlay back on');
   assert.equal(view(ret, 117).returning, false);
   const landed = view(ret, 118);
   assert.equal(landed.returning, true);
   assert.deepEqual(landed.placed.map(card => card.shoeDraw), [1, 2], 'the returned C2 lies beside C1 exactly once');
   assert.deepEqual(view(ret, 119).placed, landed.placed, 'the last frame needs no marker to keep the card');
   const options = (part: FilmPart) => part.cards as Parameters<typeof returnAfterFilmLanding>[2];
-  assert.equal(returnAfterFilmLanding(track, 118, options(ret), 119), true, 'object mode does not wait for paper fade');
+  assert.equal(returnAfterFilmLanding(track, 118, options(ret), 119), false, 'borrowed films also wait for paper fade');
   assert.equal(returnAfterFilmLanding(track, 118, options(same[1]), 119), false, 'film mode still waits for the fade');
   assert.deepEqual((ret.cards?.placed as {shoeDraw: number}[]).map(p => p.shoeDraw), [1], 'the returning C2 is not in the placed list');
   assert.deepEqual(landed.placed[1].quad, view(same[4], 0).placed[1].quad, 'the next beat keeps the C2 resting quad');
@@ -278,7 +278,7 @@ test('the film queue keeps the film card only at its filmed target and continues
   assert.ok(beyondSource.every(p => !p.cards?.filmContinuesDeal), '121 track frames exceed the 120-frame source');
   const noFade = await play(clip, 110, table, {sourceTrack: {...track, frames: track.frames.slice(0, 119)}});
   assert.equal(noFade[1].cards?.filmContinuesDeal, undefined, 'the film track reaches rest but not the end of its fade');
-  assert.equal(noFade[3].cards?.filmContinuesDeal, true, 'object mode needs only the measured rest');
+  assert.equal(noFade[3].cards?.filmContinuesDeal, undefined, 'borrowed film also needs the complete fade');
   const cutShort = await play(clip, 110, table, {backLast: 117});
   assert.ok(cutShort.every(p => !p.cards?.filmContinuesDeal), 'the return cut ends before the recorded rest');
   for (const carry of [null, 'object'] as const) {
@@ -288,7 +288,7 @@ test('the film queue keeps the film card only at its filmed target and continues
   }
   const split = await play(clip, 110, {hands: [{seat: 4, cards: [1, 2]}, {seat: 4, cards: [3]}], dealer: []});
   assert.deepEqual(split.map(p => p.cards?.target), ['P4.H1.C1', 'P4.H1.C1', 'P4.H1.C2', 'P4.H1.C2', 'P4.H2.C1', 'P4.H2.C1']);
-  assert.ok(split.every(p => p.cards?.carry === 'object' && !!p.cards?.filmContinuesDeal === !!p.cards?.returning));
+  assert.ok(split.every(p => p.cards?.carry === 'film' && !!p.cards?.filmContinuesDeal === !!p.cards?.returning));
   assert.equal(view(split[3], 110).returning, false, 'split continues the same hand motion into the return');
 });
 
@@ -445,7 +445,7 @@ test('a rest held on its first frame stands until she speaks or it is let go, an
 
 test('who decides the drawn cards: the address, then the player\'s own menu, then on; a look\'s preset has no say', () => {
   // the player switched them off in the game's menu: off, also after the frame reloads, whatever look is played
-  assert.deepEqual(cardsChoice({memory: 'off'}), {cards: false, carry: 'object'});
+  assert.deepEqual(cardsChoice({memory: 'off'}), {cards: false, carry: 'film'});
   // the address (a link, a recording) wins over what a browser remembers, both ways
   assert.equal(cardsChoice({address: true, memory: 'off'}).cards, true);
   assert.equal(cardsChoice({address: false, memory: 'on'}).cards, false);
@@ -454,12 +454,15 @@ test('who decides the drawn cards: the address, then the player\'s own menu, the
   // how the card in her hand is shown is the address's kort word alone (and a kort word means the cards are on). Without one it is
   // the game's line, the drawn card in her hand (CARRY in src/card-overlay.ts says why); kort=liggande is the film's own card there.
   // The menu has no switch for it, and a browser that still remembers the removed switch reads as cards on.
-  assert.deepEqual(cardsChoice({}), {cards: true, carry: 'object'});
-  assert.deepEqual(cardsChoice({memory: 'lying'}), {cards: true, carry: 'object'});
+  assert.deepEqual(cardsChoice({}), {cards: true, carry: 'film'});
+  assert.deepEqual(cardsChoice({memory: 'lying'}), {cards: true, carry: 'film'});
+  assert.deepEqual(cardsChoice({inHand: true}), {cards: true, carry: 'object'});
+  assert.deepEqual(cardsChoice({inHand: false}), {cards: true, carry: 'film'});
+  assert.deepEqual(cardsChoice({kort: 'liggande', inHand: true}), {cards: true, carry: 'film'});
   assert.deepEqual(cardsChoice({kort: 'hand', memory: 'lying'}), {cards: true, carry: 'object'});
   assert.deepEqual(cardsChoice({kort: 'liggande', memory: 'off'}), {cards: true, carry: 'film'});
   assert.deepEqual(cardsChoice({kort: 'liggande', address: false}), {cards: false, carry: 'film'});
-  assert.equal(cardsChoice({kort: 'matt'}).carry, 'matte'); assert.equal(cardsChoice({kort: 'nej'}).carry, 'object');
+  assert.equal(cardsChoice({kort: 'matt'}).carry, 'matte'); assert.equal(cardsChoice({kort: 'nej'}).carry, 'film');
 });
 
 test('a rest film that asks for an effect hands it to the scene with its part; a broken or missing effect is left out', async () => {

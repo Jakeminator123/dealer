@@ -99,7 +99,7 @@ export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: Scene
   );
   const parts = useMemo(() => {
     const parts = roundParts(round, segments), words = readSceneCardTrial(new URLSearchParams(searchText));
-    return words && plan ? withSceneCardTrial(parts, segments, plan, tableGeometry(searchText), words) : parts;
+    return plan ? withSceneCardTrial(parts, segments, plan, tableGeometry(searchText), words ?? {}, words ? "film" : null) : parts;
   }, [round, segments, plan, searchText]);
   const notation = isReference(round) ? round.name : round?.steps.length ? formatJakob(round.steps) : "";
   const mode = viewFor(round, kind === "rafilm" ? "platt" : "3d");

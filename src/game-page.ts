@@ -128,7 +128,7 @@ let room = ROOMS.find(r => r.id === (asked.room ?? query.get('room') ?? remember
 // The drawn cards and how the card in her hand is shown (cardsChoice in src/game-film.ts): the address's cards= and kort= first, then
 // the player's choice in the console's Miljö menu (remembered in the browser), then on. A look's preset has no say.
 const cardsMemory = (() => { try { return localStorage.getItem('dealer.cards'); } catch { return null; } })();
-const cardsNow = cardsChoice({address: (look?.keys as {cards?: boolean} | undefined)?.cards, kort: query.get('kort'), memory: cardsMemory});
+const cardsNow = cardsChoice({address: (look?.keys as {cards?: boolean} | undefined)?.cards, kort: query.get('kort'), memory: cardsMemory, inHand: asked.cardInHand});
 scene.set({format: 'fill', room: room as never, blur: ROOMS.find(r => r.id === room)!.blur, tray: true, cards: true, pitch: Number(query.get('pitch') ?? FRAMING.wide.pitch), zoom: Number(query.get('zoom') ?? FRAMING.wide.zoom)});
 // The look over the game's own settings, before the first picture. A room of it that the menu does not offer (a built room
 // of the lab) is shown all the same, and the menu marks none. The table is built by now, so the room is changed with a cut,
@@ -156,7 +156,7 @@ const film = createFilm(scene.players as unknown as FilmPlayers, graph, layout, 
 if (query.has('dealTempo')) film.dealTempo = Number(query.get('dealTempo'));
 film.calm = introOn; // under the film before the game she only rests calmly: the film ends with her at rest
 // How the card in her hand is shown (src/game-film.ts Carry) is a word in the address only, for the lab and for recordings:
-// kort=hand (the drawn card in her hand: what the game does without the word), kort=liggande (the film's own card in her hand, the
+// kort=hand (the drawn card in her hand, overriding the scene switch), kort=liggande (the film's own card in her hand, the
 // drawn card once it lies), kort=matt (the film's card recoloured in her hand).
 film.carry = cardsNow.carry;
 // The film card's own colours recoloured (src/game-film.ts CardWords), a lab trial for recordings and Jakob's own eye: cardBack=dark,

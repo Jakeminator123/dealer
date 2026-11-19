@@ -77,6 +77,7 @@ const NEEDS: Partial<Record<SceneKey, Needs>> = {
   roomLight: { key: "surface", is: ["photo", "natur", "natur-2", "natur-3", "natur-duk"] },
   felt: { key: "cloth", is: ["print"] },
   cardMethod: { key: "cards", is: [true] },
+  cardInHand: { key: "cards", is: [true] },
   cardHand: { key: "cards", is: [true] },
   cardScale: { key: "cards", is: [true] },
   cardRank: { key: "cards", is: [true] },
@@ -132,7 +133,8 @@ export const SCENE_KEYS: readonly KeySpec[] = [
   spec("shelf", "bord", "U", "Hylla vid dealern", toggle, "En låg hylla bakom bordskanten vid hennes högra sida, för filmen där hon tar ett glas därifrån (prov)."),
   spec("cups", "bord", "U", "Mugghållare", toggle, "Hållare i guld, försänkta i relingens läder mellan platserna. Förval på."),
   // ── Kort och marker ──
-  spec("cards", "kort", "D", "Renderade kort", toggle, "Spelkort ritas i stället för filmens färgade kort; spelet har dem på."),
+  spec("cards", "kort", "D", "Kort på bordet", toggle, "Behåll de utdelade spelkorten på bordet. Av döljer alla ritade kort."),
+  spec("cardInHand", "kort", "D", "Överlägg i handen", toggle, "Av: filmens eget kort under utdelningen. På: ritat spelkort även i handen. Korten på bordet behålls."),
   spec("cardMethod", "kort", "U", "Ritsätt", choice(["scene", "I scenen"], ["film", "I filmrutan"], ["matte", "Filmens matt"]), "I scenen: ett föremål under filmen. I filmrutan: det äldre sättet. Filmens matt (prov): filmens eget kort färgas om."),
   spec("cardHand", "kort", "U", "Kortet i handen", choice(["film", "Filmens storlek"], ["standard", "Standard"]), "Standard: kortet har vilans storlek hela vägen."),
   spec("cardScale", "kort", "U", "Kortens storlek", slider(0.8, 2, 0.05, "×"), "Alla ritade kort: 1 är kontraktets kort, förval 1,2. Med geometri=lins är 1,2 ett verkligt kort (63 × 88 mm)."),

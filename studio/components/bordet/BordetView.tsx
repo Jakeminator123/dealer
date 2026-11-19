@@ -220,7 +220,7 @@ export function BordetView() {
     );
   return (
     <Page
-      title="Bordet"
+      title="Scen & bord"
       full
       status={
         <>

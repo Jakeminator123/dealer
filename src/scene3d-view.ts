@@ -26,7 +26,7 @@ export type SceneState = {
   focus: 'off' | 'dealer' | 'card' | 'follow' | 'manual'; focusDistance: number; tolerance: number;
   fan: boolean; fanStrength: number; fanPeriod: number;
   tray: boolean; cups: boolean; base: TableBase; surface: TableSurface; roomLight: number; tableSize: number;
-  cards: boolean; cardMethod: 'scene' | 'film' | 'matte'; cardRank: string; cardSuit: string; cardScale: number; cardHand: 'film' | 'standard';
+  cards: boolean; cardInHand: boolean; cardMethod: 'scene' | 'film' | 'matte'; cardRank: string; cardSuit: string; cardScale: number; cardHand: 'film' | 'standard';
   clock: boolean; dust: number; flicker: boolean; flickerEvery: number; flickerStrength: number;
   filmBright: number; filmWarm: number; wrap: number;
   roomShift: 'cut' | 'shimmer'; roomShiftSeconds: number;
@@ -60,7 +60,7 @@ export const DEFAULTS: SceneState = {
   focus: 'off', focusDistance: 1.5, tolerance: 0.4,
   fan: false, fanStrength: 0.16, fanPeriod: 5,
   tray: false, cups: true, base: 'column', surface: 'painted', roomLight: 1, tableSize: 1,
-  cards: false, cardMethod: 'scene', cardRank: 'A', cardSuit: 'spades', cardScale: 1.2, cardHand: 'film',
+  cards: false, cardInHand: false, cardMethod: 'scene', cardRank: 'A', cardSuit: 'spades', cardScale: 1.2, cardHand: 'film',
   clock: false, dust: 0, flicker: false, flickerEvery: 20, flickerStrength: 0.6,
   filmBright: 1, filmWarm: 0, wrap: 0,
   roomShift: 'cut', roomShiftSeconds: 2.6,
@@ -142,6 +142,18 @@ export function createFilmTextureSelector() {
   };
 }
 
+/** Keep per-part overrides and table cards; the scene's hand switch supplies only the default carry mode. */
+export function createSceneCardOptions() {
+  let source: Part['cards'], hand: boolean | undefined, value: Part['cards'];
+  return (cards: Part['cards'], inHand: boolean): Part['cards'] => {
+    if (!value || source !== cards || hand !== inHand) {
+      source = cards; hand = inHand;
+      value = {...cards, carry: cards?.carry ?? (inHand ? 'object' : 'film')};
+    }
+    return value;
+  };
+}
+
 export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: SceneData) {
   const state: SceneState = {...DEFAULTS};
   const renderer = new T.WebGLRenderer({canvas, antialias: true, preserveDrawingBuffer: true}); renderer.autoClear = false;
@@ -167,7 +179,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   // the card into the film frame (scene3d-cards.ts), the earlier way, kept to compare; 'matte' (a trial) draws over the film's own
   // card in place, with the film's card as the matte (scene3d-deal.ts and scene3d-matte.ts). A way's module is fetched the first
   // time it is used and cards are switched off again if it cannot be read. update() returning true means "show my texture as the film".
-  const selectFilmTexture = createFilmTextureSelector();
+  const selectFilmTexture = createFilmTextureSelector(), sceneCardOptions = createSceneCardOptions();
   // Things another page adds: props lying on the table (built with the table, drawn under the film) and a call after every drawn frame.
   type Prop = {group: T.Object3D; build(edgeZ: number, scale: number): void};
   const props: Prop[] = [], frameCalls = new Set<() => void>(); let built = false, ownNotch: {x0: number; x1: number; s1: number} | null = null;
@@ -393,7 +405,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     evenFilm(playing?.video ?? null, part, seconds); film.setLife(state.dealerLife, seconds);
     const cardsOn = state.cards && !part?.frame; if (!cardsOn) cardLayer?.off?.();
     const filmCards = state.cardMethod === 'film';
-    const texture = selectFilmTexture(playing, cardsOn ? cardLayer : null, players.frame(), track, {rank: state.cardRank, suit: state.cardSuit, scale: filmCards ? state.cardScale : cardGrow(state.cardScale, geometry), hand: state.cardHand}, part?.cards, filmCards);
+    const texture = selectFilmTexture(playing, cardsOn ? cardLayer : null, players.frame(), track, {rank: state.cardRank, suit: state.cardSuit, scale: filmCards ? state.cardScale : cardGrow(state.cardScale, geometry), hand: state.cardHand}, sceneCardOptions(part?.cards, state.cardInHand), filmCards);
     if (texture) film.setTexture(texture);
     const focusOn = state.focus !== 'off', u = blurMat.uniforms, scale = canvas.width / W;
     light.update(seconds, state.fan, state.fanStrength, state.fanPeriod);

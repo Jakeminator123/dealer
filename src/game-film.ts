@@ -86,12 +86,12 @@ export const cardWords = (q: {get(name: string): string | null}): CardWords => {
  * cards are on). Then the player's own choice in the game's menu, remembered in the browser (memory: 'on' or 'off'). Then on. A
  * look's preset has no say: every saved look carried cards on, so it turned the cards on again for whoever had not chosen. The
  * menu has one switch for the cards and none for how the card in her hand is shown (Jakob 2026-11-13: "Jag vill bara att det ska
- * bli en linje"): without a kort word it is the game's line (CARRY in src/card-overlay.ts). A browser that still
+ * bli en linje"): without a kort word the scene's hand-overlay control decides (off by default). A browser that still
  * remembers 'lying', from the hours the menu had a second switch, reads as on.
  */
-export function cardsChoice(o: {address?: boolean; kort?: string | null; memory?: string | null}): {cards: boolean; carry: Carry} {
+export function cardsChoice(o: {address?: boolean; kort?: string | null; memory?: string | null; inHand?: boolean}): {cards: boolean; carry: Carry} {
   const word = ({liggande: 'film', matt: 'matte', hand: 'object'} as Record<string, Carry>)[o.kort ?? ''], remembered = o.memory === 'off' ? false : o.memory === 'on' || o.memory === 'lying' ? true : undefined;
-  return {cards: o.address ?? (word ? true : undefined) ?? remembered ?? true, carry: word ?? CARRY};
+  return {cards: o.address ?? (word ? true : undefined) ?? remembered ?? true, carry: word ?? (o.inHand ? 'object' : 'film')};
 }
 /** What the card layer needs for one beat: the lying cards, every card's value, and for the film's own card where it lands and how it is carried. */
 export function cardOptions(beat: Pick<Beat, 'own' | 'lying'> & Partial<Pick<Beat, 'kind'>>, table: TableCards, records: CardRecord[], layout: Layout, carry: Carry = CARRY, words: CardWords = {}): GameCardOptions {
@@ -272,8 +272,8 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     const parts: FilmPart[] = [], beatOf: number[] = [], shows: (number | null)[] = [];
     segments.forEach((s, i) => { if (!s?.video) return; beatOf.push(i);
       const beat = beats[i], prev = beats[i - 1], deal = segments[i - 1], target = s.film?.target;
-      // A borrowed film lands at its own slot. Only the drawn card can follow a different slot on the game table.
-      const partCarry = carry === 'film' && beat.own && target !== beat.own.label ? 'object' : carry;
+      // Respect the chosen hand mode for borrowed films too. Their final card still uses the game's own landing quad.
+      const partCarry = carry;
       // The cut can divide one deal before the card lies, even when that film is borrowed for a different slot.
       const filmContinuesDeal = carry === 'film' && beat.kind === 'RETURN' && prev?.kind === 'DEAL' && beat.own && prev.own?.shoeDraw === beat.own.shoeDraw &&
         !!target && deal?.film?.target === target && continuesCardFilm(deal, s, loaded[i - 1], loaded[i], partCarry);

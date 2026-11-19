@@ -40,7 +40,7 @@ export const SHIPPED: readonly ScenePreset[] = [
     schemaVersion: 1,
     name: "basgrund",
     label: "Basgrund",
-    about: "Det spelet visar i dag och som Jakob har kallat mycket bra: Las Vegas, hela bordet (zoom 0,84, −8°), markerbrädet, ritade kort, skimmer vid rumsbyte. Resten är scenens grund. Spelet lägger dessutom Jakobs bricka och markerna; de styrs under Kort och marker.",
+    about: "Det spelet visar i dag och som Jakob har kallat mycket bra: Las Vegas, hela bordet (zoom 0,84, −8°), markerbrädet, kort på bordet och filmens eget kort i handen, skimmer vid rumsbyte. Resten är scenens grund. Spelet lägger dessutom Jakobs bricka och markerna; de styrs under Kort och marker.",
     state: { ...GAME },
     updatedAt: SHIPPED_AT,
   },

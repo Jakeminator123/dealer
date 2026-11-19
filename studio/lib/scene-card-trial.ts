@@ -1,7 +1,7 @@
 import type { TableGeometry } from "../../src/card-plan.ts";
 import type { CardRecord } from "../../src/card-overlay.ts";
 import type { Segment } from "../../src/clip-graph.ts";
-import { cardOptions, cardWords, continuesCardSource, type CardWords } from "../../src/game-film.ts";
+import { cardOptions, cardWords, continuesCardSource, type CardWords, type Carry } from "../../src/game-film.ts";
 import { createLayout, type Slot, type TableCards } from "../../src/game-table.ts";
 import type { PlacementPlan } from "../../src/placement-model.ts";
 import type { PlayPart } from "./parts.ts";
@@ -11,7 +11,7 @@ export function readSceneCardTrial(params: Pick<URLSearchParams, "get">): CardWo
 }
 
 /** Give playable deal/return pairs resolved by the lab round the same card options as a game part. */
-export function withSceneCardTrial(parts: PlayPart[], segments: readonly Segment[], plan: PlacementPlan, geometry: TableGeometry, words: CardWords): PlayPart[] {
+export function withSceneCardTrial(parts: PlayPart[], segments: readonly Segment[], plan: PlacementPlan, geometry: TableGeometry, words: CardWords, carry: Carry | null = "film"): PlayPart[] {
   type Own = { label: string; shoeDraw: number; slot: Slot };
   const ownByStep = new Map<number, Own>(), ownByTarget = new Map<string, Own>();
   const table: TableCards = { hands: [], dealer: [] }, records: CardRecord[] = [];
@@ -45,7 +45,8 @@ export function withSceneCardTrial(parts: PlayPart[], segments: readonly Segment
     // The entry has no dealt card yet, but the shoe window must already use the round's carry mode and colours.
     if (!part.path) return part;
     const returning = own && segments[i].kind === "RETURN", lying = [...placed].filter(n => n !== own?.shoeDraw);
-    const cards = cardOptions({ own, lying, kind: returning ? "RETURN" : own ? "DEAL" : undefined }, table, records, layout, "film", words);
+    const cards = cardOptions({ own, lying, kind: returning ? "RETURN" : own ? "DEAL" : undefined }, table, records, layout, carry ?? "film", words);
+    if (carry === null) delete cards.carry; // the live scene switch decides; legacy trial links keep their explicit mode
     if (returning) {
       const deal = segments[i - 1];
       // The studio plans with track paths; the renderer reads the actual landing after loading them.

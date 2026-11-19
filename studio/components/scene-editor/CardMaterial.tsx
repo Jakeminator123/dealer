@@ -116,7 +116,7 @@ export function CardMaterial({ state, cardsOn, canSave }: { state: CardMaterialS
         <p className="text-xs text-faint">
           I planen nu: {before}
           {facts.even ? "" : " (olika per kort)"}.{" "}
-          {!cardsOn ? "Syns med Renderade kort på. " : ""}
+          {!cardsOn ? "Syns med Kort på bordet på. " : ""}
           {state.preview ? "" : "Scenen visar ändringen först när den är sparad."}
         </p>
         {canSave ? (
