@@ -29,8 +29,8 @@ Beslut, labbservern och rutinverktygen. Här står bara det som gäller nu; det 
 1. En oberoende granskares omdöme om de 96 tagningarna som väntar (listan `waiting-list.txt`), eller märk avgjorda
    prov som avgjorda, så att inget ligger i Jakobs kö.
 2. Steget Granska filmen i Bordet, efter byggordningen i `labbgrund/grund/RAPPORT.md`.
-3. Slaskdisken: gamla inventeringsförslag behöver ny kontroll av ägare och filernas tid före varje ingrepp
-   ([BRISTER](../BRISTER.md)); labbstart städar inte.
+3. Mediestädning: `npm run media:status` ger aktuell storlek och användning; rutinen står i `tools/local-work.md`.
+   Färdiga mellanresultat rensas efter uppgiften; labbstart raderar ingenting.
 4. Efterarbete, där Scen ligger: kortets förarbete per film och "Rå | renderad" på en tagning. Det kommer efter
    filmerna. Panelen Vila saknas också sedan gamla labbet togs bort.
 5. Sidornas ord: 72 ställen säger annat än ordlistan (`stadning/ord/ORD.md`, del c, med fil, rad och förslag);

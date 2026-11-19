@@ -197,7 +197,7 @@ node dealer3d/tools/shoot.ts --out <mapp> --eyes film --look plain --tags 0 --fi
 Filma en vit docka från bankens kamera i en ny utdatamapp med installerade Chrome, FFmpeg och ffprobe:
 
 ```powershell
-node dealer3d/tools/render-reference.ts --motion dealer3d/data/giv-fran-2-3-p4-f.json --out D:/dealer-scratch/tmp/dealer-3d/ut/p4-referens-ny --closeup 17,20,22,24 --crop 560:440:760:560
+node dealer3d/tools/render-reference.ts --motion dealer3d/data/giv-fran-2-3-p4-f.json --out .runtime/p4-referens-ny --closeup 17,20,22,24 --crop 560:440:760:560
 ```
 
 Inspelningen tar och släpper det delade låset för grafikkortet och headless Chrome. Den äger sin Chrome-profil och filserver.
@@ -205,6 +205,8 @@ Inspelningen tar och släpper det delade låset för grafikkortet och headless C
 För att upprepa en körning, använd `rorelse.json` med `--motion`, `kortplan.json` med `--plan` och inställningarna
 i `renderkvitto.json` med samma kod och verktyg. Kvittot anger de färdiga filernas SHA-256. `ofullstandig.txt` markerar
 en avbruten eller misslyckad körning. En vidare körning behöver en ny mapp. Lås först vid direkt användning av `shoot.ts`.
+Mellanrutorna rensas när filmkontroll, kontaktark och slutruta är klara. `--keep-frames` behåller dem för felsökning;
+misslyckade körningar behåller dem också. Kör `npm run media:status` efter städning och registrering av valt resultat.
 
 ### En giv och retur i samma cykel
 

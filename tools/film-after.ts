@@ -25,7 +25,7 @@
 //   --compare <film>          compare after.mp4 frame by frame with another film (tonight's Python after.mp4)
 // Exit code 2 and the reason in Swedish when the run is refused; nothing is then written.
 import {readFile, writeFile, mkdir, rename, rm, stat} from 'node:fs/promises';
-import {existsSync} from 'node:fs';
+import {existsSync, mkdirSync} from 'node:fs';
 import {spawn} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import path from 'node:path';
@@ -35,7 +35,12 @@ import {orderTake, OrderError} from './order-collect.ts';
 import {BANK, TREATMENTS, resizeCubic, smoothGreen, toneLock, levelFrame, NO_TONE, cornerMean, endCheck, edgeCheck, filmMeasure, seam, round, cardBlobs, type Tone, type PlanTarget} from '../src/film-after.ts';
 import {checkDeal, type DealCheck, type FrameCard} from '../src/deal-check.ts';
 
-const ROOT = process.cwd(), scratch = 'D:/dealer-scratch/tmp', env = existsSync(scratch) ? {...process.env, TEMP: scratch, TMP: scratch} : process.env;
+const ROOT = process.cwd();
+const childEnv = () => {
+  const scratch = path.join(ROOT, '.runtime', 'film-after');
+  mkdirSync(scratch, {recursive: true});
+  return {...process.env, TEMP: scratch, TMP: scratch};
+};
 const ffmpeg = process.env.FFMPEG ?? 'ffmpeg';
 /** The encoding, argument for argument as efterarbete.py called FFmpeg. */
 export const ENCODE = ['-an', '-c:v', 'libx264', '-crf', '12', '-preset', 'slow', '-pix_fmt', 'yuv420p'];
@@ -56,7 +61,7 @@ export async function readPicture(file: string): Promise<{width: number; height:
 
 /** The frames of a film as OpenCV's VideoCapture gives them: BGR, w × h × 3 bytes each. */
 export async function* decode(file: string, w: number, h: number): AsyncGenerator<Uint8Array> {
-  const bytes = w * h * 3, child = spawn(ffmpeg, ['-hide_banner', '-loglevel', 'error', '-i', file, '-map', '0:v:0', '-vf', DECODE_FILTER, '-fps_mode', 'passthrough', '-f', 'rawvideo', '-pix_fmt', 'bgr24', '-'], {stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true, env});
+  const bytes = w * h * 3, child = spawn(ffmpeg, ['-hide_banner', '-loglevel', 'error', '-i', file, '-map', '0:v:0', '-vf', DECODE_FILTER, '-fps_mode', 'passthrough', '-f', 'rawvideo', '-pix_fmt', 'bgr24', '-'], {stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true, env: childEnv()});
   let err = ''; child.stderr!.on('data', c => { err += c; });
   const done = new Promise<number>(resolve => child.on('close', code => resolve(code ?? 1)));
   let frame = new Uint8Array(bytes), filled = 0, complete = false;
@@ -75,7 +80,7 @@ export async function* decode(file: string, w: number, h: number): AsyncGenerato
 
 /** An encoder fed BGR frames, as efterarbete.py fed its FFmpeg. */
 function encoder(file: string, w: number, h: number, fps: string) {
-  const child = spawn(ffmpeg, ['-hide_banner', '-loglevel', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'bgr24', '-s', `${w}x${h}`, '-r', fps, '-i', '-', ...ENCODE, file], {stdio: ['pipe', 'ignore', 'pipe'], windowsHide: true, env});
+  const child = spawn(ffmpeg, ['-hide_banner', '-loglevel', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'bgr24', '-s', `${w}x${h}`, '-r', fps, '-i', '-', ...ENCODE, file], {stdio: ['pipe', 'ignore', 'pipe'], windowsHide: true, env: childEnv()});
   let err = ''; child.stderr!.on('data', c => { err += c; });
   const done = new Promise<void>((resolve, reject) => { child.on('error', reject); child.on('close', code => code === 0 ? resolve() : reject(Error(`ffmpeg ${code}: ${err.trim().slice(0, 400)}`))); });
   return {

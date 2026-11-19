@@ -354,7 +354,7 @@ DEALER_LOSEN_PROV=<ordet> node tools/publish-studio.ts --kor
 ```
 
 `--kor` bygger `origin/main` (eller `--commit <ref>`) i en egen ren arbetskopia,
-`D:/dealer-scratch/tmp/publiceringsagent/kopia` (detached, `npm ci` när en låsfil har ändrats, `assets/` som en koppling
+`--worktree <valt rent arbetsträd>` (krävs; detached, `npm ci` när en låsfil har ändrats, `assets/` som en koppling
 till Jakobs media), med arbetskopians egen labbserver på 4341. Den startas oförändrad med en startmodul som flyttar porten
 och låter bli att städa D:; labbservern på 4319 startas, stoppas och frågas aldrig, utom om en mediefil lämnas ut. Sedan:
 bygget, uppladdning av de filmer och bilder som är nya (oförändrade objekt skickas inte igen), bygget en gång till så att

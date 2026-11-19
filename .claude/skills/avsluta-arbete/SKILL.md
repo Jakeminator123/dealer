@@ -34,3 +34,5 @@ Rutinen står i [`AGENTS.md`](../../../AGENTS.md), "Git och samarbete", och i
    grenar, arbetsträd eller arbetsfiler. Slaskverktyget används först som rapport; åtgärder följer DRIFT:s ägarkontroll.
 9. **Media och hemligheter stannar utanför Git** (`assets/`, `output/`, `.runtime/`, `.env*`, `private/`); repot är
    publikt (AGENTS, "Det som skyddar Jakob").
+10. **Efter mediearbete:** rensa egna överflödiga mellanresultat och kör `npm run media:status`. Översikten under
+    `.runtime/media-status/` visar storlek, användning och förändring. Rutinen står i `tools/local-work.md`.

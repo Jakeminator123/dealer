@@ -2,17 +2,53 @@
 
 ## Arbetsplats
 
-Kod ändras i den projektmapp eller det arbetsträd som IDE:n har öppet. Kontrollera rot och Git-remote först.
-Återanvänd ett lämpligt träd. Ett extra rent träd behövs när andra öppna utkast måste hållas utanför en kontroll;
-välj eller skapa då trädet genom IDE:n, utan hårdkodat diskval. `push-clean.ts` och `studio-from-commit.ts`
+Arbeta normalt i Dealer-mappen på C:. Kontrollera rot och Git-remote först. En gren är en versionspekare, ingen ny
+kopia av medierna. Vanliga kortlivade grenar i samma mapp går bra; byt inte gren över någon annans pågående ändringar.
+Ett extra arbetsträd behövs när parallellt arbete eller öppna utkast behöver isoleras. Återanvänd då ett lämpligt träd.
+Ändringar från andra IDE:er jämförs med main, granskas och testas. Använd merge för en sammanhängande gren,
+cherry-pick för en avgränsad commit eller en granskad patch för osparade ändringar. Kopiera inte tillbaka äldre hela filer.
+`push-clean.ts` och `studio-from-commit.ts`
 kräver `--trad <absolut mapp>`. Inga nya källkopior eller arbetsmappar skapas automatiskt på D:.
 
 - `assets/`: en kanonisk kopia av material som används eller har en konkret roll; registrera rollen.
 - `.runtime/<uppgift>/`: tillfälliga bilder, filmer, byggen och lokala kvitton. Ta bort egna överflödiga kopior
-  efter kontroll; flytta det som ska visas till `assets/` och registrera det.
+  efter kontroll; flytta det som ska visas till `assets/` och registrera det. En kort README beskriver syftet,
+  vad som ska sparas och hur ett mellanresultat kan göras om. Ingen ny full mediekopia per IDE eller granskare.
 - `evidence/` och registren: små sökvägar, hashvärden, domar och kvitton. Spara inte en ny filmkopia per rapport.
 - Släpp egna hjälpprocesser och färdiga arbetsträd efter att deras ändringar och nödvändiga filer säkrats.
   Behåll Jakobs aktiva förhandsvisning. Rör aldrig ett annat projekt som en del av den här städningen.
+
+## Översikt och mängd
+
+`npm run media:status` bygger `.runtime/media-status/LASMIG.md` och `status.json` ur befintliga register och filer.
+Översikten visar vad de största mapparna är, hur de används, tillfälliga mappar och förändringen sedan föregående
+inventering. Den är en återbyggbar rapport, inget nytt register att underhålla. Hårda länkar räknas en gång i
+unika filbytes; storlek per sökväg visas separat. Rapporten följer inga junctions och raderar ingenting.
+
+Video tar plats, men en bildserie kan vara mycket större än sin film. `render-reference.ts` tar därför bort
+mellanrutorna efter lyckad filmkontroll, kontaktark och slutruta. Filmen, indata, kontaktark, slutruta och kvitto
+stannar kvar. `--keep-frames` används bara när rutorna behövs för felsökning. Misslyckade körningar behåller sitt
+underlag tills felet har utretts. Spara ett valt resultat och relevanta jämförelser, inte varje omrendering.
+
+Efter mediearbete: rensa egna färdiga mellanresultat, flytta och registrera den valda leveransen, kör översikten.
+Äldre unika original granskas efter användning, inte efter en automatisk åldersgräns. D: kan vara ett uttryckligt
+arkivval för sådant som ska bevaras men inte används; flytt är inte en minskning av den totala mängden.
+
+## Granskade äldre arbetsträd
+
+De tre äldre träden under `.codex/worktrees/` är jämförda med main 2026-11-19. Ingen ny funktionskod behöver tas in:
+
+| Träd | Innehåll | Var det finns nu |
+| --- | --- | --- |
+| dealer-evidence | Körkvitton, evidensindex, mediegranskning | Infört i `1267ff4`, sedan förbättrat |
+| dealer-linsnavigation | Scenval, geometri, 3D-grepp och rendering | Infört i bland annat `20a44ad`, `2b4352e`, `b1e782b` |
+| dealer-order-snapshot | Fryst orderunderlag och förhandsvisning | Infört i `20a44ad`, sedan förbättrat |
+
+Den extra filen `giv-fran-2-3-p4-grepp-pilot.json` motsvarar G-versionens rörelse; G har dessutom planhash och
+avsiktsmetadata. Äldre Casino-filer saknar senare rättningar för uppspelningsval och länkar. Återför inte dem.
+Utkasten är säkrade lokalt i `private/recovery/worktrees-2026-11-19/drafts.bundle`, med fil- och snapshotlista i
+`manifest.json`. Trädens enda ignorerade fil, evidensindexet, är separat kopierad och hashjämförd där. De äldre
+arbetskopiorna är avvecklade; beställningsträdet återanvänds bara under avslutskontrollen och tas sedan bort.
 
 ## Radera oanvänt
 

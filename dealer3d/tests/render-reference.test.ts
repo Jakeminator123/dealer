@@ -1,11 +1,25 @@
 import {strict as assert} from 'node:assert';
-import {mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
+import {mkdtemp, readFile, readdir, rm, writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {test} from 'node:test';
-import {renderSettings, reserveOutput, verifyCapture, verifyVideo} from '../tools/render-reference.ts';
+import {finishFrames, renderSettings, reserveOutput, verifyCapture, verifyVideo} from '../tools/render-reference.ts';
 
 const motion = {fps: 30, frameCount: 90, frames: Array(90).fill({})};
+
+test('successful frame cleanup keeps capture metadata; debugging can retain all frames', async t => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'dealer-frames-'));
+  t.after(() => rm(dir, {recursive: true, force: true}));
+  await writeFile(path.join(dir, 'ruta-0001.png'), 'first');
+  await writeFile(path.join(dir, 'ruta-0002.png'), 'last');
+  await writeFile(path.join(dir, 'ruta.json'), '{}');
+  assert.deepEqual(await finishFrames(dir, 2, true), {kept: true, removed: 0, bytes: 0});
+  assert.equal((await readdir(dir)).length, 3);
+  await assert.rejects(finishFrames(dir, 3), /stämmer inte/);
+  assert.equal((await readdir(dir)).length, 3, 'a mismatch removes nothing');
+  assert.deepEqual(await finishFrames(dir, 2), {kept: false, removed: 2, bytes: 9});
+  assert.deepEqual(await readdir(dir), ['ruta.json']);
+});
 
 test('reference follows the source duration and uses one-based contact sheets', () => {
   const defaults = renderSettings({}, motion);

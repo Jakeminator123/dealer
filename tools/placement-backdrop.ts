@@ -22,9 +22,7 @@
 // tools/placement-backdrop.test.ts.
 import {spawn, execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
-import {existsSync} from 'node:fs';
 import {mkdir, readFile, rename, rm, writeFile} from 'node:fs/promises';
-import os from 'node:os';
 import path from 'node:path';
 import sharp from 'sharp';
 import {NEUTRAL_BACKDROP, VIEWS, planQuad, validatePlan, type PlacementPlan} from '../src/placement-model.ts';
@@ -315,7 +313,7 @@ export async function build(options: {proof?: string | null; keep?: string | nul
   const basgrund = SHIPPED.find(p => p.name === 'basgrund'); if (!basgrund) throw Error('Förvalet Basgrund saknas.');
   const look = lookOf(basgrund.state);
 
-  const scratch = existsSync('D:/dealer-scratch/tmp') ? 'D:/dealer-scratch/tmp' : os.tmpdir(), port = options.port ?? 9481;
+  const scratch = path.resolve('.runtime'), port = options.port ?? 9481;
   const profile = path.join(scratch, 'placement-backdrop', `chrome-profile-${port}`);
   const shots: Shot[] = [{name: 'table', film: null, frame: REST.frame, hide: true}, {name: 'rest', film: null, frame: REST.frame, hide: false}, ...PROOFS.map(p => ({name: `${p.film}-${p.frame}`, film: p.film, frame: p.frame, hide: false}))];
   // --from: the stills a run kept with --keep, so that the figure can be redrawn without starting Chrome again

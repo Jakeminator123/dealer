@@ -2,7 +2,7 @@
 // "Den låsta kopian på nätet"). Run from Jakob's own checkout, which holds the media (assets/) and the copy's state
 // (.runtime/studio-deploy with the Vercel project's link, .runtime/studio-blob with the store's key and the receipt).
 //
-//   node tools/publish-studio.ts                    plan: which commit, which worktree, what would run; nothing is sent
+//   node tools/publish-studio.ts --worktree <path>  plan: which commit, which worktree, what would run; nothing is sent
 //   node tools/publish-studio.ts --kor              build that commit, upload new media, build again, deploy, check
 //   … --commit <ref>                                another commit than origin/main (fetched first)
 //   … --worktree <absolute path>                     reuse another clean worktree of this repository
@@ -38,8 +38,9 @@ const args = process.argv.slice(2), run = args.includes('--kor'), noDeploy = arg
 const option = (name: string) => { const at = args.indexOf(name); if (at < 0) return null; const v = args[at + 1]; if (!v || v.startsWith('--')) throw Error(`${name} saknar värde.`); return v; };
 
 const suppliedWorktree = option('--worktree');
+if (!suppliedWorktree) throw Error('Ange ett befintligt rent arbetsträd med --worktree <absolut mapp>. Ingen disk väljs automatiskt.');
 if (suppliedWorktree && !path.isAbsolute(suppliedWorktree)) throw Error('--worktree kräver en absolut sökväg.');
-export const WORKTREE = suppliedWorktree ?? 'D:/dealer-scratch/tmp/publiceringsagent/kopia';
+export const WORKTREE = suppliedWorktree;
 if (path.resolve(WORKTREE).toLowerCase() === home.toLowerCase()) throw Error('--worktree får inte vara huvudträdet.');
 if (suppliedWorktree && !existsSync(WORKTREE)) throw Error('--worktree måste vara ett befintligt rent arbetsträd.');
 if (existsSync(WORKTREE) && realpathSync(WORKTREE).toLowerCase() === realpathSync(home).toLowerCase()) throw Error('Arbetskopian får inte peka på huvudträdet.');
@@ -92,10 +93,7 @@ say(`Vercel: ${link.projectName ?? link.projectId} i ${TEAM}; Blob-store ${store
 
 // ── The worktree: the commit, detached and clean, with its packages and the media ──
 const sameDir = (a: string, b: string) => path.resolve(a).toLowerCase() === path.resolve(b).toLowerCase();
-if (!existsSync(WORKTREE)) {
-  say(`\n── Ny arbetskopia\n   git worktree add --detach ${WORKTREE} ${commit.slice(0, 7)}`);
-  if (run) { await mkdir(path.dirname(WORKTREE), {recursive: true}); git(home, 'worktree', 'add', '--detach', WORKTREE, commit); }
-} else {
+{
   const common = git(WORKTREE, 'rev-parse', '--git-common-dir');
   if (!sameDir(path.resolve(WORKTREE, common), path.join(home, '.git'))) throw Error(`${WORKTREE} är inte en arbetskopia av den här utcheckningen.`);
   const dirty = git(WORKTREE, 'status', '--porcelain');

@@ -20,6 +20,9 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   förbättra lokal struktur och rutiner. D: är inte arbetsförval. Kontrollera användning före radering; betalning
   ensam är inget skäl att arkivera allt. Båda separata projekten får utveckla 3D; förslaget att frysa Dealer drogs
   tillbaka i samtalet Jakob bifogade. Ingen hopslagning av projekten följer av detta.
+  Förtydligande samma dag: "arbetar kontinuerligt i mappen på C" och "allt normalt, men gärna med omtanke om att
+  repot arbetar med just videomaterial". Vanliga grenar och bra ändringar från andra IDE:er får användas; granska
+  och inför det som faktiskt tillför något. Rensa färdiga mellanresultat löpande och håll materialet överblickbart.
 
 - **Sammanhängande lokal räddning** (2026-11-18, Codex): "Styr upp det här och gör det så bra som möjligt för att spela
   upp Black Jack"; "Samordna arbetet så att vi har kontroll, även med flera metoder." Jakob gav fria händer för lokala

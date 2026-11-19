@@ -1,5 +1,5 @@
 // Measures the table plane, the light and the portrait framing of the Pamela shot from real frames.
-// Reads media only. Writes data/scene-contract.json, review images under D:/dealer-scratch/review/scen
+// Reads media only. Writes data/scene-contract.json, review images under .runtime/scene-measure/review
 // and shadow mattes under assets/scene-work (git-ignored). Every figure in the contract carries its basis.
 //   node tools/scene-measure.ts
 import {readFile, writeFile, mkdir, rm, stat} from 'node:fs/promises';
@@ -16,8 +16,9 @@ import {keyPamelaFrame} from '../src/pamela-key.ts';
 
 if (path.resolve(process.cwd()) !== path.resolve(fileURLToPath(new URL('../', import.meta.url)))) throw Error('Run from the dealer checkout.');
 sharp.concurrency(1);
-const SCRATCH = 'D:/dealer-scratch/tmp', REVIEW = 'D:/dealer-scratch/review/scen', WORK = 'assets/scene-work', FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
-if (await stat(SCRATCH).catch(() => null)) process.env.TEMP = process.env.TMP = SCRATCH;
+const SCRATCH = path.resolve('.runtime/scene-measure'), REVIEW = path.join(SCRATCH, 'review'), WORK = 'assets/scene-work', FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
+await mkdir(SCRATCH, {recursive: true});
+process.env.TEMP = process.env.TMP = SCRATCH;
 const W = 1764, H = 1174, N = W * H, NATIVE_W = 1762, IMAGE = {width: W, height: H}, TO_FILM = (W - 1) / (NATIVE_W - 1);
 const PLAN = 'placements/default.json', SHADOW_CLIP = 'pamela-p4-c1-plan-deal-02', SHADOW_RANGE: [number, number] = [40, 104];
 const clip = (id: string) => `assets/motions/${id}/source.mp4`;

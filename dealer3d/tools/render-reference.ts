@@ -2,7 +2,7 @@
 import {execFileSync, spawn} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {constants as fsConstants, createReadStream} from 'node:fs';
-import {copyFile, mkdir, readFile, stat, unlink, writeFile} from 'node:fs/promises';
+import {copyFile, lstat, mkdir, readFile, readdir, stat, unlink, writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import {setTimeout as delay} from 'node:timers/promises';
 import {fileURLToPath} from 'node:url';
@@ -19,7 +19,7 @@ const USAGE = 'node dealer3d/tools/render-reference.ts --motion <motion.json> --
 const options = {
   motion: {type: 'string'}, out: {type: 'string'}, plan: {type: 'string'}, eye: {type: 'string'},
   seconds: {type: 'string'}, fps: {type: 'string'}, sheet: {type: 'string'}, columns: {type: 'string'},
-  closeup: {type: 'string'}, crop: {type: 'string'}, help: {type: 'boolean'},
+  closeup: {type: 'string'}, crop: {type: 'string'}, help: {type: 'boolean'}, 'keep-frames': {type: 'boolean'},
 } as const;
 type Values = Partial<Record<Exclude<keyof typeof options, 'help'>, string>>;
 
@@ -121,6 +121,25 @@ const parseJson = (bytes: Buffer) => JSON.parse(bytes.toString('utf8').replace(/
 const readJson = async (filename: string) => parseJson(await readFile(filename));
 const frameName = (frame: number) => `ruta-${String(frame).padStart(4, '0')}.png`;
 
+/** Called only after video verification and proof images succeed. Keep capture metadata, not another full movie as PNGs. */
+export async function finishFrames(record: string, frameCount: number, keep = false) {
+  if (keep) return {kept: true, removed: 0, bytes: 0};
+  if (!Number.isInteger(frameCount) || frameCount < 1 || frameCount > 900) throw Error('Ogiltigt rutantal för städning.');
+  if (!(await lstat(record)).isDirectory() || (await lstat(record)).isSymbolicLink()) throw Error('Rutmappen måste vara en vanlig mapp.');
+  const expected = Array.from({length: frameCount}, (_, i) => frameName(i + 1));
+  const actual = (await readdir(record)).filter(name => /^ruta-.*\.png$/i.test(name)).sort();
+  if (JSON.stringify(actual) !== JSON.stringify(expected)) throw Error('Rutmappen stämmer inte med den verifierade filmen.');
+  let bytes = 0;
+  // Validate the complete set before deleting any frame. Never follow links or remove the capture receipt.
+  for (const name of expected) {
+    const entry = await lstat(path.join(record, name));
+    if (!entry.isFile() || entry.isSymbolicLink()) throw Error('En renderad ruta är inte en vanlig fil.');
+    bytes += entry.size;
+  }
+  for (const name of expected) await unlink(path.join(record, name));
+  return {kept: false, removed: frameCount, bytes};
+}
+
 function makeSheet(ffmpeg: (args: string[]) => Promise<void>, filenames: string[], numbers: number[], columns: number, crop: string | undefined, out: string) {
   const args = filenames.flatMap(name => ['-threads', '1', '-i', name]);
   const font = FONT.replaceAll('\\', '/').replace(/^([a-z]):/i, '$1\\:');
@@ -136,7 +155,7 @@ function makeSheet(ffmpeg: (args: string[]) => Promise<void>, filenames: string[
 
 async function main(argv: string[]): Promise<void> {
   const {values} = parseArgs({args: argv, options});
-  if (values.help) { console.log(USAGE + '\nStandard är 30 fps. --sheet och --closeup använder den valda bildfrekvensens rutnummer.'); return; }
+  if (values.help) { console.log(USAGE + '\nStandard är 30 fps. --sheet och --closeup använder den valda bildfrekvensens rutnummer. --keep-frames behåller mellanrutorna för felsökning.'); return; }
   if (!values.motion || !values.out) throw Error(USAGE);
   const motion = path.resolve(values.motion), out = path.resolve(values.out), plan = path.resolve(values.plan ?? path.join(ROOT, 'placements/default.json'));
   const name = path.basename(motion, '.json');
@@ -204,7 +223,8 @@ async function main(argv: string[]): Promise<void> {
     const output = [];
     for (const file of files) output.push({file, bytes: (await stat(path.join(out, file))).size, sha256: await sha256(path.join(out, file))});
     signal.signal.throwIfAborted();
-    const receipt = {revision, sources, versions: {...versions, chrome: shot.chrome, devtools: shot.protocol}, input, settings, camera: shot.page, media, output};
+    const intermediateFrames = await finishFrames(record, settings.frameCount, values['keep-frames']);
+    const receipt = {revision, sources, versions: {...versions, chrome: shot.chrome, devtools: shot.protocol}, input, settings, camera: shot.page, media, output, intermediateFrames};
     await writeFile(path.join(out, RECEIPT), JSON.stringify(receipt, null, 2) + '\n', {flag: 'wx'});
     await unlink(path.join(out, INCOMPLETE));
     console.log(`${video} – ${media.nb_frames} rutor, ${settings.fps} fps, ${media.duration} s, SHA-256 ${output[0].sha256}`);

@@ -15,7 +15,7 @@ samarbete", "Labbservern" och "Kod"; rutinerna i [`docs/DRIFT.md`](../../../docs
    tar** innan du ändrar något. En skribent per
    fil; allt in i repot går genom huvudagenten med en fillista (AGENTS; HANDOFF). Adressen kontrolleras med ListAgents
    före ett meddelande (HANDOFF).
-2. **Använd den aktiva IDE:ns projektmapp eller arbetsträd.** Ett extra träd behövs bara när uppdrag måste isoleras:
+2. **Arbeta normalt i projektmappen på C:, med vanliga kortlivade grenar.** Ett extra träd behövs bara när uppdrag måste isoleras:
    återanvänd ett lämpligt träd eller skapa det via IDE:n. Ingen automatisk D:-mapp (AGENTS, "Git och samarbete").
 3. **Labbservern lämnar ut huvudträdets filer:** en halvfärdig fil där syns genast i Jakobs flik. En ny modul under
    `src/` görs i ordningen fil, rad i `SCRIPTS` (`tools/lab-routes.ts`), omstart av huvudagenten, import; kör `node

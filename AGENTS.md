@@ -86,10 +86,12 @@ behöver veta och namnger högst tre filer eller avsnitt att läsa.
 
 ## Git och samarbete
 
-- Arbeta i projektmappen eller det arbetsträd som den aktiva IDE:n använder. Återanvänd ett lämpligt befintligt träd;
-  skapa ett extra bara vid ett faktiskt isoleringsbehov, via IDE:ns arbetsträdsfunktion. D: är inget förval.
+- Arbeta normalt i Dealer-mappen på C:. Vanliga kortlivade grenar i samma mapp går bra. Ett extra arbetsträd behövs
+  bara vid parallellt eller isolerat arbete; återanvänd ett lämpligt träd. D: är inget förval. Bra ändringar från
+  andra IDE:er tas in efter diffgranskning och tester; IDE:n avgör inte om kod får återanvändas.
 - Tillfälliga arbetsfiler hör hemma i `.runtime/<uppgift>/` i projektet. Avsluta med verifierad städning av egna
   kopior och byggrester. Medier städas enligt `tools/local-work.md`; en gammal fil är inte automatiskt oanvänd.
+  Efter mediearbete: `npm run media:status` ger storlek, syfte och förändring sedan föregående inventering.
 - En huvudagent äger commits, taggar och push. Vilken session det är, och vem som äger vilka filer, står på raden
   "Vem äger vad" i HANDOFF och ingen annanstans. Andra sessioner skriver bara i sina egna filer och lämnar över till
   huvudagenten med en fillista. En skribent per fil.

@@ -38,7 +38,8 @@ Arkivet är det tidigare projektet på D: (snyggare-dealer). Sidorna har kvar si
 | [Jakobs besked](docs/BESKED.md) | Hans gällande besked per ämne, med datum och hans egna ord; ersatta besked står kvar sist. Slås upp när ett besked är i fråga. |
 | [Kända brister](docs/BRISTER.md) | Varje känd brist: var den syns, vad som är prövat och vad som stänger den. |
 | [SYSTEM](docs/SYSTEM.md) | Kontrakt: koordinater, register, 3D-scenen, spelet, klippbanken och ordlistan. |
-| [DRIFT](docs/DRIFT.md) | Rutiner och anslutningar: Git och kontroller, labbservern, Runway, publicering, D:-slask. |
+| [DRIFT](docs/DRIFT.md) | Rutiner och anslutningar: Git och kontroller, labbservern, Runway och publicering. |
+| [Lokal arbetsplats och medier](tools/local-work.md) | Arbete på C:, vanliga grenar, andra IDE:ers ändringar och `npm run media:status` för lagringsöversikten. |
 | [Löpande bandet](tools/dealer-line.md) | Den enda vägen från en bild av en person till en dealer som spelar en runda: femton rader först, sedan stationer, format, namn och kommandon. |
 | [Tal](docs/TAL.md) | Dealerns repliker med talfilm och ljud: hur en talfilm görs, hur spelet spelar den och vad som går i ett spel i rörelse. |
 | [Filmmodellerna](docs/FILMMODELLER.md) | Vad varje filmmodell används till och kostar, hur dess filmer ser ut i banken, vad som håller och faller, och kontrollen för en film från en ny modell. Läs den före ett modellval. |
