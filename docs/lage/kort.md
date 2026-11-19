@@ -17,8 +17,8 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
 - Spelet och scenen kan följa samma regel och lins bakom ett val (`geometri=lins`; `TABLE_GEOMETRY` i
   `src/card-plan.ts`, förval `contract` = dagens bild): liggande kort, extra kort, split, det ritade kortets vila och
   scenens filmkamera. Testerna håller kortplan = spel = scen inom 0,01 px; i en webbläsare stämmer nu också stillbilden; rörelsen återstår ([BRISTER](../BRISTER.md)).
-- Kortplan har en vy: valet Dator | Mobil och adressordet `vy=mobil` är borta, eftersom inget som körs läste mobilvyn.
-  Behövs en mobilvy härleds den ur samma kort och lins, aldrig som en andra inställning.
+- Kortplan har en vy; Dator | Mobil och `vy=mobil` är borta. En framtida mobilvy härleds ur samma kort och lins.
+- D.C3 är redigerbart i Kortplan och Beställ. Äldre planer får dess tidigare spelposition vid läsning; de 16 befintliga korten bevaras. Sparad D.C3 styr också senare dealer-kort.
 - Labbet visar släta gula och blå kort (`CARD_COLOUR` i `src/placement-model.ts`), och spelets rygg med SG står kvar:
   inget trycks på korten före efterarbetet ([BESKED](../BESKED.md), "Kortets sidor"; kortet i Beslut är uttaget).
 - Jakob sparade planen från Bordet 2026-11-18 kl. 01.30. Den skiljer sig från den incheckade i handbytet på ett kort

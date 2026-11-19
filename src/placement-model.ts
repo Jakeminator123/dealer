@@ -37,7 +37,10 @@ export const VIEWS = { native: { width: 1762, height: 1174, label: 'Dator', prof
 // tools/placement-backdrop.ts with a receipt beside it; outside Git like all media. Only Dator has one: the scene has no home
 // view that matches the Mobil view's pixels (a separate V6 composition), so Mobil keeps its V6 picture.
 export const NEUTRAL_BACKDROP = { native: 'assets/lab/placement-backdrop/native.jpg' } as const;
-export const TARGETS = [...Array.from({length:7},(_,i)=>`P${i+1}`),'D'].flatMap(p=>[`${p}.C1`,`${p}.C2`]);
+export const INITIAL_TARGETS = [...Array.from({length:7},(_,i)=>`P${i+1}`),'D'].flatMap(p=>[`${p}.C1`,`${p}.C2`]);
+export const TARGETS = [...INITIAL_TARGETS, 'D.C3'];
+// Older files did not store this slot. Preserve its former film-pixel position when upgrading them.
+export const DEALER_THIRD_FILM = {x:1069,y:926} as const;
 export const PLAYER_TARGETS = TARGETS.filter(id=>id[0]==='P');
 // The card standing in the shoe's window in the lab's two background pictures: its corners in the picture's pixels, clockwise
 // from the upper one. The pictures show the game's own card back there (black and gold); the lab paints the place yellow, the
@@ -248,10 +251,19 @@ export function dealerAngle(plan: PlacementPlan, id: string, view: View): number
 }
 export function defaultPlan(): PlacementPlan {
  const targets: Record<string,Target>={};
- for(const id of TARGETS){const dealer=id[0]==='D',seat=dealer?3:Number(id[1])-1,second=id.endsWith('2'),v=.08+Math.abs(seat-3)*.025,closed=(dealer&&second)||id==='P4.C2';
+ for(const id of INITIAL_TARGETS){const dealer=id[0]==='D',seat=dealer?3:Number(id[1])-1,second=id.endsWith('2'),v=.08+Math.abs(seat-3)*.025,closed=(dealer&&second)||id==='P4.C2';
   targets[id]={geometry:{native:{u:dealer?.5+(second?.027:0):.13+seat*.12+(second?.025:0),v:dealer?.21:v+(second?.008:0),width:.041,height:.051,angle:0,taper:.9,reviewed:false},portrait:{u:dealer?.47+(second?.048:0):.10+seat*.125+(second?.035:0),v:dealer?.49:.16+Math.abs(seat-3)*.055+(second?.005:0),width:.06,height:.04,angle:0,taper:.9,reviewed:false}},intent:{takeHand:'LH',startSide:'BACK',endSide:closed?'BACK':'FRONT',pass:false,turn:!closed,...INTENT_DEFAULTS},material:{bend:.07,gloss:.35}};
  }
+ targets['D.C3']=dealerThirdTarget(targets);
  return {schemaVersion:1,id:'pamela-table',space:'image-normalized-bottom-up',updatedAt:null,shoe:{native:{u:.733,v:.322},portrait:{u:.84,v:.58}},targets,tableProjection:{mode:'flat',heading:0}};
+}
+/** Additive upgrade: the original sixteen cards are never moved or resized. */
+export function dealerThirdTarget(targets: Record<string,Target>): Target {
+ const first=targets['D.C1'],second=targets['D.C2'],out=structuredClone(second);
+ out.geometry.native={...out.geometry.native,u:DEALER_THIRD_FILM.x/1763,v:1-DEALER_THIRD_FILM.y/1173,reviewed:false};
+ out.geometry.portrait={...out.geometry.portrait,u:Math.min(1,Math.max(0,2*second.geometry.portrait.u-first.geometry.portrait.u)),reviewed:false};
+ out.intent={...first.intent,startSide:'BACK',endSide:'FRONT',turn:true};
+ return out;
 }
 function object(v:unknown): v is Record<string,unknown>{return !!v&&typeof v==='object'&&!Array.isArray(v);}
 function keys(v:unknown,list:string[]): asserts v is Record<string,unknown>{if(!object(v)||Object.keys(v).sort().join('|')!==list.sort().join('|'))throw Error('Felaktiga fält i placeringsfilen.');}
@@ -266,7 +278,7 @@ export function validatePlan(value: unknown): asserts value is PlacementPlan {
   if(Object.hasOwn(value.tableProjection,'perspective'))number(value.tableProjection.perspective,TABLE_PERSPECTIVE.min,TABLE_PERSPECTIVE.max);
  }
  if(value.schemaVersion!==1||value.id!=='pamela-table'||value.space!=='image-normalized-bottom-up'||!(value.updatedAt===null||(typeof value.updatedAt==='string'&&value.updatedAt.length<40&&Number.isFinite(Date.parse(value.updatedAt)))))throw Error('Okänd placering eller bildrymd.');
- keys(value.shoe,['native','portrait']);keys(value.targets,[...TARGETS]);
+ keys(value.shoe,['native','portrait']);keys(value.targets,[...(object(value.targets)&&Object.hasOwn(value.targets,'D.C3')?TARGETS:INITIAL_TARGETS)]);
  for(const view of ['native','portrait'] as View[]){const s=value.shoe[view];keys(s,['u','v']);number(s.u,0,1);number(s.v,0,1);}
  for(const target of Object.values(value.targets)){
   keys(target,['geometry','intent','material']);keys(target.geometry,['native','portrait']);keys(target.intent,['takeHand','startSide','endSide','pass','turn',...Object.keys(INTENT_DEFAULTS).filter(key=>object(target.intent)&&Object.hasOwn(target.intent,key))]);keys(target.material,['bend','gloss']);
@@ -280,4 +292,5 @@ export function validatePlan(value: unknown): asserts value is PlacementPlan {
   }
  }
  for(const target of Object.values(value.targets) as {intent:Record<string,unknown>}[])for(const [key,fallback] of Object.entries(INTENT_DEFAULTS))if(!Object.hasOwn(target.intent,key))target.intent[key]=fallback;
+ if(!Object.hasOwn(value.targets,'D.C3'))value.targets['D.C3']=dealerThirdTarget(value.targets as Record<string,Target>);
 }

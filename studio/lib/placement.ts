@@ -16,7 +16,7 @@ export const SEATS = ["P1", "P2", "P3", "P4", "P5", "P6", "P7", "D"] as const;
 /** "Plats 4 · kort 2", "Dealern · kort 1", "Skon". */
 export function placeName(id: Place): string {
   if (id === SHOE) return "Skon";
-  const m = /^(P([1-7])|D)\.C([12])$/.exec(id);
+  const m = /^(P([1-7])|D)\.C([123])$/.exec(id);
   if (!m) return id;
   return m[2] ? `Plats ${m[2]} · kort ${m[3]}` : `Dealern · kort ${m[3]}`;
 }
@@ -26,8 +26,9 @@ export const placeCode = (id: Place): string => (id === SHOE ? "Sko" : nodeCode(
 export function placeFromCode(code: string | null | undefined): Place | null {
   const text = (code ?? "").trim().toUpperCase().replace(/\./g, "");
   if (text === "SKO" || text === "SHOE") return SHOE;
-  const m = /^(P[1-7]|D)C([12])$/.exec(text);
-  return m ? `${m[1]}.C${m[2]}` : null;
+  const m = /^(P[1-7]|D)C([123])$/.exec(text);
+  const id=m ? `${m[1]}.C${m[2]}` : null;
+  return id && TARGETS.includes(id) ? id : null;
 }
 
 /**

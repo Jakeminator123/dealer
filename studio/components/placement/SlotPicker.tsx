@@ -43,7 +43,7 @@ export function SlotPicker({ plan, selected, changed, onSelect }: { plan: Placem
       </div>
       <div className="grid grid-cols-8 gap-1">{SEATS.map((s) => button(`${s}.C1`, "1"))}</div>
       <div className="grid grid-cols-8 gap-1">{SEATS.map((s) => button(`${s}.C2`, "2"))}</div>
-      <div className="flex">{button(SHOE, "Sko", true)}</div>
+      <div className="grid grid-cols-8 gap-1"><div className="col-span-2">{button(SHOE, "Sko", true)}</div><div className="col-start-8">{button("D.C3", "3")}</div></div>
     </div>
   );
 }

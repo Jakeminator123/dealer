@@ -12,7 +12,7 @@ type EntryLike = { id: string; role: string; node?: string; state?: string; card
 export type SeatEndRow<E> = { target: string; label: string; pinch: SeatEnd<E> | null; drag: SeatEnd<E> | null; two: SeatEnd<E> | null; candidates: E[] };
 
 /** "P4", "Dealer", "Hålkort": a seat as the order views name it. */
-export const seatLabel = (target: string): string => (target === "D.C1" ? "Dealer" : target === "D.C2" ? "Hålkort" : target.replace(/\.C1$/, ""));
+export const seatLabel = (target: string): string => (target === "D.C1" ? "Dealer" : target === "D.C2" ? "Hålkort" : target === "D.C3" ? "Dealer 3" : target.replace(/\.C1$/, ""));
 
 /** Every seat a deal can be ordered to, with its end picture from each anchor. Archived pictures are out of play. */
 export function seatEnds<E extends EntryLike>(entries: readonly E[], bank: BankFacts | null, dealer: string): SeatEndRow<E>[] {

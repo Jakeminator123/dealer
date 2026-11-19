@@ -322,7 +322,7 @@ export function TablePanel({ plan, id, editable }: { plan: PlacementPlan; id: Pl
   const checked = TARGETS.filter((t) => plan.targets[t].geometry[view].reviewed).length;
   return (
     <>
-      <Section title="Bordet" aside={<span className="text-xs text-faint">{`${checked} av 16 kontrollerade`}</span>}>
+      <Section title="Bordet" aside={<span className="text-xs text-faint">{`${checked} av ${TARGETS.length} kontrollerade`}</span>}>
         <Switch
           checked={flat}
           disabled={off}
@@ -365,7 +365,7 @@ export function TablePanel({ plan, id, editable }: { plan: PlacementPlan; id: Pl
               setFactor(1);
               toast({
                 tone: "ok",
-                title: `Alla 16 kort ×${decimal(factor, 2)}`,
+                title: `Alla ${TARGETS.length} kort ×${decimal(factor, 2)}`,
                 detail: `${placeCode(card)}: ${before} → ${quadSize(planCardQuad(result.plan, card, view)).text}.${result.limited.length ? ` ${result.limited.map(placeCode).join(", ")} ${factor > 1 ? "nådde kanten eller största storlek" : "nådde minsta storlek"}.` : ""} Ångra tar tillbaka.`,
               });
             }}

@@ -242,7 +242,8 @@ test("the strip: a return's still a third in, a deal's at its landing; stills on
 test("card places from the plan, as resolveRound takes them", () => {
   assert.equal(placesOf(null), null);
   const places = placesOf(defaultPlan())!;
-  assert.equal(Object.keys(places).length, 16);
+  assert.equal(Object.keys(places).length, 17);
+  assert.ok(Number.isFinite(places["D.C3"].x));
   assert.ok(Number.isFinite(places["P4.C2"].x) && Number.isFinite(places["D.C1"].y));
   // with places a seat's second card knows how far its card moves, and the note about it goes
   const shared = resolveRound(buildGraph(bank), [{ from: "READY", to: "P4.C2" }], { places });

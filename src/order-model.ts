@@ -553,6 +553,7 @@ export function seatWords(target: string | null | undefined): string {
   if (m) return `plats ${m[1]}${m[2] === '1' ? '' : ', kort ' + m[2]}`;
   // The dealer's second card is the hole card (it lands closed); her first keeps the words it was ordered with.
   if (target === 'D.C2') return 'dealerns hålkort';
+  if (target === 'D.C3') return 'dealerns tredje kort';
   return /^D\./.test(target ?? '') ? 'dealerns plats' : 'platsen';
 }
 /**
@@ -591,7 +592,7 @@ export function cutIntoOf(step: StepDef, target: string | null, shape: Shape | n
   return step.start !== 'LAND' && shape !== 'ONE_WAY' ? [edge, `${target}>${ANCHOR_NODE[step.from]}`] : [edge];
 }
 /** The cards a deal can be ordered to: the first card of every seat, the dealer's first, and her hole card (lands closed). */
-export const SEAT_TARGETS = ['P1.C1', 'P2.C1', 'P3.C1', 'P4.C1', 'P5.C1', 'P6.C1', 'P7.C1', 'D.C1', 'D.C2'];
+export const SEAT_TARGETS = ['P1.C1', 'P2.C1', 'P3.C1', 'P4.C1', 'P5.C1', 'P6.C1', 'P7.C1', 'D.C1', 'D.C2', 'D.C3'];
 /** "Alla sju": the first card to every player. */
 export const ALL_SEVEN = SEAT_TARGETS.filter((t) => t.startsWith('P'));
 /** "plats 1, 2 och 3", "plats 1–7", "dealerns plats". */

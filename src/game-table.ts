@@ -2,14 +2,14 @@
 //
 // The engine (game/) says which cards a seat's hands hold, by draw number in the shoe. This file turns that into a place per
 // card: a slot (seat, hand, number in the hand), the placement key whose films deal a card there, and the card's quad in film
-// pixels. The placement plan only has two places per seat (C1, C2). Everything beyond them is laid out here from those two:
+// pixels. The placement plan has two places per player (C1, C2) and three for the dealer. Extra player cards follow C1/C2:
 // a third, fourth and fifth card continue the line C1 → C2 in short steps, and split hands lie one behind the other toward
 // the dealer. Seats are 1–7, seat 1 at camera left; nothing here knows the engine's zero-based boxes.
 //
 // A card's outline at its place follows one of two rules (src/card-plan.ts, TABLE_GEOMETRY): 'lens', the card plan's own
 // (planCardAt: a real card through the table's lens in the plan's shape, the same for a place of the plan and for a place made
 // up here), or 'contract', the plan's older projective plane (flatQuad), which is what the game shows until Jakob has said yes.
-import {flatQuad, quad, toPixels, fromPixels, type Geometry, type PlacementPlan} from './placement-model.ts';
+import {DEALER_THIRD_FILM, flatQuad, quad, toPixels, fromPixels, type Geometry, type PlacementPlan} from './placement-model.ts';
 import {filmToPlan, planCardAt, planToFilm, tableGeometry, type TableGeometry} from './card-plan.ts';
 import type {Lens} from './table-lens.ts';
 
@@ -27,9 +27,8 @@ export const FAN = 24, SPLIT = 66;
 // Seats where the seat film's hand does not reach a fan of 24 px (the film agent's trial in motion, 2026-11-11): a shorter
 // step keeps the cards under the fingers at seat 5 and away from the shoe at seat 7. Proposals, not yet tried in motion.
 export const FAN_AT: Record<number, number> = {5: 16, 7: 12};
-// The dealer's third card lies where its film lays it (film pixels), not beside the second: the archive film's hand lands
-// there, and a card that slides a hundred pixels away from the fingers looks worse than a gap in the row.
-export const DEALER_THIRD = {x: 1069, y: 926};
+// Migration fallback for files without the now editable D.C3. New and normalized plans keep this in their own target.
+export const DEALER_THIRD = DEALER_THIRD_FILM;
 // The plan is written for the 1762 px wide lab view and the films are 1764 px wide: src/card-plan.ts planToFilm and filmToPlan.
 
 export function slotOf(table: TableCards, shoeDraw: number): Slot | null {
@@ -70,7 +69,12 @@ export function createLayout(plan: PlacementPlan, options: {fan?: number | null;
     const first = plan.targets[`${place(slot)}.C1`].geometry.native, second = plan.targets[`${place(slot)}.C2`].geometry.native;
     if (slot.hands === 1 && slot.index <= 1) return slot.index ? second : first;
     const step = options.fan ?? FAN_AT[slot.seat] ?? FAN;
-    if (slot.owner === 'D') { const third = filmToPlan({x: DEALER_THIRD.x + (slot.index - 2) * step, y: DEALER_THIRD.y}); return {...second, ...fromPixels(third.x, third.y, 'native')}; }
+    if (slot.owner === 'D') {
+      const saved=plan.targets['D.C3']?.geometry.native;
+      const origin=saved ? planToFilm(toPixels(saved,'native')) : DEALER_THIRD;
+      const third=filmToPlan({x:origin.x+(slot.index-2)*step,y:origin.y});
+      return {...(saved??second),...fromPixels(third.x,third.y,'native')};
+    }
     const a = toPixels(first, 'native'), b = toPixels(second, 'native'), length = Math.hypot(b.x - a.x, b.y - a.y) || 1;
     const along = {x: (b.x - a.x) / length, y: (b.y - a.y) / length};
     // Split hands step away from the player, toward the dealer: up in the image, whichever way the line C1 → C2 points.
@@ -84,7 +88,7 @@ export function createLayout(plan: PlacementPlan, options: {fan?: number | null;
     quad: quadOf,
     centre(slot: Slot): Pt { const q = quadOf(slot); return {x: q.reduce((s, p) => s + p.x, 0) / 4, y: q.reduce((s, p) => s + p.y, 0) / 4}; },
     /** Bend and gloss of the plan's card at the seat (the Material panel's values). */
-    material: (slot: Slot) => plan.targets[`${place(slot)}.C${slot.index ? 2 : 1}`].material,
+    material: (slot: Slot) => (slot.owner==='D'&&slot.index>=2&&plan.targets['D.C3'] ? plan.targets['D.C3'] : plan.targets[`${place(slot)}.C${slot.index ? 2 : 1}`]).material,
   };
 }
 export type Layout = ReturnType<typeof createLayout>;

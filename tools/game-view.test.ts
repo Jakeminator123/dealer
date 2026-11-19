@@ -14,6 +14,20 @@ import {tableView, tableCards, cardFaces, shownBy, lineOf, handKey, mayAsk, show
 import {handValue, type Card} from '../game/round.ts';
 import {totalText, chipsFor} from '../src/game-overlay.ts';
 
+test('the editable third dealer card drives its film position and later cards',()=>{
+ const plan=defaultPlan(),slot={owner:'D' as const,seat:0,hand:0,hands:1,index:2};
+ const before=createLayout(plan,{geometry:'contract'}).centre(slot);
+ plan.targets['D.C3'].geometry.native.u+=.04;
+ plan.targets['D.C3'].geometry.native.v-=.02;
+ plan.targets['D.C3'].material.gloss=.73;
+ const layout=createLayout(plan,{geometry:'contract'}),after=layout.centre(slot),fourth=layout.centre({...slot,index:3});
+ assert.ok(Math.abs(after.x-before.x-.04*1763)<1e-6);
+ assert.ok(Math.abs(after.y-before.y-.02*1173)<1e-6);
+ assert.ok(Math.abs(fourth.x-after.x-24)<1e-6);
+ assert.ok(Math.abs(fourth.y-after.y)<1e-6);assert.equal(layout.material(slot).gloss,.73);
+ assert.equal(layout.material({...slot,index:3}).gloss,.73);
+});
+
 // A stacked lab shoe: the cards in draw order from draw 2 (draw 1 is the burn card). One seat plays, seat 4:
 // seat 4 gets K and 6, the dealer shows 7 and hides a 10, and the next card in the shoe is a 5.
 const card = (text: string) => ({r: text.slice(0, -1), s: text.slice(-1)});

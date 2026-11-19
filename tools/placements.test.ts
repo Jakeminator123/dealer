@@ -11,11 +11,24 @@ test('pixel-centre transforms are invertible at both image edges and interior',(
   const px=toPixels(point,view),back=fromPixels(px.x,px.y,view);assert.ok(Math.abs(back.u-point.u)<1e-12);assert.ok(Math.abs(back.v-point.v)<1e-12);
  }assert.deepEqual(toPixels({u:.5,v:.5},'native'),{x:880.5,y:586.5});
 });
-test('sixteen draft slots have independent view geometry and coherent motion plans',()=>{
- const p=defaultPlan();validatePlan(p);assert.equal(Object.keys(p.targets).length,16);assert.equal(p.targets['D.C2'].intent.turn,false);assert.equal(p.targets['P4.C2'].intent.endSide,'BACK');assert.equal(p.targets['P4.C2'].intent.turn,false);
+test('seventeen draft slots have independent view geometry and coherent motion plans',()=>{
+ const p=defaultPlan();validatePlan(p);assert.equal(Object.keys(p.targets).length,17);assert.equal(p.targets['D.C2'].intent.turn,false);assert.equal(p.targets['D.C3'].intent.endSide,'FRONT');assert.equal(p.targets['P4.C2'].intent.endSide,'BACK');assert.equal(p.targets['P4.C2'].intent.turn,false);
  const old=structuredClone(p.targets['P4.C2'].geometry.portrait);p.targets['P4.C2'].geometry.native.u=.7;assert.deepEqual(p.targets['P4.C2'].geometry.portrait,old);
  for(const id of TARGETS)assert.equal(p.targets[id].geometry.native.reviewed,false);
  const text=sequence('P4.C2',{takeHand:'LH',startSide:'BACK',endSide:'BACK',pass:true,turn:false,...INTENT_DEFAULTS});assert.match(text,/PASS\(LH>RH,BACK\)/);assert.match(text,/RELEASE\(RH\)/);assert.doesNotMatch(text,/\bTURN\(/);assert.match(text,/RETURN\(SHOE_READY\)$/);
+});
+
+test('legacy plans gain only D.C3 and preserve every saved user adjustment',()=>{
+ const p=defaultPlan();delete p.targets['D.C3'];
+ p.targets['P6.C1'].geometry.native.u=.7345;p.targets['D.C2'].material.gloss=.71;
+ const before=structuredClone(p.targets);validatePlan(p);
+ assert.equal(Object.keys(p.targets).length,17);
+ for(const id of Object.keys(before))assert.deepEqual(p.targets[id],before[id]);
+ assert.ok(Math.abs(p.targets['D.C3'].geometry.native.u-1069/1763)<1e-12);
+ assert.ok(Math.abs(p.targets['D.C3'].geometry.native.v-(1-926/1173))<1e-12);
+ p.targets['D.C3'].geometry.native.u=.62;
+ const saved=structuredClone(p.targets['D.C3']);validatePlan(p);assert.deepEqual(p.targets['D.C3'],saved);
+ const bad=structuredClone(p);bad.targets['D.C3'].geometry.native.u=2;assert.throws(()=>validatePlan(bad));
 });
 
 test('saved table projection is optional for legacy files and rejects unsupported settings',async()=>{
@@ -110,7 +123,7 @@ test('the store reads an older file with the defaults and writes the two keys wh
   const store=placementStore(dir),read=await store.load();assert.equal(read.plan.targets['P5.C1'].intent.grip,'PINCH');assert.equal(read.plan.targets['P5.C1'].intent.turnAt,'AIR');
   // A client that still sends the older shape gets the keys written too.
   await store.save(legacyPlan(),read.revision);const text=await readFile(path.join(dir,'placements/default.json'),'utf8');
-  assert.equal(text.match(/"grip": "PINCH"/g)?.length,16);assert.equal(text.match(/"turnAt": "AIR"/g)?.length,16);assert.equal(text.match(/"flipAxis": "FREE"/g)?.length,16);
+  assert.equal(text.match(/"grip": "PINCH"/g)?.length,17);assert.equal(text.match(/"turnAt": "AIR"/g)?.length,17);assert.equal(text.match(/"flipAxis": "FREE"/g)?.length,17);
  }finally{assert.ok(path.resolve(dir).startsWith(base+path.sep+'dealer-placement-test-'));await rm(dir,{recursive:true,force:true});}
 });
 test('the sequence and the node map show a dragged card and where the turn happens',()=>{

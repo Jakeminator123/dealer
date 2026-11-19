@@ -12,7 +12,7 @@ import { FLIP_AXES, FLIP_LABEL } from "../../src/order-model.ts";
 import { SEAT_HUB } from "../../src/game-director.ts";
 
 test("places in his words: Plats 1–7 and dealern, the shoe, and their short forms", () => {
-  assert.equal(PLACES.length, 17);
+  assert.equal(PLACES.length, 18);
   assert.equal(placeName("P4.C2"), "Plats 4 · kort 2");
   assert.equal(placeName("D.C1"), "Dealern · kort 1");
   assert.equal(placeName(SHOE), "Skon");
@@ -23,7 +23,9 @@ test("places in his words: Plats 1–7 and dealern, the shoe, and their short fo
   assert.equal(placeFromCode("p7c1"), "P7.C1");
   assert.equal(placeFromCode("P4.C1"), "P4.C1");
   assert.equal(placeFromCode("P8C1"), null);
-  assert.equal(placeFromCode("DC3"), null);
+  assert.equal(placeFromCode("DC3"), "D.C3");
+  assert.equal(placeName("D.C3"), "Dealern · kort 3");
+  assert.equal(placeFromCode("P4C3"), null);
   assert.equal(placeFromCode(null), null);
 });
 

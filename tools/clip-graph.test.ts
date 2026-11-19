@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {readFile, readdir} from 'node:fs/promises';
 import * as graph from '../src/clip-graph.ts';
 import type {BankData, BankJob, MotionRecord} from '../src/clip-graph.ts';
-import {TARGETS as PLAN_TARGETS, defaultPlan, toPixels} from '../src/placement-model.ts';
+import {INITIAL_TARGETS as PLAN_TARGETS, defaultPlan, toPixels} from '../src/placement-model.ts';
 import {applyChange} from './review-store.ts';
 
 const sha = 'a'.repeat(64), ready = {file: {path: 'assets/motions/pamela-p4-c1-color-control-01/start.png', sha256: sha}};

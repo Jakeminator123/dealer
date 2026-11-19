@@ -131,7 +131,8 @@ test("a new order asked for by address: dealer, step and seat, or the deal the g
   // A seat's second card, as the picture chooses it (Jakob 2026-11-17: "A2.2 till P3C2 och tillbaka till A2.2").
   assert.deepEqual(q("ny=1&dealer=paow&steg=GIV-2.2&plats=P3.C2"), { dealer: "paow", step: "GIV-2.2", target: "P3.C2", all: false, model: null });
   assert.equal(q("ny=1&plats=p3.c2")?.target, "P3.C2");
-  for (const no of ["P3.C3", "P8.C2", "D.C3", "SKO"]) assert.equal(q(`ny=1&plats=${no}`)?.target, null, no);
+  for (const no of ["P3.C3", "P8.C2", "D.C4", "SKO"]) assert.equal(q(`ny=1&plats=${no}`)?.target, null, no);
+  assert.equal(q("ny=1&plats=D.C3")?.target,"D.C3");
   // The address "Flytta kortets plats" hands to Placering reads back as the same values.
   const back = presetAddress({ dealer: "paow", step: "GIV-2.2", target: "P3.C2", model: null });
   assert.equal(back, "/bestall/?ny=1&dealer=paow&steg=GIV-2.2&plats=P3.C2");
@@ -143,7 +144,8 @@ test("the card an order goes to: every card of the plan, a seat's second card to
   const { plan, file } = await readPlan(process.cwd());
   const p = planAnswerOf(plan, file);
   assert.deepEqual(Object.keys(p.seats).filter((t) => !orderableCard(t)), [], "every card of the plan can be pressed");
-  for (const no of ["P3.C3", "P8.C1", "D.C3", "SHOE", "", null]) assert.equal(orderableCard(no), false, String(no));
+  for (const no of ["P3.C3", "P8.C1", "D.C4", "SHOE", "", null]) assert.equal(orderableCard(no), false, String(no));
+  assert.equal(orderableCard("D.C3"),true);
   assert.deepEqual(["P3.C2", "P3.C1", "D.C1", "D.C2"].map(seatKey), ["P3.C1", "P3.C1", "D.C1", "D.C2"]);
   assert.deepEqual(["P3.C2", "P3.C1", "D.C2"].map(cardOf), [2, 1, 1]);
   assert.deepEqual([withCard("P5.C1", 2), withCard("P3.C2", 1), withCard("D.C1", 2), withCard("D.C2", 1)], ["P5.C2", "P3.C1", "D.C1", "D.C2"]);

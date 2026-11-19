@@ -37,7 +37,7 @@ export {REVEAL_NODE};
 // cardFace), so no value is shown. It gives way by itself when the bank has a playable film of D.C2 (planBeats).
 // NOT D.C3 (and so not D.C4 and later, which play the D.C3 film): with the first card's film the drawn card would lie 219 px (D.C3)
 // and 243 px (D.C4) right of her hand, measured for Paow 2026-11-13; that is a hand laying a card somewhere else, which Jakob calls
-// cheating with the card. Those cards are laid without a hand until a film of their own exists (the plan has no place for them yet).
+// cheating with the card. Those cards are laid without a hand until a film of their own exists; D.C3 now has an editable place.
 // Per dealer: Paow's only. Pamela is paused (Jakob 2026-11-12), and her game stays as he saw it: her hole card is laid without a hand.
 export const STAND_IN_FILM: Readonly<Record<string, Readonly<Record<string, string>>>> = {paow: {'D.C2': 'D.C1'}};
 

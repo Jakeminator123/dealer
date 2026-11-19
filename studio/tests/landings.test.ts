@@ -18,7 +18,7 @@ const bank: BankFacts = {
 
 test("each seat has its own end picture or none: a landing picture first, else the cut frame of the bank's own film there", () => {
   const rows = seatEnds([landing("P5.C1"), landing("P4.C1", "ersatt"), landing("P7.C1", "arkiverad")], bank, "paow");
-  assert.deepEqual(rows.map((r) => r.label), ["P1", "P2", "P3", "P4", "P5", "P6", "P7", "Dealer", "Hålkort"]);
+  assert.deepEqual(rows.map((r) => r.label), ["P1", "P2", "P3", "P4", "P5", "P6", "P7", "Dealer", "Hålkort", "Dealer 3"]);
   const word = Object.fromEntries(rows.map((r) => [r.label, [endWord(r.pinch), endWord(r.drag)]]));
   assert.deepEqual(word.P1, ["snittruta", "ingen slutbild"], "the pinch's own film; nothing from the drag");
   assert.deepEqual(word.P4, ["snittruta", "snittruta"], "a landing picture set aside does not hold: the cut frames of the two films");
@@ -30,9 +30,9 @@ test("each seat has its own end picture or none: a landing picture first, else t
   assert.deepEqual([p4.pinch?.kind === "SNITTRUTA" && p4.pinch.cut.clip, p4.drag?.kind === "SNITTRUTA" && p4.drag.cut.clip], ["paow-p4", "paow-p4-slap"]);
   // The station's sign and count: per seat, never one picture as if it were all.
   const state = seatEndsStatus(rows);
-  assert.deepEqual([state.status, state.have, state.total, seatEndsCount(state)], ["gäller", 3, 9, "3 av 9 platser har en slutbild"]);
+  assert.deepEqual([state.status, state.have, state.total, seatEndsCount(state)], ["gäller", 3, 10, "3 av 10 platser har en slutbild"]);
   assert.equal(seatEndsStatus(seatEnds([], bank, "paow")).status, "finns", "cut frames only: something is there, nothing is a landing picture that holds");
-  assert.deepEqual(seatEndsStatus(seatEnds([], null, "paow")), { status: "saknas", have: 0, total: 9 });
+  assert.deepEqual(seatEndsStatus(seatEnds([], null, "paow")), { status: "saknas", have: 0, total: 10 });
   assert.equal(seatEndsStatus(seatEnds([], bank, "pamela")).have, 0, "another dealer's films are not hers");
   assert.deepEqual([seatLabel("D.C1"), seatLabel("D.C2"), seatLabel("P3.C1")], ["Dealer", "Hålkort", "P3"]);
 });
@@ -55,7 +55,7 @@ test("on the checkout: the cut frames are checked against the films, and only se
   const rows = seatEnds(entries, bank, "paow");
   assert.deepEqual(rows.filter((r) => r.pinch).map((r) => r.label), ["P3", "P4"]);
   assert.deepEqual(rows.filter((r) => r.drag).map((r) => r.label), ["P4"]);
-  assert.deepEqual(seatEndsStatus(rows), { status: "finns", have: 2, total: 9 });
+  assert.deepEqual(seatEndsStatus(rows), { status: "finns", have: 2, total: 10 });
   // Without the written-down checks seven seats would look as if they had one: the file is what keeps Material and the store alike.
   assert.equal(seatEndsStatus(seatEnds(entries, { ...bank, cutChecks: {} }, "paow")).have, 7);
 });
