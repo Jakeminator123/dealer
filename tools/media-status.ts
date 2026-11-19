@@ -32,6 +32,17 @@ export function storageSummary(files: StoredFile[]) {
   return {files: files.length, logicalBytes, uniqueBytes};
 }
 const size = (n: number) => n >= 1e9 ? `${(n / 1e9).toFixed(2)} GB` : `${(n / 1e6).toFixed(1)} MB`;
+/** Assign a shared file to its first path only, so categories add up to the total. */
+export function storageCategories(files: StoredFile[]) {
+  const seen = new Set<string>(), groups = new Map<string, number>();
+  for (const f of [...files].sort((a, b) => a.file.localeCompare(b.file))) {
+    if (seen.has(f.identity)) continue;
+    seen.add(f.identity);
+    const group = f.file.startsWith('assets/') ? f.file.split('/').slice(0, 2).join('/') : f.file.split('/')[0];
+    groups.set(group, (groups.get(group) ?? 0) + f.bytes);
+  }
+  return [...groups].map(([category, bytes]) => ({category, bytes})).sort((a, b) => b.bytes - a.bytes);
+}
 const text = (s: string) => s.replace(/[\r\n|]/g, ' ');
 const use = (item: Item) => item.use === 'bara registrerad' || item.use === 'okänd' ? 'Användning behöver granskas' : item.use;
 function title(repo: string, item: Item): string {
@@ -50,6 +61,11 @@ export function report(repo: string, files: StoredFile[], items: Item[], previou
     const total = storageSummary(files.filter(f => f.file.startsWith(`${root}/`)));
     lines.push(`| ${root} | ${size(total.logicalBytes)} | ${root === 'assets' ? 'Bibliotek: filmer, bilder, prov, ljud och original' : root === 'output' ? 'Exporter; innehåller också bevarade V6-referenser' : 'Tillfälligt arbete, testkvitton och serverdata'} |`);
   }
+  const categories = storageCategories(files);
+  lines.push('', '## Fördelning utan dubbelräkning', '',
+    'En fil som har flera hårda länkar tilldelas den första sökvägen i alfabetisk ordning. Kategorierna summerar till totalen; de säger inte att filerna är oanvända.', '',
+    '| Kategori | Unika filbytes | Andel |', '| --- | ---: | ---: |');
+  for (const c of categories) lines.push(`| ${c.category} | ${size(c.bytes)} | ${summary.uniqueBytes ? (100 * c.bytes / summary.uniqueBytes).toFixed(1) : '0'} % |`);
   lines.push('', '## Största materialen', '', '| Material | Storlek | Användning | Mapp |', '| --- | ---: | --- | --- |');
   for (const item of [...items].sort((a, b) => b.bytes - a.bytes).slice(0, 30)) lines.push(`| ${text(title(repo, item))} | ${size(item.bytes)} | ${use(item)} | ${item.path} |`);
   const work = new Map<string, StoredFile[]>();
@@ -66,7 +82,7 @@ export function report(repo: string, files: StoredFile[], items: Item[], previou
     '- Efter en lyckad 3D-referensrendering rensas mellanrutorna. --keep-frames behåller dem för felsökning.',
     '- Vid avslut: flytta den valda leveransen till assets/ och registrera rollen, radera egna överflödiga mellanresultat och kör npm run media:status.',
     '- ”Användning behöver granskas” är ingen raderingslista. Kontrollera även Prov, anteckningar och pågående uppdrag. Flytt till en annan disk frigör inte totalt utrymme.', '');
-  return {at, ...summary, markdown: lines.join('\n')};
+  return {at, ...summary, categories, markdown: lines.join('\n')};
 }
 export function main(repo = path.resolve(fileURLToPath(new URL('../', import.meta.url)))) {
   const folder = path.join(repo, '.runtime', 'media-status');

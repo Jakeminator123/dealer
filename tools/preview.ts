@@ -20,18 +20,19 @@ import {mediaRoles} from './media-roles.ts';
 import {handleOrders} from './order-routes.ts';
 import {UPLOAD_LIMIT} from '../studio/lib/media.ts';
 import {dealersOf} from '../src/clip-graph.ts';
+import {diagnosticsStore,receiveDiagnostics} from './interaction-diagnostics.ts';
 const port=4319,origin=`http://127.0.0.1:${port}`,state='.runtime/preview.json';
 const args=process.argv.slice(2),has=(flag:string)=>args.includes(flag);
 // The same checkout, whatever case the shell wrote the drive letter in (Git Bash and PowerShell differ on Windows).
 const sameRoot=(a:unknown,b:string)=>typeof a==='string'&&(process.platform==='win32'?path.resolve(a).toLowerCase()===path.resolve(b).toLowerCase():path.resolve(a)===path.resolve(b));
 const readState=async()=>{try{return JSON.parse(await readFile(state,'utf8')) as {root?:string;token?:string};}catch{return null;}};
 const health=async()=>{try{const r=await fetch(origin+'/health',{signal:AbortSignal.timeout(1500)});return r.ok?await r.json() as {name?:string;root?:string}:null;}catch{return null;}};
-// Starts the server as its own process, without a window, with scratch on D: where that folder exists, and waits until it
+// Starts the server as its own process, without a window, with scratch in this checkout, and waits until it
 // answers. It stays up until it is told to stop. On Windows a child started by Node inherits
 // the caller's open handles, so a server started that way would hold the caller's output pipe and a command that reads it
 // (an agent's shell, "| more") would never end. Start-Process hands the start to the shell, which passes no handles on.
 const startServer=async()=>{
- const scratch='D:/dealer-scratch/tmp',env=existsSync(scratch)?{...process.env,TEMP:scratch,TMP:scratch}:process.env;
+ const scratch=path.resolve('.runtime/tmp');await mkdir(scratch,{recursive:true});const env={...process.env,TEMP:scratch,TMP:scratch};
  const quote=(text:string)=>`'${text.replaceAll("'","''")}'`;
  if(process.platform==='win32')spawn('powershell.exe',['-NoProfile','-NonInteractive','-Command',`Start-Process -FilePath ${quote(process.execPath)} -ArgumentList 'tools/preview.ts' -WorkingDirectory ${quote(process.cwd())} -WindowStyle Hidden`],{env,stdio:'ignore',windowsHide:true});
  else spawn(process.execPath,['tools/preview.ts'],{cwd:process.cwd(),env,detached:true,stdio:'ignore'}).unref();
@@ -154,7 +155,7 @@ if(has('--restart')){
  const games=new Map<string,Session>(),tableName=(url:URL)=>{const name=url.searchParams.get('table')??'main';return /^[a-z0-9-]{1,40}$/.test(name)?name:null;};
  const tableOf=(name:string)=>{let game=games.get(name);if(!game){if(games.size>=24)games.delete(games.keys().next().value!);game=createSession();games.set(name,game);}return game;};
  // The lab's pages: one tab at a time (tools/tab-registry.ts). A page with a stream keeps the server up for as long as it is open.
- const token=randomUUID(),tabs=tabRegistry();
+ const token=randomUUID(),tabs=tabRegistry(),interactionDiagnostics=diagnosticsStore(process.cwd());
  const types:Record<string,string>={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.mp4':'video/mp4','.png':'image/png','.jpg':'image/jpeg','.json':'application/json','.glb':'model/gltf-binary','.webp':'image/webp','.wav':'audio/wav'};
  // Streams and films in flight would hold the server open: the lab tab is told first, and what is still connected after half a second is cut.
  const stop=(reason:Reason='stop')=>{tabs.retire(reason);server.close();setTimeout(()=>server.closeAllConnections(),500).unref();};
@@ -163,6 +164,7 @@ if(has('--restart')){
    res.setHeader('Cache-Control','no-store');
    if(req.headers.host!==`127.0.0.1:${port}`){res.writeHead(403).end();return;}
    const url=new URL(req.url??'/',origin);
+   if(url.pathname==='/api/interaction-diagnostics'){await receiveDiagnostics(req,res,origin,interactionDiagnostics);return;}
    if(url.pathname==='/health'){res.setHeader('Content-Type','application/json');res.end(JSON.stringify({name:'dealer',root:process.cwd(),pid:process.pid,port,tabs:tabs.status()}));return;}
    if(url.pathname==='/stop'&&req.method==='POST'&&req.headers['x-dealer-token']===token){res.end('Stopped dealer preview');stop(url.searchParams.get('restart')==='1'?'restart':'stop');return;}
    if(url.pathname==='/heartbeat'&&req.method==='POST'&&req.headers.origin===origin){tabs.touch();res.end('ok');return;}

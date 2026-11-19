@@ -8,6 +8,7 @@ Beslut, labbservern och rutinverktygen. Här står bara det som gäller nu; det 
   Efterarbete. `/`, `/scen/`, `/placering/`, `/bestall/` och `/lab.html` leder dit; gamla labbet är borttaget. Menyn:
   Scen & bord, Karta, Granska, Material, Lipsync, Casino; i foten Beslut, Ordlista, Ljud och Modeller.
 - Basgrund behåller bordskorten. Överlägg i handen är av i Scen och Casino; Karta skiljer primära från spelbara steg.
+- Lokal klickdiagnostik sparar högst 200 långsamma händelser; läs med `node tools/interaction-diagnostics.ts` (rutin: `tools/local-work.md`). Vercels rapporterade 17-minutersvärde är ännu inte återskapat.
 - Beställ är en rak linje: plats och kort, sedan steget. Förhandsvisa visar serverns text, medier, pris och värden före
   sparning; ändrat underlag kräver ny förhandsvisning, tappat sparsvar återanvänder samma. A3-kandidat väljs under Undantag. Material visar ankare 2.3 och en bricka per plats
   för landningar. Studiobyggets fulla SHA står i `studio/out/bygge.json`; `/vinklar.html` binder två kameravinklar i en scen.
@@ -22,8 +23,7 @@ Beslut, labbservern och rutinverktygen. Här står bara det som gäller nu; det 
   flyttad, och allt går att ta tillbaka.
 - `placements/default.json` är Jakobs plan. Bara Bordet skriver den: Kortplan med Spara i kortplanen, och Efterarbete
   med Spara till planen.
-- Test och publiceringskontroll skriver lokala körkvitton; [evidensverktyget](../../tools/evidence.md) återbygger ett
-  SQLite-index för körningar och materialets ursprung. Saknade mediespår redovisas som överhoppade tester.
+- Test och publiceringskontroll skriver lokala körkvitton; [evidensverktyget](../../tools/evidence.md) indexerar körningar och materialets ursprung. Saknade mediespår redovisas som överhoppade tester.
 
 **Nästa steg.**
 1. En oberoende granskares omdöme om de 96 tagningarna som väntar (listan `waiting-list.txt`), eller märk avgjorda

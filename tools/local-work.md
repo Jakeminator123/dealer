@@ -48,9 +48,27 @@ Den extra filen `giv-fran-2-3-p4-grepp-pilot.json` motsvarar G-versionens rörel
 avsiktsmetadata. Äldre Casino-filer saknar senare rättningar för uppspelningsval och länkar. Återför inte dem.
 Utkasten är säkrade lokalt i `private/recovery/worktrees-2026-11-19/drafts.bundle`, med fil- och snapshotlista i
 `manifest.json`. Trädens enda ignorerade fil, evidensindexet, är separat kopierad och hashjämförd där. De äldre
-arbetskopiorna är avvecklade; beställningsträdet återanvänds bara under avslutskontrollen och tas sedan bort.
+arbetskopiorna är avvecklade. Endast huvudmappen är kvar som aktivt arbetsträd.
 
-## Radera oanvänt
+## Automatisk återkoppling från webbläsaren
+
+Lokala labbet registrerar långsamma interaktioner (minst 200 ms) i
+`.runtime/interaction-diagnostics/recent.json`. Alla IDE:er kan läsa dem med
+`node tools/interaction-diagnostics.ts`. Läs vid rapporterad tröghet och efter klickprov.
+Loggen skiljer väntetid före händelsen, händelsehantering och tid till nästa bild. Sökvägen före
+navigeringen, mållänk, studiobyggets SHA och flikens synlighet följer med. Inmatad text, URL-parametrar och
+sidinnehåll sparas inte. Högst 200 poster behålls; inget skickas till en extern tjänst.
+
+Detta är felsökningsprov, inte en beräkning av webbplatsens INP eller bevis för orsaken till ett extremvärde.
+En siffra i en skärmbild räcker inte för att skylla tiden på menylänken. Återskapa klicket och jämför delarna.
+Loggningen laddas efter omladdning; webbläsare utan Event Timing stöder inte insamlingen.
+
+Vercels [Interaction Timing](https://vercel.com/docs/vercel-toolbar/interaction-timing-tool) visar den aktuella
+sessionens mätning. Sparade Toolbar-kommentarer kan hämtas med Vercel-anslutningens `list_toolbar_threads`
+och `get_toolbar_thread` för projektets verifierade ID. INP-rutan blir inte automatiskt en sådan kommentar.
+Nätkopian har inte denna lokala loggning; publicering och extern insamling är separata ändringar.
+
+## Radera oanvänt material
 
 `media-audit.ts` visar användning men är inte ensam ett raderingstillstånd: exempelvis en gammal Prov-mapp
 kan fortfarande visas och ha anteckningar. Kontrollera spelbank, scen, Material, Prov/Beslut, användardomar,

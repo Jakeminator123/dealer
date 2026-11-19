@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {linkSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
-import {report, scanStorage, storageSummary} from './media-status.ts';
+import {report, scanStorage, storageSummary, storageCategories} from './media-status.ts';
 
 test('inventory counts hard links once, skips worktrees and never follows junctions', t => {
   const repo = mkdtempSync(path.join(tmpdir(), 'dealer-inventory-'));
@@ -21,4 +21,12 @@ test('inventory counts hard links once, skips worktrees and never follows juncti
   const output = report(repo, files, [], {at: 'yesterday', uniqueBytes: 8});
   assert.match(output.markdown, /Förändring sedan yesterday: -/);
   assert.match(output.markdown, /ingen raderingslista/);
+});
+test('categories sum to unique storage even when a proof and motion share a file', () => {
+  const files = [{file: 'assets/proofs/demo/source.mp4', identity: 'same', bytes: 400, changed: ''},
+    {file: 'assets/motions/demo/source.mp4', identity: 'same', bytes: 400, changed: ''},
+    {file: '.runtime/receipt.json', identity: 'receipt', bytes: 20, changed: ''}];
+  const categories = storageCategories(files);
+  assert.equal(categories.reduce((n, c) => n + c.bytes, 0), storageSummary(files).uniqueBytes);
+  assert.deepEqual(categories, [{category: 'assets/motions', bytes: 400}, {category: '.runtime', bytes: 20}]);
 });
