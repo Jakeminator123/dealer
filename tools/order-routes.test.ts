@@ -12,7 +12,7 @@ import os from 'node:os';
 import path from 'node:path';
 import sharp from 'sharp';
 import { orderRoutes } from './order-routes.ts';
-import { committedText } from './committed.ts';
+import { defaultPlan } from '../src/placement-model.ts';
 import { ARM_ALONE, ARM_AT_SHOE, POSE_ARM_WHAT, POSE_WHAT, SHOE_AT_ANCHOR, SLEEVE_AT_SHOE, orderStore, orderHash } from './order-store.ts';
 import { orderPrompt, promptFor } from '../src/order-prompts.ts';
 import { mediaRoles } from './media-roles.ts';
@@ -59,7 +59,10 @@ async function lab(t: { after(fn: () => Promise<void> | void): void }, transport
   const policy = JSON.parse(await readFile(policyFile, 'utf8'));
   policy.mandate = {id: 'test-route-mandate', startsAt: '2026-11-12T00:00:00Z', endsAt: '2026-11-13T00:00:00Z', rollingHourCredits: 800, totalCredits: 2500};
   await writeFile(policyFile, JSON.stringify(policy));
-  await writeFile(path.join(root, 'placements/default.json'), committedText('placements/default.json')); // his plan as committed, not as he last saved it (tools/committed.ts)
+  // A declared fixture, independent of Jakob's saved or newly committed hand choices.
+  const fixturePlan = defaultPlan();
+  Object.assign(fixturePlan.targets['P4.C2'].intent, {endSide: 'FRONT', turn: true}); // both player cards are open in these route tests
+  await writeFile(path.join(root, 'placements/default.json'), JSON.stringify(fixturePlan));
   await writeFile(path.join(root, 'data/media-roles.json'), JSON.stringify(register(), null, 2) + '\n');
   await writeFile(path.join(root, 'data/clip-jobs.json'), '{"jobs": []}');
   const files: Record<string, Buffer> = {};

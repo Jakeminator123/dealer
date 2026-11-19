@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "paow-giv-2-1-p6-11",
   "title": "Paow · Nyp, ett kort till platsen och tillbaka · plats 6",
-  "summary": "Gör en film av Paow: från ankare 2.1 (nyp) tar hon ett kort ur skon med vänster hand och ger det till höger lågt framför kroppen; höger vrider handleden och vänder kortet på vägen och lägger det öppet på plats 6; händerna går tillbaka till ankaret.",
+  "summary": "Gör en film av Paow: ett kort från ankare 2.1 till plats 6, tur och retur.",
   "group": null,
   "dealer": "paow",
   "kind": "FILM",
@@ -126,7 +126,7 @@
     }
   },
   "prompt": {
-    "template": "film-giv-kort@10",
+    "template": "film-giv-kort@11",
     "style": "KORT",
     "text": "Locked camera, one continuous shot. Her hand at the shoe draws the yellow card out of the window and brings it low over the felt to the middle in front of her, where her other hand takes it by its edges and carries it on low over the felt towards its place well to the right of the middle of the picture, in front of the shoe, where the last frame shows it. On the way, with the card held at its edge between thumb and fingers, her wrist turns over once: her palm comes from facing down to facing up, and the card comes over with her hand, blue side up. With her hand still turned, she lays the card flat at its place and lets go of it; only then does her empty hand turn palm down. Then the hand that laid it glides back low over the felt, palm down, to where it lay in the first frame, and the hand that gave it goes back to the shoe and takes the next card. Only one card moves. The card is plain, one flat solid yellow from edge to edge on its back and one flat solid blue from edge to edge on its face, and the next card in the window is the same plain solid yellow.",
     "sha256": "7e466f2e75a9777c87ebe681c4d2b38a256ca257616f902b4b6d36e5030dadde",
