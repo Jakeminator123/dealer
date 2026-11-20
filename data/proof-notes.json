@@ -429,6 +429,45 @@
         "at": "2026-11-18T04:35:45.023Z"
       },
       "read": "2026-11-18T04:35:45.023Z"
+    },
+    {
+      "id": 38,
+      "proof": "kortet-i-handen-orsaker-20261120",
+      "file": "3-sparet-29-34.jpg",
+      "choice": null,
+      "text": "Spårningen är ju dårlig.. Vaad ska man göra? kane träna en modelll på arrt mitt arkivmaterial av blåa och gula utor?",
+      "at": "2026-11-20T11:09:07.609Z",
+      "answer": {
+        "text": "Mätt är spårningen bra när kortet syns plant (den täcker filmens kort till 90 % i medianrutan, hörnen ligger 3,6 bildpunkter fel) och dålig i tre rutor: vändningen, där kortet står på kant och filmen bara visar en strimma på 92 × 11 bildpunkter. Där finns inget för en tränad modell att se heller, så jag råder inte till träning nu. Rådet: 1) räkna ut vändningen i stället för att mäta den, så att kortet smalnar från sista ryggen till första framsidan; 2) på sikt ett styvt kort på 63 × 88 mm som passas in ruta för ruta; 3) det rosa krysset och den röda cirkeln på nya filmer stadgar hörnen under fingrarna. En modell är värd att pröva först om hörnen fortfarande vinglar efter det. Svar från dealer-29.",
+        "at": "2026-11-20T11:13:17.726Z"
+      },
+      "read": "2026-11-20T11:13:17.726Z"
+    },
+    {
+      "id": 39,
+      "proof": "kortet-i-handen-orsaker-20261120",
+      "file": "2-ljuset-hoppar.jpg",
+      "choice": null,
+      "text": "Är det aksnke sidopanelen på höger sida när vid regalgen som ställer in att man skapar ljs och kanske böjj på borden som stör?",
+      "at": "2026-11-20T11:10:19.347Z",
+      "answer": {
+        "text": "Troligen inte. Reglagen i panelen (ljus, böj, glans) står stilla under hela given, så de kan göra kortet ljusare eller mörkare överlag men inte få det att hoppa mellan två rutor. Hoppen är mätta med ditt förval Jakob-1 och kommer från koden som under uppspelning läser hur ljust filmens blå kort är: när den hittar för få blå punkter byter den till ett reservvärde, och papperet blir 22 till 26 steg av 255 ljusare eller mörkare vid rutorna 40, 42, 46 och 52. Inte prövat: andra reglagevärden. Lagningen är att behålla det senaste goda värdet och jämna ut över rutorna. Svar från dealer-29.",
+        "at": "2026-11-20T11:13:17.506Z"
+      },
+      "read": "2026-11-20T11:13:17.506Z"
+    },
+    {
+      "id": 40,
+      "proof": "kortet-i-handen-orsaker-20261120",
+      "file": "1-vandningen.jpg",
+      "choice": null,
+      "text": "vad är det med detta?",
+      "at": "2026-11-20T11:11:12.684Z",
+      "answer": {
+        "text": "Bilden visar fyra rutor ur vändningen, varje ruta två gånger: vårt ritade kort till vänster och filmens eget kort till höger (rutorna 29, 30, 32 och 33). Ruta 29 stämmer. I ruta 30 står vårt kort kvar brett fast filmens kort redan är en smal strimma. I ruta 32 blir vårt kort en trasig vit flik, och i ruta 33 kommer framsidan liten och knivskarp bredvid en oskarp hand. Det är stället där hon hinner vrida innan symbolerna följer med. Förslaget är att kortet smalnar mjukt genom vändningen (kortet överst i Beslut). Svar från dealer-29, som gjorde undersökningen.",
+        "at": "2026-11-20T11:13:17.284Z"
+      },
+      "read": "2026-11-20T11:13:17.284Z"
     }
   ]
 }
