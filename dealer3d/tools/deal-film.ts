@@ -8,11 +8,17 @@
 //   seven seats in the order a dealer deals them (seat 7, at her left by the shoe, first) and then her own card.
 // --right-at: the film begins with her right hand where the approved anchor picture has it (dealer3d/src/two-hand.ts, startOnAnchor).
 // --lead: the frame on which her left fingers "lie on the first card" (the film stands in pose 2.3 until the card moves).
+// --pose-film <name>: the film begins on the last frame of dealer3d/data/<name>.json instead (till-ankare-2-3-c: the upright
+//   pose), her trunk as that film has it (its `body`) and her eyes where it left them. --take-at x,y: the pixel of the bank's
+//   picture where her right fingertips take the card, when that is not where her hand lies at the start. --lean-from <frame>:
+//   her trunk begins to lean toward the place from that frame. --seen-forearm <weight>: her left elbow is kept where the
+//   bank's camera sees the forearm from the side. --clear-trunk <weight>: her elbows are kept where no forearm goes through
+//   her trunk (Pace in dealer3d/src/two-hand.ts).
 // Reads dealer3d/data/till-ankare-2-3.json (its last frame is where this film begins) and placements/default.json.
 // Prints the beats, what each card asks of the body, and what to look for before a film is made of it.
 import {readFile, writeFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
-import {CARD, TABLE_LENS, filmEye, length, see, sub, cross, type Vec3} from '../../src/table-lens.ts';
+import {CARD, TABLE_LENS, filmEye, length, onPlane, see, sub, cross, type Vec3} from '../../src/table-lens.ts';
 import {spots} from '../src/world.ts';
 import {LIMITS, joints, type ArmPose} from '../src/capture.ts';
 import {sideSeen} from '../src/deal.ts';
@@ -26,7 +32,8 @@ const FPS = 30, N = Math.round(Number(arg('--seconds', '3')) * FPS), own = arg('
 if (own && (own.length !== 8 || to === 'all' || to.includes(','))) throw Error('--beats takes eight frames (b,c,d,e,l,f,g,h) and one place');
 const planPath = arg('--plan');
 if (process.argv.includes('--plan') && (!planPath || planPath.startsWith('--'))) throw Error('--plan needs a placement JSON file.');
-const pose = JSON.parse(await readFile(new URL('../data/till-ankare-2-3.json', import.meta.url), 'utf8'));
+const poseFilm = arg('--pose-film') ?? null; if (poseFilm !== null && !/^[a-z0-9-]+$/.test(poseFilm)) throw Error('--pose-film takes the name of a film in dealer3d/data, without .json.');
+const pose = JSON.parse(await readFile(new URL(`../data/${poseFilm ?? 'till-ankare-2-3'}.json`, import.meta.url), 'utf8'));
 const planBytes = await readFile(planPath ?? new URL('../../placements/default.json', import.meta.url));
 const plan = JSON.parse(planBytes.toString('utf8').replace(/^\uFEFF/, ''));
 const last = pose.frames[pose.frameCount - 1], all = spots(plan, lens), spot = (id: string) => { const s = all.find(s => s.id === id); if (!s) throw Error(`The plan has no place ${id}.`); return s.at; };
@@ -52,6 +59,15 @@ if (process.argv.includes('--contact-grip')) {
 }
 // --shared-change 1 (with --contact-grip sweep): both hands have the card for a while at the hand change (Pace in dealer3d/src/two-hand.ts).
 if (arg('--shared-change') === '1') { if (pace.contactGrip !== 'sweep') throw Error('--shared-change 1 requires --contact-grip sweep.'); pace.sharedChange = true; }
+// --shared key=value,...: this film's own values for the shared hand change (Pace.shared; the keys of TWO_HAND.shared, and soft and wait). A list is written a:b:c, soft is 1 or 0.
+if (arg('--shared')) { if (!pace.sharedChange) throw Error('--shared requires --shared-change 1.'); const known = [...Object.keys(TWO_HAND.shared), 'soft', 'wait'];
+  pace.shared = Object.fromEntries(arg('--shared')!.split(',').map(pair => { const [key, value] = pair.split('='); if (!known.includes(key) || value === undefined || value.split(':').some(v => !Number.isFinite(Number(v)))) throw Error(`--shared: ${pair} is not one of ${known.join(', ')} with a number.`);
+    return [key, key === 'soft' ? value === '1' : value.includes(':') ? value.split(':').map(Number) : Number(value)]; })); }
+if (poseFilm && pose.body) pace.base = [pose.body.lean, pose.body.twist];
+if (arg('--take-at')) { const [x, y] = arg('--take-at')!.split(',').map(Number), q = onPlane(eye, x, y, CARD.thickness / 2); if (!q) throw Error('--take-at: the pixel is not on the felt.'); pace.takeAt = [q[0], q[2]]; }
+if (arg('--lean-from')) pace.leanFrom = Number(arg('--lean-from'));
+if (arg('--seen-forearm')) pace.seenForearm = Number(arg('--seen-forearm'));
+if (arg('--clear-trunk')) pace.clearTrunk = Number(arg('--clear-trunk'));
 // At C2 the elbows are solved through the release. Pulling them toward the ordinary deal's last pose overbends the wrist.
 if (secondCardPilot) {
   const yaw = Number(arg('--hand-over-yaw', '180'));
@@ -60,10 +76,10 @@ if (secondCardPilot) {
   pace.body ??= [0, 0, 2];
 }
 // --right-at: her right hand as the approved anchor picture has it, where that differs from the pose film (the middle fingertip's pixel in the bank's picture, and the way the hand points).
-const rightAt = arg('--right-at')?.split(',').map(Number) ?? null, posed: Still = {L: last.L, R: last.R, h: last.h}, start = rightAt ? startOnAnchor(lens, posed, {x: rightAt[0], y: rightAt[1]}, rightAt[2]) : posed;
+const rightAt = arg('--right-at')?.split(',').map(Number) ?? null, posed: Still = {L: last.L, R: last.R, h: last.h, ...(poseFilm ? {g: last.g} : {})}, start = rightAt ? startOnAnchor(lens, posed, {x: rightAt[0], y: rightAt[1]}, rightAt[2]) : posed;
 // A film in its own tempo ends on the picture the film in the real tempo ends on: that film is laid first, for its elbows.
 // --end-elbows 0: the elbows are not brought to those of the film in the real tempo at the end (that film's elbow can stand out from her side, as for D.C1).
-if (own && arg('--end-elbows', secondCardPilot ? '0' : '1') !== '0') { const real = twoHandDeal(lens, start, ids.map(id => ({id, at: spot(id), real: realOf(id)})), 2, FPS, N).frames[N - 1]; pace.elbows = {L: real.L.e, R: real.R.e}; }
+if (own && arg('--end-elbows', secondCardPilot ? '0' : '1') !== '0') { const real = twoHandDeal(lens, start, ids.map(id => ({id, at: spot(id), real: realOf(id)})), 2, FPS, N, {...(pace.base ? {base: pace.base} : {}), ...(pace.takeAt ? {takeAt: pace.takeAt} : {}), ...(pace.seenForearm ? {seenForearm: pace.seenForearm} : {}), ...(pace.clearTrunk ? {clearTrunk: pace.clearTrunk} : {})}).frames[N - 1]; pace.elbows = {L: real.L.e, R: real.R.e}; }
 const deal = twoHandDeal(lens, start, places, lead, FPS, N, pace), {frames, beats} = deal;
 
 // ---- what it asks, and what to look for --------------------------------------------------------------------------
@@ -103,6 +119,6 @@ await writeFile(out, JSON.stringify({about: 'The two-hand deal from pose 2.3, la
     ...(secondCardPilot ? {trial: {timingTarget: 'P4.C1', placementTarget: 'P4.C2', planIntent: plan.targets[to].intent ?? null,
       ik: {body: pace.body, endElbows: !!pace.elbows, wristDegrees: {L: r1(asked.L.wrist), R: r1(asked.R.wrist)}, wristLimitDegrees: LIMITS.wrist}}} : {}),
   } : {}),
-  film: 'tvahandsgiv-modell', pose: 'from-2.3', places: ids.map(id => ({id, at: spot(id), pixel: all.find(s => s.id === id)!.pixel})), pace: own ? {real: places[0].real, ...pace} : null, rightAt: rightAt ? {x: rightAt[0], y: rightAt[1], yaw: rightAt[2]} : null, to: ids, loose: 0, fps: FPS, frameCount: N, leavesShoe: Math.round(beats[0].c), edge: [turnsAt(0), turnsAt(0)], folds: Math.round(beats[0].g), rests: Math.ceil(beats[0].h), handSize: pose.handSize, palm: pose.palm, throughShoe: through.length, elbowForced: deal.forced, hip: pose.hip,
+  film: 'tvahandsgiv-modell', pose: 'from-2.3', ...(poseFilm ? {poseFilm} : {}), places: ids.map(id => ({id, at: spot(id), pixel: all.find(s => s.id === id)!.pixel})), pace: own ? {real: places[0].real, ...pace} : null, rightAt: rightAt ? {x: rightAt[0], y: rightAt[1], yaw: rightAt[2]} : null, to: ids, loose: 0, fps: FPS, frameCount: N, leavesShoe: Math.round(beats[0].c), edge: [turnsAt(0), turnsAt(0)], folds: Math.round(beats[0].g), rests: Math.ceil(beats[0].h), handSize: pose.handSize, palm: pose.palm, throughShoe: through.length, elbowForced: deal.forced, hip: pose.hip,
   beats: beats.map(b => ({to: b.to, a: r1(b.a), b: r1(b.b), c: r1(b.c), d: r1(b.d), e: r1(b.e), l: r1(b.l), turned: r1(b.turned), f: r1(b.f), g: r1(b.g), h: r1(b.h), i: r1(b.i)})), turns: deal.cards.map(c => ({axis: r4(c.turn.axis), angle: Math.round(c.turn.angle * 10) / 10})),
   laid: deal.laid.map(c => ({from: c.from, c: r4(c.c), l: r4(c.l), n: r4(c.n)})), frames: frames.map(f => ({card: {c: r4(f.card.c), l: r4(f.card.l), n: r4(f.card.n), id: f.card.id}, L: limb(f.L), R: limb(f.R), h: r4(f.h), g: r4(f.g)}))}) + '\n', pace.contactGrip ? {flag: 'wx'} : undefined);

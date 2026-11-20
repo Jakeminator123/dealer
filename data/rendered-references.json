@@ -130,6 +130,15 @@
       "check": null
     },
     {
+      "id": "docka-2-3-p4c1-svep24c",
+      "edge": "READY-C>P4.C1",
+      "path": "assets/references/docka/docka-2-3-p4c1-svep24c/source.mp4",
+      "sha256": "3e7a10ddef15e67e5aeb5e9b082f40de3a8290ae8f557716b97abc44a6b9d398",
+      "seconds": 3,
+      "lays": "RH",
+      "check": null
+    },
+    {
       "id": "docka-2-3-p4c1-f",
       "edge": "READY-C>P4.C1",
       "path": "assets/references/docka/docka-2-3-p4c1-f/source.mp4",
