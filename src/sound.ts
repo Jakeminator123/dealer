@@ -1065,15 +1065,6 @@ export function voiceLead(pcs: number[], previous: number[] | null, range: [numb
   return best ?? pcs.map(pc => range[0] + ((pc - pcOf(range[0]) + 12) % 12)).sort((a, b) => a - b);
 }
 /**
- * The note of pitch class pc nearest to near, within range (which spans an octave or more). pull: how much a semitone from the
- * middle of the range counts against a note, so that a line drifting toward an edge comes back before it must leap.
- */
-export function nearestNote(pc: number, near: number, range: [number, number], pull = 0): number {
-  const centre = (range[0] + range[1]) / 2, cost = (m: number) => Math.abs(m - near) + pull * Math.abs(m - centre);
-  let best = -1; for (let m = range[0]; m <= range[1]; m++) if (pcOf(m) === pc && (best < 0 || cost(m) < cost(best))) best = m;
-  return best;
-}
-/**
  * The octave of each root a bass plays through a phrase (the last chord given is the next phrase's first): chosen for the
  * whole phrase at once (a shortest path), so that every move is a fifth or less where the range allows, an octave if it must,
  * and the line stays near the middle rather than drifting to an edge it would have to leap back from. from: the note the
