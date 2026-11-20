@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "title": "Paow · P4 · pilot 03: samma underlag som pilot 02, två meningar tillagda i texten",
+  "summary": "Gör en film av Paow: ett kort från ankare 2.3 till plats 4, bara dit.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "GIV-2.3",
+    "label": "Två händer, ett kort till platsen",
+    "edge": "READY-C>P4.C1",
+    "shape": "ONE_WAY",
+    "cutInto": [
+      "READY-C>P4.C1"
+    ],
+    "makes": null
+  },
+  "motion": {
+    "grip": "TWO_HANDS",
+    "hand": "LH",
+    "pass": true,
+    "turn": true,
+    "flipAxis": "LONG_EDGE",
+    "target": "P4.C1",
+    "side": "FRONT",
+    "fromPlan": true,
+    "planned": {
+      "grip": "PINCH",
+      "flipAxis": "AT_PLACE"
+    }
+  },
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows ankare 2.3 · kandidat",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-giv-2-3b-p4-pilot-03/first.png",
+      "sha256": "29d4564d25d6c9834fab0f84bec8dd8c19812c7faa6faa1d7320e9995b81a13b",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-ankare-2-3-b",
+        "path": "assets/anchors/paow-ankare-2-3-b/anchor.png",
+        "note": "Ankare 2.3 (B): vänster hand uppifrån på kortet (kandidat)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Sista bild · A3 · P4 (2.3 B) c, kandidat (inte gällande)",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-giv-2-3b-p4-pilot-03/last.png",
+      "sha256": "bb6f3126dce5f0941b7f239502046a5378b8e2b030207c38cf0fde8e32daba2e",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-a3-p4-23c",
+        "path": "assets/anchors/paow-a3-p4-23c/anchor.png",
+        "note": "A3 · P4 (2.3 B) c (kandidat)"
+      },
+      "waits": null
+    }
+  ],
+  "reference": {
+    "status": "FINNS",
+    "clips": [
+      "docka-2-3-p4c1-svep24"
+    ],
+    "path": "assets/orders/paow-giv-2-3b-p4-pilot-03/reference.mp4",
+    "sha256": "5992e001b06268e5544d55696784f1be2cea375416ca85ac5560c4d520591a22",
+    "seconds": 3,
+    "goesTo": "P4.C1",
+    "approvedStraight": false,
+    "dealer": "docka",
+    "from": {
+      "film": "docka-2-3-p4c1-svep24",
+      "path": "assets/references/docka/docka-2-3-p4c1-svep24/source.mp4",
+      "sha256": "5992e001b06268e5544d55696784f1be2cea375416ca85ac5560c4d520591a22",
+      "edge": "READY-C>P4.C1",
+      "verdict": "EJ_DÖMD",
+      "words": null,
+      "frames": null,
+      "also": []
+    }
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "kling-4",
+    "params": {
+      "resolution": "1080p",
+      "duration": 3
+    }
+  },
+  "prompt": {
+    "template": "film-giv-minimal@11",
+    "style": "MINIMAL",
+    "text": "Locked camera. Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing. The card's back is blank solid yellow, right out to its corners, and its face is solid blue with a small pink cross in the middle and a small red dot in one corner, as the last frame shows it; the next card in the window is the same blank yellow. One card goes from the shoe to where the last frame shows it. The window of the shoe shows a yellow card in every frame: as one card is drawn, the next slides into its place. Her hand at the shoe keeps its fingers on the card until the fingers of her other hand hold it, so the card always has a hand on it on the felt.",
+    "sha256": "5d8825ea399caf3c3c44a4d0d8f83762e33c55feb0602f26e44be332f78bb61a",
+    "extra": "The window of the shoe shows a yellow card in every frame: as one card is drawn, the next slides into its place. Her hand at the shoe keeps its fingers on the card until the fingers of her other hand hold it, so the card always has a hand on it on the felt.",
+    "middle": false,
+    "place": [
+      856.6,
+      1102.2
+    ],
+    "faceMark": true
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 64,
+    "total": 64,
+    "worstPerTake": 71,
+    "worstTotal": 71,
+    "basis": "21,3 krediter per s × 3 s. Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12."
+  },
+  "limits": {
+    "maxCredits": 71,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Undantag på huvudagentens ord 2026-11-20: orderns text har ett tillägg (prompt.extra) med två meningar; mallen film-giv-minimal@11 i src/order-prompts.ts är inte ändrad. (a) \"The window of the shoe shows a yellow card in every frame: as one card is drawn, the next slides into its place.\" (b) \"Her hand at the shoe keeps its fingers on the card until the fingers of her other hand hold it, so the card always has a hand on it on the felt.\"",
+    "Varför: de två felen växlar mellan tagningarna med samma underlag: fritt kort på filten ruta 15–18 i paow-giv-2-3b-p4-pilot-02, tomt fönster i paow-giv-2-3b-p4-pilot-01 och i paow-giv-2-3b-p4-pilot-02b. Texten ska säga båda sakerna.",
+    "Samma första bild, sista bild och referensfilm som paow-giv-2-3b-p4-pilot-02. En tagning, högst 75 krediter, ingen ytterligare tagning och ingen annan plats.",
+    "Recept giv-2.3 (prov) ur data/order-methods.json.",
+    "Undantag från receptet: texten MINIMAL i stället för KORT; vändningen LONG_EDGE i stället för FREE; med kandidaten som sista bild: A3 · P4 (2.3 B) c (paow-a3-p4-23c), en kandidat som Jakob inte har gjort gällande."
+  ],
+  "createdBy": "Underagent pilot-02 åt huvudagenten dealer-37, 2026-11-20",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-20T13:25:34.023Z",
+    "orderSha256": "60feaac3fdfea68885bbc90ccb20b16671be4256732c5e7aa9b4e6742e1deb78",
+    "mandate": "Jakob 2026-11-20 kl. 13.05: 'Du har 3k i budget ... fortsätt' (genom huvudagenten dealer-37)"
+  },
+  "status": "GODKÄND",
+  "id": "paow-giv-2-3b-p4-pilot-03",
+  "created": "2026-11-20T13:25:24.297Z"
+}
