@@ -108,6 +108,19 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   (`src/placement-model.ts:268–269`), fast valet Dator | Mobil är borta ur Bordet och spelet bara läser
   `geometry.native`. Prövat: inget; `placements/default.json` är Jakobs och är orörd. Stänger: planens format ändras i
   ett eget steg, på hans ord.
+- **Det ritade kortet i handen: vändningen står still och papperets ljus hoppar** (2026-11-20, mätt på
+  `paow-giv-2-3-p4-h24-cykel-02-01-deal`, Prov `kortet-i-handen-orsaker-20261120`). Ritningen släpar inte: kortet ritas
+  för filmens visade ruta (samma ruta i 2577 av 2577 bilder vid 0,25×, 65 av 65 stegade). Vändningen: i ruta 30
+  behåller spåret ruta 29:s form (`settleRaws` i `src/card-track.ts`, regeln "mostly hidden") fast filmens kort är en
+  strimma, och i rutorna 31–32 ritar scenen bara en linje (`src/scene3d-deal.ts`, vändgrenen); sedan kommer framsidan
+  liten och växer. Hörn under fingrarna vinglar i rutorna 26 och 34–36. Ljuset: `vShade` i `src/scene3d-deal.ts` tas
+  under uppspelning från filmens blå kort, och `cardBase` i `src/scene3d-film.ts` faller till sitt reservvärde när den
+  hittar färre än sex kortfärgade prov, så papperet hoppar 22–26 nivåer vid rutorna 40, 42, 46 och 52. Samma fel i
+  tagningen `-cykel-01-01`. Inte prövat: andra reglagevärden i Scen än förvalet Jakob-1. Stänger: kortet smalnar från
+  sista ryggen till första framsidan genom vändningen; senaste goda ljusvärdet behålls och jämnas över rutorna; på sikt
+  ett styvt kort (63 × 88 mm) passat per ruta. Väntar på Jakobs svar på kortet `kortet-i-handen-vandning-och-ljus`.
+  Underlaget, utanför Git: `.runtime/kort-takt`, `.runtime/kort-spar` (`fit.tsv` och `poses.json` per tagning) och
+  `.runtime/kort-bild` (`ljus.json`).
 
 ## Filmerna och banken
 
