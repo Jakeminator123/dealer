@@ -20,6 +20,10 @@ den här sidan och `AGENTS.md`; resten står i commitmeddelandena och i varje fi
 - Äldre versioner: -b till -d till plats 5 (ände över ände, båda händerna reser kortet), -e till plats 4 och 1 (ände över
   ände i höger hand; kortet ritas 1,4 gånger liggande); jämförelsen `ut/giv-fran-2-3-p4/jamforelse-e-f-kortets-storlek.png`.
   Den avlästa given från ankare 2.1 (`src/capture.ts`) är orörd. Inget betalt är lagt av banan.
+- **Provet en giv, två stolar** (2026-11-20, Jakobs "Ja kör" i Beslut; prov `3d-prov-en-giv-tva-stolar-20261120`, inte
+  sett av honom än): given till plats 4 med ett 3D-kort från stol 4 och stol 1. SAM 3D Body över filmen
+  `paow-giv-2-3-p4-h24-cykel-02-01` (varannan ruta) ser ut som en människa som ger från båda stolarna (underagentens
+  betyg 4/5 och 3/5); det köpta klippet, som saknar kort, sko och licenstext, gör det inte (2/5 och 1/5).
 
 **Jakobs dom på tagningarna gjorda på "-f" (2026-11-18).** "Hon flippar korten lixom utanpå fingrarna.. […] så måste
 vit-figuren bli bättre med att sköta kordineringen med kort/fingrar". Först av allt: en version där tummen ligger på
@@ -31,6 +35,8 @@ förblir vänd tills kortet ligger); ingen ring som kortet rullar i, och inga fi
 2. Höger hand under rullningen sluter sig till en ring om kortets kortsida (`gripBend` 0,6): prova ett plattare grepp.
 3. Svepet (flera kort i en film) i -f: `tools/deal-film.ts --beats` tar i dag ETT kort.
 4. Dockans filmer in i `data/rendered-references.json` gör huvudagenten; id som `docka-2-3-p4c1-f`, aldrig samma id två gånger.
+5. Efter provet 2026-11-20, om Jakob säger ja i Beslut: spara SAM:s ledvinklar (`tools/prov-sam.py` sparar i dag punkter
+   och yta) och låt dem styra en riggad, klädd figur; ingen klädd figur har hans ja än.
 
 **Väntar på Jakob.** Inget utanför Beslut.
 
@@ -79,6 +85,7 @@ använder repots låsta `three` och `sharp`.
 | `src/stage.ts` | Ritningen i three.js: bord, sko, ett kort med två sidor och provdockan, sedda genom flera ögon samtidigt. Två utseenden: `room` (filtbord) och `plain` (vit docka på grått, för en förlagefilm). Två källor för rörelsen: en avläst giv (handen ritas av sina 21 punkter) eller den handritade. |
 | `src/figure-model.ts` | En riggad modell (GLB med skelett, som Meshy riggar) på dockans plats, ställd ur samma leder; hämtas bara när sidan ber om den. Se "Kvar". |
 | `page/` | Sidan. `?motion=giv-pamela-p4` väljer en avläst giv; `?model=1` sätter den riggade modellen (`/model.glb`, som inspelaren serverar med `--model`) på dockans plats; `?eyes=1,4` ögon (en stol 1–7, `film` för bankens kamera, eller `runt35` för bankens kamera buren 35° runt dealern åt hennes vänster, `runt-35` åt hennes höger), `?to=P4.C1` kortplatsen för den handritade given, `?look=plain`, `?tags=0`, `?t=1.9`, `?play=1`. |
+| `tools/prov-sam.py`, `tools/prov-lay.ts`, `tools/prov-shoot.ts`, `src/prov-card.ts`, `page/prov.html`, `page/prov.ts` | **Provet en giv, två stolar** (2026-11-20). `prov-sam.py` läser en film med SAM 3D Body (en kroppsyta och 70 leder per ruta under bordets lins; Python eftersom SAM är det, körs i SAM-appens egen miljö och under GPU-låset). `prov-lay.ts` lägger en rörelsekälla i rummet (`--source sam` eller `pack`, det köpta klippet) och skriver `.runtime/3d-prov/scene/<källa>.json` med kortet per ruta och måtten. `prov-card.ts` ger kortet per ruta: ur filmens kortspår lagt där fingrarna är (läsningen är `capture.ts` egen, upprepad; går provet vidare ska den delade delen exporteras därifrån), eller hållet i en riggad hand. `page/prov.*` visar det, och `prov-shoot.ts` spelar in sidan huvudlöst under låset (Chrome-hanteringen är `shoot.ts` egen, upprepad). Paketets filer och SAM:s utdata ligger bara i `.runtime/3d-prov/`, utanför Git. |
 | `../tools/python/landmarks.py` (repots Python-mapp) | Läser en film ruta för ruta med MediaPipe och skriver händernas och kroppens punkter som JSON. Resultatet är mellanlager utanför Git. |
 | `tools/lift.ts` | Lägger en films punkter i rummet (`capture.ts`) med filmens kortspår, skriver `data/<namn>.json` och skriver ut vad som mättes: handens storlek, varje leds omfång, och hur kortet stämmer med filmens. |
 | `tools/measure.ts` | Kalibreringen som tal: linsfamiljen, den valda linsen, ett verkligt kort på planens platser mot planens kontur, kortet i skon, stolarnas ögon. |
