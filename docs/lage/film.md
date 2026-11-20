@@ -5,37 +5,33 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
 
 **Läget.**
 - I Bordets Beställ väljs steg och kortplats. Receptet i `data/order-methods.json` ger Kling 4, 3 s, bara giv,
-  ändbilder och dockreferens. Av 61 kombinationer går 8 att beställa utan undantag.
+  ändbilder och dockreferens. Texterna är mall 12: ingen sak sägs två gånger (`src/order-prompts.ts`).
 - Metoden som håller: en giv bara dit på Kling 4 med första och sista bild och 3D-banans dockfilm som referensfilm, i
-  UTDRAGEN takt (given över drygt 2 s, en obruten rörelse). I den riktiga dealerns takt tappar Kling vändningen.
-- Ankare 2.3 (båda händerna vid skon, blicken ned) gäller på Jakobs ja. En giv därifrån (`GIV-2.3`) slutar på platsens
-  A3, en slutbild per kortplats och hand (`tools/landing-make.ts`), och går att beställa genom Bordet till varje plats
-  som har ett A3 och en dockfilm. A3 finns som kandidat för plats 1, 4 och 5 (Prov `a3-slutbilder`).
-- Nya filmer 2026-11-18, genom linjen och den automatiska kontrollen: given till plats 4 och plats 1 (Prov
-  `giv-fran-2-3-p4-p1`) fick Jakobs Inte bra: kortet flippar utanpå fingrarna, så dockan måste hålla kortet genom
-  vändningen. Ingången (`paow-ingang-2-3-01`) underkände han: stilla från ruta 45. Tagning 4 till plats 5 är kandidat.
-- H24-03 och Cykel01 har granskningsbevis vid tagningarna. Cykel02 fick Variant 3/5 för given och 4/5 för returen.
-- P4.C2 Cykel01 och Cykel02: 97 rutor/24fps,85 krediter var, Variant giv3/5/retur4/5, split64 respektive65.
-  Omtaget bytte bara dockreferens; tvekan kvarstår och blekningen varar längre. Dess klipp är arkiverade med bevis
-  kvar i `paow-c2-film-regrip-20261118`. Cykel01 väljs. Bådas skarv och C1-kvarvaro är kontrollerade i scen.
-- En sidovinkel görs av en färdig film i Runways videoredigerare (`edit_video`), inte av nya stillbilder: plats 4
-  cirka 40° (Prov `sidovinkel-ur-film`, Jakob: "mycket bra") och plats 5 cirka 25–30°. Vinkeln och kortets plats
-  träffas inte exakt.
-- Den tatuerade uppsättningen är förstahandsvalet (keystone, ankare 1 och 2.3); ankare 2.1 och 2.2 och hela banken
-  har de äldre händerna och spelas än. Ankare 2.2 föll i tre försök i bildmodellen och görs om som 2.3.
-- Jakob har tillåtit arbete tills kontot nästan är tomt. Den tidsbundna orderpolicyn löpte ut kl. 17.30 UTC; förnya
-  den före nya köp inom 800 krediter per rullande timme och konservativt 2 500 totalt. Dealer: 404 på fem filmer.
-  Senaste delade saldo enligt 3D-dealers kvitto: 1 475 (17.37 UTC). Läs aktuellt saldo före beställning.
+  UTDRAGEN takt (given över drygt 2 s, en obruten rörelse). Filmmodellen kopierar bilderna och dockfilmen; två extra
+  meningar ändrade ingenting (pilot-03, 2026-11-20).
+- Ankare 2.3: A är arkiverad. B, ett montage efter Jakobs provbild, föll 2026-11-20: underarmen saknas och axellinjen
+  lutar 5,7° mot ankare 1. Fyra givar till plats 4 ärvde felet och Jakob sa nej. C (`paow-ankare-2-3-c`) är en riktig
+  ruta ur en film från ankare 1 som dockans raka ingång styrde; granskaren gav 4/5, handen kommer snett från sidan.
+  Jakobs svar väntas i Beslut. Landningsbilderna `paow-a3-p4-23b` och `-23c` är byggda på B och används inte.
+- Dockan: rak ingång `docka-vila-till-2-3-c`. Given `docka-2-3-p4c1-svep24b` har rätt rörelse (skons fönster synligt,
+  båda händerna på kortet ruta 21–25) men börjar i den gamla lutande posen; given från den raka posen byggs.
+- Äldre underlag: given till plats 4 och 1 från 2.3 A (Prov `giv-fran-2-3-p4-p1`) fick Jakobs Inte bra, kortet
+  flippar utanpå fingrarna. P4.C2 Cykel01 är vald framför Cykel02 (bevis i `paow-c2-film-regrip-20261118`).
+- En sidovinkel görs av en färdig film i Runways videoredigerare (`edit_video`): plats 4 cirka 40° (Prov
+  `sidovinkel-ur-film`, Jakob: "mycket bra"). Vinkeln och kortets plats träffas inte exakt.
+- Den tatuerade uppsättningen är förstahandsvalet; ankare 2.1 och 2.2 och hela banken har de äldre händerna och
+  spelas än.
+- Pengar: mandatet `dealer-37-20261120` i `data/order-policy.json` gäller till 2026-11-21 12.00 UTC, 3 000 krediter
+  och 800 per timme, genom API-nyckeln (utvecklarprojektet; Runway-MCP är inte inloggat). Använt 2026-11-20: 465.
+  Saldo 3 684 kl. 14.52 UTC; 91 krediter drogs samma dag utan kvitto i projektets liggare.
 
-**Nästa steg.** Ett mål i taget: EN dokumenterat granskad giv enligt Jakobs mandat.
-1. Före nästa beställning, verifiera arbetsytan med Runway-MCP och samordna kostnaden i DISKMASKIN.TXT.
-2. C1 ligger kvar genom C2. Omgreppsprovet i `paow-c2-film-regrip-20261118` förbättrade inte tempot eller färgen:
-   ingen serie på detta underlag. READY-C-provet nedan är begränsat till labbet. Vändning efter släpp ligger i Beslut.
-3. Plats 1 kräver nytt A3 med ansiktet orört och retur från framåtlutad pose. Prov `paow-ready-c-chain-20261118`
-   kedjar 1,667 s inpass, egen C1/C2 och omvänd reserv. Två kort består; skofärgens hopp är rättat (37,02 → 0,85 nivåer).
-   Bara labbvarianter, utan väntkö eller nytt spelval. Full rörelsedom återstår; originalets nej består.
-4. Efter en visuellt godkänd pilot enligt mandatet: resten av bordet, fem kameravinklar (`/vinklar.html`), ankare 2.1 och 2.2 med
-   tatuerade händer, hålkortet, andra kortet (`yt-referens/ut/giv-resten.md`), returer och dealerns tredje kort.
+**Nästa steg.** Ett mål i taget: EN giv till plats 4 som Jakob godkänner i spelets storlek.
+1. Pilot till plats 4 från 2.3 C med dockans giv från den raka posen: först utan sista bild, så att slutrutan kan bli
+   en riktig landningsbild för plats 4, sedan med den. Båda armarna granskas led för led före kortet.
+2. Jakobs ja på C och på piloten. Frågan om given ska ta 3 eller 4 s ställs med piloten framför honom (hans godkända
+   givar tar cirka 4 s).
+3. Därefter övriga platser (dockans svep finns bara för P4.C1), ingången 1 → 2.3 klippt ur ankarets film, returen
+   2.3 → 1, och sedan fem kameravinklar (`/vinklar.html`), hålkortet, andra kortet och dealerns tredje kort.
 
 **Väntar på Jakob.** Aktuella frågor finns i Beslut; filmdomar lämnas i Granska.
 
@@ -43,18 +39,21 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
 [tools/film-prompting.md](../../tools/film-prompting.md), granskningen i `tools/film-review.md`, läget per dealer med
 `node tools/produce.ts paow`. Banans kod: `src/order-*.ts`, `tools/order-*.ts`, `tools/film-after.ts`,
 `tools/still-after.ts`, `tools/python/`, `tools/register-order.ts`, `motions/` och registren `data/order-methods.json`,
-`data/media-roles.json`, `data/cut-frames.json` och `data/order-policy.json`. På slaskdisken, under
-`D:/dealer-scratch/tmp/`, med en liggare (`bestallningar.json`) i varje: `giv-fran-2-3-p5/` och `ankare-2-3/` (MODEL),
-`sidovinkel-v2v/`, `stol-1/` (provens tak på 2 000), `bestall/`, `giv-experiment-2/`, `yt-referens/` (den filmen går
-aldrig in i Git, `assets/` eller ett Prov) och `dealer-3d/ut/` (dockans filmer).
+`data/media-roles.json`, `data/cut-frames.json` och `data/order-policy.json`. Arbetsfiler från 2026-11-20 under
+`.runtime/`: `ankare-2-3-c/` (API-klient och liggare), `pilot-02/LAGE.md` (dockan), `granskning-pilot-p4/` (bevis) och
+`prompt-granskning/RAPPORT.md` (prompter och längder). På slaskdisken, under `D:/dealer-scratch/tmp/`: `yt-referens/`
+(den filmen går aldrig in i Git, `assets/` eller ett Prov) och `dealer-3d/ut/` (dockans filmer).
 
 **Fällor.**
+- Granska första och sista bilden led för led mot gällande ankare före filmen (`tools/film-review.md`, Metod): ett
+  fel i ankaret syns aldrig som skillnad mellan film och bild, och den automatiska kontrollen ser inte en arm.
+- Ett ankare görs som en riktig ruta ur en film från ankare 1, inte som ett montage ur bildmodellen. Dockan ska då ha
+  rak bål: filmmodellen förstorar en lutning (3° i dockan blev 10° i 2.3 A).
 - Referensfilmen ska sluta som sista bilden, och blicken måste stå i texten eller bilderna: Kling tar handens och
   kortets rörelse ur referensfilmen, inte huvudet. Utan sista bild blev kortet i skons fönster vitt.
 - En dockfilm i den riktiga dealerns takt (given klar på 1 s, sedan stilla) ger ett stopp med kortet rest och en
   vändning på två rutor; dra ut given och låt kortet aldrig stå stilla.
 - Den automatiska kontrollen skrivs bara när orderns steg börjar med `GIV-`, räknar kortets yta på mättat blått och
   ser inte ett tryckt kort eller ett målat bord: läs storleken som ett golv.
-- WAN 3 utan referensfilm faller också för handbyte (Jakobs order p4-16, 0 av 2). Hans utkast `paow-giv-2-1-p6-11`
-  ligger oincheckat och är det äldre förvalet: säg det till honom före ett godkännande.
+- WAN 3 utan referensfilm faller också för handbyte (Jakobs order p4-16, 0 av 2).
 - Hans ord om filmerna: [BESKED](../BESKED.md), "Filmerna och given"; det som inte går än: [BRISTER](../BRISTER.md).
