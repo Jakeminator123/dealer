@@ -22,8 +22,8 @@ Rutinen står i [`AGENTS.md`](../../../AGENTS.md), "Git och samarbete", och i
    Cursor betyder att pre-push-kontrollen blev röd: läs varför, dra inte och kringgå inte.
 5. **Rött stoppar.** Utred orsaken och rätta den; sänk aldrig en kontroll och ändra aldrig en referens för att få grönt.
    En verklig kvarvarande begränsning skrivs kort i `docs/BRISTER.md` (AGENTS; DRIFT, "Rött" och "Gult").
-6. **En ny testfil** ska in i både `test` i `package.json` och `TESTS` i `tools/publication-check.ts`; vakttestet fäller
-   en testfil i `tools/` som ingen lista namnger (DRIFT, "Git och kontroller").
+6. **En ny testfil** skrivs in i `test`-skriptet i `package.json`, och bara där: pushkontrollen kör samma filer, och
+   vakttestet fäller en testfil i `tools/` som skriptet inte namnger (DRIFT, "Git och kontroller").
 7. **HANDOFF är en startsida med tak** (högst 120 rader och 900 ord; `tools/handoff.test.ts` håller det): läget skrivs
    i banans lägesfil (`docs/lage/<bana>.md`, fem delar, högst 60 rader och 800 ord), och i båda ersätts det som inte längre gäller;
    inget läggs till som dagbok. Det som väntar på Jakob blir ett kort i Beslut, ett nytt besked av honom en punkt i

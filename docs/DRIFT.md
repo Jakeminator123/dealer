@@ -38,11 +38,11 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   dem. Studions kod, register och dokument omfattas också: annars kan testet bli grönt på andra filer än de som
   pushas. `placements/default.json` är det uttryckliga undantaget för användarutkast och inkluderas inte automatiskt.
   Ett oincheckat orderutkast bevaras; kör kontroll och push från ett rent träd med `push-clean` i det fallet.
-  Kontrollen kör testfilerna i `TESTS` i `tools/publication-check.ts` (bland dem
-  `studio/tests/*.test.ts`; `npm test` kör samma lista, och ett vakttest i `tools/publication-check.test.ts` fäller en
-  testfil i `tools/` som ingen lista namnger) med högst fyra arbetare, utan Runway, media eller deploy; tester som gör
-  en liten film med FFmpeg hoppas över där FFmpeg saknas. En ny testfil ska in i både `test`-skriptet i `package.json`
-  och `TESTS`.
+  Kontrollen kör testfilerna som `test`-skriptet i `package.json` namnger, läst ur den commit som kontrolleras (bland
+  dem `studio/tests/*.test.ts`), alltså samma filer som `npm test`; ett vakttest i `tools/publication-check.test.ts`
+  fäller en testfil i `tools/` som skriptet inte namnger. Högst fyra arbetare, utan Runway, media eller deploy; tester
+  som gör en liten film med FFmpeg hoppas över där FFmpeg saknas. En ny testfil skrivs in i `test`-skriptet i
+  `package.json`, och bara där.
 - GitHub kör ingen kontroll för det här repot (Jakob 2026-11-18: det som gäller dealer görs lokalt, inte på GitHub;
   arbetsflödet `.github/workflows/check.yml` är borttaget). Kontrollen är pre-push-hooken och `push-clean`, på den här
   datorn. I en ren checkout utan media och utan FFmpeg hoppas de tester över som gör en liten film med FFmpeg eller

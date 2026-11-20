@@ -5,7 +5,7 @@ import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {execFileSync} from 'node:child_process';
 import {stripTypeScriptTypes} from 'node:module';
-import {inspectBlob,parsePush,dirtyTestInputs,scanRange,TESTS,CANONICAL} from './publication-check.ts';
+import {inspectBlob,parsePush,dirtyTestInputs,scanRange,listedTests,CANONICAL} from './publication-check.ts';
 
 function fixture(t:TestContext){
   const root=mkdtempSync(path.join(tmpdir(),'dealer-publication-test-'));
@@ -83,16 +83,17 @@ test('a hook inherited GIT_DIR cannot redirect an explicit repository scan',t=>{
   }
 });
 
-test('the two lists of tests agree, and every test file is in them',()=>{
-  // "npm test" (package.json) and the pre-push run (TESTS) are two lists by hand; a test left out of either never runs
-  // there. The studio's tests go as one pattern, which node --test expands itself.
-  const script=JSON.parse(readFileSync('package.json','utf8')).scripts.test as string;
-  const listed=script.split(/\s+/).filter(word=>word.endsWith('.test.ts'));
-  assert.deepEqual(listed,[...TESTS],'package.json and TESTS in tools/publication-check.ts list the same tests in the same order');
+test('the push check runs the tests that npm test runs, and every test file is among them',()=>{
+  // The push check reads its tests from the test script in package.json (listedTests), so it and "npm test" run the
+  // same files; a test file that the script does not name runs in neither. The studio's tests go as one pattern, which
+  // node --test expands itself.
+  const listed=listedTests(readFileSync('package.json','utf8'));
   assert.ok(listed.includes('studio/tests/*.test.ts'),'the tests of the studio are part of the run');
   const onDisk=readdirSync('tools').filter(name=>name.endsWith('.test.ts')).map(name=>'tools/'+name).sort();
-  assert.deepEqual(onDisk.filter(name=>!listed.includes(name)),[],'a test file in tools/ that no list names');
+  assert.deepEqual(onDisk.filter(name=>!listed.includes(name)),[],'a test file in tools/ that the test script in package.json does not name');
   assert.deepEqual(listed.filter(name=>name.startsWith('tools/')&&!onDisk.includes(name)),[],'a listed test that is not there');
+  assert.throws(()=>listedTests(JSON.stringify({scripts:{test:'node --test'}})),/inga testfiler/,'a test script that names no file stops the check');
+  assert.throws(()=>listedTests(JSON.stringify({scripts:{}})),/inga testfiler/,'so does a package.json without one');
 });
 
 test('every TypeScript file that Node runs directly parses',()=>{
