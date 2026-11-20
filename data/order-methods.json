@@ -1,5 +1,5 @@
 {
-  "about": "The method of record: the ONE recipe per kind of step that a film or still is ordered with, and whether it is settled. Nothing else in the repo says how a step is ordered: the store (tools/order-store.ts), Bordet and the production list (tools/produce.ts) take every default from here through src/order-methods.ts recipeFor, and a draft that departs from it is a deliberate exception. A recipe: model, resolution, seconds (the film's length where no reference film goes with it; with one the film is as long as the reference), takes, the text's style and template (the version of src/order-prompts.ts the recipe is written for; template 11 writes the deal by the hand at the shoe in the words of template 10, which the trials tried, word for word; the register stops reading when the template is counted up, so that a recipe is looked at again), turn (plan: what Placering says per card, or a turn of src/order-model.ts), hand (LH: the hand at the shoe takes the card and lays it, as every trial that held; plan: what Placering says per card; null: the step has no hand to say, or its own, as the two hands of anchor 2.3; a handbyte is never a recipe, since it fell in both its trials, and is ordered only as an exception), shape (a deal: ONE_WAY bara dit, ROUND_TRIP tur och retur), reference (ingen; samma-plats-rakt-godkänd: a film of the bank of the same step to the same seat that Jakob approved straight; renderad-eller-samma-plats: the 3D lane's dummy film for the seat first, data/rendered-references.json; renderad: only the dummy's film; where the rule finds no film the step waits and nothing is ordered), lastPicture (ankare: the anchor the film ends on; ritat-kort: the first picture with the card drawn where the plan lays it; platsens-slutbild: the seat's own end picture, its landing picture where one holds, else the cut frame of the bank's film to the seat) and extra (Jakob's addition). status gäller: ordered without further trial, two takes per clip; prov: still being tried, one change and one take per trial (the recipe here is the next trial); saknas: no method yet, so the step has no default at all. seats narrows a deal to a class of seats where the evidence differs: mitten P3-P5, ytter P1, P2, P6, P7, dealer D.C1 and D.C2. Evidence: order ids, the independent reviewer's scores (the protocol, node tools/order-ledger.ts) and Jakob's own words quoted from motions/<id>.json (review.userReview). Methods are the same for every dealer; the evidence is Paow's. Change a status only on evidence, and say who and when.",
+  "about": "The method of record: the ONE recipe per kind of step that a film or still is ordered with, and whether it is settled. Nothing else in the repo says how a step is ordered: the store (tools/order-store.ts), Bordet and the production list (tools/produce.ts) take every default from here through src/order-methods.ts recipeFor, and a draft that departs from it is a deliberate exception. A recipe: model, resolution, seconds (the film's length where no reference film goes with it; with one the film is as long as the reference), takes, the text's style and template (the version of src/order-prompts.ts the recipe is written for; templates 11 and 12 write the open deal by the hand at the shoe in the words of template 10, which the trials tried, word for word, and 12 takes out what another text said twice; the register stops reading when the template is counted up, so that a recipe is looked at again), turn (plan: what Placering says per card, or a turn of src/order-model.ts), hand (LH: the hand at the shoe takes the card and lays it, as every trial that held; plan: what Placering says per card; null: the step has no hand to say, or its own, as the two hands of anchor 2.3; a handbyte is never a recipe, since it fell in both its trials, and is ordered only as an exception), shape (a deal: ONE_WAY bara dit, ROUND_TRIP tur och retur), reference (ingen; samma-plats-rakt-godkänd: a film of the bank of the same step to the same seat that Jakob approved straight; renderad-eller-samma-plats: the 3D lane's dummy film for the seat first, data/rendered-references.json; renderad: only the dummy's film; where the rule finds no film the step waits and nothing is ordered), lastPicture (ankare: the anchor the film ends on; ritat-kort: the first picture with the card drawn where the plan lays it; platsens-slutbild: the seat's own end picture, its landing picture where one holds, else the cut frame of the bank's film to the seat) and extra (Jakob's addition). status gäller: ordered without further trial, two takes per clip; prov: still being tried, one change and one take per trial (the recipe here is the next trial); saknas: no method yet, so the step has no default at all. seats narrows a deal to a class of seats where the evidence differs: mitten P3-P5, ytter P1, P2, P6, P7, dealer D.C1 and D.C2. Evidence: order ids, the independent reviewer's scores (the protocol, node tools/order-ledger.ts) and Jakob's own words quoted from motions/<id>.json (review.userReview). Methods are the same for every dealer; the evidence is Paow's. Change a status only on evidence, and say who and when.",
   "schemaVersion": 1,
   "methods": [
     {
@@ -10,7 +10,7 @@
       "model": "wan3",
       "resolution": "1080p",
       "style": "KORT",
-      "template": 11,
+      "template": 12,
       "seconds": 4,
       "takes": 2,
       "turn": null,
@@ -51,7 +51,7 @@
       "model": "wan3",
       "resolution": "1080p",
       "style": "KORT",
-      "template": 11,
+      "template": 12,
       "seconds": 4,
       "takes": 1,
       "turn": null,
@@ -59,7 +59,7 @@
       "shape": null,
       "reference": "ingen",
       "lastPicture": "ankare",
-      "extra": null,
+      "extra": "The yellow card in the window is plain, one flat solid yellow from edge to edge.",
       "evidence": {
         "orders": [
           "paow-ingang-2-2-01"
@@ -69,7 +69,7 @@
           "paow-ingang-2-2-01 t2: 3,5/5, godkänd åt Jakob (review.provisional i motions/paow-ingang-2-2-01-02.json)"
         ],
         "owner": [],
-        "note": "Ankare 1 till 2.2 för det yngre utseendet, sedan ankare 2.2 gäller (paow-ankare-2-2-t1, 2026-11-13): WAN 3, 4 s, kort text med en mening om enfärgat kort i fönstret, 1 av 2 tagningar ren. Tagning 2 spelas i rundan, där plats 6 ges via ankare 2.2; den är dömd åt Jakob, inte av honom, så metoden prövas fortfarande. Kavajomgången (det tidigare utseendet) gav en huvudtagning av två med WAN 3. Belägg: kvittot, motions/paow-ingang-2-2-01-02.json och handboken."
+        "note": "Ankare 1 till 2.2 för det yngre utseendet, sedan ankare 2.2 gäller (paow-ankare-2-2-t1, 2026-11-13): WAN 3, 4 s, kort text med en mening om enfärgat kort i fönstret, 1 av 2 tagningar ren. Tagning 2 spelas i rundan, där plats 6 ges via ankare 2.2; den är dömd åt Jakob, inte av honom, så metoden prövas fortfarande. Kavajomgången (det tidigare utseendet) gav en huvudtagning av två med WAN 3. Meningen om kortet i fönstret stod i orderns tillägg men inte i receptet; den är införd här 2026-11-20 (promptgranskningen), så att receptet beställer det som prövades. Belägg: kvittot, motions/paow-ingang-2-2-01-02.json och handboken."
       },
       "setBy": "underagent på huvudagentens uppdrag, ur kvittona, motions/ och data/media-roles.json",
       "setAt": "2026-11-17"
@@ -82,8 +82,8 @@
       "model": "kling-4",
       "resolution": "1080p",
       "style": "KORT",
-      "template": 11,
-      "seconds": 4,
+      "template": 12,
+      "seconds": 3,
       "takes": 1,
       "turn": null,
       "hand": null,
@@ -92,10 +92,10 @@
       "lastPicture": "ankare",
       "extra": null,
       "evidence": {
-        "orders": [],
+        "orders": ["paow-ingang-2-3-01"],
         "reviewer": [],
         "owner": [],
-        "note": "Ankare 1 till ankare 2.3 (båda händerna vid skon precis före draget, blicken på handen som stryker ut kortet; Jakobs beställning 2026-11-18). Oprövat genom Beställ: steget väntar på ankarets bild (rollen ankare-2.3 i Material) och på dockans posfilm till 2.3 i registret över dockfilmer. Receptet är det sessionen MODEL lade upp för första tagningen: Kling 4, 4 s, dockans film som referens."
+        "note": "Ankare 1 till ankare 2.3 (båda händerna vid skon precis före draget, blicken på handen som stryker ut kortet; Jakobs beställning 2026-11-18). Beställd en gång genom Beställ (paow-ingang-2-3-01: Kling 4, 3 s, dockans film som referens; inte dömd). Längden är referensfilmens; receptets 3 s är det kortaste Kling 4 tar och det som beställdes (receptet sade 4 s förut, längden på dockans första film till 2.3, som Jakob fann för långsam 2026-11-18 och som dockans film på 3,0 s ersatte; se referensfilmens kvitto). Mätt 2026-11-20 (promptgranskningen, bildskillnad ruta för ruta): i den levererade filmen pågår rörelsen 1,4 s av 3,0 s och bilden står stilla de sista 1,4 s; dockans filmer till 2.3 rör sig 1,3 s av 3 s och 2,1 s av 4 s. Det är en levererad film och två referensfilmer, inte tre leveranser: stillheten kommer ur referensfilmen, inte ur texten, och kortas den filmen kan modellen ändå inte ta under 3 s."
       },
       "setBy": "huvudagentens underagent (rak linje), på Jakobs ord 2026-11-18 om för många val; ur handboken §5 och de tidigare raderna",
       "setAt": "2026-11-18"
@@ -108,7 +108,7 @@
       "model": "wan3",
       "resolution": "1080p",
       "style": "KORT",
-      "template": 11,
+      "template": 12,
       "seconds": 4,
       "takes": 1,
       "turn": null,
@@ -185,7 +185,7 @@
       "model": "kling-4",
       "resolution": "1080p",
       "style": "KORT",
-      "template": 11,
+      "template": 12,
       "seconds": 3,
       "takes": 1,
       "turn": "FREE",
@@ -228,7 +228,7 @@
       "model": "kling-4",
       "resolution": "1080p",
       "style": "KORT",
-      "template": 11,
+      "template": 12,
       "seconds": 3,
       "takes": 1,
       "turn": "FREE",
@@ -277,7 +277,7 @@
       "model": "kling-4",
       "resolution": "1080p",
       "style": "KORT",
-      "template": 11,
+      "template": 12,
       "seconds": 3,
       "takes": 1,
       "turn": "plan",
@@ -318,7 +318,7 @@
       "model": "kling-4",
       "resolution": "1080p",
       "style": "KORT",
-      "template": 11,
+      "template": 12,
       "seconds": 3,
       "takes": 1,
       "turn": "AT_PLACE",
@@ -364,7 +364,7 @@
       "model": "kling-4",
       "resolution": "1080p",
       "style": "KORT",
-      "template": 11,
+      "template": 12,
       "seconds": 3,
       "takes": 1,
       "turn": "FREE",
@@ -442,7 +442,7 @@
       "model": "kling-4",
       "resolution": "1080p",
       "style": "KORT",
-      "template": 11,
+      "template": 12,
       "seconds": 3,
       "takes": 1,
       "turn": null,
@@ -494,7 +494,7 @@
       "model": "wan3",
       "resolution": "1080p",
       "style": "KORT",
-      "template": 11,
+      "template": 12,
       "seconds": 4,
       "takes": 1,
       "turn": null,
@@ -531,7 +531,7 @@
       "model": "wan3",
       "resolution": "1080p",
       "style": "KORT",
-      "template": 11,
+      "template": 12,
       "seconds": 4,
       "takes": 1,
       "turn": null,
@@ -539,7 +539,7 @@
       "shape": null,
       "reference": "ingen",
       "lastPicture": "ankare",
-      "extra": null,
+      "extra": "The yellow card in the window is plain, one flat solid yellow from edge to edge.",
       "evidence": {
         "orders": [
           "paow-utgang-2-2-01"
@@ -549,7 +549,7 @@
           "paow-utgang-2-2-01 t2: 2,5/5, variant åt Jakob (andraval: den vilande handen glider cirka 110 px fram och tillbaka)"
         ],
         "owner": [],
-        "note": "Ankare 2.2 till 1: fingertopparna lyfter från kortet i skons fönster och handen går till vila, så att en runda kan gå via 2.2 genom vila (huvudagentens beslut 2026-11-13). Samma recept som utgången från 2.1 (WAN 3, kort text, 4 s), med en mening om enfärgat kort i fönstret: 2 av 2 tagningar med rena skarvar. Tagning 1 spelas i rundan, där plats 6 ges via ankare 2.2; båda är dömda åt Jakob, inte av honom, så metoden prövas fortfarande. Belägg: kvittot, motions/paow-utgang-2-2-01-01.json och -02.json (review.provisional) och handboken."
+        "note": "Ankare 2.2 till 1: fingertopparna lyfter från kortet i skons fönster och handen går till vila, så att en runda kan gå via 2.2 genom vila (huvudagentens beslut 2026-11-13). Samma recept som utgången från 2.1 (WAN 3, kort text, 4 s), med en mening om enfärgat kort i fönstret: 2 av 2 tagningar med rena skarvar. Tagning 1 spelas i rundan, där plats 6 ges via ankare 2.2; båda är dömda åt Jakob, inte av honom, så metoden prövas fortfarande. Meningen om kortet i fönstret stod i orderns tillägg men inte i receptet; den är införd här 2026-11-20 (promptgranskningen). Belägg: kvittot, motions/paow-utgang-2-2-01-01.json och -02.json (review.provisional) och handboken."
       },
       "setBy": "underagent på huvudagentens uppdrag, ur kvittona, motions/ och data/media-roles.json",
       "setAt": "2026-11-17"
@@ -562,7 +562,7 @@
       "model": "wan3",
       "resolution": "1080p",
       "style": "KORT",
-      "template": 11,
+      "template": 12,
       "seconds": 5,
       "takes": 1,
       "turn": null,
@@ -596,7 +596,7 @@
       "model": "nano-banana-pro",
       "resolution": null,
       "style": "KORT",
-      "template": 11,
+      "template": 12,
       "seconds": null,
       "takes": 1,
       "turn": null,
@@ -627,7 +627,7 @@
       "model": "nano-banana-pro",
       "resolution": null,
       "style": "KORT",
-      "template": 11,
+      "template": 12,
       "seconds": null,
       "takes": 1,
       "turn": null,

@@ -63,11 +63,11 @@ inget förval alls, och där receptets regel inte hittar någon referensfilm bes
 
 En beställning är en ren funktion av linjen och undantagen: samma val ger samma bilder, text, modell och kostnad. Texten
 skrivs aldrig för hand i en order; ändras den, ändras mallen och versionen räknas upp. De exakta orden står i `SAY` i
-`src/order-prompts.ts` (mall 11, `TEMPLATE_VERSION`: en öppen giv med handen vid skon skrivs ord för ord som givproven
+`src/order-prompts.ts` (mall 12, `TEMPLATE_VERSION`: en öppen giv med handen vid skon skrivs ord för ord som givproven
 skickade den i mall 10, §5; Utförlig = mall 3; en order återges med sin egen version, så äldre mallars ord gäller bara
-deras egna ordrar); reglerna och recepten står här. Kort är receptets stil, Minimal är Jakobs prov, Utförlig bara för
-jämförelse. Skiljer orden sig från reglerna här, rättas orden. Format, filer och priser:
-[dealer-line.md](dealer-line.md), "Format och namn".
+deras egna ordrar och står kvar i `SAY.v6`, `SAY.v8` och `SAY.v11`); reglerna och recepten står här. Kort är receptets
+stil, Minimal är Jakobs prov, Utförlig bara för jämförelse. Skiljer orden sig från reglerna här, rättas orden. Format,
+filer och priser: [dealer-line.md](dealer-line.md), "Format och namn".
 
 **Märket på blå sidan (2026-11-20, prövat i tre filmer utanför Beställ).** Filmkortets rygg är gul och slät (stängt kort); framsidan är blå (öppet
 kort) och bär märket (Jakob 2026-11-20: "gula" ska vara ryggen). Ett öppet kort som lagret ritar på en bild bär ett
@@ -93,17 +93,38 @@ sista bilden i alla tre (V, mätt); i handen ritas krysset fyra till nio gånger
 (V); märket hindrade inte att ytan bytte färg utan kantläge i en film och visade en vit sida i en annan (V). Genom
 Beställ är ingen film beställd med märket; första ordern där är provet.
 
-GIV-2.3 med KORT har en fast kortändevändning i mall 11. Ett uttryckligt val av LONG_EDGE eller AT_PLACE avvisas före
+GIV-2.3 med KORT har en fast kortändevändning sedan mall 11. Ett uttryckligt val av LONG_EDGE eller AT_PLACE avvisas före
 sparning; MINIMAL låter referensfilmen beskriva vändningen. Den frysta placeringsplanens avsikt behålls separat.
 
-**Varje sak sägs en gång** (Jakob 2026-11-18: "för många val som kan leda till överlappande instruktioner").
-`tools/order-line.test.ts` bygger texten för varje kombination linjen tillåter (receptet för varje steg och kort, och
-varje undantag) och faller när ett ämne skrivs två gånger (kameran, referensfilmen, greppet, vägen, vändningen,
-läggningen, vägen tillbaka, den vilande handen, blicken, kortets utseende) eller när två meningar säger emot varandra.
-Mall 11 kom ur det testet: en giv bara dit med den andra handen, med handbyte eller stängd sade slutet två gånger i mall
-10 ("lets go of it … her empty hand turn palm down" och sedan "Her hand ends at the card, as in the last frame"), och
-ingången sade den vilande handen två gånger. Det som visas i studion bredvid ett val är valets namn och inget annat:
-rörelsen beskrivs bara av texten som skickas (Jakob 2026-11-17).
+**Varje sak sägs en gång** (Jakob 2026-11-18: "för många val som kan leda till överlappande instruktioner"; 2026-11-20:
+"så att det inte blir dubbla typer av meningar"). `tools/order-line.test.ts` bygger texten för varje kombination linjen
+tillåter (receptet för varje steg och kort med receptets eget tillägg, varje undantag, filmerna utan kort och
+stillbilderna) och faller när:
+- ett ämne skrivs i två meningar (kameran, referensfilmen, greppet ur skon, vändningen, läggningen, vägen tillbaka, den
+  vilande handen, blicken, kortets utseende, vad som tas ur `@pose`);
+- ett tillstånd sägs i två bisatser: vilken sida som är upp ("yellow side up", "blue side up"), "as in the last frame"
+  och "as in the first frame" högst en gång i hela texten, "palm down" högst en gång på vägen dit och en gång på vägen
+  tillbaka;
+- fem ord eller fler i följd står två gånger i samma text (undantagen är uppräknade i testet, vart och ett för att
+  samma sak NÄMNS två gånger, inte sägs två gånger: "the next card in the window" är både var handen stannar och hur
+  kortet ser ut);
+- två meningar säger emot varandra, eller samma mening står två gånger.
+
+Mall 11 kom ur ämnesräkningen: en giv bara dit med den andra handen, med handbyte eller stängd sade slutet två gånger i
+mall 10 ("lets go of it … her empty hand turn palm down" och sedan "Her hand ends at the card, as in the last frame"),
+och ingången sade den vilande handen två gånger. Mall 12 kom ur en sökning efter ordföljder som står två gånger i varje
+text linjen kan sätta ihop (1 640 texter): vilken sida som är upp sägs nu där kortet bärs eller vänds och inte en gång
+till i läggningen (stängda givar och given med två händer från 2.3), "as in the last frame" står en gång i ingången
+till 2.3, en stillbild säger en gång vad som tas ur `@pose`, och returen till 2.3 nämner handen vid skon en gång. Den
+öppna given med handen vid skon är oförändrad, ord för ord, liksom varje Minimal text.
+
+Ett tillägg säger bara det mallen inte redan säger. Receptets eget tillägg prövas av testet tillsammans med mallen; en
+orders eget tillägg prövas inte av linjen, så den som skriver ett läser först stegets text. Skickade tillägg har både
+upprepat mallen (14 av 37 tillägg: kortets utseende i `paow-giv-2-2-p6-02` och sju givar i mall 4; vägen tillbaka i
+tur och retur från 2.3, där `paow-giv-2-3-p4-h24-cykel-01` säger "to its pose in the first frame" två gånger) och
+brutit mot listan nedan (förbud i `paow-ingang-2-3-01`: "with no pause and no jerk"; tidsangivelser i åtta vilor,
+`paow-vila-01` till `-08`) (V, lästa ur ordrarna 2026-11-20). Det som visas i studion bredvid ett val är valets namn
+och inget annat: rörelsen beskrivs bara av texten som skickas (Jakob 2026-11-17).
 
 | Del | Kommer från valet | Regel |
 |---|---|---|
@@ -123,20 +144,34 @@ picture, where the last frame shows it"). 4 Vändningen, bara om kortet landar �
 (`otherRests`). 7 Kortet (`oneCardMoves`). 8 Jakobs tillägg, en positiv mening.
 
 **Står aldrig i en filmtext:** utseende, kläder, hår; förbud eller "not/no/never/without"; bildpunkter; tidsangivelser
-(WAN läser dem som scenlista, S); en andra handling; "exactly as in the last frame" mer än en gång. Längd: så kort som
-skelettet tillåter; mall 4 och 5 gav 79–132 ord (protokollet, V).
+(WAN läser dem som scenlista, S); en andra handling; samma tillstånd i två meningar eller bisatser ("as in the last
+frame", vilken sida som är upp, "palm down" på samma väg). Längd: så kort som skelettet tillåter; mall 4 och 5 gav
+79–132 ord (protokollet, V); recepttexterna i mall 12 är 36–267 ord och 194–1 328 tecken, den längsta en stillbild
+(V, räknat 2026-11-20), och den längsta text som har skickats 2 738 tecken (mall 3). Linjen känner ingen teckengräns
+hos modellerna; den enda gräns den håller är tilläggets 600 tecken (`EXTRA_LIMIT`).
 
-| Steg | Modell först | s | Varför |
+Receptens modell och längd står i `data/order-methods.json`; tabellen säger varför, och vad filmerna visade när 172
+filmer mättes 2026-11-20 (128 levererade, 28 ur Pamelas bank, dockans 16; bildskillnad ruta för ruta: hur länge bilden
+står stilla i början och i slutet, och hur länge rörelsen pågår; median och spann, V).
+
+| Steg | Receptet | s | Varför, och vad mätningen visade |
 |---|---|---|---|
-| Ingång 1 → 2.1, 1 → 2.2 | WAN 3, 1080p | 4 | Ger bankens ruta direkt; 4K gav ingen skärpa (V) |
-| Giv nyp från 2.1, med referens | Kling 4, 1080p | 7 | Det giv-recept som har hållit flest gånger (V) |
-| Giv bara dit med referens (nyp 2.1 eller släp 2.2) | Kling 4, 1080p | 4 | Referensens längd; till P4 3 av 4 och 2 av 2, till P1 0 av 2 (§5, givprov 1 och 2) (V) |
-| Giv nyp från 2.1, utan referens | Prov: Kling 4 mot WAN 3 | 7 | Oavgjort (§5) |
-| Släp från 2.2, stängt | WAN 3, 1080p | 6 | Höll till P1 (V) |
+| Ingång 1 → 2.1, 1 → 2.2 | WAN 3, 1080p | 4 | Ger bankens ruta direkt; 4K gav ingen skärpa (V). Rörelsen pågår 3,6–3,9 s, 90 % av den inom 2,4–3,4 s (4 filmer). Pamelas godkända ingång är 2 s. Om 3 s räcker är oprövat |
+| Ingång 1 → 2.3 | Kling 4, 1080p, dockans film | 3 | Referensens längd, det kortaste Kling 4 tar. Rörelsen pågår 1,4 s och bilden står stilla 1,4 s i slutet (1 film); dockans film gör likadant, så stillheten kommer ur referensen |
+| Giv bara dit från 2.1, 2.2 och 2.3 | Kling 4, 1080p, referensfilm | 3 | Receptet för varje giv. Från 2.3 (8 filmer): rörelsen 2,4 s (2,1–3,0), kortet lagt efter 2,1 s (1,8–2,25), stilla 0,5 s i slutet (0–0,6); filmen följer dockans takt. Äldre prov på 4 s med bankens referens: till P4 3 av 4 och 2 av 2, till P1 0 av 2 (§5, givprov 1 och 2) |
+| Giv tur och retur (undantag, inget recept) | Kling 4 eller WAN 3 | 7 från 2.1, 6 från 2.2, 4 från 2.3 | Rörelsen fyller filmen: stilla högst 0,3 s i var ände i median (82 filmer). I Paows bank tar given 4,1 s (2,6–5,7) och returen 2,7 s av en film på 7 s (46 filmer) |
 | Vändningen som egen film | Prov: WAN 3 och Kling 4 | 3 | Oprövat |
-| Retur som egen film | WAN 3, 1080p | 3 | Oprövat; kort väg, kort film |
-| Vila | WAN 3, 1080p | 4–5 | Samma bild först och sist |
+| Retur som egen film | Till 2.3: Kling 4, 1080p. Till 2.1, 2.2 och 1: ingen metod | 3 | Oprövat; kort väg, kort film. Pamelas returer är 3 s och rör sig 2,8 s (8 filmer) |
+| Utgång 2.1 → 1, 2.2 → 1 | WAN 3, 1080p | 4 | Rörelsen pågår 3,6–3,8 s (4 filmer) |
+| Hålkortet | WAN 3, 1080p | 5 | Rörelsen pågår 4,2–4,8 s (4 filmer); Pamelas är 4 s och rör sig 3,7 s |
+| Vila | WAN 3, 1080p | 4 | Samma bild först och sist. Bilden står stilla 0,4 s i var ände (6 filmer på 4 s): det är skarven texten ber om ("holds still for the last half second"), inte död tid. Längre vilor (5, 6, 8 s) är undantag för en större handling |
 | Stillbild (ankare, landning) | Nano Banana Pro, 4K, 4:3 | – | Redigerar dealerns egen bild med `@anchor` och `@pose` |
+
+Ingen film är för lång av sig själv: det som står stilla följer referensfilmen (ingången till 2.3, givens slut) eller
+är en beställd skarv (vilan). Om given på 3 s är för snabb är en smakfråga för Jakob: de givar han har godkänt tar
+cirka 4 s (Paows 4,3 s i median, 16 filmer; Pamelas 4,0 s, 14 filmer; ur bankens register), den nya lägger kortet
+efter cirka 2,1 s i en film på 3 s, och en sekund till kostar cirka 21 krediter per film (Kling 4, 1080p). En längre
+giv är en längre referensfilm, eftersom filmen tar referensens längd.
 
 Billig sållning: WAN 3 i 480p kostar 5 krediter per s och visar om modellen gör rörelsen (`data/order-policy.json`, V).
 Kling 3.0 4K beställs inte längre (`MODELS['kling-3-4k'].off`: ingen skärpevinst, 172 krediter mot 80; Jakob: "det är
@@ -150,6 +185,9 @@ Orden står i `SAY`; här står vad som har hållit och varför.
 ### 3.1 Ingång: ankare 1 → 2.1 och → 2.2
 - Orden: `SAY.reach['2.1']` eller `['2.2']`, `SAY.eyes`, `SAY.otherRests`. WAN 3, 1080p, 4 s, två tagningar. Blicken är
   med för att Jakob sade om `paow-ingang-2-1-01`: "En bra variant! Men hon rör inte blicken filket är tråkigt" (V).
+  Recepten till och från 2.2 bär tillägget om det enfärgade kortet i fönstret ("The yellow card in the window is plain,
+  one flat solid yellow from edge to edge."), som deras beläggsordrar skickades med; recepten till och från 2.1 skickades
+  utan och står kvar så. Ingången till 2.3 (Kling 4 med dockans film): `SAY.reach['2.3']` och `SAY.eyesStay`.
 - Har hållit: `paow-ingang-2-1-01` (WAN): granskaren 3,5/5 (äldre HANDOFF, i Git), Jakob Variant; `-02` (Kling 3.0 4K, 172 krediter):
   3/5, Jakob Godkänd, "bra men tråkig" (V, en tagning var). Kavajomgången: 1 → 2.2 gav en huvudtagning av två (V).
 - Har fallit: båda ingångarna rörde fönstrets ram före kortet (WAN ruta 44–59, 4K ruta 38–55) (V). Troligen geometrin:
@@ -191,11 +229,11 @@ Nyp, Dra, För fram, Vrid, Vänd upp, Lägg: kortet ligger gult upp mot filten h
 tagningar har beställts så; fyra vände vid platsen (V): `p4-07` (Jakob: "gör två vridningsmoment … återigen fel färg"),
 `p1-07` t2 (WAN 3, underkänd), och `p1-08` t1 och t2 (Kling 4 med referens till samma plats: 2 av 2; t2 godkänd). Utan
 referens, WAN 3 i omgång 5: 1 av 5 (P7 0 av 2; till D.C1 vändes kortet i luften). Metodregistret
-(`data/order-methods.json`) beställer i dag givar från ankare 2.1 till spelarplatserna med Kling 4, kort text, fri
-vändning (handleden på vägen), tur och retur och ingen referensfilm, dealerns kort med vändningen som planen säger, och
-givar från ankare 2.2 (släp) med WAN 3, kort text, tur och retur och vändningen som planen säger; alla med status
-`prov`. Vändningen
-vid platsen beställs bara där planen säger det för kortet: planen säger "i luften" på alla 16 kort, så förvalet i
+(`data/order-methods.json`) beställer i dag varje giv bara dit med Kling 4, kort text, 3 s och referensfilm: från
+ankare 2.1 till spelarplatserna och från ankare 2.3 med fri vändning (handleden på vägen; från 2.3 över kortändan),
+dealerns kort från 2.1 med vändningen som planen säger, och från ankare 2.2 (släp) med vändningen vid platsen; alla med
+status `prov`. Där receptet lämnar vändningen till planen beställs vändningen
+vid platsen bara där planen säger det för kortet: planen säger "i luften" på alla 16 kort, så förvalet i
 Beställ (`defaultFlip`) är fri vändning (V). Två vändningar en vänsterhand kan göra:
 
 **Vändning A, "tummen lyfter, kortet fälls över" (Jakobs skiss, `SAY.turnAtPlace`; S, inte prövad som bild).**
@@ -237,7 +275,8 @@ hand men fel kort ger målat kort (äldre HANDOFF, i Git); fel hand hjälper ing
 tagningar vänder kortet en gång vid platsen så som en hand kan, med kortet inom ±10 % (film-review §3–4).
 
 ### 3.4 Giv med släp från ankare 2.2 (stängt kort)
-- Orden: `SAY.slideOut`, `SAY.dragBack`, `SAY.stopClosed`, `SAY.backDrag`. WAN 3, 1080p, 6 s, två tagningar. Höll till
+- Orden: `SAY.slideOut`, `SAY.dragBack`, `SAY.stopFlat`, `SAY.backDrag` (sidan som är upp sägs i släpet, inte en gång
+  till där kortet stannar). Tur och retur med WAN 3, 1080p, 6 s, två tagningar, höll till
   P1: cirka 7 verkliga släp av 9 tagningar (b9–b17, V). Föll till P4 (0 av 2) och P7 (0 av 2: kortet går först åt
   vänster) (V). Pröva P1 först.
 - **Öppet, bara dit med referens (givprov 2A, 2026-11-17; V):** Kling 4, 4 s, första bild ankare 2.2, sista bild ruta
@@ -260,12 +299,14 @@ tagningar vänder kortet en gång vid platsen så som en hand kan, med kortet in
   ofta för en knytnäve i brösthöjd (V). Hans dom gäller: returen i tur och retur håller.
 - **Som egen film** (`RETUR-2.1`, `-2.2`, `-1`): från landningsbilden till ankaret, orden `SAY.liftOff` och
   `SAY.glideTo`. WAN 3, 1080p, 3 s. Oprövad; behövs för en giv "bara dit". En film som startar på en annan films ruta
-  skiftar cirka 5 nivåer i ton (Paows videoprov, V); därför en stillbild som första bild.
+  skiftar cirka 5 nivåer i ton (Paows videoprov, V); därför en stillbild som första bild. Returen till 2.3 är den enda
+  med recept (Kling 4, 1080p, 3 s, prov): `SAY.liftOffRight` och `SAY.glideBeside`, där handen vid skon nämns en gång.
 
 ### 3.6 Vila
 - Orden: `SAY.rest` plus en liten handling som Jakobs tillägg: `takes one slow, deep breath`, `smiles briefly`,
-  `nods once`, `straightens her back`, `taps her fingers once on the felt`. WAN 3, 1080p, 4–5 s, första och sista bild =
-  ankare 1.
+  `nods once`, `straightens her back`, `taps her fingers once on the felt`. WAN 3, 1080p, 4 s (receptet; 5–8 s har
+  beställts som undantag för en större handling), första och sista bild = ankare 1. Tillägget säger handlingen och inget
+  om när: mallen säger redan att hon står stilla den sista halva sekunden.
 - Jakob godkände alla åtta (`paow-vila-01` rakt; 02–08 som Variant: "Jättebra variant!", "Jättebra.. Hon ler!",
   "Kanon!", "Toppen!") (V). Granskaren gav 1–3/5, mest för munnen: öppen eller tänder i 4 av 6 granskade (V). Nästa text
   för munnen: "her lips stay together as the corners of her mouth lift a little"; prövad i omgång 12 (`paow-vila-10`):
@@ -275,9 +316,11 @@ tagningar vänder kortet en gång vid platsen så som en hand kan, med kortet in
 ### 3.7 Stillbilder: ankare 2.1, 2.2, landningsbild
 Nano Banana Pro, 4K, 4:3, `referenceImages` `@anchor` (dealerns egen bild) och `@pose` (bara en utklippt underarm och
 hand, `tools/order-images.ts`). För stillbilder gäller Googles råd: detaljerat får det vara, men det oönskade sägs
-positivt ("one card", inte "no second card"). Orden för ankarna: `SAY.still*` och `STANDARD_STILL`.
+positivt ("one card", inte "no second card"). Orden för ankarna: `SAY.still*` och `STANDARD_STILL`. Vad som tas ur
+`@pose` sägs en gång, i meningen om `@pose` (`SAY.stillPose`); meningen om handen (`SAY.stillChange`) säger bara vad
+handen gör.
 ```
-This is an edit of the picture @anchor. Keep everything in @anchor exactly as it is: the framing and camera, the flat chroma-green background and table, the black card shoe at the right with the yellow card in its window, and the woman's face, hair, clothes, build and her hand at the left of the picture. Change only her hand nearest the shoe: it rests at the blue card lying flat on the felt in front of her, the tips of her forefinger and middle finger on the card's edge nearest her, the wrist raised above the knuckles and the thumb free beside the card, placed and shaped as the hand in @pose. @pose is a cut-out on plain green that shows only a forearm and hand; take from it only where the hand is and how the fingers touch the card. [STANDARD_STILL] There is one card on the felt and one in the shoe, each the size and shape of the card in the window.
+This is an edit of the picture @anchor. Keep everything in @anchor exactly as it is: the framing and camera, the flat chroma-green background and table, the black card shoe at the right with the yellow card in its window, and the woman's face, hair, clothes, build and her hand at the left of the picture. Change only her hand nearest the shoe: it rests at the blue card lying flat on the felt in front of her, the tips of her forefinger and middle finger on the card's edge nearest her, the wrist raised above the knuckles and the thumb free beside the card. @pose is a cut-out on plain green that shows only a forearm and hand; take from it only where the hand is and how the fingers touch the card. [STANDARD_STILL] There is one card on the felt and one in the shoe, each the size and shape of the card in the window.
 ```
 - Exemplet är **landningsbilden** (S, oprövad): `@anchor` = ankare 1 med kortet ritat där planen säger; `@pose` = armen
   ur Pamelas godkända giv till samma plats, rutan där fingertopparna vilar på kortet. Efteråt ritas kortet om ur planen

@@ -313,7 +313,7 @@ test('drafts, changes and approval go through the routes with their guards', asy
   assert.equal(changed.status, 200);
   assert.equal(changed.json.order.cost.total, 40);
   assert.match(changed.json.order.prompt.text, /She smiles\.$/, 'a new still is written short: the addition last, no list of bans');
-  assert.equal(changed.json.order.prompt.template, 'bild-ankare-kort@11');
+  assert.equal(changed.json.order.prompt.template, 'bild-ankare-kort@12');
 
   // Approval: own origin, revision, then frozen with its hash.
   assert.equal((await call('POST', `/api/orders/${id}/approve`, { match: changed.json.revision, from: null })).status, 403);
@@ -345,7 +345,7 @@ test('drafts, changes and approval go through the routes with their guards', asy
   assert.deepEqual(film.waiting.map((w: { label: string; ready: boolean }) => [w.label, w.ready]), [['ankare 2.1', false], ['ankare 2.1', false]]);
   assert.equal(film.order.step.edge, 'READY>P4.C1');
   assert.equal(film.order.pictures[1].path, null, 'the last picture waits; no other dealer stands in');
-  assert.deepEqual([film.order.prompt.style, film.order.prompt.template], ['KORT', 'film-giv-kort@11'], 'a new film is written in the short text');
+  assert.deepEqual([film.order.prompt.style, film.order.prompt.template], ['KORT', 'film-giv-kort@12'], 'a new film is written in the short text');
   assert.match(film.order.prompt.text, /towards its place in the middle of the picture, where the last frame shows it/, 'the place from the plan before the last picture exists');
   // The long text (template 3) is never written for a new order: its words go against today's rules (Jakob 2026-11-17).
   const before = (await call('GET', '/api/orders')).json.orders.length;
@@ -837,7 +837,7 @@ test('the return to 2.3 copies the preceding deal’s RH ending and cannot be ap
   assert.deepEqual([order.motion.hand, order.motion.pass, order.motion.turn, order.motion.side], ['RH', false, false, 'FRONT']);
   assert.deepEqual(order.pictures.map((p: { sha256: string; from: { entry: string } }) => [p.sha256, p.from.entry]), [[last.sha256, a3.id], [sha(readyBytes), ready.id]]);
   assert.equal(order.pictures[0].from.path, last.path);
-  assert.match(order.prompt.text, /right fingertips lift off the blue card.*card stays where it lies.*glides back low.*left hand stays at the shoe/i);
+  assert.match(order.prompt.text, /right fingertips lift off the blue card.*card stays where it lies.*glides back low.*beside her left hand, which stays at the shoe, as in the last frame\.$/i);
   assert.match(order.notes.join(' '), /Recept retur-2\.3 \(prov\).*utan det utdelade kortet/);
 
   for (const [changes, reason] of [
@@ -965,7 +965,7 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   const f = line.json.order;
   assert.deepEqual([f.step.shape, f.step.cutInto, f.title, f.summary], ['ONE_WAY', ['READY>P4.C1'], 'Paow · Nyp, ett kort till platsen · plats 4', 'Gör en film av Paow: ett kort från ankare 2.1 till plats 4, bara dit.']);
   assert.deepEqual(f.generation, { provider: 'runway-app', tool: 'generate_video', model: 'kling-4', params: { resolution: '1080p', duration: 4 } }, 'the reference film is 4 s, and so is the film');
-  assert.deepEqual([f.takes, f.prompt.style, f.prompt.template, f.motion.flipAxis, f.motion.hand, f.motion.pass], [1, 'KORT', 'film-giv-kort@11', 'FREE', 'LH', false]);
+  assert.deepEqual([f.takes, f.prompt.style, f.prompt.template, f.motion.flipAxis, f.motion.hand, f.motion.pass], [1, 'KORT', 'film-giv-kort@12', 'FREE', 'LH', false]);
   assert.deepEqual(f.pictures.map((p: { name: string; label: string; sha256: string }) => [p.name, p.label, p.sha256]), [['first.png', 'Första bild · Paows ankare 2.1', sha(files['paow-nyp-ny'])], ['last.png', 'Sista bild · Paows landning på plats 4', sha(landing)]], 'seat 4 ends on seat 4\'s own landing picture');
   assert.deepEqual([f.reference.status, f.reference.clips, f.reference.path, f.reference.sha256, f.reference.seconds, f.reference.dealer, f.reference.approvedStraight, f.reference.from.verdict, f.reference.from.words], ['FINNS', ['pamela-p4-c1-plan-deal-02'], `assets/orders/${f.id}/reference.mp4`, sha(film), 4, 'pamela', true, 'GODKÄND', 'Det ser bra ut.']);
   assert.equal((await call('GET', `/${f.reference.path}`)).bytes!.equals(film), true, 'the film is copied byte for byte');
@@ -1377,7 +1377,7 @@ test('the steps a round needs: a deal to the hole card, its turn from rest and t
   assert.deepEqual(o.pictures.map((p: { name: string; goesAs: string; path: string | null; waits: { label: string } | null }) => [p.name, p.goesAs, p.path, p.waits?.label]), [['first.png', 'startFrame', null, 'ankare 1'], ['last.png', 'endFrame', null, 'ankare 1']]);
   assert.match(o.pictures[0].label, /hålkortet stängt$/);
   assert.match(o.pictures[1].label, /hålkortet öppet$/);
-  assert.deepEqual([o.prompt.style, o.prompt.template, o.generation.model, o.generation.params.duration, o.cost.total], ['KORT', 'film-halkort-kort@11', 'wan3', 5, 100]);
+  assert.deepEqual([o.prompt.style, o.prompt.template, o.generation.model, o.generation.params.duration, o.cost.total], ['KORT', 'film-halkort-kort@12', 'wan3', 5, 100]);
   assert.equal(o.takes, 1, 'the hole card\'s turn is still being tried: one take');
   assert.match(o.prompt.text, /to the yellow card lying close in front of her, in the middle of the picture, where the last frame shows it\. There her thumb slides under/);
   assert.equal(turn.json.shown, 'VÄNTAR');
@@ -1388,7 +1388,7 @@ test('the steps a round needs: a deal to the hole card, its turn from rest and t
   // The way out from the drag: anchor 2.2 to rest, its own id, its anchor 2.2 waited for (none holds in this lab).
   const outDrag = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'UTGANG-2.2' } })).json.order;
   assert.deepEqual([outDrag.id, outDrag.step.edge, outDrag.step.cutInto, outDrag.pictures.map((p: { waits: { label: string } | null }) => p.waits?.label)], ['paow-utgang-2-2-01', 'READY-B>IDLE', [], ['ankare 2.2', 'ankare 1']]);
-  assert.deepEqual([outDrag.prompt.template, outDrag.generation.model, outDrag.generation.params.duration, outDrag.cost.total], ['film-utgang-kort@11', 'wan3', 4, 80]);
+  assert.deepEqual([outDrag.prompt.template, outDrag.generation.model, outDrag.generation.params.duration, outDrag.cost.total], ['film-utgang-kort@12', 'wan3', 4, 80]);
   assert.match(outDrag.prompt.text, /^Locked camera, one continuous shot\. Her fingertips lift off the yellow card in the shoe's window/);
   assert.match(outDrag.summary, /ankare 2\.2/);
 
