@@ -191,7 +191,7 @@ async function worker(jobPath: string) {
 }
 async function main() {
   if (!process.argv.includes('--render')) { console.log('No export started. Use --render --take=01 (new two-digit take). Four workers; no public report is changed.'); return; }
-  if (process.versions.node !== '24.21.0') throw Error('Use project-pinned Node 24.21.0');
+  if (process.versions.node !== '24.22.3') throw Error('Use project-pinned Node 24.22.3');
   const take = process.argv.find(argument => argument.startsWith('--take='))?.slice(7);
   if (!take || !/^\d{2}$/.test(take)) throw Error('An explicit new --take=NN is required');
   const plan = await read<Plan>(planPath); validatePlan(plan);

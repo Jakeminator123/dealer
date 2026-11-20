@@ -112,7 +112,7 @@ behöver veta och namnger högst tre filer eller avsnitt att läsa.
 ## Kod
 
 - Ny kod skrivs i TypeScript. Undantaget är skripten i `tools/python/`, som kräver MediaPipe.
-- Node enligt `package.json` (Volta, `v24.21.0`); kontrollera med `node -p process.version`.
+- Node enligt `package.json` (Volta, `v24.22.3`); kontrollera med `node -p process.version`.
 - Högst fyra render- eller testarbetare samtidigt: datorn delas med labbservern och andra sessioner.
 - Verifiera det beteende du ändrat med ett avgränsat test eller en körning. Full rendering och deploy kräver egen
   verifiering; `npm test` täcker dem inte.

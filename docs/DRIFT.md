@@ -517,5 +517,5 @@ skrivare och atomisk historik behövs; ingen produktionsdatabas är skapad här.
 En kopia av repot i en molnmiljö (Codex Cloud eller en annan sandlåda ur GitHub) är en separat körning utan media och
 inte säkert med rätt Node: där går bara de tester som klarar sig utan media, och ingenting döms där. Ingen sådan miljö
 är uppsatt för dealer (senast kontrollerat 2026-11-10), och Scouts miljö återanvänds inte utan uttrycklig
-projektbindning. Den som sätter upp en behöver repot, Node 24.21.0 och `npm ci`; V6-verifiering och rendering kräver
+projektbindning. Den som sätter upp en behöver repot, Node 24.22.3 och `npm ci`; V6-verifiering och rendering kräver
 dessutom registrerad media, FFmpeg/FFprobe och högst fyra arbetare. Kopiera aldrig hela `.env.local` dit.

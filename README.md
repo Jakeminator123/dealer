@@ -77,9 +77,9 @@ Dokumenten länkar till dessa i stället för att föra egna statusregister. Med
 
 ## Kör lokalt
 
-- Arbeta här. `node -p process.version` ska visa `v24.21.0` via Volta; `package.json` kräver `>=24.21.0 <25`. `npm ci`
-  behövs om beroenden saknas. Inne i `studio/` binder `studio/package.json` Node 24.22.3 och npm 11.19.1 (prov av en
-  nyare version, Jakob 2026-11-20); studiobygget med `tools/studio-from-commit.ts` startas från roten och går på rotens
+- Arbeta här. `node -p process.version` ska visa `v24.22.3` via Volta; `package.json` kräver `>=24.22.3 <25`. `npm ci`
+  behövs om beroenden saknas. Roten och `studio/` binder nu samma Node 24.22.3 (Jakob 2026-11-20); bara `studio/`
+  binder dessutom npm 11.19.1. Studiobygget med `tools/studio-from-commit.ts` startas från roten och går på rotens
   Node, liksom testerna och pushkontrollen.
 - `START.cmd` startar labbservern på `http://127.0.0.1:4319` utan fönster och visar studion i en enda flik; `STATUS.cmd`
   och `STOPP.cmd` frågar och stoppar. `node tools/preview.ts --open "<sida>"` visar en sida i den öppna fliken i stället

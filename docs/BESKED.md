@@ -93,6 +93,10 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   "Låt de köra klart eller synaka md dem då.. När du är kalr med allt ditt ska du rapportera till agenten som ahr
   chatten "Schen & Bord från Referensbilder" som seda nska göra en övergripande koll och committa allt i proejktet
   typ". Den chatten gör alltså den samlade kontrollen och committar; varje session lämnar sin fillista dit.
+- **Ny orkestrerande session, och Node 24.22.3 i hela projektet** (2026-11-20, till sessionen dealer-37 när chatten
+  ovan stängdes): "Jag vill att du gör flera saker och använder underagenter för allt. Du ska mest orkestrera det som
+  sker." Den sessionen tar därmed över den samlade kontrollen och commits. Om Node samma gång: "prova att installera
+  den nya node-versionen och testa att allt fungerar. Om det gör det, byt över till den nyare node-versionen överallt."
 
 ## Labbet och studion
 
