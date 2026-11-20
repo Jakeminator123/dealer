@@ -144,10 +144,12 @@ export const TWO_HAND = {
   // Her left hand hangs over the card from the shoe's side, clear of the camera's line to the card in the shoe's window: its
   // fingertips `along` from the card's middle toward the shoe's end of it and `across` from its middle line, the hand turned
   // `swing` degrees about the plumb line (the way the other grips turn it 15), its wrist raised by `pitch` degrees, closed the
-  // share `close` of the way to flat; back to the shoe it goes by `arc` (metres, most half way: up, over the window).
+  // share `close` of the way to flat; back to the shoe it goes by `arc` (metres, most half way: up, over the window), and
+  // has gone the share `home` of that way before it begins to turn back to how it lay (0: it turns the whole way; a hand
+  // that comes low, from the camera's side of the shoe, is else before the window with its fingers until it lies).
   // Her right hand waits `back` behind its hold along the card and `side` beside it, is there `ready` frames before it closes
   // (on its way it is lifted `rise` and bowed `aside`, round her left thumb), and slides onto the moving card in `slide` frames.
-  shared: {grasp: 1, both: 5, along: 0.018, across: 0.006, swing: 60, pitch: -45, close: 0.9, arc: [0, 0.1, 0] as [number, number, number], rise: 0.03, aside: [-0.06, 0, 0] as [number, number, number], back: 0.06, side: -0.05, slide: 4, ready: 4},
+  shared: {grasp: 1, both: 5, along: 0.018, across: 0.006, swing: 60, pitch: -45, close: 0.9, arc: [0, 0.1, 0] as [number, number, number], home: 0, rise: 0.03, aside: [-0.06, 0, 0] as [number, number, number], back: 0.06, side: -0.05, slide: 4, ready: 4},
 };
 const rad = (d: number) => d * Math.PI / 180, deg = (r: number) => r * 180 / Math.PI, UP: Vec3 = [0, 1, 0];
 const smooth = (t: number) => t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t), lerp = (a: Vec3, b: Vec3, t: number): Vec3 => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
@@ -507,7 +509,7 @@ export function twoHandDeal(lens: Lens, start: Still, places: Place[], lead: num
       const hand = l.on(feeding(c.card(i)), smooth((i - b.b) / (b.d - b.b)), l.tilt, single ? 0 : smooth((i - b.d) / (b.l - b.d)));
       return pinched && i >= b.c ? aboveFelt(hand) : hand;
     }
-    if (i > lets && i < back) { const from = l.on(feeding(c.card(lets)), 1, l.tilt, single ? 0 : 1), t = (i - lets) / (back - lets), u = soft ? smooth(t) : single ? 1 - Math.pow(1 - t, 2) : smooth(t), shape = shapeBetween(shares ? from.shape : closedL, shapeL, u), axes = between(from.axes, axL0, u);
+    if (i > lets && i < back) { const from = l.on(feeding(c.card(lets)), 1, l.tilt, single ? 0 : 1), t = (i - lets) / (back - lets), u = soft ? smooth(t) : single ? 1 - Math.pow(1 - t, 2) : smooth(t), shape = shapeBetween(shares ? from.shape : closedL, shapeL, u), axes = between(from.axes, axL0, shares && S.home ? smooth(clamp((t - S.home) / (1 - S.home))) : u);
       const arc: Vec3 = shares ? S.arc : pinched ? [0.04, 0.075, 0] : [0, single ? 0.035 : M.arc.left, 0];
       // (soft: it goes on with the card at the card's speed, ever less, while it is lifted: the lift is the arc's, begun at once)
       const goesOn: Vec3 = soft ? add(mul(sub(from.wrist, l.on(feeding(c.card(lets - 1)), 1, l.tilt, 0).wrist), (back - lets) * t * (1 - t) * (1 - t)), mul(arc, Math.sin(Math.PI * eased(t, 1.2, 0)) - Math.sin(Math.PI * u))) : [0, 0, 0];
