@@ -3,6 +3,29 @@
   "about": "What waits for Jakob: one entry per question (kind beslut) or per thing only he can do (kind gora), shown as one card each in the studio's view Beslut (/studio/beslut/, lab only). The list's order is the order of urgency, the most urgent first. An entry: id, kind, question (at most 14 words), leads (one sentence: what his answer leads to), optionally proof (a folder under assets/proofs/) with file, page (an address in the lab, e.g. game.html?table=casino), link (an address outside, shown as text to open on his phone) and cost (free text), chips (two to four {value, label} for beslut, one to four for gora), asked (date), from (the lane that asks) and answer. An agent adds an entry with answer null, changes only its own entries, reads the file right before editing it and keeps the form JSON.stringify gives with two spaces; it closes an entry by taking it out once his answer is carried out, and the commit says what he answered. Only the page writes answer ({value, note, at}, tools/decision-store.ts); no agent sets, changes or clears an answer he has given. The strict reader is tools/decision-register.ts. The repo is public: no secret, personal detail or path of this machine.",
   "decisions": [
     {
+      "id": "giv-2-3b-p4-mall",
+      "kind": "beslut",
+      "question": "Duger given från nya ankare 2.3 till plats 4 som mall?",
+      "leads": "Ja gör resten av platserna med samma metod; skons fönster är svart i 0,4 s här och rättas i dockfilmen.",
+      "proof": "paow-giv-2-3b-p4-pilot-20261120",
+      "file": "2-stillbild-handbytet.png",
+      "page": "studio/granska/?prov=paow-giv-2-3b-p4-pilot-20261120&fil=1-giv-plats-4-spelets-storlek.mp4",
+      "cost": "cirka 110–180 krediter per plats",
+      "chips": [
+        {
+          "value": "ja",
+          "label": "Ja, gör resten"
+        },
+        {
+          "value": "nej",
+          "label": "Nej, ändra"
+        }
+      ],
+      "asked": "2026-11-20",
+      "from": "film",
+      "answer": null
+    },
+    {
       "id": "kortet-i-handen-vandning-och-ljus",
       "kind": "beslut",
       "question": "Ska det ritade kortets vändning och ljus i handen lagas?",
@@ -149,31 +172,6 @@
         "value": "ja",
         "note": "",
         "at": "2026-11-20T11:07:16.474Z"
-      }
-    },
-    {
-      "id": "paow-ankare-2-3-posen",
-      "kind": "beslut",
-      "question": "Är posen i nya ankare 2.3 rätt?",
-      "leads": "Ja gör bilden till kandidat i Material, och nästa vända beställs från den; vid nej skriver du vad i posen som ska ändras.",
-      "proof": "paow-ankare-2-3-b",
-      "file": "1-nytt-ankare-2-3.png",
-      "chips": [
-        {
-          "value": "ja",
-          "label": "Ja, posen är rätt"
-        },
-        {
-          "value": "nej",
-          "label": "Nej, ändra"
-        }
-      ],
-      "asked": "2026-11-20",
-      "from": "222 KORTMÄRKE",
-      "answer": {
-        "value": "ja",
-        "note": "",
-        "at": "2026-11-20T11:06:18.515Z"
       }
     },
     {
