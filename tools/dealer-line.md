@@ -155,8 +155,9 @@ väljer en retur som kommer tillbaka med den hand som är ute (`src/clip-graph.t
 
 **14. Jakobs dom.** Granska (`/studio/granska/?dealer=<id>`): Primär, Godkänd, Variant eller Underkänd med hans ord,
 skrivet bara i `review` i `motions/<klipp>.json` (`tools/review-store.ts`). Bilder: Material, `gäller` eller `ersatt`.
-Primära (`/studio/primara/`): en Primär per kant, bara hans klick (V). Har han uttryckligen lämnat över domen för vissa
-filmer (2026-11-13: "jag måste sova och du får granska och godkänna alla klipp"): `node tools/review-put.ts <klipp>
+Karta (`/studio/karta/`; `/studio/primara/` leder hit sedan 2026-11-17): en Primär per kant, bara hans klick (V). Har
+han uttryckligen lämnat över domen för vissa filmer (2026-11-13: "jag måste sova och du får granska och godkänna alla
+klipp"): `node tools/review-put.ts <klipp>
 <ACCEPTED|VARIANT|REJECTED> --by … --mandate … --note …` sätter en preliminär dom som spelas som beslutet säger, aldrig
 blir Primär eller rakt godkänd, inte väntar i hans kö (Granska visar den i Alla under Dömda åt dig; Jakob 2026-11-13)
 och tas bort av hans eget beslut (V, `8e9664c`).
