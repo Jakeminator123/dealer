@@ -42,11 +42,13 @@ const paced = (r: RealCard): {real: RealCard; pace: Pace} => { if (!own) return 
   return {real: {...r, a: 0, b, c, d, e, l, f, g, h, i: h + 0.2}, pace: {flowing: true, leftBack: Math.round(TWO_HAND.leftBack * slower * 1000) / 1000, ...(arg('--meet') === '1' ? {meeting: true} : {}), ...(arg('--push') ? {push: Number(arg('--push'))} : {}), ...(arg('--swing') ? {swing: Number(arg('--swing'))} : {}), ...(arg('--single') === '1' ? {single: true} : {}), ...(arg('--real-take') === '1' ? {realTake: true} : {}), ...(arg('--reach') ? {reach: Number(arg('--reach'))} : {}), ...(arg('--carry') ? {carry: Number(arg('--carry'))} : {}), ...(arg('--turned-at') ? {turnedAt: Number(arg('--turned-at'))} : {}), ...(arg('--roll') === '1' ? {roll: true} : {}), ...(arg('--grip-bend') ? {gripBend: Number(arg('--grip-bend'))} : {}), ...(arg('--hand-over-yaw') ? {handOverYaw: Number(arg('--hand-over-yaw'))} : {}), ...(arg('--body') ? {body: arg('--body')!.split(',').map(Number) as [number, number, number]} : {}), ...(arg('--tuck') ? {tuck: Number(arg('--tuck'))} : {})}}; };
 const ids = to === 'all' ? ['P7.C1', 'P6.C1', 'P5.C1', 'P4.C1', 'P3.C1', 'P2.C1', 'P1.C1', 'D.C1'] : to.split(','), places: Place[] = ids.map(id => ({id, at: spot(id), real: paced(realOf(id)).real})), pace = paced(realOf(ids[0])).pace;
 // --contact-grip 1 is the original P4 contact pilot. The landing variant keeps its index on the card through release.
+// The sweep variant keeps the whole grip until the card lies, and lays it in one movement (Pace in dealer3d/src/two-hand.ts).
 if (process.argv.includes('--contact-grip')) {
-  if (!(contactMode === '1' || contactMode === 'landing') || !own || !contactGripFits(to, contactMode === 'landing' ? 'landing' : true) || !pace.single || !pace.meeting || !pace.roll) {
-    throw Error('--contact-grip 1|landing requires --to P4.C1 (or P4.C2 with landing), --beats, --meet 1, --single 1 and --roll 1.');
+  const mode = contactMode === 'landing' || contactMode === 'sweep' ? contactMode : true;
+  if (!(contactMode === '1' || mode !== true) || !own || !contactGripFits(to, mode) || (mode === 'sweep' && to !== 'P4.C1') || !pace.single || !pace.meeting || !pace.roll) {
+    throw Error('--contact-grip 1|landing|sweep requires --to P4.C1 (or P4.C2 with landing), --beats, --meet 1, --single 1 and --roll 1.');
   }
-  pace.contactGrip = contactMode === 'landing' ? 'landing' : true;
+  pace.contactGrip = mode;
 }
 // At C2 the elbows are solved through the release. Pulling them toward the ordinary deal's last pose overbends the wrist.
 if (secondCardPilot) {
