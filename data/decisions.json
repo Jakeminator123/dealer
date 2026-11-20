@@ -3,52 +3,30 @@
   "about": "What waits for Jakob: one entry per question (kind beslut) or per thing only he can do (kind gora), shown as one card each in the studio's view Beslut (/studio/beslut/, lab only). The list's order is the order of urgency, the most urgent first. An entry: id, kind, question (at most 14 words), leads (one sentence: what his answer leads to), optionally proof (a folder under assets/proofs/) with file, page (an address in the lab, e.g. game.html?table=casino), link (an address outside, shown as text to open on his phone) and cost (free text), chips (two to four {value, label} for beslut, one to four for gora), asked (date), from (the lane that asks) and answer. An agent adds an entry with answer null, changes only its own entries, reads the file right before editing it and keeps the form JSON.stringify gives with two spaces; it closes an entry by taking it out once his answer is carried out, and the commit says what he answered. Only the page writes answer ({value, note, at}, tools/decision-store.ts); no agent sets, changes or clears an answer he has given. The strict reader is tools/decision-register.ts. The repo is public: no secret, personal detail or path of this machine.",
   "decisions": [
     {
-      "id": "giv-2-3b-p4-mall",
+      "id": "kortet-i-handen-provet-i-spelet",
       "kind": "beslut",
-      "question": "Duger given från nya ankare 2.3 till plats 4 som mall?",
-      "leads": "Ja gör resten av platserna med samma metod; skons fönster är svart i 0,4 s här och rättas i dockfilmen.",
-      "proof": "paow-giv-2-3b-p4-pilot-20261120",
-      "file": "2-stillbild-handbytet.png",
-      "page": "studio/granska/?prov=paow-giv-2-3b-p4-pilot-20261120&fil=1-giv-plats-4-spelets-storlek.mp4",
-      "cost": "cirka 110–180 krediter per plats",
+      "question": "Ska kortets nya vändning och stadiga ljus slås på i spelet?",
+      "leads": "Ja slår på provet (kortet smalnar i vändningen, papperet håller sitt ljus) i Scen och i spelet; skärpan mot handen byggs därefter.",
+      "proof": "kort-fram-bak-20261120",
+      "file": "2-stillbild-vandningen.png",
+      "page": "studio/granska/?prov=kort-fram-bak-20261120&fil=1-given-spelets-storlek.mp4",
+      "cost": "Inga krediter",
       "chips": [
         {
           "value": "ja",
-          "label": "Ja, gör resten"
-        },
-        {
-          "value": "nej",
-          "label": "Nej, ändra"
-        }
-      ],
-      "asked": "2026-11-20",
-      "from": "film",
-      "answer": null
-    },
-    {
-      "id": "kortet-i-handen-vandning-och-ljus",
-      "kind": "beslut",
-      "question": "Ska det ritade kortets vändning och ljus i handen lagas?",
-      "leads": "Ja gör vändningen mjuk (kortet smalnar i stället för att stå still och bli en linje) och papperets ljus stadigt; skärpan mot handen tas därefter.",
-      "proof": "kortet-i-handen-orsaker-20261120",
-      "file": "1-vandningen.jpg",
-      "chips": [
-        {
-          "value": "ja",
-          "label": "Ja, laga båda"
+          "label": "Ja, slå på"
         },
         {
           "value": "ljus",
-          "label": "Bara ljuset först"
+          "label": "Bara ljuset"
         },
         {
-          "value": "vanta",
-          "label": "Vänta"
+          "value": "nej",
+          "label": "Nej, arbeta vidare"
         }
       ],
       "asked": "2026-11-20",
       "from": "kortets undersökning",
-      "cost": "Inga krediter",
       "answer": null
     },
     {

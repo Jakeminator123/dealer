@@ -59,6 +59,10 @@ separat. En godkänd mask eller ett stabilt kortspår godkänner inte filmens r�
 
 ## Metod
 
+- **Bilderna före filmen.** Granska först första och sista bilden i hel bild mot dealerns gällande ankare och mot
+  dockan, led för led (axel, armbåge, handled, hand) på båda armarna, och fäll underlaget om en led saknas eller handens
+  yta avviker mer än 25 % [M]; ett fel i ankaret syns aldrig som skillnad mellan film och bild (fyra tagningar från ett
+  ankare utan underarm fick 4/5 innan Jakob såg det, 2026-11-20).
 - **Full upplösning, inte kontaktark.** Lägg ut rutorna med ffmpeg som PNG eller JPEG (`-q:v 2`) i den dumpmapp
   uppdraget anger. Kontaktark får ge överblick, men varje påstående om kortet, fingrarna, vändningen och de första och
   sista 15 rutorna bygger på rutor i full upplösning eller beskärningar i full upplösning.

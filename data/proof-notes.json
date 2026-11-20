@@ -468,6 +468,19 @@
         "at": "2026-11-20T11:13:17.284Z"
       },
       "read": "2026-11-20T11:13:17.284Z"
+    },
+    {
+      "id": 41,
+      "proof": "paow-giv-2-3b-p4-pilot-20261120",
+      "file": "1-giv-plats-4-spelets-storlek.mp4",
+      "choice": "inte-bra",
+      "text": "",
+      "at": "2026-11-20T13:48:54.842Z",
+      "answer": {
+        "text": "Du såg rätt. Felet sitter i ankare 2.3 B självt: ärmen slutar vid armbågen och handen hänger direkt under, underarmen saknas (mätt mot 2.3 A och 2.2). Alla fyra tagningarna ärvde det. Ett nytt ankare 2.3 görs nu som en riktig ruta ur ankare 1; inga fler filmer från B.",
+        "at": "2026-11-20T14:01:01.402Z"
+      },
+      "read": "2026-11-20T14:01:01.402Z"
     }
   ]
 }
