@@ -3,6 +3,32 @@
   "about": "What waits for Jakob: one entry per question (kind beslut) or per thing only he can do (kind gora), shown as one card each in the studio's view Beslut (/studio/beslut/, lab only). The list's order is the order of urgency, the most urgent first. An entry: id, kind, question (at most 14 words), leads (one sentence: what his answer leads to), optionally proof (a folder under assets/proofs/) with file, page (an address in the lab, e.g. game.html?table=casino), link (an address outside, shown as text to open on his phone) and cost (free text), chips (two to four {value, label} for beslut, one to four for gora), asked (date), from (the lane that asks) and answer. An agent adds an entry with answer null, changes only its own entries, reads the file right before editing it and keeps the form JSON.stringify gives with two spaces; it closes an entry by taking it out once his answer is carried out, and the commit says what he answered. Only the page writes answer ({value, note, at}, tools/decision-store.ts); no agent sets, changes or clears an answer he has given. The strict reader is tools/decision-register.ts. The repo is public: no secret, personal detail or path of this machine.",
   "decisions": [
     {
+      "id": "kortet-i-handen-vandning-och-ljus",
+      "kind": "beslut",
+      "question": "Ska det ritade kortets vändning och ljus i handen lagas?",
+      "leads": "Ja gör vändningen mjuk (kortet smalnar i stället för att stå still och bli en linje) och papperets ljus stadigt; skärpan mot handen tas därefter.",
+      "proof": "kortet-i-handen-orsaker-20261120",
+      "file": "1-vandningen.jpg",
+      "chips": [
+        {
+          "value": "ja",
+          "label": "Ja, laga båda"
+        },
+        {
+          "value": "ljus",
+          "label": "Bara ljuset först"
+        },
+        {
+          "value": "vanta",
+          "label": "Vänta"
+        }
+      ],
+      "asked": "2026-11-20",
+      "from": "kortets undersökning",
+      "cost": "Inga krediter",
+      "answer": null
+    },
+    {
       "id": "neutral-mun-tre-repliker",
       "kind": "beslut",
       "question": "Ska de tre replikerna bytas till den neutrala munnen till höger?",
@@ -90,6 +116,106 @@
       ],
       "asked": "2026-11-19",
       "from": "Jakob via Codex",
+      "answer": {
+        "value": "klart",
+        "note": "",
+        "at": "2026-11-20T09:05:56.809Z"
+      }
+    },
+    {
+      "id": "3d-avlast-giv-kladd-figur",
+      "kind": "beslut",
+      "question": "3D-provet: ska den avlästa given gå vidare till en klädd figur?",
+      "leads": "Filmen avläst med SAM ser ut som en människa som ger från båda stolarna (4/5 och 3/5) och det köpta klippet inte (2/5 och 1/5); nästa steg är att lederna styr en klädd figur.",
+      "proof": "3d-prov-en-giv-tva-stolar-20261120",
+      "file": "3-sam-stol-4.png",
+      "chips": [
+        {
+          "value": "ja",
+          "label": "Ja, gå vidare"
+        },
+        {
+          "value": "nej",
+          "label": "Nej, lägg ner spåret"
+        },
+        {
+          "value": "vanta",
+          "label": "Vänta"
+        }
+      ],
+      "asked": "2026-11-20",
+      "from": "3D-provet",
+      "answer": null
+    },
+    {
+      "id": "stada-paketen",
+      "kind": "beslut",
+      "question": "Får städningen börja, ett paket i taget med test före och efter?",
+      "leads": "Ja gör åtta paket i tur och ordning (död kod, en testlista, dokument, snabbare tester, dubblettfiler) utan att röra domar, Primär, V6 eller tal.",
+      "chips": [
+        {
+          "value": "ja",
+          "label": "Ja, alla paket"
+        },
+        {
+          "value": "kod",
+          "label": "Bara kod och tester"
+        },
+        {
+          "value": "vanta",
+          "label": "Vänta"
+        }
+      ],
+      "asked": "2026-11-20",
+      "from": "städningen",
+      "answer": {
+        "value": "ja",
+        "note": "AJ alltihopa. men se till att underätta alla agenter med vad som ska görs och vilka filer som ska ske vad med typ. kanske dokumentera också elelr liknande. Gärna med bokkom up-logik så dokumetation ändras utifrån vad som faktist finns (kanske lite luddugt, men..). Protokollför allt som ändras7raderas och så vidare gärna åpå förhand i den mån det går så andra agenterna enkelt kan förstå om berörs elelr inte. \"V6\"- kan vi cokså \"läätta\" lite på. Det som har att göra med det kan vi kanske lägga lite säkrare, mne behöver inte vara referenser att dö för längre alls",
+        "at": "2026-11-20T09:43:15.797Z"
+      }
+    },
+    {
+      "id": "paow-ankare-2-3-posen",
+      "kind": "beslut",
+      "question": "Är posen i nya ankare 2.3 rätt?",
+      "leads": "Ja gör bilden till kandidat i Material, och nästa vända beställs från den; vid nej skriver du vad i posen som ska ändras.",
+      "proof": "paow-ankare-2-3-b",
+      "file": "1-nytt-ankare-2-3.png",
+      "chips": [
+        {
+          "value": "ja",
+          "label": "Ja, posen är rätt"
+        },
+        {
+          "value": "nej",
+          "label": "Nej, ändra"
+        }
+      ],
+      "asked": "2026-11-20",
+      "from": "222 KORTMÄRKE",
+      "answer": null
+    },
+    {
+      "id": "v6-arkiv",
+      "kind": "beslut",
+      "question": "V6: arkivera råmaterialet och renderaren, men behåll filmen att titta på?",
+      "leads": "863 MB råmaterial och 986 rader kod går till ett prövat arkiv med hashlista och tas sedan ur projektet; filmen, 18 rutor, duken och plåten står kvar.",
+      "chips": [
+        {
+          "value": "ja",
+          "label": "Ja, arkivera"
+        },
+        {
+          "value": "regel",
+          "label": "Bara lätta regeln"
+        },
+        {
+          "value": "vanta",
+          "label": "Vänta"
+        }
+      ],
+      "asked": "2026-11-20",
+      "from": "städningen",
       "answer": null
     }
   ]

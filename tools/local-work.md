@@ -81,6 +81,12 @@ beställningar, referenser och pågående arbete. V6 och nu använda original sk
 Unikt material som verifierats oanvänt får raderas enligt Jakobs besked 2026-11-19; arkivera inte allt för att det
 en gång kostade krediter. Registren ska samtidigt beskriva att materialet tagits bort, så inga aktiva länkar bryts.
 
+Byteidentiska mediefiler i `assets/` kan dela en och samma fil på disken genom hårda länkar (Jakob 2026-11-20:
+"radera" om dubbletterna; båda sökvägarna finns kvar, så inget register ändras). Skriv därför aldrig om en färdig
+mediefil på plats: en ny version får ett nytt namn, eller skrivs till en tillfällig fil som sedan byter namn, annars
+ändras tvillingen med. Talets filer (`assets/speech/`), V6, originalen och referenserna delar inte fil med något.
+En förkastad tagning vars film är raderad har en `RADERAD.txt` i sin mapp; registret i `motions/` står kvar.
+
 För gamla dubbla arbetskopior finns `node tools/media-dedupe.ts --source <absolut slaskmapp>`.
 Förvalet inventerar bara. `--apply` raderar gamla mediekopior först efter SHA-256-jämförelse med en bevarad fil
 i projektets `assets/`. Det väljer ingen disk, följer inga länkar, hoppar över källträd och beroenden, skyddar

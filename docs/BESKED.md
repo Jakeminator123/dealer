@@ -84,6 +84,15 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   går snabbt med den här femtimmarsgrejen som körs". Kontots gräns delas av alla sessioner. En underagent startas bara
   för det han har beställt, en oberoende granskare bara för en tagning som den automatiska kontrollen släpper igenom,
   mekaniskt arbete går till en mindre modell, och en session skriver till huvudagenten en gång per färdig sak.
+- **Städningen, och vem som ser över och committar** (2026-11-20). Hans ja till alla städpaket, i Beslut (kortet
+  `stada-paketen`): "AJ alltihopa. men se till att underätta alla agenter med vad som ska görs och vilka filer som ska
+  ske vad med typ. kanske dokumentera också elelr liknande. Gärna med bokkom up-logik så dokumetation ändras utifrån
+  vad som faktist finns (kanske lite luddugt, men..). Protokollför allt som ändras7raderas och så vidare gärna åpå
+  förhand i den mån det går så andra agenterna enkelt kan förstå om berörs elelr inte." Protokollet förs av
+  städsessionen (STÄD) före och efter varje steg. Samma dag, till städsessionen och upprepat till sessionen dealer-29:
+  "Låt de köra klart eller synaka md dem då.. När du är kalr med allt ditt ska du rapportera till agenten som ahr
+  chatten "Schen & Bord från Referensbilder" som seda nska göra en övergripande koll och committa allt i proejktet
+  typ". Den chatten gör alltså den samlade kontrollen och committar; varje session lämnar sin fillista dit.
 
 ## Labbet och studion
 
@@ -179,6 +188,11 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   "Kvalitet före kvantitet, men om allt sitter, får du gärna gå vidare och skapa mycket material så länge det är bra."
   En granskad pilot föregår serien. 3D-Dealer har ett eget repo; saldot samordnas i skrivbordets DISKMASKIN.TXT.
   Senare samma dag: "max 2000 mer idag" gäller hans möjliga påfyllning; saldot räknas inte upp före ett kvitto.
+
+- **Timtaket för sessionen 222 KORTMÄRKE** (2026-11-20): "Andra agenten får beställa för 800 krediter per timme - så
+  'ja'." Sagt till sessionen dealer-29 om den nya stillbilden av Paows ankare 2.3 (två bilder, 2 × 40 krediter).
+  Samma dag om städningen, om dubbletterna i `assets/` och om förkastade tagningar och äldre prov: "radera"
+  (`tools/local-work.md`, "Radera oanvänt material").
 
 - **Domar åt honom, och ingen kö** (2026-11-13): "jag måste sova och du får granska och godkänna alla klipp", och kl.
   15.50, på väg ut: "jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna
@@ -402,7 +416,12 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   3/5, gul/blå sekvens 2,5/5, READY2 "konstiga". Senare ord om V6: se nästa punkt.
 - **V6 som läge i labbet** (2026-11-18, cirka kl. 00.00): "V6-läget är jag skeptisk mot i sin helhet". V6-bilden är ute
   ur Kortplans lista. V6 står kvar som referens och kontrolleras vid varje push (AGENTS); om den ska arkiveras är hans
-  ord och inte frågat än.
+  ord och inte frågat än. Senare ord om V6: se nästa punkt.
+- **V6 behöver inte längre vara en referens att dö för** (2026-11-20, i Beslut, anteckningen på kortet
+  `stada-paketen`): ""V6"- kan vi cokså "läätta" lite på. Det som har att göra med det kan vi kanske lägga lite
+  säkrare, mne behöver inte vara referenser att dö för längre alls". Skyddet får alltså lättas och V6-materialet
+  läggas säkrare undan. Inget som rör V6 ändras förrän städsessionen har inventerat det och han har sett förslaget;
+  regeln i AGENTS (byteidentisk återskapning, kontrollen vid varje push) gäller tills den är omskriven där.
 - **Trailern med tatuerade händer** (2026-11-17, kl. 19.40): rollblad 4 har hans ja, "Ja hennes 5-faldiga bilder:er är
   nu bra". **Pausad** samma kväll: "Om allt med videon är dåligt.. Låt mig titta, mne strunt i det och pausa det
   sålänge". Inget beställs och inget byts i trailern tills han säger till.
@@ -439,6 +458,18 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   huvudagenten ("Du får ta det sista beslutet"). Tillagt på kortet 2026-11-18, kl. 01.44: "Du kan behålla SG-ryggen.
   men so msagt vill jag allt ska vara rent tills efterarbete gjörs". Spelets rygg med SG står alltså kvar, och inget
   trycks på korten före efterarbetet.
+- **Märket på blå sidan** (2026-11-20): "Kan vi göra en markering på kortets blåa sida […] med ett litet rosa kryss?
+  I ena hörnet av alla blåa kort ska det också finnas en liten röd cirkel. På så sätt kommer videon ha svårare att
+  fuska med vilken sida av kortet som syns. Krysset kan också bidra till bättre vinklar. Spara RGB-färgen för det gula,
+  blåa, kryssets färg och den lilla cirkelns färg på alla kort. Det ska synas i scen och bord, men även på andra
+  ställen för att få beställningarna korrekta." Det ändrar "inget trycks på korten före efterarbetet" ovan på en
+  punkt: filmkortets blå sida bär krysset och cirkeln, i labbet och på beställningens bild; den gula sidan är slät.
+  I frågan stod "alltså korttryggen" om den blå sidan; samma dag rättade han det: "Jag menade att "gula" ska vara
+  ryggen. Förlåt!" Gult är alltså ryggen (stängt kort, slätt), blått är framsidan (öppet kort) och bär krysset och
+  cirkeln, som i beskedet ovan och i registren. Samma dag: "notera/dokumentera det X, och prick och blå och gul RGB vi
+  hoppas använda i videogenereringen": gul rygg 241, 216, 0 · blå framsida 0, 130, 218 · rosa kryss 255, 120, 200 ·
+  röd cirkel 225, 30, 35, på ett ställe i koden, `CARD_RGB` (`src/placement-model.ts`), och i handboken
+  (`tools/film-prompting.md` §2). Var cirkeln sitter och måtten valde sessionen 222 KORTMÄRKE.
 - **Ett kortformat:** kortet på plats 4 är standard och allt annat anpassar sig ("Storleken är inte problemet, utan att
   det finns olika format"; `docs/SYSTEM.md`).
 - **En film per plats** (2026-11-11): platsens andra kort spelar första kortets filmer med det ritade kortet flyttat.
@@ -502,6 +533,12 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 - **Scoutgaming:** inget härifrån införs där utan hans uttryckliga ord (AGENTS). Scoutgamings huvudagent har fått
   besked om det, och om att insatsrutor bör vara data per bord och filmbank.
 - **Görans material** används inte (`docs/SYSTEM.md`, "Återbruk och införande").
+- **Looken i Scen** (2026-11-20): förvalet Jakob-1 "är verkligen det bästa", även om det kanske inte "hänger ihop
+  exakt". Basgrund med Standard ger "det här tråkiga bordet som ser ut som att det står på golvet", och "bordet är för
+  stort". Dealern ses nästan framifrån, så bordet ska inte "ligga så mkt" utan vinklas mer mot spelaren: "Bred lins är
+  vad jag älskar och som gör jobbet." Samma dag: "Eller ska vi ha som nu kanske så kan man ju alltid ändra efter vår
+  grund?" Därför är inget ändrat: Standard är kvar som grund och Bred lins som alternativ ("Kortet", Perspektivet som
+  sparat val), och ingen lutning av bordet är byggd.
 
 ## Kopian och nätet
 
