@@ -66,13 +66,16 @@ function closestBone(a: Vec3, b: Vec3): number {
 
 // The sweep (2026-11-20): the take made on H was failed for a card standing on its edge at the place while the grip let go and the hand turned back.
 const sweepPilot: typeof pilot = await load('giv-fran-2-3-p4-grepp-svep');
-for (const [name, film, grip] of [['G', pilot, true], ['H', landingPilot, 'landing'], ['S', sweepPilot, 'sweep']] as const) {
+// The shared hand change (2026-11-20): in the takes made on S the card lay alone between the hands and the shoe's window went black behind her left hand.
+const sharedPilot: typeof pilot = await load('giv-fran-2-3-p4-grepp-svep-b');
+for (const [name, film, grip] of [['G', pilot, true], ['H', landingPilot, 'landing'], ['S', sweepPilot, 'sweep'], ['T', sharedPilot, 'sweep']] as const) {
   test(`P4 pilot ${name} reproduces from its recorded place and pace`, () => {
     assert.deepEqual(film.to, ['P4.C1']);
     assert.equal(film.planSha256, 'dbb558211411ad4a2a45ee1047e9794ab39912084a0ad6717a020e443d2f7e7c');
     assert.deepEqual(film.actualIntent, {takeHand: 'LH', startSide: 'BACK', endSide: 'FRONT', pass: true, turn: true, grip: 'DRAG', turnAt: 'AIR', flipAxis: 'LONG_EDGE'});
     const pace = film.pace as (Pace & {real: RealCard}) | null;
     assert.equal(pace?.contactGrip, grip);
+    assert.equal(!!pace?.sharedChange, name === 'T');
     assert.ok(pace && film.rightAt);
     const anchored = startOnAnchor(TABLE_LENS, start, film.rightAt, film.rightAt.yaw);
     const laid = twoHandDeal(TABLE_LENS, anchored, [{id: 'P4.C1', at: placeOf(film, 'P4.C1').at, real: pace.real}], film.beats[0].a, film.fps, film.frameCount, pace);
@@ -138,14 +141,14 @@ test('P4 H keeps the index at the same point through release and flat landing, w
   assert.ok(Math.abs(flatPose.centre[1] - CARD.thickness / 2) < tolerance, 'the card lies flat on the felt');
 });
 
-test('P4 S keeps the pinch through the whole turn, never holds the card still, and lays it without turning the hand back', () => {
-  const beat = sweepPilot.beats[0], grasp = Math.ceil(beat.l + 5), atFelt = Math.floor(beat.g), flat = Math.ceil(beat.h), last = sweepPilot.frameCount - 1;
-  const tipHeight = CARD.thickness / 2 + sphereRadius(8), frames = sweepPilot.frames;
+for (const [name, film, closes] of [['S', sweepPilot, 5], ['T', sharedPilot, 1]] as const) test(`P4 ${name} keeps the pinch through the whole turn, never holds the card still, and lays it without turning the hand back`, () => {
+  const beat = film.beats[0], grasp = Math.ceil(beat.l + closes), atFelt = Math.floor(beat.g), flat = Math.ceil(beat.h), last = film.frameCount - 1;
+  const tipHeight = CARD.thickness / 2 + sphereRadius(8), frames = film.frames;
   const backUp = (p: Vec3[]) => { const n = cross(sub(p[5], p[0]), sub(p[17], p[0])); return Math.acos(Math.max(-1, Math.min(1, n[1] / length(n) * Math.sign(cross(sub(frames[0].R.p[5], frames[0].R.p[0]), sub(frames[0].R.p[17], frames[0].R.p[0]))[1])))) * 180 / Math.PI; };
   const tilt = (i: number) => Math.acos(Math.min(1, Math.abs(frames[i].card.n[1]))) * 180 / Math.PI;
   assert.ok(frames[grasp].card.n[1] < -0.99, 'face down when the grip closes');
   for (let i = grasp; i <= last; i++) {
-    const c = card(frames[i].card), at = `S frame ${i}`, local = frames[i].R.p.map(p => cardCoordinates(p, c)), [along, side, across] = local[8];
+    const c = card(frames[i].card), at = `${name} frame ${i}`, local = frames[i].R.p.map(p => cardCoordinates(p, c)), [along, side, across] = local[8];
     assert.ok(Math.abs(side - tipHeight) < tolerance && Math.abs(along - (CARD.height / 2 - 0.005)) < tolerance && Math.abs(across + 0.012) < tolerance, `${at}: index lost its point on the card's face`);
     if (i <= atFelt) assert.ok(Math.abs(local[4][1] + tipHeight) < 0.0006 && Math.hypot(local[4][0] - along, local[4][2] - across) < 0.0015, `${at}: thumb is off its point under the index`);
     frames[i].R.p.forEach((p, k) => assert.ok(p[1] + 0.001 >= sphereRadius(k), `${at}: joint ${k} goes under the felt`));
@@ -153,17 +156,36 @@ test('P4 S keeps the pinch through the whole turn, never holds the card still, a
   }
   // The turn is whole inside the grip: when the far edge meets the felt the card is face up and tipped no more than the thumb under its near edge needs.
   assert.ok(frames[atFelt].card.n[1] > 0.97 && tilt(atFelt) <= 13, 'the card comes to the felt face up, tipped at most 13 degrees, the grip still closed');
-  for (let i = atFelt; i <= flat; i++) assert.ok(tilt(i) <= tilt(i - 1) + 0.01 || i === atFelt, `S frame ${i}: the card is raised again after it met the felt`);
+  for (let i = atFelt; i <= flat; i++) assert.ok(tilt(i) <= tilt(i - 1) + 0.01 || i === atFelt, `${name} frame ${i}: the card is raised again after it met the felt`);
   // No frame from the first movement until the card lies in which no corner of the card moves a millimetre.
   const corners = (i: number) => { const c = card(frames[i].card); return [[1, 1], [1, -1], [-1, -1], [-1, 1]].map(([x, y]) => add(c.centre, add(mul(c.long, x * CARD.height / 2), mul(c.across, y * CARD.width / 2)))); };
-  for (let i = Math.ceil(beat.b) + 2; i < flat; i++) { const a = corners(i - 1), b = corners(i); assert.ok(Math.max(...a.map((p, k) => length(sub(b[k], p)))) >= 0.001, `S frame ${i}: the card stands still`); }
+  for (let i = Math.ceil(beat.b) + 2; i < flat; i++) { const a = corners(i - 1), b = corners(i); assert.ok(Math.max(...a.map((p, k) => length(sub(b[k], p)))) >= 0.001, `${name} frame ${i}: the card stands still`); }
   // The hand is palm down when the card meets the felt and stays so: nothing is turned back after the card lies.
-  for (let i = atFelt; i <= last; i++) assert.ok(backUp(frames[i].R.p) <= 12, `S frame ${i}: the hand is turned ${backUp(frames[i].R.p).toFixed(0)} degrees from palm down`);
+  for (let i = atFelt; i <= last; i++) assert.ok(backUp(frames[i].R.p) <= 12, `${name} frame ${i}: the hand is turned ${backUp(frames[i].R.p).toFixed(0)} degrees from palm down`);
   const flatPose = card(frames[flat].card);
   assert.deepEqual(flatPose.normal, [0, 1, 0]);
   assert.ok(Math.abs(flatPose.centre[1] - CARD.thickness / 2) < tolerance, 'the card lies flat on the felt');
   assert.deepEqual(frames[last].R.p, frames[flat].R.p, 'the hand lies still on the card once it lies');
   assert.deepEqual(frames[last].R, frames[flat + 3].R, 'the elbow has settled three frames after the card lies');
+});
+
+test('P4 T: both hands have the card at the hand change, and her left hand keeps out of the camera\'s line to the window of the shoe', () => {
+  const beat = sharedPilot.beats[0], grasp = Math.ceil(beat.l + 1), frames = sharedPilot.frames, reach = CARD.thickness / 2 + sphereRadius(8) + 0.001;
+  const onCard = (i: number, p: Vec3) => { const [along, up, across] = cardCoordinates(p, card(frames[i].card)); return Math.abs(up) <= reach && Math.abs(along) <= CARD.height / 2 && Math.abs(across) <= CARD.width / 2; };
+  // Her left forefinger rides on the card from the shoe until her right forefinger and thumb have had it for five frames (four of the film's 24 a second).
+  const both = frames.map((f, i) => onCard(i, f.L.p[8]) && onCard(i, f.R.p[8]) && onCard(i, f.R.p[4]) ? i : -1).filter(i => i >= 0);
+  assert.deepEqual(both, [grasp, grasp + 1, grasp + 2, grasp + 3, grasp + 4, grasp + 5]);
+  for (let i = Math.ceil(beat.b) + 6; i <= grasp + 5; i++) assert.ok(onCard(i, frames[i].L.p[8]), `frame ${i}: her left forefinger is off the card before her right hand has it`);
+  for (const i of both) assert.ok(length(sub(frames[i].card.c, frames[i - 1].card.c)) >= 0.001, `frame ${i}: the card stands still while both hands have it`);
+  // The card in the shoe's window (the bank's picture, x 1225 to 1265 and y 775 to 855 of the box the films are measured in):
+  // once the dealt card is out, no more of her left hand is before it than when the hand rests on the shoe. S had six joints there.
+  const before = (f: typeof frames[number]) => f.L.p.filter(p => { const q = see(eye, p)!; return q.x >= 1225 && q.x <= 1265 && q.y >= 775 && q.y <= 855; }).length;
+  for (let i = Math.ceil(beat.c); i < frames.length; i++) assert.ok(before(frames[i]) <= before(frames[0]) + 1, `frame ${i}: ${before(frames[i])} joints of her left hand are before the shoe's window`);
+  assert.ok(Math.max(...sweepPilot.frames.slice(Math.ceil(beat.c)).map(before)) > before(frames[0]) + 1, 'the measure tells S from T');
+  // Her left hand is back on the shoe, as it lay, no sooner than half a second after it let go: no snatch.
+  const home = frames.findIndex((f, i) => i > grasp + 5 && length(sub(f.L.w, frames[0].L.w)) < 0.001);
+  assert.ok(home >= grasp + 5 + 15 && home < frames.length, `her left hand is back at frame ${home}`);
+  assert.deepEqual(frames[frames.length - 1].L.p, frames[0].L.p);
 });
 
 test('the H timing can lay its own P4.C2 card with independent IK and a frozen placement plan', async t => {
@@ -225,7 +247,7 @@ test('the H timing can lay its own P4.C2 card with independent IK and a frozen p
   assert.throws(() => execFileSync(process.execPath, [...args, '--contact-grip', 'landing', '--hand-over-yaw', '140'], {stdio: 'pipe'}), /needs --hand-over-yaw 180/);
 });
 
-for (const [name, film] of [['G', pilot], ['H', landingPilot], ['S', sweepPilot]] as const) test(`P4 ${name} keeps hand sizes, arm limits and clearances`, () => {
+for (const [name, film] of [['G', pilot], ['H', landingPilot], ['S', sweepPilot], ['T', sharedPilot]] as const) test(`P4 ${name} keeps hand sizes, arm limits and clearances`, () => {
   const rightInsideShoe = shoeHolds(TABLE_LENS);
   for (const [side, sign] of [['L', -1], ['R', 1]] as const) {
     const sizes = bones(start[side].p), twists: number[] = [];

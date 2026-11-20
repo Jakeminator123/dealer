@@ -50,6 +50,8 @@ if (process.argv.includes('--contact-grip')) {
   }
   pace.contactGrip = mode;
 }
+// --shared-change 1 (with --contact-grip sweep): both hands have the card for a while at the hand change (Pace in dealer3d/src/two-hand.ts).
+if (arg('--shared-change') === '1') { if (pace.contactGrip !== 'sweep') throw Error('--shared-change 1 requires --contact-grip sweep.'); pace.sharedChange = true; }
 // At C2 the elbows are solved through the release. Pulling them toward the ordinary deal's last pose overbends the wrist.
 if (secondCardPilot) {
   const yaw = Number(arg('--hand-over-yaw', '180'));

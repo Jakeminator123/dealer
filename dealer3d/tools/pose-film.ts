@@ -5,6 +5,13 @@
 // (version b, on Jakob's word of 2026-11-18 that the film to 2.3 was too slow, jerky and leaned too much: 3.0 s, the move done
 // at 1.6 s, a gentler ease (--ease 5: the fifth-degree one, whose speed and acceleration both start and end at nought) and the
 // elbow smoothed over more frames. The pose it ends in is the same to the last digit, and the body leans only toward it.)
+//   node dealer3d/tools/pose-film.ts --pose 2.3 --frames 90 --goes 3,45 --looks 8,45 --ease 5 --passes 8 --body 0,0 --right-at 1030,862,48 --head-turn 14 --out dealer3d/data/till-ankare-2-3-c.json
+// (version c, 2026-11-20: Jakob saw that she sat askew in the anchor made from pose 2.3, and the deals began with her right hand
+// 60 px from where this film ended. --body 0,0: the trunk as at rest, only arms and head move. --right-at x,y,yaw: her right
+// hand flat on the felt with its middle fingertip on that pixel of the bank's picture, pointing yaw degrees (0 toward the
+// players, 90 toward the picture's right): here where Paow's hand lay in the first take of anchor 2.3 C. --head-turn <degrees>:
+// she does not look down at the card (in that take her eyes fell); her head turns that far toward the shoe, her chin as at rest.
+// The move is done at 1.5 s. A deal laid from this film with deal-film.ts --pose-film begins on its last frame, to the digit.)
 // Reads dealer3d/data/giv-pamela-p4.json (the resting hand as read off the film, the card standing in the shoe, the hip)
 // and writes one file. Prints what the pose asks of the body.
 //
@@ -17,7 +24,7 @@
 // of the shoe's mouth, fingers together and pointing into it, a card's length and a little more before the shoe's foot;
 // her head bowed toward the shoe, her eyes on the card.
 import {readFile, writeFile} from 'node:fs/promises';
-import {TABLE_LENS, SHOE, add, cross, dot, length, mul, shoeCard, shoePose, sub, unit, type Vec3} from '../../src/table-lens.ts';
+import {TABLE_LENS, SHOE, add, cross, dot, filmEye, length, mul, onPlane, shoeCard, shoePose, sub, unit, type Vec3} from '../../src/table-lens.ts';
 import {arm, standing, turned} from '../src/body.ts';
 import {LIMITS, joints, type ArmPose} from '../src/capture.ts';
 
@@ -25,7 +32,8 @@ const arg = (name: string) => { const i = process.argv.indexOf(name); return i >
 const out = arg('--out'); if (!out || arg('--pose') !== '2.3') throw Error('usage: pose-film.ts --pose 2.3 --out <json>');
 const pair = (name: string, d: number[]) => arg(name)?.split(',').map(Number) ?? d;
 const FPS = 30, N = Number(arg('--frames') ?? 120), GOES = pair('--goes', [15, 84]), LOOKS = pair('--looks', [30, 84]), PASSES = Number(arg('--passes') ?? 3), EASE5 = arg('--ease') === '5'; // frames: at rest to 0.5 s, on the way to 2.8 s, still from there; her eyes go down from 1.0 s
-const POSE = {lean: 10, twist: 8, wristAtShoe: SHOE.frontHeight, beforeShoe: 0.11, thumb: 35, arcL: 0.05, arcR: 0.035}; // degrees and metres
+const BODY = pair('--body', [10, 8]), RIGHT_AT = arg('--right-at')?.split(',').map(Number) ?? null, HEAD_TURN = arg('--head-turn') ? Number(arg('--head-turn')) : null;
+const POSE = {lean: BODY[0], twist: BODY[1], wristAtShoe: SHOE.frontHeight, beforeShoe: 0.11, thumb: 35, arcL: 0.05, arcR: 0.035}; // degrees and metres
 
 const read = JSON.parse(await readFile(new URL('../data/giv-pamela-p4.json', import.meta.url), 'utf8')), first = read.frames[0], lens = TABLE_LENS, frame = standing(lens);
 const smooth = (t: number) => t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t), lerp = (a: Vec3, b: Vec3, t: number): Vec3 => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t], rad = (d: number) => d * Math.PI / 180, deg = (r: number) => r * 180 / Math.PI;
@@ -58,7 +66,9 @@ let dip = rad(19); for (let pass = 0; pass < 40; pass++) { const w = leftAt(dip)
 const endL = leftAt(dip);
 // Her right: turned about a plumb line until its fingers point into the shoe's mouth, slid along the felt until its middle fingertip is `beforeShoe` before the mouth's middle.
 const mouth = add(shoe.front, mul(shoe.far, SHOE.width / 2)), into = unit([shoe.back[0], 0, shoe.back[2]]), yaw = Math.atan2(cross([axR0.forward[0], 0, axR0.forward[2]], into)[1], dot([axR0.forward[0], 0, axR0.forward[2]], into));
-const turnedR = restR.map(q => add(restR[12], turned(sub(q, restR[12]), [0, 1, 0], yaw))), tipR: Vec3 = [mouth[0] - into[0] * POSE.beforeShoe, restR[12][1], mouth[2] - into[2] * POSE.beforeShoe], endRp = turnedR.map(q => add(q, sub(tipR, restR[12])));
+const turnedR = restR.map(q => add(restR[12], turned(sub(q, restR[12]), [0, 1, 0], yaw))), tipR: Vec3 = [mouth[0] - into[0] * POSE.beforeShoe, restR[12][1], mouth[2] - into[2] * POSE.beforeShoe], sliding = turnedR.map(q => add(q, sub(tipR, restR[12])));
+// --right-at: the resting hand turned about a plumb line until it points that way, its middle fingertip moved along the felt to that pixel (as startOnAnchor in dealer3d/src/two-hand.ts lays it).
+const anchored = (() => { if (!RIGHT_AT) return null; const way = sub(restR[9], restR[0]), by = rad(RIGHT_AT[2]) - Math.atan2(way[0], way[2]), to = onPlane(filmEye(lens), RIGHT_AT[0], RIGHT_AT[1], restR[12][1]); if (!to) throw Error('--right-at: the pixel is not on the felt.'); return restR.map(q => add(to, turned(sub(q, restR[12]), [0, 1, 0], by))); })(), endRp = anchored ?? sliding;
 const axR1 = axesOf(endRp, 1), endR = {axes: axR1, wrist: endRp[0], points: endRp};
 
 // Her body: bent forward from the hip and turned toward the shoe, a share of the way at each moment.
@@ -81,7 +91,8 @@ for (let i = 0; i < N; i++) { const s = ease((i - GOES[0]) / (GOES[1] - GOES[0])
   const sR = posed(frame.shoulders[0], s), sL = posed(frame.shoulders[1], s), aL = reach(sL, L, -1, 1), aR = reach(sR, R, 1, -1), head = posed(frame.head, s, 0.85);
   for (const [key, a, sign] of [['L', aL, -1], ['R', aR, 1]] as const) { const j = joints(a, sign); asked[key] = Math.max(asked[key], j.wrist); const e = key === 'L' ? asked.elbowL : asked.elbowR; e[0] = Math.min(e[0], j.elbow); e[1] = Math.max(e[1], j.elbow); asked.far[key] = Math.max(asked.far[key], length(sub(a.wrist, a.shoulder))); }
   const r = (v: number[]) => v.map(x => Math.round(x * 10000) / 10000), limb = (a: ArmPose) => ({s: r(a.shoulder), e: r(a.elbow), w: r(a.wrist), k: 1, p: a.points.map(r)});
-  frames.push({card: standingCard, L: limb(aL), R: limb(aR), h: r(head), g: r(lerp(lookUp(head), inShoe.centre, look))}); }
+  const looksAt = HEAD_TURN === null ? inShoe.centre : add(head, turned(sub(lookUp(head), head), [0, 1, 0], rad(HEAD_TURN)));
+  frames.push({card: standingCard, L: limb(aL), R: limb(aR), h: r(head), g: r(lerp(lookUp(head), looksAt, look))}); }
 // The elbow is chosen anew in every frame; smooth it over time so that it does not hop between two equally good places.
 for (const side of ['L', 'R'] as const) for (let pass = 0; pass < PASSES; pass++) for (let i = 1; i < N - 1; i++) { const e = [0, 1, 2].map(k => (frames[i - 1][side].e[k] + 2 * frames[i][side].e[k] + frames[i + 1][side].e[k]) / 4) as Vec3, sh = frames[i][side].s as Vec3, w = frames[i][side].w as Vec3; frames[i][side].e = arm(sh, w, sub(e, sh)).elbow.map(x => Math.round(x * 10000) / 10000); }
 
@@ -94,4 +105,4 @@ console.log([`Pose 2.3, ${N} rutor, ${FPS} per sekund: vila till ruta ${GOES[0]}
 function f(v: number[]) { return '(' + v.map(n => n.toFixed(3)).join(', ') + ')'; }
 
 await writeFile(out, JSON.stringify({about: 'The figure going from rest to pose 2.3 and standing still in it, laid by dealer3d/tools/pose-film.ts. The shape of the hands is read (her right hand resting in the film named; her left is its mirror); where they end, the way there, the body and where she looks (g) are a model. Same frame and fields as the read deals; the card stands in the shoe throughout.',
-  film: read.film, pose: '2.3', to: null, loose: 0, fps: FPS, frameCount: N, leavesShoe: N - 1, edge: [N - 1, N - 1], folds: N - 1, rests: N - 1, handSize: read.handSize, palm: read.palm, throughShoe: 0, hip: read.hip, frames}) + '\n');
+  film: read.film, pose: '2.3', to: null, loose: 0, fps: FPS, frameCount: N, leavesShoe: N - 1, edge: [N - 1, N - 1], folds: N - 1, rests: N - 1, handSize: read.handSize, palm: read.palm, throughShoe: 0, hip: read.hip, ...(arg('--body') || RIGHT_AT || HEAD_TURN !== null ? {body: {lean: POSE.lean, twist: POSE.twist}, rightAt: RIGHT_AT ? {x: RIGHT_AT[0], y: RIGHT_AT[1], yaw: RIGHT_AT[2]} : null, headTurn: HEAD_TURN} : {}), frames}) + '\n');

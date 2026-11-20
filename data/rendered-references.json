@@ -30,6 +30,13 @@
       "seconds": 3
     },
     {
+      "id": "docka-vila-till-2-3-c",
+      "edge": "IDLE>READY-C",
+      "path": "assets/references/docka/docka-vila-till-2-3-c/source.mp4",
+      "sha256": "65e0169eb4840fd8dde96904797dd86dc22422688e4a22dfc5019e0ab8431d42",
+      "seconds": 3
+    },
+    {
       "id": "docka-2-3-p1c1-f",
       "edge": "READY-C>P1.C1",
       "path": "assets/references/docka/docka-2-3-p1c1-f/source.mp4",
@@ -109,6 +116,15 @@
       "edge": "READY-C>P4.C1",
       "path": "assets/references/docka/docka-2-3-p4c1-svep24/source.mp4",
       "sha256": "5992e001b06268e5544d55696784f1be2cea375416ca85ac5560c4d520591a22",
+      "seconds": 3,
+      "lays": "RH",
+      "check": null
+    },
+    {
+      "id": "docka-2-3-p4c1-svep24b",
+      "edge": "READY-C>P4.C1",
+      "path": "assets/references/docka/docka-2-3-p4c1-svep24b/source.mp4",
+      "sha256": "d2ce23a1b33d7efff1089099134396fc9edbbbedc7ea0a1038a82de8ebc2d803",
       "seconds": 3,
       "lays": "RH",
       "check": null
