@@ -4184,6 +4184,22 @@
           }
         },
         {
+          "id": "paow-ankare-2-3-c",
+          "role": "ankare-2.3",
+          "name": "Ankare 2.3 (C): vänster hand uppifrån på kortet, rak bål",
+          "path": "assets/anchors/paow-ankare-2-3-c/anchor.png",
+          "node": "READY-C",
+          "state": "kandidat",
+          "builtOn": [
+            "paow-vila-tatuerad"
+          ],
+          "note": "Vänster hand uppifrån på kortet i skon, höger hand platt närmare skon, blicken mot skon med öppna ögon, bålen rak. En riktig filmruta, som 2.3 A: ruta 45 ur en film från ankare 1 som dockans raka ingång styrde, med bankens sko. Mot ankare 1: axellinjen 1,2°, axlarnas överkant högst 3 px. Inte sedd av en oberoende granskare. Kvittot ligger bredvid bilden.",
+          "source": {
+            "from": "ruta 45 ur filmen ankare 1 → 2.3 C, tagning 3 (Runway-uppdrag 13c3a3b6; receipt.json bredvid bilden)",
+            "when": "2026-11-20"
+          }
+        },
+        {
           "id": "paow-a3-p4-23b",
           "role": "landning",
           "name": "A3 · P4 (2.3 B)",
