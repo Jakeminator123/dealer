@@ -145,7 +145,11 @@
       ],
       "asked": "2026-11-20",
       "from": "3D-provet",
-      "answer": null
+      "answer": {
+        "value": "ja",
+        "note": "",
+        "at": "2026-11-20T11:07:16.474Z"
+      }
     },
     {
       "id": "paow-ankare-2-3-posen",
@@ -166,7 +170,11 @@
       ],
       "asked": "2026-11-20",
       "from": "222 KORTMÄRKE",
-      "answer": null
+      "answer": {
+        "value": "ja",
+        "note": "",
+        "at": "2026-11-20T11:06:18.515Z"
+      }
     },
     {
       "id": "v6-arkiv",
@@ -189,7 +197,11 @@
       ],
       "asked": "2026-11-20",
       "from": "städningen",
-      "answer": null
+      "answer": {
+        "value": "ja",
+        "note": "",
+        "at": "2026-11-20T11:07:24.860Z"
+      }
     }
   ]
 }
