@@ -10,11 +10,12 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
   UTDRAGEN takt (given över drygt 2 s, en obruten rörelse). Filmmodellen kopierar bilderna och dockfilmen; två extra
   meningar ändrade ingenting (pilot-03, 2026-11-20).
 - Ankare 2.3: A är arkiverad. B, ett montage efter Jakobs provbild, föll 2026-11-20: underarmen saknas och axellinjen
-  lutar 5,7° mot ankare 1. Fyra givar till plats 4 ärvde felet och Jakob sa nej. C (`paow-ankare-2-3-c`) är en riktig
-  ruta ur en film från ankare 1 som dockans raka ingång styrde; granskaren gav 4/5, handen kommer snett från sidan.
-  Jakobs svar väntas i Beslut. Landningsbilderna `paow-a3-p4-23b` och `-23c` är byggda på B och används inte.
-- Dockan: rak ingång `docka-vila-till-2-3-c`. Given `docka-2-3-p4c1-svep24b` har rätt rörelse (skons fönster synligt,
-  båda händerna på kortet ruta 21–25) men börjar i den gamla lutande posen; given från den raka posen byggs.
+  lutar 5,7° mot ankare 1. C (`paow-ankare-2-3-c`) är en riktig ruta ur en film från ankare 1 som dockans raka ingång
+  styrde; granskaren gav 4/5. Landningen för plats 4 är `paow-a3-p4-ur-film-1120`, ur en film från C;
+  `paow-a3-p4-23b` och `-23c` är byggda på B och används inte.
+- Givar från C till plats 4 (Prov `paow-giv-2-3c-p4-pilot-20261120`): pilot 01 med dockan `svep24c` föll hos
+  granskaren (3/5), vänster hand hängde så att armen såg avklippt ut. Pilot 02 med `svep24d`, där handen går lågt
+  hem, fick 4/5 och väntar på Jakob i Beslut; vänster hand väntar en halv sekund vid skon.
 - Äldre underlag: given till plats 4 och 1 från 2.3 A (Prov `giv-fran-2-3-p4-p1`) fick Jakobs Inte bra, kortet
   flippar utanpå fingrarna. P4.C2 Cykel01 är vald framför Cykel02 (bevis i `paow-c2-film-regrip-20261118`).
 - En sidovinkel görs av en färdig film i Runways videoredigerare (`edit_video`): plats 4 cirka 40° (Prov
@@ -22,16 +23,15 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
 - Den tatuerade uppsättningen är förstahandsvalet; ankare 2.1 och 2.2 och hela banken har de äldre händerna och
   spelas än.
 - Pengar: mandatet `dealer-37-20261120` i `data/order-policy.json` gäller till 2026-11-21 12.00 UTC, 3 000 krediter
-  och 800 per timme, genom API-nyckeln (utvecklarprojektet; Runway-MCP är inte inloggat). Använt 2026-11-20: 465.
-  Saldo 3 684 kl. 14.52 UTC; 91 krediter drogs samma dag utan kvitto i projektets liggare.
+  och 800 per timme, genom API-nyckeln (utvecklarprojektet; Runway-MCP är inte inloggat). Använt 2026-11-20: 669.
+  Saldo 3 480 kl. 17.07 UTC; 91 krediter drogs samma dag utan kvitto i projektets liggare.
 
 **Nästa steg.** Ett mål i taget: EN giv till plats 4 som Jakob godkänner i spelets storlek.
-1. Pilot till plats 4 från 2.3 C med dockans giv från den raka posen: först utan sista bild, så att slutrutan kan bli
-   en riktig landningsbild för plats 4, sedan med den. Båda armarna granskas led för led före kortet.
-2. Jakobs ja på C och på piloten. Frågan om given ska ta 3 eller 4 s ställs med piloten framför honom (hans godkända
-   givar tar cirka 4 s).
-3. Därefter övriga platser (dockans svep finns bara för P4.C1), ingången 1 → 2.3 klippt ur ankarets film, returen
-   2.3 → 1, och sedan fem kameravinklar (`/vinklar.html`), hålkortet, andra kortet och dealerns tredje kort.
+1. Jakobs svar på pilot 02 (med takten: 3 eller 4 s) och på ankare C. Fäller han den väntande vänsterhanden: en
+   dockfilm där handen går hem direkt när den släpper kortet (ruta 29), och en ny tagning.
+2. Därefter övriga platser: varje plats behöver en dockfilm (svepet finns bara för P4.C1) och en landningsbild ur en
+   film. Sedan ingången 1 → 2.3 klippt ur ankarets film, returen 2.3 → 1, fem kameravinklar (`/vinklar.html`),
+   hålkortet, andra kortet och dealerns tredje kort.
 
 **Väntar på Jakob.** Aktuella frågor finns i Beslut; filmdomar lämnas i Granska.
 
@@ -40,8 +40,8 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
 `node tools/produce.ts paow`. Banans kod: `src/order-*.ts`, `tools/order-*.ts`, `tools/film-after.ts`,
 `tools/still-after.ts`, `tools/python/`, `tools/register-order.ts`, `motions/` och registren `data/order-methods.json`,
 `data/media-roles.json`, `data/cut-frames.json` och `data/order-policy.json`. Arbetsfiler från 2026-11-20 under
-`.runtime/`: `ankare-2-3-c/` (API-klient och liggare), `pilot-02/LAGE.md` (dockan), `granskning-pilot-p4/` (bevis) och
-`prompt-granskning/RAPPORT.md` (prompter och längder). På slaskdisken, under `D:/dealer-scratch/tmp/`: `yt-referens/`
+`.runtime/`: `ankare-2-3-c/` (API-klient och liggare; dess tak, 403, är nått), `pilot-c/` (piloternas skript och
+`LAGE-02.md`), `pilot-02/LAGE.md` (dockan), `granskning-pilot-c-02/` (bevis) och `prompt-granskning/RAPPORT.md`. På slaskdisken, under `D:/dealer-scratch/tmp/`: `yt-referens/`
 (den filmen går aldrig in i Git, `assets/` eller ett Prov) och `dealer-3d/ut/` (dockans filmer).
 
 **Fällor.**
