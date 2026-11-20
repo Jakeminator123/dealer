@@ -13,7 +13,7 @@
   "maxPerOrder": 2000,
   "minBalance": 0,
   "timeZone": "Europe/Stockholm",
-  "balance": { "credits": 3748, "at": "2026-11-19T16:23:01Z", "source": "Runway whoami: Jakob, workspace67037521. Jakob godkände D.C3 A/B/C inklusive bildöverföring, tre tagningar högst495. Mandatets identitet och tidigare förbrukning bevaras." },
+  "balance": { "credits": 4172, "at": "2026-11-20T12:15:00Z", "source": "Runways API (GET /v1/organization), utvecklarprojektet som API-nyckeln drar från, läst efter piloten paow-giv-2-3b-p4-pilot-01 (68 krediter). Webbappens pott (workspace 67037521) stod på 3 748 den 2026-11-19 och är inte läst sedan dess." },
   "prices": [
     { "model": "kling-4", "resolution": "1080p", "perSecond": 21.3, "listedPerSecond": 23.5, "source": "Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12." },
     { "model": "kling-4", "resolution": "720p", "perSecond": 15.7, "listedPerSecond": 15.7, "source": "Listpris i verktyget generate_video 2026-11-12; inte mätt i någon liggare." },

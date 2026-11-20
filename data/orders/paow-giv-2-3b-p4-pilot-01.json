@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "title": "Paow · P4 · pilot från nya ankare 2.3 (B)",
+  "summary": "Gör en film av Paow: ett kort från ankare 2.3 till plats 4, bara dit.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "GIV-2.3",
+    "label": "Två händer, ett kort till platsen",
+    "edge": "READY-C>P4.C1",
+    "shape": "ONE_WAY",
+    "cutInto": [
+      "READY-C>P4.C1"
+    ],
+    "makes": null
+  },
+  "motion": {
+    "grip": "TWO_HANDS",
+    "hand": "LH",
+    "pass": true,
+    "turn": true,
+    "flipAxis": "LONG_EDGE",
+    "target": "P4.C1",
+    "side": "FRONT",
+    "fromPlan": true,
+    "planned": {
+      "grip": "PINCH",
+      "flipAxis": "AT_PLACE"
+    }
+  },
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows ankare 2.3 · kandidat",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-giv-2-3b-p4-pilot-01/first.png",
+      "sha256": "29d4564d25d6c9834fab0f84bec8dd8c19812c7faa6faa1d7320e9995b81a13b",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-ankare-2-3-b",
+        "path": "assets/anchors/paow-ankare-2-3-b/anchor.png",
+        "note": "Ankare 2.3 (B): vänster hand uppifrån på kortet (kandidat)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Sista bild · A3 · P4 (2.3 B), kandidat (inte gällande)",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-giv-2-3b-p4-pilot-01/last.png",
+      "sha256": "4e8034886a0a7560a98a8a936525306e4600520e49214b50bd9a20afe0ee3d1d",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-a3-p4-23b",
+        "path": "assets/anchors/paow-a3-p4-23b/anchor.png",
+        "note": "A3 · P4 (2.3 B) (kandidat)"
+      },
+      "waits": null
+    }
+  ],
+  "reference": {
+    "status": "FINNS",
+    "clips": [
+      "docka-2-3-p4c1-h24"
+    ],
+    "path": "assets/orders/paow-giv-2-3b-p4-pilot-01/reference.mp4",
+    "sha256": "b7af14fc311d21a922941ca1d40f7211e405fc7a391cfdf853c9b8e78e059818",
+    "seconds": 3,
+    "goesTo": "P4.C1",
+    "approvedStraight": false,
+    "dealer": "docka",
+    "from": {
+      "film": "docka-2-3-p4c1-h24",
+      "path": "assets/references/docka/docka-2-3-p4c1-h24/source.mp4",
+      "sha256": "b7af14fc311d21a922941ca1d40f7211e405fc7a391cfdf853c9b8e78e059818",
+      "edge": "READY-C>P4.C1",
+      "verdict": "EJ_DÖMD",
+      "words": null,
+      "frames": null,
+      "also": []
+    }
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "kling-4",
+    "params": {
+      "resolution": "1080p",
+      "duration": 3
+    }
+  },
+  "prompt": {
+    "template": "film-giv-minimal@11",
+    "style": "MINIMAL",
+    "text": "Locked camera. Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing. The card's back is blank solid yellow, right out to its corners, and its face is solid blue with a small pink cross in the middle and a small red dot in one corner, as the last frame shows it; the next card in the window is the same blank yellow. One card goes from the shoe to where the last frame shows it.",
+    "sha256": "7c3ce096d68ba8eead07ea199a83de49dfaff48ef87e1f97f5245e700b60f2c3",
+    "extra": null,
+    "middle": false,
+    "place": [
+      856.6,
+      1102.2
+    ],
+    "faceMark": true
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 64,
+    "total": 64,
+    "worstPerTake": 71,
+    "worstTotal": 71,
+    "basis": "21,3 krediter per s × 3 s. Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12."
+  },
+  "limits": {
+    "maxCredits": 71,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Pilot: en plats godkänns innan flera beställs. Mot paow-giv-2-3-p4-h24-03 (granskaren: Variant 4/5) skiljer två saker: första bild är nya ankare 2.3 (B), Jakobs ja 2026-11-20, med platsens A3 gjord för det ankaret som sista bild; och kortet bär den blå sidans märken (rosa kryss, röd prick), Jakobs val från 2026-11-20, där h24-03 hade ett omärkt kort.",
+    "Samma modell, längd, textstil, vändning och referensfilm som h24-03. En tagning, inga omtagningar utan huvudagentens svar.",
+    "A3 · P4 (2.3 B) är en lokal sammansättning (ruta 114 ur dagens film från nya 2.3 med ankarets egen vänsterarm och sko), inte oberoende granskad.",
+    "Recept giv-2.3 (prov) ur data/order-methods.json.",
+    "Undantag från receptet: texten MINIMAL i stället för KORT; vändningen LONG_EDGE i stället för FREE; med kandidaten som sista bild: A3 · P4 (2.3 B) (paow-a3-p4-23b), en kandidat som Jakob inte har gjort gällande."
+  ],
+  "createdBy": "Underagent schema-paow åt huvudagenten dealer-37, 2026-11-20",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-20T12:10:00.169Z",
+    "orderSha256": "f0f5e4c1e6369832bcbf5af8d792f83266298e9dd7683f4b23bf669d2995a68f",
+    "mandate": "Jakob 2026-11-20 kl. 13.05: 'Du har 3k i budget ... fortsätt' (genom huvudagenten dealer-37)"
+  },
+  "status": "GODKÄND",
+  "id": "paow-giv-2-3b-p4-pilot-01",
+  "created": "2026-11-20T12:07:45.074Z"
+}

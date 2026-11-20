@@ -258,6 +258,9 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 
 ## Labbet och verktygen
 
+- **Ett nytt orderutkast skriver texten innan bilderna ligger på disk** (2026-11-20, sett på piloten
+  `paow-giv-2-3b-p4-pilot-01`). Med en A3 som sista bild säger texten då att kortets blå sida är omärkt, fast bilden
+  bär kryss och prick. `refresh` på utkastet rättar texten; gör det före ett godkännande. Verktyget är inte rättat.
 - **Kling-mellanbilder saknas i aktuellt Codex-MCP-schema** (2026-11-19), trots stöd i Runways API. Start/slut och
   `referenceVideos` finns nu; D.C3 A/B/C levererades direkt genom Codex, 372 krediter. Tidigare brist på modellstöd
   är därmed löst. En kontaktbild mellan start och slut kräver fortfarande en anslutning som exponerar fältet.
