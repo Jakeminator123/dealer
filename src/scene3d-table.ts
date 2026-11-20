@@ -242,7 +242,7 @@ float lampLight(vec3 p){
   return 1. - lampOn + lampOn * min(1., max(l.y, 0.) / d / d2 * smoothstep(lampCone, 1., dot(-l / d, lampAxis)) * lampRef);
 }`;
 export const BASE ={floor: -0.95, under: -0.15, legX: 0.58, legZ: 0.25, rail: -0.72}; // heights above the felt and places, dealer metres
-const PRINT = {width: 2.8, depth: 1.4, back: 0.1, pxW: 4096, pxH: 2048}; // the felt image covers width x depth metres and starts `back` behind the dealer edge
+export const PRINT = {width: 2.8, depth: 1.4, back: 0.1, pxW: 4096, pxH: 2048}; // the felt image covers width x depth metres and starts `back` behind the dealer edge
 export const FELT_PX_PER_M = PRINT.pxW / PRINT.width; // what a cloth tile is stored at, to be drawn into the felt image as it is
 const GOLD = '#d8b665';
 // The print under the lens, real metres: a card's length, how far the logo's middle lies past the near edge of the dealer's cards,
@@ -469,7 +469,9 @@ export function roomReflection() {
 
 // camera: the film camera in use, through which V6's cloth is laid flat; marks: the kinds of print drawn (feltMarks; absent = all).
 // size: the table's size (sized); the rail's shadow on the felt follows the felt's edge.
-export type FeltPrint = {spots: Spot[]; logo: string; felt: string; scale: number; marks?: string; cloth?: TableCloth; camera?: FilmCamera; size?: TableSize};
+// bare: only the print, on a clear sheet: no ground, no dealer-side list and no rail shadow, for a table model that brings its own
+// cloth and lays this image over it (src/scene3d-bord02.ts).
+export type FeltPrint = {spots: Spot[]; logo: string; felt: string; scale: number; marks?: string; cloth?: TableCloth; camera?: FilmCamera; size?: TableSize; bare?: boolean};
 // What the table offers what is set into its rail (createTable's group.userData.rail).
 export type RailLink = {leather: T.Material; follow(material: T.MeshStandardMaterial, own: number): void};
 export function createTable(lit: <M extends T.Material>(material: M) => M = m => m) {
@@ -577,9 +579,10 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
   function draw(print: FeltPrint) {
     lastPrint = print;
     const g = canvas.getContext('2d')!, [light, dark] = FELTS[print.felt] ?? FELTS.green, on = feltMarks(print.marks);
-    const weave = print.cloth === 'v6' && print.camera ? v6Pattern(g, print.camera) : isRunwayCloth(print.cloth) ? runwayPattern(g, print.cloth) : null;
+    const weave = print.bare ? null : print.cloth === 'v6' && print.camera ? v6Pattern(g, print.camera) : isRunwayCloth(print.cloth) ? runwayPattern(g, print.cloth) : null;
     g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1;
-    if (weave) { g.fillStyle = weave; g.fillRect(0, 0, PRINT.pxW, PRINT.pxH); }
+    if (print.bare) g.clearRect(0, 0, PRINT.pxW, PRINT.pxH);
+    else if (weave) { g.fillStyle = weave; g.fillRect(0, 0, PRINT.pxW, PRINT.pxH); }
     else {
       g.fillStyle = dark; g.fillRect(0, 0, PRINT.pxW, PRINT.pxH);
       const pool = g.createRadialGradient(X(0), Y(0.3), 40, X(0), Y(0.3), 1.25 * k); pool.addColorStop(0, light); pool.addColorStop(1, dark); g.fillStyle = pool; g.fillRect(0, 0, PRINT.pxW, PRINT.pxH);
@@ -587,11 +590,11 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
       g.globalAlpha = 0.05; for (let i = 0; i < 70000; i++) { g.fillStyle = random() > 0.5 ? '#fff' : '#000'; g.fillRect(random() * PRINT.pxW, random() * PRINT.pxH, 2, 2); } g.globalAlpha = 1;
     }
     // dealer-side trim: the film's body ends exactly at s = 0
-    if (on.has('trim')) { g.fillStyle = '#17110c'; g.fillRect(0, 0, PRINT.pxW, Y(0.016)); g.fillStyle = GOLD; g.globalAlpha = 0.55; g.fillRect(0, Y(0.016), PRINT.pxW, 3); g.globalAlpha = 1; }
+    if (on.has('trim') && !print.bare) { g.fillStyle = '#17110c'; g.fillRect(0, 0, PRINT.pxW, Y(0.016)); g.fillStyle = GOLD; g.globalAlpha = 0.55; g.fillRect(0, Y(0.016), PRINT.pxW, 3); g.globalAlpha = 1; }
     // the rail's soft shadow on the felt along the arc: a dark band just outside the felt edge, blurred inward and clipped to the felt
     const edge = sized(print.size);
     g.save(); g.beginPath(); g.ellipse(X(0), Y(0), edge.a * k, edge.b * k, 0, 0, 2 * Math.PI); g.clip();
-    for (const [width, blur, alpha] of [[0.04, 0.016, 0.55], [0.01, 0.0035, 0.65]]) { g.filter = `blur(${Math.round(blur * k)}px)`; g.strokeStyle = `rgba(3,2,1,${alpha})`; g.lineWidth = 2 * width * k;
+    for (const [width, blur, alpha] of print.bare ? [] : [[0.04, 0.016, 0.55], [0.01, 0.0035, 0.65]]) { g.filter = `blur(${Math.round(blur * k)}px)`; g.strokeStyle = `rgba(3,2,1,${alpha})`; g.lineWidth = 2 * width * k;
       g.beginPath(); g.ellipse(X(0), Y(0), (edge.a + width) * k, (edge.b + width) * k, 0, 0, 2 * Math.PI); g.stroke(); }
     g.restore();
     const seats = print.spots.filter(p => /^P\d\.C1$/.test(p.id)), row = seats.length ? seats.reduce((t, p) => t + p.s, 0) / seats.length : 0.35, span = Math.max(0.3, ...seats.map(p => Math.abs(p.x))) * 1.5;
@@ -697,5 +700,8 @@ export function createTable(lit: <M extends T.Material>(material: M) => M = m =>
   }
   /** The serving shelf at the dealer's right hand, shown or not. */
   const setShelf = (on: boolean) => { shelfOn = on; if (shelf) shelf.visible = on; };
-  return {group, draw, build, setEnvironment, setLamp, setShelf};
+  // For a table model that stands in this one's place (src/scene3d-bord02.ts): what makes a material one of the table's (`own`),
+  // the felt image itself, the room's light for a material of its own (railLink.follow), and the level of a cloth drawn in its own
+  // light in the room that is showing (the "duk" cloth's; 1 without a room's light).
+  return {group, draw, build, setEnvironment, setLamp, setShelf, own, canvas, follow: railLink.follow, level: () => dukFelt.color.r};
 }

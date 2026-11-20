@@ -25,27 +25,188 @@
       "file": "brown_leather-nor_gl.webp",
       "sha256": "5563963829922e802aef387d7e8d5580aaa03066929be0dea74a7a78995b4386",
       "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/brown_leather/brown_leather_nor_gl_1k.jpg",
-      "use": "not used yet"
+      "use": "the leather of the model lab's photographed surfaces (src/props-stage.ts), and with table BORD-02 the rail \"Brunt läder\" (src/scene3d-bord02.ts): relief"
     },
     {
       "file": "brown_leather-rough.webp",
       "sha256": "00612ec28b54cf8da43dc60085be0511a65112825e8ca863afaadefce556d7e4",
       "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/brown_leather/brown_leather_rough_1k.jpg",
-      "use": "not used yet"
+      "use": "the leather of the model lab's photographed surfaces (src/props-stage.ts), and with table BORD-02 the rail \"Brunt läder\" (src/scene3d-bord02.ts): roughness"
     },
     {
       "file": "denim_fabric-nor_gl.webp",
       "sha256": "47d6e98f08a4311f7e7332b159d0ec3aa4b472d3f94b781c664a971655e77119",
       "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/denim_fabric/denim_fabric_nor_gl_1k.jpg",
-      "use": "the weave of the felt (src/scene3d-table.ts, surface photo); a denim weave, not measured blackjack felt"
+      "use": "the weave of the felt (src/scene3d-table.ts, surface photo); a denim weave, not measured blackjack felt; with table BORD-02 the rail \"Blå denim\" (src/scene3d-bord02.ts): relief"
     },
     {
       "file": "denim_fabric-rough.webp",
       "sha256": "a9a9483ca0672ef18329e7d7de6acd7b6742201808cd91e4e1c36829fd27d97d",
       "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/denim_fabric/denim_fabric_rough_1k.jpg",
-      "use": "the weave of the felt"
+      "use": "the weave of the felt; with table BORD-02 the rail \"Blå denim\" (src/scene3d-bord02.ts): roughness"
     }
   ],
+  "bord02": {
+    "about": "The photographed surfaces of table BORD-02, the second table model of the 3D scene (src/scene3d-bord02.ts; state keys tableModel, modelCloth, modelWood and modelRail; a lab trial of 2026-11-20, off from the start). Jakob delivered the table of his project Ultimate Reality that day (2026-11-20: \"kunna i höger panel ändra till detta bord\", and its materials \"som förval eller val\" here): its seven Poly Haven scans as 2048 px JPGs (Texturer/, with a register of its own, Texturer/materialregister.json, which names every original by SHA-256), the table's source (Källor/), from which its form is built here, and pictures of it (Referensbilder/). The 48 MB model file and the card shoe were not taken. Each original was checked against the delivery's register and stored as WebP with sharp 0.35.5: resized to `width`, quality 84 (relief 90), smartSubsample. The relief and roughness of brown_leather and denim_fabric are the 1 k maps under \"maps\" above, which were here already.",
+    "licence": "CC0 (Poly Haven)",
+    "delivery": "C:/Users/jakem/Desktop/material",
+    "revision": "Ultimate Reality 9dba0e7f8c490829036af957058e27efba3b1add",
+    "maps": [
+      {
+        "file": "scuba_suede-diffuse.webp",
+        "sha256": "00c83e644165679ffcfeb5b1a7f639adedbbde4e0559637a9741d42c8b62c694",
+        "width": 1024,
+        "source": "https://polyhaven.com/a/scuba_suede",
+        "original": "Texturer/scuba_suede/scuba_suede_diff_2k.jpg",
+        "originalSha256": "9c0b3ed2ffc4862c571940b139680ac6f612041b9454bbddff21f90dc027033c",
+        "use": "the cloth \"Grön mikromocka\" (modelCloth filt): colour"
+      },
+      {
+        "file": "scuba_suede-nor_gl.webp",
+        "sha256": "6b45bf3c47d5fdf10ac5a2f2ed519dc02419e4d43a9be0fcf92ecc92a1917568",
+        "width": 1024,
+        "source": "https://polyhaven.com/a/scuba_suede",
+        "original": "Texturer/scuba_suede/scuba_suede_nor_gl_2k.jpg",
+        "originalSha256": "3bce1a0272cacffcd8f7414fb679a0ea27944b9b82dab5165a6dd079d6eda871",
+        "use": "the cloth \"Grön mikromocka\" (modelCloth filt): relief"
+      },
+      {
+        "file": "scuba_suede-rough.webp",
+        "sha256": "2943741ff427b4b82c6c1c04dfb30ec37aa2951e9486cbb876fcaf542c3a5ed4",
+        "width": 1024,
+        "source": "https://polyhaven.com/a/scuba_suede",
+        "original": "Texturer/scuba_suede/scuba_suede_rough_2k.jpg",
+        "originalSha256": "fc43e105b4cffb5246753d7cbf43bb2cda79c084bd159daf28ce8cfa82573a30",
+        "use": "the cloth \"Grön mikromocka\" (modelCloth filt): roughness"
+      },
+      {
+        "file": "brown_leather-diffuse.webp",
+        "sha256": "6038c56a03c3cc15659479bc5b6c182058825079b76868c835b28b4e7ff731bd",
+        "width": 1024,
+        "source": "https://polyhaven.com/a/brown_leather",
+        "original": "Texturer/brown_leather/brown_leather_diff_2k.jpg",
+        "originalSha256": "b0de2403a31efa31e501b0028c0bd8e504d5bd6318f4a5ce90c550c3067f96d8",
+        "use": "the rail \"Brunt läder\" (modelRail brun): colour"
+      },
+      {
+        "file": "walnut_veneer-diffuse.webp",
+        "sha256": "6af91679e56d8a216131b95b46edbdd9737e1757c8b25fadc1261a281dffd2fb",
+        "width": 2048,
+        "source": "https://polyhaven.com/a/walnut_veneer",
+        "original": "Texturer/walnut_veneer/walnut_veneer_diff_2k.jpg",
+        "originalSha256": "66c73defcc62ac090cb838e8455b8c1febbfea29a15c8f40a5e2d398b2ba4733",
+        "use": "the side \"Valnötsfaner\" (modelWood valnot) and the two legs: colour"
+      },
+      {
+        "file": "walnut_veneer-nor_gl.webp",
+        "sha256": "99665f7a93baca6947e13cb70ad24c5c9e6138932b5e43f7df16fc3b7e183713",
+        "width": 1024,
+        "source": "https://polyhaven.com/a/walnut_veneer",
+        "original": "Texturer/walnut_veneer/walnut_veneer_nor_gl_2k.jpg",
+        "originalSha256": "544d3feffd325a0f6f7db5dc94ae99820349bb3d53ce3651e4647d5e66336cba",
+        "use": "the side \"Valnötsfaner\" (modelWood valnot) and the two legs: relief"
+      },
+      {
+        "file": "walnut_veneer-rough.webp",
+        "sha256": "b4c82f55a428a8822677079121e34be8950b2ab9588cd4545545a124a9425c2f",
+        "width": 1024,
+        "source": "https://polyhaven.com/a/walnut_veneer",
+        "original": "Texturer/walnut_veneer/walnut_veneer_rough_2k.jpg",
+        "originalSha256": "e3a8a7e035a378ce6ce2252fcd4352f62b16a2a6b2f453baacd4e081c2fedb34",
+        "use": "the side \"Valnötsfaner\" (modelWood valnot) and the two legs: roughness"
+      },
+      {
+        "file": "grass_ground-diffuse.webp",
+        "sha256": "1674c78959805afe5dd5cc5529d7412a7eba26a4cca963572e742d18ae045ff4",
+        "width": 2048,
+        "source": "https://polyhaven.com/a/grass_ground",
+        "original": "Texturer/grass_ground/grass_ground_diff_2k.jpg",
+        "originalSha256": "4272bddc71a7fa659d1deeb13a9df8c42e68a5ac8cde7523187e4a081e028258",
+        "use": "the cloth \"Gräsmatta\" (modelCloth gras): colour"
+      },
+      {
+        "file": "grass_ground-nor_gl.webp",
+        "sha256": "a1087036e3478b6d3cf8d08848bf4dfa70451dce95830bcae02feb52823d0f5d",
+        "width": 1024,
+        "source": "https://polyhaven.com/a/grass_ground",
+        "original": "Texturer/grass_ground/grass_ground_nor_gl_2k.jpg",
+        "originalSha256": "effa95c06af273c974476d9a74a234668a1c9292f60fffb4fa40348d638ee7f3",
+        "use": "the cloth \"Gräsmatta\" (modelCloth gras): relief"
+      },
+      {
+        "file": "grass_ground-rough.webp",
+        "sha256": "efef08b1bd3aa138253c1e34e922415d6d37f1a57c5ef44355e6e7a9fd04eb57",
+        "width": 1024,
+        "source": "https://polyhaven.com/a/grass_ground",
+        "original": "Texturer/grass_ground/grass_ground_rough_2k.jpg",
+        "originalSha256": "afaed95537e894b8054db38c81712a6d9504b05b560274526621d91d5a95fbe7",
+        "use": "the cloth \"Gräsmatta\" (modelCloth gras): roughness"
+      },
+      {
+        "file": "coated_pine-diffuse.webp",
+        "sha256": "f6ac4bba647fdb7567787eb0ae711a672591e6fc91e05fcf157c951ea2393f15",
+        "width": 1024,
+        "source": "https://polyhaven.com/a/coated_pine",
+        "original": "Texturer/coated_pine/coated_pine_diff_2k.jpg",
+        "originalSha256": "377fa07523a1d2a52fb4a3b099eba0e81a6167038210cdd9791c07a0f1d39497",
+        "use": "the side \"Lackerad furu\" (modelWood furu): colour"
+      },
+      {
+        "file": "coated_pine-nor_gl.webp",
+        "sha256": "ce30641166c99492dff0dbff9d5d5c5b4026abfc226b7592adff08f19ca788c8",
+        "width": 1024,
+        "source": "https://polyhaven.com/a/coated_pine",
+        "original": "Texturer/coated_pine/coated_pine_nor_gl_2k.jpg",
+        "originalSha256": "ff84c4c858c54074eba887aaf2213a1f57c0e34ec3548693792dbd0b7a3f3f6b",
+        "use": "the side \"Lackerad furu\" (modelWood furu): relief"
+      },
+      {
+        "file": "coated_pine-rough.webp",
+        "sha256": "f8504eba9842b8e60f30eb82bdbe9bda7261b7db366ba4bd21257e4654de5d12",
+        "width": 1024,
+        "source": "https://polyhaven.com/a/coated_pine",
+        "original": "Texturer/coated_pine/coated_pine_rough_2k.jpg",
+        "originalSha256": "d007a8bc135aa4787d8d508b2425577a0422d22b6e09020607c77b4854c2c6fe",
+        "use": "the side \"Lackerad furu\" (modelWood furu): roughness"
+      },
+      {
+        "file": "leather_red_02-diffuse.webp",
+        "sha256": "06eea21c3e3f548f33a6bca90f8872d9c59b82c315a706d0e134b32dc622a037",
+        "width": 1024,
+        "source": "https://polyhaven.com/a/leather_red_02",
+        "original": "Texturer/leather_red_02/leather_red_02_diff_2k.jpg",
+        "originalSha256": "a900630e541991b7ee63aab820f425610fbf2db32f7ae6c63b6ef4fc2325ab60",
+        "use": "the rail \"Rödbrunt läder\" (modelRail rodbrun): colour"
+      },
+      {
+        "file": "leather_red_02-nor_gl.webp",
+        "sha256": "1b6c21bdb993dbe80ab117440f3eb7797e1d7f961e2d4066a7df53954f82c029",
+        "width": 1024,
+        "source": "https://polyhaven.com/a/leather_red_02",
+        "original": "Texturer/leather_red_02/leather_red_02_nor_gl_2k.jpg",
+        "originalSha256": "be8e0525fe6cc7d0215d4fc81f2761a2f8485f85baad3bcd4b9bcdeb843ea925",
+        "use": "the rail \"Rödbrunt läder\" (modelRail rodbrun): relief"
+      },
+      {
+        "file": "leather_red_02-rough.webp",
+        "sha256": "92542e7d4b588ab00a0e945b03019510d7380d41859c7727b86669d1c3cf9045",
+        "width": 1024,
+        "source": "https://polyhaven.com/a/leather_red_02",
+        "original": "Texturer/leather_red_02/leather_red_02_rough_2k.jpg",
+        "originalSha256": "0dd604b493aef28488a7f8a4c86846c1ec7313c16bd5198a9deec8a7f880b43d",
+        "use": "the rail \"Rödbrunt läder\" (modelRail rodbrun): roughness"
+      },
+      {
+        "file": "denim_fabric-diffuse.webp",
+        "sha256": "d72a5fcefc94ab7dcd464cc8183b023f81225a90b3188714fd155070152a7667",
+        "width": 1024,
+        "source": "https://polyhaven.com/a/denim_fabric",
+        "original": "Texturer/denim_fabric/denim_fabric_diff_2k.jpg",
+        "originalSha256": "164fdc3adbae7eab65171b05fb43aac5e3945615cb905b37b48049b2630c56d2",
+        "use": "the rail \"Blå denim\" (modelRail denim): colour"
+      }
+    ]
+  },
   "generated": {
     "about": "Materials made from generated pictures for the lab trial of 2026-11-13 (cloth \"runway\", surface \"natur\"). The pictures were ordered by LEVANDE-OBJEKTAGENTEN on Jakob's word that day (\"Kan du med hjälp av Runway skapa ett pokerbord utifrån det vi har nu, men göra det mer naturalistiskt?\") through Runway's MCP server, on his app account, with the image model Nano Banana Pro, about 20 credits a picture. The sources are kept as they came; tools/scene-material.ts makes each map from its source and writes a receipt beside it. They are not CC0: generated pictures, Jakob's by his Runway account.",
     "source": {

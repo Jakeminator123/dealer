@@ -13,6 +13,7 @@ import {createRooms, type Panorama, type RoomId} from './scene3d-room.ts';
 import {CHANGE_FRAGMENT, SHIMMER_GLSL, readyFrom, retake, roomChange, shiftProgress, shimmerLevel} from './scene3d-shift.ts';
 import {createTable, lightFromAbove, sized, tableUnder, type TableBase, type TableCloth, type TableSurface} from './scene3d-table.ts';
 import {createRailExtras} from './scene3d-rail.ts';
+import type {createBord02, Bord02Cloth, Bord02Rail, Bord02Wood} from './scene3d-bord02.ts';
 import {createSmoke} from './scene3d-smoke.ts';
 import {createMouthLayer} from './scene3d-mouth.ts';
 import {createPageAudio} from './page-audio.ts';
@@ -48,6 +49,10 @@ export type SceneState = {
   shelf: boolean; // the serving shelf behind the dealer's edge at her right hand (SHELF in src/scene3d-table.ts)
   edgeClean: number; // the screen's green taken out of her outline, 0 to 1 (setEdge in src/scene3d-film.ts); 0 is the key as it is, 1 the standard since 2026-11-13
   tal: 'repliker' | 'av'; // the game's: the dealer says her fixed lines with her talk films ('av': as text in the chat only; src/game-page.ts)
+  // Lab trial of 2026-11-20, at its default the picture before it. tableModel: which table stands in the scene: the standard one
+  // (src/scene3d-table.ts) or BORD-02 (src/scene3d-bord02.ts, fetched the first time it is asked for). modelCloth, modelWood,
+  // modelRail: that model's three surfaces (BORD02_FINISHES there); they do nothing on the standard table.
+  tableModel: 'standard' | 'bord-02'; modelCloth: Bord02Cloth; modelWood: Bord02Wood; modelRail: Bord02Rail;
 };
 // What was added after checkpoint v1 starts switched off, so that the page opens as v1, except what Jakob has made the standard
 // (2026-11-13: "det ska bli en linje"): the films evened in colour (filmEven), the
@@ -70,6 +75,7 @@ export const DEFAULTS: SceneState = {
   edgeClean: 1, shelf: false,
   smoke: 0,
   tal: 'repliker',
+  tableModel: 'standard', modelCloth: 'filt', modelWood: 'valnot', modelRail: 'brun',
 };
 // rooms: the panorama rooms of the register (data/scene-rooms.json, readRegister in scene3d-room.ts); without it the first three, at urls.
 export type SceneData = {contract: Parameters<typeof cameraFromContract>[0]; plan: Parameters<typeof cardSpots>[0]; urls: {plate: string; panorama: string; la: string; skog: string}; rooms?: Panorama[]; onChange: () => void; onMissingRoom: (room: RoomId) => void};
@@ -260,13 +266,26 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     line([[-5, 0.001, edgeZ], [5, 0.001, edgeZ]], 0xff5a7a); // the fold
     line([[0, camera.edgeRow], [W - 1, camera.edgeRow], [W - 1, H - 1], [0, H - 1]].map(([x, y]) => { const p = filmToScene(camera, x, y); return [p[0], 0.002, p[2]]; }), 0x55c8ff); // the film's part of the felt
   }
+  // The table model BORD-02 (state tableModel; src/scene3d-bord02.ts), fetched the first time the key asks for it. While it stands
+  // the standard table and what is set into its rail are hidden and the felt image is drawn bare for it (drawFelt); until it has
+  // been read, and if it cannot be, the standard table stands.
+  let bord02: ReturnType<typeof createBord02> | null = null, bord02Asked = false;
+  const secondTable = () => state.tableModel === 'bord-02' && !!bord02;
+  function loadBord02() {
+    if (bord02Asked) return; bord02Asked = true;
+    import('./scene3d-bord02.ts').then(m => { if (gone) return; bord02 = m.createBord02(table.own, {canvas: table.canvas, follow: table.follow, level: table.level}); fg.add(bord02.group); if (built) rebuild(); },
+      () => { bord02Asked = false; if (!gone && state.tableModel === 'bord-02') { state.tableModel = 'standard'; if (built) rebuild(); } });
+  }
   function rebuild() {
     if (gone) return; camera = filmCamera(); const solved = solveCamera(camera); pitch = solved.pitch; edgeZ = -solved.edgeDistance;
     filmCam.fov = solved.fovYDeg; filmCam.aspect = W / H; filmCam.position.set(0, camera.heightM, 0); filmCam.rotation.set(-pitch, 0, 0, 'YXZ'); filmCam.updateProjectionMatrix(); filmCam.updateMatrixWorld(true);
     filmVP.multiplyMatrices(filmCam.projectionMatrix, filmCam.matrixWorldInverse);
-    table.build(edgeZ, camera.scale, ownNotch ?? (state.tray ? TRAY : undefined), state.base, state.surface, tableUnder(camera, state.tableSize)); tray.group.visible = state.tray && !ownNotch; if (tray.group.visible) tray.build(edgeZ, camera.scale); rail.build(edgeZ, camera.scale, betSpots(data.plan, camera), tableUnder(camera, state.tableSize)); smoke.build(edgeZ, camera.scale, tableUnder(camera, state.tableSize)); drawFelt(); rooms.place(camera.source === 'lens' ? written() : camera); light.place(camera); buildGuides(); focusNow = NaN; built = true; for (const prop of props) prop.build(edgeZ, camera.scale); apply();
+    table.build(edgeZ, camera.scale, ownNotch ?? (state.tray ? TRAY : undefined), state.base, state.surface, tableUnder(camera, state.tableSize));
+    if (state.tableModel === 'bord-02') loadBord02(); const second = secondTable(); table.group.visible = rail.group.visible = !second;
+    if (bord02) { bord02.group.visible = second; if (second) bord02.build(edgeZ, camera.scale, tableUnder(camera, state.tableSize), {cloth: state.modelCloth, wood: state.modelWood, rail: state.modelRail, surface: state.surface}, ownNotch ?? (state.tray ? TRAY : undefined)); }
+    tray.group.visible = state.tray && !ownNotch; if (tray.group.visible) tray.build(edgeZ, camera.scale); rail.build(edgeZ, camera.scale, betSpots(data.plan, camera), tableUnder(camera, state.tableSize)); smoke.build(edgeZ, camera.scale, tableUnder(camera, state.tableSize)); drawFelt(); rooms.place(camera.source === 'lens' ? written() : camera); light.place(camera); buildGuides(); focusNow = NaN; built = true; for (const prop of props) prop.build(edgeZ, camera.scale); apply();
   }
-  const drawFelt = () => table.draw({spots: cardSpots(data.plan, camera), logo: state.logo, felt: state.felt, scale: camera.scale, marks: state.marks, cloth: state.cloth, camera, size: tableUnder(camera, state.tableSize)});
+  const drawFelt = () => { table.draw({spots: cardSpots(data.plan, camera), logo: state.logo, felt: state.felt, scale: camera.scale, marks: state.marks, cloth: state.cloth, camera, size: tableUnder(camera, state.tableSize), bare: secondTable()}); bord02?.printed(); };
   function apply() {
     if (gone) return; if (!rooms.rooms[state.room]) state.room = 'salong'; // a room the scene does not have (an old address, a room taken out of the register)
     useCards(); rooms.show(state.room); rail.set({cups: state.cups}); film.place(edgeZ, state.fold, state.focus !== 'off', camera.scale); film.setKey({lo: state.keyLo, hi: state.keyHi, shadow: state.shadow, above: state.shadowAbove}); film.setGrade(state.filmBright, state.filmWarm); film.setEdge(state.edgeClean); players.tempo(state.filmTempo);
@@ -503,7 +522,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   // registers no observers or listeners of its own (the pages do). Afterwards every call is a no-op, dispose() too.
   function takeDown() {
     if (gone) return; gone = true; running = false; shift = null;
-    mouth.dispose(); voice.dispose(); players.dispose(); sound.dispose(); rooms.dispose(); smoke.dispose();
+    mouth.dispose(); voice.dispose(); players.dispose(); sound.dispose(); rooms.dispose(); smoke.dispose(); bord02?.dispose();
     for (const prop of props.splice(0)) fg.remove(prop.group); frameCalls.clear();
     for (const layer of Object.values(cardLayers)) layer.off?.(); cardLayer = null;
     const freed = new Set<{dispose(): void}>(), textures = (value: unknown): void => { if (value instanceof T.Texture) freed.add(value as T.Texture); else if (Array.isArray(value)) value.forEach(textures); };
@@ -524,7 +543,7 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
     start() { if (!running && !gone) { running = true; requestAnimationFrame(loop); } }, stop() { running = false; },
     dispose: takeDown,
     home() { if (gone) return; Object.assign(state, {yaw: 0, pitch: 0, zoom: 1, dx: 0, dy: 0, dz: 0, sway: false}); apply(); },
-    set(patch: Partial<SceneState>) { if (gone) return; if (patch.cards) loadCards(); const relens = 'lens' in patch && patch.lens !== state.lens || 'scale' in patch && patch.scale !== state.scale || 'tray' in patch && patch.tray !== state.tray || 'base' in patch && patch.base !== state.base || 'surface' in patch && patch.surface !== state.surface || 'tableSize' in patch && patch.tableSize !== state.tableSize, reprint = 'logo' in patch || 'felt' in patch || 'marks' in patch || 'cloth' in patch;
+    set(patch: Partial<SceneState>) { if (gone) return; if (patch.cards) loadCards(); const relens = 'lens' in patch && patch.lens !== state.lens || 'scale' in patch && patch.scale !== state.scale || 'tray' in patch && patch.tray !== state.tray || 'base' in patch && patch.base !== state.base || 'surface' in patch && patch.surface !== state.surface || 'tableSize' in patch && patch.tableSize !== state.tableSize || 'tableModel' in patch && patch.tableModel !== state.tableModel || 'modelCloth' in patch && patch.modelCloth !== state.modelCloth || 'modelWood' in patch && patch.modelWood !== state.modelWood || 'modelRail' in patch && patch.modelRail !== state.modelRail, reprint = 'logo' in patch || 'felt' in patch || 'marks' in patch || 'cloth' in patch;
       // Another room: with the shimmer the change is an animation that render() carries through; without it, or before the scene is built, a cut as before.
       const other = 'room' in patch && patch.room !== state.room, before = lookNow(); Object.assign(state, patch);
       if (other) { if (state.roomShift === 'shimmer' && built) beginShift(before); else if (shift) endShift(); }

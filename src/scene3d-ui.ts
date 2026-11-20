@@ -193,7 +193,12 @@ function build() {
     note('<b>Två ben</b>: fotograferat trä, mässingsfötter, fotstöd i mässing och bordets skugga på golvet, efter rumsstudien 7 november. Syns när kameran backar: knappen <b>Hela bordet</b> under Kamera.'),
     (() => { const box = el('input', {type: 'checkbox'}); box.checked = query.get('sko') === '3d'; box.addEventListener('change', () => void shoe.set(box.checked)); return el('label', {className: 'check'}, box, el('span', {textContent: 'Sko i 3D i stället för filmens sko (prov)'})); })(),
     note('<b>Sko i 3D</b>: din skomodell står som ett föremål i scenen där filmens sko står, och filmens sko ritas inte. Den står kvar när dealern går. Inte löst än: i en giv klipps handen där den sträcker sig in till skon.'),
-    check('Mugghållare i relingen', 'cups'), check('Hylla vid dealerns högra sida', 'shelf'), note('<b>Mugghållare</b>: en mässingsring mellan varje plats, nedsänkt i lädret.'));
+    check('Mugghållare i relingen', 'cups'), check('Hylla vid dealerns högra sida', 'shelf'), note('<b>Mugghållare</b>: en mässingsring mellan varje plats, nedsänkt i lädret.'),
+    el('label', {className: 'row two'}, el('span', {textContent: 'Bordsmodell'}), choice('tableModel', [['standard', 'Standardbordet'], ['bord-02', 'BORD-02, njurformat']])),
+    el('label', {className: 'row two'}, el('span', {textContent: 'Spelyta'}), choice('modelCloth', [['filt', 'Grön mikromocka'], ['gras', 'Gräsmatta']])),
+    el('label', {className: 'row two'}, el('span', {textContent: 'Träsarg'}), choice('modelWood', [['valnot', 'Valnötsfaner'], ['furu', 'Lackerad furu']])),
+    el('label', {className: 'row two'}, el('span', {textContent: 'Reling'}), choice('modelRail', [['brun', 'Brunt läder'], ['rodbrun', 'Rödbrunt läder'], ['denim', 'Blå denim']])),
+    note('<b>BORD-02</b> (prov): det njurformade bordet ur Ultimate Reality, byggt ur sina egna mått (192 × 129,6 cm), med sju fotograferade material från Poly Haven som tre val. Trycket är scenens eget, där filmerna delar ut. Spelyta, träsarg och reling gäller bara det bordet; duk, filtfärg, underrede, mugghållare och hylla gäller standardbordet. <b>Yta</b> styr ljuset: på Målad och Duken behåller spelytan sin egen färg, på de fotograferade ytorna belyses den av rummet.'));
   group('Marker och bricka', el('div', {className: 'btns'}, button('Lägg insatser', () => chipsLab.lay()), button('En marker till på plats 4', () => chipsLab.more())),
     el('div', {className: 'btns'}, button('Dealern tar plats 2', () => chipsLab.take(2)), button('Betala plats 6', () => chipsLab.pay(6)), button('Rensa', () => chipsLab.clear())),
     slider('Markernas glans', 'chipGloss', 0, 1, 0.01, '', () => { chipsLab.gloss(); hud(); }),

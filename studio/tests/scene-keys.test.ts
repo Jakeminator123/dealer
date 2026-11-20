@@ -47,23 +47,23 @@ test("each control: a group in order, a label of at most three words, one line o
     assert.ok(s.help.length > 10 && s.help.length <= 120 && !s.help.includes("\n"), `${s.key}: one line of help`);
     assert.ok(s.who === "D" || s.who === "U");
   }
-  assert.deepEqual(GROUPS.map((g) => keysOf(g.id).length), [6, 13, 10, 10, 8, 13, 8]);
+  assert.deepEqual(GROUPS.map((g) => keysOf(g.id).length), [6, 13, 10, 14, 8, 13, 8]);
   assert.deepEqual(SCENE_KEYS.filter((s) => s.who === "D").map((s) => s.key), ["room", "roomShift", "roomShiftSeconds", "clock", "dust", "flicker", "fan", "cards", "cardInHand", "pitch", "zoom", "format"]);
 });
 
 test("a key that needs another names a real key and real values, and comes after it in its group", () => {
   const order = SCENE_KEYS.map((s) => s.key);
   const needing = SCENE_KEYS.filter((s) => s.needs);
-  assert.equal(needing.length, 16);
+  assert.equal(needing.length, 19);
   for (const s of needing) {
     const parent = keySpec(s.needs!.key);
     assert.ok(parent && parent.key !== s.key, s.key);
     for (const v of s.needs!.is) assert.equal(checkValue(parent!, v), null, `${s.key} needs ${parent!.key} = ${String(v)}`);
     if (parent!.group === s.group) assert.ok(order.indexOf(parent!.key) < order.indexOf(s.key), `${s.key} after ${parent!.key}`);
   }
-  // at the scene's defaults: the flicker's and the fan's timing, the card options and the focus values are tucked away
+  // at the scene's defaults: the flicker's and the fan's timing, table BORD-02's surfaces, the card options and the focus values are tucked away
   const idle = SCENE_KEYS.filter((s) => !inUse(s, DEFAULTS)).map((s) => s.key);
-  assert.deepEqual(idle, ["roomShiftSeconds", "flickerEvery", "flickerStrength", "fanStrength", "fanPeriod", "roomLight", "cardInHand", "cardMethod", "cardHand", "cardScale", "cardRank", "cardSuit", "focusDistance", "tolerance"]);
+  assert.deepEqual(idle, ["roomShiftSeconds", "flickerEvery", "flickerStrength", "fanStrength", "fanPeriod", "roomLight", "modelCloth", "modelWood", "modelRail", "cardInHand", "cardMethod", "cardHand", "cardScale", "cardRank", "cardSuit", "focusDistance", "tolerance"]);
 });
 
 test("the scene's own default of every key is a value its control can hold", () => {

@@ -66,7 +66,7 @@ export const MARKS: readonly Option[] = opts(
 // What each key needs to do anything, read off the scene (src/scene3d-view.ts, scene3d-room.ts, scene3d-table.ts): the
 // shimmer's length only with the shimmer, the depth ramp only with depth blur, the room's light on the table only on the
 // photo surface, the felt colour not under V6's cloth, the card options only with drawn cards, the focus distance only
-// with the own focus and the depth of field only with a focus at all.
+// with the own focus and the depth of field only with a focus at all, and the three surfaces of table BORD-02 only on that table.
 const NEEDS: Partial<Record<SceneKey, Needs>> = {
   roomShiftSeconds: { key: "roomShift", is: ["shimmer"] },
   dofRange: { key: "depthBlur", is: [true] },
@@ -76,6 +76,9 @@ const NEEDS: Partial<Record<SceneKey, Needs>> = {
   fanPeriod: { key: "fan", is: [true] },
   roomLight: { key: "surface", is: ["photo", "natur", "natur-2", "natur-3", "natur-duk"] },
   felt: { key: "cloth", is: ["print"] },
+  modelCloth: { key: "tableModel", is: ["bord-02"] },
+  modelWood: { key: "tableModel", is: ["bord-02"] },
+  modelRail: { key: "tableModel", is: ["bord-02"] },
   cardMethod: { key: "cards", is: [true] },
   cardInHand: { key: "cards", is: [true] },
   cardHand: { key: "cards", is: [true] },
@@ -122,6 +125,10 @@ export const SCENE_KEYS: readonly KeySpec[] = [
   spec("filmWarm", "ljus", "U", "Dealerns värme", slider(-0.2, 0.2, 0.005), "Filmens färgton, kallare eller varmare; 0 är filmen som den är."),
   spec("shadowAbove", "ljus", "U", "Skugga ovanför kanten", slider(0, 1, 0.05), "Filmens skugga ovanför bordskanten, där armbågarnas skugga annars hänger i luften. 0 tar bort den."),
   // ── Bord ──
+  spec("tableModel", "bord", "U", "Bordsmodell", choice(["standard", "Standardbordet"], ["bord-02", "BORD-02, njurformat"]), "BORD-02 (prov): njurformat bord med läderreling. Duk, filtfärg, underrede, mugghållare och hylla gäller standardbordet."),
+  spec("modelCloth", "bord", "U", "Spelyta", choice(["filt", "Grön mikromocka"], ["gras", "Gräsmatta"]), "BORD-02:s spelyta, fotograferad: Scuba Suede eller Grass Ground från Poly Haven."),
+  spec("modelWood", "bord", "U", "Träsarg", choice(["valnot", "Valnötsfaner"], ["furu", "Lackerad furu"]), "BORD-02:s sarg; benen behåller valnötsfaneret."),
+  spec("modelRail", "bord", "U", "Reling", choice(["brun", "Brunt läder"], ["rodbrun", "Rödbrunt läder"], ["denim", "Blå denim"]), "BORD-02:s vadderade reling längs spelarnas kant."),
   spec("cloth", "bord", "U", "Duk", choice(["print", "Kodens filt"], ["v6", "V6-duken"], ["runway", "Runway-filten"], ["runway-2", "Runway-filten 2: tät duk"], ["runway-3", "Runway-filten 3: borstad boj"]), "V6-duken tar filtens färg och korn ur V6:s bord; Runway-filtarna ur var sin Runway-bild av hemvyn (prov)."),
   spec("felt", "bord", "U", "Filtens färg", choice(["green", "Grön"], ["blue", "Blå"], ["vin", "Vinröd"], ["svart", "Svart"]), "Filtens färg; gäller inte V6-duken."),
   spec("marks", "bord", "U", "Markeringar", { kind: "set", options: MARKS }, "Vad filten bär för tryck, varje slag för sig."),
@@ -176,7 +183,7 @@ export const isSceneKey = (key: string): key is SceneKey => BY_KEY.has(key);
 export const keysOf = (group: GroupId): KeySpec[] => SCENE_KEYS.filter((s) => s.group === group);
 
 /** Keys whose change builds the table again (src/scene3d-view.ts set: relens); a slider among them is debounced. */
-export const REBUILDS: ReadonlySet<SceneKey> = new Set<SceneKey>(["lens", "scale", "tray", "base", "surface", "tableSize"]);
+export const REBUILDS: ReadonlySet<SceneKey> = new Set<SceneKey>(["lens", "scale", "tray", "base", "surface", "tableSize", "tableModel", "modelCloth", "modelWood", "modelRail"]);
 /** Keys whose change paints the felt again; text among them is debounced. */
 export const REPRINTS: ReadonlySet<SceneKey> = new Set<SceneKey>(["logo", "felt", "marks", "cloth"]);
 
