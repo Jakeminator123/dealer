@@ -4228,6 +4228,24 @@
             "from": "gjord: kalla-p4-e.png",
             "when": "2026-11-20"
           }
+        },
+        {
+          "id": "paow-a3-p4-ur-film-1120",
+          "role": "landning",
+          "name": "A3 · P4 (ur film från 2.3 C)",
+          "path": "assets/anchors/paow-a3-p4-ur-film-1120/anchor.png",
+          "node": "LAND(P4.C1)",
+          "card": "P4.C1",
+          "hand": "RH",
+          "state": "kandidat",
+          "builtOn": [
+            "paow-ankare-2-3-c"
+          ],
+          "note": "A3 för P4.C1, höger hand vid kortet: slutrutan (72) ur pilotgiven från ankare 2.3 C, gjord med tools/landing-make.ts. Handen vid skon, skon och fönstrets kort är ankare C:s egna (skarv tvärs över ärmen); filmens fönster var tomt. Kortet är planens. Bålen lutar 6° som i filmens slut.",
+          "source": {
+            "from": "ruta 72 ur pilotgiven från ankare 2.3 C, tagning 1 (Runway-uppdrag 2e5704dc; receipt.json bredvid bilden)",
+            "when": "2026-11-20"
+          }
         }
       ]
     },
