@@ -36,9 +36,9 @@ Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-
 
 ## Vem äger vad
 
-- **Huvudagentens adress: `/root`.** Codex-chatten `01a1f397-0b78-71d0-a9ba-329961d47800` samordnar arbetet efter överlämningen 2026-11-19.
-  Kontrollera med ListAgents före meddelanden. Huvudagenten äger commits, taggar och push, studion,
-  labbservern, spelet och 3D-scenens filmlager, `src/clip-graph.ts` och styrdokumenten.
+- **Huvudagentens adress: `/root`.** Codex-chatten `01a1f397-0b78-71d0-a9ba-329961d47800` äger push, taggar, studion,
+  labbservern, spelet, 3D-scenens filmlager, `src/clip-graph.ts` och styrdokumenten. Commits: 2026-11-20 lät Jakob
+  Claude-sessionen `dealer-e7` granska och committa ([BESKED](docs/BESKED.md), "Arbetet och dokumenten"); fråga honom.
 - **Avgränsade uppdrag:** underagenterna har lämnat över landningsmasken, orderns handbyte och forkens bildgranskning.
   Huvudagenten äger nu integration, register och körjournal; nya uppdrag anger egna filer före skrivning.
 - **Jakob talar bara med huvudagenten**, som håller ihop sessionerna. Varje bana får sin kö av huvudagenten och säger

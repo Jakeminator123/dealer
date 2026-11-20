@@ -7,7 +7,7 @@ Beslut, labbservern och rutinverktygen. Här står bara det som gäller nu; det 
 - Scen & bord (adressen `/bordet/`) är labbvyn: lägena Kortplan, Beställ (Filmer och Kön), Scen, Råfilm och
   Efterarbete. `/`, `/scen/`, `/placering/`, `/bestall/` och `/lab.html` leder dit; gamla labbet är borttaget. Menyn:
   Scen & bord, Karta, Granska, Material, Lipsync, Casino; i foten Beslut, Ordlista, Ljud och Modeller.
-- Basgrund behåller bordskorten. Överlägg i handen är av i Scen och Casino; Karta skiljer primära från spelbara steg.
+- Basgrund behåller bordskorten. Överlägg i handen är av i Scen och Casino; Karta skiljer primära från spelbara steg. Scen har labbprovet bordet BORD-02 (Bord → Bordsmodell, `tableModel=bord-02`, 2026-11-20): avslaget som förval, och spelet slår inte på det före Jakobs ja.
 - Lokal klickdiagnostik sparar högst 200 långsamma händelser; läs med `node tools/interaction-diagnostics.ts` (rutin: `tools/local-work.md`). Vercels rapporterade 17-minutersvärde är ännu inte återskapat.
 - Beställ är en rak linje: plats och kort, sedan steget. Förhandsvisa visar serverns text, medier, pris och värden före
   sparning; ändrat underlag kräver ny förhandsvisning, tappat sparsvar återanvänder samma. A3-kandidat väljs under Undantag. Material visar ankare 2.3 och en bricka per plats
