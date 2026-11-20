@@ -604,7 +604,9 @@ test('the studio prioritizes the rolling mandate over the ordinary daily cap and
   const budget = groupBudget(cost, 2, active, 0, 7000);
   assert.equal(budget.fitToday, 1);
   assert.match(budget.words[0], /150 av 800 kvar denna rullande timme/);
-  assert.match(budget.words[0], /1 600 av 2 500 kvar totalt/);
+  // The total follows the mandate in data/order-policy.json, which the main agent renews on Jakob's word.
+  const grouped = (credits: number) => String(credits).replace(/\B(?=(\d{3})+$)/g, '\\s');
+  assert.match(budget.words[0], new RegExp(`${grouped(p.mandate.totalCredits - 900)} av ${grouped(p.mandate.totalCredits)} kvar totalt`));
   assert.doesNotMatch(budget.words.join(' '), /Ryms i dagens tak/);
   assert.equal(checkPolicy({cost}, {...active, dailyCapCredits: 90}, 0, 7000).ok, false);
   const expired = { ...active, mandateBudget: {...mandateBudget, status: 'expired' as const, available: 0} };

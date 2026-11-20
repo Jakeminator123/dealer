@@ -198,6 +198,14 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   Samma dag om städningen, om dubbletterna i `assets/` och om förkastade tagningar och äldre prov: "radera"
   (`tools/local-work.md`, "Radera oanvänt material").
 
+- **API-nyckeln, 3 000 krediter och granskning utan kö** (2026-11-20, kl. 13.05, till sessionen dealer-37 när Runways
+  MCP-inloggning saknades). Han pekade på `RUNWAY_API_KEY` i `.env.local` och skrev: "Du har 3k i budget, men behöver
+  inte använda så mkt såkalrt. me ngår allt bra - fortsä'tt. Livegranskning avklipp med second opinion funkar skitbra
+  från browsern så jag inte behöver gransla allt heal tiden". Beställningar får alltså gå genom API-nyckeln
+  (utvecklarprojektets krediter) inom 3 000 krediter; timtaket 800 står kvar, och mandatet i `data/order-policy.json`
+  är förnyat med de talen. En tagning döms av en oberoende granskare som ser den i rörelse i webbläsaren, och väntar
+  inte på honom.
+
 - **Domar åt honom, och ingen kö** (2026-11-13): "jag måste sova och du får granska och godkänna alla klipp", och kl.
   15.50, på väg ut: "jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna
   så vi får en roligare grundloop i idle/ankjare 1" och "Med andra ord vill jag inte se en sån här lista när jag är
