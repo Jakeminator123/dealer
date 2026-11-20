@@ -20,8 +20,8 @@ Huvudagentens bana: spelet, scenens filmlager, nätkopian och stängda banor. Ko
   `paow-game-frame-20261118` höll 8 i över 22 s paus; ruta 60 visade 8, ruta 61 visade 13. Maskens kvalitet bedöms separat.
 - Filmkortsprovet behåller filmens kort vid eget mål och ritar återbruk till C2/split på spelplatsen. Spår måste täcka
   landning/övertoning genom returskarven. `paow-game-carry-20261118`: native split 18/17 mot 17, saldo 1005; C2-kant högst 1 px vid två gränser. Full rörelsedom återstår.
-- Kopian på nätet står på `1206c43` (2026-11-19): sju filmer publicerade på Jakobs ja, oförändrat åtkomstskydd.
-  Mobilfelen från `9ffa4b0` är ute: nätkontroll 19/19; IAB-hand 18 mot 19, saldo 995. Lokal native-hand: 20 mot 17, 1005.
+- Kopian på nätet står på `c9d006d` (2026-11-20, Jakobs ord): inga nya filmer, kontroll utifrån 20/20, samma åtkomst.
+  Telefonmått senast på `1206c43`: nätkontroll 19/19; IAB-hand 18 mot 19, saldo 995. Lokal native-hand: 20 mot 17, 1005.
   Bevis: `assets/proofs/paow-mobile-studio-20261118`. Stående beskär ytterplatser; liggande visar alla sju.
 - Filmen till hans chef ligger på hans skrivbord (`paow-runda-6-till-chefen-spelet.mp4` och `-scenen.mp4`, 124 s,
   blint granskad 3,75/5). Ingen granskare har hört ljudet, och `paow-runda-2-` till `-5-` ska inte skickas.
@@ -33,7 +33,7 @@ Huvudagentens bana: spelet, scenens filmlager, nätkopian och stängda banor. Ko
 2. Repliker som munlappar över vila (`repliker-som-munlappar`) kan provas efter Jakobs ja till realtidsmunnen 2026-11-17.
 3. En ny runda till chefen när läpparna är inne (`node alla.mjs <namn>`, blind granskning mot `chef-jakob-1-1x-v10`).
    Jakob lyssnar innan han skickar.
-4. Nätkopian är verifierad i mobilmått; fysisk telefon och ljud återstår. Material kallar ännu opublicerade ankare saknade.
+4. Nätkopian på `c9d006d` är inte prövad i mobilmått än; fysisk telefon och ljud återstår. Material kallar ännu opublicerade ankare saknade.
 
 **Väntar på Jakob.** Inget utanför Beslut.
 
