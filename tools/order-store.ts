@@ -48,7 +48,7 @@ import {
 import { readMethods, recipeFor, recipeHands, referenceByRule, referenceWaits, secondsOf, type MethodRegister } from '../src/order-methods.ts';
 import { handsIn, orderPrompt } from '../src/order-prompts.ts';
 import { checkCutFrame, patchShoe } from '../src/cut-frame.ts';
-import { CUT, H, LAY, TEXTURE, W, armAlone, cardTexture, cutFigure, drawCard, drawCards, matchGreen, pictureBytes, planQuad, pngOf, poseOnShoe, readPlan, readRgb, type CardOutline, type Pt, type Texture } from './order-images.ts';
+import { CUT, H, LAY, TEXTURE, W, armAlone, cardTexture, cutFigure, drawCard, drawCards, markSeen, matchGreen, pictureBytes, planQuad, pngOf, poseOnShoe, readPlan, readRgb, type CardOutline, type Pt, type Texture } from './order-images.ts';
 import type { PlacementPlan } from '../src/placement-model.ts';
 import type { Entry, Register } from '../studio/lib/media.ts';
 
@@ -560,11 +560,18 @@ export function orderStore(root: string, options: StoreOptions = {}) {
    * plan says later.
    */
   async function textOf(order: Pick<Order, 'step' | 'motion' | 'generation' | 'pictures' | 'prompt' | 'reference'>, dealer: DealerInfo, extra: string | null, snapshot?: PlanSnapshot): Promise<Order['prompt']> {
-    const drawn = order.pictures.find((p) => p.goesAs === 'endFrame')?.drawn ?? null;
+    const end = order.pictures.find((p) => p.goesAs === 'endFrame'), drawn = end?.drawn ?? null;
     const target = order.motion?.target ?? stepOf(order.step.key)?.target ?? null;
     const planPlace = !drawn && target ? planCentre((snapshot ?? await readPlan(root)).plan, target) : null;
-    const { template, style, text } = orderPrompt({ ...order, prompt: { ...order.prompt, extra } }, dealer, planPlace);
-    return { template, style, text, sha256: sha(text), extra, middle: false, ...(planPlace ? { place: [planPlace.x, planPlace.y] as [number, number] } : {}) };
+    // An open deal whose last picture shows the blue side's marks (the pink cross, the red circle) says them: the card drawn
+    // with them, or seen in the picture's own pixels where it draws no card of its own (an A3, a film's frame).
+    let faceMark = false;
+    if (end && target && order.motion?.side === 'FRONT' && order.step.key.startsWith('GIV-')) {
+      if (drawn) faceMark = !!drawn.mark;
+      else if (end.path) { try { faceMark = markSeen(await readRgb(path.join(root, ...end.path.split('/'))), planQuad((snapshot ?? await readPlan(root)).plan, target)); } catch { faceMark = false; } }
+    }
+    const { template, style, text } = orderPrompt({ ...order, prompt: { ...order.prompt, extra, faceMark } }, dealer, planPlace);
+    return { template, style, text, sha256: sha(text), extra, middle: false, ...(planPlace ? { place: [planPlace.x, planPlace.y] as [number, number] } : {}), ...(faceMark ? { faceMark: true } : {}) };
   }
 
   /** The short two-hand prompt turns a face-up deal over the short end (template 11). */

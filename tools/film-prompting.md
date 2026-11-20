@@ -69,6 +69,30 @@ deras egna ordrar); reglerna och recepten står här. Kort är receptets stil, M
 jämförelse. Skiljer orden sig från reglerna här, rättas orden. Format, filer och priser:
 [dealer-line.md](dealer-line.md), "Format och namn".
 
+**Märket på blå sidan (2026-11-20, prövat i tre filmer utanför Beställ).** Filmkortets rygg är gul och slät (stängt kort); framsidan är blå (öppet
+kort) och bär märket (Jakob 2026-11-20: "gula" ska vara ryggen). Ett öppet kort som lagret ritar på en bild bär ett
+litet rosa kryss i mitten och en liten röd cirkel i hörnet nere till vänster (`layCard` i `tools/order-images.ts`).
+Färgerna som bilderna till en film ritas med, och som en granskare mäter mot (`CARD_RGB`, `src/placement-model.ts`):
+
+| Del | RGB | Hex |
+|---|---|---|
+| Gul rygg | 241, 216, 0 | `#f1d800` |
+| Blå framsida | 0, 130, 218 | `#0082da` |
+| Rosa kryss (X), mitt på den blå sidan | 255, 120, 200 | `#ff78c8` |
+| Röd cirkel (prick), hörnet nere till vänster | 225, 30, 35 | `#e11e23` |
+
+Krysset är 34 % av kortets bredd från spets till spets och 7 % tjockt; cirkeln har radien 7,5 % av bredden och sitter
+20 % in från båda kanterna, så att blått omger den (`CARD_MARK`). Siffrorna står aldrig i en filmtext: en videomodell
+läser färgen ur bilden, och texten säger bara "small pink cross" och "small red dot". Texten följer bilden: visar sista bilden märket (`markSeen` läser bildens egna punkter, så
+det gäller också en A3 och en snittruta) sparas `prompt.faceMark`, och meningen om kortets utseende i Kort och Minimal
+säger "its face is solid blue with a small pink cross in the middle and a small red dot in one corner, as the last frame
+shows it" i stället för en slät blå sida. Utan märke i bilden är varje text ord för ord som förut, och mallens version
+är densamma: ordern bär själv vilket som gäller. Prövat i tre vändfilmer utanför Beställ (Kling 4, Prov
+`paow-ankare-2-3-b`; raden i [film-prov.md](film-prov.md), Oavgjort): kortet ligger till slut med kryss och prick som i
+sista bilden i alla tre (V, mätt); i handen ritas krysset fyra till nio gånger större och krymper när kortet släpps
+(V); märket hindrade inte att ytan bytte färg utan kantläge i en film och visade en vit sida i en annan (V). Genom
+Beställ är ingen film beställd med märket; första ordern där är provet.
+
 GIV-2.3 med KORT har en fast kortändevändning i mall 11. Ett uttryckligt val av LONG_EDGE eller AT_PLACE avvisas före
 sparning; MINIMAL låter referensfilmen beskriva vändningen. Den frysta placeringsplanens avsikt behålls separat.
 

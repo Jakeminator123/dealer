@@ -5,8 +5,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { H, TEXTURE, W, apply, armAlone, cardOutline, cardTexture, components, drawCard, drawCards, greenOf, homography, matchGreen, planQuad, pngOf, poseOnShoe, readPlan, type Pt } from './order-images.ts';
+import { H, TEXTURE, W, apply, armAlone, cardOutline, cardTexture, components, drawCard, drawCards, greenOf, homography, layCard, markSeen, matchGreen, planQuad, pngOf, poseOnShoe, readPlan, type Pt } from './order-images.ts';
 import { ARM_ALONE, SHOE_AT_ANCHOR, SLEEVE_AT_SHOE } from './order-store.ts';
+import { CARD_RGB, cardMark } from '../src/placement-model.ts';
 import { committedText } from './committed.ts';
 
 test('the homography maps the four corners onto the four corners', () => {
@@ -178,4 +179,34 @@ test('several cards drawn one after the other, each where the plan says; the hol
   assert.match(first.label, /^Första bild · Paows ankare 1 \+ hålkortet stängt$/);
   assert.ok(first.sha256 && last.sha256 && first.sha256 !== last.sha256);
   assert.match(order.prompt.text, /lying close in front of her, in the middle of the picture, where the last frame shows it/, 'the place from the drawn card');
+});
+
+test('the blue side\'s marks (Jakob 2026-11-20): an open card is drawn with the pink cross in its middle and the red circle at its near left corner, in the register\'s colours; a closed card is plain yellow', () => {
+  // a made-up card: flat blue over the whole picture, its outline a square; laid on green at P4's size
+  const blue = Buffer.alloc(W * H * 3);
+  for (let i = 0; i < W * H; i++) { blue[i * 3] = CARD_RGB.face[0]; blue[i * 3 + 1] = CARD_RGB.face[1]; blue[i * 3 + 2] = CARD_RGB.face[2]; }
+  const mask = new Float32Array(W * H).fill(1);
+  const texture = { rgb: blue, mask, quad: [[100, 100], [300, 100], [300, 380], [100, 380]] as Pt[], source: { video: 'made-up', frame: 0, sha256: '', quadFrom: 'made-up' } };
+  const green = Buffer.alloc(W * H * 3);
+  for (let i = 0; i < W * H; i++) { green[i * 3] = 0; green[i * 3 + 1] = 237; green[i * 3 + 2] = 44; }
+  const to: Pt[] = [[819, 1066], [893, 1066], [897, 1138], [813, 1138]];
+  const open = layCard(green, texture, to, 'FRONT'), closed = layCard(green, texture, to, 'BACK');
+  const at = (rgb: Buffer, [x, y]: Pt) => [...rgb.subarray((Math.round(y) * W + Math.round(x)) * 3, (Math.round(y) * W + Math.round(x)) * 3 + 3)];
+  const mark = cardMark(to.map(([x, y]) => ({ x, y }))), middle = (q: { x: number; y: number }[]): Pt => [q.reduce((s, p) => s + p.x, 0) / q.length, q.reduce((s, p) => s + p.y, 0) / q.length];
+  assert.deepEqual(at(open, middle(mark.cross[0])), [...CARD_RGB.cross], 'the cross is pink in the card\'s middle');
+  assert.deepEqual(at(open, middle(mark.dot)), [...CARD_RGB.dot], 'the circle is red');
+  const dot = middle(mark.dot), centre = middle(to.map(([x, y]) => ({ x, y })));
+  assert.ok(dot[0] < centre[0] && dot[1] > centre[1], 'the circle lies at the near left corner');
+  assert.deepEqual(at(open, [centre[0] + 22, centre[1] - 22]), [...CARD_RGB.face], 'the rest of the side is blue');
+  assert.equal(markSeen(open, to), true);
+  assert.equal(markSeen(closed, to), false, 'a closed card carries nothing');
+  assert.equal(markSeen(green, to), false);
+  // her fingers over the cross: the circle alone is enough
+  const covered = Buffer.from(open);
+  for (let y = 1085; y <= 1118; y++) for (let x = 835; x <= 880; x++) { covered[(y * W + x) * 3] = 230; covered[(y * W + x) * 3 + 1] = 150; covered[(y * W + x) * 3 + 2] = 120; }
+  assert.equal(markSeen(covered, to), true);
+  // a plain blue card with skin over both places is not read as marked
+  const plain = layCard(green, { ...texture, rgb: blue }, to, 'BACK');
+  for (let y = 1066; y <= 1138; y++) for (let x = 813; x <= 897; x++) { plain[(y * W + x) * 3] = 230; plain[(y * W + x) * 3 + 1] = 150; plain[(y * W + x) * 3 + 2] = 120; }
+  assert.equal(markSeen(plain, to), false, 'skin is neither the pink nor the red');
 });

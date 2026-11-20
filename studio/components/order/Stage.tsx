@@ -15,6 +15,7 @@ import { nodeCode } from "../../lib/names.ts";
 import type { Route } from "../../lib/orders.ts";
 import { placeName } from "../../lib/placement.ts";
 import { CARD_COLOUR } from "../../../src/placement-model.ts";
+import { CardMark } from "../placement/CardMark";
 import { SegmentedControl, buttonClasses, cn } from "../ui";
 
 const W = 1764,
@@ -140,6 +141,7 @@ export function Stage({
                   strokeDasharray={c.filled ? undefined : "6 4"}
                   vectorEffect="non-scaling-stroke"
                 />
+                {c.filled && c.side === "FRONT" ? <CardMark quad={c.quad} /> : null}
               </g>
             );
           })}

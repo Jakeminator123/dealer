@@ -71,8 +71,11 @@ test("on the checkout: no landing picture holds for Paow, the lone seat-4 pictur
   assert.match(landings[0].stateBy, /gäller → ersatt \(huvudagentens beslut på Jakobs ord i huvudagentens chatt 2026-11-18/);
   assert.match(landings[0].stateBy, /^Jakob 2026-11-13 02:39: kandidat → gäller \(Material\); /, "what he did himself in Material stays said");
   assert.equal(paow.missing?.landning, undefined, "the station shows seat by seat what holds; no note beside it says something else");
-  // Anchor 2.3 holds, on his yes in Beslut.
-  const a23 = paow.entries.filter((e: { role: string; state: string }) => e.role === "ankare-2.3" && e.state === "gäller");
-  assert.deepEqual(a23.map((e: { id: string; node: string; path: string }) => [e.id, e.node, e.path]), [["paow-ankare-2-3-a", "READY-C", "assets/anchors/paow-ankare-2-3-a/anchor.png"]]);
-  assert.match(a23[0].stateBy, /hans ja i Beslut 2026-11-18/);
+  // Anchor 2.3: the first one (both hands at the shoe) he archived himself in Material when he asked for a new pose; it is
+  // set aside, not deleted, and one that holds is his own choice, never an agent's.
+  const a23 = paow.entries.filter((e: { role: string }) => e.role === "ankare-2.3");
+  const first = a23.filter((e: { id: string }) => e.id === "paow-ankare-2-3-a");
+  assert.deepEqual(first.map((e: { node: string; path: string; state: string }) => [e.node, e.path, e.state]), [["READY-C", "assets/anchors/paow-ankare-2-3-a/anchor.png", "arkiverad"]]);
+  assert.match(first[0].stateBy, /^Jakob 2026-11-20 08:33: gäller → arkiverad \(Material\)/);
+  for (const e of a23.filter((x: { state: string }) => x.state === "gäller")) assert.match(e.stateBy ?? "", /^Jakob |hans ja i Beslut/, `${e.id}: holds on his own choice`);
 });

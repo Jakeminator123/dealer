@@ -16,6 +16,7 @@ import { FOR_YOU } from "../../lib/verdict.ts";
 import { PRODUCTION_CHIP, draftProduction, getProduction, productionCount, type Production as List, type ProductionAnchor, type ProductionRow } from "../../lib/orders.ts";
 import type { PlanAnswer } from "../../../src/order-model.ts";
 import { CARD_COLOUR } from "../../../src/placement-model.ts";
+import { CardMark } from "../placement/CardMark";
 import { Badge, Button, cn, useToast } from "../ui";
 
 const W = 1764,
@@ -50,6 +51,7 @@ function StepPicture({ row, plan }: { row: ProductionRow; plan: PlanAnswer | nul
               <g key={i}>
                 <circle cx={cx} cy={cy} r={95} fill="none" stroke="#e8cb85" strokeWidth={9} opacity={0.9} />
                 <polygon points={c.quad.map((q) => q.join(",")).join(" ")} fill={CARD_FILL[c.side]} stroke={CARD_FILL[c.side]} strokeWidth={4} strokeLinejoin="round" />
+                {c.side === "FRONT" ? <CardMark quad={c.quad} /> : null}
               </g>
             );
           })}

@@ -5,7 +5,7 @@
 //   2. the bank's shoe and the yellow card in its window put back from the anchor (SHOE_AT_ANCHOR), so that the window is never
 //      white or redrawn;
 //   3. a card the source drew near the seat taken away (blue on the felt becomes the anchor's felt), the plan's card drawn on
-//      the seat with the repo's own function (drawCard: the bank's card in the plan's quad, plain blue, no white rim), and her
+//      the seat with the repo's own function (drawCard: the bank's card in the plan's quad, blue with its pink cross and red circle, no white rim), and her
 //      fingers that lie over it put back on top;
 //   4. checks, measured and written into the receipt: the bank's size; the frame held (her head and shoulders where the anchor
 //      has them, the shoe where it stands); the laying hand's fingertips at the card's corner nearest her; the other hand at the

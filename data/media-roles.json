@@ -1521,12 +1521,13 @@
           "name": "Vila i linnet",
           "path": "assets/proofs/paow-profilbild-och-keystone/3-keystone-vila-linne.png",
           "node": "IDLE",
-          "state": "ersatt",
+          "state": "arkiverad",
           "note": "Det första utseendet. Filmerna b9–b12 utgår härifrån. Kallas keystone i provet men är ett ankare.",
           "source": {
             "from": "GPT Image 2.5 ur Pamelas vila och Jakobs bilder, plagget förlängt lokalt",
             "when": "2026-11-11"
-          }
+          },
+          "stateBy": "Jakob 2026-11-20 08:35: ersatt → arkiverad (Material)"
         },
         {
           "id": "paow-nyp-linne",
@@ -1534,12 +1535,13 @@
           "name": "Nyp i linnet",
           "path": "assets/proofs/paow-profilbild-och-keystone/5-keystone-redo-a-nyp.png",
           "node": "READY",
-          "state": "ersatt",
+          "state": "arkiverad",
           "note": "Det första utseendet; användbar med anmärkningar. Kallas keystone 2 i provet men är ett ankare.",
           "source": {
             "from": "GPT Image 2.5, skon ur bankens egen bild",
             "when": "2026-11-11"
-          }
+          },
+          "stateBy": "Jakob 2026-11-20 08:35: ersatt → arkiverad (Material)"
         },
         {
           "id": "paow-slap-linne",
@@ -1547,12 +1549,13 @@
           "name": "Handen över kortet, linnet",
           "path": "assets/proofs/paow-profilbild-och-keystone/6-keystone-redo-b-slap.png",
           "node": "READY-B",
-          "state": "ersatt",
+          "state": "arkiverad",
           "note": "Det första utseendet; användbar med anmärkningar. Bankens sko för läge 2.",
           "source": {
             "from": "GPT Image 2.5, skon ur bankens egen bild",
             "when": "2026-11-11"
-          }
+          },
+          "stateBy": "Jakob 2026-11-20 08:35: ersatt → arkiverad (Material)"
         },
         {
           "id": "paow-film-b17-ankare1-till-2-1-t1",
@@ -3823,13 +3826,13 @@
           "name": "Paow · ankare 2.2 (släp), tagning 1",
           "path": "assets/anchors/paow-ankare-2-2-t1/anchor.png",
           "node": "READY-B",
-          "state": "gäller",
+          "state": "ersatt",
           "note": "Ankare 2.2 lagd till i studion 2026-11-13.",
           "source": {
             "from": "uppladdad: after-2.png",
             "when": "2026-11-13"
           },
-          "stateBy": "Jakob (besked 15:47 till huvudagenten: kandidaten för ankare 2.2 gäller; infört av filmproducenten) 2026-11-13 16:00: kandidat → gäller (Material)"
+          "stateBy": "Jakob 2026-11-20 08:34: gäller → ersatt (Material)"
         },
         {
           "id": "paow-ankare-2-2-blick-a",
@@ -3837,7 +3840,7 @@
           "name": "Ankare 2.2, blicken mot kortet, tatuerad hand (A)",
           "path": "assets/anchors/paow-ankare-2-2-blick-a/anchor.png",
           "node": "READY-B",
-          "state": "kandidat",
+          "state": "gäller",
           "builtOn": [
             "paow-ankare-2-2-t1",
             "paow-vila-tatuerad"
@@ -3846,7 +3849,8 @@
           "source": {
             "from": "paow-ankare-2-2-t1 redigerad (Nano Banana Pro 2K för huvud och hand, storlek och inpassning lokalt; kvittot ligger bredvid bilden)",
             "when": "2026-11-18"
-          }
+          },
+          "stateBy": "Jakob 2026-11-20 08:34: kandidat → gäller (Material)"
         },
         {
           "id": "paow-ankare-2-3-a",
@@ -3854,7 +3858,7 @@
           "name": "Ankare 2.3, båda händerna vid skon före första kortet (A)",
           "path": "assets/anchors/paow-ankare-2-3-a/anchor.png",
           "node": "READY-C",
-          "state": "gäller",
+          "state": "arkiverad",
           "builtOn": [
             "paow-vila-tatuerad"
           ],
@@ -3863,7 +3867,7 @@
             "from": "ruta 94 ur filmen ankare 1 → 2.3 (Runway-uppdrag 5b26016d; receipt.json bredvid bilden)",
             "when": "2026-11-18"
           },
-          "stateBy": "Jakob 2026-11-18 02:39: kandidat → gäller (hans ja i Beslut 2026-11-18, \"Ja, registrera\"; infört av huvudagenten genom dess underagent för beställningslinjen)"
+          "stateBy": "Jakob 2026-11-20 08:33: gäller → arkiverad (Material)"
         },
         {
           "id": "paow-a3-p4",

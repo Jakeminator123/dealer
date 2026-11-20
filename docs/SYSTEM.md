@@ -205,10 +205,25 @@ Spelet med flera dealers (2026-11-13):
   spelas alltid i takt 1, också när reglaget Givarnas tempo (`filmTempo`, förval 1) står högre, så att munnen och
   rösten följs åt. Försäkringen och utfallet sägs i vila efter kedjan. Nyckeln `tal` (`repliker`, förval, eller `av`) stänger av talet. Talet i
   sin helhet: [docs/TAL.md](TAL.md).
-- **Ritade kort.** Filmens egna kort är gula (baksidan) och blå (framsidan) och har ingen valör. Kortspåret
+- **Ritade kort.** Filmens egna kort är gula (baksidan) och blå (framsidan) och har ingen valör. Från 2026-11-20 bär
+  den blå sidan ett märke: ett litet rosa kryss i mitten och en liten röd cirkel i hörnet nere till vänster, som kortet
+  ligger i bilden. Gult är ryggen och blått framsidan (Jakob 2026-11-20). De fyra färgerna står i tabellen under
+  punkten och på ett ställe i koden, `CARD_RGB` i `src/placement-model.ts`, och märkets mått i `CARD_MARK` (andelar av kortets bredd);
+  `cardMark` lägger det genom samma perspektiv som kortets hörn. Labbet ritar det på varje fyllt blått kort
+  (`CardMark`), `layCard` i `tools/order-images.ts` ritar det på beställningens bild och på en ny A3 (orderns
+  `drawn.mark` bär färgerna), och texten säger märket bara när sista bilden visar det (`markSeen`, `prompt.faceMark`).
+  Kortspåret, nyckeln och matten i spelet läser ännu bara gult och blått. Kortspåret
   (`assets/tracking/<klipp>/card-track.json`) säger var kortet är i varje ruta, och scenen kan rita ett riktigt kort
   där (`cardMethod: 'scene'`, förval): ett föremål under filmen, där filmens eget kort nycklas bort så att hennes
   fingrar ligger över det ritade. Var det görs bestämmer linjen sist i den här punkten.
+
+  | Del av filmkortet | RGB | Hex |
+  |---|---|---|
+  | Gul rygg | 241, 216, 0 | `#f1d800` |
+  | Blå framsida | 0, 130, 218 | `#0082da` |
+  | Rosa kryss (X) | 255, 120, 200 | `#ff78c8` |
+  | Röd prick | 225, 30, 35 | `#e11e23` |
+
   - Kortet ritas för den ruta som visas. Filmkön håller reda på vilken ruta varje film senast visade
     (`requestVideoFrameCallback`), inte filmelementets klocka, som går upp till en ruta före bilden; med klockan stod
     det ritade kortet där filmens kort är i nästa ruta, och filmens gula stack fram bredvid.

@@ -66,7 +66,38 @@ export const WINDOW_CARD: Readonly<Record<View, readonly {x:number;y:number}[]>>
 // the card drawn on an order's last picture (the bank's real card pixels, tools/order-images.ts TEXTURE: 0, 130, 218), the
 // yellow the median of the card in the shoe's window of anchors 1 and 2.1 and the neutral backdrop (239–245, 214–228, 0–3).
 // The game's lit film card (src/scene3d-deal.ts COLOUR: 232, 209, 5 and 0, 121, 227) lies within 13 of both.
-export const CARD_COLOUR: Readonly<Record<Side, string>> = { BACK: '#f1d800', FRONT: '#0082da' };
+//
+// The film card's four colours, kept here and nowhere else (Jakob 2026-11-20: "Spara RGB-färgen för det gula, blåa, kryssets
+// färg och den lilla cirkelns färg på alla kort"): the yellow and the blue above, and the two marks on the blue side, a small
+// pink cross in its middle and a small red circle in one corner, so that a film cannot show the wrong side of the card in the
+// right colour, and so that the card's turn and angle can be read off the cross. The yellow side carries nothing.
+export type Rgb3 = readonly [number, number, number];
+export const CARD_RGB: Readonly<Record<'back' | 'face' | 'cross' | 'dot', Rgb3>> = { back: [241, 216, 0], face: [0, 130, 218], cross: [255, 120, 200], dot: [225, 30, 35] };
+const hexOf = (c: Rgb3) => `#${c.map((v) => v.toString(16).padStart(2, '0')).join('')}`;
+export const CARD_COLOUR: Readonly<Record<Side, string>> = { BACK: hexOf(CARD_RGB.back), FRONT: hexOf(CARD_RGB.face) };
+export const MARK_COLOUR: Readonly<Record<'cross' | 'dot', string>> = { cross: hexOf(CARD_RGB.cross), dot: hexOf(CARD_RGB.dot) };
+// The marks' measures in card widths (63 mm): the cross's arms reach `arm` from the card's middle along its diagonals of a
+// square and are `stroke` wide (about 21 mm across, 4 mm wide); the circle has radius `radius` and its middle lies `inset` in
+// from both sides of one corner (9 mm across, 13 mm in), so that blue goes all round it and the card's outline stays whole.
+// `long` is the card's long side in widths (88 mm).
+export const CARD_MARK = { long: 88 / 63, cross: { arm: 0.17, stroke: 0.07 }, dot: { radius: 0.075, inset: 0.2 } } as const;
+/**
+ * The marks of a card's blue side as shapes in the picture, for a card drawn as four corners far left, far right, near
+ * right, near left (src/card-plan.ts planCardQuad): the cross's two arms and the circle, each a polygon, laid through the
+ * same perspective as the corners. The first side (far left to far right) is read as the card's short side, as the plan's
+ * cards lie; the circle sits at the near left corner, the one furthest from her fingertips in a landing picture.
+ */
+export function cardMark(quad: readonly { x: number; y: number }[]): { cross: { x: number; y: number }[][]; dot: { x: number; y: number }[] } {
+  const [p0, p1, p2, p3] = quad, M = CARD_MARK;
+  const dx1 = p1.x - p2.x, dx2 = p3.x - p2.x, sx = p0.x - p1.x + p2.x - p3.x, dy1 = p1.y - p2.y, dy2 = p3.y - p2.y, sy = p0.y - p1.y + p2.y - p3.y;
+  const den = dx1 * dy2 - dx2 * dy1 || 1, g = (sx * dy2 - dx2 * sy) / den, h = (dx1 * sy - sx * dy1) / den;
+  // a point of the card in widths (x across 0–1, y along 0–long) to the picture
+  const at = (x: number, y: number) => { const s = x, t = y / M.long, w = g * s + h * t + 1; return { x: ((p1.x - p0.x + g * p1.x) * s + (p3.x - p0.x + h * p3.x) * t + p0.x) / w, y: ((p1.y - p0.y + g * p1.y) * s + (p3.y - p0.y + h * p3.y) * t + p0.y) / w }; };
+  const cx = 0.5, cy = M.long / 2, a = M.cross.arm * Math.SQRT1_2, k = (M.cross.stroke / 2) * Math.SQRT1_2;
+  const arm = (d: 1 | -1) => [at(cx - a * d - k * d, cy - a + k), at(cx - a * d + k * d, cy - a - k), at(cx + a * d + k * d, cy + a - k), at(cx + a * d - k * d, cy + a + k)];
+  const dot = Array.from({ length: 20 }, (_, i) => at(M.dot.inset + M.dot.radius * Math.cos((i * Math.PI) / 10), M.long - M.dot.inset + M.dot.radius * Math.sin((i * Math.PI) / 10)));
+  return { cross: [arm(1), arm(-1)], dot };
+}
 export const otherHand = (h: Hand): Hand => h==='LH'?'RH':'LH';
 export const otherSide = (s: Side): Side => s==='BACK'?'FRONT':'BACK';
 export function toPixels(point: Point, view: View) { const p=VIEWS[view]; return { x:point.u*(p.width-1), y:(1-point.v)*(p.height-1) }; }

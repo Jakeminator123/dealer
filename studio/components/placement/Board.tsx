@@ -23,6 +23,7 @@ import { PLAN_VIEW, centreOf, nudged, placeCode, sideWord, sizeFromCorner, taper
 import { PATH_SECONDS, pathFrame, type PathPhase } from "../../lib/placement-path.ts";
 import { IconButton } from "../ui";
 import { cn } from "../ui/cn";
+import { CardMark } from "./CardMark";
 import { draftActions } from "./useDraft.ts";
 
 export type Backdrop = { kind: "still"; src: string } | { kind: "film"; src: string; fps: number; frame: number };
@@ -38,13 +39,19 @@ const pts = (q: readonly Pt[]) => q.map((p) => `${p.x},${p.y}`).join(" ");
 type Grip = "move" | "turn" | "size" | "taper";
 
 /**
- * Every card on the stage, one shape: plain yellow (closed) or plain blue (open), the films' own colours (CARD_COLOUR), with
- * rounded corners and no rim (Jakob 2026-11-17). `grow` widens it by that many picture pixels all round (the shoe's card,
+ * Every card on the stage, one shape: plain yellow (closed) or blue (open), the films' own colours (CARD_COLOUR), with
+ * rounded corners and no rim (Jakob 2026-11-17); the blue side carries its pink cross and red circle (CardMark, Jakob
+ * 2026-11-20). `grow` widens it by that many picture pixels all round (the shoe's card,
  * to cover the backdrop's pale window edge).
  */
 export function CardShape({ quad, side, grow = 0, ...rest }: { quad: readonly Pt[]; side: Side; grow?: number } & Omit<SVGProps<SVGPathElement>, "d" | "fill" | "stroke">) {
   const colour = COLOUR[side];
-  return <path d={cardPath(quad)} fill={colour} stroke={grow ? colour : "none"} strokeWidth={grow * 2} strokeLinejoin="round" {...rest} />;
+  return (
+    <>
+      <path d={cardPath(quad)} fill={colour} stroke={grow ? colour : "none"} strokeWidth={grow * 2} strokeLinejoin="round" {...rest} />
+      {side === "FRONT" ? <CardMark quad={quad} /> : null}
+    </>
+  );
 }
 
 /** Arrow keys over a run of presses are one step: the run ends after a short pause. */

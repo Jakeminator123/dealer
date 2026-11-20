@@ -12,6 +12,7 @@ import { swedishMoment } from "../../lib/mode.ts";
 import { SHOWN_CHIP, goesWords, offsetWords, ownerWords, shownWords, type OrderAnswer, type Owner, type Picture } from "../../lib/orders.ts";
 import type { Drawn } from "../../../src/order-model.ts";
 import { CARD_COLOUR } from "../../../src/placement-model.ts";
+import { CardMark } from "../placement/CardMark";
 import { Badge, IconButton, cn } from "../ui";
 
 const W = 1764,
@@ -91,43 +92,6 @@ function PictureViewer({ src, title, open, onOpenChange }: { src: string; title:
   );
 }
 
-/**
- * A picture as it will go out, before a draft exists (Ny beställning, Bordet): a thumbnail, its short name, whose it is; the
- * card drawn over it where the plan says, which the store draws into the last picture when the draft is made.
- */
-export function PreviewPicture({ src, frame, name, owner, dealer, waiting, drawn, cards }: { src: string | null; frame?: { video: string; time: number } | null; name: string; owner: Owner | null; dealer: string; waiting?: string | null; drawn?: boolean; cards?: { quad: [number, number][]; side: "FRONT" | "BACK"; faint?: boolean }[] }) {
-  return (
-    <figure className="flex min-w-0 flex-col gap-1.5">
-      <div className="relative aspect-[1764/1174] overflow-hidden rounded-md border border-line bg-well">
-        {frame ? (
-          // One frame of a film (a landing picture taken from a take): the film paused at that frame.
-          <video src={`${frame.video}#t=${frame.time.toFixed(3)}`} muted playsInline preload="auto" className="size-full object-cover" aria-label={name} />
-        ) : src ? (
-          // eslint-disable-next-line @next/next/no-img-element -- a lab file
-          <img src={src} alt={name} className="size-full object-cover" />
-        ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-[repeating-linear-gradient(135deg,#0c110f_0_10px,#0a0e0c_10px_20px)] text-center">
-            <Clock className="size-5 text-vantar" />
-            <span className="text-sm text-ink">Väntar på {waiting ?? "bilden"}</span>
-            <span className="text-2xs text-dim">{drawn ? "kortet ritas på den när den är godkänd i Material" : "hämtas hit när den är godkänd i Material"}</span>
-          </div>
-        )}
-        {cards?.length ? (
-          <svg viewBox={`0 0 ${W} ${H}`} className="pointer-events-none absolute inset-0 size-full" aria-hidden>
-            {cards.map((c, i) => (
-              <polygon key={i} points={c.quad.map((p) => p.join(",")).join(" ")} fill={c.faint ? "none" : CARD_COLOUR[c.side]} stroke={c.faint ? "#e8cb85" : CARD_COLOUR[c.side]} strokeWidth={c.faint ? 3 : 4} strokeLinejoin="round" strokeDasharray={c.faint ? "10 8" : undefined} opacity={c.faint ? 0.7 : 1} />
-            ))}
-          </svg>
-        ) : null}
-      </div>
-      <figcaption className="flex min-w-0 flex-wrap items-center gap-1.5 text-xs">
-        <span className="truncate text-ink">{name}</span>
-        <OwnerChip owner={owner} dealer={dealer} />
-      </figcaption>
-    </figure>
-  );
-}
-
 /** One picture of an order, with whose it is when the answer says. */
 export function PictureCard({ picture, owner, dealer, planned, className }: { picture: Picture; owner?: Owner | null; dealer?: string; planned?: { quad: [number, number][]; side: "FRONT" | "BACK" } | null; className?: string }) {
   const [open, setOpen] = useState(false);
@@ -161,6 +125,7 @@ export function PictureCard({ picture, owner, dealer, planned, className }: { pi
             {planned ? (
               <svg viewBox={`0 0 ${W} ${H}`} className="pointer-events-none absolute inset-0 size-full" aria-label="Där kortet ritas">
                 <polygon points={planned.quad.map((p) => p.join(",")).join(" ")} fill={CARD_COLOUR[planned.side]} stroke={CARD_COLOUR[planned.side]} strokeWidth={4} strokeLinejoin="round" />
+                {planned.side === "FRONT" ? <CardMark quad={planned.quad} /> : null}
               </svg>
             ) : null}
           </div>

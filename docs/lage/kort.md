@@ -20,8 +20,8 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
   rum och kortvisning följer med. **Bred lins** visar äldre, mer ovalt perspektiv som tillval; **Standard** återgår till B.
 - Kortplan har en vy; Dator | Mobil och `vy=mobil` är borta. En framtida mobilvy härleds ur samma kort och lins.
 - D.C3 är redigerbart i Kortplan och Beställ; äldre planer bevarar de 16 korten och får dess tidigare spelposition. Sparad D.C3 styr senare dealer-kort. Tre lokala geometrier jämförs i Prov `paow-dc3-tre-geometrier-20261119` (372 krediter); inget Primär-byte.
-- Labbet visar släta gula och blå kort (`CARD_COLOUR` i `src/placement-model.ts`), och spelets rygg med SG står kvar:
-  inget trycks på korten före efterarbetet ([BESKED](../BESKED.md), "Kortets sidor"; kortet i Beslut är uttaget).
+- Filmkortet är gult och blått, och den blå sidan bär ett rosa kryss och en röd cirkel (`CARD_RGB`, `cardMark` i
+  `src/placement-model.ts`; [BESKED](../BESKED.md), "Märket på blå sidan"; prövat i tre filmer utanför Beställ, se BRISTER). Spelets rygg med SG står kvar.
 - Jakob sparade planen från Bordet 2026-11-18 kl. 01.30. Den skiljer sig från den incheckade i handbytet på ett kort
   och i P6.C1 (3 px); avsmalningen är 0,87 som förut (0,90 står bara som P6.C1:s eget fält, som regeln inte läser).
   Hans sparade plan och domar tas med vid avslut på hans uttryckliga begäran 2026-11-19.

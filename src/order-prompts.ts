@@ -113,6 +113,8 @@ export type PromptInput = {
   reference?: boolean;
   /** The card drawn at this factor of the plan's size (a trial): no sentence may then say it keeps the size it has in the shoe. */
   cardScale?: number;
+  /** The last picture shows the blue side's marks, the pink cross and the red circle (tools/order-images.ts markSeen): an open deal's text then says them instead of a blank blue side. */
+  faceMark?: boolean;
 };
 /** What a part of the text comes from: a choice in the sheet, Jakob's addition, the reference film, or the bans. */
 export type Choice = 'hand' | 'side' | 'turn' | 'place' | 'shape' | 'reference' | 'extra' | 'bans';
@@ -441,6 +443,16 @@ const fromTen = (input: PromptInput) => (input.version ?? TEMPLATE_VERSION) >= 1
 /** From template 11 every deal bara dit says its end once (TEMPLATE_VERSION's note), and anchor 2.3 has its words. */
 const fromEleven = (input: PromptInput) => (input.version ?? TEMPLATE_VERSION) >= 11;
 /** The card's colours in Minimal, and "Only one card moves" with them in Kort: plain from template 9, before as templates 4 to 8 said them. */
+/**
+ * The card's look where the last picture carries the blue side's marks (Jakob 2026-11-20: a small pink cross and a small
+ * red circle on the blue side, "på så sätt kommer videon ha svårare att fuska med vilken sida av kortet som syns"): the
+ * blank-card sentence of template 10 with the face said as the picture shows it, so that text and picture agree. Only an
+ * open deal, and only where the picture has the marks; every other text is word for word what it was. Untried as a text.
+ */
+const BLANK_SIDES = 'blank, solid yellow on one side and solid blue on the other, each colour reaching right out to its corners, and the next card in the window is the same blank yellow.';
+const MARKED_SIDES = 'back is blank solid yellow, right out to its corners, and its face is solid blue with a small pink cross in the middle and a small red dot in one corner, as the last frame shows it; the next card in the window is the same blank yellow.';
+const cardLook = (input: PromptInput, text: string) =>
+  input.faceMark && (input.motion ?? DEFAULT_MOTION).side === 'FRONT' ? text.replace(`It is ${BLANK_SIDES}`, `Its ${MARKED_SIDES}`).replace(`The card is ${BLANK_SIDES}`, `The card's ${MARKED_SIDES}`) : text;
 const cardColours = (input: PromptInput) => (fromNine(input) ? SAY.colours : SAY.v8.colours);
 const cardMoves = (input: PromptInput) => (fromNine(input) ? SAY.oneCardMoves : SAY.v8.oneCardMoves);
 
@@ -588,7 +600,7 @@ function shortDeal(input: PromptInput): Prompt {
     { text: turn, from: open ? ['turn', ...(nine && drag && !alongFelt ? (['hand'] as Choice[]) : [])] : ['side'] },
     { text: back, from: input.oneWay ? ['shape'] : ['hand'] },
     { text: body, from: ['hand'] },
-    { text: card, from: colours ? ['side'] : [] },
+    { text: cardLook(input, card), from: colours ? ['side'] : [] },
     extraPart(input),
   ];
   return { template: templateOf('film-giv', 'KORT'), style: 'KORT', text: joined(parts), parts };
@@ -617,7 +629,7 @@ function twoHandDeal(input: PromptInput, m: DealMotion): Prompt {
     { text: input.oneWay ? '' : SAY.backTwoHands, from: ['hand'] },
     { text: open ? SAY.shoeHandBack : SAY.shoeHandBackClosed, from: ['hand'] },
     { text: SAY.headToPlace, from: [] },
-    { text: sized ? SAY.oneCardMovesFree : SAY.oneCardMovesSized, from: [] },
+    { text: cardLook(input, sized ? SAY.oneCardMovesFree : SAY.oneCardMovesSized), from: [] },
     extraPart(input),
   ];
   return { template: templateOf('film-giv', 'KORT'), style: 'KORT', text: joined(parts), parts };
@@ -632,7 +644,7 @@ function minimalDeal(input: PromptInput): Prompt {
   const parts: Part[] = [
     { text: SAY.cameraMinimal, from: [] },
     referencePart(input),
-    { text: colours ? SAY.v6.cardIs(open ? SAY.v6.sides.open : SAY.v6.sides.closed) : fromTen(input) ? SAY.blankCard : cardColours(input), from: colours ? ['side'] : [] },
+    { text: colours ? SAY.v6.cardIs(open ? SAY.v6.sides.open : SAY.v6.sides.closed) : fromTen(input) ? cardLook(input, SAY.blankCard) : cardColours(input), from: colours ? ['side'] : [] },
     { text: input.oneWay ? SAY.oneCard : SAY.oneCardBack, from: ['shape'] },
     extraPart(input),
   ];
@@ -832,7 +844,7 @@ export function orderPrompt(
     motion: (DealMotion & { target?: string | null; cardScale?: number }) | null;
     generation: { model: string };
     pictures: readonly { goesAs: string; drawn?: { centre: [number, number] } | null }[];
-    prompt: { extra: string | null; style?: TextStyle | null; template?: string; place?: readonly [number, number] | null };
+    prompt: { extra: string | null; style?: TextStyle | null; template?: string; place?: readonly [number, number] | null; faceMark?: boolean };
     reference?: { status: string } | null;
   },
   dealer: Dealer,
@@ -858,6 +870,7 @@ export function orderPrompt(
     oneWay: deal && order.step.shape === 'ONE_WAY',
     reference: order.reference?.status === 'FINNS',
     cardScale: m?.cardScale ?? 1,
+    faceMark: !!order.prompt.faceMark,
     version: stored,
   });
 }

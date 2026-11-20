@@ -155,6 +155,8 @@ export type Drawn = {
   measuredOffsetPx: number | null;
   /** The card drawn at this factor of the plan's size about its centre (the order's motion.cardScale; stopped at the picture's edge). Absent: the plan's size. */
   scale?: number;
+  /** An open card drawn with the blue side's marks, in these colours (src/placement-model.ts CARD_RGB: the pink cross, the red circle). Absent: a plain card (a closed one, or one drawn before 2026-11-20). */
+  mark?: { cross: [number, number, number]; dot: [number, number, number] };
 };
 export type GoesAs = 'startFrame' | 'endFrame' | 'referenceImage';
 /**
@@ -291,7 +293,8 @@ export type Order = {
    * its own (an A3, a bank film's frame): a sent text is history, so it is reproduced from this and never from the plan of
    * now (tools/order-store.ts textOf, src/order-prompts.ts orderPrompt). Absent on orders written before 2026-11-18.
    */
-  prompt: { template: string; style?: TextStyle; text: string; sha256: string; extra: string | null; middle: boolean; place?: [number, number] | null };
+  /** faceMark: the last picture showed the blue side's marks when the text was written, and the text says them (tools/order-store.ts textOf). */
+  prompt: { template: string; style?: TextStyle; text: string; sha256: string; extra: string | null; middle: boolean; place?: [number, number] | null; faceMark?: boolean };
   takes: number;
   cost: { perTake: number; total: number; worstPerTake: number; worstTotal: number; basis: string };
   limits: { maxCredits: number; stopBelowCredits: number };

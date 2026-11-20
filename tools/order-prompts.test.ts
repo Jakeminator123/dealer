@@ -669,3 +669,24 @@ test('template 10: an open deal is written as the reference-film trials sent it,
     assert.deepEqual([p.text, p.template], [order.prompt.text, order.prompt.template], name);
   }
 });
+
+test('the marked blue side (Jakob 2026-11-20): an open deal whose last picture shows the pink cross and the red dot says them; every other text is word for word what it was', () => {
+  const open: DealMotion = { grip: 'PINCH', hand: 'LH', pass: false, turn: true, flipAxis: 'FREE', side: 'FRONT' }, closed: DealMotion = { ...open, grip: 'DRAG', turn: false, flipAxis: null, side: 'BACK' };
+  const said = /face is solid blue with a small pink cross in the middle and a small red dot in one corner, as the last frame shows it/;
+  for (const step of ['GIV-2.1', 'GIV-2.2', 'GIV-2.3'] as const) for (const style of ['KORT', 'MINIMAL'] as const) for (const oneWay of [true, false]) {
+    const base = { dealer: paow, step, model: 'kling-4', style, oneWay, place: { x: 856.6, y: 1101.4 } }, at = `${step} ${style} ${oneWay ? 'bara dit' : 'tur och retur'}`;
+    const plain = promptFor({ ...base, motion: open }), marked = promptFor({ ...base, motion: open, faceMark: true });
+    assert.match(marked.text, said, at);
+    assert.match(marked.text, /back is blank solid yellow, right out to its corners/, at);
+    assert.doesNotMatch(marked.text, /solid blue on the other|\b(?:not|no|never|without)\b/i, `${at}: the blank blue side is gone, and nothing is said as a ban`);
+    assert.equal(marked.text.match(/pink cross/g)!.length, 1, `${at}: said once`);
+    assert.equal(marked.template, plain.template, at);
+    assert.equal(promptFor({ ...base, motion: open, faceMark: false }).text, plain.text, at);
+    // a closed deal never shows the face: its words stay
+    assert.equal(promptFor({ ...base, motion: closed, faceMark: true }).text, promptFor({ ...base, motion: closed }).text, `${at}, closed`);
+  }
+  // the stored order's own word decides, and only an open deal reads it
+  const order = { step: { key: 'GIV-2.3' as StepKey, shape: 'ONE_WAY' as const }, motion: { ...open, target: 'P4.C1' }, generation: { model: 'kling-4' }, pictures: [], prompt: { extra: null, style: 'KORT' as TextStyle, faceMark: true }, reference: null };
+  assert.match(orderPrompt(order, paow, { x: 856.6, y: 1101.4 }).text, said);
+  assert.doesNotMatch(orderPrompt({ ...order, prompt: { ...order.prompt, faceMark: false } }, paow, { x: 856.6, y: 1101.4 }).text, /pink/);
+});
