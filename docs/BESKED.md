@@ -539,6 +539,10 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   vad jag älskar och som gör jobbet." Samma dag: "Eller ska vi ha som nu kanske så kan man ju alltid ändra efter vår
   grund?" Därför är inget ändrat: Standard är kvar som grund och Bred lins som alternativ ("Kortet", Perspektivet som
   sparat val), och ingen lutning av bordet är byggd.
+- **Bordet BORD-02 i Scen** (2026-11-20): "en utomstående agent har lagt in nya bordet, som alternativ och är skitbra"
+  (läst som BORD-02, det enda nya bordet i projektet den dagen; tolkningen är sessionen dealer-e7:s). Gräsduken, valet
+  Gräsmatta under Spelyta, ska vara kvar som val: "behåll gräsdike". Bordet är ett labbprov, avslaget som förval, och
+  spelet slår inte på det före hans ja.
 
 ## Kopian och nätet
 
