@@ -148,33 +148,6 @@
       "answer": null
     },
     {
-      "id": "stada-paketen",
-      "kind": "beslut",
-      "question": "Får städningen börja, ett paket i taget med test före och efter?",
-      "leads": "Ja gör åtta paket i tur och ordning (död kod, en testlista, dokument, snabbare tester, dubblettfiler) utan att röra domar, Primär, V6 eller tal.",
-      "chips": [
-        {
-          "value": "ja",
-          "label": "Ja, alla paket"
-        },
-        {
-          "value": "kod",
-          "label": "Bara kod och tester"
-        },
-        {
-          "value": "vanta",
-          "label": "Vänta"
-        }
-      ],
-      "asked": "2026-11-20",
-      "from": "städningen",
-      "answer": {
-        "value": "ja",
-        "note": "AJ alltihopa. men se till att underätta alla agenter med vad som ska görs och vilka filer som ska ske vad med typ. kanske dokumentera också elelr liknande. Gärna med bokkom up-logik så dokumetation ändras utifrån vad som faktist finns (kanske lite luddugt, men..). Protokollför allt som ändras7raderas och så vidare gärna åpå förhand i den mån det går så andra agenterna enkelt kan förstå om berörs elelr inte. \"V6\"- kan vi cokså \"läätta\" lite på. Det som har att göra med det kan vi kanske lägga lite säkrare, mne behöver inte vara referenser att dö för längre alls",
-        "at": "2026-11-20T09:43:15.797Z"
-      }
-    },
-    {
       "id": "paow-ankare-2-3-posen",
       "kind": "beslut",
       "question": "Är posen i nya ankare 2.3 rätt?",
