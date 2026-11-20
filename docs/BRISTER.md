@@ -289,9 +289,10 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   stora filer här (repot är publikt och 16 MB): det som kostar på kontot är ett annat repos automatiska kontroller
   (`D:/dealer-scratch/tmp/github-kostnad/siffror.txt`, förslagen bredvid). Stänger: bara han, under Settings, Billing
   and licensing.
-- **Mobilkopians telefonprov återstår.** Version `1206c43` publicerades 2026-11-19 på Jakobs ja till sju filmer.
-  Material-registret, Bordets staplade panel och inloggningslänkarna fungerar i nätkopian. Prövat: 19/19 nätkontroller,
-  alla sju filmer med Range vid början, mitten och slutet; IAB 390 × 844 och 844 × 390, hand 18 mot 19, saldo 995.
+- **Mobilkopians telefonprov återstår.** Kopians aktuella version står i spelets lägesfil (`docs/lage/spelet.md`).
+  Prövat på `1206c43` (publicerad 2026-11-19 på Jakobs ja till sju filmer): Material-registret, Bordets staplade panel
+  och inloggningslänkarna fungerar i nätkopian; 19/19 nätkontroller, alla sju filmer med Range vid början, mitten och
+  slutet; IAB 390 × 844 och 844 × 390, hand 18 mot 19, saldo 995.
   Bevis: `assets/proofs/paow-mobile-studio-20261118`. Fysisk telefon och ljud är inte prövade; stående spel beskär
   ytterplatserna. Material kallar sex av åtta ankare saknade när de inte ingår i publiceringsurvalet, även om de finns
   lokalt. Stänger: telefonprov och tydlig skillnad mellan opublicerat och saknat material. Äldre kontrollskript i
