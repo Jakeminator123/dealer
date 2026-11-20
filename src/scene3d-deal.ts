@@ -16,12 +16,12 @@
 // no card object is drawn while a film shows its card; the passes that make the matte run here, on targets of the film's size.
 // The cards lying since earlier films are drawn as objects either way: a film lays one card, and later films do not show it.
 import * as T from 'three';
-import {poseAt, restOf, restFade, restShare, restingQuad, restingFilmPaperZone, returnCardAt, returnAfterFilmLanding, filmMarkerAt, sceneOf, planScene, cardRecord, cardFace, overridesOf, cardInFront, plausible, skirtSound, firstDrawn, turnOf, BACK, CARRY, FACE, UNDER, RIM, MARGIN, PLAUSIBLE, EASE, HOLD, type CardTrack, type CardRecord} from './card-overlay.ts';
+import {poseAt, restOf, restFade, restShare, restingQuad, restingFilmPaperZone, returnCardAt, returnAfterFilmLanding, filmMarkerAt, sceneOf, planScene, cardRecord, cardFace, overridesOf, cardInFront, plausible, skirtSound, firstDrawn, turnOf, BACK, CARRY, FACE, UNDER, RIM, MARGIN, PLAUSIBLE, EASE, HOLD, TRIAL, trialParts, trialTrack, smearOf, lightStep, type CardTrack, type CardRecord, type Light, type LightRead} from './card-overlay.ts';
 import {centre, clockwise, grown, signedArea, sound, type Pt} from './card-track.ts';
 import {FILM, edgeQuad, heldScale, solveCamera, squareToQuad, type FilmCamera} from './scene3d-geometry.ts';
 import type {TableGeometry} from './card-plan.ts';
 import type {PlacementPlan} from './placement-model.ts';
-import {CARD_GLSL, type BackKey, type CardKey, type MatteKey} from './scene3d-film.ts';
+import {CARD_GLSL, CARD_SEEN_GLSL, type BackKey, type CardKey, type MatteKey} from './scene3d-film.ts';
 import {FAN_GLSL} from './scene3d-light.ts';
 import {roomReflection} from './scene3d-table.ts';
 import {CLASSIFY_FRAGMENT, DARK_BACK, MATTE, PAPER_FACE, MORPH_FRAGMENT, PASS_VERTEX, PLANE_GLSL, SHADE_FRAGMENT, SHOE_BOX, backZone, matteBox, matteZone, meanLinear, paleZone, paperAirBeforeRest, printQuad, toPrint, turnZone, type MatteTrack} from './scene3d-matte.ts';
@@ -52,7 +52,7 @@ const PAPER = [0.93, 0.91, 0.86]; // light on the paper of a card lying flat: a 
 const SEATED = [[1292.9, 752.7], [1343.2, 777.8], [1283.2, 858.6], [1239.5, 831.4]];
 
 const VERTEX = `uniform mat3 cardH; uniform vec4 lens; uniform vec3 eye; uniform float edgeRow, edgeZ, lift, bend, tilt, shadeOn, localOn, lying, shadow, depthOnly;
-uniform sampler2D map; uniform vec2 core[4]; uniform vec3 cardColour;
+uniform sampler2D map; uniform vec2 core[4]; uniform vec3 cardColour; uniform float shadeFix, planeMean; uniform vec4 planeFix;
 varying vec2 vUv, vSt; varying vec3 vWorld, vNormal; varying float vShade, vLight, vMean; varying vec4 vPlane;
 ${CARD_GLSL}
 ${PLANE_GLSL}
@@ -85,6 +85,8 @@ void main(){
   vShade = shadeOn > .5 ? clamp(dot(cardBase(map, core, cardColour), vec3(.2126, .7152, .0722)) / lying, .55, 1.3) : 1.;
   // and how that light falls across it (scene3d-matte.ts PLANE): the same for every vertex
   if (shadeOn > .5 && localOn > .5) vPlane = lightPlane(map, core, cardColour, vMean);
+  // the lab trial "kortprov": the light as it is remembered from frame to frame (remembered, below), in place of this frame's reading
+  if (shadeOn > .5 && shadeFix >= 0.) { vShade = shadeFix; vPlane = planeFix; vMean = planeMean; }
   gl_Position = projectionMatrix * viewMatrix * vec4(p, 1.);
 }`;
 // Output is sRGB-encoded like the film's, whatever the target, so it composites the same way with focus on or off. `accum`:
@@ -119,6 +121,22 @@ void main(){
   vec3 col = albedo * paper * vShade * vLight * planeLight(vPlane, vMean, filmPixel) + (textureLod(room, equirect(R), roomLod).rgb + sheen * textureLod(room, equirect(R), roomLod - 2.5).rgb) * F;
   col = mix(col * 12.92, 1.055 * pow(max(col, 0.), vec3(1. / 2.4)) - .055, step(.0031308, col));
   gl_FragColor = accum > .5 ? vec4(col * grade * fanShade(vWorld), 1.) * weight : vec4(col * grade * fanShade(vWorld), shown); // shown: the hand-over at rest brings the card in
+}`;
+// The film's light on its card read back for the lab trial "kortprov" (readLight): three pixels of two 16-bit numbers each. The
+// first: the brightness cardBase gives, how many of its 36 samples carried the card's colour, and whether a plane was fitted; the
+// second: the plane's fall per film pixel against its mean; the third: where the plane's mean lies from the middle of the core.
+// READ: what the numbers are scaled by (a fall of 1 / (2 slope) per film pixel, and a mean `offset` / 2 pixels from the middle, fill the range).
+const READ = {slope: 40, offset: 256};
+const READ_FRAGMENT = `uniform sampler2D map; uniform vec2 core[4]; uniform vec3 cardColour;
+${CARD_GLSL}
+${CARD_SEEN_GLSL}
+${PLANE_GLSL}
+vec2 two(float v){ float s = floor(clamp(v, 0., 1.) * 65535. + .5), hi = floor(s / 256.); return vec2(hi, s - hi * 256.) / 255.; }
+void main(){
+  float mean = 0.; vec4 p = lightPlane(map, core, cardColour, mean); vec2 mid = (core[0] + core[1] + core[2] + core[3]) / 4.; float i = floor(gl_FragCoord.x);
+  if (i < .5) gl_FragColor = vec4(two(dot(cardBase(map, core, cardColour), vec3(.2126, .7152, .0722))), cardSeen(map, core, cardColour) / 36., mean > 0. ? 1. : 0.);
+  else if (i < 1.5) gl_FragColor = vec4(two(.5 + ${READ.slope}. * p.z / max(mean, 1e-4)), two(.5 + ${READ.slope}. * p.w / max(mean, 1e-4)));
+  else gl_FragColor = vec4(two(.5 + (p.x - mid.x) / ${READ.offset}.), two(.5 + (p.y - mid.y) / ${READ.offset}.));
 }`;
 // The motion samples' sum laid into the picture: premultiplied, where the card would have been drawn (under the film).
 const COMPOSITE_VERTEX = 'void main(){ gl_Position = vec4(position.xy, 0., 1.); }';
@@ -229,7 +247,7 @@ export function createDealLayer(o: Options) {
   const made = (shadow: boolean) => keep(new T.ShaderMaterial({vertexShader: VERTEX, fragmentShader: FRAGMENT, transparent: true, depthWrite: false,
     ...(shadow ? {blending: T.CustomBlending, blendSrc: T.OneFactor, blendDst: T.OneMinusSrcAlphaFactor, blendSrcAlpha: T.OneFactor, blendDstAlpha: T.OneMinusSrcAlphaFactor} : {}),
     uniforms: {...shared, cardH: {value: new T.Matrix3()}, bend: {value: 0}, tilt: {value: 0}, shadeOn: {value: 0}, lying: {value: 1}, core: {value: quad()}, cardColour: {value: new T.Vector3(1, 1, 0)},
-      localOn: {value: 0}, field: {value: new T.Vector3()}, printIn: {value: 1}, shown: {value: 1}, print: {value: null}, soft: {value: PRINT.soft}, level: {value: 1}, edgeOn: {value: 0}, sheen: {value: 1.4}, shadow: {value: shadow ? 1 : 0}, shade: {value: 0}, accum: {value: 0}, weight: {value: 1}, depthOnly: {value: 0}}}));
+      localOn: {value: 0}, shadeFix: {value: -1}, planeFix: {value: new T.Vector4()}, planeMean: {value: 0}, field: {value: new T.Vector3()}, printIn: {value: 1}, shown: {value: 1}, print: {value: null}, soft: {value: PRINT.soft}, level: {value: 1}, edgeOn: {value: 0}, sheen: {value: 1.4}, shadow: {value: shadow ? 1 : 0}, shade: {value: 0}, accum: {value: 0}, weight: {value: 1}, depthOnly: {value: 0}}}));
   // A card: its surface and its contact shadow on the felt (drawn first, so the card covers it), both laid by the same homography.
   // Draw order: felt and props (opaque), then shadows (2), cards (3), then the film (5, 6) over them.
   type Card = {mesh: T.Mesh; shadow: T.Mesh; material: T.ShaderMaterial; under: T.ShaderMaterial};
@@ -248,13 +266,16 @@ export function createDealLayer(o: Options) {
   // clear of the homography's line at infinity (skirtSound) and lies below the table's edge row, on the felt; otherwise there is none.
   const shadowFits = (q: number[][]) => { const p = q.map(([x, y]) => ({x, y})); if (!skirtSound(p, REACH)) return false;
     try { const H = squareToQuad(q), row = o.camera().edgeRow; return [[-REACH, -REACH], [1 + REACH, -REACH], [1 + REACH, 1 + REACH], [-REACH, 1 + REACH]].every(([u, v]) => { const w = H[6] * u + H[7] * v + H[8]; return w > 0 && (H[3] * u + H[4] * v + H[5]) / w >= row; }); } catch { return false; } };
-  const lay = (c: Card, q: number[][], how: {print: T.Texture; edge?: boolean; bend?: number; tilt?: number; shade?: {core: number[][]; colour: number[]; lying: number; local?: boolean} | null; contact: number; gloss?: number; printIn?: number; shown?: number}) => {
+  const lay = (c: Card, q: number[][], how: {print: T.Texture; edge?: boolean; bend?: number; tilt?: number; shade?: {core: number[][]; colour: number[]; lying: number; local?: boolean} | null; light?: Light | null; contact: number; gloss?: number; printIn?: number; shown?: number}) => {
     let H: number[]; try { if (!drawable(q, !!how.edge)) throw Error('no plausible card'); H = squareToQuad(q); } catch { c.mesh.visible = c.shadow.visible = false; return; }
     for (const m of [c.material, c.under]) (m.uniforms.cardH.value as T.Matrix3).set(H[0], H[1], H[2], H[3], H[4], H[5], H[6], H[7], H[8]);
     const u = c.material.uniforms; u.print.value = how.print; const back = how.print === print(); u.level.value = back ? PRINT.back : PRINT.face; u.soft.value = back ? PRINT.soft : PRINT.softFace; u.edgeOn.value = how.edge ? 1 : 0; u.printIn.value = back ? how.printIn ?? 1 : 1; if (back) (u.field.value as T.Vector3).fromArray(backBody()); u.bend.value = how.bend ?? 0; u.tilt.value = how.tilt ?? 0;
     u.sheen.value = 2 * (how.gloss ?? GLOSS); u.shadeOn.value = how.shade ? 1 : 0; // gloss 0.35: the coat's lobe at 0.7 of the paper's
     if (how.shade) { how.shade.core.forEach((p, i) => (u.core.value as T.Vector2[])[i].set(p[0], p[1])); (u.cardColour.value as T.Vector3).set(how.shade.colour[0], how.shade.colour[1], how.shade.colour[2]); u.lying.value = how.shade.lying; }
     u.localOn.value = how.shade?.local ? 1 : 0; u.shown.value = how.shown ?? 1;
+    // the lab trial "kortprov": the remembered light, its fall across the card laid about the middle of the film's card (how.shade.core)
+    const lit = how.shade ? how.light ?? null : null, mid = lit && centreOf(how.shade!.core); u.shadeFix.value = lit ? lit.shade : -1; u.planeMean.value = lit?.slope && how.shade!.local ? 1 : 0;
+    if (lit && mid) (u.planeFix.value as T.Vector4).set(mid[0] + lit.offset[0], mid[1] + lit.offset[1], lit.slope?.[0] ?? 0, lit.slope?.[1] ?? 0);
     c.under.uniforms.shade.value = CONTACT * how.contact; c.mesh.visible = true; c.shadow.visible = how.contact > 0.01 && !how.edge && shadowFits(q);
   };
   const dealt = card(), seated = card(), lying: Card[] = [];
@@ -321,7 +342,7 @@ export function createDealLayer(o: Options) {
   // frames before and after, of the same kind of shape. The tracker's corners jitter by a pixel or more and now and then jump, so
   // the shape's own changes are left out, and the step is the median of the step back, the step ahead and their mean: one bad
   // frame is outvoted. The smear is held to MAX_BLUR screen pixels.
-  function shutter(now: Drawn, before: Drawn | null, after: Drawn | null): number[][][] {
+  function shutter(now: Drawn, before: Drawn | null, after: Drawn | null, band: number | null = null): number[][][] {
     const flat = !now.line, fits = (d: Drawn | null) => !!d && (flat ? !d.line && d.pose.side === now.pose.side : true);
     const c0 = centreOf(flat ? now.q : now.line!), a0 = angleOf(now, flat);
     const step = (d: Drawn | null, sign: number) => { if (!fits(d)) return null; const c = centreOf(flat ? d!.q : lineOf(d!)), t = Math.atan2(Math.sin(angleOf(d!, flat) - a0), Math.cos(angleOf(d!, flat) - a0));
@@ -329,7 +350,10 @@ export function createDealLayer(o: Options) {
     const back = step(before, -1), ahead = step(after, 1); if (!back && !ahead) return [now.q];
     const s = back && ahead ? {x: median(back.x, ahead.x, (back.x + ahead.x) / 2), y: median(back.y, ahead.y, (back.y + ahead.y) / 2), t: median(back.t, ahead.t, (back.t + ahead.t) / 2)} : (back ?? ahead)!;
     const reach = Math.max(...(flat ? now.q : now.line!).map(p => Math.hypot(p[0] - c0[0], p[1] - c0[1])));
-    let travel = SHUTTER * (Math.hypot(s.x, s.y) + Math.abs(s.t) * reach) * o.pixels(); const k = travel > MAX_BLUR ? MAX_BLUR / travel : 1; travel *= k;
+    let travel = SHUTTER * (Math.hypot(s.x, s.y) + Math.abs(s.t) * reach) * o.pixels(), k = travel > MAX_BLUR ? MAX_BLUR / travel : 1;
+    // the lab trial "kortprov": as far as the film's own card is smeared in this frame (its measured edge band), along the same path
+    if (band != null) k = travel > 1e-6 ? Math.min(MAX_BLUR, smearOf(band, flat ? now.q : null, s) * o.pixels()) / travel : 0;
+    travel *= k;
     const n = Math.max(1, Math.min(SAMPLES, Math.ceil(travel / 1.2))); if (n < 2) return [now.q];
     const at = (tau: number, p: number[]) => { const a = s.t * k * tau, cs = Math.cos(a), sn = Math.sin(a), dx = p[0] - c0[0], dy = p[1] - c0[1]; return [c0[0] + cs * dx - sn * dy + s.x * k * tau, c0[1] + sn * dx + cs * dy + s.y * k * tau]; };
     return Array.from({length: n}, (_, i) => { const tau = -SHUTTER / 2 + SHUTTER * (i + 0.5) / n; if (flat) return now.q.map(p => at(tau, p)); const [a, b] = now.line!.map(p => at(tau, p)); return edgeQuad(a, b, 1.4); });
@@ -342,6 +366,40 @@ export function createDealLayer(o: Options) {
   // Read from the film's own uniform, as the scene has no word for it yet.
   const shoeModel = () => { const v = (((o.film as {body?: T.Mesh}).body?.material as T.ShaderMaterial | undefined)?.uniforms?.hide?.value) as T.Vector4 | undefined;
     return !!v && v.z > v.x && v.x <= SHOE_BOX[0] && v.y <= SHOE_BOX[1] && v.z >= SHOE_BOX[2] && v.w >= SHOE_BOX[3]; };
+  // ---- the lab trial "kortprov" (card-overlay.ts TRIAL): null unless Scen is opened with its word, and then nothing of it runs ----
+  const trial = typeof location === 'undefined' ? null : trialParts(location.pathname, location.search);
+  // spar: the trial's track in place of the film's own, fetched once per film by the clip's name; the stored track until it has come,
+  // and for good where there is none
+  const fetched = new Map<string, Pick<CardTrack, 'clip' | 'frames' | 'edgeWindow'> | null>(), swapped = new WeakMap<object, CardTrack>();
+  const trialOf = (stored: CardTrack | null): CardTrack | null => {
+    if (!trial?.has('spar') || !stored?.clip || !stored.frames) return stored;
+    const done = swapped.get(stored); if (done) return done;
+    const clip = stored.clip; if (!fetched.has(clip)) { fetched.set(clip, null); fetch(`${TRIAL.folder}/${encodeURIComponent(clip)}.json`).then(r => r.ok ? r.json() : null).then(t => { if (t) fetched.set(clip, t); }).catch(() => {}); }
+    const own = trialTrack(stored, fetched.get(clip) ?? null); if (own !== stored) swapped.set(stored, own); return own;
+  };
+  // ljus: the film's light on its card in this frame, read back from three pixels (READ_FRAGMENT) ...
+  let reader: {target: T.WebGLRenderTarget; material: T.ShaderMaterial; scene: T.Scene; camera: T.Camera; bytes: Uint8Array} | null = null;
+  function readLight(core: number[][], colour: number[], lying: number): LightRead & {seen: number} {
+    const film = o.film.shared.map.value; if (!film) return {shade: null, slope: null, seen: 0};
+    if (!reader) { const material = keep(new T.ShaderMaterial({vertexShader: COMPOSITE_VERTEX, fragmentShader: READ_FRAGMENT, depthTest: false, depthWrite: false, blending: T.NoBlending, uniforms: {map: {value: null}, core: {value: quad()}, cardColour: {value: new T.Vector3()}}}));
+      const mesh = new T.Mesh(triangle, material), scene = new T.Scene(); mesh.frustumCulled = false; scene.add(mesh);
+      reader = {material, scene, camera: new T.OrthographicCamera(-1, 1, 1, -1, 0, 1), bytes: new Uint8Array(12), target: keep(new T.WebGLRenderTarget(3, 1, {type: T.UnsignedByteType, minFilter: T.NearestFilter, magFilter: T.NearestFilter, depthBuffer: false, generateMipmaps: false}))}; }
+    const u = reader.material.uniforms, r = o.renderer, before = r.getRenderTarget(); u.map.value = film; core.forEach((p, i) => (u.core.value as T.Vector2[])[i].set(p[0], p[1])); (u.cardColour.value as T.Vector3).fromArray(colour);
+    try { r.setRenderTarget(reader.target); r.render(reader.scene, reader.camera); r.readRenderTargetPixels(reader.target, 0, 0, 3, 1, reader.bytes); } catch { return {shade: null, slope: null, seen: 0}; } finally { r.setRenderTarget(before); }
+    const b = reader.bytes, two = (i: number) => (b[i] * 256 + b[i + 1]) / 65535, seen = Math.round(b[2] / 255 * 36);
+    return {seen, shade: seen >= 6 ? Math.max(0.55, Math.min(1.3, two(0) / lying)) : null, slope: b[3] > 127 ? [(two(4) - 0.5) / READ.slope, (two(6) - 0.5) / READ.slope] : null, offset: [(two(8) - 0.5) * READ.offset, (two(10) - 0.5) * READ.offset]};
+  }
+  // ... and remembered (card-overlay.ts lightStep). What the frame read and what the card was lit by are written on the page, for a
+  // measurement (document.documentElement.dataset.kortprov); with the word "mat" alone that is all, and the card is lit as before.
+  let memory: Light | null = null;
+  function remembered(track: CardTrack, at: number, side: 'BACK' | 'FRONT', core: number[][] | null): Light | null {
+    if (!trial || (!trial.has('ljus') && !trial.has('mat'))) return null;
+    const read = core ? readLight(core, COLOUR[side], LYING[side]) : {shade: null, slope: null, seen: 0};
+    memory = lightStep(memory, `${track.clip ?? ''}/${side}`, at, read);
+    if (typeof document !== 'undefined') document.documentElement.dataset.kortprov = JSON.stringify({frame: at, side, read, lit: memory && {shade: memory.shade, slope: memory.slope}, blur: track.frames[at]?.blur ?? null});
+    return trial.has('ljus') ? memory : null;
+  }
+
   function off() { hide(dealt); hide(seated); composite.visible = depth.visible = seatDepth.visible = false; for (const c of lying) hide(c); o.film.setCards(null); o.film.setMatte(null); o.film.setBack(null); }
   // The matte: its passes (their targets are made the first time they run), and the back print as one colour (its mean in linear
   // light), which the film's back is recoloured to. The way 'matte' uses it for every frame; the way 'scene' while a card is carried
@@ -459,10 +517,12 @@ export function createDealLayer(o: Options) {
       const q = now.q, core = own4?.length === 4 ? own4 : null;
       // the back's print comes in over PRINT.in frames from the first frame the card is drawn after the shoe (inShoe), smoothly
       const since = filmSeat(extra) && typeof track!.leavesShoe === 'number' ? at - (track!.leavesShoe + 2) + 1 : Infinity, t = Math.max(0, Math.min(1, since / (PRINT.in + 1)));
-      lay(dealt, q, {print: face.back ? print() : print(face.art), edge, printIn: t * t * (3 - 2 * t), bend: (material?.bend ?? BEND) * held, tilt: TILT * held, gloss: extra.gloss ?? material?.gloss,
-        shade: core && !edge ? {core, colour: COLOUR[side], lying: LYING[side], local: carryOf(extra) !== 'film'} : null, contact: share.card * (measured ? 1 - inHand : Math.max(0, Math.min(1, (pose.resting - 0.3) / 0.6))), shown: share.card});
+      // the lab trial "kortprov": the film's light on its card read back and remembered; a card with no film card in its pose keeps the light it had
+      const light = trial && !edge ? remembered(track!, at, side, core) : null, lit = light && !core ? {core: q, colour: COLOUR[side], lying: LYING[side], local: carryOf(extra) !== 'film'} : null;
+      lay(dealt, q, {print: face.back ? print() : print(face.art), edge, printIn: t * t * (3 - 2 * t), bend: (material?.bend ?? BEND) * held, tilt: TILT * held, gloss: extra.gloss ?? material?.gloss, light,
+        shade: lit ? lit : core && !edge ? {core, colour: COLOUR[side], lying: LYING[side], local: carryOf(extra) !== 'film'} : null, contact: share.card * (measured ? 1 - inHand : Math.max(0, Math.min(1, (pose.resting - 0.3) / 0.6))), shown: share.card});
       // moving fast: drawn along its path over the shutter time instead, like the film's hand
-      const path = pose.resting < 1 ? shutter(now, drawnAt(track!, at - 1, choice, extra), drawnAt(track!, at + 1, choice, extra)) : [q];
+      const path = pose.resting < 1 ? shutter(now, drawnAt(track!, at - 1, choice, extra), drawnAt(track!, at + 1, choice, extra), trial?.has('skarpa') ? f.blur ?? null : null) : [q];
       // (only a card that was laid at all: its samples are rigid copies of it, so they are as plausible as it is)
       if (path.length > 1 && dealt.mesh.visible) { drawSamples(path); dealt.mesh.visible = false; composite.visible = true; }
       depth.visible = true;
@@ -491,13 +551,14 @@ export function createDealLayer(o: Options) {
       // A film element between two frames (seeking, at the change to a new part) keeps the cards as they were drawn: turned off for
       // that frame, the film's own yellow card showed in the shoe window as the rest film began (the boss film at 6.40 and 143.27).
       if (video.readyState < 2) return false;
-      const camera = o.camera(), solved = solveCamera(camera), track = trackIn as CardTrack | null, options = (extraIn ?? {}) as Extra;
+      const camera = o.camera(), solved = solveCamera(camera), track = trialOf(trackIn as CardTrack | null), options = (extraIn ?? {}) as Extra;
       const carry = carryOf(options), continues = !alwaysMatte && carry !== 'matte' && options.returning && options.filmContinuesDeal;
       const fadeEnd = continues && carry === 'film' && track ? restFade(track)?.to : undefined;
       const extra = continues && !returnAfterFilmLanding(track, frame, options, fadeEnd) ? {...options, returning: false} : options;
       lens.lens.value.set((FILM.width - 1) / 2, (FILM.height - 1) / 2, camera.focalPx, solved.pitch); lens.eye.value.set(0, camera.heightM, 0); lens.edgeRow.value = camera.edgeRow; lens.edgeZ.value = o.edgeZ();
       // Returns look up the exact marker frame. Only carried cards use the last track frame past its end.
       const at = !extra.returning && track?.frames?.length ? Math.max(0, Math.min(track.frames.length - 1, Math.round(frame))) : -1;
+      if (trial && typeof document !== 'undefined') document.documentElement.dataset.kortprovRuta = `${at}${track !== trackIn ? ' spar' : ''}`; // the lab trial "kortprov": the frame drawn and whether by the trial's track, for a measurement
       if (alwaysMatte && !extra.returning) {
         hide(dealt); hide(seated); composite.visible = depth.visible = seatDepth.visible = false; o.film.setCards(null);
         drawMatte(track, at, choice, extra); o.film.setBack(null); }

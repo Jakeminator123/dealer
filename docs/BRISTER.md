@@ -91,10 +91,24 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   vänder det i luften. Prövat: banan är omgjord efter filmerna (`ccd9c52`, Prov `kortbanan-efter-filmerna`). Stänger:
   hans svar på hur vändningen vid platsen ska ritas, och en film som visar vändningen med handflatan uppåt (`FREE`) att
   rita efter; ingen sådan finns.
-- **Kortet i handen** (Prov `kort-bojning-glans`). Syns: med baksidan mot kameran sitter det ritade kortet större och
-  längre upp till höger än filmens gula kort, och kanten mot hennes ärm är ojämn med ljusa prickar. Prövat: böjning och
-  glans är inte felet (kanten flyttar sig inte en bildpunkt med böjningen; glansen syns bara på den mörka baksidan).
-  Stänger: efterarbetet, efter filmerna.
+- **Det ritade kortet i handen** (Prov `kort-fram-bak-20261120`; Jakob 2026-11-20: "Ja, laga båda"). Syns när kortet
+  ritas i handen (`cardInHand=1`; spelets förval visar filmens eget kort där), mätt på 104 kortspår: (1) i vändningen
+  står kortet kvar brett och blir sedan en linje, för spårets regel för ett skymt kort ("last known shape kept") slår
+  till på ett kort som vänds (95 rutor); (2) papperets ljus slår om mellan rutorna, för `cardBase`
+  (`src/scene3d-film.ts`) tar reservfärgen när färre än 6 av 36 prov bär kortets färgton, som på en starkt belyst
+  framsida, och ljusplanet slår av och på vid samma rutor (`paow-giv-2-3-p4-h24-cykel-02-01`, rutorna 40–41 och 46–51:
+  steg på upp till 36 av 255); (3) fyrhörningen är i 122 rutor färgregelns skarpa kärna, under 0,8 av det mätta kortet;
+  (4) kanten mot fingrarna. Böjning och glans är inte felet (Prov `kort-bojning-glans`). Prövat: labbprovet `kortprov`,
+  av som förval och bara i Scen (`/scene3d.html?cards=1&cardInHand=1&kortprov=1`; delarna `spar`, `skarpa` och `ljus`
+  går att slå på var för sig, `mat` bara mäter). Det lägger mätningen i spåret (`refineFrames` i `src/card-track.ts`)
+  och minns ljuset mellan rutorna (`lightStep` i `src/card-overlay.ts`): på filmen ovan faller det största synliga
+  steget från 36 till 13 av 255, och rutor med kvarhållen form går från 95 till 70 (på de 26 filmer regeln inte är
+  gjord på: 29 till 22). Ett kort lagt mellan mätta grannrutor, på en räknad plats, stod bredvid filmens kort i 3 av 7
+  rutor och är inte med. Stänger: Jakobs ja på provet, och sedan skärpan mot handen; mätningen in i
+  `tools/track-card.ts` (i dag kommer den ur etiketterna på slaskdisken, `tools/python/kort-dataset/`, och provets spår
+  ligger i provmappen); en färgregel som läser en starkt belyst framsida (i dag bär minnet över de rutorna); rutan mitt
+  i vändningen där bara en bit av framsidan syns (som i dag). Tryckta spelkort i en film ser varken spåret eller
+  mätningen.
 - **Orden för kortets sidor är öppna.** Jakob 2026-11-13: "Baksida kan betyda olika saker, som baksidan på ett kort, men
   det kan också referera till undersidan." Syns: i beställningstexter och på sidorna; mallarna säger slätt kort med
   "back" och "face" (`PLAIN_CARD` i `src/order-prompts.ts`). Prövat: inget. Stänger: ett ord per sida i ordlistan

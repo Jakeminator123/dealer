@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {is, classify, YELLOW, BLUE, TABLE, SKIN, DARK, TINT, SHADE, OTHER, blobs, pieces, persistent, measure, hull, fitQuad, orderCorners, alignCorners, carryAcrossFlip,
-  signedArea, dist, centre, sideOf, EDGE_THICKNESS, MIN_AREA, smooth, offsetRamp, homography, project, follower, buildTrack, thinSliver, settleRaws, isPale, paleMask, SMEAR, type Pt, type Raw} from '../src/card-track.ts';
+  signedArea, dist, centre, sideOf, EDGE_THICKNESS, MIN_AREA, smooth, offsetRamp, homography, project, follower, buildTrack, thinSliver, settleRaws, refineFrames, isPale, paleMask, SMEAR, type Pt, type Raw} from '../src/card-track.ts';
 
 const GREEN = [10, 208, 56], LIT = [232, 208, 4], FACE = [6, 112, 224], BLACK = [20, 20, 20], RIM = [235, 225, 160], FLESH = [240, 172, 140];
 const W = 320, H = 240, N = W * H;
@@ -304,4 +304,42 @@ test('a track marked not good enough in the hand (hand: false) draws no card whi
   assert.ok(poseAt({...track, hand: undefined}, null, 3, 1.2)?.quad, 'without the mark the card is drawn in the hand as before');
   // a drawing that wants the card only once it lies ("Bara liggande") says from which frame
   assert.equal(poseAt({...track, hand: undefined, drawnFrom: 30}, null, 29, 1.2)?.quad, null); assert.ok(poseAt({...track, hand: undefined, drawnFrom: 30}, null, 30, 1.2)?.quad);
+});
+
+// ---- the measured card (lab trial "kortprov") ----
+test('a card that keeps its length and loses its width is turning, not hidden: with rigid it keeps its own shape', () => {
+  const wide = rect(100, 100, 60, 100), narrow = rect(118, 100, 24, 100), hidden = rect(100, 100, 60, 40);
+  const raws = [seen('BACK', wide), seen('BACK', wide), seen('BACK', narrow, 1900), seen('BACK', hidden, 1900)];
+  const today = settleRaws(raws, 'OTHER'), rigid = settleRaws(raws, 'OTHER', 15, {rigid: true});
+  assert.match(today[2].note, /mostly hidden/); assert.deepEqual(today[2].corners, wide);                    // today: the wide shape kept on the turning card
+  assert.equal(rigid[2].note, ''); assert.deepEqual(rigid[2].corners, narrow);                               // rigid: its own narrow shape
+  assert.match(settleRaws([seen('BACK', wide), seen('BACK', hidden, 1900)], 'OTHER', 15, {rigid: true})[1].note, /mostly hidden/); // a card that lost its length is under a hand, as before
+});
+test('refineFrames: in the turn the kept shape and the track\'s line give way to the stiff card along the measured line', () => {
+  const frame = (i: number, side: Raw['side'], quad: Pt[] | null, edge: [Pt, Pt] | null = null, note = '') => ({frame: i, side, quad, edge, area: 6000, confidence: 1, ...(note ? {note} : {})});
+  const back = (x: number) => rect(x, 100, 60, 100), measured = (side: Raw['side'], x: number, y: number, thickness: number, length = 100, quad: Pt[] | null = null, seen4 = 0) => [{side, centre: {x, y}, length, thickness, axis: {x: 0, y: 1}, quad, seen: seen4, band: 3}];
+  const frames = [frame(0, 'BACK', back(100)), frame(1, 'BACK', back(110)), frame(2, 'BACK', back(120)), frame(3, 'BACK', back(120), null, 'mostly hidden: last known shape kept'),
+    frame(4, 'EDGE', null, [{x: 150, y: 140}, {x: 190, y: 150}]), frame(5, 'EDGE', null, [{x: 300, y: 300}, {x: 320, y: 300}]), frame(6, 'FRONT', back(180)), frame(7, 'FRONT', back(190)), frame(8, 'FRONT', back(200))];
+  const m = [null, null, null, measured('BACK', 165, 150, 20), measured('EDGE', 172, 150, 4), null, null, null, null];
+  const before = JSON.stringify(frames), r = refineFrames(frames, m);
+  assert.equal(JSON.stringify(frames), before, 'the track itself is not changed');
+  assert.deepEqual(r.turn, [3, 5]); assert.deepEqual(r.changed.turn, [3, 4]);
+  const q = r.frames[3].quad!, xs = q.map(p => p.x), ys = q.map(p => p.y);
+  assert.equal(r.frames[3].side, 'BACK'); assert.ok(Math.abs(Math.abs(signedArea(q)) - 100 * 20) < 60, 'the card\'s own length, as wide as measured');
+  assert.ok(Math.abs((Math.min(...xs) + Math.max(...xs)) / 2 - 165) < 1 && Math.abs((Math.min(...ys) + Math.max(...ys)) / 2 - 150) < 1, 'at the measured place, not the kept one');
+  const e = r.frames[4].edge!; assert.equal(r.frames[4].side, 'EDGE'); assert.ok(Math.abs(dist(e[0], e[1]) - 100) < 1 && Math.abs(e[0].x - 172) < 1 && Math.abs(e[1].x - 172) < 1, 'a line as long as the card, along the measured line');
+  assert.deepEqual(r.frames[5].edge, frames[5].edge, 'a frame without a measurement keeps the line found in it: no card is laid at a computed place');
+  assert.equal(r.frames[3].blur, 3); assert.deepEqual(r.frames[1].quad, frames[1].quad, 'frames the track has a shape of its own for stay');
+  // nothing measured at all: the track's own lines stay, only the kept shape goes
+  const bare = refineFrames(frames, frames.map(() => null));
+  assert.equal(bare.frames[3].side, 'NONE'); assert.deepEqual(bare.frames[4].edge, frames[4].edge);
+});
+test('refineFrames: outside the turn a quad well under the measured card takes the measured one, never a larger thing or a card at rest', () => {
+  const frame = (i: number, quad: Pt[]) => ({frame: i, side: 'FRONT' as const, quad, edge: null, area: 6000, confidence: 1});
+  const card = rect(100, 100, 60, 100), core = rect(110, 115, 40, 70), frames = [0, 1, 2, 3, 4, 5].map(i => frame(i, i === 2 || i === 5 ? core : card));
+  const whole = (quad: Pt[], seen4 = 4) => [{side: 'FRONT' as const, centre: centre(quad), length: 100, thickness: 60, axis: {x: 0, y: 1}, quad, seen: seen4, band: 0}];
+  const m = [whole(card), whole(card), whole(card), whole(rect(60, 60, 140, 180)), whole(card, 2), whole(card)];
+  const r = refineFrames(frames, m, 5);
+  assert.deepEqual(r.changed.size, [2]); assert.ok(Math.abs(Math.abs(signedArea(r.frames[2].quad!)) - 6000) < 1); assert.match(r.frames[2].note!, /size from the measured card/);
+  assert.deepEqual(r.frames[3].quad, card, 'a measured shape far larger than the card is two things'); assert.deepEqual(r.frames[5].quad, core, 'at rest the track is left alone');
 });

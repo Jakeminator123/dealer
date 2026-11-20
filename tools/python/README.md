@@ -30,6 +30,33 @@ Användning står överst i varje skript. Kör alltid med `-I` (isolerat läge),
 tools/python/.venv/Scripts/python.exe -I tools/python/filmmatt.py <film.mp4> <namn> <utmapp> --start first.png --end last.png
 ```
 
+## Kortdatasetet (`kort-dataset/`)
+
+Verktygen som gjorde datasetet över kortets rygg och framsida ruta för ruta (2026-11-20), mätte dagens kortspår mot det
+och bygger labbprovet `kortprov` ([BRISTER](../../docs/BRISTER.md), "Kortet"). Datasetet ligger kvar på slaskdisken,
+`D:/dealer-scratch/tmp/kort-dataset/` (etiketter i `labels/`, `manifest.jsonl`, `rutor.csv`, modellen `modell-v1.pt`):
+skripten läser och skriver där och läser repots `assets/`. Referensfilmen under `yt-referens/` mäts men kopieras
+aldrig; ur den sparas inga utsnitt. Skripten behöver bara `numpy` och `cv2`: etiketteringen kördes i miljön här
+(`.venv`, OpenCV 5.0), mätningarna och provets skript med datorns Python 3.13 (OpenCV 4.13). `train.py` och `eval.py`
+behöver också `torch` (miljön `D:/dealer-scratch/tmp/kort-dataset/venv`, torch 2.6) och kör på grafikkortet under det
+delade låset. Användning står överst i varje skript.
+
+| Vad | Skript |
+| --- | --- |
+| Datasetet, i ordning | `inventory.py` (alla filmer), `probe.py` (snabbprov), `valj.py` (kortfilmerna), `dela.py` (listor för två etiketterare), `label.py` (kortets kontur per ruta), `export.py` (manifest och tabell). `sheet.py` ritar etiketten på filmrutor för ögat. |
+| Mätningar mot dagens spår | `storlek.py`, `spar_noter.py`, `spar_storlek.py`, `vandning.py`, `ljus_check.py` |
+| Modellen (v1) | `train.py`, `eval.py` |
+| Labbprovet | `spar_b.ts` (provets spår ur etiketterna, regeln `refineFrames` i `src/card-track.ts`), `spela_in.ts` (spelar in Scen ruta för ruta, headless under låset), `ljus_serie.py` (ljusets steg ur en inspelning), `titta_val.py` (spåren ritade på filmrutor), `prov_bygg.py` (provets filmer och stillbilder) |
+
+```
+tools/python/.venv/Scripts/python.exe -I tools/python/kort-dataset/label.py D:/dealer-scratch/tmp/kort-dataset/lista-a.jsonl --workers 2
+tools/python/.venv/Scripts/python.exe -I tools/python/kort-dataset/export.py
+node tools/python/kort-dataset/spar_b.ts --alla
+node tools/python/kort-dataset/spela_in.ts <bankklipp> 10 80 <utmapp> fore=mat@1764x1174/640 efter=1@1764x1174/640
+```
+
+De två TypeScript-skripten ligger här för att verktygen ska hålla ihop.
+
 ## Miljön
 
 Python 3.13 (miljön skripten kördes i hade 3.13.11). En gång per checkout:

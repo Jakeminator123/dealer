@@ -10,7 +10,9 @@ import type {PlacementPlan} from './placement-model.ts';
 // film: where the film's own card is in the frame, when the track draws the card somewhere else than the film has it (a track that
 // carries an even card in the grip): what is covered and keyed is then this quad, and quad is only where the card is drawn.
 // held: 1 while the card hangs in the hand, 0 once it lies (measured contact); absent, the scene goes by the frames before restFrom.
-export type TrackFrame = {frame: number; side: Side; quad: number[][] | null; edge: number[][] | null; confidence?: number; shoeShare?: number; film?: number[][] | null; held?: number};
+// blur: the width of the film card's smeared edge in this frame, film pixels over the same card standing still (0: sharp); only in
+// the tracks of the lab trial "kortprov" (TRIAL below), absent where it was not measured.
+export type TrackFrame = {frame: number; side: Side; quad: number[][] | null; edge: number[][] | null; confidence?: number; shoeShare?: number; film?: number[][] | null; held?: number; blur?: number};
 // hand: false when the track does not hold the card in the hand well enough to draw it there (tools/track-card.ts --no-hand): no
 // card object is drawn while it is carried; it comes in over the last EASE frames before it lies, settling from the film's own card
 // onto its place (the 3D scene shows the film's card recoloured until then: src/scene3d-deal.ts, carry). drawnFrom: the first frame
@@ -561,4 +563,73 @@ export function describeTrack(track: CardTrack): string {
   const unsure = track.frames.filter(f => f.side !== 'NONE' && (f.confidence ?? 1) < 0.6).length;
   const rest = restOf(track);
   return [runs.join(' · '), ...turns, !rest ? 'kortet kommer aldrig till vila i spåret' : rest.assumed ? `vilar inte i klippet, sista rutan ${rest.from} får gälla` : `vilar från ruta ${rest.from}`, ...(unsure ? [`${unsure} osäkra rutor`] : [])].join(' · ');
+}
+
+// ---- the lab trial "kortprov" (Prov kort-fram-bak-20261120; drawn in src/scene3d-deal.ts) --------------------------------------
+// Off unless Scen (scene3d.html) is opened with ?kortprov=1: the game and every other page are as they were, whatever their address
+// says. Its parts, each also asked for by its own word (?kortprov=spar,ljus):
+//   spar    the card's track with the measured card laid in (src/card-track.ts refineFrames), read from TRIAL.folder by the clip's
+//           name; a film without such a file keeps its stored track;
+//   skarpa  the drawn card smeared as far as the film's own card is in that frame (the frame's measured `blur`: smearOf), where
+//           today it is smeared by how fast the track moves;
+//   ljus    the film's light on the drawn card remembered from frame to frame (lightStep), where today each frame is read alone.
+// (The film's fingers against the drawn card, their edge, are not part of it: Jakob's yes of 2026-11-20 was for the turn and the
+// light, the sharpness against the hand comes after.)
+// ?kortprov=mat changes nothing and only writes what each frame read (document.documentElement.dataset.kortprov), to measure the
+// page as it is.
+// slew: how far the card's brightness (against the same card lying flat) may change per frame: the film's own card changes by at
+// most 0.116 per frame through a turn (13 of 255 on the face, paow-giv-2-3-p4-h24-cykel-02-01 frames 34-56), the jumps it removes
+// were about twice that. slope, decay: the same for the light's fall across the card (per film pixel) and for letting go of a fall
+// that is no longer read. smear: the mean, over all directions, of travel over edge band (smearOf).
+export const TRIAL = {word: 'kortprov', folder: 'assets/proofs/kort-fram-bak-20261120/spar', parts: ['spar', 'skarpa', 'ljus'] as const, slew: 0.12, slope: 0.0008, decay: 0.0002, smear: Math.PI / 2};
+export type TrialPart = typeof TRIAL.parts[number] | 'mat';
+/** The trial's parts asked for by a page's address, or null: only Scen, only by its word. */
+export function trialParts(path: string, search: string): Set<TrialPart> | null {
+  if (!/(^|\/)scene3d\.html$/.test(path)) return null;
+  const word = new URLSearchParams(search).get(TRIAL.word); if (!word) return null;
+  if (word === '1') return new Set<TrialPart>(TRIAL.parts);
+  const asked = word.split(',').filter(w => w === 'mat' || (TRIAL.parts as readonly string[]).includes(w)) as TrialPart[];
+  return asked.length ? new Set(asked) : null;
+}
+/** The stored track with the trial's frames; the stored track itself when the trial's file is of another film (its clip, its number of frames). */
+export function trialTrack(stored: CardTrack, trial: Pick<CardTrack, 'clip' | 'frames' | 'edgeWindow'> | null): CardTrack {
+  if (!trial || !stored.clip || trial.clip !== stored.clip || trial.frames?.length !== stored.frames.length) return stored;
+  return {...stored, frames: trial.frames, edgeWindow: trial.edgeWindow ?? null};
+}
+/**
+ * How far the film's card travelled while the frame was exposed, in film pixels, from the band measured round it (`band`: the mean
+ * width of its soft edge over its outline, less that of the same card standing still). A side is soft over the travel times how
+ * far it faces the travel, so the travel is the band over the outline's mean facing: of the quad `q` (film pixels) moving along
+ * `dir`; with no quad or no direction, the mean over all directions (TRIAL.smear).
+ */
+export function smearOf(band: number, q: number[][] | null, dir: Pt | null): number {
+  if (!(band > 0)) return 0;
+  const l = dir ? Math.hypot(dir.x, dir.y) : 0; if (!q || q.length !== 4 || l < 1e-6) return band * TRIAL.smear;
+  let facing = 0, around = 0;
+  for (let i = 0; i < 4; i++) { const a = q[i], b = q[(i + 1) % 4], ex = b[0] - a[0], ey = b[1] - a[1]; around += Math.hypot(ex, ey); facing += Math.abs(ex * dir!.y - ey * dir!.x) / l; }
+  return around > 1e-6 ? band / Math.max(facing / around, 0.3) : band * TRIAL.smear;
+}
+// The film's light on its card as one frame reads it (src/scene3d-deal.ts): shade, its brightness against the same card lying flat
+// (null: too little of the card's colour to read, or no film card in the pose); slope, how the light falls across it per film pixel
+// against its mean (null: no plane fitted); offset, where that mean lies from the card's middle.
+export type LightRead = {shade: number | null; slope: [number, number] | null; offset?: [number, number]};
+export type Light = {key: string; frame: number; shade: number; slope: [number, number] | null; offset: [number, number]};
+/**
+ * The light remembered: the reading of `frame` taken into what the frames before it gave. Following on (the same card and side,
+ * `key`, at most two frames from the last), the brightness moves toward the reading by at most TRIAL.slew a frame, and stays
+ * where it was when nothing can be read (today the card then takes its reference colour, or goes unlit, for that frame alone);
+ * the fall across the card moves by TRIAL.slope a frame, and lets go by TRIAL.decay a frame when no plane is read. The same frame
+ * again gives the same light (a paused film). Not following on (a seek, another card, the other side), the reading itself; null
+ * when there is neither a reading nor a memory, and the card is lit as before.
+ */
+export function lightStep(was: Light | null, key: string, frame: number, read: LightRead): Light | null {
+  const gap = was && was.key === key ? Math.abs(frame - was.frame) : Infinity, follows = gap <= 2;
+  if (follows && gap === 0) return was;
+  const toward = (a: number, b: number, by: number) => a + Math.max(-by * gap, Math.min(by * gap, b - a));
+  const shade = read.shade == null ? (follows ? was!.shade : null) : follows ? toward(was!.shade, read.shade, TRIAL.slew) : read.shade;
+  if (shade == null) return null;
+  const before = follows ? was!.slope : null;
+  const slope: [number, number] | null = read.slope ? (follows ? [toward(before?.[0] ?? 0, read.slope[0], TRIAL.slope), toward(before?.[1] ?? 0, read.slope[1], TRIAL.slope)] : read.slope)
+    : before ? [toward(before[0], 0, TRIAL.decay), toward(before[1], 0, TRIAL.decay)] : null;
+  return {key, frame, shade, slope, offset: read.slope && read.offset ? read.offset : follows ? was!.offset : [0, 0]};
 }

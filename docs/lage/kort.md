@@ -27,6 +27,7 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
   Hans sparade plan och domar tas med vid avslut på hans uttryckliga begäran 2026-11-19.
 - `data/media-fit.json` säger för varje bild, ankare, giv och referens om den stämmer med dagens kortplan, och Material
   visar det som en bricka ("äldre plan", "annan kamera", "avviker").
+- Labbprovet `kortprov` (Scen, av som förval) lagar det ritade kortet i handen: vändningen ur mätningen, papperets ljus med minne. Prov `kort-fram-bak-20261120`; hur i [BRISTER](../BRISTER.md), "Kortet".
 
 **Nästa steg.**
 1. C1 ligger kvar genom P4.C2. `paow-c2-paper-rim-20261118` och `paow-c2-contact-20261118` visar mindre blåspill
@@ -34,8 +35,7 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
 2. `data/media-fit.json` är ommätt. Kör `node tools/media-audit.ts --fit --write` igen när plan, lins eller ankare ändras.
 3. Kortets sidor i efterarbetet, efter filmerna: gul rygg (SG får stå kvar) och blå framsida, lika i labbet och spelet.
 4. Ta bort kravet på två vyer i planfilen (`validatePlan` kräver ännu båda), utan att planfilen skrivs av en agent.
-5. Efter filmerna: kortets efterarbete per film, ruta för ruta (kortet i handen och det som är kvar av kortens fjärde
-   steg; [BRISTER](../BRISTER.md)).
+5. Efter Jakobs ja på `kortprov`: skärpan mot handen, mätningen in i `tools/track-card.ts`, och resten av kortens fjärde steg.
 
 **Väntar på Jakob.** Inget utanför Beslut.
 

@@ -348,7 +348,9 @@ const sameWay = (from: Pt[], to: Pt[]): Pt[] => { // `to` begun at the corner ne
   let best = to, least = Infinity; for (const base of [to, [to[0], to[3], to[2], to[1]]]) for (let turn = 0; turn < 4; turn++) { const q = base.map((_, i) => base[(i + turn) % 4]), off = q.reduce((sum, p, i) => sum + dist(p, from[i]), 0); if (off < least) { least = off; best = q; } }
   return best; };
 const spine = (q: Pt[]): [Pt, Pt] => { const [a, b] = ends(q); return [mid(q[a[0]], q[a[1]]), mid(q[b[0]], q[b[1]])]; };
-export function settleRaws(raws: Raw[], kind: FilmKind, reach = 15): Raw[] {
+// rigid (the trial "kortprov", off unless asked for): a card is stiff, so one that keeps its length and loses its width has turned toward
+// the eye's line, it is not under a hand; such a finding keeps its own narrow shape (see the rule about the hidden card below).
+export function settleRaws(raws: Raw[], kind: FilmKind, reach = 15, how: {rigid?: boolean} = {}): Raw[] {
   const out = raws.map(r => ({...r})), drop = (i: number, note: string) => { out[i] = {...out[i], side: 'NONE', corners: null, segment: null, note}; };
   const flat = (i: number) => out[i].side === 'BACK' || out[i].side === 'FRONT';
   if (kind === 'DEAL') { // one turn: the split with the fewest findings on the wrong side of it
@@ -361,7 +363,10 @@ export function settleRaws(raws: Raw[], kind: FilmKind, reach = 15): Raw[] {
     out.forEach((r, i) => { if (flat(i) && r.side !== side) drop(i, 'another object: a lying card shows one side'); else if (r.side === 'EDGE') drop(i, 'a lying card is not edge-on'); });
   }
   // A card mostly hidden under the hand keeps its last known shape: a finding that suddenly has less than half the area, at the same place, is the same card.
+  // In the bank's 104 tracks (2026-11-20) the rule held 95 frames, 22 of them under a hand and 33 beside the turn, where the area halves
+  // because the card stands on its edge: the kept shape is then 1.7 times the film's card. `rigid` leaves those to their own shape.
   for (let i = 1; i < out.length; i++) { const now = out[i], was = out[i - 1];
+    if (how.rigid && now.corners && was.corners && longSide(now.corners) >= REFINE.kept * longSide(was.corners)) continue;
     if (flat(i) && flat(i - 1) && now.side === was.side && now.corners && was.corners && now.area < 0.5 * was.area && dist(centre(now.corners), centre(was.corners)) < 0.6 * Math.sqrt(Math.abs(signedArea(was.corners))))
       out[i] = {...was, shoeShare: now.shoeShare, note: 'mostly hidden: last known shape kept'}; }
   // A card carried fast is smeared. Its quad then comes out too small (only the sharp core is card-coloured) or lopsided (a corner
@@ -542,4 +547,92 @@ export function soundFrames(frames: Frame[]): {bridged: number[]; dropped: numbe
     i = j;
   }
   return {bridged, dropped};
+}
+
+// ---- the measured card (lab trial "kortprov": src/scene3d-deal.ts TRIAL) ----
+// The colour rules above count a pixel as card or not. A second measurement of the same frame (tools/python/kort-dataset/label.py:
+// how far each pixel lies from the table's colour toward the card's, so the card's outline is where it is half card) gives, for
+// each card in a frame, its place, its length and width, its line and how wide its edge is smeared. refineFrames lays a track and
+// that measurement together by what a card is: stiff. Through the turn it keeps its length and only its width goes (seen
+// edge-on), so there the card is drawn as its own length along the measured line, as wide as measured, at the measured place.
+const longSide = (q: Pt[]) => Math.max(dist(q[0], q[1]) + dist(q[2], q[3]), dist(q[1], q[2]) + dist(q[3], q[0])) / 2;
+const shortSide = (q: Pt[]) => Math.min(dist(q[0], q[1]) + dist(q[2], q[3]), dist(q[1], q[2]) + dist(q[3], q[0])) / 2;
+/** One card as measured in one frame. axis: unit vector along its longer measure, or null when it is not oblong; seen: how many of its quad's corners are free; band: the width of its smeared edge in film pixels, over that of the film's still cards. */
+export type Measured = {side: Side; centre: Pt; length: number; thickness: number; axis: Pt | null; quad: Pt[] | null; seen: number; band: number};
+// reach: a measured card belongs to the track's card when it lies within this many card lengths of it. thin: a card narrower than this
+// share of its short side is turning. kept: ... while at least this share of its length is there (shorter: a piece of it, or under a
+// hand). piece: a measured shape shorter than this share of the card says nothing of where the card's middle is. small: a tracked quad
+// under this share of the measured one is the colour rule's sharp core, not the card. large: a measured quad over this many times the
+// card is two cards. window: how far from the track's own turn frames the turn may reach.
+export const REFINE = {reach: 1.2, thin: 0.6, kept: 0.7, piece: 0.5, small: 0.8, large: 1.35, window: 8};
+export type Refined = Frame & {blur?: number};
+/**
+ * A track's frames with the measured cards laid in (the track is not changed). In the turn (`turn`: the frames between back and
+ * face and those beside them where the measured card is narrow, or where the hidden-card rule kept a wide shape) each frame is the
+ * stiff card: its length from the flat frames before and after, along the measured line, as wide as measured, where it was
+ * measured. A frame without a usable measurement keeps the line the track found in it, and only a kept wide shape goes: no card is
+ * laid at a computed place (laid between its measured neighbours it stood beside the film's card in three of the seven frames it gave
+ * on films the rule was not made on).
+ * Outside the turn a tracked quad well under the measured card takes the measured quad, and a kept shape gives way to a card that
+ * was measured whole. Frames at rest (from `restFrom`) are left alone. blur: the measured edge band, for the renderer's motion blur.
+ */
+export function refineFrames(frames: Frame[], measured: (Measured[] | null | undefined)[], restFrom: number | null = null): {frames: Refined[]; turn: [number, number] | null; changed: {turn: number[]; size: number[]; unhidden: number[]}} {
+  const n = frames.length, end = Math.min(n, restFrom ?? n), out: Refined[] = frames.map(f => ({...f, quad: f.quad && f.quad.map(p => ({...p})), edge: f.edge && [{...f.edge[0]}, {...f.edge[1]}] as [Pt, Pt]}));
+  const changed = {turn: [] as number[], size: [] as number[], unhidden: [] as number[]};
+  const flat = (i: number, side?: Side) => { const f = frames[i]; return !!f && !!f.quad && (side ? f.side === side : f.side === 'BACK' || f.side === 'FRONT'); };
+  const kept = (i: number) => /mostly hidden/.test(frames[i]?.note ?? ''), mean = (v: number[]) => { const s = [...v].sort((a, b) => a - b); return s.length ? s[s.length >> 1] : 0; };
+  // where the track has the card, also in frames where it has none (between the frames around them): only to know which measured card is ours
+  const place: (Pt | null)[] = frames.map(f => f.quad ? centre(f.quad) : f.edge ? mid(f.edge[0], f.edge[1]) : null);
+  for (let i = 0; i < n; i++) { if (place[i]) continue; let j = i; while (j < n && !place[j]) j++; const a = place[i - 1], b = j < n ? place[j] : null;
+    if (a && b && j - i <= 10) for (let k = i; k < j; k++) { const t = (k - i + 1) / (j - i + 1); place[k] = {x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t}; } i = j; }
+  // the card's measures while it is carried: the flat frames of each side that the hidden-card rule did not make
+  const sizes = (side: Side) => { const own = frames.map((_, i) => i).filter(i => i < end && flat(i, side) && !kept(i) && (frames[i].shoeShare ?? 0) < 0.05); return own.length ? {long: mean(own.map(i => longSide(frames[i].quad!))), short: mean(own.map(i => shortSide(frames[i].quad!)))} : null; };
+  const back = sizes('BACK'), front = sizes('FRONT'), any = back ?? front; if (!any) return {frames: out, turn: null, changed};
+  const whole = mean(measured.flatMap(list => (list ?? []).filter(m => m.quad && m.seen === 4).map(m => Math.abs(signedArea(m.quad!)))));
+  const near = (i: number, reach = REFINE.reach * any.long): Measured | null => { const at = place[i]; let best: Measured | null = null, least = reach; if (at) for (const m of measured[i] ?? []) { const d = dist(m.centre, at); if (d <= least) { least = d; best = m; } } return best; };
+  const firstFront = frames.findIndex((f, i) => i < end && flat(i, 'FRONT') && !!back), lastBack = firstFront < 0 ? -1 : Math.max(-1, ...frames.map((_, i) => i).filter(i => i < firstFront && flat(i, 'BACK')));
+  let turn: [number, number] | null = null;
+  if (firstFront >= 0 && lastBack >= 0 && back) { const f = front ?? back; let a = lastBack + 1, b = firstFront - 1;
+    // only frames the track has no shape of its own for: where it has one (also a narrow one), that quad is the film's card, sheared as
+    // the film shows it, and fits better than a card laid by rule (seen on paow-giv-2-3-p4-h24-cykel-02-01, frames 28-29 and 33-34)
+    while (a - 1 > 0 && lastBack + 1 - (a - 1) <= REFINE.window && kept(a - 1)) a--;
+    while (b + 1 < end - 1 && b + 1 - (firstFront - 1) <= REFINE.window && kept(b + 1)) b++;
+    if (b >= a) { turn = [a, b];
+      const before = [...Array(a).keys()].reverse().find(i => flat(i, 'BACK') && !kept(i)), after = [...Array(n).keys()].find(i => i > b && flat(i, 'FRONT'));
+      const dirs = [before, after].filter((i): i is number => i !== undefined).map(i => { const d = lengthAxis(frames[i].quad!), l = Math.hypot(d.x, d.y) || 1; return {x: d.x / l, y: d.y / l}; });
+      // the card's other sides keep their direction in the picture while they shorten (a card turning about the side it is seen along):
+      // taken from the flat frames before and after, so the narrow card is the sheared shape the film shows, not a rectangle
+      const sideDirs = [before, after].filter((i): i is number => i !== undefined).map(i => { const q = frames[i].quad!, [e] = ends(q), l = dist(q[e[0]], q[e[1]]) || 1; return {x: (q[e[1]].x - q[e[0]].x) / l, y: (q[e[1]].y - q[e[0]].y) / l}; });
+      const blend = (list: Pt[], t: number): Pt | null => { if (!list.length) return null; const p = list[0], q0 = list[list.length - 1], way = p.x * q0.x + p.y * q0.y < 0 ? -1 : 1, x = p.x + (q0.x * way - p.x) * t, y = p.y + (q0.y * way - p.y) * t, l = Math.hypot(x, y) || 1; return {x: x / l, y: y / l}; };
+      type Lay = {c: Pt; d: Pt; len: number; wide: number; side: Side; note: string; across?: boolean};
+      const lays: (Lay | null)[] = Array.from({length: n}, () => null), share = (i: number) => (i - a + 1) / (b - a + 2);
+      for (let i = a; i <= b; i++) { const m = near(i), t = share(i), long = back.long + (f.long - back.long) * t, short = back.short + (f.short - back.short) * t;
+        if (!m || !m.axis || m.length < 1.5 * m.thickness) continue;
+        // the measured line lies along one of the card's sides: the long one, unless it stands across the card's length before and after
+        const across = dirs.length > 0 && dirs.every(d => Math.abs(d.x * m.axis!.x + d.y * m.axis!.y) < 0.5), len = across ? short : long;
+        if (m.length < REFINE.piece * len) continue;
+        lays[i] = {c: m.centre, d: m.axis, len, wide: Math.max(2, Math.min(m.thickness, across ? long : short)), side: m.side, across, note: 'turn: the stiff card along the measured line, width and place measured'}; }
+      // which side a turning card shows: as measured, else the back up to its narrowest frame and the face after it
+      let thinnest = a, least = Infinity; for (let i = a; i <= b; i++) if (lays[i] && lays[i]!.wide < least) { least = lays[i]!.wide; thinnest = i; }
+      for (let i = a; i <= b; i++) { const l = lays[i], f0 = out[i];
+        // nothing measured (the card edge-on, or turning in front of her jacket, where the measurement, made against the table, sees no card):
+        // the track's own line stays as it is, found in this frame; only a kept wide shape goes, since that is known to be wrong
+        if (!l) { if (kept(i)) { out[i] = {...f0, side: 'NONE', quad: null, edge: null, confidence: 0, note: 'turn: the kept shape dropped, nothing measured to lay instead'}; changed.turn.push(i); } continue; }
+        const hx = l.d.x * l.len / 2, hy = l.d.y * l.len / 2; changed.turn.push(i);
+        if (l.wide < EDGE_THICKNESS) { out[i] = {...f0, side: 'EDGE', quad: null, edge: [round({x: l.c.x - hx, y: l.c.y - hy}), round({x: l.c.x + hx, y: l.c.y + hy})], area: Math.round(l.len * l.wide), confidence: 0.6, note: l.note}; continue; }
+        const other = blend(l.across ? dirs : sideDirs, share(i)), lean = other ? Math.abs(l.d.x * other.y - l.d.y * other.x) : 0, o = other && lean >= 0.35 ? other : {x: -l.d.y, y: l.d.x}, reach = l.wide / 2 / (other && lean >= 0.35 ? lean : 1);
+        const nx = o.x * reach, ny = o.y * reach, side: Side = l.side === 'BACK' || l.side === 'FRONT' ? l.side : i <= thinnest ? 'BACK' : 'FRONT';
+        out[i] = {...f0, side, quad: clockwise([{x: l.c.x - hx + nx, y: l.c.y - hy + ny}, {x: l.c.x + hx + nx, y: l.c.y + hy + ny}, {x: l.c.x + hx - nx, y: l.c.y + hy - ny}, {x: l.c.x - hx - nx, y: l.c.y - hy - ny}]).map(round), edge: null, area: Math.round(l.len * l.wide), confidence: 0.6, note: l.note}; }
+      // corner identity as buildTrack keeps it: the back from the frame before it onward, the face from the frame after it backward; a line the way the card's length ran
+      for (let i = a; i <= b; i++) { const f0 = out[i], p = out[i - 1]; if (f0.side === 'BACK' && f0.quad && p?.side === 'BACK' && p.quad) f0.quad = alignCorners(p.quad, f0.quad);
+        if (f0.edge && p) { const d = p.quad ? lengthAxis(p.quad) : p.edge ? {x: p.edge[1].x - p.edge[0].x, y: p.edge[1].y - p.edge[0].y} : null; if (d && (f0.edge[1].x - f0.edge[0].x) * d.x + (f0.edge[1].y - f0.edge[0].y) * d.y < 0) f0.edge = [f0.edge[1], f0.edge[0]]; } }
+      for (let i = b; i >= a; i--) { const f0 = out[i], p = out[i + 1]; if (f0.side === 'FRONT' && f0.quad && p?.side === 'FRONT' && p.quad) f0.quad = alignCorners(p.quad, f0.quad); } } }
+  for (let i = 0; i < end; i++) { const m = near(i); if (!m) continue;
+    out[i].blur = Math.max(0, Math.round(m.band * 10) / 10); /* 0: measured, and sharp; absent: not measured */
+    if ((turn && i >= turn[0] && i <= turn[1]) || !flat(i) || !m.quad || m.seen < 3 || m.side !== frames[i].side) continue;
+    const size = (frames[i].side === 'BACK' ? back : front) ?? any, card =Math.max(size.long * size.short, whole), theirs = Math.abs(signedArea(m.quad)), ours = Math.abs(signedArea(frames[i].quad!));
+    if (theirs > REFINE.large * card || dist(m.centre, place[i]!) > 0.5 * size.long) continue;
+    if (kept(i) && theirs >= 0.5 * card) { out[i] = {...out[i], quad: alignCorners(frames[i].quad!, m.quad).map(round), area: Math.round(theirs), note: 'measured whole: not hidden'}; changed.unhidden.push(i); }
+    else if (ours < REFINE.small * theirs) { out[i] = {...out[i], quad: alignCorners(frames[i].quad!, m.quad).map(round), area: Math.round(theirs), note: `${frames[i].note ? frames[i].note + '; ' : ''}size from the measured card`}; changed.size.push(i); } }
+  return {frames: out, turn, changed};
 }

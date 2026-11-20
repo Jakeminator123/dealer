@@ -36,6 +36,14 @@ vec3 cardBase(sampler2D map, vec2 q[4], vec3 ref){
   for (int j = 0; j < 6; j++) for (int i = 0; i < 6; i++) { vec3 s = coreAt(map, q, i, j); if (length(s) > .12 && dot(normalize(s), dir) > .96 && dot(s, w) >= mean) { top += s; m += 1.; } }
   return n >= 6. ? (m >= 3. ? top / m : sum / n) : ref;
 }`;
+// How many of cardBase's 36 samples carry the card's colour: under 6, cardBase gives the reference colour and not a reading. Asked
+// only by the lab trial "kortprov" (src/scene3d-deal.ts reads the light back to remember it); it repeats cardBase's rule and stands
+// beside it for that reason. Needs CARD_GLSL.
+export const CARD_SEEN_GLSL = `float cardSeen(sampler2D map, vec2 q[4], vec3 ref){
+  vec3 dir = normalize(ref); float n = 0.;
+  for (int j = 0; j < 6; j++) for (int i = 0; i < 6; i++) { vec3 s = coreAt(map, q, i, j); if (length(s) > .12 && dot(normalize(s), dir) > .96) n += 1.; }
+  return n;
+}`;
 // The middle of the dealer-side table edge in the standard film frame (film pixels, y down): the fixed point of a film's own frame.
 export const FRAME_FIX = {x: 881.5, y: 831.5};
 const CARD_KEY = `const vec2 FRAME_FIX = vec2(${FRAME_FIX.x}, ${FRAME_FIX.y});

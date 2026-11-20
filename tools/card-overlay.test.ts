@@ -710,3 +710,46 @@ test('the hole card\'s deal, as mended 2026-11-14: the whole card slides on unde
   sizes.forEach((s, i) => { assert.ok(plausible(poseAt(track, scene, 40 + i, 1.2)!.quad!, 2.5 * PLAUSIBLE.size), `frame ${40 + i}`); if (i) assert.ok(Math.abs(s - sizes[i - 1]) < 4, `frame ${40 + i}: no jump in size`); });
   for (let f = 41; f <= 80; f++) assert.ok(dist(centre(poseAt(track, scene, f, 1.2)!.quad!), centre(poseAt(track, scene, f - 1, 1.2)!.quad!)) < 20, `frame ${f}: no jump in place`);
 });
+
+// ---- the lab trial "kortprov" (src/card-overlay.ts TRIAL) ----
+test('kortprov: only Scen answers to the word, and only when it is given', async () => {
+  const {trialParts, TRIAL} = await import('../src/card-overlay.ts');
+  assert.equal(trialParts('/scene3d.html', '?clip=a'), null, 'off when the address does not say it');
+  assert.equal(trialParts('/scene3d.html', '?kortprov=0'), null); assert.equal(trialParts('/scene3d.html', '?kortprov=annat'), null);
+  assert.equal(trialParts('/game.html', '?kortprov=1'), null, 'never in the game'); assert.equal(trialParts('/studio/granska/', '?kortprov=1'), null);
+  assert.deepEqual([...trialParts('/scene3d.html', '?clip=a&kortprov=1')!], [...TRIAL.parts]);
+  assert.deepEqual([...trialParts('/scene3d.html', '?kortprov=ljus,spar')!], ['ljus', 'spar']);
+  assert.deepEqual([...trialParts('/scene3d.html', '?kortprov=mat')!], ['mat'], 'measuring only');
+});
+test('kortprov: the trial\'s frames go into the stored track only for the same film', async () => {
+  const {trialTrack} = await import('../src/card-overlay.ts');
+  const frame = (i: number, side: 'BACK' | 'NONE') => ({frame: i, side, quad: null, edge: null});
+  const stored = {clip: 'a', width: 1764, height: 1174, hand: false, frames: [frame(0, 'BACK'), frame(1, 'BACK')], edgeWindow: null, restFrom: 1, restQuad: null};
+  const trial = {clip: 'a', frames: [frame(0, 'BACK'), {...frame(1, 'NONE'), blur: 2.5}], edgeWindow: [1, 1] as [number, number]};
+  const own = trialTrack(stored, trial);
+  assert.equal(own.frames, trial.frames); assert.deepEqual(own.edgeWindow, [1, 1]); assert.equal(own.hand, false, 'what the page knows of the track stays'); assert.equal(stored.frames[1].side, 'BACK', 'the stored track is not changed');
+  assert.equal(trialTrack(stored, null), stored); assert.equal(trialTrack(stored, {...trial, clip: 'b'}), stored, 'another film');
+  assert.equal(trialTrack(stored, {...trial, frames: trial.frames.slice(0, 1)}), stored, 'another length');
+});
+test('kortprov: the smear is the travel that gives the measured edge band', async () => {
+  const {smearOf, TRIAL} = await import('../src/card-overlay.ts');
+  const card = [[0, 0], [90, 0], [90, 60], [0, 60]]; // the two short sides face a travel along x: 120 of 300 pixels of outline
+  assert.equal(smearOf(0, card, {x: 1, y: 0}), 0, 'a sharp card is not smeared, however fast the track says it moves');
+  assert.ok(Math.abs(smearOf(2, card, {x: 5, y: 0}) - 2 / (120 / 300)) < 1e-9); assert.ok(Math.abs(smearOf(2, card, {x: 0, y: -3}) - 2 / (180 / 300)) < 1e-9);
+  assert.ok(Math.abs(smearOf(2, null, {x: 1, y: 0}) - 2 * TRIAL.smear) < 1e-9 && Math.abs(smearOf(2, card, null) - 2 * TRIAL.smear) < 1e-9, 'no shape or no direction: the mean over all directions');
+});
+test('kortprov: the light is remembered from frame to frame', async () => {
+  const {lightStep, TRIAL} = await import('../src/card-overlay.ts');
+  assert.equal(lightStep(null, 'a/FRONT', 10, {shade: null, slope: null}), null, 'nothing read, nothing remembered: lit as before');
+  const first = lightStep(null, 'a/FRONT', 10, {shade: 0.9, slope: [0.002, 0], offset: [3, -2]})!;
+  assert.deepEqual([first.shade, first.slope, first.offset], [0.9, [0.002, 0], [3, -2]], 'the first reading as it is');
+  assert.equal(lightStep(first, 'a/FRONT', 10, {shade: 0.6, slope: null}), first, 'the same frame again, the same light');
+  const jump = lightStep(first, 'a/FRONT', 11, {shade: 1.3, slope: [-0.004, 0], offset: [0, 0]})!;
+  assert.ok(Math.abs(jump.shade - (0.9 + TRIAL.slew)) < 1e-9, 'a jump is taken a step at a time'); assert.ok(Math.abs(jump.slope![0] - (0.002 - TRIAL.slope)) < 1e-9);
+  const near = lightStep(jump, 'a/FRONT', 12, {shade: 1.05, slope: [-0.004, 0]})!; assert.equal(near.shade, 1.05, 'a small change is followed');
+  const blind = lightStep(near, 'a/FRONT', 13, {shade: null, slope: null})!;
+  assert.equal(blind.shade, 1.05, 'nothing to read: the light stays, where a single frame took the reference colour'); assert.ok(Math.abs(Math.abs(blind.slope![0]) - (Math.abs(near.slope![0]) - TRIAL.decay)) < 1e-9, 'and the fall across the card lets go slowly');
+  assert.equal(lightStep(blind, 'a/FRONT', 40, {shade: 0.7, slope: null})!.shade, 0.7, 'after a seek the reading itself');
+  assert.equal(lightStep(blind, 'a/BACK', 14, {shade: 0.7, slope: null})!.shade, 0.7, 'the other side is another light');
+  assert.equal(lightStep(blind, 'a/BACK', 14, {shade: null, slope: null}), null);
+});
