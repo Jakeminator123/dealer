@@ -1,7 +1,7 @@
 // The routes of the view Beställ and of Jakob's verdict in Material (tools/order-routes.ts), run against a temporary
 // copy of the data on a real local server: drafts from a few choices, changes only with the revision read, approval only
 // from the lab's own origin and within the policy, nothing changed after approval, files only from the order's folder,
-// and kandidat → gäller with the other candidates replaced. Pictures here are tiny PNGs; no film is decoded.
+// and kandidat → gäller with the other candidates replaced. Pictures are flat PNGs in the bank's size; no film is decoded.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
