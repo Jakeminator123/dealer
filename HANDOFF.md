@@ -9,8 +9,8 @@ Läs AGENTS.md, den här sidan och EN lägesfil för din bana. Ersätt inaktuell
   returer till redo och vila. Paow är dealern; Pamela är pausad (namnet bär också dockans rörelser `giv-pamela-*` och en scenfilm: skriv
   vilken du menar). Scoutgaming är slutmålet på sikt.
 - Labbet är en vy, Bordet, där en film beställs längs en rak linje: steget och kortets plats, receptet ger resten.
-- Den tatuerade uppsättningen är hans förstahandsval, och ankare 2.3 gäller. Vägen från det finns (ett slutbildsankare,
-  A3, per plats; beställt genom Bordet), men givarna till plats 4 och 1 fick hans Inte bra och ingången hans nej.
+- Den tatuerade uppsättningen är hans förstahandsval, och A2.3 gäller. Vägen från det finns (ett slutbildsankare per
+  spelare och kort, A3P4C1; beställt genom Bordet); given till plats 4 har hans ja, och övriga platser görs likadant.
 - Kortplan och order följer B-linsen. **Använd i Casino** sparar visningen, även Bred lins, för Casino och `/casino`.
 - Kopian på nätet är publicerad på `c9d006d` den 2026-11-20 på Jakobs ord, utan nya filmer; kontrollen utifrån
   20/20 och åtkomsten oförändrad. Telefonmått, fysisk telefon och ljud återstår ([spelet](docs/lage/spelet.md)).
