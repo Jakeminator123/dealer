@@ -14,7 +14,7 @@ given från 2.3 till plats 5 har fyra tagningar, där den fjärde håller i den 
   Saldot hos Runway var 5 392 när banan stängdes.
 
 **Nästa steg.** I den här ordningen:
-1. Gjort 2026-11-18: A3 per plats och hand, vägen in i banken för en tagning beställd utanför Beställ, och ingången
+1. Gjort 2026-11-18: A3PnC1 per plats och hand, vägen in i banken för en tagning beställd utanför Beställ, och ingången
    omgjord genom Bordet ([film](film.md)). Kvar: oberoende granskning av de tre nya filmerna.
 2. En tagning per återstående plats med samma recept, på en långsam docka från 3D-banan per plats.
 3. Kortet i skons fönster har en ljus överkant i ankare 1 och 2.3 (bankens platta): rättas i ankarbilden.

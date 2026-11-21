@@ -11,9 +11,9 @@
 //      has them, the shoe where it stands); the laying hand's fingertips at the card's corner nearest her; the other hand at the
 //      window as in the anchor; the green plain. A check that fails stops the run unless --anyway is given (then it is said).
 //   5. the picture into Material as a candidate (tools/media-roles.ts add, role landning, node LAND(<seat>), card, hand), named
-//      "A3 · P4": assets/anchors/<dealer>-<name>/anchor.png with its receipt. Never gäller: Jakob makes an anchor hold.
+//      "A3P4C1": assets/anchors/<dealer>-<name>/anchor.png with its receipt. Never gäller: Jakob makes an anchor hold.
 //
-//   node tools/landing-make.ts <source.png> --target P4.C1 --hand RH --name a3-p4-nb [--anchor <png>] [--title "A3 · P4"] [--dealer paow] [--anyway] [--dry]
+//   node tools/landing-make.ts <source.png> --target P4.C1 --hand RH --name a3-p4-nb [--anchor <png>] [--title "A3P4C1"] [--dealer paow] [--anyway] [--dry]
 // Tests: tools/landing-make.test.ts (the pure parts on made-up pictures).
 import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
@@ -130,7 +130,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const args = process.argv.slice(2), flag = (name: string) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : undefined; };
   const source = args[0], target = flag('--target'), hand = flag('--hand'), name = flag('--name');
   try {
-    if (!source || source.startsWith('--') || !target || (hand !== 'LH' && hand !== 'RH') || !name) throw new Error('Använd: node tools/landing-make.ts <källa.png> --target P4.C1 --hand RH --name a3-p4-<variant> [--anchor <png>] [--title "A3 · P4"] [--anyway] [--dry]');
+    if (!source || source.startsWith('--') || !target || (hand !== 'LH' && hand !== 'RH') || !name) throw new Error('Använd: node tools/landing-make.ts <källa.png> --target P4.C1 --hand RH --name a3-p4-<variant> [--anchor <png>] [--title "A3P4C1"] [--anyway] [--dry]');
     const root = path.resolve(fileURLToPath(new URL('../', import.meta.url)));
     const out = await makeLanding(root, {source, target, hand, name, anchor: flag('--anchor'), title: flag('--title'), anyway: args.includes('--anyway'), dry: args.includes('--dry')});
     const preview = flag('--preview');

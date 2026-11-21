@@ -412,8 +412,8 @@ export const LANDING_ROLE = 'landning';
  */
 export type HandOf = { hand?: string };
 const handOf = (e: HandOf): 'LH' | 'RH' => (e.hand === 'RH' ? 'RH' : 'LH');
-/** "A3 · P4", "A3 · Dealer": what a seat's A3 is called. */
-export const a3Name = (target: string): string => `A3 · ${target === 'D.C1' ? 'Dealer' : target === 'D.C2' ? 'Hålkort' : target.replace(/\.C1$/, '').replace(/\.C2$/, ' kort 2')}`;
+/** "A3P4C1", "A3DC1": what the anchor a card ends on is called, as Jakob writes it (2026-11-21: anchor 3, player 4, card 1). */
+export const a3Name = (target: string): string => `A3${target.replace('.', '')}`;
 const isLanding = <E extends { role: string; node?: string; card?: string } & HandOf>(e: E, target: string, hand: 'LH' | 'RH') => e.role === LANDING_ROLE && e.node === landingNode(target) && e.card === target && handOf(e) === hand;
 /** The landing picture of a seat that holds for a hand: role landning, node LAND(<seat>), state gäller, the card on that seat, that hand at it. */
 export function landingOf<E extends { role: string; node?: string; state?: string; card?: string } & HandOf>(entries: readonly E[], target: string | null | undefined, hand: 'LH' | 'RH' = 'LH'): E | null {

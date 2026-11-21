@@ -47,7 +47,7 @@ test("Bordet's row and the store agree for every standard step and card, and the
   const entries = [
     ...([["ankare-1", "IDLE"], ["ankare-2.1", "READY"], ["ankare-2.2", "READY-B"], ["ankare-2.3", "READY-C"]] as const).map(([role, node]) => ({ id: `paow-${role}`, role, name: role, path: still, node, state: "gäller" })),
     ...SEATS.filter((card) => card !== "D.C1").map((card) => ({ id:`paow-landning-${card.toLowerCase().replace(".", "-")}`, role: "landning", name: `Landning ${card}`, path: still, node: `LAND(${card})`, card, state: "gäller" })),
-    { id: "paow-a3-p4", role: "landning", name: "A3 · P4", path: still, node: "LAND(P4.C1)", card: "P4.C1", hand: "RH", state: "gäller" },
+    { id: "paow-a3-p4", role: "landning", name: "A3P4C1", path: still, node: "LAND(P4.C1)", card: "P4.C1", hand: "RH", state: "gäller" },
   ];
   await writeFile(path.join(root, "data/media-roles.json"), JSON.stringify({ schemaVersion: 1, dealers: { paow: { name: "Paow", entries } }, measures: [] }, null, 2) + "\n");
   // The bank: what a rule must tell apart.

@@ -641,7 +641,7 @@ test('a legacy incompatible KORT two-hand deal cannot be revised or frozen until
   const { root, call } = await lab(t);
   const media = register();
   const ready = { id: 'paow-2-3', role: 'ankare-2.3', name: 'Ankare 2.3', path: 'assets/anchors/paow-vila-ung-2/anchor.png', node: 'READY-C', state: 'gäller' };
-  const a3 = { id: 'paow-a3-p4', role: 'landning', name: 'A3 · P4', path: 'assets/anchors/paow-nyp-ny/anchor.png', node: 'LAND(P4.C1)', card: 'P4.C1', hand: 'RH', state: 'kandidat' };
+  const a3 = { id: 'paow-a3-p4', role: 'landning', name: 'A3P4C1', path: 'assets/anchors/paow-nyp-ny/anchor.png', node: 'LAND(P4.C1)', card: 'P4.C1', hand: 'RH', state: 'kandidat' };
   media.dealers.paow.entries.push(ready, a3);
   await writeFile(path.join(root, 'data/media-roles.json'), JSON.stringify(media));
   const input = { dealer: 'paow', step: 'GIV-2.3', target: 'P4.C1', end: a3.id, side: 'FRONT', reference: null };
@@ -724,7 +724,7 @@ test('a legacy incompatible KORT two-hand deal cannot be revised or frozen until
 test('the MINIMAL two-hand deal accepts the H24 long-edge reference', async (t) => {
   const { root, call, files } = await lab(t);
   const media = register();
-  const a3 = { id: 'paow-a3-p4', role: 'landning', name: 'A3 · P4', path: 'assets/anchors/paow-a3-p4/anchor.png', node: 'LAND(P4.C1)', card: 'P4.C1', hand: 'RH', state: 'kandidat' };
+  const a3 = { id: 'paow-a3-p4', role: 'landning', name: 'A3P4C1', path: 'assets/anchors/paow-a3-p4/anchor.png', node: 'LAND(P4.C1)', card: 'P4.C1', hand: 'RH', state: 'kandidat' };
   media.dealers.paow.entries.push(a3);
   await writeFile(path.join(root, 'data/media-roles.json'), JSON.stringify(media));
   await mkdir(path.dirname(path.join(root, a3.path)), { recursive: true });
@@ -804,7 +804,7 @@ test('the return to 2.3 copies the preceding deal’s RH ending and cannot be ap
   const { root, call, request, files } = await lab(t);
   const media = register();
   const ready = { id: 'paow-ankare-2-3-a', role: 'ankare-2.3', name: 'Ankare 2.3', path: 'assets/anchors/paow-ankare-2-3-a/anchor.png', node: 'READY-C', state: 'gäller' };
-  const a3 = { id: 'paow-a3-p4', role: 'landning', name: 'A3 · P4', path: 'assets/anchors/paow-a3-p4/anchor.png', node: 'LAND(P4.C1)', card: 'P4.C1', hand: 'RH', state: 'kandidat' };
+  const a3 = { id: 'paow-a3-p4', role: 'landning', name: 'A3P4C1', path: 'assets/anchors/paow-a3-p4/anchor.png', node: 'LAND(P4.C1)', card: 'P4.C1', hand: 'RH', state: 'kandidat' };
   const left = { ...a3, id: 'paow-a3-p4-lh', hand: 'LH' };
   const different = { ...a3, id: 'paow-a3-p4-other' };
   media.dealers.paow.entries.push(ready, a3, left, different);
