@@ -71,7 +71,8 @@ const HUBS = new Set(['IDLE', 'READY', 'READY-B', 'READY-C']);
 const OUTER = new Set(['AWAY', 'REVEAL(D.C2)']);
 export const isCard = (node: string) => CARD.test(node);
 /** A node as he writes it: A1, A2.1, A2.3, A3P4C1, A3DC1, Borta, DC2 upp; seen from a seat, S2-A2.2. */
-export const code = (node: string, seat?: number) => `${seat ? `S${seat}-` : ''}${isCard(node) ? `A3${nodeCode(node)}` : nodeCode(node)}`;
+// The studio's nodeCode may already write a card node as A3P4C1; "A3" is added only when it does not.
+export const code = (node: string, seat?: number) => { const n = nodeCode(node); return `${seat ? `S${seat}-` : ''}${isCard(node) && !n.startsWith('A3') ? `A3${n}` : n}`; };
 /** The take's two nodes, with the anchor variant the graph stores under READY put back (take.hub). */
 export function nodesOf(edge: string, hub?: string | null): [string, string] {
   const cut = edge.indexOf('>'), [from, to] = cut < 0 ? [edge, edge] : [edge.slice(0, cut), edge.slice(cut + 1)];
@@ -134,22 +135,29 @@ export type Row = {
   /** inGame: the take is in the bank the game holds (gameTakes); plays: it is there and the game also picks it (usesOf is not "never"). */
   verdict: string; good: boolean; variant: boolean; inGame?: boolean; plays: boolean; use: string | null; mb: number;
   via: string | null; reason: string | null; proposal: string | null; anchors: string[]; note?: string;
+  /** The verdict as data (verdictOf for a take, the record's review otherwise); null for a clip cut into takes and a folder without a record. */
+  judge?: Judge | null;
 };
+/** primar | godkand | variant | vantar | underkand; byJakob: his own word; provisional: given for him by the main agent and a reviewer;
+ *  detail: verdictOf's word more ("sekundär" for an underkand that is a secondary alternative). */
+export type Judge = {verdict: string; byJakob: boolean; provisional: boolean; detail: string | null};
 type Tree = TreeDef & {dealer: string; at: Map<string, string>; ids: Set<string>};
-type Verdict = {text: string; good: boolean};
+type Verdict = {text: string; good: boolean; judge: Judge | null};
 
 const VERDICT_WORD: Record<string, string> = {primar: 'Primär', godkand: 'Godkänd', variant: 'Variant', vantar: 'ej dömd', underkand: 'Inte bra'};
 function takeVerdict(take: Take): Verdict {
   const v = verdictOf(take), word = VERDICT_WORD[v.verdict];
   const who = v.provisional ? 'dömd åt honom: ' : '', by = !v.provisional && !v.byJakob && v.verdict !== 'vantar' ? ' (granskare)' : '';
-  return {text: `${who}${word}${by}${v.detail ? `, ${v.detail}` : ''}`, good: ['primar', 'godkand', 'variant'].includes(v.verdict)};
+  return {text: `${who}${word}${by}${v.detail ? `, ${v.detail}` : ''}`, good: ['primar', 'godkand', 'variant'].includes(v.verdict), judge: {verdict: v.verdict, byJakob: v.byJakob, provisional: v.provisional, detail: v.detail}};
 }
 type Review = {decision?: string; userAccepted?: boolean; userReview?: string; provisional?: unknown};
 function recordVerdict(review: Review | undefined): Verdict {
-  if (!review?.decision) return {text: 'ej dömd', good: false};
+  if (!review?.decision) return {text: 'ej dömd', good: false, judge: null};
   const his = review.userAccepted === true || (typeof review.userReview === 'string' && review.userReview.trim() !== '');
   const word = review.decision === 'ACCEPTED' ? 'Godkänd' : review.decision === 'SECONDARY' ? 'Godkänd, sekundär' : review.decision === 'REJECTED' ? 'Inte bra' : 'ej dömd';
-  return {text: `${review.provisional ? 'dömd åt honom: ' : ''}${word}${!his && !review.provisional && word !== 'ej dömd' ? ' (granskare)' : ''}`, good: review.decision === 'ACCEPTED' || review.decision === 'SECONDARY'};
+  return {text: `${review.provisional ? 'dömd åt honom: ' : ''}${word}${!his && !review.provisional && word !== 'ej dömd' ? ' (granskare)' : ''}`, good: review.decision === 'ACCEPTED' || review.decision === 'SECONDARY',
+    // A record outside the bank that is SECONDARY counts as good here, as its text says: the safe side for anything that deletes.
+    judge: {verdict: review.decision === 'REJECTED' ? 'underkand' : review.decision === 'ACCEPTED' || review.decision === 'SECONDARY' ? 'godkand' : 'vantar', byJakob: his, provisional: !!review.provisional, detail: review.decision === 'SECONDARY' ? 'sekundär' : null}};
 }
 const RANK: Record<Group, number> = {kopplad: 0, halvkopplad: 1, okopplad: 2};
 
@@ -282,7 +290,7 @@ export async function buildReport(only: string | null = null) {
     // No picture where two trees share the level: a film the game plays points at the one tree the game plays (still a proposal).
     const hubs = nodesOf(take.edge, take.hub).filter(n => HUBS.has(n)), live = owners(dealer).filter(t => t.state === 'spelas' && hubs.every(n => t.at.has(n)));
     const proposal = p.group === 'halvkopplad' && p.reason?.startsWith('ingen bild för') && played && live.length === 1 ? `${live[0].name}: ${stepName(take.edge, take.hub)} (förslag: spelet spelar den)` : p.proposal;
-    rows.push({id, dealer, kind: 'tagning', group: p.group, tree: p.tree?.id ?? null, step: stepName(take.edge, take.hub), edge: take.edge, verdict: v.text, good: v.good,
+    rows.push({id, dealer, kind: 'tagning', group: p.group, tree: p.tree?.id ?? null, step: stepName(take.edge, take.hub), edge: take.edge, verdict: v.text, good: v.good, judge: v.judge,
       variant: !!take.variant, inGame, plays: played, use: use ? use.word : null, mb: mb(own.bytes), via: p.via, reason: p.reason, proposal,
       anchors: p.anchors, note: [take.archived ? 'arkiverad' : '', own.deleted ? 'filmen raderad (RADERAD.txt)' : '', !own.exists ? `filmen ligger i ${take.segment?.clip ?? 'källfilmen'}` : ''].filter(Boolean).join('; ') || undefined});
     seen.add(id);
@@ -308,13 +316,13 @@ export async function buildReport(only: string | null = null) {
     const v = recordVerdict(rec.review);
     if (edge) {
       const p = place(dealer, edge, null, evidence(id));
-      rows.push({...base, group: 'halvkopplad', tree: null, step: stepName(edge), edge, verdict: v.text, good: v.good, plays: false, use: null, via: null,
+      rows.push({...base, group: 'halvkopplad', tree: null, step: stepName(edge), edge, verdict: v.text, good: v.good, judge: v.judge, plays: false, use: null, via: null,
         reason: `ingen tagning i banken${p.reason ? `; ${p.reason}` : ''}`, proposal: p.tree ? `${p.tree.name}: ${stepName(edge)} (förslag)` : p.proposal});
       continue;
     }
     const target = typeof rec.motion?.target === 'string' ? rec.motion.target : null;
     const whole = rec.kind ?? (rec.sequence ? 'sequence' : null);
-    rows.push({...base, group: whole || !target ? 'okopplad' : 'halvkopplad', tree: null, step: null, edge: null, verdict: v.text, good: v.good, plays: false, use: null, via: null,
+    rows.push({...base, group: whole || !target ? 'okopplad' : 'halvkopplad', tree: null, step: null, edge: null, verdict: v.text, good: v.good, judge: v.judge, plays: false, use: null, via: null,
       reason: whole ? `hel runda i ett stycke (${whole}), ingen kant` : target ? `ingen tagning i banken, siktar på ${code(target)}` : 'ingen kant och ingen tagning i banken',
       proposal: target ? `${owners(dealer).filter(t => true).map(t => t.name).join(' eller ')}: mot ${code(target)} (förslag)` : null});
   }

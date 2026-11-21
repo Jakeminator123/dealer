@@ -71,6 +71,17 @@ Nätkopian har inte denna lokala loggning; publicering och extern insamling är 
 
 ## Radera oanvänt material
 
+Gallringen (Jakob 2026-11-21: "kan du inte bara fixa upp något bra ang detta?") är ett verktyg i tre nivåer.
+`npm run gallra` skriver bara rapporten: `.runtime/gallring/LASMIG.md` och `plan.json`, med varje fil, skälet, storleken
+och antalet hårda länkar. `npm run gallra -- --kor` utför nivån **säkert** och inget annat: hans egna Inte bra som
+inget pekar på, det som bevisligen går att göra igen, och byteidentiska filer som blir en fil. `--kor --grupp <namn>`
+utför EN grupp ur **förslag**, och bara på hans ord om den gruppen. Nivån **blob** är bara förberedd: det som kan
+ligga enbart på den nya Blobben när den finns. Spärren (Primär, Godkänd, Variant, det spelet har, roller, V6,
+original, referenser, noir-samlingen, filmen före spelet, det Beslut eller en öppen order nämner, och allt yngre än
+tre dygn) kontrolleras för varje fil precis innan den rörs. Det som går flyttas först till
+`D:/dealer-scratch/papperskorg/<datum>/` och ligger där i 14 dygn (`--tom-korgen` tömmer det äldre); planen gäller
+i 24 timmar, sedan görs rapporten om. Kör rapporten efter varje filmomgång och `--kor` när den visar något säkert.
+
 Efter varje avslutad filmbeställning: kör `npm run media:status`, kontrollera roller och referenser, rensa egna
 återskapbara mellanresultat och kör rapporten igen. Bevara källfilm, styrbilder, orderkvitto och valt granskningsbevis.
 Tillfälliga kopior ligger i `.runtime/<uppgift>/`; färdiga filmer och användbara prov ligger i `assets/` med en roll.
