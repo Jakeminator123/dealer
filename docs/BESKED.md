@@ -15,6 +15,15 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 
 ## Arbetet och dokumenten
 
+- **Datorn bär bara det som det arbetas med; resten ligger på den nya Blobben, och det ersatta gallras** (2026-11-21,
+  sent): "idag ser jag att 'assets' har sjukt mkt material. Ska man inte göra så att det raderas massa om nya versioner
+  kommer in lite automatiskt? Eller typ att någonting gör att mappen inte blir så tung? Eller jag menar allt ska ju
+  köras via blobben fortsättningsvis, den nya alltså, så lokalt ska vi kanske inte ha så mkt alls. Men om vi arbetar
+  aktivt lokalt så ska vi såklart ha det.. kan du inte bara fixa upp något bra ang detta?" Läst så: det en regel ensam
+  avgör (hans egna Inte bra, återskapbart, dubbletter) gallras utan fler ord och går att ta tillbaka i 14 dygn; allt
+  annat löst listas och tas först på hans ord; Primär, Godkänd, Variant, ankare och det spelet spelar rörs aldrig.
+  När den nya storen finns kan det som ligger där tas bort från datorn och hämtas vid behov. Rutinen:
+  `tools/local-work.md`, "Radera oanvänt material".
 - **Testerna skars ner till en kärna, och en ny Blob med ett träd per dealer** (2026-11-21, kväll): "Försök antingen
   gör en quickfix och radera alla tester eller om du kan skriva ett kommando så jag på annat sätt kan svärma mappen med
   tester […] men tveka inte att bara radera dem.. kan inte låsningar jag har i projektet bero på detta? Kan ju bara
@@ -561,6 +570,13 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 
 ## Läpparna och talet
 
+- **Den neutrala munnen är standard för alla Paows repliker** (2026-11-21, kl. 18.38, anteckning 43 i Prov på
+  `paow-munbyte-neutral-20261121`): "den andra av dessa ska in som standard för alla hennes repliker överallt och som
+  standard-läppsynk för PAOW men bara vi vet att detta är just i ett annat format OM det är andra format i denna än de
+  som tex finns i andra projekt eller som den dära stora imagen eller vad det är använder som standards för cache".
+  Läst så: "den andra" är den högra i jämförelserna, den neutrala munnen; den gäller varje replik och är förvalet för
+  en ny; och det ska stå i klartext om dess format skiljer sig från det Scouts renderer och imagen på hans RunPod
+  väntar sig (`docs/TAL.md`).
 - **Läpparna i realtid är huvudmålet** (2026-11-17): "Jag vill ju kunna använda mig av min runpod framgent för att
   skapa realtidslipsynk. Det är det som är huvudmålet. hennes talade replikklipp är av mindre relevans, även fast dessa
   också ska sitta såklart." Arbetet med munnen gäller först realtid på hans pod; replikfilmerna kommer i andra hand.
@@ -650,6 +666,12 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 - **Kopian är öppen för läsning** (2026-11-14): "Se till att den inte är lösenordsskyddad." Boten och önskemålslådan
   kräver fortfarande lösenordet, eftersom boten kostar per fråga; han svarade "Ja" i Beslut på att öppna den, med
   frågan "Vilkne är botten?". Det är förklarat, och boten öppnas först när han säger det igen.
+- **Noirfilmerna: v4 och framåt sparas, och den är filmen på Blob** (2026-11-21, sent): "typ alla lätta kopior kan
+  raderas"; "Alla noirfilmer kan raderas före 'v4'-noirtrailern. Eller kanske ska man i alla fall spara de
+  tagningar/sekvenser om just den har som typ klipp som den byggts av. Men det innan kan raderas som sagt. Denna film
+  ska också vara den som ligger på blobben.. lite separerat från annat dealermaterial". Utfört samma kväll: de lätta
+  kopiorna och allt före v4 raderat, originalet på 30 sekunder och klippen sparade (`assets/noir/`); filmen före
+  spelet är v4 i sin senaste inspelning och står som egen grupp, `ingång`, i utgåvans fillista (DRIFT).
 - **Trailrar** hålls utanför kopian (2026-11-12), utom filmen före spelet bakom `/trailer` (2026-11-13: "så att man
   övergår till henne i URL:en på vercel"); trailerproven i Prov är spärrade (`data/studio-release.json`).
 - **Vercel** (2026-11-12): kopian och botens anrop via AI Gateway ligger i hans eget team, där krediterna finns

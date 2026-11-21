@@ -7,7 +7,7 @@ import { SEAT_HUB } from "../../src/game-director.ts";
 import { ANCHOR_NODE, defaultFlip, seatWords, type FlipAxis } from "../../src/order-model.ts";
 import { NEUTRAL_BACKDROP, SHOE, TARGETS, VIEWS, editIntent, editPlace, motionNodes, sequence, toPixels, type Geometry, type Hand, type Intent, type Place, type PlacementPlan, type Side, type View } from "../../src/placement-model.ts";
 import { nameOf } from "./dealer.ts";
-import { nodeCode } from "./names.ts";
+import { cardCode, nodeCode } from "./names.ts";
 
 // ── Places ──────────────────────────────────────────────────────────────────
 export const PLACES: readonly Place[] = [...TARGETS, SHOE];
@@ -21,7 +21,7 @@ export function placeName(id: Place): string {
   return m[2] ? `Plats ${m[2]} · kort ${m[3]}` : `Dealern · kort ${m[3]}`;
 }
 /** "P4C2", "DC1", "Sko": the short form on the picture and in the address. */
-export const placeCode = (id: Place): string => (id === SHOE ? "Sko" : nodeCode(id));
+export const placeCode = (id: Place): string => (id === SHOE ? "Sko" : (cardCode(id) ?? id));
 /** A place from its short form ("p4c2", "DC1", "sko") or its plan key ("P4.C2"); null when it names none. */
 export function placeFromCode(code: string | null | undefined): Place | null {
   const text = (code ?? "").trim().toUpperCase().replace(/\./g, "");

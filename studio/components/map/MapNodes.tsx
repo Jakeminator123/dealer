@@ -10,6 +10,7 @@ import { cn } from "@/components/ui";
 import type { EdgeInfo } from "@/lib/edge-stats";
 import type { Box, Field } from "@/lib/map-layout";
 import { REACH_LIMIT } from "@/lib/map-layout";
+import { nodeCode } from "@/lib/names";
 import { CountSigns } from "./EdgeChip";
 import { restLine } from "./rest.ts";
 
@@ -139,7 +140,7 @@ export function DealerNode({ data }: NodeProps<DealerNodeType>) {
       </div>
       {data.fields.map((f) => (
         <FieldBox key={f.card} field={f} node={data.box} className={cn("flex-row items-center justify-center gap-1.5 border bg-raised", f.optional ? "border-dashed border-line opacity-60" : "border-line")}>
-          <span className="text-[12px] font-semibold text-ink">{f.card.replace(".", "")}</span>
+          <span className="text-[12px] font-semibold text-ink">{nodeCode(f.card)}</span>
           <span className="text-[10.5px] text-faint">{word(f.card)}</span>
         </FieldBox>
       ))}

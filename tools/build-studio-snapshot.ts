@@ -126,7 +126,9 @@ const json = (value: unknown) => JSON.stringify(value);
 
 type BlobFile = {path: string; source: string; sha256: string; bytes: number; type: string; object: string; group: string};
 const blob = new Map<string, BlobFile>();
-const GROUP_RANK = ['spel', 'variant', 'scen', 'prov'];
+// The film before the game (/trailer) is its own group, apart from the dealers' material (Jakob 2026-11-21).
+const GROUP_RANK = ['spel', 'variant', 'ingång', 'scen', 'prov'];
+const sceneGroup = (relative: string) => relative.startsWith('assets/films/intro/') ? 'ingång' : 'scen';
 async function toBlob(relative: string, group: string) {
   const rule = blockedPath(relative, release);
   if (rule) throw Error(`Spärrad sökväg (${rule}): ${relative}`);
@@ -306,7 +308,7 @@ for (const relative of named) {
   const rule = blockedPath(relative, release);
   if (rule) { namedLeft.push(`${relative} (spärrad: ${rule})`); continue; }
   if (!await localFile(relative) || !await labServes(relative)) { namedLeft.push(`${relative} (labbet lämnar inte ut den)`); continue; }
-  if (relative.endsWith('.mp4')) await toBlob(relative, 'scen'); else await copyStatic(relative, 'scenens filer');
+  if (relative.endsWith('.mp4')) await toBlob(relative, sceneGroup(relative)); else await copyStatic(relative, 'scenens filer');
 }
 
 // ── The scene's presets, read-only ──────────────────────────────────────────

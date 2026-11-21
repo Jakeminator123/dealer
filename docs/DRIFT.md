@@ -347,7 +347,9 @@ Allt går att läsa och spela, inget går att ändra, och inga kostnader visas.
 - **Vad som går upp** (Jakob 2026-11-21: på nätet "ska endast filer som används i casinot finnas + filer som kan behövas
   och testas med typ i och under fliken 'Scen & Bord'") avgör spelet: för varje dealer i `casino.dealers` i
   `data/studio-release.json` de filmer spelet spelar (varje stegs tagning, vilorna och gesterna, talfilmerna det säger),
-  och därtill scenens egna filmer som dess moduler nämner (rummens liv och filmen före spelet vid `/trailer`). Urvalet görs
+  och därtill scenens egna filmer som dess moduler nämner (rummens liv och filmen före spelet vid `/trailer`). Filmen före
+  spelet är en egen grupp, `ingång`, i fillistan och i byggets summering, skild från dealrarnas material (Jakob
+  2026-11-21: "lite separerat från annat dealermaterial"); den är v4 av noir-trailern i sin senaste inspelning. Urvalet görs
   på ett ställe, `pickTakes` i `tools/studio-freeze.ts`; bygget stannar om spelet i kopian skulle välja en annan tagning
   än i labbet. `variants` i registret (av som förval) tar också med de varianter av spelets steg som spelet aldrig väljer
   själv; han väljer det vid en publicering (Jakob 2026-11-21: han är "rädd för att förlora" dem, och ingenting raderas på

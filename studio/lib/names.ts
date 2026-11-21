@@ -5,7 +5,9 @@ import { ANCHOR_WORDS } from "./words.ts";
 
 // ── Anchors ─────────────────────────────────────────────────────────────────
 // His words, 2026-11-12: ankare 1 = rest, ankare 2.1 = the pinch at the shoe window, ankare 2.2 = the card handed over at
-// the shoe's mouth. code is the short form used inside an edge ("A2.1 → P4C1"); name is the form used on its own.
+// the shoe's mouth. code is the short form used inside an edge ("A2.1 → A3P4C1"); name is the form used on its own.
+// 2026-11-21: "'A3P2C1' är t.ex. 'Ankare 3, Player 2, card 1'": the anchor where a card has landed is written together with
+// the player and the card. The card's place on the table, without a dealer in the picture, stays "P4C1" (cardCode).
 // The words themselves live in lib/words.ts, the studio's one table of words (the rail's Ordlista and the bot read it too).
 const ANCHORS: Record<string, { code: string; name: string }> = {
   IDLE: ANCHOR_WORDS.IDLE,
@@ -16,18 +18,24 @@ const ANCHORS: Record<string, { code: string; name: string }> = {
   [REVEAL_NODE]: ANCHOR_WORDS["REVEAL(D.C2)"],
 };
 
-/** The short code of a node: IDLE → "A1", READY → "A2.1", READY-B → "A2.2", P4.C1 → "P4C1", D.C1 → "DC1", REVEAL(D.C2) → "DC2 upp". */
+/** A card's place on the table as its short code: P4.C1 → "P4C1", D.C1 → "DC1"; null for anything that is no card. */
+export function cardCode(node: string): string | null {
+  const card = /^(P[1-7]|D)\.C([1-3])$/.exec(node);
+  return card ? `${card[1]}C${card[2]}` : null;
+}
+
+/** The short code of a node: IDLE → "A1", READY → "A2.1", READY-B → "A2.2", P4.C1 → "A3P4C1", D.C1 → "A3DC1", REVEAL(D.C2) → "DC2 upp". */
 export function nodeCode(node: string): string {
   const known = ANCHORS[node];
   if (known) return known.code;
-  const card = /^(P[1-7]|D)\.C([1-3])$/.exec(node);
-  return card ? `${card[1]}C${card[2]}` : node; // an experiment's own pose ("DRAWN") as the graph wrote it
+  const card = cardCode(node);
+  return card ? `A3${card}` : node; // an experiment's own pose ("DRAWN") as the graph wrote it
 }
 
 /** A node on its own: IDLE → "A1 vila", READY → "A2.1 nyp", READY-B → "A2.2 hand över"; cards as their code. */
 export const nodeName = (node: string): string => ANCHORS[node]?.name ?? nodeCode(node);
 
-/** An edge (or its id "READY>P4.C1") in his words: "A2.1 → P4C1". */
+/** An edge (or its id "READY>P4.C1") in his words: "A2.1 → A3P4C1". */
 export function edgeName(edge: { from: string; to: string } | string): string {
   const [from, to] = typeof edge === "string" ? splitEdge(edge) : [edge.from, edge.to];
   return `${nodeCode(from)} → ${nodeCode(to)}`;
@@ -190,7 +198,8 @@ export function factsLine(facts: TakeFacts): string {
 }
 
 // ── His notation for a round ────────────────────────────────────────────────
-// "A2.1 - P4C1 - A2.1 - P4C2 - A2.1": anchors and cards in the order the hand passes them. Between two of them stands
+// "A2.1 - A3P4C1 - A2.1 - A3P4C2 - A2.1": anchors in the order the hand passes them (a card also without its "A3", as he
+// wrote rounds before 2026-11-21: "A2.1 - P4C1 - A2.1"). Between two of them stands
 // -, –, →, > or just a space; "|", "," or a new line starts a new chain. Accepted names: A1 (vila), A2.1 (nyp),
 // A2.2 (hand över), P1C1…P7C2, DC1…DC3 (with or without the dot), "DC2 upp", Borta, and the lab's own words (IDLE, READY,
 // READY-B, VILA, REDO, P4.C1). The lab's own notation with pinned takes ("READY>P4.C1@<take> | …") is passed to
@@ -206,6 +215,7 @@ const TOKENS: [RegExp, string | null][] = [
   [/REVEAL\(\s*D\.?C2\s*\)/iuy, REVEAL_NODE],
   [/READY-[A-Z](?![\p{L}\d.])/iuy, null], // a hub variant, written out: READY-B
 ];
+const A3_CARD = /^A3(?=(?:P[1-7]|D)\.?C[1-3]$)/i; // "A3P4C1" names the card's node P4.C1
 const GAP = /(?:[^\S\n]|[-–—→>])+/y;
 const BREAK = /[^\S\n]*[|,;\n]\s*/y;
 const WORD = /[^\s\-–—→>|,;]+/y;
@@ -249,7 +259,7 @@ export function parseJakob(text: string): JakobRound {
     if (!node) {
       const word = here(WORD)!;
       used = word[0].length;
-      node = parseNode(word[0]);
+      node = parseNode(word[0].replace(A3_CARD, ""));
       if (!node) {
         errors.push(/^A2$/i.test(word[0]) ? "”A2” kan vara A2.1 (nyp) eller A2.2 (hand över): skriv vilken." : `Kunde inte läsa ”${word[0]}”.`);
       }
@@ -268,11 +278,11 @@ export function parseJakob(text: string): JakobRound {
     }
   }
   const named = chains.flat().filter(Boolean).length;
-  if (named === 1 && !errors.length) errors.push("Skriv minst två ankare, till exempel ”A2.1 - P4C1 - A2.1”.");
+  if (named === 1 && !errors.length) errors.push("Skriv minst två ankare, till exempel ”A2.1 - A3P4C1 - A2.1”.");
   return { steps, errors };
 }
 
-/** Steps back in his notation: "A2.1 - P4C1 - A2.1"; where the chain breaks, " | " starts a new one. */
+/** Steps back in his notation: "A2.1 - A3P4C1 - A2.1"; where the chain breaks, " | " starts a new one. */
 export function formatJakob(steps: readonly Step[]): string {
   let out = "";
   let last: string | null = null;

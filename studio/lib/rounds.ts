@@ -345,13 +345,13 @@ export function stepWord(step: Step): string {
 }
 
 const fold = (text: string) => text.trim().toLowerCase().replace(/\s+/g, " ");
-/** The node a word names in his notation ("A1", "a2.1 nyp", "P4C1", "DC2 upp", "Borta") or the lab's ("IDLE", "P4.C1", "VILA"), or null. */
+/** The node a word names in his notation ("A1", "a2.1 nyp", "A3P4C1" or "P4C1", "DC2 upp", "Borta") or the lab's ("IDLE", "P4.C1", "VILA"), or null. */
 export function nodeOf(word: string, graph: Pick<Graph, "edges"> | null = null): string | null {
   const nodes = roundNodes(graph);
   const want = fold(word);
   const named = nodes.find((n) => fold(nodeCode(n)) === want || fold(nodeName(n)) === want);
   if (named) return named;
-  const parsed = parseNode(word);
+  const parsed = parseNode(word.trim().replace(/^A3(?=(?:P[1-7]|D)\.?C[1-3]$)/i, ""));
   return parsed && nodes.includes(parsed) ? parsed : null;
 }
 

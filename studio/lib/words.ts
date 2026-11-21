@@ -23,7 +23,7 @@ export type Word = {
 };
 
 /**
- * The anchors as the studio's views write them today: the code inside a step ("A2.1 → P4C1") and the name on its own
+ * The anchors as the studio's views write them today: the code inside a step ("A2.1 → A3P4C1") and the name on its own
  * (lib/names.ts takes both from here). Anchor 2.2's entry below leads with his word "släp" and lists this name, "A2.2
  * hand över", among its other names; the views and names.ts's reader are renamed together, not here alone.
  */
@@ -42,19 +42,20 @@ export const WORDS: readonly Word[] = [
   { grupp: "Ankare och platser", ord: "A2.1 nyp", betyder: "Ankare 2.1: hennes vänstra hand nyper det gula kortet i skons fönster mellan tumme och pekfinger, på kortet och inte på skons kant.", sager: ["ankare 2.1", "nyper", "nypet"], aven: ["READY", "REDO", "Keystone 2 (gammalt namn)", "variant A", "PINCH"] },
   { grupp: "Ankare och platser", ord: "A2.2 släp", betyder: "Ankare 2.2: hennes vänstra hand ligger platt över det gula kortet i skon, redo att släpa ut det längs filten.", sager: ["ankare 2.2", "släpar", "släpet"], aven: ["A2.2 hand över", "READY-B", "REDO B", "variant B", "DRAG"] },
   { grupp: "Ankare och platser", ord: "A2.3 två händer", betyder: "Ankare 2.3: båda händerna vid skon precis före draget. Vänster hand stryker ut kortet och för det plant på filten till höger hand, som vänder det och lägger det.", sager: ["ankare 2.3"], aven: ["READY-C", "TWO_HANDS"] },
+  { grupp: "Ankare och platser", ord: "A3P4C1", betyder: "Ankare 3: bilden där ett kort har landat, skriven ihop med spelare och kort. A3P4C1 är ankare 3, spelare 4, kort 1; dealerns heter A3DC1, A3DC2 och A3DC3.", sager: ["A3P2C1", "ankare 3, player 2, card 1"], aven: ["P4.C1", "landningsbild", "slutbildsankare"] },
   { grupp: "Ankare och platser", ord: "Borta", betyder: "Bordet utan dealern: innan hon har kommit och sedan hon har gått.", sager: [], aven: ["AWAY", "tomt bord"] },
   { grupp: "Ankare och platser", ord: "DC2 upp", betyder: "Dealerns hålkort (DC2) vänt med framsidan upp medan hon vilar; rundan går vidare som från A1.", sager: [], aven: ["REVEAL(D.C2)", "hålkortet vänt"] },
   { grupp: "Ankare och platser", ord: "Plats och kort", betyder: "P1–P7 är spelarnas platser från kamerans vänster, C1 och C2 deras två kort: P4C1 är plats 4, första kortet.", sager: [], aven: ["P4.C1", "box 3 i Scout (box = plats − 1)", "kortplats", "placeringsnyckel"] },
   { grupp: "Ankare och platser", ord: "Dealerns kort", betyder: "DC1 (öppet), DC2 (hålkortet, stängt tills det vänds) och DC3, ett tredje kort som en runda kan ha.", sager: ["hålkortet"], aven: ["D.C1", "D.C2", "D.C3"] },
   { grupp: "Ankare och platser", ord: "Skon", betyder: "Den svarta lådan med korten, till höger i bilden; kortet syns i ett fönster snett framtill. En sko per dealer, samma i alla ankare.", sager: [], aven: ["SHOE", "skobild"] },
   // ── Steps and films ──
-  { grupp: "Steg och filmer", ord: "Steg", betyder: "En rörelse mellan två lägen, och filmen som gör den: steget A2.1 → P4C1. En linje på Kartan.", sager: [], aven: ["kant", "edge", "READY>P4.C1"] },
+  { grupp: "Steg och filmer", ord: "Steg", betyder: "En rörelse mellan två lägen, och filmen som gör den: steget A2.1 → A3P4C1. En linje på Kartan.", sager: [], aven: ["kant", "edge", "READY>P4.C1"] },
   { grupp: "Steg och filmer", ord: "Tagning", betyder: "En filmad version av ett steg. Ett steg kan ha många tagningar; en av dem spelas.", sager: [], aven: ["take", "jobb", "job"] },
   { grupp: "Steg och filmer", ord: "Film", betyder: "En videofil. Oftast en tagning, men ur en film kan flera tagningar klippas (given och returen ur samma film).", sager: ["klipp", "video"], aven: [] },
   { grupp: "Steg och filmer", ord: "Banken", betyder: "Alla tagningar en dealer har, ordnade per steg: det en runda väljer bland. Kartan visar den.", sager: [], aven: ["klippbank", "clip-jobs.json"] },
   { grupp: "Steg och filmer", ord: "54 och 33", betyder: "Modellen har 54 steg: giv, retur till A2.1 och retur till A1 för vart och ett av 16 kort, och sex till (ingång, utgång, vilan, hon kommer, hon går, hålkortets vändning). En dealer behöver 33 filmer: en plats andra kort spelar första kortets, utom hålkortet.", sager: [], aven: ["modellens 54", "en film per plats"] },
   { grupp: "Steg och filmer", ord: "Ingång", betyder: "Filmen från vilan till skon: A1 → A2.1 eller A1 → A2.2.", sager: [], aven: ["ENTRY", "IDLE>READY", "INGANG-2.1"] },
-  { grupp: "Steg och filmer", ord: "Giv", betyder: "Filmen där kortet går från skon ut till sin plats: A2.1 → P4C1 med nyp, A2.2 → P4C1 med släp. Beställs tur och retur eller bara dit.", sager: ["utgiven", "dela ut"], aven: ["DEAL", "utdelning", "GIV-2.1"] },
+  { grupp: "Steg och filmer", ord: "Giv", betyder: "Filmen där kortet går från skon ut till sin plats: A2.1 → A3P4C1 med nyp, A2.2 → A3P4C1 med släp. Beställs tur och retur eller bara dit.", sager: ["utgiven", "dela ut"], aven: ["DEAL", "utdelning", "GIV-2.1"] },
   { grupp: "Steg och filmer", ord: "Tur och retur", betyder: "En giv där handen kommer tillbaka i samma film, skriven A2.2 → P3C2 → A2.2. I banken blir filmen två tagningar: given och returen.", sager: [], aven: ["ROUND_TRIP"] },
   { grupp: "Steg och filmer", ord: "Bara dit", betyder: "En giv som slutar när kortet ligger, på platsens egen slutbild: platsens landningsbild, annars snittrutan ur bankens egen film dit. Så beställs en giv enligt receptet.", sager: [], aven: ["ONE_WAY"] },
   { grupp: "Steg och filmer", ord: "Retur", betyder: "Filmen där handen går tillbaka från kortet på bordet: till nypet (A2.1), över skon (A2.2) eller till vila (A1).", sager: ["tillbakagången", "retreat"], aven: ["RETURN", "P4.C1>READY", "RETUR-2.1"] },
@@ -63,7 +64,7 @@ export const WORDS: readonly Word[] = [
   { grupp: "Steg och filmer", ord: "Hålkortets vändning", betyder: "Filmen där hon vänder upp hålkortet från vila och handen går tillbaka till vila: A1 → DC2 upp.", sager: [], aven: ["HALKORT", "IDLE>REVEAL(D.C2)"] },
   { grupp: "Steg och filmer", ord: "Hon kommer", betyder: "Filmen där hon kommer in och sätter sig: Borta → A1.", sager: [], aven: ["AWAY>IDLE", "ARRIVE"] },
   { grupp: "Steg och filmer", ord: "Hon går", betyder: "Filmen där hon reser sig och går från bordet: A1 → Borta.", sager: [], aven: ["IDLE>AWAY", "LEAVE"] },
-  { grupp: "Steg och filmer", ord: "Runda", betyder: "En väg genom stegen, skriven med streck: A1 - A2.1 - P4C1 - A2.1 - A1. I Scen väljer eller skriver man en under fliken Runda.", sager: [], aven: ["round", "sekvens", "kedja"] },
+  { grupp: "Steg och filmer", ord: "Runda", betyder: "En väg genom stegen, skriven med streck: A1 - A2.1 - A3P4C1 - A2.1 - A1. I Scen väljer eller skriver man en under fliken Runda.", sager: [], aven: ["round", "sekvens", "kedja"] },
   { grupp: "Steg och filmer", ord: "Huvudtagning", betyder: "Tagningen som spelas i ett steg: Primär om en finns, annars en rakt godkänd, annars en ogranskad.", sager: [], aven: ["edge.main", "Spelas nu"] },
   { grupp: "Steg och filmer", ord: "Utsnitt", betyder: "En tagning som är rutor ur en längre film, till exempel given och returen ur samma tur och retur-film.", sager: [], aven: ["derived", "segment", "härledd tagning"] },
   { grupp: "Steg och filmer", ord: "Rättad kopia", betyder: "En tagning som är en befintlig film rättad med en video-till-video-modell.", sager: [], aven: ["edit", "editOf", "Aleph"] },
