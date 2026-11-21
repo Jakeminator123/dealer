@@ -21,8 +21,8 @@ Beslut, labbservern och rutinverktygen. Här står bara det som gäller nu; det 
 - Det oanvända i `assets/` är arkiverat (`53dc116`): 367 enheter, 3,96 GB, ligger med samma sökvägar i
   `D:/dealer-archive/dealer-ej-anvant-2026-11-17/`. Inget Jakob har dömt, inget banken spelar och ingen referens är
   flyttad, och allt går att ta tillbaka.
-- `placements/default.json` är Jakobs plan. Bara Bordet skriver den: Kortplan med Spara i kortplanen, och Efterarbete
-  med Spara till planen.
+- `placements/default.json` är Jakobs plan. Bara Bordet skriver den: Kortplan och Efterarbete (Kortmaterial), båda med
+  Spara i kortplanen.
 - Test och publiceringskontroll skriver lokala körkvitton; [evidensverktyget](../../tools/evidence.md) indexerar körningar och materialets ursprung. Saknade mediespår redovisas som överhoppade tester.
 
 **Nästa steg.**
