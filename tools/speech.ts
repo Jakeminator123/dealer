@@ -2,6 +2,7 @@
 //   node tools/speech.ts check
 //   node tools/speech.ts bank  --dealer paow
 //   node --env-file=.env.local tools/speech.ts say --dealer paow --line placebets [--lang sv] [--voice <name>] [--text "…" --as <word>] [--again ja]
+//   node tools/speech.ts say   --dealer paow --from paow-tal-lose-sv-09      (one take laid back again with the dealer's mouth; no call)
 //   node tools/speech.ts reel  --dealer paow --lines placebets,goodluck,blackjack,win [--name demo] [--rests <rest film>,…]
 //   node tools/speech.ts over  --dealer paow --film paow-giv-2-1-p4-04-01 --line goodluck [--at 0.6] [--patches <mapp>] [--lips '<json>']
 //   node tools/speech.ts warm  --dealer paow [--idle 300]      (and: warm --dealer paow --stop ja)
@@ -18,7 +19,9 @@
 //   say    one line: the voice reads the text (once; the sound is kept and reused), the plan goes out from the rest frame and back,
 //          the renderer bakes the clip, the answer is checked against exactly what was sent, and the drawn face is laid back into
 //          the film's own frames, only around what is heard: where she is silent the film keeps its own mouth (speechGate in
-//          src/speech-plan.ts; a take laid back before the gate is laid back again from the renderer's kept answer). Written to assets/speech/<dealer>/<dealer>-tal-<line>-<lang>-<nn>/: tts.mp3, job.json, worker.mp4
+//          src/speech-plan.ts; a take laid back another way than the dealer's mouth, recipeOf, is laid back again from the
+//          renderer's kept answer, the newest such take of the line or the one --from names). Paow's mouth is the neutral one
+//          (the renderer's box as it is, NEUTRAL_MOUTH), every other dealer's the recipe with her own lips (RECIPE). Written to assets/speech/<dealer>/<dealer>-tal-<line>-<lang>-<nn>/: tts.mp3, job.json, worker.mp4
 //          (the renderer's answer, 1080 × 1920), source.mp4 (the bank's frame, 24 frames a second, H.264 CRF 12, AAC sound) and
 //          receipt.json. The film starts and ends on the rest film's first played frame, as every rest film does.
 //   reel   one film of several lines in a row with rest in between, made from the takes that exist (nothing is read or rendered
@@ -26,6 +29,8 @@
 //   over   a line said over another film than the rest (a deal, 24 frames a second): the film gets a bank of its own and the sound
 //          already read is laid from --at seconds; the same mouth is also written as a mouth patch for the scene to lay on the
 //          film while it plays (assets/speech/<dealer>/patches/<id>/, tools/speech-patch.ts): assets/speech/<dealer>/<dealer>-tal-<line>-over-<film>/. A proof, not a take.
+//          Laid with the dealer's mouth (recipeOf) unless --lips is given. A patch is never written over: a new one of the same
+//          line over the same film gets the next free name, and the earlier is moved to patches/../patches-ersatta/.
 //   warm   keeps one renderer in memory with the dealer's bank, so that say and over take 10–15 s a line instead of a minute or
 //          more: the same bake as cold, frame for frame (measured 2026-11-13: no pixel differs). It holds nearly all of a 12 GB
 //          card while it is up, so it ends itself after --idle seconds without work (300 if nothing is said); start it for a
@@ -41,7 +46,6 @@ import os from 'node:os';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createStrip, writePatch} from './speech-patch.ts';
-import {wavBytes} from '../src/speech-patch.ts';
 import {BRIDGE, RENDER, bridgeProblems, bridgeFilter, clipLength, filmFrameOf, lineFrames, longestSound, restPath, planRows, canonical, sourcesOf, bakeJob, answerVideo, sameWords,
   changedBox, unionBox, grownBox, featherMask, blendFrame, heardFrames, speechGate, mixFrame, GATE, LIPS, mouthWindow, cutPlanes, lipMap, lipsMiddle, lipTone, lipLine, mouthOpens, mouthDrop, mouthLift, mouthMoves, layMouth, type Gate, type Lips, type BakeJob, type BankId, type Box, type Bridge, type PlanRow, type Sources} from '../src/speech-plan.ts';
 
@@ -71,6 +75,22 @@ const LEVEL = 6, MARGIN = 40, FEATHER = 24;
 export const LOUDNESS = {lufs: -16, peakDb: -1} as const;
 export type Level = {targetLufs: number; readLufs: number | null; gainDb: number; lufs: number | null; peakDb: number | null};
 export const RECIPE: {gate: Gate; lips: Lips | null; sound: {lufs: number; peakDb: number}} = {gate: GATE, lips: LIPS, sound: LOUDNESS};
+// The mouth a dealer's lines are laid back with when nothing else is asked (say, over). Paow's is the neutral mouth: the renderer's
+// box laid in as it is, with the gate and the sound at the same strength, without the lips and the lift (lips null). Jakob chose it
+// 2026-11-19 in Beslut for three lines after the comparison at game size, and 2026-11-21 in Prov (note 43 on
+// paow-munbyte-neutral-20261121) for all of hers: "den andra av dessa ska in som standard för alla hennes repliker överallt och som
+// standard-läppsynk för PAOW". Every other dealer is laid back with RECIPE.
+export const NEUTRAL_MOUTH: readonly string[] = ['paow'];
+export const recipeOf = (dealer: string): typeof RECIPE => NEUTRAL_MOUTH.includes(dealer) ? {...RECIPE, lips: null} : RECIPE;
+// The next number of a take or film stem: after the highest there is among the dealer's speech folders, the bank's records
+// (motions/) and their films (assets/motions/), so that a take set aside, moved or taken in under its number never gives that
+// number to the next.
+async function nextNumber(root: string, dealer: string, stem: string): Promise<string> {
+  const names: string[] = [];
+  for (const dir of [path.join(root, 'assets/speech', dealer), path.join(root, 'motions'), path.join(root, 'assets/motions')]) if (existsSync(dir)) names.push(...(await readdir(dir)).map(n => n.replace(/\.json$/, '')));
+  const highest = Math.max(0, ...names.filter(n => n.startsWith(stem) && /^\d+$/.test(n.slice(stem.length))).map(n => Number(n.slice(stem.length))));
+  return stem + String(highest + 1).padStart(2, '0');
+}
 
 type VoiceSettings = Record<string, number | boolean>;
 // key: the name of the line in .env.local that holds the key of the account the voice lives in (a voice is only found by its own
@@ -544,29 +564,37 @@ export async function reel(register: Register, root: string, options: ReelOption
     return {dir, id};
   } finally { for (const r of raws.values()) await r.close().catch(() => {}); await rm(work, {recursive: true, force: true}); }
 }
-export type SayOptions = {dealer: string; line: string; language?: string; voice?: string; text?: string; again?: boolean; log?: (text: string) => void};
+// from: one finished take, laid back again from the renderer's kept answer with the dealer's recipe (recipeOf), as a new take; its
+// line, language, text and voice are the take's own. For a take the game plays that is not the newest of its line.
+export type SayOptions = {dealer: string; line?: string; language?: string; voice?: string; text?: string; again?: boolean; from?: string; log?: (text: string) => void};
 export async function say(register: Register, root: string, options: SayOptions): Promise<{dir: string; id: string}> {
   const log = options.log ?? console.log, d = register.dealers[options.dealer]; if (!d) throw Error(`data/speech.json har ingen dealer ${options.dealer}.`);
-  const language = options.language ?? d.language, voiceName = options.voice ?? d.voice, listed = register.voices[voiceName], voice = listed && voiceIn(listed, language), text = options.text ?? register.lines[language]?.[options.line] ?? register.chat?.[language]?.[options.line];
+  const recipe = recipeOf(options.dealer), base = path.join(root, 'assets/speech', options.dealer);
+  const source = options.from ? JSON.parse(await readFile(path.join(base, options.from, 'receipt.json'), 'utf8')) as TakeReceipt : null;
+  if (source && (source.kind || (options.line && options.line !== source.line) || !existsSync(path.join(base, options.from!, 'worker.mp4')) || !existsSync(path.join(base, options.from!, 'job.json')) || !existsSync(path.join(base, options.from!, 'tts.mp3'))))
+    throw Error(`${options.from}: inte en färdig tagning${options.line ? ` av ${options.line}` : ''} med rendererns svar och ljudet kvar.`);
+  const line = source?.line ?? options.line; if (!line) throw Error('Ange repliken (--line) eller tagningen (--from).');
+  const language = source?.language ?? options.language ?? d.language, voiceName = options.voice ?? d.voice, listed = register.voices[voiceName], voice = source?.voice ?? (listed && voiceIn(listed, language)), text = source?.text ?? options.text ?? register.lines[language]?.[line] ?? register.chat?.[language]?.[line];
   if (!voice) throw Error(`data/speech.json har ingen röst ${voiceName}.`);
-  if (!text) throw Error(`Ingen text för ${options.line} på ${language}; ge --text.`);
-  if (!/^[a-z0-9]{1,24}$/.test(options.line) || !/^[a-z]{2}$/.test(language)) throw Error('Repliken ska heta med små bokstäver och siffror, språket med två bokstäver.');
+  if (!text) throw Error(`Ingen text för ${line} på ${language}; ge --text.`);
+  if (!/^[a-z0-9]{1,24}$/.test(line) || !/^[a-z]{2}$/.test(language)) throw Error('Repliken ska heta med små bokstäver och siffror, språket med två bokstäver.');
   const bank = await readBank(root, options.dealer); if (!bank) throw Error(`Ingen bank för ${options.dealer}; kör först: node tools/speech.ts bank --dealer ${options.dealer}`);
-  const base = path.join(root, 'assets/speech', options.dealer), stem = `${options.dealer}-tal-${options.line}-${language}-`;
+  const stem = `${options.dealer}-tal-${line}-${language}-`;
+  if (source && sameValue(source.laidBack.recipe ?? null, recipe)) { log(`${options.from}: är redan lagd med dealerns recept.`); return {dir: path.join(base, options.from!), id: options.from!}; }
   // The same text in the same voice is not read twice by accident: a finished take is answered with (unless a new reading is asked
   // for), and one that has its sound but no film (the renderer or the laying back fell) is taken up again. Otherwise the next number.
-  // A finished take whose mouth was laid back another way than the tool lays it back now (RECIPE) is not the film this tool makes:
+  // A finished take whose mouth was laid back another way than the tool lays it back now (recipeOf) is not the film this tool makes:
   // it is laid back again from the renderer's kept answer, as a new take. Nothing is read anew and the graphics card is not used.
   const taken = existsSync(base) ? (await readdir(base)).filter(n => n.startsWith(stem)).sort() : [];
-  let id = '', kept = '';
-  for (const name of taken) { const told = path.join(base, name, 'said.json'), at = (file: string) => path.join(base, name, file); if (!existsSync(told)) continue;
+  let id = '', kept = options.from ?? '';
+  for (const name of source ? [] : taken) { const told = path.join(base, name, 'said.json'), at = (file: string) => path.join(base, name, file); if (!existsSync(told)) continue;
     const s = JSON.parse(await readFile(told, 'utf8')) as {text: string; voice: Voice}; if (s.text !== text || !sameValue(s.voice, voice)) continue;
     if (!existsSync(at('source.mp4')) || !existsSync(at('receipt.json'))) { id = name; break; }
-    if (!sameValue((JSON.parse(await readFile(at('receipt.json'), 'utf8')) as TakeReceipt).laidBack.recipe ?? null, RECIPE)) { kept = existsSync(at('worker.mp4')) && existsSync(at('job.json')) ? name : ''; continue; }
+    if (!sameValue((JSON.parse(await readFile(at('receipt.json'), 'utf8')) as TakeReceipt).laidBack.recipe ?? null, recipe)) { kept = existsSync(at('worker.mp4')) && existsSync(at('job.json')) ? name : ''; continue; }
     if (!options.again) { log(`${name}: finns redan med samma text och röst; --again ja ger en ny läsning.`); return {dir: path.join(base, name), id: name}; } }
-  const fresh = !id; if (fresh) id = stem + String(Math.max(0, ...taken.map(n => Number(n.slice(stem.length)) || 0)) + 1).padStart(2, '0');
+  const fresh = !id; if (fresh) id = await nextNumber(root, options.dealer, stem);
   const dir = path.join(base, id), mp3 = path.join(dir, 'tts.mp3'), work = await mkdtemp(path.join(existsSync(scratch) ? scratch : os.tmpdir(), 'speech-'));
-  if (fresh && kept && !options.again) { await mkdir(dir, {recursive: true}); for (const file of ['tts.mp3', 'said.json', 'job.json', 'worker.mp4']) await copyFile(path.join(base, kept, file), path.join(dir, file)); log(`${id}: samma läsning och rendering som ${kept}; munnen läggs tillbaka på nytt (inget anrop, inget grafikkort).`); }
+  if (fresh && kept && (source || !options.again)) { await mkdir(dir, {recursive: true}); for (const file of ['tts.mp3', 'said.json', 'job.json', 'worker.mp4']) await copyFile(path.join(base, kept, file), path.join(dir, file)); log(`${id}: samma läsning och rendering som ${kept}; munnen läggs tillbaka på nytt (inget anrop, inget grafikkort).`); }
   else kept = '';
   try {
     await mkdir(dir, {recursive: true});
@@ -574,7 +602,8 @@ export async function say(register: Register, root: string, options: SayOptions)
     if (!existsSync(mp3)) { log(`${id}: ${voice.name} läser "${text}" (${text.length} tecken hos ElevenLabs)`); await writeFile(saidFile, json({text, voice, language, at: new Date().toISOString()})); await readAloud(voice, text, mp3); }
     else log(`${id}: ljudet finns redan och återanvänds (inget nytt anrop).`);
     const said = JSON.parse(await readFile(saidFile, 'utf8')) as {heard?: string | null};
-    if (typeof said.heard !== 'string') { said.heard = await listen(mp3, language); await writeFile(saidFile, json(said)); }
+    // The kept sound was listened to when it was read (or the service did not answer then); it is not sent again.
+    if (typeof said.heard !== 'string' && !kept) { said.heard = await listen(mp3, language); await writeFile(saidFile, json(said)); }
     const heard = said.heard ?? null, wordsMatch = heard === null ? null : sameWords(heard, text);
     if (wordsMatch === false) log(`${id}: OBS, avlyssningen hörde "${heard}"; läs och lyssna innan filmen används.`);
     if (heard === null) log(`${id}: ljudet är inte avlyssnat (tjänsten svarade inte).`);
@@ -596,14 +625,14 @@ export async function say(register: Register, root: string, options: SayOptions)
     // with the strength.
     const loud = await levelled(pcm, work), track = Buffer.alloc(total * (RENDER.pcmRate / RENDER.fps) * 2), heardAs = Buffer.alloc(track.length);
     loud.pcm.copy(track, RENDER.leadSamples * 2, 0, Math.min(loud.pcm.length, track.length - RENDER.leadSamples * 2)); pcm.copy(heardAs, RENDER.leadSamples * 2, 0, Math.min(pcm.length, heardAs.length - RENDER.leadSamples * 2));
-    const filmRel = bank.film, laid = await layBack(path.join(root, filmRel), worker, frames, out, work, {heard: heardAs, pcm: track}), made = probe(out);
+    const filmRel = bank.film, laid = await layBack(path.join(root, filmRel), worker, frames, out, work, {heard: heardAs, pcm: track, lips: recipe.lips}), made = probe(out);
     if (made.width !== BRIDGE.film.width || made.height !== BRIDGE.film.height || made.frames !== total || !made.audio) throw Error(`Filmen blev ${made.width} × ${made.height}, ${made.frames} rutor, ljud ${made.audio}; väntat ${total} rutor med ljud.`);
     await writeFile(path.join(dir, 'receipt.json'), json({schemaVersion: 1, id, dealer: options.dealer, role: 'film', createdAt: new Date().toISOString(), by: 'tools/speech.ts say',
-      line: options.line, language, text, voice, sound: {path: 'tts.mp3', sha256: await sha256File(mp3), characters: text.length, pcmSha256: sha256(pcm), seconds: Number((pcm.length / 2 / RENDER.pcmRate).toFixed(3)), heard, wordsMatch, level: loud.level},
+      line, language, text, voice, sound: {path: 'tts.mp3', sha256: await sha256File(mp3), characters: text.length, pcmSha256: sha256(pcm), seconds: Number((pcm.length / 2 / RENDER.pcmRate).toFixed(3)), heard, wordsMatch, level: loud.level},
       plan: {restFilm: filmRel, restFilmSha256: await sha256File(path.join(root, filmRel)), clipFrames: [frames[0], Math.max(...frames), frames[frames.length - 1]], filmFrames: [filmFrameOf(frames[0]), filmFrameOf(Math.max(...frames)), filmFrameOf(frames[frames.length - 1])], rows},
       bank: bank.id, renderer: rendered,
       worker: {path: 'worker.mp4', sha256: sha256(data), bytes: data.length, width: RENDER.width, height: RENDER.height},
-      laidBack: {bridge: BRIDGE, changed: laid.changed, box: laid.box, level: LEVEL, margin: MARGIN, feather: FEATHER, gate: RECIPE.gate, recipe: RECIPE, shift: laid.shift, weights: laid.weights, drops: laid.drops, lifts: laid.lifts, ...(laid.sinks ? {sinks: laid.sinks} : {})},
+      laidBack: {bridge: BRIDGE, changed: laid.changed, box: laid.box, level: LEVEL, margin: MARGIN, feather: FEATHER, gate: recipe.gate, recipe, shift: laid.shift, weights: laid.weights, drops: laid.drops, lifts: laid.lifts, ...(laid.sinks ? {sinks: laid.sinks} : {})},
       output: {path: 'source.mp4', sha256: await sha256File(out), width: made.width, height: made.height, fps: RENDER.fps, frames: made.frames, audio: true, encoding: ENCODING},
       note: 'Outside the box every pixel is the rest film\'s own frame (encoded once more), and so is everything but the mouth, and the mouth too where she is not heard (laidBack.weights, one per frame). Not reviewed: tools/film-review.md before Jakob judges it.'}));
     log(`${id}: klart → ${path.relative(root, out).replaceAll('\\', '/')} (${total} rutor, munnen lagd i ${laid.box.w} × ${laid.box.h} vid ${laid.box.x},${laid.box.y})`);
@@ -649,8 +678,6 @@ export async function warmUp(register: Register, root: string, dealer: string, i
   } finally { await rm(work, {recursive: true, force: true}); }
 }
 // patches: where the mouth patch is written (a hand-over's folder), the bank's own patches folder when nothing is said.
-/** Whether a patch's record is of this reading: by the reading's sha256 where the record has it, else by its sound. */
-const sameReading = (record: {sound?: {sha256?: string}; made?: {renderer?: {reading?: unknown}}}, reading: string, wavs: string[]) => record.made?.renderer?.reading === reading || wavs.includes(record.sound?.sha256 ?? '');
 // lips: measures for the lips that differ from the recipe's for this one line over this one film (they stand in the receipt and
 // in the patch's record). For a film where the recipe's mouth reads badly; the recipe itself is not changed by it.
 export type OverOptions = {dealer: string; film: string; line: string; at?: number; patches?: string; lips?: Partial<Lips>; log?: (text: string) => void};
@@ -697,7 +724,7 @@ export async function over(register: Register, root: string, options: OverOption
     // The same reading over the same film from the same place has been rendered before: the renderer's kept answer is laid back
     // again, and the graphics card is not used. Laid back as the tool lays a mouth back now, the film is already there.
     const old = kept?.r, keptAnswer = !!old?.renderer && old.sound?.startsAtSeconds === at && old.film?.sha256 === await sha256File(path.join(root, filmRel)) && sameValue(old.plan?.rows, rows);
-    const recipe = {...RECIPE, lips: options.lips && RECIPE.lips ? {...RECIPE.lips, ...options.lips} : RECIPE.lips};
+    const own = recipeOf(options.dealer), recipe = {...own, lips: options.lips ? {...(own.lips ?? LIPS), ...options.lips} : own.lips};
     if (keptAnswer && sameValue(old!.laidBack?.recipe ?? null, recipe)) { log(`${kept!.name}: finns redan.`); return {dir: path.join(base, kept!.name), id: kept!.name}; }
     log(`${id}: "${take.receipt.text}" från ${at} s över ${options.film} (${clip.frameCount} rutor). ${keptAnswer ? `Samma rendering som ${kept!.name}; munnen läggs tillbaka på nytt (inget grafikkort).` : 'Renderar …'}`);
     const made = keptAnswer ? {data: await readFile(path.join(base, kept!.name, 'worker.mp4')), release: old!.renderer!.releaseSha256, gpu: old!.renderer!.gpu, jobId: old!.renderer!.jobId, job: {binding: {requestId: old!.renderer!.requestId}}, seconds: old!.renderer!.seconds}
@@ -713,22 +740,30 @@ export async function over(register: Register, root: string, options: OverOption
     if (film.frames !== clip.frameCount || !film.audio) throw Error(`Filmen blev ${film.frames} rutor, ljud ${film.audio}; väntat ${clip.frameCount} med ljud.`);
     const filmSha = await sha256File(path.join(root, filmRel)), outSha = await sha256File(out), outRel = path.relative(root, out).replaceAll('\\', '/');
     // The mouth patch of the same line over the same film (src/speech-patch.ts): the cells as they were laid into the film, and the
-    // line's sound alone, at the strength every line has. It keeps its name while the reading is the same (the reading's sha256 in
-    // the record, or for an older patch its sound), and is written anew when the mouth is laid back anew; another reading gets the
-    // next number.
-    let patch: string | null = null;
-    if (strip) { const reading = take.receipt.sound.sha256, wavs = [sha256(wavBytes(said)), sha256(wavBytes(loud.pcm))], named = `${options.dealer}-mun-${options.line}-${take.receipt.language}-${options.film.replace(new RegExp(`^${options.dealer}-`), '')}`, patches = options.patches ? path.resolve(options.patches) : path.join(base, 'patches'); patch = named;
-      for (let n = 2; existsSync(path.join(patches, patch, 'patch.json')) && !sameReading(JSON.parse(await readFile(path.join(patches, patch, 'patch.json'), 'utf8')), reading, wavs); n++) patch = `${named}-${String(n).padStart(2, '0')}`;
+    // line's sound alone, at the strength every line has. A patch is never written over (tools/local-work.md): the new one gets the
+    // first free name, and an earlier patch of the same line over the same film, in the same language and voice, is moved to
+    // patches-ersatta/ beside patches/, since the register takes every folder under patches/ and the game lays the first it finds for
+    // a line over a film. The register is written anew after (node tools/speech-patch.ts register).
+    let patch: string | null = null; const replaced: string[] = [];
+    if (strip) { const reading = take.receipt.sound.sha256, named = `${options.dealer}-mun-${options.line}-${take.receipt.language}-${options.film.replace(new RegExp(`^${options.dealer}-`), '')}`, patches = options.patches ? path.resolve(options.patches) : path.join(base, 'patches'), aside = path.join(path.dirname(patches), 'patches-ersatta'); patch = named;
+      for (let n = 2; existsSync(path.join(patches, patch)); n++) patch = `${named}-${String(n).padStart(2, '0')}`;
+      for (const other of existsSync(patches) ? (await readdir(patches)).sort() : []) { const file = path.join(patches, other, 'patch.json'); if (!existsSync(file)) continue;
+        const r = JSON.parse(await readFile(file, 'utf8')) as {film?: {id?: string}; line?: {key?: string; language?: string; voice?: string}};
+        if (r.film?.id !== options.film || r.line?.key !== options.line || r.line?.language !== take.receipt.language || r.line?.voice !== take.receipt.voice.name) continue;
+        if (existsSync(path.join(aside, other))) throw Error(`${other} finns redan i ${path.relative(root, aside)}; ingenting flyttas eller skrivs.`);
+        replaced.push(other); }
       const record = await writePatch(path.join(patches, patch), {id: patch, dealer: options.dealer, film: {id: options.film, path: filmRel, sha256: filmSha, fps: RENDER.fps, frames: film.frames, width: film.width, height: film.height},
         line: {key: options.line, language: take.receipt.language, text: take.receipt.text, voice: take.receipt.voice.name, voiceId: take.receipt.voice.voiceId}, box: laid.box, feather: FEATHER, weights: laid.weights, sound: {pcm: loud.pcm, startsAtSeconds: at},
-        made: {by: 'tools/speech.ts over', at: new Date().toISOString(), from: {path: outRel, sha256: outSha}, bridge: {cropX: WHOLE.cropX, padY: WHOLE.padY}, gate: RECIPE.gate, changed: laid.changed, renderer: {releaseSha256: made.release, jobId: made.jobId, film: id, lips: laid.lips, shift: laid.shift, reading, level: loud.level}}}, strip);
-      log(`${patch}: munlapp, ${record.count} rutor (filmens ${record.first}–${record.first + record.count - 1}) → ${path.relative(root, path.join(patches, patch)).replaceAll('\\', '/')}`); }
+        made: {by: 'tools/speech.ts over', at: new Date().toISOString(), from: {path: outRel, sha256: outSha}, bridge: {cropX: WHOLE.cropX, padY: WHOLE.padY}, gate: recipe.gate, changed: laid.changed, renderer: {releaseSha256: made.release, jobId: made.jobId, film: id, lips: laid.lips, shift: laid.shift, reading, level: loud.level}}}, strip);
+      log(`${patch}: munlapp, ${record.count} rutor (filmens ${record.first}–${record.first + record.count - 1}) → ${path.relative(root, path.join(patches, patch)).replaceAll('\\', '/')}`);
+      if (replaced.length) { await mkdir(aside, {recursive: true}); for (const other of replaced) await rename(path.join(patches, other), path.join(aside, other));
+        log(`Ersatta lappar flyttade till ${path.relative(root, aside).replaceAll('\\', '/')}: ${replaced.join(', ')}. Skriv registret: node tools/speech-patch.ts register`); } }
     await writeFile(path.join(dir, 'receipt.json'), json({schemaVersion: 1, id, dealer: options.dealer, role: 'film', kind: 'over', createdAt: new Date().toISOString(), by: 'tools/speech.ts over',
       line: options.line, language: take.receipt.language, text: take.receipt.text, voice: take.receipt.voice, film: {id: options.film, path: filmRel, sha256: filmSha},
       sound: {from: `${take.id}/tts.mp3`, seconds: Number((said.length / 2 / RENDER.pcmRate).toFixed(3)), heard: take.receipt.sound.heard ?? null, startsAtSeconds: at, endsAtSeconds: Number((at + said.length / 2 / RENDER.pcmRate).toFixed(3)), level: loud.level},
       plan: {rows, note: 'the film\'s frames in order and its first frame once more for the renderer; that last frame is not in the film'}, bank: bank.id,
       renderer: {image: register.renderer.image, releaseSha256: made.release, gpu: made.gpu, jobId: made.jobId, requestId: made.job.binding.requestId, seconds: made.seconds},
-      worker: {path: 'worker.mp4', sha256: sha256(made.data), bytes: made.data.length}, laidBack: {bridge: WHOLE, changed: laid.changed, box: laid.box, level: LEVEL, margin: MARGIN, feather: FEATHER, gate: RECIPE.gate, recipe, shift: laid.shift, weights: laid.weights, drops: laid.drops, lifts: laid.lifts, ...(laid.sinks ? {sinks: laid.sinks} : {})}, patch,
+      worker: {path: 'worker.mp4', sha256: sha256(made.data), bytes: made.data.length}, laidBack: {bridge: WHOLE, changed: laid.changed, box: laid.box, level: LEVEL, margin: MARGIN, feather: FEATHER, gate: recipe.gate, recipe, shift: laid.shift, weights: laid.weights, drops: laid.drops, lifts: laid.lifts, ...(laid.sinks ? {sinks: laid.sinks} : {})}, patch, ...(replaced.length ? {replaced} : {}),
       output: {path: 'source.mp4', sha256: outSha, width: film.width, height: film.height, fps: RENDER.fps, frames: film.frames, audio: true, encoding: ENCODING},
       note: 'A proof of speech over a deal. Outside the mouth every pixel is the film\'s own frame (encoded once more). Not a take of the bank: it has no card track and no verdict.'}));
     log(`${id}: klart → ${path.relative(root, out).replaceAll('\\', '/')} (${film.frames} rutor, munnen lagd i ${laid.box.w} × ${laid.box.h} vid ${laid.box.x},${laid.box.y})`);
@@ -790,8 +825,8 @@ async function main(argv: string[]): Promise<number> {
     finally { await rm(work, {recursive: true, force: true}); } return 0; }
   if (!flags.dealer) { console.error('Ange --dealer.'); return 2; }
   if (command === 'bank') { await makeBank(register, root, flags.dealer); return 0; }
-  if (command === 'say') { if (!flags.line && !flags.as) { console.error('Ange --line (eller --text med --as).'); return 2; }
-    await say(register, root, {dealer: flags.dealer, line: flags.as ?? flags.line, language: flags.lang, voice: flags.voice, text: flags.text, again: flags.again !== undefined}); return 0; }
+  if (command === 'say') { if (!flags.line && !flags.as && !flags.from) { console.error('Ange --line (eller --text med --as, eller --from <tagning>).'); return 2; }
+    await say(register, root, {dealer: flags.dealer, line: flags.as ?? flags.line, language: flags.lang, voice: flags.voice, text: flags.text, again: flags.again !== undefined, from: flags.from}); return 0; }
   if (command === 'reel') { await reel(register, root, {dealer: flags.dealer, lines: (flags.lines ?? '').split(',').map(s => s.trim()).filter(Boolean), name: flags.name, rests: flags.rests?.split(',').map(s => s.trim()).filter(Boolean)}); return 0; }
   if (command === 'warm') { if (flags.stop !== undefined) { const work = await mkdtemp(path.join(existsSync(scratch) ? scratch : os.tmpdir(), 'speech-')); try { await docker(register, work, 'warm-stop'); console.log('Den varma renderern är stoppad.'); } finally { await rm(work, {recursive: true, force: true}); } return 0; }
     await warmUp(register, root, flags.dealer, flags.idle === undefined ? undefined : Number(flags.idle)); return 0; }

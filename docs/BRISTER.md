@@ -203,6 +203,10 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 
 ## Läpparna och rösten
 
+- **Talverktyget tar inte det delade låset.** `tools/speech.ts` renderar på grafikkortet utan att ta låset som headless
+  Chrome och andra renderingar delar (skillen `bredvid-andra-sessioner`), så två körningar kan gå samtidigt på Jakobs
+  dator. Sett 2026-11-21, när två munlappar lades om (104 s och 431 s). Prövat: att ta låset för hand runt körningen.
+
 - **Läpparna i bankens repliker.** Syns: banken har repliker lagda med två recept ([TAL.md](TAL.md), "Kvaliteten"); vid
   stora öppningar står överläppen högst nio till tolv rutor medan käken rör sig, tysta pauser talas med öppen mun, och
   munnen är rendererns (matt, mjukare underläpp, strimmiga tänder); `namn` hörs som "Pau". Prövat: omläggningen med

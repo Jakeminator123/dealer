@@ -70,7 +70,7 @@
         "where": "Beslut 2026-11-17 kl. 21.38; versionerad profil och lokal hälsokontroll 2026-11-18"
       },
       "lines": {
-        "value": "lyftet med ritad underläpp (LIPS i src/speech-plan.ts, påslaget i tools/speech.ts); banken har filmer lagda med flera recept, och vilket står i varje tagnings kvitto",
+        "value": "den neutrala munnen: rendererns mun utan ritad underläpp (recipeOf i tools/speech.ts, Jakob 2026-11-21, anteckning 43 i Prov); spelet säger 24 av 25 repliker så, blackjack har kvar hans dömda tagning -04; vilket recept en tagning lades med står i dess kvitto",
         "where": "docs/TAL.md, Kvaliteten"
       },
       "runner": [
@@ -133,7 +133,7 @@
         {
           "what": "Replikfilmerna lagda med munnen i realtid",
           "answer": "nej",
-          "note": "banken läggs med spelets recept; F för replikfilmerna finns bara i en gren som inte är lämnad",
+          "note": "banken läggs med den neutrala munnen (2026-11-21); köraren kan bara lägga in F och behöver en egen neutral profil och ett prov bredvid talfilmerna (docs/TAL.md)",
           "where": "talbanans överlämning 2026-11-17"
         },
         {

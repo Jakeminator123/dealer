@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-otur-sv-12",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-otur-sv-12/source.mp4",
+    "sha256": "a3c3ea738a67f67378a94bfe8f8116cace681719581d5072729d32ff0bc05211",
+    "bytes": 6547604,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 67,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Det vänder snart, det brukar det göra."
+    }
+  },
+  "speech": {
+    "line": "otur",
+    "language": "sv",
+    "text": "Det vänder snart, det brukar det göra.",
+    "voice": "Paow",
+    "heard": "Det vänder snart. Det brukar det göra.",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 2.294
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte dömd av Jakob i Granska. Den neutrala munnen (rendererns låda som den är, samma grind) ur paow-tal-otur-sv-09: samma läsning och samma rendering, lagd igen med tools/speech.ts say --from, med samma ljud.",
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten på Jakobs ord",
+      "at": "2026-11-21T17:58:51.716Z",
+      "mandate": "Jakob 2026-11-21 i Prov, anteckning 43 på paow-munbyte-neutral-20261121: \"den andra av dessa ska in som standard för alla hennes repliker överallt och som standard-läppsynk för PAOW\" (den andra: den neutrala munnen, till höger i jämförelserna); innan dess ja i Beslut 2026-11-19 (neutral-mun-tre-repliker) för insatser, hej och lycka till.",
+      "note": "Ersätter paow-tal-otur-sv-09 i spelet. Vägen tillbaka: sätt review.decision till REJECTED här, så säger spelet paow-tal-otur-sv-09 igen."
+    }
+  },
+  "postProcessing": "the renderer's box laid back into the rest film's own frames as it is, without the lips recipe (assets/speech/paow/paow-tal-otur-sv-12/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-otur-sv-12/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

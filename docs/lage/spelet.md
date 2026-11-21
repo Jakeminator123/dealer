@@ -9,9 +9,9 @@ Huvudagentens bana: spelet, scenens filmlager, nätkopian och stängda banor. Ko
   (`docs/SYSTEM.md`, "Gränsen mellan kärnan och presentationen"; `de1883c`) och sedd i en webbläsare 2026-11-18.
 - Realtidsmunnen har Jakobs ja (`paow-realtid-mun-6`, F). Koden och profilhashen finns i `tools/python/mouth-runner`.
   Tre lokala GPU-prov 2026-11-18 använde samma hash; varm fart 5,6–6,7 rutor/s med fyra CPU:er, under realtidens 24.
-- Jakob såg clownmun 2026-11-18 och valde den neutrala munnen 2026-11-19. Den är införd i spelet 2026-11-21 för
-  insatser, hej och lycka till: tre nya talfilmer och lyckoönskans två munlappar, med samma ljud (provet
-  `assets/proofs/paow-munbyte-neutral-20261121`; TAL, Kvaliteten). Övriga repliker har det äldre receptet; ingen har hört ljudet.
+- Den neutrala munnen är standard för alla Paows repliker (Jakob 2026-11-21): spelet säger 24 av 25 så, och de fyra
+  munlapparna. Blackjack spelar kvar `paow-tal-blackjack-sv-04`, som har hans egen dom; den neutrala `-14` väntar på
+  hans ja i Granska. Ljudet är byteidentiskt med förut; ingen har hört det (Prov `paow-munbyte-neutral-alla-20261121`; TAL).
 - `dealTempo` är ett prov med standard 1 och intervallet 1–1,15. Bara tysta givar och returer ändrar takt efter
   munlappsvalet. I Chrome verifierades tredje P6-kortet vid filmruta 86 och 1,12×, samt tre P6-kort och två
   dealerkort efter returen. Mjukhet och övergång i rörelse återstår att bedöma.

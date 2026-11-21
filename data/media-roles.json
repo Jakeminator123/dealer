@@ -2900,6 +2900,20 @@
           }
         },
         {
+          "id": "paow-tal-chat1-sv-11",
+          "role": "film",
+          "name": "Tal: Tack! Lycka till. Neutral mun",
+          "path": "assets/motions/paow-tal-chat1-sv-11/source.mp4",
+          "still": 24,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Den neutrala munnen: vilan paow-vila-01-01 med rendererns mun inlagd som den är (utan läppreceptet), bara kring det som hörs, samma ljud som paow-tal-chat1-sv-09, 48 rutor i 24 per sekund. Jakob 2026-11-21 i Prov (anteckning 43 på paow-munbyte-neutral-20261121): den neutrala munnen för alla hennes repliker.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-chat1-sv-09 (Paows mun, lips null)",
+            "when": "2026-11-21"
+          }
+        },
+        {
           "id": "paow-tal-chat2-sv-09",
           "role": "film",
           "name": "Tal: Roligt att du är här.",
@@ -2911,6 +2925,20 @@
           "source": {
             "from": "tools/speech.ts say --dealer paow --line chat2 (Paow)",
             "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-chat2-sv-11",
+          "role": "film",
+          "name": "Tal: Roligt att du är här. Neutral mun",
+          "path": "assets/motions/paow-tal-chat2-sv-11/source.mp4",
+          "still": 26,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Den neutrala munnen: vilan paow-vila-01-01 med rendererns mun inlagd som den är (utan läppreceptet), bara kring det som hörs, samma ljud som paow-tal-chat2-sv-09, 51 rutor i 24 per sekund. Jakob 2026-11-21 i Prov (anteckning 43 på paow-munbyte-neutral-20261121): den neutrala munnen för alla hennes repliker.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-chat2-sv-09 (Paows mun, lips null)",
+            "when": "2026-11-21"
           }
         },
         {
@@ -2956,6 +2984,20 @@
           }
         },
         {
+          "id": "paow-tal-dealerblackjack-sv-12",
+          "role": "film",
+          "name": "Tal: Dealern har blackjack. Den här rundan går till huset. Neutral mun",
+          "path": "assets/motions/paow-tal-dealerblackjack-sv-12/source.mp4",
+          "still": 44,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Den neutrala munnen: vilan paow-vila-01-01 med rendererns mun inlagd som den är (utan läppreceptet), bara kring det som hörs, samma ljud som paow-tal-dealerblackjack-sv-10, 88 rutor i 24 per sekund. Jakob 2026-11-21 i Prov (anteckning 43 på paow-munbyte-neutral-20261121): den neutrala munnen för alla hennes repliker.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-dealerblackjack-sv-10 (Paows mun, lips null)",
+            "when": "2026-11-21"
+          }
+        },
+        {
           "id": "paow-tal-dealerbust-sv-10",
           "role": "film",
           "name": "Tal: Dealern är över tjugoett! Grattis, bordet vinner.",
@@ -2967,6 +3009,20 @@
           "source": {
             "from": "tools/speech.ts say --dealer paow --line dealerbust (Paow)",
             "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-dealerbust-sv-12",
+          "role": "film",
+          "name": "Tal: Dealern är över tjugoett! Grattis, bordet vinner. Neutral mun",
+          "path": "assets/motions/paow-tal-dealerbust-sv-12/source.mp4",
+          "still": 40,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Den neutrala munnen: vilan paow-vila-01-01 med rendererns mun inlagd som den är (utan läppreceptet), bara kring det som hörs, samma ljud som paow-tal-dealerbust-sv-10, 79 rutor i 24 per sekund. Jakob 2026-11-21 i Prov (anteckning 43 på paow-munbyte-neutral-20261121): den neutrala munnen för alla hennes repliker.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-dealerbust-sv-10 (Paows mun, lips null)",
+            "when": "2026-11-21"
           }
         },
         {
@@ -2995,6 +3051,20 @@
           "source": {
             "from": "tools/speech.ts say --dealer paow --line detsamma (Paow)",
             "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-detsamma-sv-12",
+          "role": "film",
+          "name": "Tal: Tack detsamma! Neutral mun",
+          "path": "assets/motions/paow-tal-detsamma-sv-12/source.mp4",
+          "still": 20,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Den neutrala munnen: vilan paow-vila-01-01 med rendererns mun inlagd som den är (utan läppreceptet), bara kring det som hörs, samma ljud som paow-tal-detsamma-sv-09, 40 rutor i 24 per sekund. Jakob 2026-11-21 i Prov (anteckning 43 på paow-munbyte-neutral-20261121): den neutrala munnen för alla hennes repliker.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-detsamma-sv-09 (Paows mun, lips null)",
+            "when": "2026-11-21"
           }
         },
         {
@@ -3040,6 +3110,20 @@
           }
         },
         {
+          "id": "paow-tal-grattis-sv-12",
+          "role": "film",
+          "name": "Tal: Grattis! Det där var snyggt spelat. Neutral mun",
+          "path": "assets/motions/paow-tal-grattis-sv-12/source.mp4",
+          "still": 36,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Den neutrala munnen: vilan paow-vila-01-01 med rendererns mun inlagd som den är (utan läppreceptet), bara kring det som hörs, samma ljud som paow-tal-grattis-sv-09, 71 rutor i 24 per sekund. Jakob 2026-11-21 i Prov (anteckning 43 på paow-munbyte-neutral-20261121): den neutrala munnen för alla hennes repliker.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-grattis-sv-09 (Paows mun, lips null)",
+            "when": "2026-11-21"
+          }
+        },
+        {
           "id": "paow-tal-hej-sv-09",
           "role": "film",
           "name": "Tal: Hej och välkommen till bordet!",
@@ -3068,6 +3152,20 @@
           }
         },
         {
+          "id": "paow-tal-hejda-sv-12",
+          "role": "film",
+          "name": "Tal: Tack för i kväll, välkommen tillbaka! Neutral mun",
+          "path": "assets/motions/paow-tal-hejda-sv-12/source.mp4",
+          "still": 29,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Den neutrala munnen: vilan paow-vila-01-01 med rendererns mun inlagd som den är (utan läppreceptet), bara kring det som hörs, samma ljud som paow-tal-hejda-sv-10, 58 rutor i 24 per sekund. Jakob 2026-11-21 i Prov (anteckning 43 på paow-munbyte-neutral-20261121): den neutrala munnen för alla hennes repliker.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-hejda-sv-10 (Paows mun, lips null)",
+            "when": "2026-11-21"
+          }
+        },
+        {
           "id": "paow-tal-hurmardu-sv-13",
           "role": "film",
           "name": "Tal: Jag mår fint, tack. Korten verkar vara på gott humör i kväll.",
@@ -3079,6 +3177,20 @@
           "source": {
             "from": "tools/speech.ts say --dealer paow --line hurmardu (Paow)",
             "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-hurmardu-sv-15",
+          "role": "film",
+          "name": "Tal: Jag mår fint, tack. Korten verkar vara på gott humör i kväll. Neutral mun",
+          "path": "assets/motions/paow-tal-hurmardu-sv-15/source.mp4",
+          "still": 40,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Den neutrala munnen: vilan paow-vila-01-01 med rendererns mun inlagd som den är (utan läppreceptet), bara kring det som hörs, samma ljud som paow-tal-hurmardu-sv-13, 79 rutor i 24 per sekund. Jakob 2026-11-21 i Prov (anteckning 43 på paow-munbyte-neutral-20261121): den neutrala munnen för alla hennes repliker.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-hurmardu-sv-13 (Paows mun, lips null)",
+            "when": "2026-11-21"
           }
         },
         {
@@ -3096,6 +3208,20 @@
           }
         },
         {
+          "id": "paow-tal-insurance-sv-13",
+          "role": "film",
+          "name": "Tal: Försäkringen är öppen. Vill du försäkra din hand? Neutral mun",
+          "path": "assets/motions/paow-tal-insurance-sv-13/source.mp4",
+          "still": 40,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Den neutrala munnen: vilan paow-vila-01-01 med rendererns mun inlagd som den är (utan läppreceptet), bara kring det som hörs, samma ljud som paow-tal-insurance-sv-11, 79 rutor i 24 per sekund. Jakob 2026-11-21 i Prov (anteckning 43 på paow-munbyte-neutral-20261121): den neutrala munnen för alla hennes repliker.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-insurance-sv-11 (Paows mun, lips null)",
+            "when": "2026-11-21"
+          }
+        },
+        {
           "id": "paow-tal-lose-sv-09",
           "role": "film",
           "name": "Tal: Dealern vinner den här gången. Bättre lycka nästa runda.",
@@ -3107,6 +3233,20 @@
           "source": {
             "from": "tools/speech.ts say --dealer paow --line lose (Paow)",
             "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-lose-sv-11",
+          "role": "film",
+          "name": "Tal: Dealern vinner den här gången. Bättre lycka nästa runda. Neutral mun",
+          "path": "assets/motions/paow-tal-lose-sv-11/source.mp4",
+          "still": 44,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Den neutrala munnen: vilan paow-vila-01-01 med rendererns mun inlagd som den är (utan läppreceptet), bara kring det som hörs, samma ljud som paow-tal-lose-sv-09, 88 rutor i 24 per sekund. Jakob 2026-11-21 i Prov (anteckning 43 på paow-munbyte-neutral-20261121): den neutrala munnen för alla hennes repliker.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-lose-sv-09 (Paows mun, lips null)",
+            "when": "2026-11-21"
           }
         },
         {
@@ -3135,6 +3275,20 @@
           "source": {
             "from": "tools/speech.ts say --dealer paow --line otur (Paow)",
             "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-otur-sv-12",
+          "role": "film",
+          "name": "Tal: Det vänder snart, det brukar det göra. Neutral mun",
+          "path": "assets/motions/paow-tal-otur-sv-12/source.mp4",
+          "still": 34,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Den neutrala munnen: vilan paow-vila-01-01 med rendererns mun inlagd som den är (utan läppreceptet), bara kring det som hörs, samma ljud som paow-tal-otur-sv-09, 67 rutor i 24 per sekund. Jakob 2026-11-21 i Prov (anteckning 43 på paow-munbyte-neutral-20261121): den neutrala munnen för alla hennes repliker.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-otur-sv-09 (Paows mun, lips null)",
+            "when": "2026-11-21"
           }
         },
         {
@@ -3180,6 +3334,20 @@
           }
         },
         {
+          "id": "paow-tal-regler-sv-12",
+          "role": "film",
+          "name": "Tal: Närmast tjugoett vinner, men gå inte över. Neutral mun",
+          "path": "assets/motions/paow-tal-regler-sv-12/source.mp4",
+          "still": 34,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Den neutrala munnen: vilan paow-vila-01-01 med rendererns mun inlagd som den är (utan läppreceptet), bara kring det som hörs, samma ljud som paow-tal-regler-sv-09, 67 rutor i 24 per sekund. Jakob 2026-11-21 i Prov (anteckning 43 på paow-munbyte-neutral-20261121): den neutrala munnen för alla hennes repliker.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-regler-sv-09 (Paows mun, lips null)",
+            "when": "2026-11-21"
+          }
+        },
+        {
           "id": "paow-tal-varsagod-sv-09",
           "role": "film",
           "name": "Tal: Varsågod, det är bara roligt.",
@@ -3191,6 +3359,20 @@
           "source": {
             "from": "tools/speech.ts say --dealer paow --line varsagod (Paow)",
             "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-varsagod-sv-12",
+          "role": "film",
+          "name": "Tal: Varsågod, det är bara roligt. Neutral mun",
+          "path": "assets/motions/paow-tal-varsagod-sv-12/source.mp4",
+          "still": 26,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Den neutrala munnen: vilan paow-vila-01-01 med rendererns mun inlagd som den är (utan läppreceptet), bara kring det som hörs, samma ljud som paow-tal-varsagod-sv-09, 52 rutor i 24 per sekund. Jakob 2026-11-21 i Prov (anteckning 43 på paow-munbyte-neutral-20261121): den neutrala munnen för alla hennes repliker.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-varsagod-sv-09 (Paows mun, lips null)",
+            "when": "2026-11-21"
           }
         },
         {
@@ -3208,6 +3390,20 @@
           }
         },
         {
+          "id": "paow-tal-vetej-sv-12",
+          "role": "film",
+          "name": "Tal: Det kan jag tyvärr inte svara på, men korten ljuger aldrig. Neutral mun",
+          "path": "assets/motions/paow-tal-vetej-sv-12/source.mp4",
+          "still": 43,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Den neutrala munnen: vilan paow-vila-01-01 med rendererns mun inlagd som den är (utan läppreceptet), bara kring det som hörs, samma ljud som paow-tal-vetej-sv-10, 85 rutor i 24 per sekund. Jakob 2026-11-21 i Prov (anteckning 43 på paow-munbyte-neutral-20261121): den neutrala munnen för alla hennes repliker.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-vetej-sv-10 (Paows mun, lips null)",
+            "when": "2026-11-21"
+          }
+        },
+        {
           "id": "paow-tal-win-sv-10",
           "role": "film",
           "name": "Tal: Bra spelat! Njut av din vinst.",
@@ -3219,6 +3415,20 @@
           "source": {
             "from": "tools/speech.ts say --dealer paow --line win (Paow)",
             "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-win-sv-12",
+          "role": "film",
+          "name": "Tal: Bra spelat! Njut av din vinst. Neutral mun",
+          "path": "assets/motions/paow-tal-win-sv-12/source.mp4",
+          "still": 30,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Den neutrala munnen: vilan paow-vila-01-01 med rendererns mun inlagd som den är (utan läppreceptet), bara kring det som hörs, samma ljud som paow-tal-win-sv-10, 60 rutor i 24 per sekund. Jakob 2026-11-21 i Prov (anteckning 43 på paow-munbyte-neutral-20261121): den neutrala munnen för alla hennes repliker.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-win-sv-10 (Paows mun, lips null)",
+            "when": "2026-11-21"
           }
         },
         {
@@ -3236,6 +3446,20 @@
           }
         },
         {
+          "id": "paow-tal-blackjack-sv-14",
+          "role": "film",
+          "name": "Tal: Blackjack! Vackert spelat. Grattis! Neutral mun",
+          "path": "assets/motions/paow-tal-blackjack-sv-14/source.mp4",
+          "still": 35,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Den neutrala munnen: vilan paow-vila-01-01 med rendererns mun inlagd som den är (utan läppreceptet), bara kring det som hörs, samma ljud som paow-tal-blackjack-sv-12, 70 rutor i 24 per sekund. Jakob 2026-11-21 i Prov (anteckning 43 på paow-munbyte-neutral-20261121): den neutrala munnen för alla hennes repliker.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-blackjack-sv-12 (Paows mun, lips null)",
+            "when": "2026-11-21"
+          }
+        },
+        {
           "id": "paow-tal-chat3-sv-11",
           "role": "film",
           "name": "Tal: Det ordnar vi.",
@@ -3247,6 +3471,20 @@
           "source": {
             "from": "tools/speech.ts say --dealer paow --line chat3 (Paow)",
             "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-chat3-sv-13",
+          "role": "film",
+          "name": "Tal: Det ordnar vi. Neutral mun",
+          "path": "assets/motions/paow-tal-chat3-sv-13/source.mp4",
+          "still": 20,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Den neutrala munnen: vilan paow-vila-01-01 med rendererns mun inlagd som den är (utan läppreceptet), bara kring det som hörs, samma ljud som paow-tal-chat3-sv-11, 39 rutor i 24 per sekund. Jakob 2026-11-21 i Prov (anteckning 43 på paow-munbyte-neutral-20261121): den neutrala munnen för alla hennes repliker.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-chat3-sv-11 (Paows mun, lips null)",
+            "when": "2026-11-21"
           }
         },
         {
@@ -3264,6 +3502,20 @@
           }
         },
         {
+          "id": "paow-tal-chat4-sv-13",
+          "role": "film",
+          "name": "Tal: Lycka till med nästa hand. Neutral mun",
+          "path": "assets/motions/paow-tal-chat4-sv-13/source.mp4",
+          "still": 28,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Den neutrala munnen: vilan paow-vila-01-01 med rendererns mun inlagd som den är (utan läppreceptet), bara kring det som hörs, samma ljud som paow-tal-chat4-sv-11, 56 rutor i 24 per sekund. Jakob 2026-11-21 i Prov (anteckning 43 på paow-munbyte-neutral-20261121): den neutrala munnen för alla hennes repliker.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-chat4-sv-11 (Paows mun, lips null)",
+            "when": "2026-11-21"
+          }
+        },
+        {
           "id": "paow-tal-dealerplays-sv-11",
           "role": "film",
           "name": "Tal: Dealern spelar.",
@@ -3278,6 +3530,20 @@
           }
         },
         {
+          "id": "paow-tal-dealerplays-sv-14",
+          "role": "film",
+          "name": "Tal: Dealern spelar. Neutral mun",
+          "path": "assets/motions/paow-tal-dealerplays-sv-14/source.mp4",
+          "still": 21,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Den neutrala munnen: vilan paow-vila-01-01 med rendererns mun inlagd som den är (utan läppreceptet), bara kring det som hörs, samma ljud som paow-tal-dealerplays-sv-11, 41 rutor i 24 per sekund. Jakob 2026-11-21 i Prov (anteckning 43 på paow-munbyte-neutral-20261121): den neutrala munnen för alla hennes repliker.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-dealerplays-sv-11 (Paows mun, lips null)",
+            "when": "2026-11-21"
+          }
+        },
+        {
           "id": "paow-tal-double-sv-12",
           "role": "film",
           "name": "Tal: Du dubblar. Ett kort, nu gör vi det bästa av det.",
@@ -3289,6 +3555,20 @@
           "source": {
             "from": "tools/speech.ts say --dealer paow --line double (Paow)",
             "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-double-sv-15",
+          "role": "film",
+          "name": "Tal: Du dubblar. Ett kort, nu gör vi det bästa av det. Neutral mun",
+          "path": "assets/motions/paow-tal-double-sv-15/source.mp4",
+          "still": 37,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Den neutrala munnen: vilan paow-vila-01-01 med rendererns mun inlagd som den är (utan läppreceptet), bara kring det som hörs, samma ljud som paow-tal-double-sv-12, 74 rutor i 24 per sekund. Jakob 2026-11-21 i Prov (anteckning 43 på paow-munbyte-neutral-20261121): den neutrala munnen för alla hennes repliker.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-double-sv-12 (Paows mun, lips null)",
+            "when": "2026-11-21"
           }
         },
         {
@@ -3320,6 +3600,20 @@
           }
         },
         {
+          "id": "paow-tal-namn-sv-13",
+          "role": "film",
+          "name": "Tal: Jag heter Paow, och jag är din dealer i kväll. Neutral mun",
+          "path": "assets/motions/paow-tal-namn-sv-13/source.mp4",
+          "still": 34,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Den neutrala munnen: vilan paow-vila-01-01 med rendererns mun inlagd som den är (utan läppreceptet), bara kring det som hörs, samma ljud som paow-tal-namn-sv-11, 67 rutor i 24 per sekund. Jakob 2026-11-21 i Prov (anteckning 43 på paow-munbyte-neutral-20261121): den neutrala munnen för alla hennes repliker.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-namn-sv-11 (Paows mun, lips null)",
+            "when": "2026-11-21"
+          }
+        },
+        {
           "id": "paow-tal-push-sv-12",
           "role": "film",
           "name": "Tal: Det är lika. Din insats betalas tillbaka.",
@@ -3331,6 +3625,20 @@
           "source": {
             "from": "tools/speech.ts say --dealer paow --line push (Paow)",
             "when": "2026-11-13"
+          }
+        },
+        {
+          "id": "paow-tal-push-sv-15",
+          "role": "film",
+          "name": "Tal: Det är lika. Din insats betalas tillbaka. Neutral mun",
+          "path": "assets/motions/paow-tal-push-sv-15/source.mp4",
+          "still": 38,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Den neutrala munnen: vilan paow-vila-01-01 med rendererns mun inlagd som den är (utan läppreceptet), bara kring det som hörs, samma ljud som paow-tal-push-sv-12, 76 rutor i 24 per sekund. Jakob 2026-11-21 i Prov (anteckning 43 på paow-munbyte-neutral-20261121): den neutrala munnen för alla hennes repliker.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-push-sv-12 (Paows mun, lips null)",
+            "when": "2026-11-21"
           }
         },
         {

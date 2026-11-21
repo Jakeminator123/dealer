@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-dealerplays-sv-14",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-dealerplays-sv-14/source.mp4",
+    "sha256": "c54be823be4e39fddc5781b2b8ad335cf695b3d7add4c208905a5c5f1ac76f13",
+    "bytes": 3934429,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 41,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Dealern spelar."
+    }
+  },
+  "speech": {
+    "line": "dealerplays",
+    "language": "sv",
+    "text": "Dealern spelar.",
+    "voice": "Paow",
+    "heard": "Dealern spelar",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 1.18
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte dömd av Jakob i Granska. Den neutrala munnen (rendererns låda som den är, samma grind) ur paow-tal-dealerplays-sv-11: samma läsning och samma rendering, lagd igen med tools/speech.ts say --from, med samma ljud.",
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten på Jakobs ord",
+      "at": "2026-11-21T17:58:51.716Z",
+      "mandate": "Jakob 2026-11-21 i Prov, anteckning 43 på paow-munbyte-neutral-20261121: \"den andra av dessa ska in som standard för alla hennes repliker överallt och som standard-läppsynk för PAOW\" (den andra: den neutrala munnen, till höger i jämförelserna); innan dess ja i Beslut 2026-11-19 (neutral-mun-tre-repliker) för insatser, hej och lycka till.",
+      "note": "Ersätter paow-tal-dealerplays-sv-11 i spelet. Vägen tillbaka: sätt review.decision till REJECTED här, så säger spelet paow-tal-dealerplays-sv-11 igen."
+    }
+  },
+  "postProcessing": "the renderer's box laid back into the rest film's own frames as it is, without the lips recipe (assets/speech/paow/paow-tal-dealerplays-sv-14/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-dealerplays-sv-14/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

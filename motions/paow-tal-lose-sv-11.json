@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-lose-sv-11",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-lose-sv-11/source.mp4",
+    "sha256": "4241c1253865d6b514300a7574b0c73badbdab9cc285638289c0c86fd62f2c4d",
+    "bytes": 8616972,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 88,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Dealern vinner den här gången. Bättre lycka nästa runda."
+    }
+  },
+  "speech": {
+    "line": "lose",
+    "language": "sv",
+    "text": "Dealern vinner den här gången. Bättre lycka nästa runda.",
+    "voice": "Paow",
+    "heard": "Dealern vinner den här gången. Bättre lycka nästa runda.",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 3.175
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte dömd av Jakob i Granska. Den neutrala munnen (rendererns låda som den är, samma grind) ur paow-tal-lose-sv-09: samma läsning och samma rendering, lagd igen med tools/speech.ts say --from, med samma ljud.",
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten på Jakobs ord",
+      "at": "2026-11-21T17:58:51.716Z",
+      "mandate": "Jakob 2026-11-21 i Prov, anteckning 43 på paow-munbyte-neutral-20261121: \"den andra av dessa ska in som standard för alla hennes repliker överallt och som standard-läppsynk för PAOW\" (den andra: den neutrala munnen, till höger i jämförelserna); innan dess ja i Beslut 2026-11-19 (neutral-mun-tre-repliker) för insatser, hej och lycka till.",
+      "note": "Ersätter paow-tal-lose-sv-09 i spelet. Vägen tillbaka: sätt review.decision till REJECTED här, så säger spelet paow-tal-lose-sv-09 igen."
+    }
+  },
+  "postProcessing": "the renderer's box laid back into the rest film's own frames as it is, without the lips recipe (assets/speech/paow/paow-tal-lose-sv-11/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-lose-sv-11/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

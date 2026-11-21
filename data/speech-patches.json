@@ -3,24 +3,24 @@
   "about": "The mouth patches the game may lay on its films (src/speech-patch.ts, docs/TAL.md): one film and one line each, with the sha256 of its record. Written by node tools/speech-patch.ts register and by nothing else; a folder that does not check is left out.",
   "patches": [
     {
-      "id": "paow-mun-dealerplays-sv-halkort-04-02",
+      "id": "paow-mun-dealerplays-sv-halkort-04-02-02",
       "dealer": "paow",
       "film": "assets/motions/paow-halkort-04-02/source.mp4",
       "line": "dealerplays",
       "language": "sv",
       "voice": "Paow",
-      "path": "assets/speech/paow/patches/paow-mun-dealerplays-sv-halkort-04-02/patch.json",
-      "sha256": "82b1b94931534dff4857e1c9c8d921553b048323c794d0eaafb0edcfc4f7ab43"
+      "path": "assets/speech/paow/patches/paow-mun-dealerplays-sv-halkort-04-02-02/patch.json",
+      "sha256": "ea8f2d17b85ffe549f2b8d6db6268b884d0fc38ecc684010939838cb1726c541"
     },
     {
-      "id": "paow-mun-double-sv-ingang-2-1-02-01",
+      "id": "paow-mun-double-sv-ingang-2-1-02-01-02",
       "dealer": "paow",
       "film": "assets/motions/paow-ingang-2-1-02-01/source.mp4",
       "line": "double",
       "language": "sv",
       "voice": "Paow",
-      "path": "assets/speech/paow/patches/paow-mun-double-sv-ingang-2-1-02-01/patch.json",
-      "sha256": "afdde928fe0ed582e7094d7445319ea4583293101ddfea111c4bdd5d92666e22"
+      "path": "assets/speech/paow/patches/paow-mun-double-sv-ingang-2-1-02-01-02/patch.json",
+      "sha256": "bc2331a41aec9b4aba2e0fdac9d52cfb44d1e8ed429a1aae067de5f0bd865ce2"
     },
     {
       "id": "paow-mun-goodluck-sv-giv-2-1-p4-04-01-neutral",

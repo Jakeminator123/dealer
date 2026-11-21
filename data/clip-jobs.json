@@ -6333,6 +6333,20 @@
       "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
     },
     {
+      "id": "paow-tal-chat1-sv-11",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-chat1-sv-11",
+      "frames": [
+        0,
+        47
+      ],
+      "purpose": "Talfilm på begäran: Tack! Lycka till. Neutral mun (tools/speech.ts, Paow; Jakob i Prov 2026-11-21).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
       "id": "paow-tal-chat2-sv-09",
       "kind": "IDLE",
       "from": "IDLE",
@@ -6343,6 +6357,20 @@
         50
       ],
       "purpose": "Talfilm på begäran: Roligt att du är här. (tools/speech.ts, Paow).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-chat2-sv-11",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-chat2-sv-11",
+      "frames": [
+        0,
+        50
+      ],
+      "purpose": "Talfilm på begäran: Roligt att du är här. Neutral mun (tools/speech.ts, Paow; Jakob i Prov 2026-11-21).",
       "dealer": "paow",
       "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
     },
@@ -6389,6 +6417,20 @@
       "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
     },
     {
+      "id": "paow-tal-dealerblackjack-sv-12",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-dealerblackjack-sv-12",
+      "frames": [
+        0,
+        87
+      ],
+      "purpose": "Talfilm på begäran: Dealern har blackjack. Den här rundan går till huset. Neutral mun (tools/speech.ts, Paow; Jakob i Prov 2026-11-21).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
       "id": "paow-tal-dealerbust-sv-10",
       "kind": "IDLE",
       "from": "IDLE",
@@ -6399,6 +6441,20 @@
         78
       ],
       "purpose": "Talfilm på begäran: Dealern är över tjugoett! Grattis, bordet vinner. (tools/speech.ts, Paow).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-dealerbust-sv-12",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-dealerbust-sv-12",
+      "frames": [
+        0,
+        78
+      ],
+      "purpose": "Talfilm på begäran: Dealern är över tjugoett! Grattis, bordet vinner. Neutral mun (tools/speech.ts, Paow; Jakob i Prov 2026-11-21).",
       "dealer": "paow",
       "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
     },
@@ -6427,6 +6483,20 @@
         39
       ],
       "purpose": "Talfilm på begäran: Tack detsamma! (tools/speech.ts, Paow).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-detsamma-sv-12",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-detsamma-sv-12",
+      "frames": [
+        0,
+        39
+      ],
+      "purpose": "Talfilm på begäran: Tack detsamma! Neutral mun (tools/speech.ts, Paow; Jakob i Prov 2026-11-21).",
       "dealer": "paow",
       "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
     },
@@ -6473,6 +6543,20 @@
       "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
     },
     {
+      "id": "paow-tal-grattis-sv-12",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-grattis-sv-12",
+      "frames": [
+        0,
+        70
+      ],
+      "purpose": "Talfilm på begäran: Grattis! Det där var snyggt spelat. Neutral mun (tools/speech.ts, Paow; Jakob i Prov 2026-11-21).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
       "id": "paow-tal-hej-sv-09",
       "kind": "IDLE",
       "from": "IDLE",
@@ -6501,6 +6585,20 @@
       "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
     },
     {
+      "id": "paow-tal-hejda-sv-12",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-hejda-sv-12",
+      "frames": [
+        0,
+        57
+      ],
+      "purpose": "Talfilm på begäran: Tack för i kväll, välkommen tillbaka! Neutral mun (tools/speech.ts, Paow; Jakob i Prov 2026-11-21).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
       "id": "paow-tal-hurmardu-sv-13",
       "kind": "IDLE",
       "from": "IDLE",
@@ -6511,6 +6609,20 @@
         78
       ],
       "purpose": "Talfilm på begäran: Jag mår fint, tack. Korten verkar vara på gott humör i kväll. (tools/speech.ts, Paow).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-hurmardu-sv-15",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-hurmardu-sv-15",
+      "frames": [
+        0,
+        78
+      ],
+      "purpose": "Talfilm på begäran: Jag mår fint, tack. Korten verkar vara på gott humör i kväll. Neutral mun (tools/speech.ts, Paow; Jakob i Prov 2026-11-21).",
       "dealer": "paow",
       "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
     },
@@ -6529,6 +6641,20 @@
       "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
     },
     {
+      "id": "paow-tal-insurance-sv-13",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-insurance-sv-13",
+      "frames": [
+        0,
+        78
+      ],
+      "purpose": "Talfilm på begäran: Försäkringen är öppen. Vill du försäkra din hand? Neutral mun (tools/speech.ts, Paow; Jakob i Prov 2026-11-21).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
       "id": "paow-tal-lose-sv-09",
       "kind": "IDLE",
       "from": "IDLE",
@@ -6539,6 +6665,20 @@
         87
       ],
       "purpose": "Talfilm på begäran: Dealern vinner den här gången. Bättre lycka nästa runda. (tools/speech.ts, Paow).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-lose-sv-11",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-lose-sv-11",
+      "frames": [
+        0,
+        87
+      ],
+      "purpose": "Talfilm på begäran: Dealern vinner den här gången. Bättre lycka nästa runda. Neutral mun (tools/speech.ts, Paow; Jakob i Prov 2026-11-21).",
       "dealer": "paow",
       "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
     },
@@ -6567,6 +6707,20 @@
         66
       ],
       "purpose": "Talfilm på begäran: Det vänder snart, det brukar det göra. (tools/speech.ts, Paow).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-otur-sv-12",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-otur-sv-12",
+      "frames": [
+        0,
+        66
+      ],
+      "purpose": "Talfilm på begäran: Det vänder snart, det brukar det göra. Neutral mun (tools/speech.ts, Paow; Jakob i Prov 2026-11-21).",
       "dealer": "paow",
       "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
     },
@@ -6613,6 +6767,20 @@
       "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
     },
     {
+      "id": "paow-tal-regler-sv-12",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-regler-sv-12",
+      "frames": [
+        0,
+        66
+      ],
+      "purpose": "Talfilm på begäran: Närmast tjugoett vinner, men gå inte över. Neutral mun (tools/speech.ts, Paow; Jakob i Prov 2026-11-21).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
       "id": "paow-tal-varsagod-sv-09",
       "kind": "IDLE",
       "from": "IDLE",
@@ -6623,6 +6791,20 @@
         51
       ],
       "purpose": "Talfilm på begäran: Varsågod, det är bara roligt. (tools/speech.ts, Paow).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-varsagod-sv-12",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-varsagod-sv-12",
+      "frames": [
+        0,
+        51
+      ],
+      "purpose": "Talfilm på begäran: Varsågod, det är bara roligt. Neutral mun (tools/speech.ts, Paow; Jakob i Prov 2026-11-21).",
       "dealer": "paow",
       "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
     },
@@ -6641,6 +6823,20 @@
       "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
     },
     {
+      "id": "paow-tal-vetej-sv-12",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-vetej-sv-12",
+      "frames": [
+        0,
+        84
+      ],
+      "purpose": "Talfilm på begäran: Det kan jag tyvärr inte svara på, men korten ljuger aldrig. Neutral mun (tools/speech.ts, Paow; Jakob i Prov 2026-11-21).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
       "id": "paow-tal-win-sv-10",
       "kind": "IDLE",
       "from": "IDLE",
@@ -6651,6 +6847,20 @@
         59
       ],
       "purpose": "Talfilm på begäran: Bra spelat! Njut av din vinst. (tools/speech.ts, Paow).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-win-sv-12",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-win-sv-12",
+      "frames": [
+        0,
+        59
+      ],
+      "purpose": "Talfilm på begäran: Bra spelat! Njut av din vinst. Neutral mun (tools/speech.ts, Paow; Jakob i Prov 2026-11-21).",
       "dealer": "paow",
       "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
     },
@@ -6669,6 +6879,20 @@
       "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
     },
     {
+      "id": "paow-tal-blackjack-sv-14",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-blackjack-sv-14",
+      "frames": [
+        0,
+        69
+      ],
+      "purpose": "Talfilm på begäran: Blackjack! Vackert spelat. Grattis! Neutral mun (tools/speech.ts, Paow; Jakob i Prov 2026-11-21).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
       "id": "paow-tal-chat3-sv-11",
       "kind": "IDLE",
       "from": "IDLE",
@@ -6679,6 +6903,20 @@
         38
       ],
       "purpose": "Talfilm på begäran: Det ordnar vi. (tools/speech.ts, Paow).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-chat3-sv-13",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-chat3-sv-13",
+      "frames": [
+        0,
+        38
+      ],
+      "purpose": "Talfilm på begäran: Det ordnar vi. Neutral mun (tools/speech.ts, Paow; Jakob i Prov 2026-11-21).",
       "dealer": "paow",
       "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
     },
@@ -6697,6 +6935,20 @@
       "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
     },
     {
+      "id": "paow-tal-chat4-sv-13",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-chat4-sv-13",
+      "frames": [
+        0,
+        55
+      ],
+      "purpose": "Talfilm på begäran: Lycka till med nästa hand. Neutral mun (tools/speech.ts, Paow; Jakob i Prov 2026-11-21).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
       "id": "paow-tal-dealerplays-sv-11",
       "kind": "IDLE",
       "from": "IDLE",
@@ -6711,6 +6963,20 @@
       "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
     },
     {
+      "id": "paow-tal-dealerplays-sv-14",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-dealerplays-sv-14",
+      "frames": [
+        0,
+        40
+      ],
+      "purpose": "Talfilm på begäran: Dealern spelar. Neutral mun (tools/speech.ts, Paow; Jakob i Prov 2026-11-21).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
       "id": "paow-tal-double-sv-12",
       "kind": "IDLE",
       "from": "IDLE",
@@ -6721,6 +6987,20 @@
         73
       ],
       "purpose": "Talfilm på begäran: Du dubblar. Ett kort, nu gör vi det bästa av det. (tools/speech.ts, Paow).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-double-sv-15",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-double-sv-15",
+      "frames": [
+        0,
+        73
+      ],
+      "purpose": "Talfilm på begäran: Du dubblar. Ett kort, nu gör vi det bästa av det. Neutral mun (tools/speech.ts, Paow; Jakob i Prov 2026-11-21).",
       "dealer": "paow",
       "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
     },
@@ -6753,6 +7033,20 @@
       "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
     },
     {
+      "id": "paow-tal-namn-sv-13",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-namn-sv-13",
+      "frames": [
+        0,
+        66
+      ],
+      "purpose": "Talfilm på begäran: Jag heter Paow, och jag är din dealer i kväll. Neutral mun (tools/speech.ts, Paow; Jakob i Prov 2026-11-21).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
       "id": "paow-tal-push-sv-12",
       "kind": "IDLE",
       "from": "IDLE",
@@ -6763,6 +7057,20 @@
         75
       ],
       "purpose": "Talfilm på begäran: Det är lika. Din insats betalas tillbaka. (tools/speech.ts, Paow).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-push-sv-15",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-push-sv-15",
+      "frames": [
+        0,
+        75
+      ],
+      "purpose": "Talfilm på begäran: Det är lika. Din insats betalas tillbaka. Neutral mun (tools/speech.ts, Paow; Jakob i Prov 2026-11-21).",
       "dealer": "paow",
       "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
     },

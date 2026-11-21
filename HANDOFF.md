@@ -25,7 +25,7 @@ Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-
 2. P4.C2 Cykel01 väljs i provet. Ordinarie spel återbrukar spelarnas C1 för C2/C3; egna filmer är nästa steg,
    inte krav nu. Rundans 22 filmbehov täcks. Rundbyggarens P6 går via A2.2; DC3 är valfritt ([kort](docs/lage/kort.md)).
 3. Använd automatiska testkvitton och det återbyggbara SQLite-indexet ([evidens](tools/evidence.md)); inga medieblobs.
-4. Den neutrala munnen är införd för insatser, hej och lycka till; övriga repliker återstår ([spelet](docs/lage/spelet.md)).
+4. Den neutrala munnen gäller alla Paows repliker utom blackjack, som väntar på hans ja; ingen har hört ljudet ([spelet](docs/lage/spelet.md)).
 5. D.C3 är redigerbart. Tre jämförelsefilmer: `paow-dc3-tre-geometrier-20261119`, 372 krediter, utanför banken.
    Tre kort per plats: 9 egna givar, 14 återbruk, D.C3 utan bankfilm (valfritt). Se [kort](docs/lage/kort.md).
 6. Hålkort, native split och READY-C:s tvåkortsprov är kontrollerade inom sina avgränsade prov. Grepp, tempo,
