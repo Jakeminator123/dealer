@@ -1,19 +1,21 @@
 // The deal drawn with three.js: a table, a shoe, a real card with two sides, and the test figure, seen through any number
 // of eyes at once. Everything shown comes from the pure modules beside this file (world, deal, body); this file only gives
 // it shape and light. Two looks: 'room' (a felt table, for looking at the geometry from the seats) and 'plain' (a white
-// figure and a grey table on a flat ground, for a reference film a video model can follow).
+// figure and a grey table on a flat ground, for a reference film a video model can follow). The figure is a doll
+// (dealer3d/src/doll.ts): options.doll, else the one a read motion names, else the standard.
 import * as T from 'three';
 import {CARD, FILM, filmEye, fovYDeg, orbit, type Eye, type Vec3} from './camera.ts';
 import {SHOE, dealerEdge, filmLens, realCardAt, seatEye, shoeCard, shoePose, spots, type Plan} from './world.ts';
 import {HAND, MOMENTS, planDeal, type CardPose} from './deal.ts';
 import {restingHand, solveBody, standing, type Body} from './body.ts';
+import {dollNamed, type Doll} from './doll.ts';
 import {FINGERS} from './capture.ts';
 import type {Figure} from './figure-model.ts';
 
 export type Look = 'room' | 'plain';
 type Limb = {s: number[]; e: number[]; w: number[]; k: number; p: number[][]};
 /** A deal read off a film and laid into the room by dealer3d/tools/lift.ts (dealer3d/data/*.json). */
-export type Read = {film: string; fps: number; frameCount: number; leavesShoe: number; edge: number[]; folds: number; rests: number; hip: number[]; laid?: {from: number; c: number[]; l: number[]; n: number[]}[]; frames: {card: {c: number[]; l: number[]; n: number[]; id?: number}; L: Limb; R: Limb; h: number[]; g?: number[]}[]}; // g: where she looks in that frame, if the film says (dealer3d/tools/pose-film.ts); without it her eyes follow the card. card.id and laid: a film of several cards (dealer3d/tools/deal-film.ts) says which card is in play and which lie, each from its frame
+export type Read = {film: string; fps: number; frameCount: number; leavesShoe: number; edge: number[]; folds: number; rests: number; hip: number[]; laid?: {from: number; c: number[]; l: number[]; n: number[]}[]; frames: {card: {c: number[]; l: number[]; n: number[]; id?: number}; L: Limb; R: Limb; h: number[]; g?: number[]}[]; doll?: string}; // g: where she looks in that frame, if the film says (dealer3d/tools/pose-film.ts); without it her eyes follow the card. card.id and laid: a film of several cards (dealer3d/tools/deal-film.ts) says which card is in play and which lie, each from its frame
 export type View = 'film' | number | {round: number}; // the bank's camera, a seat 1-7 (seat 4 is the bank's camera), or the bank's camera carried that many degrees round the dealer
 const COLOUR = {
   room: {ground: 0x101214, felt: 0x1f7045, rail: 0x3a2417, wood: 0x2a1a10, figure: 0xe6e1d8, shoe: 0x1b1c1f, mark: 0xd8c27a, fog: 0x101214},
@@ -73,10 +75,10 @@ function pointHand(material: T.Material) {
     [0, 5, 9, 13, 17, 1].forEach((k, i) => palmAt.setXYZ(i, p[k][0], p[k][1], p[k][2])); palmAt.needsUpdate = true; palm.computeVertexNormals(); }};
 }
 
-export function createStage(canvas: HTMLCanvasElement, plan: Plan, options: {look?: Look; target?: string; read?: Read | null; figure?: Figure | null} = {}) {
+export function createStage(canvas: HTMLCanvasElement, plan: Plan, options: {look?: Look; target?: string; read?: Read | null; figure?: Figure | null; doll?: Doll} = {}) {
   const look = options.look ?? 'room', target = options.target ?? 'P4.C1', C = COLOUR[look], lens = filmLens(), edge = dealerEdge(lens), all = spots(plan, lens);
   const four = all.find(s => s.id === 'P4.C1')!, to = all.find(s => s.id === target); if (!to) throw Error(`The plan has no place ${target}.`);
-  const pose = shoePose(lens), inShoe = shoeCard(pose), deal = planDeal({lens, target, place: to.at, placeOfSeat4: four.at, shoe: inShoe}), frame = standing(lens), rest = restingHand(lens);
+  const pose = shoePose(lens), inShoe = shoeCard(pose), deal = planDeal({lens, target, place: to.at, placeOfSeat4: four.at, shoe: inShoe}), doll = options.doll ?? dollNamed(options.read?.doll), frame = standing(lens, doll), rest = restingHand(lens), S = doll.shape;
 
   const renderer = new T.WebGLRenderer({canvas, antialias: true, preserveDrawingBuffer: true}); renderer.outputColorSpace = T.SRGBColorSpace; renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap; renderer.setScissorTest(true);
   const scene = new T.Scene(); scene.background = new T.Color(C.ground);
@@ -111,10 +113,14 @@ export function createStage(canvas: HTMLCanvasElement, plan: Plan, options: {loo
   const lying = (options.read?.laid ?? []).map(l => { const m = cardMesh(), long = l.l as Vec3, normal = l.n as Vec3; placeCard(m, {centre: l.c as Vec3, long, normal, across: [normal[1] * long[2] - normal[2] * long[1], normal[2] * long[0] - normal[0] * long[2], normal[0] * long[1] - normal[1] * long[0]]}); m.visible = false; scene.add(m); return {from: l.from, mesh: m}; });
 
   // The figure.
-  const skin = matte(C.figure, 0.85), torso = ball(skin, 1), yoke = limb(skin, 0.052, 0.052), neck = limb(skin, 0.04, 0.036), head = new T.Group();
-  const skull = ball(skin, 1); skull.scale.set(0.74, 1, 0.86); head.add(skull); const nose = ball(skin, 0.16); nose.position.set(0, -0.12, 0.84); nose.scale.set(0.7, 1, 1); head.add(nose); head.scale.setScalar(frame.headRadius * 0.92);
-  torso.matrixAutoUpdate = false; scene.add(torso, yoke.mesh, neck.mesh, head);
-  const arms = [0, 1].map(() => ({upper: limb(skin, 0.047, 0.04), fore: limb(skin, 0.038, 0.03), shoulder: ball(skin, 0.055), elbow: ball(skin, 0.04), wrist: ball(skin, 0.031)}));
+  // The trunk: the standard's egg (a unit ball), or a doll's profile turned about its upright axis (a smooth curve through
+  // the profile's points; half-widths in shoulders' spans, heights in hip-to-shoulders over the hip).
+  const skin = matte(C.figure, 0.85), torso = S.trunk.kind === 'egg' ? ball(skin, 1) : new T.Mesh(new T.LatheGeometry(new T.SplineCurve(S.trunk.profile.map(([h, r]) => new T.Vector2(r, h))).getPoints(80).map(p => new T.Vector2(Math.max(0, p.x), p.y)), 64), skin);
+  if (S.trunk.kind === 'profile') { torso.castShadow = true; torso.receiveShadow = true; }
+  const yokes = (S.yoke.kind === 'bar' ? [0] : [0, 1]).map(() => limb(skin, S.yoke.radius, S.yoke.radius)), neck = limb(skin, S.neck.radius[0], S.neck.radius[1]), head = new T.Group();
+  const skull = ball(skin, 1); skull.scale.set(S.skull[0], S.skull[1], S.skull[2]); head.add(skull); const nose = ball(skin, 0.16); nose.position.set(0, -0.12, 0.84); nose.scale.set(0.7, 1, 1); head.add(nose); head.scale.setScalar(frame.headRadius * S.headScale);
+  torso.matrixAutoUpdate = false; scene.add(torso, ...yokes.map(y => y.mesh), neck.mesh, head);
+  const arms = [0, 1].map(() => ({upper: limb(skin, S.upperArmRadius[0], S.upperArmRadius[1]), fore: limb(skin, S.forearmRadius[0], S.forearmRadius[1]), shoulder: ball(skin, S.shoulderBall), elbow: ball(skin, S.elbowBall), wrist: ball(skin, S.wristBall)}));
   for (const a of arms) scene.add(a.upper.mesh, a.fore.mesh, a.shoulder, a.elbow, a.wrist);
   const cross = (a: Vec3, b: Vec3): Vec3 => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
   // Two sources of motion. Drawn by hand (deal.ts, body.ts): two stiff hands. Read off a film (options.read): each hand its 21 points.
@@ -123,9 +129,14 @@ export function createStage(canvas: HTMLCanvasElement, plan: Plan, options: {loo
   const stiff = read ? [] : [handMesh(skin, -1), handMesh(skin, 1)], jointed = read ? [pointHand(skin), pointHand(skin)] : []; // her right hand, her left
   scene.add(...stiff, ...jointed.map(h => h.group)); if (!read) place(stiff[0], cross([0, -1, 0], rest.forward), [0, -1, 0], rest.forward, rest.wrist); // palm down on the felt
   // A rigged model in the figure's place (options.figure): the white figure is made as always and not drawn, and the model is posed from its joints.
-  const figure = options.figure ?? null; if (figure) { scene.add(figure.root); for (const o of [torso, yoke.mesh, neck.mesh, head, ...arms.flatMap(a => [a.upper.mesh, a.fore.mesh, a.shoulder, a.elbow, a.wrist]), ...stiff, ...jointed.map(h => h.group)]) o.visible = false; }
+  const figure = options.figure ?? null; if (figure) { scene.add(figure.root); for (const o of [torso, ...yokes.map(y => y.mesh), neck.mesh, head, ...arms.flatMap(a => [a.upper.mesh, a.fore.mesh, a.shoulder, a.elbow, a.wrist]), ...stiff, ...jointed.map(h => h.group)]) o.visible = false; }
   const mix = (a: number[], b: number[], t: number): Vec3 => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t], norm = (v: Vec3): Vec3 => { const l = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / l, v[1] / l, v[2] / l]; };
 
+  /** A point of the upright frame carried with the trunk (hip to shoulders' middle, shoulder to shoulder) to where the hip and shoulders now are. */
+  const trunkAxes = (hip: Vec3, s: [Vec3, Vec3]) => { const m = mix(s[0], s[1], 0.5), x = norm([s[1][0] - s[0][0], s[1][1] - s[0][1], s[1][2] - s[0][2]]), up: Vec3 = [m[0] - hip[0], m[1] - hip[1], m[2] - hip[2]], z = norm(cross(x, up)); return {m, x, y: cross(z, x), z}; };
+  const carried = (p: Vec3, hip: Vec3, s: [Vec3, Vec3]): Vec3 => { const a = trunkAxes(frame.hip, frame.shoulders), b = trunkAxes(hip, s), d: Vec3 = [p[0] - a.m[0], p[1] - a.m[1], p[2] - a.m[2]];
+    const dx = d[0] * a.x[0] + d[1] * a.x[1] + d[2] * a.x[2], dy = d[0] * a.y[0] + d[1] * a.y[1] + d[2] * a.y[2], dz = d[0] * a.z[0] + d[1] * a.z[1] + d[2] * a.z[2];
+    return [b.m[0] + b.x[0] * dx + b.y[0] * dy + b.z[0] * dz, b.m[1] + b.x[1] * dx + b.y[1] * dy + b.z[1] * dz, b.m[2] + b.x[2] * dx + b.y[2] * dy + b.z[2] * dz]; };
   let now = 0, shown: {card: CardPose} | null = null;
   function setTime(t: number) {
     now = Math.max(0, Math.min(duration, t)); let c: CardPose, body: Pick<Body, 'hip' | 'shoulders' | 'neck' | 'head'> & {arms: {shoulder: Vec3; elbow: Vec3; wrist: Vec3}[]};
@@ -136,15 +147,22 @@ export function createStage(canvas: HTMLCanvasElement, plan: Plan, options: {loo
       c = {centre: mix(a.card.c, b.card.c, k), long, normal, across: cross(normal, long)};
       const limbOf = (side: 'L' | 'R') => ({shoulder: mix(a[side].s, b[side].s, k), elbow: mix(a[side].e, b[side].e, k), wrist: mix(a[side].w, b[side].w, k)}), R = limbOf('R'), L = limbOf('L');
       jointed[0].set(a.R.p.map((p, j) => mix(p, b.R.p[j], k))); jointed[1].set(a.L.p.map((p, j) => mix(p, b.L.p[j], k)));
-      body = {hip: read.hip as Vec3, shoulders: [R.shoulder, L.shoulder], neck: [(R.shoulder[0] + L.shoulder[0]) / 2, (R.shoulder[1] + L.shoulder[1]) / 2 + 0.03, (R.shoulder[2] + L.shoulder[2]) / 2], head: mix(a.h, b.h, k), arms: [R, L]};
-    } else { const h = deal.hand(now), solved = solveBody(frame, h.wrist, rest.wrist); c = deal.card(now); body = solved; place(stiff[1], cross(h.palm, h.forward), h.palm, h.forward, solved.arms[1].wrist); }
+      // The neck: the standard's 3 cm straight up over the shoulders' middle, as it has always been drawn; a doll placed by its joints carries its own neck with the trunk.
+      const shoulders: [Vec3, Vec3] = [R.shoulder, L.shoulder], neckAt = doll.place.kind === 'film' ? [(R.shoulder[0] + L.shoulder[0]) / 2, (R.shoulder[1] + L.shoulder[1]) / 2 + 0.03, (R.shoulder[2] + L.shoulder[2]) / 2] as Vec3 : carried(frame.neck, read.hip as Vec3, shoulders);
+      body = {hip: read.hip as Vec3, shoulders, neck: neckAt, head: mix(a.h, b.h, k), arms: [R, L]};
+    } else { const h = deal.hand(now), solved = solveBody(frame, h.wrist, rest.wrist, doll); c = deal.card(now); body = solved; place(stiff[1], cross(h.palm, h.forward), h.palm, h.forward, solved.arms[1].wrist); }
     shown = {card: c}; placeCard(card, c);
     body.arms.forEach((a, i) => { arms[i].upper.set(a.shoulder, a.elbow); arms[i].fore.set(a.elbow, a.wrist); arms[i].shoulder.position.copy(v3(a.shoulder)); arms[i].elbow.position.copy(v3(a.elbow)); arms[i].wrist.position.copy(v3(a.wrist)); });
-    yoke.set(body.shoulders[0], body.shoulders[1]); neck.set(body.neck, [body.head[0], body.head[1] - frame.headRadius * 0.6, body.head[2]]);
-    // The trunk: an egg from the hip to the shoulders, as wide as they are, leaning and turning with them.
+    neck.set(body.neck, [body.head[0], body.head[1] - frame.headRadius * S.neck.intoHead, body.head[2]]);
+    // The trunk: from the hip to the shoulders, as wide as they are, leaning and turning with them.
     const mid: Vec3 = [(body.shoulders[0][0] + body.shoulders[1][0]) / 2, (body.shoulders[0][1] + body.shoulders[1][1]) / 2, (body.shoulders[0][2] + body.shoulders[1][2]) / 2];
     const x = v3(body.shoulders[1]).sub(v3(body.shoulders[0])), wide = x.length(); x.normalize(); const y = v3(mid).sub(v3(body.hip)), tall = y.length(); y.normalize(); const z = new T.Vector3().crossVectors(x, y).normalize(); y.crossVectors(z, x);
-    torso.matrix.makeBasis(x.multiplyScalar(wide * 0.47), y.multiplyScalar(tall * 0.56), z.multiplyScalar(0.095)).setPosition(v3(body.hip).lerp(v3(mid), 0.52)); torso.matrixWorldNeedsUpdate = true;
+    if (S.trunk.kind === 'egg') torso.matrix.makeBasis(x.clone().multiplyScalar(wide * S.trunk.wide), y.clone().multiplyScalar(tall * S.trunk.tall), z.clone().multiplyScalar(S.trunk.deep)).setPosition(v3(body.hip).lerp(v3(mid), S.trunk.at));
+    else torso.matrix.makeBasis(x.clone().multiplyScalar(wide), y.clone().multiplyScalar(tall), z.clone().multiplyScalar(wide * S.trunk.deep)).setPosition(v3(body.hip));
+    torso.matrixWorldNeedsUpdate = true;
+    // The yoke: straight across (the standard), or down from a foot over the shoulders' middle to each shoulder.
+    if (S.yoke.kind === 'bar') yokes[0].set(body.shoulders[0], body.shoulders[1]);
+    else { const foot: Vec3 = [mid[0] + y.x * S.yoke.footOver, mid[1] + y.y * S.yoke.footOver, mid[2] + y.z * S.yoke.footOver]; yokes[0].set(foot, body.shoulders[0]); yokes[1].set(foot, body.shoulders[1]); }
     // Her eyes are on the card from the shoe until it lies, all through the turn (Jakob 2026-11-18: "Hon ska följa korten
     // oftast, och alltid när det vänds över"); when it lies she looks up toward the players, over two thirds of a second.
     const lies = read ? moments.lands : MOMENTS.lands, up = Math.max(0, Math.min(1, (now - lies) / 0.65)), eased = up * up * (3 - 2 * up);

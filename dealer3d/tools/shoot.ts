@@ -4,6 +4,7 @@
 //        --times 0,0.92,1.9      stills at those seconds, named <prefix>-<seconds>.png
 //        --film 24 0 4           every frame at 24 a second from 0 to 4 s, named <prefix>-0001.png ... (ffmpeg makes the film)
 //        [--motion giv-pamela-p4]   a deal read off a film (dealer3d/data/<name>.json) instead of the one drawn by hand
+//        [--doll paow]              a doll other than the standard, or than the one the motion names (dealer3d/src/doll.ts)
 //        [--model <file.glb>]       a rigged model in the white figure's place (dealer3d/src/figure-model.ts); the file stays where it is
 //        [--motion-file <file.json>] [--plan <file.json>]   serve these frozen inputs for the named motion and plan
 //        [--prefix ruta] [--profile <new folder>] [--port 0] [--serve 0]   0 chooses a free port
@@ -161,7 +162,7 @@ try {
   const run = async (expression: string) => { const r = await send('Runtime.evaluate', {expression, awaitPromise: true, returnByValue: true}); if (r.exceptionDetails) throw Error(JSON.stringify(r.exceptionDetails).slice(0, 700)); return r.result.value; };
   await send('Runtime.enable'); await send('Page.enable'); await send('Network.enable');
   await send('Emulation.setDeviceMetricsOverride', {width: W, height: H, deviceScaleFactor: 1, mobile: false});
-  const query = new URLSearchParams({eyes: arg('--eyes', '1,4')!, to: arg('--to', 'P4.C1')!, look: arg('--look', 'room')!, tags: arg('--tags', '1')!, ...(motion ? {motion} : {}), ...(MODEL ? {model: '1'} : {})});
+  const query = new URLSearchParams({eyes: arg('--eyes', '1,4')!, to: arg('--to', 'P4.C1')!, look: arg('--look', 'room')!, tags: arg('--tags', '1')!, ...(motion ? {motion} : {}), ...(MODEL ? {model: '1'} : {}), ...(arg('--doll') ? {docka: arg('--doll')!} : {})});
   await send('Page.navigate', {url: `http://127.0.0.1:${servePort}/dealer3d/page/index.html?${query}`});
   // A model is tens of megabytes to fetch, read and send to the graphics card: the page gets two minutes instead of twenty seconds.
   let ready = false; for (let i = 0; i < (MODEL ? 480 : 80) && !ready; i++) { assertRunning(); await sleep(250); ready = await run('!!(window.dealer3d && window.dealer3d.ready)'); if (errors.length) break; }
