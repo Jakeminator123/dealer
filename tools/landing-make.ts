@@ -100,10 +100,17 @@ export function composeLanding(source: Rgb, anchor: Rgb, draw: (base: Rgb) => Rg
   return {rgb: drawn, fingers, strayBlue};
 }
 
+/**
+ * The cards an A3 is made for: a player's first and second card and the dealer's first, each laid open with a film of its own
+ * (the second since 2026-11-21, when Jakob ordered the deal from anchor 2.3 to P4.C2). The picture shows only that card: the
+ * game draws the cards that already lie. The hole card (D.C2) is laid closed, and a third card plays the seat's film.
+ */
+export const LANDING_TARGET = /^(?:P[1-7]\.C[12]|D\.C1)$/;
+
 /** The whole run: read, make, check, and (unless dry) add the candidate to Material. */
 export async function makeLanding(root: string, o: {source: string; target: string; hand: 'LH' | 'RH'; name: string; anchor?: string; title?: string; dealer?: string; anyway?: boolean; dry?: boolean; who?: string}) {
   const dealer = o.dealer ?? 'paow';
-  if (!/^(?:P[1-7]|D)\.C1$/.test(o.target)) throw new Error(`${o.target}: ett A3 görs för en plats första kort (P1.C1 … P7.C1, D.C1).`);
+  if (!LANDING_TARGET.test(o.target)) throw new Error(`${o.target}: ett A3 görs för ett kort som läggs öppet med egen film: en spelares första eller andra kort (P1.C1 … P7.C2) eller dealerns första (D.C1).`);
   const register = JSON.parse(await readFile(path.join(root, 'data', 'media-roles.json'), 'utf8'));
   const holding = register.dealers?.[dealer]?.entries?.find((e: {role: string; state?: string}) => e.role === 'ankare-2.3' && e.state === 'gäller');
   const anchorFile = o.anchor ? path.resolve(o.anchor) : holding?.path ? path.join(root, holding.path) : null;
