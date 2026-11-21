@@ -8,9 +8,10 @@ Läs AGENTS.md, den här sidan och EN lägesfil för din bana. Ersätt inaktuell
 - Målet är en trovärdig utdelning i spelet i studion: två kort till plats 1–7 och två eller tre till dealern, med
   returer till redo och vila. Paow är dealern; Pamela är pausad (namnet bär också dockans rörelser `giv-pamela-*` och en scenfilm: skriv
   vilken du menar). Scoutgaming är slutmålet på sikt.
-- Labbet är en vy, Bordet, där en film beställs längs en rak linje: steget och kortets plats, receptet ger resten.
-- Den tatuerade uppsättningen är hans förstahandsval, och A2.3 gäller. Vägen från det finns (ett slutbildsankare per
-  spelare och kort, A3P4C1; beställt genom Bordet); given till plats 4 har hans ja, och övriga platser görs likadant.
+- Labbet är en vy, Bordet, där en film beställs längs en rak linje: kortets plats och steget, receptet ger resten.
+  Kommandot `node tools/order-new.ts` gör samma utkast; Karta visar varje dealers träd och vad som saknas.
+- Den tatuerade uppsättningen är hans förstahandsval, och A2.3 gäller. Trädet Tatuerad fylls från A2.3 med en giv per
+  kort och spelare (plats 4 har hans ja; läget per steg i [film](docs/lage/film.md)). Spelet kan inte välja träd än.
 - Kortplan och order följer B-linsen. **Använd i Casino** sparar visningen, även Bred lins, för Casino och `/casino`.
 - Kopian på nätet är publicerad på `c9d006d` den 2026-11-20 på Jakobs ord, utan nya filmer; kontrollen utifrån
   20/20 och åtkomsten oförändrad. Telefonmått, fysisk telefon och ljud återstår ([spelet](docs/lage/spelet.md)).
@@ -28,8 +29,6 @@ Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-
 4. Den neutrala munnen gäller alla Paows repliker utom blackjack, som väntar på hans ja; ingen har hört ljudet ([spelet](docs/lage/spelet.md)).
 5. Hålkort, native split och READY-C:s tvåkortsprov är kontrollerade inom sina avgränsade prov. Grepp, tempo,
    mask och hela rörelsen återstår ([film](docs/lage/film.md)).
-
-Äldre frågor till honom som inte är kort än: `D:/dealer-scratch/tmp/handoff-nytt/forslag-kort.md`.
 
 ## Vem äger vad
 

@@ -4,13 +4,13 @@ Huvudagentens bana: studion på `http://127.0.0.1:4319/studio/` med vyerna Scen 
 Beslut, labbservern och rutinverktygen. Här står bara det som gäller nu; det som hänt står i Git.
 
 **Läget.**
-- Scen & bord (adressen `/bordet/`) är labbvyn: lägena Kortplan, Beställ (Filmer och Kön), Scen, Råfilm och
-  Efterarbete. `/`, `/scen/`, `/placering/`, `/bestall/` och `/lab.html` leder dit; gamla labbet är borttaget. Menyn:
-  Scen & bord, Karta, Granska, Material, Lipsync, Casino; i foten Beslut, Ordlista, Ljud och Modeller.
+- Scen & bord (adressen `/bordet/`) är labbvyn: Kortplan (tre steg: Var kortet landar, Hur det kommer dit, Beställ),
+  Kön, Scen, Råfilm och Efterarbete. `/`, `/scen/`, `/placering/`, `/bestall/` och `/lab.html` leder dit; gamla labbet
+  är borttaget. Menyn: Scen & bord, Karta, Granska, Material, Lipsync, Casino; i foten Beslut, Ordlista, Ljud och Modeller.
 - Basgrund behåller bordskorten. Överlägg i handen är av i Scen och Casino; Karta skiljer primära från spelbara steg. Scen har labbprovet bordet BORD-02 (Bord → Bordsmodell, `tableModel=bord-02`, 2026-11-20): avslaget som förval, och spelet slår inte på det före Jakobs ja.
 - Lokal klickdiagnostik sparar högst 200 långsamma händelser; läs med `node tools/interaction-diagnostics.ts` (rutin: `tools/local-work.md`). Vercels rapporterade 17-minutersvärde är ännu inte återskapat.
-- Beställ är en rak linje: plats och kort, sedan steget. Förhandsvisa visar serverns text, medier, pris och värden före
-  sparning; ändrat underlag kräver ny förhandsvisning, tappat sparsvar återanvänder samma. A3-kandidat väljs under Undantag. Material visar ankare 2.3 och en bricka per plats
+- En beställning är en rak linje i Kortplan: plats och kort, hur kortet kommer dit, och i steg 3 "Det här skickas" med serverns text, bilder, pris och värden före sparning; slutbild och referensfilm ändras under Undantag. Utkastet godkänns i Kön. Under korten kan en docka visas (`?bakgrund=docka-paow`, måtten i `dealer3d/LASMIG.md`).
+- Karta visar varje dealers träd (Paow: Casino, Tatuerad, Ingången) med vad som finns och saknas av 36 steg, och kommandot som beställer ett saknat steg (`/karta/?dealer=paow&trad=tatuerad`). Material visar ankare 2.3 och en bricka per plats
   för landningar. Studiobyggets fulla SHA står i `studio/out/bygge.json`; `/vinklar.html` binder två kameravinklar i en scen.
 - Material för hand (`da339a5`): Jakob kan göra vilken bild som helst gällande, lägga den åt sidan, arkivera den och ta
   tillbaka den, och klipp byggda på en äldre bild mörkas. I Karta (`9a09570`) arkiveras ett klipp för hand och tas

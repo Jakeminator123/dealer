@@ -147,6 +147,10 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   stilla fingrar med handryggen mot kameran, mitt i flykten (3–5 kortbredder från platsen). Filmmodellen kopierar det:
   kortet blir halvgenomskinligt i fyra till sex rutor kring kantrutan. Jakobs regel är att handleden vänder kortet.
   Stänger: en omgjord dockfilm där handleden vrids och vändningen sker nära platsen, prövad på en plats först.
+- **Rosen på högra handryggen blir en mandala** (2026-11-21). Sett i A3P4C1 (ur pilotgivens slutruta) och i given
+  till A3P3C1 från ruta 46; A2.3 har rosen. En retur från en sådan bild byter tillbaka till rosen under rörelsen
+  (returprovet `paow-retur-2-3-p4-01`, ruta 0–12). Stänger: A3-bilden rättas mot handen i A2.3 innan fler returer
+  beställs, och granskaren jämför handryggen i slutrutan med ankaret.
 - **Landningsverktyget stoppar ytterplatserna** (2026-11-21). A3P1C1 och A3P2C1 ur filmernas slutruta faller på
   kontrollen av bildrutan: hon lutar sig mot platsen, så huvud och axlar täcker ankarets till 58 och 69 % (gränsen är
   75 %), och hennes kontur korsar skarven vid skon. Kontrollen är inte sänkt. Stänger: ett beslut om hur en lutning

@@ -303,6 +303,8 @@ tagningar vänder kortet en gång vid platsen så som en hand kan, med kortet in
   `SAY.glideTo`. WAN 3, 1080p, 3 s. Oprövad; behövs för en giv "bara dit". En film som startar på en annan films ruta
   skiftar cirka 5 nivåer i ton (Paows videoprov, V); därför en stillbild som första bild. Returen till 2.3 är den enda
   med recept (Kling 4, 1080p, 3 s, prov): `SAY.liftOffRight` och `SAY.glideBeside`, där handen vid skon nämns en gång.
+  Första provet (2026-11-21) föll på vägen: ändarna och kortet höll, men "glides back low over the felt" blev en hand
+  som stryker över bordet. Nästa prov byter bara den meningen mot en kort, rak väg till skon ([film-prov.md](film-prov.md)).
 
 ### 3.6 Vila
 - Orden: `SAY.rest` plus en liten handling som Jakobs tillägg: `takes one slow, deep breath`, `smiles briefly`,
@@ -473,8 +475,8 @@ olika, står på protokollsidan [film-prov.md](film-prov.md), först. Metoden so
 hur hon rör sig och plats 6) står på en egen sida, [film-prov.md](film-prov.md): sök där på omgångens, mallens eller
 orderns namn.
 
-**Oprövat:** referensfilm eller handbyte till plats 6; retur som egen film från en landningsbild; vändningen som egen
-film; landningsbild som stillbild; ankare 2.2 som ruta ur en film; referensfilm av Jakobs hand; renderat kort i
+**Oprövat:** referensfilm eller handbyte till plats 6; retur som egen film till ankare 1, 2.1 och 2.2; vändningen som
+egen film; ankare 2.2 som ruta ur en film; referensfilm av Jakobs hand; renderat kort i
 vändningens rutor.
 
 ## 6. Källor
