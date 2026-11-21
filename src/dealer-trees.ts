@@ -135,10 +135,10 @@ export type StepState = 'finns' | 'prov' | 'saknas';
 export const STEP_STATES: readonly StepState[] = ['finns', 'prov', 'saknas'];
 /**
  * A step of a tree: what stands best on it (take, its verdict and whose word), via: the other anchor at the shoe it is
- * given from when not the tree's own, takes: the tree's films on the step (archived left out), deliveries: orders delivered
- * for it that are not in the bank.
+ * given from when not the tree's own, takes: the tree's films on the step (archived left out), ids: those films and its
+ * stand-ins' (what Karta's films panel lists), deliveries: orders delivered for it that are not in the bank.
  */
-export type TreeStep = MeasureStep & { name: string; state: StepState; take: string | null; verdict: Verdict | null; byJakob: boolean; provisional: boolean; via: string | null; takes: number; deliveries: string[] };
+export type TreeStep = MeasureStep & { name: string; state: StepState; take: string | null; verdict: Verdict | null; byJakob: boolean; provisional: boolean; via: string | null; takes: number; ids: string[]; deliveries: string[] };
 
 /** The steps of the measure for a tree's films (its own, already placed in it), with `others` standing in for `hub`. */
 export function treeSteps(hub: string, others: readonly string[], takes: readonly TreeTake[], deliveries: readonly Delivery[] = []): TreeStep[] {
@@ -154,7 +154,7 @@ export function treeSteps(hub: string, others: readonly string[], takes: readonl
     const waiting = own.find((t) => t.verdict === 'vantar') ?? null;
     const shown = good ?? (waiting ? { t: waiting, via: null } : null);
     const state: StepState = good ? 'finns' : waiting || sent.length ? 'prov' : 'saknas';
-    return { ...m, name: stepName(m.from, m.to), state, take: shown?.t.id ?? null, verdict: shown?.t.verdict ?? null, byJakob: !!shown?.t.byJakob, provisional: !!shown?.t.provisional, via: shown?.via ?? null, takes: own.length, deliveries: sent };
+    return { ...m, name: stepName(m.from, m.to), state, take: shown?.t.id ?? null, verdict: shown?.t.verdict ?? null, byJakob: !!shown?.t.byJakob, provisional: !!shown?.t.provisional, via: shown?.via ?? null, takes: own.length, ids: ranked.map((x) => x.t.id), deliveries: sent };
   });
 }
 

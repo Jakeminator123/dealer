@@ -35,11 +35,12 @@ export const GUIDE: readonly GuideView[] = [
     vy: "karta",
     namn: "Karta",
     adress: "/studio/karta/",
-    kort: "Se alla filmer på kartan",
+    kort: "Se dealerns nodträd",
     text:
-      "Nodkartan över allt som är filmat, upplagd som bordet: ankarna vid skon (A1 vila, A2.1 nyp, A2.2 släp), platserna P1 " +
-      "till P7 i en båge och dealern överst. Varje linje är ett steg mellan två lägen, till exempel steget A2.1 → P4C1, med sin " +
-      "Primär (tagningen som spelas, som bara Jakob väljer) och de andra tagningarna, med Jakobs omdöme på varje.",
+      "Dealerns nodträd, ett i taget (till exempel Casino 22/36 och Tatuerad 0/36): bilderna för A1, trädets ankare vid skon " +
+      "och varje kort, och de 36 stegen i Jakobs mått som linjer. Heldragen linje: steget har film; streckad: ett prov väntar " +
+      "på dom; röd: steget saknas. Ett steg med film visar sin Primär och de andra tagningarna; ett saknat steg visar vad en " +
+      "beställning har och saknar, priset och kommandot som gör ett utkast.",
   },
   {
     vy: "granska",

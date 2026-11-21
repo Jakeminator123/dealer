@@ -71,6 +71,8 @@ test("a step's state: finns, prov or saknas, read from the verdicts and never se
   assert.deepEqual([at("READY-C>P6.C1").state, at("READY-C>P6.C1").via], ["finns", "READY-B"], "the other anchor stands in");
   assert.deepEqual([at("READY-C>P1.C1").state, at("READY-C>P1.C1").takes], ["saknas", 0], "an archived take is left out");
   assert.deepEqual([at("READY-C>P3.C1").take, at("READY-C>P3.C1").via], ["own-p3c1", null], "the tree's own film before a stand-in at the same verdict");
+  assert.deepEqual(at("READY-C>P3.C1").ids, ["own-p3c1", "via-p3c1"], "the films panel lists the tree's films on the step, its stand-ins' too");
+  assert.deepEqual(at("READY-C>P1.C1").ids, [], "not an archived one");
   assert.equal(at("READY-C>P7.C1").state, "saknas", "a stand-in waiting for a verdict does not make the step a trial");
   assert.deepEqual([at("READY-C>P2.C1").state, at("READY-C>P2.C1").byJakob, at("READY-C>P2.C1").provisional], ["finns", false, true], "a verdict given for him counts, marked as not his");
   assert.equal(at("READY-C>IDLE").state, "saknas");

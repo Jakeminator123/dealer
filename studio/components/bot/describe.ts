@@ -2,6 +2,7 @@
 // view's own address (?kant=…&tagning=…) and the clip bank. Raw ids stay in the address; the words go in val. Pure: no
 // DOM, no React.
 import type { Graph, Segment } from "../../../src/clip-graph.ts";
+import { stepName } from "../../../src/dealer-trees.ts";
 import type { Proof } from "../../lib/api.ts";
 import { edgeName, nodeName, takeName } from "../../lib/names.ts";
 import { proofFiles, proofTitle } from "../../lib/proofs.ts";
@@ -40,17 +41,28 @@ function takeWords(graph: Graph | null, id: string | null): string | null {
   return takeName(take, graph?.edge[take.edge]?.takes);
 }
 
-/** Karta: the film chosen and its take: {kant: "A2.1 → P4C1", tagning: "Giv 02", omdome: "Godkänd"}. */
-export function describeKarta(graph: Graph | null, params: Params): Val {
+/** A step of a tree as the address writes it ("READY-C>P4.C2") in his words: "A2.3 → A3P4C2". */
+function stepWords(id: string | null): string | null {
+  const cut = id ? id.indexOf(">") : -1;
+  return id && cut > 0 ? stepName(id.slice(0, cut), id.slice(cut + 1)) : null;
+}
+
+/**
+ * Karta: the tree, the step and the film chosen, and its take: {trad: "Tatuerad", steg: "A2.3 → A3P4C2", kant: "A2.1 → P4C1",
+ * tagning: "Giv 02", omdome: "Godkänd"}. trees: the trees' names by id (GET /api/trees); without them the address's id is said.
+ */
+export function describeKarta(graph: Graph | null, params: Params, trees?: ReadonlyMap<string, string>): Val {
+  const trad = params.get("trad");
   const kant = params.get("kant");
   const tagning = params.get("tagning");
   const take = tagning ? graph?.takes[tagning] : undefined;
   return cleanVal({
+    trad: trad ? (trees?.get(trad) ?? trad) : null,
+    steg: stepWords(params.get("steg")),
     kant: kant ? edgeName(kant) : null,
     tagning: takeWords(graph, tagning),
     omdome: take ? verdictOf(take).label : null,
     plats: params.get("plats") ? nodeName(params.get("plats")!) : null,
-    filmer: params.get("filmer") === "kort" ? "en film per kort" : null,
   });
 }
 
@@ -104,7 +116,7 @@ export function stepFacts(pos: Position | null, segments: readonly Pick<Segment,
 /** The chip's words: "Karta · A2.1 → P4C1 · Giv 02". The verdict and other extras stay out of the chip. */
 export function contextLine(namn: string, val: Val, keep = 2): string {
   const shown = Object.entries(val)
-    .filter(([key]) => !["omdome", "ruta", "filmer"].includes(key))
+    .filter(([key]) => !["omdome", "ruta"].includes(key))
     .slice(0, keep)
     .map(([, value]) => value);
   return [namn, ...shown].join(" · ");

@@ -27,17 +27,19 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { resolveRound } from "../../../src/clip-graph.ts";
+import { countWord } from "../../../src/dealer-trees.ts";
 import { tableGeometry } from "../../../src/card-plan.ts";
 import { sceneWords } from "../../lib/bordet.ts";
 import { useBank } from "../../lib/bank.ts";
 import { ONLINE_CASINO, readGeometryWord, trialAddress, withGeometry } from "../../lib/casino.ts";
 import { stepFacts, useViewContext } from "../../lib/context.ts";
-import { BANK_DEALER, filmsLine, openingRound, ownSteps, withDealer } from "../../lib/dealer.ts";
+import { BANK_DEALER, openingRound, ownSteps, withDealer } from "../../lib/dealer.ts";
 import { isSnapshot } from "../../lib/mode.ts";
 import { formatJakob } from "../../lib/names.ts";
 import { addressOf, contextRound, isReference, no3d, readAddress, readyRounds, roundFacts, roundFromText, roundParts, viewFor, type Round } from "../../lib/rounds.ts";
 import { BRED_LINS, CASINO_PRESET } from "../../lib/scene-presets.ts";
 import { readSceneCardTrial, withSceneCardTrial } from "../../lib/scene-card-trial.ts";
+import { firstTree, useTrees } from "../map/useTrees";
 import { RoundPicker, RoundStrip } from "../round";
 import { joinParts, readLook, roundPart, useSceneEditor } from "../scene-editor";
 import { Stage, createClock, type StageHandle } from "../stage";
@@ -62,7 +64,8 @@ export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: Scene
   const query = scenePart(new URLSearchParams(searchText)).toString();
   const params = useMemo(() => new URLSearchParams(query), [query]);
   const toast = useToast();
-  const { graph, status, error, reload, dealer, dealers, owners } = useBank();
+  const { graph, status, error, reload, dealer, dealers, owners, readAt } = useBank();
+  const tree = firstTree(useTrees(dealer, readAt).answer);
   const rounds = useMemo(() => readyRounds(graph), [graph]);
   const lookOf = (p: URLSearchParams) => readLook([...p.keys()].some((k) => k !== "runda" && k !== "kant" && k !== "tagning" && k !== "robot") ? p : new URLSearchParams({ forval: CASINO_PRESET }));
   const [address, setAddress] = useState(() => readAddress(params));
@@ -112,7 +115,8 @@ export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: Scene
   const mode = viewFor(round, kind === "rafilm" ? "platt" : "3d");
   const flat = mode === "platt";
   const blocked3d = kind !== "rafilm" ? no3d(round) : null;
-  const few = graph && dealer !== BANK_DEALER ? filmsLine(graph, dealers.find((d) => d.id === dealer)?.name ?? dealer) : null;
+  // How far the dealer is, by the number Karta, the rail and Kön show ("Paow: Casino 22/36 steg"), while the tree lacks films.
+  const few = tree && dealer !== BANK_DEALER && tree.count.have < tree.count.total ? `${dealers.find((d) => d.id === dealer)?.name ?? dealer}: ${tree.tree.name} ${countWord(tree.count)} steg` : null;
 
   // The address follows the round and the look (a moment after the hand stops), beside Bordet's own words.
   const want = joinParts(roundText, editor.lookText);

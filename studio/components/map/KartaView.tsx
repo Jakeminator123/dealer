@@ -21,7 +21,8 @@ import { getPlacements } from "@/lib/api";
 import { useBank } from "@/lib/bank";
 import { bankSummary, edgeInfo, isSecondary, primaryOf, type EdgeInfo, type Summary } from "@/lib/edge-stats";
 import { mapLayout, treeLayout, type PlanPoints } from "@/lib/map-layout";
-import { stepFilms, treeOrder } from "@/lib/primaries";
+import { stepFilms, treeOrder, type Film } from "@/lib/primaries";
+import { takeName } from "@/lib/names";
 import { primarCount } from "@/lib/verdict";
 import { EdgeSheet, type Around } from "./EdgeSheet";
 import { ExperimentTray } from "./ExperimentTray";
@@ -129,7 +130,22 @@ function TreeKarta({ answer }: { answer: TreeAnswer }) {
   const game = useMemo(() => (judged ? buildGraph(judged, { dealer }) : null), [judged, dealer]);
   const played = useMemo(() => (judged ? buildGraph(judged, { mode: "CARD", dealer }) : null), [judged, dealer]);
   const hubs = useMemo(() => (bank ? hubDeals(bank, dealer) : {}), [bank, dealer]);
-  const films = useMemo(() => (bank && graph && game && edgeId && graph.edge[edgeId] ? stepFilms(bank, graph, game, edgeId, hubs) : null), [bank, graph, game, edgeId, hubs]);
+  // The films panel lists the tree's own films on the step (its stand-ins' too), not every anchor's films of the bank's edge
+  // (an anchor variant at the shoe is a take of A2.1's edge). The Primär is the bank's, one per edge: when it is another
+  // tree's, the panel says so, since "Gör primär" here replaces it.
+  const filmStep = step && step.edge === edgeId ? step : (view.steps.find((s) => s.edge === edgeId && s.state === "finns") ?? null);
+  const films = useMemo(() => {
+    const all = bank && graph && game && edgeId && graph.edge[edgeId] ? stepFilms(bank, graph, game, edgeId, hubs) : null;
+    if (!all || !filmStep) return all;
+    const mine = new Set(filmStep.ids);
+    const keep = (f: Film) => mine.has(f.take.id);
+    const primary = all.primary && keep(all.primary) ? all.primary : null;
+    const secondaries = all.secondaries.filter(keep);
+    const live = all.edge.takes.filter((t) => !t.archived && mine.has(t.id)).length;
+    return { ...all, primary, secondaries, proposal: all.proposal && mine.has(all.proposal.id) ? all.proposal : null, elsewhere: Math.max(0, live - secondaries.length - (primary ? 1 : 0)) };
+  }, [bank, graph, game, edgeId, hubs, filmStep]);
+  const bankPrimary = films && !films.primary ? primaryOf(films.edge) : null;
+  const filmNote = bankPrimary ? `Stegets Primär i banken, ${takeName(bankPrimary, films!.edge.takes)}, hör till ett annat träd. Gör primär här ersätter den.` : null;
   const info = edgeId && graph && played && graph.edge[edgeId] ? edgeInfo(played.edge[edgeId] ? played : graph, edgeId, hubs, true) : null;
   // ‹ › in the films' panel walk the tree's steps that have a film, in the measure's order.
   const order = useMemo(() => [...new Set(view.steps.filter((s) => s.state === "finns" && graph?.edge[s.edge]).map((s) => s.edge))], [view.steps, graph]);
@@ -160,6 +176,8 @@ function TreeKarta({ answer }: { answer: TreeAnswer }) {
       <EdgeSheet
         graph={graph}
         step={films}
+        title={filmStep?.name}
+        note={filmNote}
         info={info}
         takeId={takeId}
         around={around}

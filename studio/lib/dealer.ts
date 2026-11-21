@@ -157,13 +157,6 @@ export function addressWord(dealer: string, address: DealerAddress, owners: Read
   return address.takes.some((t) => owners[t] && owners[t] !== dealer) ? dealer : null;
 }
 
-// ── A dealer with few films ─────────────────────────────────────────────────
-/** "Paow har 3 av 33 filmer": how far the dealer's round is, or null when every film the round needs is there. */
-export function filmsLine(graph: Pick<Graph, "summary">, name: string): string | null {
-  const { done, total } = graph.summary.films;
-  return done < total ? `${name} har ${done} av ${total} filmer` : null;
-}
-
 /** A round's steps for this dealer: a step locked to another dealer's take (Pamela's favourite round) plays this dealer's film. */
 export function ownSteps(steps: readonly Step[], dealer: string, owners: Readonly<Record<string, string>>): Step[] {
   return steps.map((s) => (s.take && owners[s.take] && owners[s.take] !== dealer ? { from: s.from, to: s.to } : s));

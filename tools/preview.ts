@@ -1,6 +1,6 @@
 import http from 'node:http';
 import {readFile,mkdir,writeFile,stat,unlink,realpath,readdir} from 'node:fs/promises';
-import {createReadStream,existsSync,openSync} from 'node:fs';
+import {existsSync,openSync} from 'node:fs';
 import {spawn} from 'node:child_process';
 import {randomUUID} from 'node:crypto';
 import path from 'node:path';
@@ -13,7 +13,7 @@ import {scenePresetStore} from './scene-preset-store.ts';
 import {PRESET_BYTES} from '../studio/lib/scene-presets.ts';
 import {createSession,SessionError,type Session,type SessionOptions} from '../game/session.ts';
 import {tabRegistry,localPath,openAddress,type Tab,type Reason} from './tab-registry.ts';
-import {resolveStudio} from './studio-files.ts';
+import {resolveStudio,sendFile} from './studio-files.ts';
 import {SCRIPTS as scripts,VENDOR as vendor,PAGES as pages,SCENE_FILES as sceneFiles,forBrowser,studioAddress} from './lab-routes.ts';
 import {mediaRoles} from './media-roles.ts';
 import {handleOrders} from './order-routes.ts';
@@ -369,8 +369,8 @@ if(has('--restart')){
     if(start>end||end>=size){res.writeHead(416,{'Content-Range':`bytes */${size}`}).end();return;}
     res.writeHead(206,{'Content-Range':`bytes ${start}-${end}/${size}`,'Content-Length':end-start+1});
    }else res.setHeader('Content-Length',size);
-   if(req.method==='HEAD'){res.end();return;}
-   const stream=createReadStream(file,{start,end});stream.on('error',()=>res.destroy());stream.pipe(res);res.on('close',()=>stream.destroy());
+   // Opened only when there is something to send, and closed however the answer ends (a cancelled prefetch held studio/out open).
+   sendFile(req,res,file,start,end);
   }catch{if(!res.headersSent)res.writeHead(500);res.end();}
  });
  // The server stays up until it is told to stop (STOPP.cmd, --stop). It used to stop a minute after the last lab tab

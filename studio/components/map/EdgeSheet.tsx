@@ -43,6 +43,8 @@ export function EdgeSheet({
   onClose,
   onPickTake,
   onPickEdge,
+  title,
+  note,
 }: {
   graph: Graph | null;
   /** The chosen step's films (KartaView: stepFilms), null when none is chosen. */
@@ -55,11 +57,16 @@ export function EdgeSheet({
   onClose: () => void;
   onPickTake: (id: string | null) => void;
   onPickEdge: (id: string) => void;
+  /** The step in a tree's own words ("A2.3 → A3P4C1"), in place of the bank's edge name. */
+  title?: string;
+  /** A line over the films (Karta's trees: the bank's Primär of the step is another tree's). */
+  note?: string | null;
 }) {
   const edge = step?.edge ?? null;
   const subtitle = edge ? (edge.experiment ? "Experiment utanför kartan" : describeEdge(edge)) : "";
   return (
-    <Sheet open={!!step} onOpenChange={(open) => !open && onClose()} title={edge ? edgeName(edge) : ""} subtitle={subtitle} width={SHEET_W}>
+    <Sheet open={!!step} onOpenChange={(open) => !open && onClose()} title={edge ? (title ?? edgeName(edge)) : ""} subtitle={subtitle} width={SHEET_W}>
+      {step && note ? <p className="mb-3 rounded-md border border-line bg-raised px-3 py-2 text-sm text-dim">{note}</p> : null}
       {step && info && graph ? <SheetBody key={step.edge.id} graph={graph} step={step} info={info} takeId={takeId} around={around} onPickTake={onPickTake} onPickEdge={onPickEdge} /> : null}
     </Sheet>
   );

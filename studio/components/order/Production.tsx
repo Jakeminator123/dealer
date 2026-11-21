@@ -3,13 +3,17 @@
 // "Det här saknas för en runda", at the top of Beställ: the production list of the dealer chosen in the rail
 // (tools/produce.ts through GET /api/production). Pictures first: the dealer's three anchors, then one small card per step a
 // round needs that is not klar, each with the picture it starts from and its card drawn where the plan lays it, its state
-// as a chip (colour and sign) and one line in Jakob's words. The count says how far the round is (tools/produce.ts counts it).
+// as a chip (colour and sign) and one line in Jakob's words. The count is the dealer's number, the same as Karta's and the
+// rail's: the tree the game plays, steps with a film of the 36 of his measure (src/dealer-trees.ts countWord, GET /api/trees);
+// a lab server without the trees shows tools/produce.ts's own count until it is restarted.
 // Drafts are made in Kortplan's step 3, not here. "Visa alla" shows every step of the graph. Folded away it is one line, so
 // the orders below still read well. Reads on load and when the tab is seen again.
 import { ChevronDown, ChevronRight, Clock } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { countWord } from "../../../src/dealer-trees.ts";
 import { asApiError } from "../../lib/api.ts";
+import { useBank } from "../../lib/bank.ts";
 import { dealerHref } from "../../lib/dealer.ts";
 import { labUrl } from "../../lib/lab.ts";
 import { FOR_YOU } from "../../lib/verdict.ts";
@@ -17,6 +21,7 @@ import { nodeCode } from "../../lib/names.ts";
 import { PRODUCTION_CHIP, getProduction, productionCount, type Production as List, type ProductionAnchor, type ProductionRow } from "../../lib/orders.ts";
 import { ANCHOR_NODE, type PlanAnswer } from "../../../src/order-model.ts";
 import { CARD_COLOUR } from "../../../src/placement-model.ts";
+import { firstTree, useTrees } from "../map/useTrees";
 import { CardMark } from "../placement/CardMark";
 import { Badge, Skeleton, cn } from "../ui";
 
@@ -118,6 +123,8 @@ export function Production({ dealer, dealerName, plan, onOpen }: { dealer: strin
   const [{ list, error }, setState] = useState<{ list: List | null; error: string | null }>({ list: null, error: null });
   const [open, setOpen] = useState(true);
   const [all, setAll] = useState(false);
+  const { readAt } = useBank();
+  const tree = firstTree(useTrees(dealer, readAt).answer);
 
   const read = useCallback(async () => {
     try {
@@ -154,7 +161,13 @@ export function Production({ dealer, dealerName, plan, onOpen }: { dealer: strin
           <h2 className="font-display text-md font-semibold text-ink">{missing.length ? "Det här saknas för en runda" : "Allt en runda kräver är klart"}</h2>
           <span className="text-sm text-dim">· {dealerName}</span>
         </button>
-        <span className="text-sm tabular-nums text-ink">{productionCount(list.counts)}</span>
+        {tree ? (
+          <Link href={dealerHref(`/karta/?trad=${encodeURIComponent(tree.tree.id)}`, dealer)} className="text-sm tabular-nums text-ink hover:underline" title="Steg med film (Primär, Godkänd eller Variant) av de 36 i hans mått, i trädet spelet spelar; samma tal som Karta och menyn">
+            {tree.tree.name} {countWord(tree.count)} steg
+          </Link>
+        ) : (
+          <span className="text-sm tabular-nums text-ink">{productionCount(list.counts)}</span>
+        )}
         {list.counts.provisional ? (
           <span className="text-sm tabular-nums text-dim" title="Dömda av huvudagenten och en granskare när du lämnade över domen. De spelas och väntar inte på dig; Granska visar dem under Dömda åt dig, och ditt eget beslut ersätter dem.">
             · {list.counts.provisional} av de klara dömda åt dig

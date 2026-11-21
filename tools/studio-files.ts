@@ -1,8 +1,25 @@
 // The studio (studio/, a Next.js app) is built to static files in studio/out/, and the lab server hands them out
 // under /studio/. This is the one place that turns an address into a file there. It never leaves that folder, it
-// never lists it, and it hands out only the kinds of file a built studio consists of.
+// never lists it, and it hands out only the kinds of file a built studio consists of. sendFile is how the lab server
+// sends a file (the studio's and every other), so that no answer leaves one open.
+import {createReadStream} from 'node:fs';
 import {realpath,stat} from 'node:fs/promises';
+import type {IncomingMessage,ServerResponse} from 'node:http';
 import path from 'node:path';
+import {pipeline} from 'node:stream';
+
+/**
+ * Sends bytes start..end of a file whose size the caller has read and whose headers it has set. The file is opened only
+ * when there is something to send to someone still asking (not for a HEAD, an empty range, or a request already cut off),
+ * and pipeline closes it however the answer ends: sent, cut off by the browser, or failed. 2026-11-21: the studio's
+ * prefetches, cancelled by the browser while the server was still looking the file up, were piped into a closed answer;
+ * the file stayed open, and Windows refused the next build's rename of studio/out (EPERM) until the server was restarted.
+ */
+export function sendFile(req:IncomingMessage,res:ServerResponse,file:string,start:number,end:number):void{
+ if(req.method==='HEAD'||end<start||res.writableEnded){if(!res.writableEnded)res.end();return;}
+ if(res.destroyed||req.socket.destroyed){res.destroy();return;}
+ pipeline(createReadStream(file,{start,end}),res,()=>{});
+}
 
 export const STUDIO_TYPES:Record<string,string>={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.txt':'text/plain; charset=utf-8','.svg':'image/svg+xml','.ico':'image/x-icon','.woff2':'font/woff2','.webmanifest':'application/manifest+json'};
 export type StudioAnswer={kind:'file';file:string;type:string}|{kind:'redirect';to:string}|{kind:'unbuilt'}|{kind:'none'};
