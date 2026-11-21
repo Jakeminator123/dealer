@@ -38,8 +38,9 @@ export const LIT = {BACK: [0.91, 0.82, 0.02], FRONT: [0, 0.475, 0.89]};
 export const SHOE_BOX = [1242, 754, 1339, 855];
 
 // The colour rules, video values 0-255. Written once in the subset JavaScript and GLSL share (numbers with a point, min, && and
-// ||), so the shader and the tests read the same text: the tests compile it and hold the strict rules to the tracker's own
-// (src/card-track.ts `is`). back/face: the tracker's yellow and blue. shade: its yellow back in finger shadow. dimBack/dimFace:
+// ||), so it can be read as JavaScript as well as GLSL. The strict rules follow the tracker's own (src/card-track.ts `is`) by
+// hand: no test holds them equal, so a change to one is made in the other too. back/face: the tracker's yellow and blue.
+// shade: its yellow back in finger shadow. dimBack/dimFace:
 // the same colours below the tracker's brightness (a finger's shadow on the card); those two and shade count only near the card's
 // own colour, so the shoe's tan frame, a knuckle or a dark sleeve are not taken for card. pale: the face as some films wash it out
 // (light lavender instead of blue: Paow at seat 1, paow-giv-2-1-p1-06-01 frames 74-81, mean 192-215/193-219/239-246); it counts only

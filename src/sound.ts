@@ -4,7 +4,7 @@
 //
 // The first half has no page and no audio context in it: seeded randomness, what each sound is made of (its plan, drawn
 // from a seed so that no two clicks are alike and a test can repeat them), the sounds themselves as samples, the rooms'
-// recipes and the planner that says what happens in a room when, and the measuring used by the tests and the proof.
+// recipes and the planner that says what happens in a room when, and the measuring of a sound.
 // The second half puts it on a Web Audio graph (createSound) and is the page,
 // started only where there is a document. Importing the module never touches AudioContext.
 
@@ -1374,7 +1374,7 @@ const WRITERS: Record<MusicTrack, (w: Writing) => MusicNote[]> = {lounge: writeL
 /**
  * A track as it plays, from a seed. plan(from, to) gives its notes in [from, to), seconds from the track's start, in order;
  * window after window it gives exactly what one call over the whole span would (as the rooms' planner does). chords: every
- * chord written so far with its time, for the tests and the proof.
+ * chord written so far with its time.
  */
 export function createComposer(track: MusicTrack, seed: number) {
   const recipe = MUSIC_RECIPES[track], h = recipe.harmony, harmonyRng = createRng(seed), rng = createRng((seed ^ 0x2545f491) >>> 0), spb = 60 / recipe.tempo;
@@ -1583,7 +1583,7 @@ export type Measure = {
   centroidHz: number; above2k: number; loudestHz: number; bands: Record<string, number>;
   dc: number; clipped: number; startDb: number; endDb: number;
 };
-/** The numbers the tests and the proof judge a sound by: level, length, where its energy lies, and whether it is clean. */
+/** The numbers a sound is judged by: level, length, where its energy lies, and whether it is clean. */
 export function measure(channels: Float32Array[], rate: number): Measure {
   const n = channels[0].length; let peak = 0, peakAt = 0, sum2 = 0, clipped = 0, dc = 0;
   for (const c of channels) { let s = 0; for (let i = 0; i < n; i++) { const v = c[i], a = Math.abs(v); if (a > peak) { peak = a; peakAt = i; } sum2 += v * v; if (a >= 0.9999) clipped++; s += v; } dc = Math.max(dc, Math.abs(s / n)); }
@@ -1951,6 +1951,6 @@ function start() {
   // For the proof recorder and the console: the sound itself, the offline renderer and the measuring.
   Object.assign(window, {soundLab: Object.assign(sound, {ready: Promise.resolve(true), render: renderOffline, measure, encodeWav, powerSpectrum, fft, chipPlan, cardPlan, createRng, ROOMS, BUTTONS, LEVEL, ROOM_RECIPES, MUSIC, MUSIC_RECIPES, createComposer, renderMusicNote, musicRate})});
 }
-// Under Node (the tests) only the first half is used. The page half starts only on sound.html itself (its body carries
+// Without a document only the first half is used. The page half starts only on sound.html itself (its body carries
 // data-page="ljud-labb"); the game and any other page that imports the module get its exports and nothing else.
 if (typeof document !== 'undefined' && document.body?.dataset.page === 'ljud-labb') try { start(); } catch (error) { const box = document.getElementById('fail'); if (box && !box.textContent) box.textContent = 'Ljud-labbet kunde inte starta. Ladda om sidan; om det inte hjälper, säg till.'; console.error(error); }

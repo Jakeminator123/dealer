@@ -533,5 +533,5 @@ async function start() {
     state: () => ({...state, problem, loaded: model ? {id: model.id, triangles: model.triangles, turned: model.turned, size: model.size.toArray(), textureSize: model.textureSize} : null}),
   }});
 }
-// Under Node (the tests) only the look logic above is used; the page starts where there is a document.
+// Without a document only the look logic above is used; the page starts where there is a document.
 if (typeof document !== 'undefined') start().catch(error => { const box = document.getElementById('fail'); if (box && !box.textContent) box.textContent = 'Modell-labbet kunde inte starta. Ladda om sidan; om det inte hjälper, säg till.'; console.error(error); });

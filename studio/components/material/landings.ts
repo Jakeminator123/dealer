@@ -4,21 +4,30 @@
 // with), else nothing, said plainly. One seat's picture is never shown as if it were every seat's. A landing picture is for one
 // hand (A3, src/order-model.ts landingOf): from 2.1 and 2.2 the left hand lays the card, from 2.3 the right, so the seat shows
 // each; an A3 that is a candidate is counted only as one, never as the seat's end. Pure.
-import { SEAT_TARGETS, a3Candidates, seatEndOf, stepOf, type BankFacts, type SeatEnd } from "../../../src/order-model.ts";
+import { SEAT_TARGETS, a3Candidates, a3Name, seatEndOf, stepOf, type BankFacts, type SeatEnd } from "../../../src/order-model.ts";
 import type { RoleStatus } from "../../lib/media.ts";
 
 type EntryLike = { id: string; role: string; node?: string; state?: string; card?: string; hand?: string; name?: string };
 /** One seat: its card, its short name, where a deal from anchor 2.1 (the pinch), 2.2 (the drag) and 2.3 (two hands, the right lays) ends, and its A3 candidates for the right hand. */
 export type SeatEndRow<E> = { target: string; label: string; pinch: SeatEnd<E> | null; drag: SeatEnd<E> | null; two: SeatEnd<E> | null; candidates: E[] };
 
-/** "P4", "Dealer", "Hålkort": a seat as the order views name it. */
-export const seatLabel = (target: string): string => (target === "D.C1" ? "Dealer" : target === "D.C2" ? "Hålkort" : target === "D.C3" ? "Dealer 3" : target.replace(/\.C1$/, ""));
+/** "P4", "Dealer", "Hålkort": a seat as the order views name it; a player's second card by its A3, as Jakob writes it ("A3P4C2"). */
+export const seatLabel = (target: string): string => (target === "D.C1" ? "Dealer" : target === "D.C2" ? "Hålkort" : target === "D.C3" ? "Dealer 3" : /^P\d\.C2$/.test(target) ? a3Name(target) : target.replace(/\.C1$/, ""));
 
-/** Every seat a deal can be ordered to, with its end picture from each anchor. Archived pictures are out of play. */
+/**
+ * Every seat a deal can be ordered to, and a player's second card where a landing picture is made for it (its own A3 since
+ * 2026-11-21, tools/landing-make.ts), right after its seat, with its end picture from each anchor. Archived pictures are
+ * out of play.
+ */
 export function seatEnds<E extends EntryLike>(entries: readonly E[], bank: BankFacts | null, dealer: string): SeatEndRow<E>[] {
   const live = entries.filter((e) => e.state !== "arkiverad");
   const pinch = stepOf("GIV-2.1")!, drag = stepOf("GIV-2.2")!, two = stepOf("GIV-2.3")!;
-  return SEAT_TARGETS.map((target) => ({
+  const hasLanding = (target: string) => live.some((e) => e.role === "landning" && e.card === target);
+  const targets = SEAT_TARGETS.flatMap((seat) => {
+    const second = seat.replace(/^(P\d)\.C1$/, "$1.C2");
+    return second !== seat && hasLanding(second) ? [seat, second] : [seat];
+  });
+  return targets.map((target) => ({
     target, label: seatLabel(target),
     pinch: seatEndOf(live, bank, { dealer, step: pinch, target }),
     drag: seatEndOf(live, bank, { dealer, step: drag, target }),
@@ -36,5 +45,5 @@ export function seatEndsStatus(rows: readonly SeatEndRow<unknown>[]): { status: 
 
 /** "landningsbild", "snittruta" or "ingen slutbild": what a seat's end picture is, in one word for its chip. */
 export const endWord = (end: SeatEnd<unknown> | null): string => (!end ? "ingen slutbild" : end.kind === "LANDNING" ? "landningsbild" : "snittruta");
-/** "3 av 9 platser har en slutbild": the station's count. */
+/** "3 av 10 platser har en slutbild": the station's count; the total is the rows', so a second card with a landing picture counts as one more. */
 export const seatEndsCount = (s: { have: number; total: number }): string => `${s.have} av ${s.total} platser har en slutbild`;

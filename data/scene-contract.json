@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "measuredAt": "2026-11-11T00:04:03.385Z",
-  "generatedBy": "node tools/scene-measure.ts (maths in src/scene-geometry.ts, checked by tools/scene-geometry.test.ts)",
+  "generatedBy": "node tools/scene-measure.ts (maths in src/scene-geometry.ts)",
   "basisLegend": {
     "MEASURED": "read from film pixels by the tool",
     "DERIVED": "computed from measured values under the stated model",

@@ -12,9 +12,10 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 - **Märket på blå sidan hindrar inte fel i vändningen** (2026-11-20). Prövat i tre vändfilmer utanför Beställ (Kling 4,
   Prov `paow-ankare-2-3-b`): kortet ligger till slut med kryss och prick som i sista bilden i alla tre, men en film
   bytte gult mot blått på ytan utan kantläge och en visade en vit sida i sex rutor mellan gult och blått; i
-  handen ritas krysset fyra till nio gånger större än i sista bilden och krymper när kortet släpps. Genom Beställ är
-  ingen film beställd med märket (`MARKED_SIDES` i `src/order-prompts.ts`, `prompt.faceMark`): första ordern där är
-  provet, en plats före fler. Tre ställen läser
+  handen ritas krysset fyra till nio gånger större än i sista bilden och krymper när kortet släpps. Genom Beställ bär
+  sju ordrar märket (`MARKED_SIDES` i `src/order-prompts.ts`, `prompt.faceMark`), bland dem piloterna till plats 4
+  från A2.3; `paow-giv-2-3c-p4-pilot-02` har Jakobs ja (Beslut 2026-11-21) och övriga platser står på tur (se
+  [film-prompting.md](../tools/film-prompting.md)). Tre ställen läser
   ännu bara gult och blått och är inte anpassade: kortspåret (`tools/track-card.ts`) kan tappa krysset som hål i det
   blå; spelets pålägg (`cardFace=paper`) färgar om blått men lämnar rosa och rött; och `tools/landing-make.ts` läser
   rosa och rött i en KÄLLBILD som hennes hud och lägger det ovanpå det nya kortet. Dockans kort i 3D
