@@ -285,10 +285,10 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 
 ## Labbet och verktygen
 
-- **Materials anteckningar har kvar id:n och sökvägar** (2026-11-21). Omkring 180 av Paows 233 anteckningar har ett
-  id, 135 nämner ElevenLabs och 160 rader under Gjord ur visar en sökväg till ett verktyg. Visaren skriver datum som
-  dag och månad och lägger sökvägar under pekaren, och `tools/order-bring.ts` skriver nya rader utan id. Talfilmernas
-  registrering (`tools/speech.ts`) och de gamla raderna är inte omskrivna.
+- **Materials anteckningar har kvar id:n** (2026-11-21). Omkring 180 av Paows 233 anteckningar (Om bilden och
+  sidfoten) har ett id och 135 nämner ElevenLabs. Visaren skriver datum som dag och månad, och raden Gjord ur visas
+  utan kommando, sökväg och kvittonamn (hela raden ligger under pekaren); `tools/order-bring.ts` skriver nya rader
+  utan id. Talfilmernas registrering (`tools/speech.ts`) och de gamla anteckningarna är inte omskrivna.
 - **Ett nytt orderutkast skriver texten innan bilderna ligger på disk** (2026-11-20, sett på piloten
   `paow-giv-2-3b-p4-pilot-01`). Med en A3 som sista bild säger texten då att kortets blå sida är omärkt, fast bilden
   bär kryss och prick. `refresh` på utkastet rättar texten; gör det före ett godkännande. Verktyget är inte rättat.

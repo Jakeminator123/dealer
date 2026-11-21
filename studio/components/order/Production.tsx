@@ -5,8 +5,8 @@
 // round needs that is not klar, each with the picture it starts from and its card drawn where the plan lays it, its state
 // as a chip (colour and sign) and one line in Jakob's words. The count is the dealer's number, the same as Karta's and the
 // rail's: the tree the game plays, steps with a film of the 36 of his measure (src/dealer-trees.ts TreeCount, GET /api/trees),
-// said with what it counts ("Casino: 22 av 36 steg har film"), as the Karta's missing films are ("9 av Kartans 33 filmer
-// saknas"), so that the numbers on one line never read as the same measure; a lab server without the trees shows
+// said with what it counts ("Casino: 22 av 36 steg har film"), as the bank's steps without a film are ("9 av bankens 33 steg
+// saknar film"), so that the numbers on one line never read as the same measure; a lab server without the trees shows
 // tools/produce.ts's own count until it is restarted.
 // Drafts are made in Kortplan's step 3, not here. "Visa alla" shows every step of the graph. Folded away it is one line, so
 // the orders below still read well. Reads on load and when the tab is seen again.
@@ -180,7 +180,7 @@ export function Production({ dealer, dealerName, plan, onOpen }: { dealer: strin
         <div className="ml-auto flex items-center gap-2">
           {open ? (
             <button type="button" onClick={() => setAll((a) => !a)} className="text-sm text-dim hover:text-ink hover:underline">
-              {all ? "Visa bara det som saknas" : `Visa alla ${list.counts.total}`}
+              {all ? "Visa bara det som saknas" : `Visa alla ${list.counts.total} i banken`}
             </button>
           ) : null}
         </div>
@@ -192,7 +192,7 @@ export function Production({ dealer, dealerName, plan, onOpen }: { dealer: strin
               <AnchorTile key={a.at} anchor={a} />
             ))}
             <p className="mb-1 max-w-[420px] text-xs leading-4 text-dim">
-              {`${list.counts.missing || "Ingen"} av Kartans ${list.counts.total} filmer saknas${list.counts.missing && !missing.length ? ", ingen av dem behövs för en runda" : ""} · landningsbilder som gäller: ${list.landings.length ? list.landings.map((t) => nodeCode(t)).join(", ") : "ingen än"}`}
+              {`${list.counts.missing || "Inget"} av bankens ${list.counts.total} steg saknar film${list.counts.missing && !missing.length ? ", inget av dem behövs för en runda" : ""} · landningsbilder som gäller: ${list.landings.length ? list.landings.map((t) => nodeCode(t)).join(", ") : "ingen än"}`}
               {candidatesOf(list) ? ` · ${candidatesOf(list)} ${candidatesOf(list) === 1 ? "kandidat" : "kandidater"}` : ""}
               {" i "}
               <Link href={`/material/?dealer=${encodeURIComponent(dealer)}`} className="text-brass-hi hover:underline">

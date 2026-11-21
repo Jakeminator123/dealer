@@ -55,7 +55,8 @@ test('without a last picture the texts name the plan\'s card, and the thresholds
   assert.equal(near.pass, true);
   assert.deepEqual(near.remarks.find(f => f.code === 'plats')?.text, 'Kortet ligger 10 px från kortplanens kort.');
   assert.equal(far.pass, false);
-  assert.deepEqual(far.fails.map(f => [f.code, f.text]), [['fel-plats', 'Kortet ligger 20 px från kortplanens kort: returen hoppar.']]);
+  assert.deepEqual(far.fails.map(f => [f.code, f.text]), [['fel-plats', 'Kortet ligger 20 px från kortplanens kort: kortet ligger utanför sin plats.']]);
+  assert.equal([...far.fails, ...far.remarks, ...near.remarks].some(f => /retur|sista bilden/.test(f.text)), false);
 });
 
 test('without a last picture and without the place in the plan there is nothing to land on', () => {

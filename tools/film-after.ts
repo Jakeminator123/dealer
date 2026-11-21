@@ -259,7 +259,7 @@ export function dealCheckOf(order: {motion?: unknown; pictures?: unknown}, deal:
     const target = String((order.motion as {target?: unknown} | null)?.target ?? '(inget mål)');
     if (!planCard) return {pass: false, fails: [{code: 'ingen-plats-i-planen', text: `Ordern har ingen sista bild och kortplanen ingen plats ${target}: inget att jämföra landningen med.`}], remarks: [], measures: {}};
     const check = checkDeal(deal.frames, {fps, side, lastCard: {bbox: planCard.bbox, centre: planCard.centre, n: planCard.n}, changePerFrame: deal.changePerFrame});
-    const named = (f: DealCheck['fails'][number]) => ({...f, text: f.text.replaceAll('sista bildens kort', 'kortplanens kort')});
+    const named = (f: DealCheck['fails'][number]) => ({...f, text: f.text.replaceAll('sista bildens kort', 'kortplanens kort').replace(': returen hoppar.', ': kortet ligger utanför sin plats.').replace('handen hoppar till sista bilden', 'handen hoppar i filmens sista rutor')});
     return {...check, fails: check.fails.map(named), remarks: check.remarks.map(named), cardFrom: `kortplanen, ${planCard.target} (ingen sista bild)`, planCard};
   }
   const card = last ? cardBlobs(last.data, last.width, last.height).filter(b => b.c === (side === 'BACK' ? 'Y' : 'B') && !b.inShoe).sort((a, b) => b.area - a.area)[0] : null;

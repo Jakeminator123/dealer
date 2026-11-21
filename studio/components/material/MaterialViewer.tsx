@@ -18,7 +18,7 @@ import { formatBytes } from "../../lib/proofs.ts";
 import { TakeChip, frameTime } from "../takes";
 import { Button, IconButton, Kbd, cn } from "../ui";
 import { StateDecision } from "./StateDecision";
-import { dayWords } from "./day-words.ts";
+import { dayWords, fromWords } from "./day-words.ts";
 import type { Lineage } from "../../lib/lineage.ts";
 import { StateChip } from "./Tile";
 
@@ -178,8 +178,8 @@ function Facts({ entry }: { entry: EntryAnswer }) {
           </Fact>
         ) : null}
         {entry.source ? (
-          <Fact label="Gjord ur">
-            {dayWords(entry.source.from)}
+          <Fact label="Gjord ur" title={entry.source.from}>
+            {dayWords(fromWords(entry.source.from))}
             {entry.source.when ? <span className="text-dim"> · {dayWords(entry.source.when)}</span> : null}
           </Fact>
         ) : null}

@@ -364,7 +364,8 @@ export async function buildReport(only: string | null = null) {
   for (const e of entries.values()) {
     if (e.role !== 'film' || !e.path || e.path.startsWith('assets/motions/') || !dealers.includes(e.dealer)) continue;
     const unit = e.path.split('/').slice(0, e.path.startsWith('assets/films/') ? 4 : 3).join('/'), f = e.path.startsWith('assets/films/') ? folder(unit) : {bytes: fileBytes(e.path)} as Folder;
-    const ord = /beställningen ([a-z0-9-]+)/.exec(e.source?.from ?? '')?.[1], p = ord ? placedOrder.get(ord) : undefined;
+    // The order a film came from: named in older rows' source.from, and for a film brought in from Kön read from the receipt beside the copy (tools/order-bring.ts writes original.order there).
+    const ord = /beställningen ([a-z0-9-]+)/.exec(e.source?.from ?? '')?.[1] ?? json<{original?: {order?: string}}>(`${path.posix.dirname(e.path)}/receipt.json`)?.original?.order, p = ord ? placedOrder.get(ord) : undefined;
     const opening = intro.has(e.id) ? trees.find(t => t.opening === e.id)! : null;
     const said = /\b(\d)\/5\b/.exec(e.note ?? '')?.[0];
     outside.push({id: e.id, dealer: e.dealer, kind: opening ? 'filmen före spelet' : 'film utanför banken', path: e.path, mb: mb(f.bytes), tree: opening ? opening.id : p?.group === 'kopplad' ? p.tree!.id : null,
