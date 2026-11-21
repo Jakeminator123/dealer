@@ -139,15 +139,6 @@
       "check": null
     },
     {
-      "id": "docka-2-3-p4c1-svep24d",
-      "edge": "READY-C>P4.C1",
-      "path": "assets/references/docka/docka-2-3-p4c1-svep24d/source.mp4",
-      "sha256": "60bd1ca010097c889021a049122ac6f774d469f7a5fce283eec84e3b93305ea1",
-      "seconds": 3,
-      "lays": "RH",
-      "check": null
-    },
-    {
       "id": "docka-2-3-p4c1-f",
       "edge": "READY-C>P4.C1",
       "path": "assets/references/docka/docka-2-3-p4c1-f/source.mp4",
@@ -211,6 +202,51 @@
         "clean": true,
         "codes": []
       }
+    },
+    {
+      "id": "docka-2-3-p4c1-svep24d",
+      "edge": "READY-C>P4.C1",
+      "path": "assets/references/docka/docka-2-3-p4c1-svep24d/source.mp4",
+      "sha256": "60bd1ca010097c889021a049122ac6f774d469f7a5fce283eec84e3b93305ea1",
+      "seconds": 3,
+      "lays": "RH",
+      "check": null
+    },
+    {
+      "id": "docka-2-3-p1c1-svep24d",
+      "edge": "READY-C>P1.C1",
+      "path": "assets/references/docka/docka-2-3-p1c1-svep24d/source.mp4",
+      "sha256": "87f781a045555ec80f060dad761a197493ca02a86b07ac3be4ce04881f88e99f",
+      "seconds": 3,
+      "lays": "RH",
+      "check": null
+    },
+    {
+      "id": "docka-2-3-p2c1-svep24d",
+      "edge": "READY-C>P2.C1",
+      "path": "assets/references/docka/docka-2-3-p2c1-svep24d/source.mp4",
+      "sha256": "633c8dab0605a487bd7e910affc04193a931fc28942bfd4ad94f532930df1864",
+      "seconds": 3,
+      "lays": "RH",
+      "check": null
+    },
+    {
+      "id": "docka-2-3-p3c1-svep24d",
+      "edge": "READY-C>P3.C1",
+      "path": "assets/references/docka/docka-2-3-p3c1-svep24d/source.mp4",
+      "sha256": "7b161967f51d050eef9111fff00caa56c0ae4857bc3dace7f8698b16e5d0665e",
+      "seconds": 3,
+      "lays": "RH",
+      "check": null
+    },
+    {
+      "id": "docka-2-3-p5c1-svep24d",
+      "edge": "READY-C>P5.C1",
+      "path": "assets/references/docka/docka-2-3-p5c1-svep24d/source.mp4",
+      "sha256": "cbc45829da9c15efac2b2576c611923e9a921d7d373eed62e3dfd660da3e8211",
+      "seconds": 3,
+      "lays": "RH",
+      "check": null
     }
   ]
 }

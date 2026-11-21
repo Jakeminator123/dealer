@@ -26,9 +26,9 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
   Använt 2026-11-20: 669; saldo 3 480 kl. 17.07 UTC (91 drogs samma dag utan kvitto i projektets liggare). Mandatet
   `dealer-37-20261120` löpte ut 2026-11-21 12.00 UTC och förnyas av huvudagenten inför seriens beställningar.
 
-**Nästa steg.** Samma giv från C till övriga platser: P1, P2, P3, P5, P6 och P7.
-1. En dockfilm per plats som `svep24d` (3D-banan, gratis), granskad ruta för ruta: vänster underarm sedd från sidan,
-   handen plan och låg, rak bål.
+**Nästa steg.** Samma giv från C till övriga platser. Betalda tagningar först på Jakobs "kör" (2026-11-21).
+1. Dockfilmerna `docka-2-3-p{1,2,3,5}c1-svep24d` finns (2026-11-21, ännu inte oberoende granskade; vid P1–P3 bromsar
+   höger handled 6–9 mm på en ruta mot gränsen 5). P6 och P7 går inte från C: höger arm måste korsa kroppen framför skon.
 2. Per plats: en tagning utan sista bild för landningen, landningen (`tools/landing-make.ts`), och givens tagning med
    första och sista bild. Varje omgång granskas oberoende och döms åt Jakob (`review-put`), inte i hans kö.
 3. Sedan returerna från platserna till 2.3, ingången 1 → 2.3 klippt ur ankarets film, returen 2.3 → 1, fem

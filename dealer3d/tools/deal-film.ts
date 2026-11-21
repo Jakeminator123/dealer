@@ -13,7 +13,8 @@
 //   picture where her right fingertips take the card, when that is not where her hand lies at the start. --lean-from <frame>:
 //   her trunk begins to lean toward the place from that frame. --seen-forearm <weight>: her left elbow is kept where the
 //   bank's camera sees the forearm from the side. --clear-trunk <weight>: her elbows are kept where no forearm goes through
-//   her trunk (Pace in dealer3d/src/two-hand.ts).
+//   her trunk. --steady <weight>: her right elbow's way is chosen over the whole film, against the square of its steps
+//   (Pace in dealer3d/src/two-hand.ts).
 // Reads dealer3d/data/till-ankare-2-3.json (its last frame is where this film begins) and placements/default.json.
 // Prints the beats, what each card asks of the body, and what to look for before a film is made of it.
 import {readFile, writeFile} from 'node:fs/promises';
@@ -52,8 +53,8 @@ const ids = to === 'all' ? ['P7.C1', 'P6.C1', 'P5.C1', 'P4.C1', 'P3.C1', 'P2.C1'
 // The sweep variant keeps the whole grip until the card lies, and lays it in one movement (Pace in dealer3d/src/two-hand.ts).
 if (process.argv.includes('--contact-grip')) {
   const mode = contactMode === 'landing' || contactMode === 'sweep' ? contactMode : true;
-  if (!(contactMode === '1' || mode !== true) || !own || !contactGripFits(to, mode) || (mode === 'sweep' && to !== 'P4.C1') || !pace.single || !pace.meeting || !pace.roll) {
-    throw Error('--contact-grip 1|landing|sweep requires --to P4.C1 (or P4.C2 with landing), --beats, --meet 1, --single 1 and --roll 1.');
+  if (!(contactMode === '1' || mode !== true) || !own || !contactGripFits(to, mode) || !pace.single || !pace.meeting || !pace.roll) {
+    throw Error('--contact-grip 1|landing|sweep requires --to P4.C1 (P4.C2 with landing, the first card of any seat with sweep), --beats, --meet 1, --single 1 and --roll 1.');
   }
   pace.contactGrip = mode;
 }
@@ -68,6 +69,7 @@ if (arg('--take-at')) { const [x, y] = arg('--take-at')!.split(',').map(Number),
 if (arg('--lean-from')) pace.leanFrom = Number(arg('--lean-from'));
 if (arg('--seen-forearm')) pace.seenForearm = Number(arg('--seen-forearm'));
 if (arg('--clear-trunk')) pace.clearTrunk = Number(arg('--clear-trunk'));
+if (arg('--steady')) pace.steady = Number(arg('--steady'));
 // At C2 the elbows are solved through the release. Pulling them toward the ordinary deal's last pose overbends the wrist.
 if (secondCardPilot) {
   const yaw = Number(arg('--hand-over-yaw', '180'));
@@ -79,7 +81,7 @@ if (secondCardPilot) {
 const rightAt = arg('--right-at')?.split(',').map(Number) ?? null, posed: Still = {L: last.L, R: last.R, h: last.h, ...(poseFilm ? {g: last.g} : {})}, start = rightAt ? startOnAnchor(lens, posed, {x: rightAt[0], y: rightAt[1]}, rightAt[2]) : posed;
 // A film in its own tempo ends on the picture the film in the real tempo ends on: that film is laid first, for its elbows.
 // --end-elbows 0: the elbows are not brought to those of the film in the real tempo at the end (that film's elbow can stand out from her side, as for D.C1).
-if (own && arg('--end-elbows', secondCardPilot ? '0' : '1') !== '0') { const real = twoHandDeal(lens, start, ids.map(id => ({id, at: spot(id), real: realOf(id)})), 2, FPS, N, {...(pace.base ? {base: pace.base} : {}), ...(pace.takeAt ? {takeAt: pace.takeAt} : {}), ...(pace.seenForearm ? {seenForearm: pace.seenForearm} : {}), ...(pace.clearTrunk ? {clearTrunk: pace.clearTrunk} : {})}).frames[N - 1]; pace.elbows = {L: real.L.e, R: real.R.e}; }
+if (own && arg('--end-elbows', secondCardPilot ? '0' : '1') !== '0') { const real = twoHandDeal(lens, start, ids.map(id => ({id, at: spot(id), real: realOf(id)})), 2, FPS, N, {...(pace.base ? {base: pace.base} : {}), ...(pace.takeAt ? {takeAt: pace.takeAt} : {}), ...(pace.seenForearm ? {seenForearm: pace.seenForearm} : {}), ...(pace.clearTrunk ? {clearTrunk: pace.clearTrunk} : {}), ...(pace.steady ? {steady: pace.steady} : {})}).frames[N - 1]; pace.elbows = {L: real.L.e, R: real.R.e}; }
 const deal = twoHandDeal(lens, start, places, lead, FPS, N, pace), {frames, beats} = deal;
 
 // ---- what it asks, and what to look for --------------------------------------------------------------------------
