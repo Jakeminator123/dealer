@@ -20,11 +20,11 @@
 //                                       holds (gäller), as node tools/produce.ts <dealer> --draft; never an approval
 // Writes come from the lab's own origin only, with the revision last read, as in tools/review-store.ts. Nothing here
 // places an order: an ordering agent does that after tools/order-clerk.md. Tests: tools/order-routes.test.ts.
-import { createReadStream } from 'node:fs';
 import { stat } from 'node:fs/promises';
 import path from 'node:path';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { StoreError } from './placement-store.ts';
+import { sendFile } from './studio-files.ts';
 import { mediaRoles } from './media-roles.ts';
 import { orderStore, type NewOrder, type StoreOptions } from './order-store.ts';
 import { makeDrafts, productionList, readProduction } from './produce.ts';
@@ -70,10 +70,8 @@ export function orderRoutes(options: { root: string; origin: string } & StoreOpt
     } else res.writeHead(200, { ...headers, 'Content-Length': size });
     if (req.method === 'HEAD') { res.end(); return; }
     if (bytes) { res.end(bytes.subarray(start, end + 1)); return; }
-    const stream = createReadStream(file, { start, end });
-    stream.on('error', () => res.destroy());
-    stream.pipe(res);
-    res.on('close', () => stream.destroy());
+    // The one way the lab server sends a file (tools/studio-files.ts): it is closed however the answer ends.
+    sendFile(req, res, file, start, end);
   }
 
   return async function handleOrders(req: IncomingMessage, res: ServerResponse, url: URL): Promise<boolean> {

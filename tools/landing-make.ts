@@ -41,6 +41,13 @@ export const isScreen = (rgb: Rgb, i: number) => rgb[i * 3 + 1] - Math.max(rgb[i
 export const isCardBlue = (rgb: Rgb, i: number) => { const r = rgb[i * 3], g = rgb[i * 3 + 1], b = rgb[i * 3 + 2]; return b > 110 && b > r + 40 && b > g + 15; };
 /** Her, round the seat: a dark tattoo or sleeve, or skin (redder than blue). */
 export const isHer = (rgb: Rgb, i: number) => { const r = rgb[i * 3], g = rgb[i * 3 + 1], b = rgb[i * 3 + 2]; return Math.max(r, g, b) < 110 || (r > b + 10 && r > 90 && g < r + 20); };
+/**
+ * The marks of an open card: the pink cross (red with its blue well above its green) and the red circle (red with hardly any
+ * green). Skin is neither: its blue stays at or below its green, and its green above a third of its red, even in a rosy
+ * fingertip's shade. Near the seat such a pixel is the source's card, not her, and gives way to the felt with the card's blue
+ * (round two, 2026-11-21: on pilot 02's frame 72 the marks of the card the film laid were left on the felt as "skin").
+ */
+export const isCardMark = (rgb: Rgb, i: number) => { const r = rgb[i * 3], g = rgb[i * 3 + 1], b = rgb[i * 3 + 2]; return r > 140 && ((b > g + 30 && g < 0.75 * r) || g < 0.35 * r); };
 /** A card or its rim as an image model draws it: bluish, or near white and grey; never her skin (redder than blue) or a dark tattoo or sleeve. */
 export const isCardLike = (rgb: Rgb, i: number) => { const r = rgb[i * 3], g = rgb[i * 3 + 1], b = rgb[i * 3 + 2], hi = Math.max(r, g, b), lo = Math.min(r, g, b); return (b > 110 && b >= r - 5) || (lo > 165 && hi - lo < 45); };
 const polygonMask = (poly: readonly Pt[]) => { const m = new Uint8Array(W * H); const xs = poly.map((p) => p[0]), ys = poly.map((p) => p[1]);
@@ -87,10 +94,10 @@ export function composeLanding(source: Rgb, anchor: Rgb, draw: (base: Rgb) => Rg
   const shoe = polygonMask(SHOE_AT_ANCHOR);
   for (let i = 0; i < W * H; i++) if (shoe[i]) { out[i * 3] = anchor[i * 3]; out[i * 3 + 1] = anchor[i * 3 + 1]; out[i * 3 + 2] = anchor[i * 3 + 2]; }
   // A card the source drew round the seat (its blue, its light rim and the lines of its edge, on the felt where the anchor has
-  // felt) gives way to the anchor's felt; what is her (skin, a tattoo, the sleeve) stays.
+  // felt) gives way to the anchor's felt, its pink and red marks too; what is her (skin, a tattoo, the sleeve) stays.
   const near = growMask(polygonMask(quad), 170);
   let strayBlue = 0;
-  for (let i = 0; i < W * H; i++) if (near[i] && !shoe[i] && isScreen(anchor, i) && !isHer(out, i) && Math.abs(out[i * 3] - anchor[i * 3]) + Math.abs(out[i * 3 + 1] - anchor[i * 3 + 1]) + Math.abs(out[i * 3 + 2] - anchor[i * 3 + 2]) > 30) { out[i * 3] = anchor[i * 3]; out[i * 3 + 1] = anchor[i * 3 + 1]; out[i * 3 + 2] = anchor[i * 3 + 2]; strayBlue++; }
+  for (let i = 0; i < W * H; i++) if (near[i] && !shoe[i] && isScreen(anchor, i) && (!isHer(out, i) || isCardMark(out, i)) && Math.abs(out[i * 3] - anchor[i * 3]) + Math.abs(out[i * 3 + 1] - anchor[i * 3 + 1]) + Math.abs(out[i * 3 + 2] - anchor[i * 3 + 2]) > 30) { out[i * 3] = anchor[i * 3]; out[i * 3 + 1] = anchor[i * 3 + 1]; out[i * 3 + 2] = anchor[i * 3 + 2]; strayBlue++; }
   // Her fingers over the card: what of her (not green, not a card) lies in the card's quad, kept on top of the drawn card.
   const inCard = growMask(polygonMask(quad), 2), keep = new Uint8Array(W * H);
   let fingers = 0;

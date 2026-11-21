@@ -21,8 +21,8 @@ import sharp from "sharp";
 import { orderRoutes } from "../../tools/order-routes.ts";
 import { STEPS, readCutChecks, type BankFacts, type OrdersAnswer } from "../../src/order-model.ts";
 import { productionList, readProduction } from "../../tools/produce.ts";
-import { NOT_YET, recipeFor } from "../../src/order-methods.ts";
-import { cardWishes, filmRow } from "../lib/bordet.ts";
+import { recipeFor } from "../../src/order-methods.ts";
+import { NO_METHOD, cardWishes, filmRow } from "../lib/bordet.ts";
 
 const repo = path.resolve(import.meta.dirname, "../..");
 const base = existsSync("D:/dealer-scratch/tmp") ? "D:/dealer-scratch/tmp" : os.tmpdir();
@@ -161,10 +161,10 @@ test("Bordet's row and the store agree for every standard step and card, and the
       assert.equal(row.body, null, key);
       // Changed with the five marks (2026-11-21): the row says the first missing mark in his words, and the store's refusal
       // is matched to it. A picture of the seat that is missing ("A3P4C1 saknas (vänster hand)") is the return's first
-      // picture or the deal's last; no recipe is "kan inte beställas än"; the reference film the recipe wants and the
+      // picture or the deal's last; no recipe is "steget har ingen metod än"; the reference film the recipe wants and the
       // rule does not find is "ingen referensfilm (till platsen)".
       const words = /saknas \((vänster|höger) hand\)$/.test(row.why) ? (step.start === "LAND" ? /Ingen landningsbild gäller/ : /har ingen slutbild/)
-        : row.why === NOT_YET ? /har ingen metod än/
+        : row.why === NO_METHOD ? /har ingen metod än/
         : row.why.startsWith("ingen referensfilm") ? /Inget beställs utan den/
         : null;
       assert.ok(words, `${key}: the row says "${row.why}", which this test does not map to a refusal of the store`);
@@ -192,7 +192,8 @@ test("Bordet's row and the store agree for every standard step and card, and the
     if (row.text !== null) texts++;
     assert.deepEqual(shownOrder.pictures.map((p: { sha256: string }) => p.sha256), o.pictures.map((p: { sha256: string }) => p.sha256), `${key}: the same image bytes`);
     assert.equal(shownOrder.reference.sha256, o.reference.sha256, `${key}: the same reference bytes`);
-    assert.deepEqual(o.notes, [`Recept ${recipeFor(register, step.key, target)!.method.id} (${recipeFor(register, step.key, target)!.method.status}) ur data/order-methods.json.`], `${key}: the recipe and no exception`);
+    // Changed 2026-11-21 (review finding 16): the note names the recipe without the file it lies in.
+    assert.deepEqual(o.notes, [`Recept ${recipeFor(register, step.key, target)!.method.id} (${recipeFor(register, step.key, target)!.method.status}).`], `${key}: the recipe and no exception`);
     made[key] = stored;
     compared++;
   }
@@ -216,5 +217,6 @@ test("Bordet's row and the store agree for every standard step and card, and the
   // to seat 5, the film laid with the right hand to seat 3.
   // The words changed with the five marks (2026-11-21): "ingen referensfilm till platsen" and "kan inte beställas än".
   for (const key of ["GIV-2.1 P2.C1", "GIV-2.1 P5.C1", "GIV-2.1 P3.C1"]) assert.equal(refused[key], "ingen referensfilm till platsen", key);
-  assert.equal(refused["RETUR-2.1 P4.C1"], NOT_YET);
+  // Changed 2026-11-21 (review finding 22): a step without a method says so, as the store's refusal does.
+  assert.equal(refused["RETUR-2.1 P4.C1"], NO_METHOD);
 });

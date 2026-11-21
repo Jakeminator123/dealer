@@ -200,6 +200,9 @@ export type Cut = {
 export type Picture = {
   name: string;
   label: string;
+  /** Only in the orders' answer, never stored or hashed: the name its register entry (from.entry) has in Material today, or
+   *  null. The label stays as it was frozen ("Paows ankare 2.3 · kandidat"); the view shows this name instead. */
+  named?: string | null;
   goesAs: GoesAs;
   tag?: string;
   path: string | null;
@@ -361,38 +364,38 @@ export type StepDef = {
   styles?: readonly TextStyle[];
 };
 export const STEPS: readonly StepDef[] = [
-  { key: 'INGANG-2.1', group: 'Ingång', label: 'Ankare 1 → 2.1', kind: 'FILM', from: '1', to: '2.1', card: false },
-  { key: 'INGANG-2.2', group: 'Ingång', label: 'Ankare 1 → 2.2', kind: 'FILM', from: '1', to: '2.2', card: false },
+  { key: 'INGANG-2.1', group: 'Ingång', label: 'Från vila till nypet', kind: 'FILM', from: '1', to: '2.1', card: false },
+  { key: 'INGANG-2.2', group: 'Ingång', label: 'Från vila till släpet', kind: 'FILM', from: '1', to: '2.2', card: false },
   // Anchor 2.3 (Jakob 2026-11-18): both hands at the shoe just before the deal, her eyes on the hand that strokes the card
   // out. The entry and the deal wait for the anchor's picture like every step whose anchor does not hold yet.
-  { key: 'INGANG-2.3', group: 'Ingång', label: 'Ankare 1 → 2.3', kind: 'FILM', from: '1', to: '2.3', card: false, styles: ['KORT', 'MINIMAL'] },
-  { key: 'GIV-2.1', group: 'Giv från ankare 2.1', label: 'Nyp, ett kort till platsen', kind: 'FILM', from: '2.1', to: '2.1', card: true, grip: 'PINCH' },
-  { key: 'GIV-2.2', group: 'Giv från ankare 2.2', label: 'Släp, ett kort till platsen', kind: 'FILM', from: '2.2', to: '2.2', card: true, grip: 'DRAG' },
-  { key: 'GIV-2.3', group: 'Giv från ankare 2.3', label: 'Två händer, ett kort till platsen', kind: 'FILM', from: '2.3', to: '2.3', card: true, grip: 'TWO_HANDS', styles: ['KORT', 'MINIMAL'] },
+  { key: 'INGANG-2.3', group: 'Ingång', label: 'Från vila till båda händerna vid skon', kind: 'FILM', from: '1', to: '2.3', card: false, styles: ['KORT', 'MINIMAL'] },
+  { key: 'GIV-2.1', group: 'Giv från A2.1', label: 'Nyp, ett kort till platsen', kind: 'FILM', from: '2.1', to: '2.1', card: true, grip: 'PINCH' },
+  { key: 'GIV-2.2', group: 'Giv från A2.2', label: 'Släp, ett kort till platsen', kind: 'FILM', from: '2.2', to: '2.2', card: true, grip: 'DRAG' },
+  { key: 'GIV-2.3', group: 'Giv från A2.3', label: 'Två händer, ett kort till platsen', kind: 'FILM', from: '2.3', to: '2.3', card: true, grip: 'TWO_HANDS', styles: ['KORT', 'MINIMAL'] },
   // A return is a film of its own (one action per film, 2026-11-13): from the seat's landing picture back to an anchor.
   // It can be ordered where a landing picture holds for the seat (landingMissing says what is lacking otherwise).
-  { key: 'RETUR-2.1', group: 'Retur från landningen', label: 'Tillbaka till nypet (2.1)', kind: 'FILM', from: '2.1', to: '2.1', start: 'LAND', card: true, grip: 'PINCH' },
-  { key: 'RETUR-2.2', group: 'Retur från landningen', label: 'Tillbaka över skon (2.2)', kind: 'FILM', from: '2.2', to: '2.2', start: 'LAND', card: true, grip: 'DRAG' },
-  { key: 'RETUR-2.3', group: 'Retur från landningen', label: 'Prov: höger hand tillbaka till 2.3', kind: 'FILM', from: '2.3', to: '2.3', start: 'LAND', card: true, styles: ['KORT'], off: 'Provet förbereds via Beställs API med namngiven A3 och giv.' },
-  { key: 'RETUR-1', group: 'Retur från landningen', label: 'Tillbaka till vila (1)', kind: 'FILM', from: '1', to: '1', start: 'LAND', card: true, grip: 'PINCH' },
+  { key: 'RETUR-2.1', group: 'Retur från landningen', label: 'Tillbaka till nypet', kind: 'FILM', from: '2.1', to: '2.1', start: 'LAND', card: true, grip: 'PINCH' },
+  { key: 'RETUR-2.2', group: 'Retur från landningen', label: 'Tillbaka över skon', kind: 'FILM', from: '2.2', to: '2.2', start: 'LAND', card: true, grip: 'DRAG' },
+  { key: 'RETUR-2.3', group: 'Retur från landningen', label: 'Prov: höger hand tillbaka till skon', kind: 'FILM', from: '2.3', to: '2.3', start: 'LAND', card: true, styles: ['KORT'], off: 'Provet beställs med kommandot (node tools/order-new.ts paow "A3P4C1 - A2.3"), som själv hittar den godkända given och dess frysta slutbild.' },
+  { key: 'RETUR-1', group: 'Retur från landningen', label: 'Tillbaka till vila', kind: 'FILM', from: '1', to: '1', start: 'LAND', card: true, grip: 'PINCH' },
   // The steps a round needs that Beställ could not order before 2026-11-13 (the dealer's second card is GIV-2.1 to D.C2):
   // the hand leaving the shoe for rest (READY>IDLE), and the hole card turned open from rest and the hand back to rest
   // (IDLE>REVEAL(D.C2)), whose pictures are anchor 1 with only the hole card drawn where the plan says: the game draws
   // every lying card itself, and with both drawn she lifted both together (round 6, 2026-11-13).
-  { key: 'UTGANG', group: 'Utgång', label: 'Ankare 2.1 → 1: handen lämnar skon och vilar', kind: 'FILM', from: '2.1', to: '1', card: false, styles: ['KORT', 'MINIMAL'] },
+  { key: 'UTGANG', group: 'Utgång', label: 'Handen lämnar skon och vilar', kind: 'FILM', from: '2.1', to: '1', card: false, styles: ['KORT', 'MINIMAL'] },
   // The way out from the drag at the shoe (READY-B>IDLE, anchor 2.2 to anchor 1), so that a round can go through 2.2 by rest
   // (the main agent's decision 2026-11-13): the hand that lies over the card in the window lifts off it and comes to rest.
-  { key: 'UTGANG-2.2', group: 'Utgång', label: 'Ankare 2.2 → 1: handen lämnar kortet i skon och vilar', kind: 'FILM', from: '2.2', to: '1', card: false, styles: ['KORT', 'MINIMAL'] },
+  { key: 'UTGANG-2.2', group: 'Utgång', label: 'Handen lämnar kortet i skon och vilar', kind: 'FILM', from: '2.2', to: '1', card: false, styles: ['KORT', 'MINIMAL'] },
   // The way out from both hands at the shoe (READY-C>IDLE, anchor 2.3 to anchor 1), so that a round dealt from 2.3 can end at
   // rest (the main agent on Jakob's order 2026-11-21, "A2.3 → A1"): both hands leave the shoe and come to rest.
-  { key: 'UTGANG-2.3', group: 'Utgång', label: 'Ankare 2.3 → 1: båda händerna lämnar skon och vilar', kind: 'FILM', from: '2.3', to: '1', card: false, styles: ['KORT', 'MINIMAL'] },
+  { key: 'UTGANG-2.3', group: 'Utgång', label: 'Båda händerna lämnar skon och vilar', kind: 'FILM', from: '2.3', to: '1', card: false, styles: ['KORT', 'MINIMAL'] },
   {
     key: 'HALKORT', group: 'Hålkortet', label: 'Hålkortet vänds upp från vila, handen tillbaka', kind: 'FILM', from: '1', to: '1', card: false, target: 'D.C2', edge: 'IDLE>REVEAL(D.C2)',
     cards: [{ target: 'D.C2', before: 'BACK', after: 'FRONT' }], styles: ['KORT', 'MINIMAL'],
   },
   { key: 'VILA', group: 'Vila', label: 'Vila, samma bild först och sist', kind: 'FILM', from: '1', to: '1', card: false },
-  { key: 'ANKARE-2.1', group: 'Bild', label: 'Ankare 2.1 (nyp)', kind: 'STILL', from: '1', to: null, card: false, ratio: '4:3', imageSize: '4K', makes: { role: 'ankare-2.1', node: 'READY', label: 'ankare 2.1' } },
-  { key: 'ANKARE-2.2', group: 'Bild', label: 'Ankare 2.2 (släp)', kind: 'STILL', from: '1', to: null, card: false, ratio: '4:3', imageSize: '4K', makes: { role: 'ankare-2.2', node: 'READY-B', label: 'ankare 2.2' } },
+  { key: 'ANKARE-2.1', group: 'Bild', label: 'Bild av nypet', kind: 'STILL', from: '1', to: null, card: false, ratio: '4:3', imageSize: '4K', makes: { role: 'ankare-2.1', node: 'READY', label: 'ankare 2.1' } },
+  { key: 'ANKARE-2.2', group: 'Bild', label: 'Bild av släpet', kind: 'STILL', from: '1', to: null, card: false, ratio: '4:3', imageSize: '4K', makes: { role: 'ankare-2.2', node: 'READY-B', label: 'ankare 2.2' } },
 ];
 export const stepOf = (key: string): StepDef | null => STEPS.find((s) => s.key === key) ?? null;
 /**
@@ -434,6 +437,8 @@ export type HandOf = { hand?: string };
 const handOf = (e: HandOf): 'LH' | 'RH' => (e.hand === 'RH' ? 'RH' : 'LH');
 /** "A3P4C1", "A3DC1": what the anchor a card ends on is called, as Jakob writes it (2026-11-21: anchor 3, player 4, card 1). */
 export const a3Name = (target: string): string => `A3${target.replace('.', '')}`;
+/** A deal bara dit with no last picture (tools/order-store.ts end: null; Bordet's "Utan slutbild"): the note the draft gets and the row shows. */
+export const openEndWords = (target: string): string => `utan sista bild: filmen slutar där modellen lämnar kortet, och ${a3Name(target)} görs efteråt ur filmens sista ruta (node tools/landing-make.ts)`;
 const isLanding = <E extends { role: string; node?: string; card?: string } & HandOf>(e: E, target: string, hand: 'LH' | 'RH') => e.role === LANDING_ROLE && e.node === landingNode(target) && e.card === target && handOf(e) === hand;
 /** The landing picture of a seat that holds for a hand: role landning, node LAND(<seat>), state gäller, the card on that seat, that hand at it. */
 export function landingOf<E extends { role: string; node?: string; state?: string; card?: string } & HandOf>(entries: readonly E[], target: string | null | undefined, hand: 'LH' | 'RH' = 'LH'): E | null {
@@ -778,7 +783,9 @@ export type BankFacts = {
  * card lies (the dummy's "cykel"); absent, the film ends with the card laid, as a deal bara dit does. A deal bara dit never takes
  * a round trip as its reference (src/order-methods.ts referenceByRule): the whole film goes, and it would end at the shoe.
  */
-export type RenderedReference = { id: string; edge: string; path: string; sha256: string; seconds: number; fromDeal?: string; capture?: string; lays?: 'LH' | 'RH'; shape?: Shape; check?: { pass: boolean; clean?: boolean; codes?: string[] } | null };
+export type RenderedReference = { id: string; edge: string; path: string; sha256: string; seconds: number; fromDeal?: string; capture?: string; lays?: 'LH' | 'RH'; shape?: Shape; check?: { pass: boolean; clean?: boolean; codes?: string[] } | null;
+  /** A film of a dealer's own doll ("paow"), not the dummy's: never the default; an order chooses it by name (node tools/order-new.ts --docka paow). */
+  doll?: string };
 /**
  * The pose with the card just drawn out onto the felt, which the bank's drag deals start from ("DRAWN>LAND(P4.C1)"): as a
  * reference such a film shows the drag to the seat, so it counts as a deal from anchor 2.2 (trial 2A, 2026-11-17, held with one).
@@ -795,6 +802,8 @@ export type RefCandidate = {
   kind?: 'BANK' | 'RENDERED';
   /** For a rendered film: the deal its hand is read off. */
   fromDeal?: string | null;
+  /** For a rendered film of a dealer's own doll: whose (RenderedReference.doll); such a film is chosen only by name. */
+  doll?: string | null;
   match: 0 | 1 | 2; verdict: RefVerdict; approvedStraight: boolean; words: string | null;
   /** The reference check of its film, where one has been run: whether it passes and the codes of what fails or is remarked. */
   check?: { pass: boolean; clean?: boolean; codes?: string[] } | null;
@@ -868,7 +877,7 @@ export function referenceCandidates(bank: BankFacts, want: { dealer: string; ste
     if (!e) continue;
     const match = e.id === w.id ? 0 : e.base === w.base ? 1 : null;
     if (match === null) continue;
-    out.push({ take: r.id, film: r.id, path: r.path, dealer: 'docka', edge: r.edge, goesTo: e.target, kind: 'RENDERED', fromDeal: r.fromDeal ?? null, match, verdict: 'EJ_DÖMD', approvedStraight: false, words: null,
+    out.push({ take: r.id, film: r.id, path: r.path, dealer: 'docka', edge: r.edge, goesTo: e.target, kind: 'RENDERED', fromDeal: r.fromDeal ?? null, doll: r.doll ?? null, match, verdict: 'EJ_DÖMD', approvedStraight: false, words: null,
       check: r.check ?? null, lays: r.lays ?? 'LH', shape: r.shape ?? null, seconds: r.seconds, frames: null, also: [], fits: !range || (r.seconds >= range[0] && r.seconds <= range[1]), sha256: r.sha256 });
   }
   const rank = (c: RefCandidate) => [c.match, c.kind === 'RENDERED' ? 0 : 1, ...key(c).slice(1)];
@@ -944,13 +953,20 @@ export function spentOn(orders: readonly Pick<Order, 'approval' | 'cost' | 'stat
 
 export type PolicyCheck = { ok: boolean; refusals: string[]; spentToday: number; afterToday: number; balance: number; balanceAfter: number };
 /** Where the mandate stands, in one line: missing, not begun, run out, or what is left of it this hour and in all. */
+/** "lördag 21 november kl. 13.00": a moment in Swedish time (Europe/Stockholm), as Jakob reads it; the text itself where it is no time. */
+export function swedishTime(iso: string): string {
+  const t = new Date(iso);
+  if (Number.isNaN(t.getTime())) return iso;
+  const part = Object.fromEntries(new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Stockholm', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(t).map((p) => [p.type, p.value]));
+  return `${part.day} ${String(part.month).replace('.', '')} ${part.hour}.${part.minute}`;
+}
 export function mandateWords(budget: MandateBudget): string {
-  if (budget.status === 'missing') return 'Inget giltigt beställningsmandat. Nya betalda anrop är spärrade.';
-  if (budget.status === 'unreadable') return 'Mandatet eller dess orderkvitton kunde inte verifieras. Nya betalda anrop är spärrade.';
+  if (budget.status === 'missing') return 'Inget giltigt beställningsmandat. Inget kan godkännas.';
+  if (budget.status === 'unreadable') return 'Mandatet eller dess kvitton kunde inte kontrolleras. Inget kan godkännas.';
   const mandate = budget.mandate!;
-  if (budget.status === 'before-start') return `Mandatet börjar ${mandate.startsAt}. Nya betalda anrop är spärrade fram till dess.`;
-  if (budget.status === 'expired') return `Mandatet löpte ut ${mandate.endsAt}. Nya betalda anrop är spärrade.`;
-  return `Mandat: ${credits(Math.max(0, mandate.rollingHourCredits - budget.hourlyReserved))} av ${credits(mandate.rollingHourCredits)} kvar denna rullande timme · ${credits(Math.max(0, mandate.totalCredits - budget.totalReserved))} av ${credits(mandate.totalCredits)} kvar totalt · till ${mandate.endsAt}.`;
+  if (budget.status === 'before-start') return `Mandatet börjar ${swedishTime(mandate.startsAt)}. Inget kan godkännas före dess.`;
+  if (budget.status === 'expired') return `Mandatet löpte ut ${swedishTime(mandate.endsAt)}. Inget kan godkännas.`;
+  return `Mandat: ${credits(Math.max(0, mandate.rollingHourCredits - budget.hourlyReserved))} av ${credits(mandate.rollingHourCredits)} krediter kvar den här timmen · ${credits(Math.max(0, mandate.totalCredits - budget.totalReserved))} av ${credits(mandate.totalCredits)} kvar i mandatet · till ${swedishTime(mandate.endsAt)}.`;
 }
 
 export function mandateRefusal(budget: MandateBudget, cost: number): string | null {
@@ -963,7 +979,7 @@ export function mandateRefusal(budget: MandateBudget, cost: number): string | nu
 /** Whether the policy lets this order be approved now. The worst-case cost counts. */
 export function checkPolicy(order: Pick<Order, 'cost'>, policy: Policy, spentToday: number, balance: number): PolicyCheck {
   const cost = order.cost.worstTotal, refusals: string[] = [];
-  if (!policy.enabled) refusals.push('Beställningar är avstängda (enabled: false i data/order-policy.json).');
+  if (!policy.enabled) refusals.push('Beställningar är avstängda i beställningsreglerna.');
   if (cost > policy.maxPerOrder) refusals.push(`Beställningen kostar upp till ${cost} krediter; taket per beställning är ${policy.maxPerOrder}.`);
   if (spentToday + cost > policy.dailyCapCredits) refusals.push(`I dag är ${spentToday} av ${policy.dailyCapCredits} krediter intecknade; den här skulle ta det till ${spentToday + cost}.`);
   if (policy.mandateBudget) {
@@ -988,7 +1004,7 @@ export function groupBudget(cost: Pick<Order['cost'], 'total' | 'worstTotal'>, c
   const fitToday = !policy.enabled || overPerOrder ? 0 : mandate ? Math.min(dayFit, fit(mandate.available)) : dayFit;
   const fitBalance = fit(balance - policy.minBalance);
   const words: string[] = [];
-  if (!policy.enabled) words.push('Beställningar är avstängda (enabled: false i data/order-policy.json): inget kan godkännas.');
+  if (!policy.enabled) words.push('Beställningar är avstängda i beställningsreglerna: inget kan godkännas.');
   else if (overPerOrder) words.push(`Varje utkast kostar upp till ${credits(worst)} krediter; taket per beställning är ${credits(policy.maxPerOrder)}, så inget av dem kan godkännas.`);
   else if (mandate) {
     words.push(mandateWords(mandate));
@@ -1038,7 +1054,8 @@ export function canonical(value: unknown): string {
 /** What the approval's orderSha256 is the hash of: everything in the order but approval and status. */
 export function hashInput(order: Order): string {
   const { approval: _approval, status: _status, ...rest } = order;
-  return canonical(rest);
+  // A picture's Material name (named) is only in the orders' answer and never hashed; a stored order has none, so no hash moves.
+  return canonical(rest.pictures?.some((p) => 'named' in p) ? { ...rest, pictures: rest.pictures.map(({ named: _named, ...p }) => p) } : rest);
 }
 
 // ── State ───────────────────────────────────────────────────────────────────
@@ -1057,7 +1074,7 @@ export type Receipt = {
    * review: the independent reviewer's verdict recorded beside the take's state, at any state from HÄMTAD on, without
    * moving it (node tools/order-put.ts review); the protocol reads it as the reviewer's note when it is the newest.
    */
-  takes: { take: number; status: TakeStatus; requestedAt: string | null; taskId: string | null; reservation?: { mandateId: string; credits: number }; creditsRemainingAfter?: number | null; error?: string | null; file?: string | null; sha256?: string | null; review?: { at: string; note: string; evidence?: ReviewEvidence } | null; history: { at: string; status: TakeStatus; note?: string }[] }[];
+  takes: { take: number; status: TakeStatus; requestedAt: string | null; taskId: string | null; reservation?: { mandateId: string; credits: number }; creditsRemainingAfter?: number | null; via?: 'api' | 'mcp'; error?: string | null; file?: string | null; sha256?: string | null; review?: { at: string; note: string; evidence?: ReviewEvidence } | null; history: { at: string; status: TakeStatus; note?: string }[] }[];
 };
 /** The takes of an approved order as they stand: a take the receipt does not name waits in the queue. */
 export function takeStates(order: Pick<Order, 'takes'>, receipt: Receipt | null): TakeStatus[] {
@@ -1075,7 +1092,13 @@ export function shownOf(order: Order, problems: readonly string[], receipt: Rece
 }
 
 /** What keeps a draft from being approved, in words (pictures waiting, files missing, text missing). Pure part only. */
-export const RETURN_23_BLOCK = 'Returprovet kan inte godkännas ännu: sista styrbilden är ankare 2.3 utan det utdelade kortet. Först måste det visas att kortet ligger kvar genom returen.';
+/**
+ * The return to 2.3 (2026-11-21): its last picture is anchor 2.3 with the card drawn where the plan lays it, so one take, a
+ * trial, can be approved; a series waits until a trial has held (the card stays where it lies through the return).
+ */
+export const RETURN_23_BLOCK = 'En serie returer till 2.3 kan inte godkännas ännu: först ska ett prov, en tagning, visa att kortet ligger kvar genom returen.';
+export const RETURN_23_TRIAL = 'Returprovet är en tagning och kan godkännas; en serie väntar tills provet har hållit.';
+const returnSeries = (o: { step?: { key?: string } | null; takes?: unknown }) => o.step?.key === 'RETUR-2.3' && Number(o.takes) > 1;
 export const SHORT_TWO_HAND_TURN_HELP = 'KORT för GIV-2.3 vänder över kortänden. Välj MINIMAL för att låta referensfilmen styra vändningen.';
 
 export function shortTwoHandTurnProblem(step: StepKey, style: TextStyle | undefined, turn: boolean | undefined, axis: FlipAxis | null | undefined): string | null {
@@ -1095,15 +1118,22 @@ export function twoHandDraftProblem({ status, approval, step, motion }: Pick<Ord
   return 'GIV-2.3 har ett handbyte från vänster till höger. Uppdatera utkastet med Hämta bilderna före godkännande.';
 }
 
+/** Jakob 2026-11-21 (docs/BESKED.md, "Släpet med handbyte ges från A2.3"): a card whose plan says handbyte is ordered from
+ *  A2.3, where the left hand draws the card out and the right one lays it. A draft from A2.1 with handbyte, made before
+ *  that, is not approved; an approved or frozen order is left as it is. */
+export const HAND_PASS_FROM_23 = 'Handbyte ges från A2.3 sedan 21 november: ett utkast från A2.1 med handbyte godkänns inte. Lägg det åt sidan och beställ kortet från A2.3.';
+const oldHandPassDraft = (o: Pick<Order, 'status' | 'approval' | 'step' | 'motion'>) => o.status === 'UTKAST' && !o.approval && o.step.key === 'GIV-2.1' && !!o.motion?.pass;
+
 export function draftProblems(order: Order): string[] {
   const out: string[] = [];
-  if (order.step.key === 'RETUR-2.3') out.push(RETURN_23_BLOCK);
+  if (returnSeries(order)) out.push(RETURN_23_BLOCK);
   if (order.status === 'UTKAST') {
     const problem = twoHandDealSideProblem(order) ?? shortTwoHandTurnProblem(order.step.key, order.prompt.style, order.motion?.turn, order.motion?.flipAxis);
     if (problem) out.push(problem);
   }
   const hands = twoHandDraftProblem(order);
   if (hands) out.push(hands);
+  if (oldHandPassDraft(order)) out.push(HAND_PASS_FROM_23);
   const waits = waitingOf(order);
   if (waits.length) out.push(`Väntar på ${waitWords(waits)}.`);
   for (const p of order.pictures) if (!p.waits && (!p.path || !p.sha256)) out.push(`${p.label} saknas.`);
@@ -1188,7 +1218,7 @@ export function validateOrder(value: unknown): { order: Order | null; errors: st
   else if (o.approval && o.approval.by === 'huvudagent' && (typeof o.approval.mandate !== 'string' || !o.approval.mandate.trim() || o.approval.mandate.length > 300)) errors.push('approval: huvudagentens godkännande bär sitt uppdrag (mandate: vems ord och när).');
   if (o.setAside != null && (!isObject(o.setAside) || typeof o.setAside.why !== 'string' || !o.setAside.why.trim() || typeof o.setAside.at !== 'string' || o.status !== 'AVBRUTEN')) errors.push('setAside: en avbruten beställning säger när och varför (why).');
   if (o.status === 'GODKÄND' && !o.approval) errors.push('En godkänd beställning måste ha approval.');
-  if (o.status === 'GODKÄND' && o.step?.key === 'RETUR-2.3') errors.push(RETURN_23_BLOCK);
+  if (o.status === 'GODKÄND' && returnSeries(o)) errors.push(RETURN_23_BLOCK);
   if (o.status === 'UTKAST' && o.approval) errors.push('Ett utkast har ingen approval.');
   if (!Array.isArray(o.notes)) errors.push('notes ska vara en lista.');
   return { order: errors.length ? null : (o as Order), errors };

@@ -33,6 +33,7 @@ import {sendResponse} from '../cloud/studio/bot-node.ts';
 import {fileStore} from '../cloud/studio/store-file.ts';
 import type {Knowledge} from '../cloud/studio/bot-search.ts';
 import {forBrowser} from './lab-routes.ts';
+import {sendFile} from './studio-files.ts';
 import {BOT_FUNCTION_FILES} from './build-knowledge.ts';
 
 const root = path.resolve(fileURLToPath(new URL('../', import.meta.url)));
@@ -101,7 +102,7 @@ async function inside(base: string, relative: string): Promise<string | null> {
 }
 
 /** A file with Range, as the CDN and Blob answer: 206 with Content-Range for a range, 416 for one outside the file. */
-async function sendFile(req: http.IncomingMessage, res: http.ServerResponse, file: string, type: string, status = 200, extra: Record<string, string> = {}) {
+async function sendRanged(req: http.IncomingMessage, res: http.ServerResponse, file: string, type: string, status = 200, extra: Record<string, string> = {}) {
   const size = (await stat(file)).size;
   for (const [k, v] of Object.entries(extra)) res.setHeader(k, v);
   res.setHeader('Content-Type', type); res.setHeader('Accept-Ranges', 'bytes');
@@ -114,8 +115,8 @@ async function sendFile(req: http.IncomingMessage, res: http.ServerResponse, fil
     if (start > end || start >= size) { res.writeHead(416, {'Content-Range': `bytes */${size}`}).end(); return; }
     res.writeHead(206, {'Content-Range': `bytes ${start}-${end}/${size}`, 'Content-Length': end - start + 1});
   } else res.writeHead(status, {'Content-Length': size});
-  if (req.method === 'HEAD') { res.end(); return; }
-  const stream = createReadStream(file, {start, end}); stream.on('error', () => res.destroy()); stream.pipe(res); res.on('close', () => stream.destroy());
+  // The lab server's one way to send a file (tools/studio-files.ts): it is closed however the answer ends.
+  sendFile(req, res, file, start, end);
 }
 
 const token = randomUUID();
@@ -150,7 +151,7 @@ const server = http.createServer(async (req, res) => {
     const serveStatic = async (at: string, status = 200) => {
       const file = await inside(realStatic, at.replace(/^\//, ''));
       if (!file) return false;
-      await sendFile(req, res, file, TYPES[path.extname(file).toLowerCase()] ?? 'application/octet-stream', status, added);
+      await sendRanged(req, res, file, TYPES[path.extname(file).toLowerCase()] ?? 'application/octet-stream', status, added);
       return true;
     };
     for (const route of config.routes) {
@@ -166,7 +167,7 @@ const server = http.createServer(async (req, res) => {
           const file = from ? await inside(realRoot, from) : null;
           if (!file) { res.writeHead(502, added).end('Ingen lokal fil för Blob-objektet.'); return; }
           delete added['content-type'];
-          await sendFile(req, res, file, TYPES[path.extname(file).toLowerCase()] ?? 'application/octet-stream', 200, added); return;
+          await sendRanged(req, res, file, TYPES[path.extname(file).toLowerCase()] ?? 'application/octet-stream', 200, added); return;
         }
         if (answer.headers.get('x-middleware-next') === '1') continue;
         const cookies = answer.headers.getSetCookie();

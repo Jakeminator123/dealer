@@ -174,7 +174,14 @@ test('what a person sees: waiting, ready, then the least advanced take; doubt an
   const waits = { dealer: 'paow', role: 'ankare-2.1', node: 'READY', label: 'ankare 2.1' };
   const film = { ...made, status: 'UTKAST', approval: null, pictures: made.pictures.map((p) => ({ ...p, path: null, sha256: null, waits })) } as Order;
   assert.equal(shownOf(film, draftProblems(film), null), 'VÄNTAR');
-  const approved = { ...order, status: 'GODKÄND', approval: { by: 'jakob', at: '2026-11-12T22:00:00Z', orderSha256: 'a'.repeat(64) } } as Order;
+  // Handbyte goes from A2.3 since Jakob's word 2026-11-21: an older draft of a deal from A2.1 with handbyte is not ready to
+  // approve; the same order once approved keeps its state (its hash is frozen).
+  const passDraft = { ...made, step: { ...made.step, key: 'GIV-2.1' }, status: 'UTKAST', approval: null, motion: { ...made.motion!, hand: 'LH', pass: true } } as Order;
+  assert.ok(draftProblems(passDraft).includes(model.HAND_PASS_FROM_23));
+  assert.equal(shownOf(passDraft, draftProblems(passDraft), null), 'UTKAST');
+  assert.ok(!draftProblems({ ...passDraft, motion: { ...passDraft.motion!, pass: false } }).includes(model.HAND_PASS_FROM_23));
+  assert.ok(!draftProblems({ ...passDraft, status: 'GODKÄND', approval: { by: 'jakob', at: '2026-11-18T22:00:00Z', orderSha256: 'a'.repeat(64) } } as Order).includes(model.HAND_PASS_FROM_23));
+  const approved ={ ...order, status: 'GODKÄND', approval: { by: 'jakob', at: '2026-11-12T22:00:00Z', orderSha256: 'a'.repeat(64) } } as Order;
   const take = (n: number, status: Receipt['takes'][number]['status']) => ({ take: n, status, requestedAt: '2026-11-12T22:01:00Z', taskId: null, history: [] });
   const receipt = (...takes: Receipt['takes']): Receipt => ({ schemaVersion: 1, order: order.id, orderSha256: 'a'.repeat(64), takes });
   assert.equal(shownOf(approved, [], null), 'GODKÄND');
@@ -196,7 +203,8 @@ test('the steps: defaults from the plan, edges in the graph notation, and an ord
   assert.deepEqual([stepOf('GIV-2.3')?.from, stepOf('GIV-2.3')?.grip, edgeOf(stepOf('GIV-2.3')!, 'P4.C1'), cutIntoOf(stepOf('GIV-2.3')!, 'P4.C1', 'ONE_WAY')], ['2.3', 'TWO_HANDS', 'READY-C>P4.C1', ['READY-C>P4.C1']]);
   assert.deepEqual([model.ANCHOR_NODE['2.3'], model.ANCHOR_ROLE['2.3']], ['READY-C', 'ankare-2.3']);
   assert.deepEqual(STEPS.filter((s) => s.off).map((s) => s.key), ['RETUR-2.3'], 'only the return trial requires sources unavailable in the normal form');
-  assert.match(stepOf('RETUR-2.3')?.off ?? '', /Beställs API med namngiven A3 och giv/);
+  // Changed 2026-11-21 (round two): the trial is ordered with the command, which finds the deal and its frozen last picture.
+  assert.match(stepOf('RETUR-2.3')?.off ?? '', /kommandot .*"A3P4C1 - A2\.3".*hittar den godkända given/);
   assert.deepEqual(['RETUR-2.1', 'RETUR-2.2', 'RETUR-2.3', 'RETUR-1'].map((k) => edgeOf(stepOf(k)!, 'P4.C1')), ['P4.C1>READY', 'P4.C1>READY-B', 'P4.C1>READY-C', 'P4.C1>IDLE']);
   assert.deepEqual(cutIntoOf(stepOf('GIV-2.1')!, 'P4.C1', 'ROUND_TRIP'), ['READY>P4.C1', 'P4.C1>READY']);
   assert.deepEqual(cutIntoOf(stepOf('GIV-2.1')!, 'P4.C1', 'ONE_WAY'), ['READY>P4.C1'], 'bara dit: the deal alone');
@@ -614,14 +622,20 @@ test('the studio prioritizes the rolling mandate over the ordinary daily cap and
   const active = { ...p, mandateBudget };
   const budget = groupBudget(cost, 2, active, 0, 7000);
   assert.equal(budget.fitToday, 1);
-  assert.match(budget.words[0], /150 av 800 kvar denna rullande timme/);
+  // Changed 2026-11-21 (review finding 15): the figures say their unit, and "den här timmen" replaces the trade word.
+  assert.match(budget.words[0], /150 av 800 krediter kvar den här timmen/);
   // The total follows the mandate in data/order-policy.json, which the main agent renews on Jakob's word.
   const grouped = (credits: number) => String(credits).replace(/\B(?=(\d{3})+$)/g, '\\s');
-  assert.match(budget.words[0], new RegExp(`${grouped(p.mandate.totalCredits - 900)} av ${grouped(p.mandate.totalCredits)} kvar totalt`));
+  assert.match(budget.words[0], new RegExp(`${grouped(p.mandate.totalCredits - 900)} av ${grouped(p.mandate.totalCredits)} kvar i mandatet`));
   assert.doesNotMatch(budget.words.join(' '), /Ryms i dagens tak/);
   assert.equal(checkPolicy({cost}, {...active, dailyCapCredits: 90}, 0, 7000).ok, false);
   const expired = { ...active, mandateBudget: {...mandateBudget, status: 'expired' as const, available: 0} };
   assert.equal(groupBudget(cost, 2, expired, 0, 7000).fitToday, 0);
   assert.match(groupBudget(cost, 2, expired, 0, 7000).words[0], /Mandatet löpte ut/);
+  // New in round two (2026-11-21): the mandate's times in Swedish time, as he reads them, not as ISO.
+  assert.equal(model.swedishTime('2026-11-21T12:00:00Z'), '21 nov 13.00');
+  assert.equal(model.swedishTime('2026-11-21T23:30:00Z'), '22 nov 00.30', 'Stockholm time: the UTC evening is the next day');
+  assert.ok(budget.words[0].endsWith(`till ${model.swedishTime(p.mandate.endsAt)}.`), budget.words[0]);
+  assert.doesNotMatch(budget.words.join(' '), /\d{4}-\d{2}-\d{2}T/);
   assert.equal(checkPolicy({cost}, expired, 0, 7000).ok, false);
 });

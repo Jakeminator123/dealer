@@ -23,7 +23,16 @@ import {orderTake, OrderError, ORDER_ID, type OrderLike} from './order-collect.t
 import {endsOnOf} from '../src/order-model.ts';
 
 const CLIP = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const PROVIDER = 'Runway MCP server (app account credits)';
+/**
+ * Who placed the take, read from its receipt: the channel tools/order-put.ts placed kept (via: api, the API client on the
+ * developer project's credits; mcp, Runway's MCP server on the app account's), or a take recorded afterwards (tools/order-import.ts,
+ * outside: true), which went through the MCP server. Without either the receipt does not say, and neither does the bank.
+ */
+export function placedThrough(entry: {via?: 'api' | 'mcp'; outside?: boolean} | null): {provider: string; endpoint: string; creditNote: string} {
+  if (entry?.via === 'api') return {provider: 'Runway developer API', endpoint: 'api', creditNote: 'Betald med utvecklarprojektets krediter genom API-klienten; ingår inte i taket i data/clip-jobs.json.'};
+  if (entry?.via === 'mcp' || entry?.outside === true) return {provider: 'Runway MCP server (app account credits)', endpoint: 'mcp', creditNote: 'Betald med appkontots krediter genom MCP-servern; ingår inte i taket i data/clip-jobs.json.'};
+  return {provider: 'Runway (kanal okänd)', endpoint: 'kanal okänd', creditNote: 'Kvittot säger inte genom vilken kanal tagningen lades (API-klienten eller MCP-servern), så inte heller ur vilken pott krediterna drogs.'};
+}
 export type OrderRef = {id: string; take: number; fix?: number};
 export type Entry = DerivedTake & {order: OrderRef};
 export type Plan = {clip: string; takes: Entry[]; records: Record<string, Record<string, unknown>>; files: {copy: [string, string] | null; generation: [string, Record<string, unknown>]}; notes: string[]};
@@ -131,8 +140,8 @@ export async function planRegistration(root: string, id: string, take: number, o
   for (const id2 of [...takes.map(t => t.id), target]) { const file = path.join(root, 'motions', `${id2}.json`); if (existsSync(file) && decided(await json(file))) throw new OrderError(`${id2} har Jakobs beslut: inget skrivs över.`); }
   const dir = path.join(root, 'assets', 'motions', target), source = path.join(dir, 'source.mp4');
   if (existsSync(source) && await sha256File(source) !== filmSha) throw new OrderError(`En annan film ligger redan i ${posix(root, source)}.`);
-  const sourceRel = posix(root, source), bytes = (await stat(film)).size, model = order.generation?.model ?? 'okänd';
-  const facts2 = {path: sourceRel, sha256: filmSha, bytes, width: facts.width, height: facts.height, fps: facts.rate, frames, provider: ref.fix ? 'tools/film-fix.ts' : PROVIDER, model: ref.fix ? `${model} + film-fix` : model};
+  const sourceRel = posix(root, source), bytes = (await stat(film)).size, model = order.generation?.model ?? 'okänd', through = placedThrough(entry as Parameters<typeof placedThrough>[0]);
+  const facts2 = {path: sourceRel, sha256: filmSha, bytes, width: facts.width, height: facts.height, fps: facts.rate, frames, provider: ref.fix ? 'tools/film-fix.ts' : through.provider, model: ref.fix ? `${model} + film-fix` : model};
   const orderRef = {id, take, path: `data/orders/${id}.json`, orderSha256: order.approval.orderSha256 ?? null, receipt: `assets/orders/${id}/receipt.json`, taskId: entry.taskId, delivered: {path: posix(root, delivered), sha256: deliveredSha}};
   const review = {decision: 'PENDING', inbox: true, basis: `Inte granskad av Jakob: förd in från beställningen ${id}, tagning ${take}${ref.fix ? `, rättad kopia ${ref.fix}` : ''} (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.`,
     limitations: 'I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.', colorDoesNotProvePhysicalSide: true, userAccepted: false, productionReady: false};
@@ -151,8 +160,8 @@ export async function planRegistration(root: string, id: string, take: number, o
   // The clip's own record when the film is split: its facts, read by the bank for both halves (tools/preview.ts clipBank).
   if (trip) records[target] = {schemaVersion: 1, id: target, dealer: order.dealer, source: facts2, cutInto: takes.map(t => t.id), order: orderRef, ...(fix ? {fix} : {}), generationRef: `assets/motions/${target}/generation.json`, jobRef: 'data/clip-jobs.json', scoutIntegrated: false, published: false};
   const generation = {schemaVersion: 1, id: target, edges, takes: takes.map(t => t.id), dealer: order.dealer, purpose: takes[0].purpose, status: 'SUCCEEDED', provider: facts2.provider,
-    endpoint: ref.fix ? 'tools/film-fix.ts' : `mcp ${order.generation?.tool ?? 'generate_video'}`, taskId: entry.taskId, model, params: order.generation?.params ?? null, estimatedCredits: 0, appCredits: ref.fix ? 0 : order.cost?.perTake ?? null,
-    creditNote: ref.fix ? 'Rättad lokalt ur en levererad film: kostade inga krediter.' : 'Betald med appkontots krediter genom MCP-servern; ingår inte i taket i data/clip-jobs.json.', promptText: order.prompt?.text ?? '', promptSha256: order.prompt?.sha256 ?? null, template: order.prompt?.template ?? null,
+    endpoint: ref.fix ? 'tools/film-fix.ts' : `${through.endpoint} ${order.generation?.tool ?? 'generate_video'}`, taskId: entry.taskId, model, params: order.generation?.params ?? null, estimatedCredits: 0, appCredits: ref.fix ? 0 : order.cost?.perTake ?? null,
+    creditNote: ref.fix ? 'Rättad lokalt ur en levererad film: kostade inga krediter.' : through.creditNote, promptText: order.prompt?.text ?? '', promptSha256: order.prompt?.sha256 ?? null, template: order.prompt?.template ?? null,
     first: first ?? null, last: last ?? null, reference: order.reference ?? null, motion: order.motion ?? null, order: orderRef, requestedAt: entry.requestedAt, ...(fix ? {fix} : {}),
     output: {path: sourceRel, sha256: filmSha, bytes, width: facts.width, height: facts.height, fps: facts.rate, frames, codec: facts.codec, audio: facts.audio}};
   return {clip: target, takes, records, files: {copy: existsSync(source) ? null : [film, source], generation: [path.join(dir, 'generation.json'), generation]}, notes};

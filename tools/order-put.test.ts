@@ -12,6 +12,7 @@ import sharp from 'sharp';
 import { ARM_AT_SHOE, POSE_WHAT, orderStore } from './order-store.ts';
 import { committedText } from './committed.ts';
 import { placedFromCommand, receiptMatchesOrder, receipts, reviewFromCommand } from './order-put.ts';
+import { placedThrough } from './register-order.ts';
 import {orderHash} from './order-store.ts';
 
 const base = existsSync('D:/dealer-scratch/tmp') ? 'D:/dealer-scratch/tmp' : os.tmpdir();
@@ -150,9 +151,16 @@ test('requestedAt before, task id after, and a begun take is never begun again',
   await assert.rejects(r.begin('prov-ett', 1), /aldrig igen/);
   await assert.rejects(r.begin('prov-ett', 3), /1–2/);
   await assert.rejects(r.placed('prov-ett', 2, 'task-0000-1111'), /kör begin först/);
-  const placed = await r.placed('prov-ett', 1, 'b90b9362-7a13-4b80-b498-c324f02c41f8', 17804);
+  await assert.rejects(r.placed('prov-ett', 1, 'b90b9362-7a13-4b80-b498-c324f02c41f8', 17804, 'app' as never), /api eller mcp/);
+  const placed = await r.placed('prov-ett', 1, 'b90b9362-7a13-4b80-b498-c324f02c41f8', 17804, 'api');
   assert.equal(placed.take.status, 'LAGD');
   assert.equal(placed.take.creditsRemainingAfter, 17804);
+  // The channel the call went through is kept in the take (review of PR 1, 2026-11-21), and the bank says it from there;
+  // a take without it says "kanal okänd", never MCP by default.
+  assert.equal((placed.take as { via?: string }).via, 'api');
+  assert.equal(placedThrough(placed.take as never).provider, 'Runway developer API');
+  assert.equal(placedThrough({ via: 'mcp' }).provider, 'Runway MCP server (app account credits)');
+  assert.equal(placedThrough({}).endpoint, 'kanal okänd');
   await assert.rejects(r.placed('prov-ett', 1, 'b90b9362-7a13-4b80-b498-c324f02c41f9'), /redan task-id/);
   assert.equal((await r.begin('prov-ett', 2)).request.args.confirmRepeat, true);
   await r.failed('prov-ett', 2, 'model_unavailable');

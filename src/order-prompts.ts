@@ -355,8 +355,10 @@ export const SAY = {
     pinchTurnLay: 'Her hand at the shoe takes the yellow card between thumb and fingers and carries it low over the felt; on the way her wrist turns over once and the card turns with it in one unbroken turn, and she lays it flat, blue side up, where the last frame shows it, with her fingertips resting on it.',
     card: 'Only one card moves, and it keeps the size it has in the last frame. Its back is blank solid yellow, right out to its corners, and its face is solid blue with a small pink cross in the middle and a small red dot in one corner, as the last frame shows it; the next card in the window is the same blank yellow.',
     liftOff: 'Her hand on the blue card lifts off it, and the card stays where it lies.',
+    // The return to 2.3 ends on anchor 2.3, both hands at the shoe (Jakob 2026-11-18): the review's "rests flat in front of
+    // her" said the opposite of its last frame, so its end says where the hand comes to rest (round two, 2026-11-21).
     back: {
-      '2.3': 'That hand glides back low over the felt, palm down, and rests flat in front of her, as in the last frame.',
+      '2.3': 'That hand glides back low over the felt, palm down, and settles at the shoe beside her other hand, as in the last frame.',
       '1': 'Both her hands come back low over the felt, palm down, and rest flat in front of her, as in the last frame.',
     },
   },

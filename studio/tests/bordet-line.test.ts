@@ -15,11 +15,11 @@ import os from "node:os";
 import path from "node:path";
 import sharp from "sharp";
 import { orderRoutes } from "../../tools/order-routes.ts";
-import { LANDS_LABEL, modelFor, readCutChecks, stepOf, type BankFacts, type MandateBudget, type OrdersAnswer, type RenderedReference } from "../../src/order-model.ts";
+import { LANDS_LABEL, modelFor, openEndWords, readCutChecks, stepOf, type BankFacts, type MandateBudget, type OrdersAnswer, type RenderedReference } from "../../src/order-model.ts";
 import { NOT_YET, methodFor, recipeWords, referenceByRule } from "../../src/order-methods.ts";
 import type { Intent } from "../../src/placement-model.ts";
-import { MARK_NAMES, type FilmWish, cardWishes, filmRow, gameLine, hasRound, motionLine, roundFor, stepTwoSummary, sumWords, wishAnchor } from "../lib/bordet.ts";
-import { dealAnchor, orderingState } from "../lib/orders.ts";
+import { MARK_NAMES, NOT_FROM_HERE, NO_METHOD, orderBody, type FilmWish, cardWishes, filmRow, gameLine, hasRound, motionLine, roundFor, stepTwoSummary, sumWords, wishAnchor } from "../lib/bordet.ts";
+import { MANDATE_UNKNOWN, dealAnchor, orderingState } from "../lib/orders.ts";
 import { motionSteps } from "../lib/placement.ts";
 
 const repo = path.resolve(import.meta.dirname, "../..");
@@ -46,6 +46,21 @@ test("the reference rule: the film made again comes first, and a deal bara dit n
   assert.equal(chosen([cycle], "ROUND_TRIP"), "docka-2-3-p4c2-h24-cykel");
   // A one-hand film is no reference for the two-hand deal (the right hand lays the card).
   assert.equal(chosen([film("docka-2-3-p4c2-svep24d", "READY-C>P4.C2", 3, { lays: "LH" })]), null);
+  // And a round trip takes only a dummy's film that itself goes there and back (review of PR 1, 2026-11-21): the one-way
+  // svep24d listed last is no reference for it, and without a round-trip film the step waits.
+  assert.equal(chosen([cycle, film("docka-2-3-p4c2-svep24d", "READY-C>P4.C2", 3)], "ROUND_TRIP"), "docka-2-3-p4c2-h24-cykel");
+  assert.equal(chosen([film("docka-2-3-p4c2-svep24d", "READY-C>P4.C2", 3)], "ROUND_TRIP"), null);
+});
+
+test("the real register: the dummy's films that go back to A2.3 say ROUND_TRIP, and a deal bara dit never gets one", async () => {
+  // Read from data/rendered-references.json itself (the films are not in Git, so no frames are compared here).
+  const rendered = (JSON.parse(await readFile(path.join(import.meta.dirname, "../../data/rendered-references.json"), "utf8")) as { films: RenderedReference[] }).films;
+  const byId = new Map(rendered.map((r) => [r.id, r]));
+  for (const id of ["docka-2-3-p4c2-h24-omgrepp", "docka-2-3-p4c2-h24-cykel", "docka-2-3-p4c1-h24-cykel"]) assert.equal(byId.get(id)?.shape, "ROUND_TRIP", id);
+  const step = stepOf("GIV-2.3")!, model = modelFor(step, "kling-4");
+  const want = { dealer: "paow", step, target: "P4.C2", model, lays: "RH" as const, shape: "ONE_WAY" as const };
+  const withoutSweep = rendered.filter((r) => r.id !== "docka-2-3-p4c2-svep24d");
+  assert.equal(referenceByRule({ rendered: withoutSweep }, "renderad", want), null, "P4.C2 bara dit waits rather than take omgrepp or a cycle");
 });
 
 test("step 2 and the card's films: from A2.3 with handbyte, from the game's anchor without", () => {
@@ -68,6 +83,13 @@ test("step 2 and the card's films: from A2.3 with handbyte, from the game's anch
   // The game's line, where the films go from another anchor than the game deals the card from today.
   assert.equal(gameLine("paow", "P4.C2", pass), "Spelet ger plats 4, kort 2 från A2.1 i dag; filmen spelas när rundan namnger den.");
   assert.equal(gameLine("paow", "P4.C2", plain), null);
+  assert.equal(gameLine("paow", "P4.C1", pass), "Spelet ger plats 4, kort 1 från A2.1 i dag; filmen spelas när rundan namnger den.", "the first card is named as one card too");
+  // What is sent: only the exceptions the form shows for the row's shape and reference film (review of PR 1, 2026-11-21).
+  const hidden = { duration: 5, cardScale: 1.1, end: "paow-a3-p4-x" };
+  const oneWay = orderBody("paow", { step: "GIV-2.1", target: "P4.C1" }, hidden, { shape: "ONE_WAY", reference: true })!;
+  assert.deepEqual([oneWay.duration, oneWay.cardScale, oneWay.end], [undefined, undefined, "paow-a3-p4-x"], "bara dit with a reference film: the end picture only");
+  const trip = orderBody("paow", { step: "GIV-2.1", target: "P4.C1" }, hidden, { shape: "ROUND_TRIP", reference: false })!;
+  assert.deepEqual([trip.duration, trip.cardScale, trip.end], [5, 1.1, undefined], "a round trip without a reference film: the length and the card's size");
   // The round stays the game's until the bank has the A2.3 films both ways.
   assert.equal(roundFor("P4.C2", "paow"), "A2.1 - A3P4C2 - A2.1");
   assert.equal(roundFor("P4.C2", "paow", "2.3"), "A2.3 - A3P4C2 - A2.3");
@@ -93,12 +115,15 @@ test("the ordering block's state in one line", () => {
   assert.deepEqual(orderingState(null).open, false);
   assert.match(orderingState(answer(null)).words, /kunde inte läsas/);
   assert.match(orderingState(answer({ enabled: false })).words, /avstängda/);
-  assert.deepEqual(orderingState(answer({})), { open: false, words: "Inget giltigt beställningsmandat. Nya betalda anrop är spärrade." });
+  // Changed 2026-11-21 (review finding 15): what it means for him, "Inget kan godkännas", not the calls it stops.
+  assert.deepEqual(orderingState(answer({})), { open: false, words: "Inget giltigt beställningsmandat. Inget kan godkännas." });
   const dayFull = orderingState(answer({ mandateBudget: undefined }, 1000));
   assert.equal(dayFull.open, false);
   assert.match(dayFull.words, /Dagens tak är nått/);
   assert.match(orderingState(answer({ mandateBudget: undefined, balance: { credits: 100, at: "", source: "" } })).words, /nere vid golvet/);
-  assert.deepEqual(orderingState(answer({ mandateBudget: undefined })), { open: true, words: "I dag 0 av 1 000 krediter intecknade." });
+  // Changed 2026-11-21 (round two): without the mandate's figure the line says so, not the day's cap ("0 av 1 000 000").
+  assert.deepEqual(orderingState(answer({ mandateBudget: undefined })), { open: true, words: MANDATE_UNKNOWN });
+  assert.doesNotMatch(orderingState(answer(null)).words + orderingState(answer({ enabled: false })).words, /order-policy/);
 });
 
 test("Bordet's rows for a card with handbyte and one without say what the store's preview freezes", async (t) => {
@@ -177,7 +202,9 @@ test("Bordet's rows for a card with handbyte and one without say what the store'
       assert.ok(!r.orderable && r.body === null && r.cost === null && r.why, `${r.key}: listed, not orderable`);
       assert.equal(r.recipe, NOT_YET, `${r.key}: no recipe shown for what cannot be ordered`);
       assert.doesNotMatch(recipeWords(methodFor(all.methods!, r.wish.step, card), card), /bara given|tur och retur/, `${r.key}: a return is no deal`);
-      assert.equal(words(r).Text, `✗ ${NOT_YET}`, `${r.key}: no recipe to write it with yet`);
+      // Changed 2026-11-21 (review finding 22): the mark says why, in the store's own words, not "kan inte beställas än".
+      // The return to A2.3 is tried with the command first (StepDef.off), the others have no method yet.
+      assert.equal(words(r).Text, `✗ ${r.wish.step === "RETUR-2.3" ? NOT_FROM_HERE : NO_METHOD}`, `${r.key}: not written from here yet`);
       assert.equal((await call("POST", "/api/orders/preview", { dealer: "paow", step: r.wish.step, target: card })).status, 400, `${r.key}: the store refuses it too`);
     }
     if (card === "P4.C2") {
@@ -191,6 +218,20 @@ test("Bordet's rows for a card with handbyte and one without say what the store'
       assert.equal(words(back)["Första bild"], "A3P4C2");
       assert.equal(sumWords(rows), "3 filmer · 1 kan beställas · 64 krediter");
       assert.equal(motionLine("paow", card, intent, all.methods!), "A2.3 · vänster hand drar ut, höger hand vänder kortet och lägger det · rörelsen följer dockfilmen");
+      // New in round two (2026-11-21): "Utan slutbild", what the command's --no-end makes, is a choice of the row, with the
+      // command's note; the row says the text and the price the store freezes for it.
+      const open = filmRow("paow", deal.wish, all.methods!, all.policy, { bank, entries: shown, plan: all.plan ?? null, dealers: all.dealers, marks: all.marks, choice: { end: null } });
+      assert.ok(open.orderable, `${open.key}: ${open.why}`);
+      assert.equal(words(open).Slutbild, "ingen, A3P4C2 görs efteråt");
+      assert.equal(open.body?.end, null);
+      const openPreview = await call("POST", "/api/orders/preview", open.body);
+      assert.equal(openPreview.status, 200, openPreview.json.error);
+      const shownOpen = openPreview.json.orders[0];
+      assert.ok(!shownOpen.pictures.some((p: { goesAs: string }) => p.goesAs === "endFrame"), "no last picture");
+      assert.equal(shownOpen.prompt.text, open.text, "the open deal's text, word for word");
+      assert.doesNotMatch(open.text!, /last frame/);
+      assert.ok(shownOpen.notes.join(" ").includes(openEndWords("P4.C2")), "the command's note");
+      assert.equal(shownOpen.cost.total, open.cost);
     } else {
       // Without handbyte: from the anchor the game deals the card from, laid by the left hand.
       assert.equal(dealAnchor("paow", card), "2.1");

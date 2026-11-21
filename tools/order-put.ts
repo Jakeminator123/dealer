@@ -169,8 +169,13 @@ export function receipts(root: string, options: { now?: () => Date } = {}) {
       return { ...result, request: request!, validUntil };
     });
   }
-  /** After the call: the task id. Only for a take that was begun and has none. */
-  async function placed(id: string, takeValue: unknown, taskId: string, creditsRemaining: number | null = null) {
+  /**
+   * After the call: the task id. Only for a take that was begun and has none. via: the channel the call went through (the API
+   * client on the developer project's credits, or Runway's MCP server on the app account's), kept in the take so that
+   * tools/register-order.ts says it; left out, the receipt does not say it and the bank writes "kanal okänd".
+   */
+  async function placed(id: string, takeValue: unknown, taskId: string, creditsRemaining: number | null = null, via: 'api' | 'mcp' | null = null) {
+    if (via !== null && via !== 'api' && via !== 'mcp') throw new StoreError(400, 'Kanalen är api eller mcp.');
     if (!/^[A-Za-z0-9-]{8,80}$/.test(taskId ?? '')) throw new StoreError(400, 'Ogiltigt task-id.');
     if (creditsRemaining !== null && (typeof creditsRemaining !== 'number' || !Number.isFinite(creditsRemaining) || creditsRemaining < 0)) {
       throw new StoreError(400, 'Saldot efter anropet ska vara ett ändligt tal på minst 0 eller null.');
@@ -180,7 +185,7 @@ export function receipts(root: string, options: { now?: () => Date } = {}) {
       if (!t?.requestedAt) throw new StoreError(409, `${id} tagning ${take} är inte begärd: kör begin först, före anropet.`);
       if (t.taskId) throw new StoreError(409, `${id} tagning ${take} har redan task-id ${t.taskId}.`);
       if (t.status !== 'OSÄKER') throw new StoreError(409, `${id} tagning ${take} är ${t.status}.`);
-      return { ...step(t, 'LAGD', `task ${taskId}`), taskId, creditsRemainingAfter: creditsRemaining };
+      return { ...step(t, 'LAGD', `task ${taskId}`), taskId, creditsRemainingAfter: creditsRemaining, ...(via ? { via } : {}) };
     });
   }
   /** The call answered with an error and no task: nothing was made. The take is not placed again by a tool. */
@@ -282,13 +287,17 @@ export function receipts(root: string, options: { now?: () => Date } = {}) {
 }
 
 /** Pass only the task id and optional positional balance from the CLI. */
-export function placedFromCommand(root: string, id: string, take: unknown, args: readonly string[]) {
+export function placedFromCommand(root: string, id: string, take: unknown, all: readonly string[]) {
+  // --via api|mcp, anywhere: the channel the call went through.
+  const at = all.indexOf('--via'), via = at < 0 ? null : all[at + 1];
+  if (at >= 0 && via !== 'api' && via !== 'mcp') throw new StoreError(400, 'Använd: --via api eller --via mcp.');
+  const args = at < 0 ? all : [...all.slice(0, at), ...all.slice(at + 2)];
   const [taskId, balance] = args;
   if (!taskId || taskId.startsWith('-') || args.length > 2 || balance?.startsWith('--')) {
-    throw new StoreError(400, 'Använd: placed <id> <tagning> <task-id> [saldo]. Saldot anges som ett tal utan flagga.');
+    throw new StoreError(400, 'Använd: placed <id> <tagning> <task-id> [saldo] [--via api|mcp]. Saldot anges som ett tal utan flagga.');
   }
   if (balance !== undefined && !balance.trim()) throw new StoreError(400, 'Saldot efter anropet saknar värde.');
-  return receipts(root).placed(id, take, taskId, balance === undefined ? null : Number(balance));
+  return receipts(root).placed(id, take, taskId, balance === undefined ? null : Number(balance), via as 'api' | 'mcp' | null);
 }
 
 /** Strict CLI boundary: a misspelled evidence flag must never become a note-only replacement. */

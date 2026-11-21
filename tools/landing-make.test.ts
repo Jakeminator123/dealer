@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {W, H, type Pt, type Rgb} from './order-images.ts';
-import {LANDING_TARGET, checkLanding, composeLanding, makeLanding, nearEdge} from './landing-make.ts';
+import {LANDING_TARGET, checkLanding, composeLanding, isCardMark, makeLanding, nearEdge} from './landing-make.ts';
 
 const GREEN = [30, 190, 40], DARK = [20, 20, 20], SKIN = [205, 150, 130], BLUE = [30, 90, 220];
 const picture = (...blocks: [number[], number, number, number, number][]): Rgb => {
@@ -62,4 +62,20 @@ test('the making takes away a card the source drew, draws the plan\'s card, and 
   assert.ok(made.fingers > 0);
   assert.deepEqual(at(made.rgb, 910, 1065), SKIN, 'her fingertip lies over the drawn card');
   assert.deepEqual(at(made.rgb, 910, 1110), BLUE, 'the plan\'s card is drawn where no finger lies');
+});
+
+// New in round two (2026-11-21): on pilot 02's frame 72 the pink cross and red circle of the card the film laid stayed on the
+// felt, counted as skin. Near the seat they are the card's and go; her skin, a rosy fingertip's shade too, stays.
+test('the marks of a card the source drew go with it, and her skin, a rosy fingertip too, stays', () => {
+  const PINK = [240, 120, 200], RED = [200, 30, 50], ROSY = [185, 105, 95];
+  const px = (c: number[]) => Buffer.from(c);
+  assert.ok(isCardMark(px(PINK), 0) && isCardMark(px(RED), 0));
+  assert.ok(!isCardMark(px(SKIN), 0) && !isCardMark(px(ROSY), 0) && !isCardMark(px(DARK), 0));
+  const anchor = picture(HEAD);
+  const source = picture(HEAD, [PINK, 790, 1070, 12, 4], [PINK, 794, 1066, 4, 12], [RED, 820, 1110, 8, 8], [ROSY, 860, 1040, 20, 20], TIPS);
+  const draw = (base: Rgb) => Buffer.from(base);
+  const made = composeLanding(source, anchor, draw, QUAD);
+  for (const [x, y] of [[795, 1071], [823, 1113]]) assert.deepEqual(at(made.rgb, x, y), at(anchor, x, y), `the card's mark at ${x},${y} has given way to the felt`);
+  assert.deepEqual(at(made.rgb, 868, 1048), ROSY, 'a rosy fingertip stays');
+  assert.deepEqual(at(made.rgb, 900, 1045), SKIN, 'her fingertips stay');
 });

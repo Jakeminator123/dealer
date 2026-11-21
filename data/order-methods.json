@@ -447,23 +447,23 @@
       "model": "kling-4",
       "resolution": "1080p",
       "style": "KORT",
-      "template": 12,
+      "template": 13,
       "seconds": 3,
       "takes": 1,
       "turn": null,
       "hand": null,
       "shape": "ONE_WAY",
       "reference": "ingen",
-      "lastPicture": "ankare",
+      "lastPicture": "ritat-kort",
       "extra": null,
       "evidence": {
         "orders": [],
         "reviewer": [],
         "owner": [],
-        "note": "Lokalt provunderlag. Börjar byte för byte på en godkänd 2.3-givs frysta slutbild med namngiven A3-kandidat och högerhand vid kortet. Slutar på gällande ankare 2.3. Godkännande spärrat tills det är visat hur kortet ligger kvar genom returen även om ankaret saknar det."
+        "note": "Lokalt provunderlag. Börjar byte för byte på en godkänd 2.3-givs frysta slutbild (A3-kandidaten med högerhand vid kortet; utan namn den senast godkända given dit). Slutar på gällande ankare 2.3 med kortet ritat i planens ruta, utan referensfilm, mall 13 (huvudagenten 2026-11-21). En tagning, ett prov, kan godkännas; en serie väntar tills provet har hållit."
       },
-      "setBy": "huvudagentens underagent",
-      "setAt": "2026-11-18"
+      "setBy": "underagent på huvudagentens uppdrag (omgång två, etapp B)",
+      "setAt": "2026-11-21"
     },
     {
       "id": "retur-1",

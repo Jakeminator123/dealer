@@ -82,6 +82,7 @@
       "sha256": "d514c08659796e811dd9cd4bfcdf02a0eafaee261afcbe07199c1e70313d2598",
       "seconds": 4,
       "lays": "RH",
+      "shape": "ROUND_TRIP",
       "check": null
     },
     {
@@ -258,6 +259,16 @@
       "seconds": 3,
       "lays": "RH",
       "check": null
+    },
+    {
+      "id": "docka-paow-2-3-p4c2-svep24d",
+      "edge": "READY-C>P4.C2",
+      "path": "assets/references/docka/docka-paow-2-3-p4c2-svep24d/source.mp4",
+      "sha256": "28041a6bb45d7fa6c59358df5405eb61cd4e3fa73df952852ec4a4190a2c5ed8",
+      "seconds": 3,
+      "lays": "RH",
+      "check": null,
+      "doll": "paow"
     }
   ]
 }

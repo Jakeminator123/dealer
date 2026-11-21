@@ -1,18 +1,16 @@
 // Beställ (/bordet/?lage=bestall, Bordet's queue; the old /bestall/ leads there): the view's calls to the lab server (tools/order-routes.ts) and the pure words and rows it shows.
-// The order's shape, the exact call per take and the cost come from ../../src/order-model.ts (built in, never copied):
-// "Det här skickas" lists the arguments requestOf() gives, so the screen shows what the ordering agent will send. The
+// The order's shape, the exact call per take and the cost come from ../../src/order-model.ts (built in, never copied). The
 // text and its marks come from ../../src/order-prompts.ts, the same function the store writes a draft's text with. A new
-// order can be asked for by address (presetOf, and back again with presetAddress); whose each picture is is said in words
+// order can be asked for by address (presetOf); whose each picture is is said in words
 // (ownerWords); what an order makes in Jakob's notation, "A2.2 → A3P3C2 → A2.2", with one plain sentence (routeOf).
 // In the online copy nothing is asked for or written. Tests: tools/order-routes.test.ts (the calls) and studio/tests/line-same.test.ts.
 import { ApiError, asApiError } from "./api.ts";
 import { labUrl } from "./lab.ts";
 import { isSnapshot } from "./mode.ts";
 import { nodeCode } from "./names.ts";
-import { GRIP_LABEL } from "./placement.ts";
 import {
-  ANCHOR_NODE, ANCHOR_ROLE, FLIP_LABEL, defaultFlip, HAND_LABEL, mandateWords, LANDS_LABEL, REF_VERDICT_LABEL, STYLE_LABEL, genitive, MODELS, SEAT_TARGETS, SHOWN_LABEL, STEPS, credits, cutIntoOf, edgeOf, handChoiceOf, plannedDiffers, requestOf, seatList, seatWords, secondsWords, stepOf, styleOf, summaryOf, waitWords,
-  type Anchor, type FlipAxis, type Grip, type HandChoice, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type SeatPlan, type Shape, type Shown, type StepDef, type StepKey, type TextStyle,
+  ANCHOR_NODE, ANCHOR_ROLE, FLIP_LABEL, HAND_LABEL, mandateWords, LANDS_LABEL, STYLE_LABEL, genitive, MODELS, SEAT_TARGETS, SHOWN_LABEL, credits, cutIntoOf, edgeOf, handChoiceOf, seatList, seatWords, stepOf, styleOf, summaryOf, waitWords,
+  type Anchor, type FlipAxis, type HandChoice, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Shape, type Shown, type StepDef, type StepKey, type TextStyle,
 } from "../../src/order-model.ts";
 import { orderPrompt, wordCount, type Choice, type Part } from "../../src/order-prompts.ts";
 import { dealPose } from "../../src/game-director.ts";
@@ -73,8 +71,8 @@ export type NewOrderInput = {
   reference?: string | null;
   /** The card's size on a round trip's last picture as a factor of the plan's (a trial); sent only when not 1. */
   cardScale?: number;
-  /** A deal bara dit: an A3 candidate of the seat as its last picture, a named exception (tools/order-store.ts NewOrder.end). */
-  end?: string;
+  /** A deal bara dit: an A3 candidate of the seat as its last picture, a named exception, or null for none ("utan slutbild") (tools/order-store.ts NewOrder.end). */
+  end?: string | null;
 };
 export type OrderPreviewInput = NewOrderInput | readonly NewOrderInput[];
 export type OrderPreview = import("../../tools/order-store.ts").OrderPreview;
@@ -97,9 +95,6 @@ export const refreshOrder = (id: string, revision: string) => call<OrderAnswer>(
 export type { Production, ProductionRow, RowState, Anchor as ProductionAnchor } from "../../tools/produce.ts";
 type ProductionAnswer = { list: import("../../tools/produce.ts").Production; problems: string[] };
 export const getProduction = (dealer: string) => call<ProductionAnswer>(`api/production?dealer=${encodeURIComponent(dealer)}`, "Produktionslistan");
-/** The drafts the list makes for every step that is missing, can be ordered now and whose method holds; never an approval. */
-export const draftProduction = (dealer: string) =>
-  call<ProductionAnswer & { made: { id: string; edge: string; title: string }[]; skipped: { edge: string; why: string }[] }>("api/production/draft", "Utkasten", send("POST", { dealer }));
 
 /** A state of the production list as a chip: colour AND sign, and the short word the list's row shows. */
 export const PRODUCTION_CHIP: Record<import("../../tools/produce.ts").RowState, { tone: Tone; sign: string; word: string }> = {
@@ -125,17 +120,20 @@ export function productionCount(counts: Pick<import("../../tools/produce.ts").Pr
  * policy unread or turned off, the mandate missing, not begun or run out, its credits used, the day's cap reached, or the
  * balance at its floor. Open: what is left of the mandate (src/order-model.ts mandateWords).
  */
+/** What the line says when the lab's answer has no figure for the mandate (an older lab server). */
+export const MANDATE_UNKNOWN = "Mandatets uppgift saknas i labbets svar: vad som är kvar av det syns inte här, och godkännandet prövar det ändå.";
 export function orderingState(a: Pick<OrdersAnswer, "policy" | "day" | "balance"> | null): { open: boolean; words: string } {
   const p = a?.policy;
-  if (!a || !p) return { open: false, words: "Beställningsreglerna kunde inte läsas (data/order-policy.json)." };
-  if (!p.enabled) return { open: false, words: "Beställningar är avstängda (data/order-policy.json)." };
+  if (!a || !p) return { open: false, words: "Beställningsreglerna kunde inte läsas." };
+  if (!p.enabled) return { open: false, words: "Beställningar är avstängda i beställningsreglerna." };
   const b = p.mandateBudget;
   if (b && b.status !== "active") return { open: false, words: mandateWords(b) };
   if (b && b.available <= 0) return { open: false, words: `Mandatet är förbrukat. ${mandateWords(b)}` };
   if (a.day.spent >= a.day.cap) return { open: false, words: `Dagens tak är nått: ${credits(a.day.spent)} av ${credits(a.day.cap)} krediter intecknade.` };
   const balance = a.balance?.credits ?? p.balance.credits;
   if (balance <= p.minBalance) return { open: false, words: `Saldot ${credits(balance)} krediter är nere vid golvet ${credits(p.minBalance)}.` };
-  return { open: true, words: b ? mandateWords(b) : `I dag ${credits(a.day.spent)} av ${credits(a.day.cap)} krediter intecknade.` };
+  // Without the mandate's figure the row says so, rather than the day's cap, which is set too high to say anything.
+  return { open: true, words: b ? mandateWords(b) : MANDATE_UNKNOWN };
 }
 
 // ── Words ───────────────────────────────────────────────────────────────────
@@ -175,35 +173,6 @@ export function picturesInOrder(pictures: readonly Picture[]): Picture[] {
   return [...pictures].sort((a, b) => rank(a) - rank(b));
 }
 
-/** What a picture is in the call, in words: "startFrame", "referenceImages · @pose". */
-export function goesWords(p: Picture): string {
-  if (p.goesAs === "referenceImage") return p.tag ? `referenceImages · @${p.tag}` : "referenceImages";
-  return p.goesAs;
-}
-
-export type ParamRow = { name: string; value: string; note?: string; picture?: string };
-/**
- * Every argument of the call by its name, as requestOf() makes it for take 1 (promptText is shown on its own), then what
- * changes from take 2 and what is deliberately not sent.
- */
-export function paramRows(order: Order): ParamRow[] {
-  const { tool, args } = requestOf(order, 1);
-  const rows: ParamRow[] = [{ name: "verktyg", value: tool, note: "Runways MCP-verktyg" }];
-  const file = (ref: unknown) => String((ref as { url?: string })?.url ?? "").replace(/^\$file:/, "");
-  for (const [name, value] of Object.entries(args)) {
-    if (name === "promptText") continue;
-    if (name === "startFrame" || name === "endFrame") rows.push({ name, value: file(value), picture: file(value), note: "laddas upp, adressen sätts in" });
-    else if (name === "referenceImages") (value as unknown[]).forEach((v, i) => rows.push({ name: `${name}[${i}]`, value: `${file(v)}${(v as { tag?: string }).tag ? ` · tag ${(v as { tag?: string }).tag}` : ""}`, picture: file(v), note: "laddas upp" }));
-    else if (name === "referenceVideos") (value as { durationSeconds: number }[]).forEach((v, i) => rows.push({ name: `${name}[${i}]`, value: `${file(v)} · ${String(v.durationSeconds).replace(".", ",")} s`, note: "laddas upp" }));
-    else rows.push({ name, value: typeof value === "string" ? value : JSON.stringify(value), note: name === "duration" ? "sekunder" : undefined });
-  }
-  if (order.takes > 1) rows.push({ name: "confirmRepeat", value: "true", note: `från tagning 2 av ${order.takes}` });
-  const model = MODELS[order.generation.model];
-  if (model?.audio === "always") rows.push({ name: "generateAudio", value: "skickas inte", note: "ljudet är alltid på; tas bort i efterarbetet" });
-  if (model?.tool === "generate_video" && model.shape && !("ratio" in args)) rows.push({ name: "ratio", value: "skickas inte", note: model.shape });
-  return rows;
-}
-
 /** "1,1 px från planen". */
 export const offsetWords = (px: number | null | undefined): string | null => (px === null || px === undefined ? null : `${String(px).replace(".", ",")} px från planen`);
 
@@ -228,15 +197,8 @@ export function anchorFor<E extends { role: string; state?: string; node?: strin
   return { holds: mine.find((e) => e.state === "gäller") ?? null, candidates: mine.filter((e) => e.state === "kandidat") };
 }
 
-/** The step a new order starts on: the first picture or film the dealer lacks. */
-export function firstLacking(entries: Parameters<typeof anchorFor>[0]): StepKey {
-  if (!anchorFor(entries, "2.1").holds) return "ANKARE-2.1";
-  if (!anchorFor(entries, "2.2").holds) return "ANKARE-2.2";
-  return "GIV-2.1";
-}
-
 /** The line under the queue: how the approved orders get placed. */
-export const HANDOVER = "Säg 'lägg kön' till filmagenten eller huvudagenten, så läggs godkända beställningar.";
+export const HANDOVER = "Säg 'lägg kön' till huvudagenten, så läggs godkända beställningar.";
 
 // ── The card an order goes to ───────────────────────────────────────────────
 /**
@@ -246,20 +208,13 @@ export const HANDOVER = "Säg 'lägg kön' till filmagenten eller huvudagenten, 
  */
 export const SECOND_CARD = /^P[1-7]\.C2$/;
 export const orderableCard = (target: string | null | undefined): boolean => !!target && (SEAT_TARGETS.includes(target) || SECOND_CARD.test(target));
-/** The seat of a card as the sheet's seat field names it: P3.C2 → P3.C1; the dealer's two cards are seats of their own. */
-export const seatKey = (target: string): string => target.replace(/^(P[1-7])\.C2$/, "$1.C1");
 /** A player's card: 1 or 2; the dealer's cards count as 1 here (Dealer and Hålkort are chosen as seats). */
 export const cardOf = (target: string): 1 | 2 => (SECOND_CARD.test(target) ? 2 : 1);
-/** A player's seat with its first or second card; the dealer's cards are kept as they are. */
-export const withCard = (target: string, card: 1 | 2): string => (/^P[1-7]\.C[12]$/.test(target) ? `${target.slice(0, 3)}C${card}` : target);
-/** "Kort 2 spelar i dag kort 1:s film …": why a second card is a film of its own, said where it is chosen. */
-export const SECOND_CARD_WORDS = "I rundan spelar kort 2 i dag kort 1:s film. En egen film för kort 2 läggs i banken och spelas där en runda väljer den.";
 
 // ── What is ordered, in his notation ────────────────────────────────────────
 /** Where the hand goes back to, in the model's words (the returns' labels "Tillbaka till nypet (2.1)", "… över skon (2.2)"). */
 const BACK_TO: Record<Anchor, string> = { "1": "till vila", "2.1": "till nypet", "2.2": "över skon", "2.3": "till skon" };
 /** A deal's grip as the studio names it: the plan's two (lib/placement.ts), and the two hands of anchor 2.3. */
-const gripLabel = (grip: Grip): string => (grip === "TWO_HANDS" ? "A2.3 två händer" : GRIP_LABEL[grip]);
 const split = (edge: string): [string, string] => [edge.slice(0, edge.indexOf(">")), edge.slice(edge.indexOf(">") + 1)];
 export type Route = { nodes: string[]; line: string; sentence: string };
 /**
@@ -300,20 +255,6 @@ export function orderLine(order: Pick<Order, "step" | "motion">): string | null 
   return step ? routeOf(step, order.motion?.target ? [order.motion.target] : [], order.step.shape, "").line : null;
 }
 
-// ── A seat's turn, and the card's part of a new order ───────────────────────
-/**
- * A seat's turn in a new order: the recipe's (no choice in the studio), else what the plan says for that seat, which is what
- * the store takes when the order names none (tools/order-store.ts create: input.flipAxis ?? recipe.turn ?? defaultFlip(…)).
- */
-export const seatFlip = (step: string, seat: Pick<SeatPlan, "turnAt" | "flipAxis"> | null | undefined, chosen: FlipAxis | null): FlipAxis => chosen ?? defaultFlip(step, seat?.turnAt, seat?.flipAxis);
-/**
- * The card's part of a new order's body (Ny beställning): never a turn, so that each seat gets its recipe's (with several
- * seats, "Alla sju", each its own); tur och retur or bara dit for a deal; the trial card scale when not 1.
- */
-export function cardBody(v: { shape: Shape | null; deal: boolean; cardScale: number }): Pick<NewOrderInput, "shape" | "cardScale"> {
-  return { ...(v.deal && v.shape ? { shape: v.shape } : {}), ...(v.cardScale !== 1 ? { cardScale: v.cardScale } : {}) };
-}
-
 // ── A new order from the address ────────────────────────────────────────────
 /**
  * The anchor a card's deal starts on: the one the game deals it from for this dealer (src/game-director.ts dealPose, SEAT_HUB:
@@ -346,20 +287,6 @@ export function presetOf(params: { get(name: string): string | null }): Preset |
   if (!step && (target || all)) step = `GIV-${dealAnchor(dealer ?? SHEET_DEALER, target ?? "P1.C1")}`;
   return { dealer, step, target, all, model: modell && Object.hasOwn(MODELS, modell) ? modell : null };
 }
-/** The address params a new order is asked with, removed when the sheet closes. */
-export const PRESET_PARAMS = ["ny", "dealer", "steg", "plats", "modell", "som"] as const;
-/**
- * Beställ's address that opens "Ny beställning" with these values again (presetOf reads it): "Flytta kortets plats" hands
- * it to Placering, whose "Tillbaka till beställningen" leads back here. The model only when it is not the step's own.
- */
-export function presetAddress(v: { dealer: string; step: StepKey; target: string | null; all?: boolean; model?: string | null }): string {
-  const p = new URLSearchParams({ ny: "1", dealer: v.dealer, steg: v.step });
-  if (v.all) p.set("plats", "alla");
-  else if (v.target) p.set("plats", v.target);
-  if (v.model) p.set("modell", v.model);
-  return `/bordet/?lage=bestall&ko=1&${p.toString()}`;
-}
-
 /**
  * Every choice of an order, so that "Ny beställning som den här" opens the sheet with them chosen and one change gives a
  * clean comparison: dealer, step, seat, hand and handbyte, closed or open, the text's style, model, seconds,
@@ -402,37 +329,9 @@ export function motionWords(order: Pick<Order, "motion"> & { step?: Pick<Order["
   return { hand: HAND_LABEL[handChoiceOf(m)], lands: LANDS_LABEL[m.side], turn: m.side === "FRONT" && !back && m.flipAxis ? FLIP_LABEL[m.flipAxis] : null };
 }
 
-// ── Where an order and Placering differ ─────────────────────────────────────
-// Placering's Rörelse is the source of a new order's defaults (hand, side, how the card turns); the grip is the step's own
-// (GIV-2.1 pinches, GIV-2.2 drags). Where the step and the plan disagree the sheet and the draft say so in one line, with the
-// choices' own labels only: what happens is said by the order's text.
-/** "Placering säger A2.1 nyp för plats 6; steget är A2.2 släp.": where a deal's step does not take the card as the plan does. */
-export function gripAgainstPlan(step: Pick<StepDef, "grip" | "card" | "start">, seats: readonly (Pick<SeatPlan, "target" | "grip"> | null | undefined)[]): string | null {
-  if (!step.card || !step.grip || step.start === "LAND") return null;
-  const differ = seats.filter((s): s is Pick<SeatPlan, "target" | "grip"> => !!s && s.grip !== step.grip);
-  return differ.length ? `Placering säger ${GRIP_LABEL[differ[0].grip]} för ${seatList(differ.map((s) => s.target))}; steget är ${gripLabel(step.grip)}.` : null;
-}
-/** A stored deal against what Placering said for its card when the draft was made (Motion.planned): the grip, then the turn. */
-export function plannedWords(order: Pick<Order, "motion">): string[] {
-  const m = order.motion;
-  if (!m?.planned) return [];
-  const differ = plannedDiffers(m, m.planned), seat = seatWords(m.target);
-  return [
-    ...(differ.includes("grip") ? [`Placering sa ${GRIP_LABEL[m.planned.grip]} för ${seat}; steget är ${gripLabel(m.grip)}.`] : []),
-    ...(differ.includes("turn") && m.planned.flipAxis && m.flipAxis ? [`Placering sa ”${FLIP_LABEL[m.planned.flipAxis]}” för ${seat}; utkastet säger ”${FLIP_LABEL[m.flipAxis]}”.`] : []),
-  ];
-}
-
 /** "Kort · 108 ord": a stored order's text style (Utförlig when it was written before template 4) and its length. */
 export function styleWords(order: Pick<Order, "prompt">): string {
   return `${STYLE_LABEL[styleOf(order.prompt)]} · ${wordCount(order.prompt.text)} ord`;
-}
-
-/** "Pamelas film · godkänd · 4 s": a reference film as it is shown, with whose it is when it is another dealer's. */
-export function referenceWords(reference: Order["reference"], dealer: string, names: Record<string, string> = {}): string | null {
-  if (reference.status !== "FINNS") return null;
-  const whose = reference.dealer && reference.dealer !== dealer ? `${genitive(names[reference.dealer] ?? reference.dealer)} film` : reference.dealer ? "egen film" : null;
-  return [reference.clips.join(", "), whose, reference.from ? REF_VERDICT_LABEL[reference.from.verdict] : null, secondsWords(reference.seconds)].filter(Boolean).join(" · ");
 }
 
 /** The marks of the text: a quiet underline per choice, and its word in the legend. */
@@ -459,6 +358,3 @@ export function storedParts(order: Order, look: string | null | undefined, plan:
   const prompt = orderPrompt(order, { name: dealerName, look }, seat ? { x: seat.centre[0], y: seat.centre[1] } : null, { asStored: true });
   return prompt.text === order.prompt.text ? prompt.parts : null;
 }
-
-/** The step groups in the order the sheet shows them: pictures first (a new dealer needs her anchors before any film). */
-export const stepGroups = () => [...new Set(STEPS.map((s) => s.group))].sort((a, b) => (a === "Bild" ? -1 : b === "Bild" ? 1 : 0));

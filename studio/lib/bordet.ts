@@ -145,7 +145,9 @@ export function roundFor(card: string, dealer: string, from: Exclude<Anchor, "1"
 export function gameLine(dealer: string, place: Place, planned: object | null): string | null {
   if (place === SHOE || !planned) return null;
   const game = dealAnchor(dealer, place);
-  return wishAnchor(dealer, place, planned) === game ? null : `Spelet ger ${seatWords(place)} från ${nodeCode(ANCHOR_NODE[game])} i dag; filmen spelas när rundan namnger den.`;
+  // A player's first card says so too ("plats 4, kort 1"), as the second one does: the line is about one card.
+  const card = /^P[1-7]\.C1$/.test(place) ? `${seatWords(place)}, kort 1` : seatWords(place);
+  return wishAnchor(dealer, place, planned) === game ? null : `Spelet ger ${card} från ${nodeCode(ANCHOR_NODE[game])} i dag; filmen spelas när rundan namnger den.`;
 }
 
 // ── Step 2: what steers the motion ──────────────────────────────────────────
@@ -228,7 +230,7 @@ export const wishLine = (step: StepDef, target: string | null, shape: Shape | nu
  * the text's style, tur och retur, another reference film or none, the hand, the side, the trial card scale) and his own
  * addition. Only what is chosen is sent; everything else is the recipe's, which the store fills in.
  */
-export type RowChoice = Partial<{ model: string; duration: number; takes: number; style: TextStyle; shape: Shape; reference: string | null; hand: HandChoice; side: Side; cardScale: number; extra: string; /** A deal bara dit: an A3 candidate of the seat as its last picture (the exception "med kandidaten som sista bild"). */ end: string }>;
+export type RowChoice = Partial<{ model: string; duration: number; takes: number; style: TextStyle; shape: Shape; reference: string | null; hand: HandChoice; side: Side; cardScale: number; extra: string; /** A deal bara dit: an A3 candidate of the seat as its last picture (the exception "med kandidaten som sista bild"), or null for none ("utan slutbild", the command's --no-end). */ end: string | null }>;
 
 type EntryLike = { id: string; role: string; state?: string; node?: string; card?: string; hand?: string; served: string | null; name?: string; frame?: number; fps?: number | null };
 
@@ -276,6 +278,10 @@ const missing = (name: MarkName, words: string): Mark => ({ name, ready: false, 
 const anchorCode = (at: Anchor) => nodeCode(ANCHOR_NODE[at]);
 const wordCount = (text: string) => text.trim().split(/\s+/).length;
 
+/** A step without a method: the store refuses it with "… har ingen metod än". */
+export const NO_METHOD = "steget har ingen metod än";
+/** A step that is tried with the command first (the return to A2.3, StepDef.off). */
+export const NOT_FROM_HERE = "provet beställs med kommandot, inte här";
 export function lineOf(input: {
   dealer: string; wish: FilmWish; methods: Pick<MethodRegister, "methods"> | null; bank: BankFacts | null; entries: readonly EntryLike[]; plan: Pick<PlanAnswer, "seats"> | null; choice?: RowChoice;
   /** The prices (data/order-policy.json); without them the row has no price. */
@@ -299,15 +305,20 @@ export function lineOf(input: {
   const lays: "LH" | "RH" = twoHands || hands.pass ? "RH" : hands.hand;
   const side: Side = c.side ?? seat?.side ?? "FRONT";
   const oneWayDeal = deal && shape === "ONE_WAY";
-  const end = oneWayDeal ? seatEndOf(entries, bank, { dealer, step: def, target: wish.target, hand: lays, chosen: c.end ?? null }) : null;
+  // "Utan slutbild" (the command's --no-end): the deal ends where the model leaves the card, its A3 made afterwards.
+  const open = oneWayDeal && c.end === null;
+  const end = oneWayDeal && !open ? seatEndOf(entries, bank, { dealer, step: def, target: wish.target, hand: lays, chosen: c.end ?? null }) : null;
   const endChoices = oneWayDeal ? a3Candidates(entries, wish.target, lays) : [];
   const byRule = c.reference === undefined && !!recipe && recipe.reference !== "ingen" && !!model?.videos;
   const reference = c.reference
     ? ((bank && model ? referenceCandidates(bank, { dealer, step: def, target: wish.target, model }).find((x) => (x.take === c.reference || x.film === c.reference) && x.fits) : null) ?? null)
     : byRule ? referenceByRule(bank, recipe!.reference, { dealer, step: def, target: wish.target, model, shape, lays }) : null;
-  const seconds = def.kind !== "FILM" || !model ? null : (c.duration ?? secondsOf(model, recipe?.seconds ?? null, reference));
+  // With a reference film its own length rules, as in the store; his length is an exception only without one (orderBody).
+  const seconds = def.kind !== "FILM" || !model ? null : (!reference && c.duration !== undefined ? c.duration : secondsOf(model, recipe?.seconds ?? null, reference));
   // A step that is off (the return to 2.3 until its trial), or without a recipe or a model he chose, is not ordered from here.
   const writable = !!model && !def.off && (def.kind !== "FILM" || seconds !== null);
+  // Why it is not ordered from here, in words that say it (review finding 22, 2026-11-21), not "kan inte beställas än".
+  const notHere = def.off ? NOT_FROM_HERE : !model ? NO_METHOD : "receptet säger ingen längd";
 
   // The anchor a picture is, where it holds (role, node, gäller, no card), as the store copies it (holding).
   const holds = (at: Anchor) => entries.find((e) => e.role === ANCHOR_ROLE[at] && e.state === "gäller" && !e.card && e.node === ANCHOR_NODE[at] && e.served !== null) ?? null;
@@ -318,12 +329,14 @@ export function lineOf(input: {
     ? (startLanding ? ready("Första bild", a3Name(wish.target!)) : missing("Första bild", `${a3Name(wish.target!)} saknas (${HAND_WORD[lays]})`))
     : anchorMark("Första bild", def.from);
   const last = def.kind !== "FILM" ? ready("Slutbild", "ingen, en bild")
+    : open ? ready("Slutbild", `ingen, ${a3Name(wish.target!)} görs efteråt`)
     : oneWayDeal ? (end ? ready("Slutbild", end.kind === "LANDNING" ? `${a3Name(wish.target!)}${end.candidate ? " (kandidat)" : ""}` : `snittruta ${end.cut.frame} ur ${end.cut.clip}`) : missing("Slutbild", c.end ? `${c.end} är ingen kandidat` : `${a3Name(wish.target!)} saknas (${HAND_WORD[lays]})`))
     : deal || def.cards?.length ? anchorMark("Slutbild", def.from, true)
     : anchorMark("Slutbild", def.to ?? def.from);
-  const referenceMark = !writable && !model ? missing("Referensfilm", NOT_YET)
+  const referenceMark = !writable && !model ? missing("Referensfilm", notHere)
     : reference ? ready("Referensfilm", reference.kind === "RENDERED" || reference.dealer === "docka" ? "dockan" : "godkänd giv")
     : c.reference || byRule ? missing("Referensfilm", def.card ? "ingen referensfilm till platsen" : "ingen referensfilm")
+    : open ? missing("Referensfilm", "utan slutbild behövs en referensfilm")
     : ready("Referensfilm", "ingen");
 
   // The text, as the store writes it (textOf): the motion it stores, the plan's point for the card where the last picture
@@ -338,21 +351,33 @@ export function lineOf(input: {
     const axis: FlipAxis = wish.step === "GIV-2.3" && style === "KORT" && turn ? "FREE" : (recipe?.turn ?? defaultFlip(wish.step, seat?.turnAt, seat?.flipAxis));
     const held = twoHands ? { hand: "LH" as const, pass: true } : hands;
     const mall = recipe?.template ?? TEMPLATE_VERSION;
-    const faceMark = !!shows && side === "FRONT" && !!input.marks?.[shows.id] && (def.start === "LAND" || wish.step.startsWith("GIV-"));
+    // Without a last picture the marks are said as the store says them for it: pilot 02's (tools/order-store.ts textOf).
+    const faceMark = open ? side === "FRONT" : !!shows && side === "FRONT" && !!input.marks?.[shows.id] && (def.start === "LAND" || wish.step.startsWith("GIV-"));
     text = orderPrompt({
       step: { key: wish.step, shape },
       motion: def.card && seat ? { grip: def.grip ?? "PINCH", hand: held.hand, pass: held.pass, turn, flipAxis: turn ? axis : null, side, target: wish.target } : null,
-      generation: { model: model.id }, pictures: [],
+      // Without a last picture the text is the open deal's, which the store writes from the first picture alone.
+      generation: { model: model.id }, pictures: open ? [{ goesAs: "startFrame" } as never] : [],
       prompt: { extra: (c.extra === undefined ? recipe?.extra : c.extra)?.trim() || null, style, template: mall !== TEMPLATE_VERSION ? `@${mall}` : "", faceMark },
       reference: { status: reference ? "FINNS" : "INGEN" },
     }, look, seat ? { x: seat.centre[0], y: seat.centre[1] } : null).text;
   }
   const takes = c.takes ?? recipe?.takes ?? 1;
-  const cost = writable ? lineCost(def, { model, seconds, takes, recipe }, input.policy ?? null) : null;
-  const textMark = writable ? ready("Text", text ? `${wordCount(text)} ord` : "skrivs med utkastet") : missing("Text", NOT_YET);
-  const priceMark = cost !== null ? ready("Pris", `${credits(cost)} krediter`) : missing("Pris", NOT_YET);
+  // The price where the model and the length are known, also on a row that is not ordered from here (Bordet shows it dimmed);
+  // the row's own cost stays null until it can be ordered.
+  const cost = model && (def.kind !== "FILM" || seconds !== null) ? lineCost(def, { model, seconds, takes, recipe }, input.policy ?? null) : null;
+  // The text is not ready while a picture it is written against is missing, or while the last picture is a cut frame (round
+  // two, 2026-11-21): only a text written with the draft's own pictures counts.
+  const textMark = !writable ? missing("Text", notHere)
+    : text ? ready("Text", `${wordCount(text)} ord`)
+    : !first.ready || !last.ready ? missing("Text", "väntar på bilderna")
+    : end?.kind === "SNITTRUTA" ? missing("Text", "slutbilden är en snittruta")
+    : ready("Text", "skrivs med utkastet");
+  const priceMark = cost !== null ? ready("Pris", `${credits(cost)} krediter`) : missing("Pris", notHere);
   const marks = [first, last, referenceMark, textMark, priceMark];
-  const why = [first, textMark, last, referenceMark, priceMark].find((m) => !m.ready)?.words ?? null;
+  // The first missing mark, in the order the store asks: no recipe or model before the last picture, a text that waits for
+  // the pictures after them.
+  const why = (writable ? [first, last, textMark, referenceMark, priceMark] : [first, textMark, last, referenceMark, priceMark]).find((m) => !m.ready)?.words ?? null;
   return { recipe, model, seconds, takes, style: c.style ?? recipe?.style ?? "KORT", shape, flipAxis: recipe?.turn ?? null, hands, side, reference, wanted: byRule, end, endChoices, marks, text, cost, why };
 }
 
@@ -391,21 +416,23 @@ export type FilmRow = {
  * the recipe (model, length, shape, takes, text, the reference film its rule finds, the seat's end picture). Over that, only
  * his deliberate exceptions, with the keys the store reads them under.
  */
-export function orderBody(dealer: string, wish: FilmWish, c: RowChoice = {}): NewOrderInput | null {
+export function orderBody(dealer: string, wish: FilmWish, c: RowChoice = {}, row: { shape?: Shape | null; reference?: boolean } = {}): NewOrderInput | null {
   const def = stepOf(wish.step);
   if (!def) return null;
   const out: NewOrderInput = { dealer, step: wish.step, ...(def.card && wish.target ? { target: wish.target } : {}) };
   if (c.model !== undefined) out.model = c.model;
-  if (c.duration !== undefined) out.duration = c.duration;
+  // An exception the form hides is not sent (review of PR 1, 2026-11-21): the length only without a reference film (the
+  // film's own length rules otherwise), the card's size only for a round trip, the end picture only for a deal bara dit.
+  if (c.duration !== undefined && !row.reference) out.duration = c.duration;
   if (c.takes !== undefined) out.takes = c.takes;
   if (c.style !== undefined) out.style = c.style;
   if (c.shape !== undefined && def.card && def.start !== "LAND") out.shape = c.shape;
   if (c.reference !== undefined) out.reference = c.reference || null;
   if (c.hand !== undefined) Object.assign(out, c.hand === "PASS" ? { hand: "LH", pass: true } : { hand: c.hand, pass: false });
   if (c.side !== undefined) out.side = c.side;
-  if (c.cardScale !== undefined && c.cardScale !== 1) out.cardScale = c.cardScale;
+  if (c.cardScale !== undefined && c.cardScale !== 1 && row.shape === "ROUND_TRIP") out.cardScale = c.cardScale;
   if (c.extra !== undefined) out.extra = c.extra.trim() || null;
-  if (c.end && def.card && def.start !== "LAND") out.end = c.end;
+  if (c.end !== undefined && def.card && def.start !== "LAND" && row.shape === "ONE_WAY") out.end = c.end;
   return out;
 }
 
@@ -430,7 +457,7 @@ export function filmRow(dealer: string, wish: FilmWish, methods: Pick<MethodRegi
     key: wishKey(wish), wish, line: wishLine(def, wish.target, resolved.shape), label: def.label, method: method ? { id: method.id, status: method.status, reference: method.reference } : null,
     // A step that is off (the return to 2.3 until its trial) shows no recipe: nothing of it can be ordered from here.
     recipe: def.off ? NOT_YET : recipeWords(method, wish.target, { model: resolved.model?.id ?? null, seconds: resolved.seconds }), marks: resolved.marks, orderable, text: resolved.text,
-    cost: orderable ? resolved.cost : null, body: orderable ? orderBody(dealer, wish, choice) : null, why: resolved.why,
+    cost: orderable ? resolved.cost : null, body: orderable ? orderBody(dealer, wish, choice, { shape: resolved.shape, reference: !!resolved.reference }) : null, why: resolved.why,
     reference: resolved.reference, wanted: resolved.wanted, chosen: Object.keys(choice).length > 0, resolved,
   };
 }
@@ -460,16 +487,6 @@ export function bordetOrderAddress(params: { forEach(fn: (value: string, key: st
     if (key !== "lage" && key !== "ko") p.append(key, value);
   });
   return `/bordet/?${p.toString()}`;
-}
-
-/** Bordet's Kortplan at a card ("/bordet/?plats=p3c2"), for "Flytta kortets plats" in Ny beställning and Placering's old address. */
-export function kortplanHref(place: string): string {
-  const p = new URLSearchParams();
-  const code = /^(P[1-7]|D)\.C([12])$/.exec(place);
-  if (code) p.set("plats", `${code[1]}c${code[2]}`.toLowerCase());
-  else if (place === "shoe") p.set("plats", "sko");
-  const q = p.toString();
-  return `/bordet/${q ? `?${q}` : ""}`;
 }
 
 /**

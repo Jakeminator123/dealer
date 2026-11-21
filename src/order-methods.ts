@@ -7,7 +7,7 @@
 // film the recipe's rule finds (referenceByRule), the film's length (secondsOf), and the words the production list
 // (tools/produce.ts) and Beställ show. No fs, no network. Tests: tools/order-line.test.ts, tools/order-routes.test.ts and studio/tests/line-same.test.ts.
 import { FLIP_AXES, FLIP_LABEL, MODELS, STEPS, TAKES_MAX, a3Name, lengthFor, lengthOfReference, modelFor, referenceCandidates, stepOf, stylesFor, type BankFacts, type FlipAxis, type ModelDef, type RefCandidate, type Shape, type StepDef, type StepKey, type TextStyle } from './order-model.ts';
-import { TEMPLATE_VERSION } from './order-prompts.ts';
+import { TEMPLATE_CHOICES, TEMPLATE_VERSION } from './order-prompts.ts';
 
 export const METHOD_STATUSES = ['gäller', 'prov', 'saknas'] as const;
 export type MethodStatus = (typeof METHOD_STATUSES)[number];
@@ -103,6 +103,8 @@ export function lastPictureOf(step: Pick<StepDef, 'kind' | 'card' | 'start' | 'c
   if (step.kind !== 'FILM') return null;
   if (step.cards?.length) return 'ritat-kort';
   if (step.card && step.start !== 'LAND') return shape === 'ONE_WAY' ? 'platsens-slutbild' : 'ritat-kort';
+  // A return ends on its anchor with the card drawn where the plan lays it (tools/order-store.ts, 2026-11-21).
+  if (step.card && step.start === 'LAND') return 'ritat-kort';
   return 'ankare';
 }
 
@@ -149,7 +151,9 @@ export function readMethods(value: unknown): { register: MethodRegister | null; 
     if (step.kind === 'STILL' && m.resolution !== null && m.resolution !== undefined) errors.push(`${at}: en bild har ingen upplösning här (stegets storlek gäller).`);
     if (m.style !== null && m.style !== undefined && !stylesFor(step.kind, step).includes(m.style)) errors.push(`${at}: stilen ${String(m.style)} finns inte för ${step.label}.`);
     else if ((m.style === null || m.style === undefined) && whole) errors.push(`${at}: ${m.status} kräver en stil.`);
-    if (whole && m.template !== TEMPLATE_VERSION) errors.push(`${at}: receptet säger mall ${String(m.template)}; texten skrivs med mall ${TEMPLATE_VERSION}. Ett recept gäller den mall det är prövat med: pröva om eller skriv om det.`);
+    // A recipe is written with one of the templates a draft can choose (TEMPLATE_CHOICES: today's 12, or 13 since the review of
+    // 2026-11-21, which the return to 2.3 is tried with).
+    if (whole && !TEMPLATE_CHOICES.includes(m.template as number)) errors.push(`${at}: receptet säger mall ${String(m.template)}; texten skrivs med mall ${TEMPLATE_CHOICES.join(' eller ')}. Ett recept gäller den mall det är prövat med: pröva om eller skriv om det.`);
     if (step.kind === 'FILM' && whole && !(typeof m.seconds === 'number' && m.seconds > 0)) errors.push(`${at}: en film kräver sekunder.`);
     if (step.kind === 'STILL' && m.seconds !== null && m.seconds !== undefined) errors.push(`${at}: en bild har inga sekunder.`);
     if (m.takes !== null && m.takes !== undefined && !(Number.isInteger(m.takes) && m.takes >= 1 && m.takes <= TAKES_MAX)) errors.push(`${at}: takes ska vara 1–${TAKES_MAX}.`);
@@ -218,9 +222,11 @@ export function referenceByRule(bank: BankFacts | null, rule: ReferenceRule, wan
   const rendered = rule === 'renderad' || rule === 'renderad-eller-samma-plats', banked = rule !== 'renderad';
   // A deal bara dit never takes a round trip: neither a take cut from one (the whole film goes) nor the dummy's film that goes
   // back to its anchor (its register says ROUND_TRIP). Match 0 is the step's own edge: for GIV-2.3 the dummy's film to exactly
-  // that card from anchor 2.3, of which the one listed last comes first (referenceCandidates).
+  // that card from anchor 2.3, of which the one listed last comes first (referenceCandidates). And a round trip takes only a
+  // dummy's film that itself goes there and back (2026-11-21, review of PR 1): a seat without one gets none, and the step waits.
   return referenceCandidates(bank, want).find((c) =>
-    c.match === 0 && c.fits && !(c.check && !c.check.pass) && (want.shape !== 'ONE_WAY' || (!c.frames && c.shape !== 'ROUND_TRIP')) && (c.lays ?? 'LH') === (want.lays ?? 'LH')
+    // A film of a dealer's own doll is never the default (round two, 2026-11-21): it goes only where the order names it.
+    c.match === 0 && c.fits && !c.doll && !(c.check && !c.check.pass) && (want.shape !== 'ONE_WAY' || (!c.frames && c.shape !== 'ROUND_TRIP')) && (want.shape !== 'ROUND_TRIP' || c.kind !== 'RENDERED' || c.shape === 'ROUND_TRIP') && (c.lays ?? 'LH') === (want.lays ?? 'LH')
     && (c.kind === 'RENDERED' ? rendered : banked && c.approvedStraight && c.verdict === 'GODKÄND')) ?? null;
 }
 

@@ -143,6 +143,8 @@ export type Production = {
   rows: ProductionRow[];
   anchors: Anchor[];
   landings: string[];
+  /** A3 candidates in Material (landing pictures with a card that do not hold yet): Kön says them beside the ones that hold. */
+  candidates: number;
   /** provisional: of the klar steps, those whose verdict was given for him (tools/review-put.ts); his own decision replaces it. */
   counts: { total: number; done: number; needed: number; neededDone: number; missing: number; provisional: number; byState: Record<RowState, number> };
   /** Karta's own count over the same graph (bankSummary): its "saknas" is counts.missing. */
@@ -300,6 +302,7 @@ export function productionList(input: ProductionInput): Production {
     };
   });
   const landings = entries.filter((e) => e.role === LANDING_ROLE && e.state === 'gäller' && e.card).map((e) => e.card!).sort();
+  const candidates = entries.filter((e) => e.role === LANDING_ROLE && e.state === 'kandidat' && e.card).length;
   const byState = Object.fromEntries(ROW_STATES.map((s) => [s, rows.filter((r) => r.state === s).length])) as Record<RowState, number>;
   const counts = {
     total: rows.length, done: byState.KLAR, needed: rows.filter((r) => r.needed).length, neededDone: rows.filter((r) => r.needed && r.state === 'KLAR').length,
@@ -311,7 +314,7 @@ export function productionList(input: ProductionInput): Production {
     'En saknad direktretur till vila kräver ingen ny film när både returen till skon och utgången till vila är spelbara. Kartans alla filmkanter är fler än rundans nödvändiga filmer.',
   ];
   if (rows.some((r) => r.hub)) notes.push(`En plats som ges via ett annat ankare vid skon spelas i rundan med vila före och efter (src/game-director.ts SEAT_HUB): ${rows.filter((r) => r.hub && r.kind === 'DEAL').map((r) => `${cardWords(r.target!)} via ${hubAnchor(r.hub!)}`).join(', ')}.`);
-  return { dealer, rows, anchors, landings, counts, karta: bankSummary(graph, input.hubs), notes };
+  return { dealer, rows, anchors, landings, candidates, counts, karta: bankSummary(graph, input.hubs), notes };
 }
 
 // ── Reading ─────────────────────────────────────────────────────────────────

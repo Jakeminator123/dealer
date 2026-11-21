@@ -15,8 +15,9 @@ import { orderRoutes } from './order-routes.ts';
 import { defaultPlan } from '../src/placement-model.ts';
 import { ARM_ALONE, ARM_AT_SHOE, POSE_ARM_WHAT, POSE_WHAT, SHOE_AT_ANCHOR, SLEEVE_AT_SHOE, orderStore, orderHash } from './order-store.ts';
 import { orderPrompt, promptFor } from '../src/order-prompts.ts';
-import { requestOf } from '../src/order-model.ts';
-import { newOrderOf, treesOf } from './order-new.ts';
+import { MODELS, requestOf, stepOf } from '../src/order-model.ts';
+import { referenceByRule } from '../src/order-methods.ts';
+import { dollFilm, newOrderOf, treesOf } from './order-new.ts';
 import { mediaRoles } from './media-roles.ts';
 import { replacedBy, allowed, isDecidable } from '../studio/components/material/state.ts';
 
@@ -50,6 +51,18 @@ const TUR = { shape: 'ROUND_TRIP', reference: null, duration: 7 } as const;
 const TUR_WAN = { shape: 'ROUND_TRIP', reference: null, model: 'wan3', duration: 6, takes: 2 } as const;
 
 type SaveTransport = { dropNext: boolean; dropped: number; revisions: (string | undefined)[] };
+
+/** The bank's real card, which a return's last picture is drawn with (TEXTURE in tools/order-images.ts), copied into the lab; false where this checkout has no media. */
+async function texture(root: string) {
+  const { TEXTURE } = await import('./order-images.ts');
+  if (![TEXTURE.video, TEXTURE.quadFrom].every((file) => existsSync(file))) return false;
+  for (const file of [TEXTURE.video, TEXTURE.quadFrom]) {
+    await mkdir(path.join(root, path.dirname(file)), { recursive: true });
+    await copyFile(file, path.join(root, file));
+  }
+  return true;
+}
+const NO_TEXTURE = 'kortets textur (assets/) finns inte i den här utcheckningen';
 
 async function lab(t: { after(fn: () => Promise<void> | void): void }, transport?: SaveTransport) {
   const root = await mkdtemp(path.join(base, 'order-routes-'));
@@ -293,7 +306,11 @@ test('drafts, changes and approval go through the routes with their guards', asy
   const anchor = a.order.pictures.find((p: { name: string }) => p.name === 'anchor.png');
   assert.equal(anchor.sha256, sha(files['paow-vila-ung-2']), 'the picture is copied byte for byte');
   assert.equal((await call('GET', `/${anchor.path}`)).bytes!.equals(files['paow-vila-ung-2']), true);
-  assert.equal(anchor.label, 'Paows ankare 1 · kandidat 2', 'which of her pictures the draft uses');
+  // Since 2026-11-21 in Jakob's notation (A1, A2.1), not "Paows ankare 1".
+  assert.equal(anchor.label, 'Paows A1 · kandidat 2', 'which of her pictures the draft uses');
+  // The answer names each picture as Material does today, beside the frozen label; the stored order has no such field.
+  assert.equal(anchor.named, 'Vila, kandidat 2');
+  assert.equal('named' in JSON.parse(await readFile(path.join(root, 'data/orders/paow-ankare-2-1-01.json'), 'utf8')).pictures[0], false);
   const pose = a.order.pictures.find((p: { name: string }) => p.name === 'pose-figure.png');
   assert.equal(pose.from.entry, 'pamela-nyp');
   assert.equal(pose.label, 'Pose · bara armen, handen och skon');
@@ -301,7 +318,8 @@ test('drafts, changes and approval go through the routes with their guards', asy
   assert.equal(pose.cut.source.sha256, sha(files['pamela-nyp']));
   assert.equal(a.order.summary, 'Gör Paows ankare 2.1 ur hennes ankare 1.', 'what it makes and from what, never how she moves');
   assert.equal(a.order.cost.total, 80);
-  assert.deepEqual(a.order.notes, ['Recept ankare-2.1 (prov) ur data/order-methods.json.', 'Undantag från receptet: 2 tagningar i stället för 1.'], 'the recipe it follows, and where it departs from it');
+  // Changed 2026-11-21 (review finding 16): the notes name the recipe, not the file it lies in.
+  assert.deepEqual(a.order.notes, ['Recept ankare-2.1 (prov).', 'Undantag från receptet: 2 tagningar i stället för 1.'], 'the recipe it follows, and where it departs from it');
 
   // Files: only pictures and films directly in the order's folder.
   for (const bad of [`/assets/orders/${a.order.id}/receipt.json`, `/assets/orders/${a.order.id}/..%2F..%2Fdata%2Forder-policy.json`, '/assets/orders/../data/order-policy.json', '/assets/orders/x/none.png']) assert.equal((await call('GET', bad)).status, 404, bad);
@@ -445,7 +463,7 @@ test('a draft that waits fetches its picture once the anchor holds: with refresh
   const anchor = refreshed.json.order.pictures[0];
   assert.equal(anchor.sha256, sha(files['paow-vila-ung-1']));
   assert.equal(anchor.from.entry, 'paow-vila-ung-1');
-  assert.equal(anchor.label, 'Paows ankare 1');
+  assert.equal(anchor.label, 'Paows A1');
   assert.equal(refreshed.json.shown, 'KLAR_ATT_TRYCKA');
   assert.equal(refreshed.json.refresh, null);
 });
@@ -453,7 +471,7 @@ test('a draft that waits fetches its picture once the anchor holds: with refresh
 test('a draft follows the anchor Jakob approves in Material, and shows what its picture was', async (t) => {
   const { root, call, files } = await lab(t);
   const made = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'ANKARE-2.1', base: 'paow-vila-ung-2' } })).json;
-  assert.equal(made.order.pictures[0].label, 'Paows ankare 1 · kandidat 2');
+  assert.equal(made.order.pictures[0].label, 'Paows A1 · kandidat 2');
   assert.deepEqual(made.made, [made.order.id]);
   const media = await mediaRoles(root).answer();
   const decided = await call('PUT', '/api/media/paow-vila-ung-1/state', { body: { state: 'gäller' }, match: media.revision! });
@@ -462,13 +480,13 @@ test('a draft follows the anchor Jakob approves in Material, and shows what its 
   const after = (await call('GET', `/api/orders/${made.order.id}`)).json;
   const anchor = after.order.pictures[0];
   assert.equal(anchor.sha256, sha(files['paow-vila-ung-1']));
-  assert.equal(anchor.label, 'Paows ankare 1');
-  assert.deepEqual(anchor.replaced, { at: '2026-11-12T21:00:00.000Z', was: 'Paows ankare 1 · kandidat 2 (Vila, kandidat 2)', entry: 'paow-vila-ung-2', sha256: sha(files['paow-vila-ung-2']) });
+  assert.equal(anchor.label, 'Paows A1');
+  assert.deepEqual(anchor.replaced, { at: '2026-11-12T21:00:00.000Z', was: 'Paows A1 · kandidat 2 (Vila, kandidat 2)', entry: 'paow-vila-ung-2', sha256: sha(files['paow-vila-ung-2']) });
   assert.equal(after.warnings.length, 0, 'the anchor holds now');
   assert.equal(after.refresh, null);
   // The same candidate approved: only the words change.
   const other = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'ANKARE-2.2', base: 'paow-vila-ung-1' } })).json;
-  assert.equal(other.order.pictures[0].label, 'Paows ankare 1', 'made after the approval');
+  assert.equal(other.order.pictures[0].label, 'Paows A1', 'made after the approval');
   assert.equal((await call('POST', `/api/orders/${made.order.id}/approve`, { match: after.revision })).status, 200);
 });
 
@@ -507,7 +525,7 @@ test('a deal: the hand, handbyte and how the card lands, defaulted from the plan
   const closed = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.2', target: 'P2.C1', side: 'BACK', pass: true, ...TUR_WAN } })).json;
   const c = closed.order.motion;
   assert.deepEqual([c.hand, c.pass, c.side, c.turn, c.fromPlan, c.flipAxis], ['LH', true, 'BACK', false, false, null], 'a card that is not turned stores no turn');
-  assert.equal(closed.order.pictures[1].label, 'Sista bild · samma + kortet stängt på plats 2');
+  assert.equal(closed.order.pictures[1].label, 'Slutbild · samma + kortet stängt på plats 2');
   assert.match(closed.order.prompt.text, /where her other hand takes it by its edges/);
   assert.equal(closed.order.summary, 'Gör en film av Paow: ett kort från ankare 2.2 till plats 2, tur och retur.', 'the line says what the film goes between; the hands are said by the text that is sent');
   const changed = (await call('PUT', `/api/orders/${closed.order.id}`, { body: { hand: 'RH', side: 'FRONT' }, match: closed.revision })).json;
@@ -515,7 +533,7 @@ test('a deal: the hand, handbyte and how the card lands, defaulted from the plan
   assert.deepEqual([d.hand, d.pass, d.side, d.turn, d.flipAxis], ['RH', false, 'FRONT', true, 'FREE'], 'opened again: the turn the plan suggests');
   assert.equal(changed.order.summary, 'Gör en film av Paow: ett kort från ankare 2.2 till plats 2, tur och retur.');
   assert.match(changed.order.prompt.text, /Her hand at the shoe lets go of the card and waits beside the shoe, and her other hand reaches across/);
-  assert.equal(changed.order.pictures[1].label, 'Sista bild · samma + kortet öppet på plats 2');
+  assert.equal(changed.order.pictures[1].label, 'Slutbild · samma + kortet öppet på plats 2');
   assert.equal((await call('PUT', `/api/orders/${closed.order.id}`, { body: { pass: true, hand: 'RH' }, match: changed.revision })).status, 400, 'handbyte goes from left to right');
   assert.equal((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.2', target: 'P2.C1', hand: 'RH', pass: true, ...TUR_WAN } })).status, 400);
 
@@ -528,7 +546,8 @@ test('a deal: the hand, handbyte and how the card lands, defaulted from the plan
   const orders = ((await call('GET', '/api/orders')).json.orders as A[]).filter((a) => a.order.group);
   assert.equal(orders.length, 7);
   assert.equal(new Set(orders.map((a) => a.order.group!.id)).size, 1);
-  assert.equal(orders[0].order.group!.label, 'Paow · giv från ankare 2.2 · alla sju');
+  // The step's group in Jakob's notation since 2026-11-21 ("Giv från A2.2"), its first letter small in the group's name.
+  assert.equal(orders[0].order.group!.label, 'Paow · giv från A2.2 · alla sju');
   assert.deepEqual(orders.map((a) => [a.order.motion.target, a.order.motion.pass]), all.map((s) => [s.target, s.pass]));
   for (const a of orders) {
     const s = seats[a.order.motion.target];
@@ -568,7 +587,7 @@ test("the turn is the recipe's, the plan's where the recipe leaves it to Placeri
   // a turn chosen for the draft is the draft's own, named as an exception; the plan's word stays with it
   const chosen = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P5.C1', ...TUR, flipAxis: 'AT_PLACE' } })).json.order;
   assert.deepEqual([chosen.motion.flipAxis, chosen.motion.planned.flipAxis], ['AT_PLACE', 'LONG_EDGE']);
-  assert.match(chosen.notes.join(' '), /vändningen AT_PLACE i stället för FREE/);
+  assert.match(chosen.notes.join(' '), /vändningen "Vänd vid platsen" i stället för "Handleden vänder kortet på vägen"/);
   // a later change of the plan does not move a draft's turn
   Object.assign(plan.targets['P5.C1'].intent, { flipAxis: 'FREE' });
   await writeFile(file, JSON.stringify(plan, null, 2) + '\n');
@@ -853,7 +872,10 @@ test('C2 two-hand drafts store the actual handoff and retain the legacy prompt',
   assert.equal(refreshed.json.order.prompt.sha256, shown.prompt.sha256);
 });
 
-test('the return to 2.3 copies the preceding deal’s RH ending and cannot be approved', async (t) => {
+// Changed in round two (2026-11-21): the return ends on anchor 2.3 with the card drawn where the plan lays it, is written
+// with template 13, finds the deal it continues when the order names none, and one take (a trial) can be approved; a series
+// cannot until the trial has held.
+test('the return to 2.3 copies the preceding deal’s RH ending, ends on the anchor with the card drawn, and only a trial is approved', async (t) => {
   const { root, call, request, files } = await lab(t);
   const media = register();
   const ready = { id: 'paow-ankare-2-3-a', role: 'ankare-2.3', name: 'Ankare 2.3', path: 'assets/anchors/paow-ankare-2-3-a/anchor.png', node: 'READY-C', state: 'gäller' };
@@ -869,6 +891,7 @@ test('the return to 2.3 copies the preceding deal’s RH ending and cannot be ap
     await mkdir(path.dirname(file), { recursive: true });
     await writeFile(file, bytes);
   }
+  if (!(await texture(root))) return t.skip(NO_TEXTURE);
 
   const deal = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.3', target: 'P4.C1', end: a3.id, side: 'FRONT', reference: null } });
   assert.equal(deal.status, 201, deal.json.error);
@@ -888,10 +911,20 @@ test('the return to 2.3 copies the preceding deal’s RH ending and cannot be ap
   const order = prepared.json.orders[0];
   assert.deepEqual([order.step.edge, order.step.shape, order.step.cutInto, order.reference.status], ['P4.C1>READY-C', 'ONE_WAY', ['P4.C1>READY-C'], 'INGEN']);
   assert.deepEqual([order.motion.hand, order.motion.pass, order.motion.turn, order.motion.side], ['RH', false, false, 'FRONT']);
-  assert.deepEqual(order.pictures.map((p: { sha256: string; from: { entry: string } }) => [p.sha256, p.from.entry]), [[last.sha256, a3.id], [sha(readyBytes), ready.id]]);
+  assert.deepEqual(order.pictures.map((p: { from: { entry: string } }) => p.from.entry), [a3.id, ready.id]);
+  assert.equal(order.pictures[0].sha256, last.sha256);
   assert.equal(order.pictures[0].from.path, last.path);
-  assert.match(order.prompt.text, /right fingertips lift off the blue card.*card stays where it lies.*glides back low.*beside her left hand, which stays at the shoe, as in the last frame\.$/i);
-  assert.match(order.notes.join(' '), /Recept retur-2\.3 \(prov\).*utan det utdelade kortet/);
+  // The last picture: anchor 2.3 with the card drawn in the plan's quad for the seat, not the bare anchor.
+  assert.notEqual(order.pictures[1].sha256, sha(readyBytes));
+  assert.ok(order.pictures[1].drawn && order.pictures[1].from.built, JSON.stringify(order.pictures[1].from));
+  assert.match(order.pictures[1].label, /Slutbild · Paows A2\.3 \+ kortet öppet på plats 4/);
+  assert.equal(order.prompt.template, 'film-retur-kort@13');
+  assert.match(order.prompt.text, /lifts off it, and the card stays where it lies.*glides back low over the felt.*as in the last frame\.$/i);
+  assert.match(order.notes.join(' '), /Recept retur-2\.3 \(prov\).*Returprovet är en tagning och kan godkännas/);
+  // Naming neither the candidate nor the deal: the last approved deal to the seat whose frozen last picture is one.
+  const found = await preview({ dealer: 'paow', step: 'RETUR-2.3', target: 'P4.C1' });
+  assert.equal(found.status, 200, found.json.error);
+  assert.deepEqual(found.json.orders[0].pictures.map((p: { sha256: string }) => p.sha256), order.pictures.map((p: { sha256: string }) => p.sha256));
 
   for (const [changes, reason] of [
     [{ base: null }, /namngiven A3-kandidat/],
@@ -913,10 +946,18 @@ test('the return to 2.3 copies the preceding deal’s RH ending and cannot be ap
   assert.equal(saved.status, 201, saved.json.error);
   const persisted = saved.json.order;
   assert.deepEqual(await readFile(path.join(root, persisted.pictures[0].path)), a3Bytes);
-  assert.deepEqual(await readFile(path.join(root, persisted.pictures[1].path)), readyBytes);
-  const blocked = await call('POST', `/api/orders/${persisted.id}/approve`, { match: saved.json.revision });
+  assert.equal(sha(await readFile(path.join(root, persisted.pictures[1].path))), order.pictures[1].sha256);
+  // A series waits for the trial; the trial, one take, is approved.
+  const series = await call('PUT', `/api/orders/${persisted.id}`, { body: { takes: 2 }, match: saved.json.revision });
+  assert.equal(series.status, 200, series.json.error);
+  const blocked = await call('POST', `/api/orders/${persisted.id}/approve`, { match: series.json.revision });
   assert.equal(blocked.status, 409);
-  assert.match(blocked.json.error, /utan det utdelade kortet/);
+  assert.match(blocked.json.error, /En serie returer till 2\.3/);
+  const trial = await call('PUT', `/api/orders/${persisted.id}`, { body: { takes: 1 }, match: series.json.revision });
+  assert.equal(trial.status, 200, trial.json.error);
+  const approvedTrial = await call('POST', `/api/orders/${persisted.id}/approve`, { match: trial.json.revision });
+  assert.equal(approvedTrial.status, 200, approvedTrial.json.error);
+  assert.equal(approvedTrial.json.order.status, 'GODKÄND');
   assert.equal(JSON.parse(await readFile(registerFile, 'utf8')).dealers.paow.entries.find((e: { id: string }) => e.id === a3.id).state, 'kandidat');
 
   await writeFile(path.join(root, last.path), readyBytes);
@@ -947,19 +988,19 @@ test('a film made with another model: the 4K model for the entry, its parameters
   const o = made.json.order;
   assert.deepEqual(o.generation, { provider: 'runway-app', tool: 'generate_video', model: 'kling-4', params: { resolution: '1080p', duration: 4 } });
   assert.deepEqual([o.cost.perTake, o.cost.total, o.cost.worstTotal, o.limits.maxCredits], [86, 86, 94, 94]);
-  assert.equal(o.title, 'Paow · Ankare 1 → 2.1 · Kling 4', 'another model than the recipe\'s is said in the title');
-  assert.match(o.notes.join(' '), /Recept ingang-2\.1 \(gäller\) ur data\/order-methods\.json\. Undantag från receptet: modell Kling 4 i stället för WAN 3; 1 tagningar i stället för 2\./);
+  assert.equal(o.title, 'Paow · Från vila till nypet · Kling 4', 'another model than the recipe\'s is said in the title');
+  assert.match(o.notes.join(' '), /Recept ingang-2\.1 \(gäller\)\. Undantag från receptet: modell Kling 4 i stället för WAN 3; 1 tagningar i stället för 2\./);
   assert.deepEqual(o.pictures.map((p: { goesAs: string }) => p.goesAs), ['startFrame', 'endFrame']);
   assert.equal(o.reference.status, 'INGEN');
   // None asked for: the recipe's model, resolution and length.
   const own = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'INGANG-2.1', takes: 1 } })).json.order;
   assert.deepEqual([own.generation.model, own.generation.params], ['wan3', { resolution: '1080p', duration: 4, ratio: 'adaptive', generateAudio: false }]);
-  assert.equal(own.title, 'Paow · Ankare 1 → 2.1');
+  assert.equal(own.title, 'Paow · Från vila till nypet');
   // A deal from 2.1 with WAN 3 gets WAN's ratio and no sound.
   const deal = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', ...TUR, model: 'wan3' } })).json.order;
   assert.deepEqual(deal.generation.params, { resolution: '1080p', duration: 7, ratio: 'adaptive', generateAudio: false });
   for (const [body, why] of [
-    [{ dealer: 'paow', step: 'INGANG-2.1', model: 'nano-banana-pro' }, /kan inte göra Ankare 1 → 2\.1: välj kling-4, wan3\.$/],
+    [{ dealer: 'paow', step: 'INGANG-2.1', model: 'nano-banana-pro' }, /kan inte göra Från vila till nypet: välj kling-4, wan3\.$/],
     [{ dealer: 'paow', step: 'ANKARE-2.1', model: 'kling-3-4k' }, /kan inte göra/],
     [{ dealer: 'paow', step: 'INGANG-2.1', model: 'gen-9' }, /kan inte göra/],
     [{ dealer: 'paow', step: 'INGANG-2.1', model: 7 }, /kan inte göra/],
@@ -993,21 +1034,24 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   await writeFile(path.join(root, 'data/clip-jobs.json'), JSON.stringify({ jobs }));
   await writeFile(path.join(root, 'motions/pamela-p4-c1-plan-deal-02.json'), JSON.stringify({ source: { frames: 120, fps: 30, sha256: sha(film) }, review: straight }));
   await writeFile(path.join(root, 'motions/pamela-kort-01.json'), JSON.stringify({ source: { frames: 60, fps: 30 } }));
+  if (!(await texture(root))) return t.skip(NO_TEXTURE);
 
   // A return has no method yet: nothing is defaulted, and the one who orders says the model and the length.
   const bare = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'RETUR-2.1', target: 'P4.C1' } });
   assert.equal(bare.status, 400);
-  assert.match(bare.json.error, /^Tillbaka till nypet \(2\.1\) har ingen metod än \(data\/order-methods\.json\), så inget är förvalt: säg modell \(kling-4, wan3\) och längd själv\.$/);
+  assert.match(bare.json.error, /^Tillbaka till nypet har ingen metod än \(data\/order-methods\.json\), så inget är förvalt: säg modell \(kling-4, wan3\) och längd själv\.$/);
   assert.match((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'RETUR-2.1', target: 'P4.C1', model: 'wan3' } })).json.error, /säg längden själv \(2–30 s för WAN 3\)/);
   const back = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'RETUR-2.1', target: 'P4.C1', model: 'wan3', duration: 3 } });
   assert.equal(back.status, 201);
   const r = back.json.order;
   assert.deepEqual([r.step.edge, r.step.shape, r.step.cutInto, r.generation.model, r.generation.params.duration, r.takes, r.cost.total], ['P4.C1>READY', 'ONE_WAY', ['P4.C1>READY'], 'wan3', 3, 1, 60]);
-  assert.deepEqual(r.pictures.map((p: { name: string; label: string; from: { entry: string } }) => [p.name, p.label, p.from.entry]), [['first.png', 'Första bild · Paows landning på plats 4', 'paow-landning-p4'], ['last.png', 'Sista bild · Paows ankare 2.1', 'paow-nyp-ny']]);
+  // Changed 2026-11-21 (round two): a return ends on its anchor with the card drawn where it stays, not on the bare anchor.
+  assert.deepEqual(r.pictures.map((p: { name: string; label: string; from: { entry: string } }) => [p.name, p.label, p.from.entry]), [['first.png', 'Första bild · Paows landning på plats 4', 'paow-landning-p4'], ['last.png', 'Slutbild · Paows A2.1 + kortet öppet på plats 4', 'paow-nyp-ny']]);
+  assert.ok(r.pictures[1].drawn, 'the card is drawn on the last picture');
   assert.equal(r.pictures[0].sha256, sha(landing));
   assert.deepEqual([r.motion.turn, r.motion.side], [false, 'FRONT']);
   assert.match(r.prompt.text, /^Locked camera, one continuous shot\. Her fingertips lift off the blue card, which stays where it lies\. Her open hand glides back low over the felt, palm down, to the shoe/);
-  assert.deepEqual(r.notes, ['Inget recept finns för Tillbaka till nypet (2.1): varje värde är valt för den här beställningen.']);
+  assert.deepEqual(r.notes, ['Inget recept finns för Tillbaka till nypet: varje värde är valt för den här beställningen.']);
   assert.equal(back.json.shown, 'KLAR_ATT_TRYCKA');
   assert.equal(back.json.refresh, null);
 
@@ -1019,12 +1063,12 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   assert.deepEqual([f.step.shape, f.step.cutInto, f.title, f.summary], ['ONE_WAY', ['READY>P4.C1'], 'Paow · Nyp, ett kort till platsen · A3P4C1', 'Gör en film av Paow: ett kort från ankare 2.1 till plats 4, bara dit.']);
   assert.deepEqual(f.generation, { provider: 'runway-app', tool: 'generate_video', model: 'kling-4', params: { resolution: '1080p', duration: 4 } }, 'the reference film is 4 s, and so is the film');
   assert.deepEqual([f.takes, f.prompt.style, f.prompt.template, f.motion.flipAxis, f.motion.hand, f.motion.pass], [1, 'KORT', 'film-giv-kort@12', 'FREE', 'LH', false]);
-  assert.deepEqual(f.pictures.map((p: { name: string; label: string; sha256: string }) => [p.name, p.label, p.sha256]), [['first.png', 'Första bild · Paows ankare 2.1', sha(files['paow-nyp-ny'])], ['last.png', 'Sista bild · Paows landning på plats 4', sha(landing)]], 'seat 4 ends on seat 4\'s own landing picture');
+  assert.deepEqual(f.pictures.map((p: { name: string; label: string; sha256: string }) => [p.name, p.label, p.sha256]), [['first.png', 'Första bild · Paows A2.1', sha(files['paow-nyp-ny'])], ['last.png', 'Slutbild · Paows landning på plats 4', sha(landing)]], 'seat 4 ends on seat 4\'s own landing picture');
   assert.deepEqual([f.reference.status, f.reference.clips, f.reference.path, f.reference.sha256, f.reference.seconds, f.reference.dealer, f.reference.approvedStraight, f.reference.from.verdict, f.reference.from.words], ['FINNS', ['pamela-p4-c1-plan-deal-02'], `assets/orders/${f.id}/reference.mp4`, sha(film), 4, 'pamela', true, 'GODKÄND', 'Det ser bra ut.']);
   assert.equal((await call('GET', `/${f.reference.path}`)).bytes!.equals(film), true, 'the film is copied byte for byte');
   assert.match(f.prompt.text, /^Locked camera, one continuous shot\. Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing\. Her hand at the shoe draws the yellow card up out of the window/);
   assert.match(f.prompt.text, /she lays the card flat at its place, blue side up, and her fingertips come to rest on it, as in the last frame\./);
-  assert.deepEqual(f.notes, ['Recept giv-2.1-mitten (prov) ur data/order-methods.json.'], 'the recipe and nothing against it');
+  assert.deepEqual(f.notes, ['Recept giv-2.1-mitten (prov).'], 'the recipe and nothing against it');
   assert.equal(f.cost.perTake, 86, '21,5 per s × 4 s');
   assert.deepEqual(line.json.problems, [], 'another dealer\'s film is allowed as a reference');
 
@@ -1034,7 +1078,7 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   Object.assign(plan.targets['P4.C1'].intent, { pass: true });
   await writeFile(planFile, JSON.stringify(plan, null, 2) + '\n');
   const planned = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1' } })).json.order;
-  assert.deepEqual([planned.motion.hand, planned.motion.pass, planned.motion.fromPlan, planned.reference.clips, planned.notes], ['LH', false, false, ['pamela-p4-c1-plan-deal-02'], ['Recept giv-2.1-mitten (prov) ur data/order-methods.json.']]);
+  assert.deepEqual([planned.motion.hand, planned.motion.pass, planned.motion.fromPlan, planned.reference.clips, planned.notes], ['LH', false, false, ['pamela-p4-c1-plan-deal-02'], ['Recept giv-2.1-mitten (prov).']]);
   assert.equal(planned.prompt.text, f.prompt.text, 'the same text as with a plan that says the hand at the shoe');
   Object.assign(plan.targets['P4.C1'].intent, { pass: false });
   await writeFile(planFile, JSON.stringify(plan, null, 2) + '\n');
@@ -1066,7 +1110,7 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   // The exceptions, each said in the draft: no reference film (then the recipe's 3 s), another model, tur och retur.
   const none = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', reference: null } })).json.order;
   assert.deepEqual([none.reference.status, none.generation.params.duration, none.cost.perTake], ['INGEN', 3, 64]);
-  assert.deepEqual(none.notes, ['Recept giv-2.1-mitten (prov) ur data/order-methods.json.', 'Undantag från receptet: ingen referensfilm fast receptet vill ha en.']);
+  assert.deepEqual(none.notes, ['Recept giv-2.1-mitten (prov).', 'Undantag från receptet: ingen referensfilm fast receptet vill ha en.']);
   assert.doesNotMatch(none.prompt.text, /Video 1/);
   const wanAnswer = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', model: 'wan3' } });
   assert.equal(wanAnswer.status, 201, wanAnswer.json.error);
@@ -1075,7 +1119,7 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   assert.match(wan.notes[1], /^Undantag från receptet: modell WAN 3 i stället för Kling 4; ingen referensfilm fast receptet vill ha en\.$/);
   // (Tur och retur as an exception, with its title and its notes: the test of the hand and "Alla sju" above.)
   // The last picture of a deal bara dit shows a hand and a side: they are not changed on the draft.
-  assert.match((await call('PUT', `/api/orders/${f.id}`, { body: { hand: 'RH' }, match: line.json.revision })).json.error, /Sista bilden är platsens slutbild, som visar handen och kortets sida/);
+  assert.match((await call('PUT', `/api/orders/${f.id}`, { body: { hand: 'RH' }, match: line.json.revision })).json.error, /Slutbilden är platsens egen, som visar handen och kortets sida/);
 
   // A reference film named outright: only for a model that takes one, of a length it takes, and from the bank.
   assert.match((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', model: 'wan3', reference: 'pamela-p4-c1-plan-deal-02' } })).json.error, /WAN 3 tar ingen referensfilm/);
@@ -1107,7 +1151,7 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   const candidates = ['assets/motions/paow-giv-2-1-p4-04-01/source.mp4@108', 'assets/motions/paow-giv-2-1-p4-08-01/source.mp4@133'];
   assert.deepEqual(asked, candidates, 'the preview passes over the frame 40 px off the plan, and save reuses the selected frame');
   const last = c.pictures[1];
-  assert.deepEqual([last.label, last.from.path, last.from.frame, last.from.cut], ['Sista bild · platsens slutbild: ruta 133 ur paow-giv-2-1-p4-08-01', 'assets/motions/paow-giv-2-1-p4-08-01/source.mp4', 133, { clip: 'paow-giv-2-1-p4-08-01', frame: 133, ret: 'paow-giv-2-1-p4-08-01-return', shoeFrom: 'paow-vila-ung-2' }]);
+  assert.deepEqual([last.label, last.from.path, last.from.frame, last.from.cut], ['Slutbild · snittruta 133 ur paow-giv-2-1-p4-08-01', 'assets/motions/paow-giv-2-1-p4-08-01/source.mp4', 133, { clip: 'paow-giv-2-1-p4-08-01', frame: 133, ret: 'paow-giv-2-1-p4-08-01-return', shoeFrom: 'paow-vila-ung-2' }]);
   assert.match(last.from.note, /^ruta 133 ur paow-giv-2-1-p4-08-01, där returen börjar \(Jakob: ”Bra retur\.”\); skon och kortet i fönstret ur ankare 1$/);
   assert.equal(cut.json.owners['last.png'].dealer, 'paow', 'the frame is the dealer\'s own');
   assert.deepEqual(cut.json.problems, []);
@@ -1330,7 +1374,7 @@ test("whose each picture is: the dealer's own, the other dealer's arm only, neve
   const film = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.2', target: 'P4.C1', ...TUR_WAN } })).json;
   assert.deepEqual([film.owners['first.png'].dealer, film.owners['last.png'].dealer], ['paow', 'paow'], 'what waits is still hers');
   const mixed = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'ANKARE-2.1', base: 'pamela-vila' } })).json;
-  assert.match(mixed.problems.join(' '), /Paows ankare 1: bilden är Pamelas, inte Paows/);
+  assert.match(mixed.problems.join(' '), /Paows A1: bilden är Pamelas, inte Paows/);
   assert.equal((await call('POST', `/api/orders/${mixed.order.id}/approve`, { match: mixed.revision })).status, 409, 'a mix-up cannot be approved');
 });
 
@@ -1488,9 +1532,12 @@ test('the template is a choice per order (12 or 13), kept when the draft is chan
   assert.equal(refreshed.status, 200, refreshed.json.error);
   assert.equal(refreshed.json.order.prompt.template, 'film-giv-kort@13');
   // tools/order-new.ts: the words of the command line are the order the routes take.
-  // Changed in round two (2026-11-21): the command also says the tree it holds the pictures to (--trad), null when none.
-  assert.deepEqual(newOrderOf(['paow', 'GIV-2.3', 'P4.C2', '--mall', '13', '--takes', '1', '--dry']), { input: { dealer: 'paow', step: 'GIV-2.3', target: 'P4.C2', template: 13, takes: 1, createdBy: 'huvudagenten, tools/order-new.ts' }, dry: true, tree: null });
+  // Changed in round two (2026-11-21): the command also says the tree it holds the pictures to (--trad), null when none, and
+  // the doll whose film goes with it (--docka), null when none.
+  assert.deepEqual(newOrderOf(['paow', 'GIV-2.3', 'P4.C2', '--mall', '13', '--takes', '1', '--dry']), { input: { dealer: 'paow', step: 'GIV-2.3', target: 'P4.C2', template: 13, takes: 1, createdBy: 'huvudagenten, tools/order-new.ts' }, dry: true, tree: null, doll: null });
   assert.equal(newOrderOf(['paow', 'RETUR-2.3', 'P4.C2', '--no-reference']).input.reference, null);
+  // The step form takes the seat as he writes it too (review of PR 1, 2026-11-21): A3P4C2 and P4C2 are the plan's P4.C2.
+  for (const said of ['A3P4C2', 'P4C2', 'p4.c2']) assert.equal(newOrderOf(['paow', 'GIV-2.3', said, '--dry']).input.target, 'P4.C2', said);
   assert.throws(() => newOrderOf(['paow', 'GIV-2.3', '--mall']), /--mall behöver ett värde/);
   assert.throws(() => newOrderOf(['paow', 'GIV-2.3', 'P4.C2', '--skicka']), /Okänd flagga --skicka/);
   // His notation: one film, its step chosen by the anchor it starts from (or, for a return, the anchor it goes to).
@@ -1515,4 +1562,22 @@ test('the template is a choice per order (12 or 13), kept when the draft is chan
   assert.deepEqual(treesOf(treeRoot, deal('ny-2-3'), 'tatuerad').map((p) => p.trees), [['tatuerad'], []]);
   assert.throws(() => treesOf(treeRoot, deal('gammal-2-3'), 'tatuerad'), /hör inte till trädet "tatuerad"/);
   assert.throws(() => treesOf(treeRoot, deal('ny-2-3'), 'bred'), /har inget träd "bred"/);
+});
+
+test('a film of a dealer’s own doll is never the default: the command names it with --docka, and says which doll’s film goes', async (t) => {
+  const root = await mkdtemp(path.join(base, 'order-doll-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const film = (id: string, more: object = {}) => ({ id, edge: 'READY-C>P4.C2', path: `assets/references/docka/${id}/source.mp4`, sha256: 'a'.repeat(64), seconds: 3, lays: 'RH' as const, check: null, ...more });
+  // The doll's film is listed last, where a film made again would come first: the rule still takes the dummy's.
+  const rendered = [film('docka-2-3-p4c2'), film('docka-paow-2-3-p4c2', { doll: 'paow' })];
+  const want = { dealer: 'paow', step: stepOf('GIV-2.3')!, target: 'P4.C2', model: MODELS['kling-4'], shape: 'ONE_WAY' as const, lays: 'RH' as const };
+  assert.equal(referenceByRule({ rendered }, 'renderad-eller-samma-plats', want)?.take, 'docka-2-3-p4c2');
+  assert.equal(referenceByRule({ rendered: [rendered[1]] }, 'renderad-eller-samma-plats', want), null, 'only a doll’s film: the rule finds none');
+  await mkdir(path.join(root, 'data'), { recursive: true });
+  await writeFile(path.join(root, 'data/rendered-references.json'), JSON.stringify({ schemaVersion: 1, films: rendered }));
+  const asked = newOrderOf(['paow', 'A2.3 - A3P4C2', '--docka', 'paow', '--no-end']);
+  assert.deepEqual([asked.doll, asked.input.reference], ['paow', undefined]);
+  assert.equal(dollFilm(root, 'paow', asked.input).id, 'docka-paow-2-3-p4c2');
+  assert.throws(() => dollFilm(root, 'paow', { step: 'GIV-2.3', target: 'P4.C1' }), /Dockan paow har ingen film för READY-C>P4.C1.*den har READY-C>P4.C2/);
+  assert.throws(() => newOrderOf(['paow', 'A2.3 - A3P4C2', '--docka', 'paow', '--no-reference']), /--docka väljer referensfilmen/);
 });
