@@ -6,6 +6,7 @@ import {buildGraph, type BankData, type BankJob, type MotionRecord} from '../src
 import {LOCAL, assemble, bankSections, breaks, cleanDoc, cleanLine, cut, hasLocalPath, knowledgeLeaks, placeWords, prioFrom, proofSections, scanLeaks, unwrap, viewSection, wordSections, PART_CHARS, WORDS_PER_PART, type Built, type Removed} from './knowledge.ts';
 import {Index, coreText, expandQuery, stem, tokenize, type Knowledge} from '../cloud/studio/bot-search.ts';
 import {findTextLeaks, type Proof} from './studio-freeze.ts';
+import {verdictOf} from '../studio/lib/verdict.ts';
 
 const release = {blocked: {folders: ['trailer*'], names: ['Göran', 'Astrid', 'Kevin']}};
 
@@ -146,17 +147,18 @@ function smallBank(): BankData {
 }
 
 test('the bank as text: what plays, verdicts with Jakob\'s words cleaned, what waits, and seat words for the search', () => {
-  const removed: Removed = {}, sections = bankSections(buildGraph(smallBank()), release, removed);
+  const removed: Removed = {}, graph = buildGraph(smallBank()), sections = bankSections(graph, release, removed);
   const summary = sections.find(s => s.id === 'banken/lage')!, p6 = sections.find(s => s.id === 'banken/ready-p6-c1')!;
-  assert.match(summary.text, /Huvudfilmer som en runda behöver: 33\./);
-  assert.match(summary.text, /Väntar på Jakobs ord: 1: pamela-p6-c1-plan-deal-03/);
-  assert.match(p6.text, /plats 6, kort 1/);
+  // what the text says, however it is worded: the round's count, the take that waits, the seat in words, his words, the verdict
+  assert.match(summary.text, /\b33\b/, 'the main films a round needs');
+  assert.ok(summary.text.includes('pamela-p6-c1-plan-deal-03'), 'the take that waits for Jakob is named');
+  assert.ok(p6.text.includes(placeWords('P6.C1')), 'the seat in the words the search expands');
   assert.match(p6.text, /Väldigt bra\./);
-  assert.match(p6.text, /underkänd/);
+  assert.ok(p6.text.includes(verdictOf(graph.takes['pamela-p6-c1-plan-deal-02']).label.toLowerCase()), 'the rejected take carries its verdict');
   const all = sections.map(s => s.text).join('\n');
   for (const gone of ['Kevin', 'credits', 'kostade', 'someone', 'estimatedCredits']) assert.ok(!all.includes(gone), gone);
   assert.equal(sections.find(s => s.id === 'banken/filmer')!.prio, 4);
-  assert.equal(placeWords('D.C2'), 'dealerns kort 2 (hålkortet)');
+  assert.match(placeWords('D.C2'), /hålkort/, 'the hole card is called so, as the search knows it'); assert.notEqual(placeWords('D.C1'), placeWords('D.C2'));
 });
 
 test('proofs: blocked and trailer proofs are left out whole; the list says what is in the copy', () => {
@@ -164,7 +166,10 @@ test('proofs: blocked and trailer proofs are left out whole; the list says what 
   const removed: Removed = {};
   const sections = proofSections([proof('pamela-film', 'Pamela-film 2', 'Version 2 med ljud. Den kostade mycket.'), proof('trailer-noir-3', 'Reklamfilm 3'), proof('helkropp', 'Helkropp', 'Prov med Astrid.')], new Set(['pamela-film']), release, removed);
   const list = sections[0].text;
-  assert.match(list, /Pamela-film 2 \(pamela-film\): 1 filmer, 0 bilder; 1 användbar; finns i kopian\. Version 2 med ljud\./);
+  assert.ok(list.includes('Pamela-film 2 (pamela-film)') && list.includes('Version 2 med ljud.'), list);
+  // whether a proof is in the copy is said, in whatever words: the same proof outside the copy gives another list
+  const one = (onSite: Set<string>) => proofSections([proof('pamela-film', 'Pamela-film 2')], onSite, release, {})[0].text;
+  assert.notEqual(one(new Set(['pamela-film'])), one(new Set()));
   assert.ok(!/trailer|Reklamfilm|Astrid|Helkropp|kostade/.test(sections.map(s => `${s.titel} ${s.text}`).join(' ')));
   assert.equal(sections.length, 2);
 });

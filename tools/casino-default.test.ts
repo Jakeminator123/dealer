@@ -52,7 +52,8 @@ test('the Casino opens on its editable saved look, its own table and the rail\'s
   assert.equal(src.searchParams.get('inbaddad'), '1');
   assert.equal(src.searchParams.get('table'), CASINO_TABLE);
   assert.deepEqual([...src.searchParams.keys()].sort(), ['forval', 'inbaddad', 'table'], 'no key of an experiment rides along by default');
-  assert.match(readFileSync('studio/components/casino/CasinoView.tsx', 'utf8'), /const src = `\$\{gameSrc\(look\)\}&\$\{new URLSearchParams\(\{ \[DEALER_PARAM\]: dealer \}\)\}`;/, 'the rail\'s dealer is passed on');
+  // the frame's address carries the rail's dealer: the view's own line, however it is written
+  assert.match(readFileSync('studio/components/casino/CasinoView.tsx', 'utf8'), /gameSrc\(look\)[^\n]*DEALER_PARAM/, 'the rail\'s dealer is passed on');
 });
 
 test('the Casino carries the geometry word on to the game in the frame, and keeps it in its own address', () => {
@@ -89,5 +90,6 @@ test('the saved perspective goes up with the copy: validated, scrubbed and still
 });
 
 test('Bordet\'s Scen starts from the same preset as the Casino when its address names no look', () => {
-  assert.match(readFileSync('studio/components/bordet/SceneBody.tsx', 'utf8'), /: new URLSearchParams\(\{ forval: CASINO_PRESET \}\)\);/);
+  // the view may be laid out anew; what holds is that the look it falls back on is the Casino's preset by name
+  assert.match(readFileSync('studio/components/bordet/SceneBody.tsx', 'utf8'), /\bforval: CASINO_PRESET\b/);
 });

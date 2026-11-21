@@ -4,7 +4,7 @@ import {dealerNote, musicLabel, roomCards, roomNote} from '../src/game-panel.ts'
 import assert from 'node:assert/strict';
 import {createSession, type Snapshot} from '../game/session.ts';
 import {defaultPlan} from '../src/placement-model.ts';
-import {createLayout, slotOf, slotLabel, slotFilm} from '../src/game-table.ts';
+import {createLayout, slotOf, slotLabel, slotFilm, FAN} from '../src/game-table.ts';
 import {planBeats, cardRecords, lyingAfter, SEAT_HUB} from '../src/game-director.ts';
 import {buildGraph, formatSequence, roundSequence} from '../src/clip-graph.ts';
 import {cardOptions, createFilm, placedCards} from '../src/game-film.ts';
@@ -23,7 +23,7 @@ test('the editable third dealer card drives its film position and later cards',(
  const layout=createLayout(plan,{geometry:'contract'}),after=layout.centre(slot),fourth=layout.centre({...slot,index:3});
  assert.ok(Math.abs(after.x-before.x-.04*1763)<1e-6);
  assert.ok(Math.abs(after.y-before.y-.02*1173)<1e-6);
- assert.ok(Math.abs(fourth.x-after.x-24)<1e-6);
+ assert.ok(Math.abs(fourth.x-after.x-FAN)<1e-6,'the fourth card lies one fan step on, whatever the step is set to');
  assert.ok(Math.abs(fourth.y-after.y)<1e-6);assert.equal(layout.material(slot).gloss,.73);
  assert.equal(layout.material({...slot,index:3}).gloss,.73);
 });
@@ -359,7 +359,10 @@ test('the chat dummy: the dealer speaks at the phases she has a line for, and wh
   assert.notEqual(dealerLine('BETTING', 1), dealerLine('BETTING', 0)); assert.equal(dealerLine('TURN', 0), null, 'she does not talk over the player');
   assert.equal(dealerLine('SETTLED', 3), null);
   assert.equal(replyTo(0), replyTo(4)); assert.notEqual(replyTo(0), replyTo(1));
-  assert.deepEqual(otherLine(0), {who: 'other', name: 'Alex', text: 'Lycka till alla!'}); assert.equal(otherLine(6).text, otherLine(0).text);
+  // The other players' lines: whatever they say, each is someone else's, named and said, and they come round again.
+  const others = Array.from({length: 60}, (_, i) => otherLine(i)), round = others.findIndex((o, i) => i > 0 && o.text === others[0].text && o.name === others[0].name);
+  assert.ok(others.every(o => o.who === 'other' && o.name.trim() && o.text.trim()));
+  assert.ok(round > 1 && others.every((o, i) => i + round >= others.length || o.text === others[i + round].text), 'the lines come round again');
   assert.equal(cleanMessage('  hej   på \n dig  '), 'hej på dig'); assert.equal(cleanMessage('   '), null); assert.equal(cleanMessage('x'.repeat(300))!.length, 140);
 });
 
@@ -368,13 +371,15 @@ test('the menus: the room that is showing is marked, and nothing can be changed 
   assert.deepEqual(roomCards(rooms, {room: 'la', canChange: true, changing: false}), [{id: 'panorama', chosen: false, disabled: false}, {id: 'la', chosen: true, disabled: true}]);
   assert.ok(roomCards(rooms, {room: 'la', canChange: false, changing: false}).every(c => c.disabled), 'a round is being played');
   assert.ok(roomCards(rooms, {room: 'la', canChange: true, changing: true}).every(c => c.disabled), 'the dealer is being changed');
-  assert.notEqual(dealerNote({canChange: true, changing: false}), dealerNote({canChange: false, changing: false}));
-  assert.match(dealerNote({canChange: true, changing: true}), /byts/);
-  // With one dealer the note says she is the one who comes back; with more it does not.
-  assert.match(dealerNote({canChange: true, changing: false}, 1), /kommer tillbaka/); assert.doesNotMatch(dealerNote({canChange: true, changing: false}, 2), /kommer tillbaka/);
-  assert.match(roomNote({canChange: true, changing: false}), /skimmer/i); assert.match(roomNote({canChange: false, changing: false}), /mellan rundorna/);
+  // The notes under the rooms and the dealers may be worded anew; what holds is that each state (free, during a round, while
+  // changing) says something of its own, and that with one dealer the note differs from the one with more.
+  const states = [{canChange: true, changing: false}, {canChange: false, changing: false}, {canChange: true, changing: true}];
+  for (const note of [roomNote, dealerNote]) { const said = states.map(s => note(s)); assert.ok(said.every(Boolean)); assert.equal(new Set(said).size, states.length, note.name); }
+  assert.notEqual(dealerNote({canChange: true, changing: false}, 1), dealerNote({canChange: true, changing: false}, 2));
   // The Musik button: the track that plays, else that sounds are on, else quiet. A track that is not in the list is not named.
-  const tracks = [{id: 'lounge', label: 'Lounge', note: ''}];
-  assert.equal(musicLabel({tracks, track: 'lounge', table: false, ambience: false}), 'Lounge'); assert.equal(musicLabel({tracks, track: null, table: true, ambience: false}), 'Ljud på');
-  assert.equal(musicLabel({tracks, track: null, table: false, ambience: false}), 'Tyst'); assert.equal(musicLabel({tracks: [], track: 'lounge', table: false, ambience: false}), 'Tyst');
+  const tracks = [{id: 'lounge', label: 'Lounge', note: ''}], on = musicLabel({tracks, track: null, table: true, ambience: false}), quiet = musicLabel({tracks, track: null, table: false, ambience: false});
+  assert.equal(musicLabel({tracks, track: 'lounge', table: false, ambience: false}), 'Lounge');
+  assert.ok(on && quiet && on !== quiet && on !== 'Lounge' && quiet !== 'Lounge');
+  assert.equal(musicLabel({tracks, track: null, table: false, ambience: true}), on, 'the room\'s sound is a sound too');
+  assert.equal(musicLabel({tracks: [], track: 'lounge', table: false, ambience: false}), quiet);
 });

@@ -44,7 +44,9 @@ function checkout(t: TestContext) {
     const previous = new Set(existsSync(folder) ? readdirSync(folder) : []);
     const result = spawnSync(process.execPath, ['--test', '--test-concurrency=1', '--test-reporter=spec',
       `--test-reporter=${reporter}`, '--test-reporter-destination=stdout', '--test-reporter-destination=stderr', 'probe.test.mjs'],
-    {cwd: opts.cwd ?? root, env: childEnv, encoding: 'utf8', timeout: 20000});
+    // The limit only catches a child run that hangs; it is no demand on speed. At 20 s it fell on a loaded machine
+    // (28.5 s on 2026-11-21 with several sessions working; 2.4 s alone), so it stands well above that.
+    {cwd: opts.cwd ?? root, env: childEnv, encoding: 'utf8', timeout: 120000});
     assert.ifError(result.error);
     assert.ok(existsSync(folder), result.stdout + result.stderr);
     const files = readdirSync(folder);

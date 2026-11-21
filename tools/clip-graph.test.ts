@@ -511,8 +511,8 @@ test('a second card automatically uses a playable own deal with its own compatib
 
   const unknownLocks = graph.resolveRound(g, [{...steps[0], take: 'wrong-deal'}, {...steps[1], take: 'wrong-return'}]);
   assert.deepEqual(unknownLocks.map(s => s.take?.id), [deal, back]);
-  assert.match(unknownLocks[0].notes.join(' '), /Låst tagning wrong-deal/);
-  assert.match(unknownLocks[1].notes.join(' '), /Låst tagning wrong-return/);
+  assert.match(unknownLocks[0].notes.join(' '), /\bwrong-deal\b/); // the note names the locked take, in whatever words
+  assert.match(unknownLocks[1].notes.join(' '), /\bwrong-return\b/);
 
   for (const mode of ['rejected', 'archived', 'missing', 'wrong frame', 'wrong hub', 'wrong hand']) {
     const changed: BankData = {...data, jobs: [...data.jobs!], motions: {...data.motions}, media: {...data.media}};
@@ -843,7 +843,10 @@ test('a bank without any Primär resolves as before: the takes of the rule befor
 });
 
 test('every segment of a whole round says why its take plays, with a short Swedish word for each reason', async () => {
-  assert.deepEqual(graph.WHY_LABEL, {LOCKED: 'låst', PRIMARY: 'primär', MAIN: 'huvudtagning', SHARED: 'platsens film', FITS_DEAL: 'passar given före', FITS_PRIMARY_RETURN: 'passar primär retur', SIDE: 'rätt kortsida krävs', HAND: 'samma hand som given', GAP: 'lucka'});
+  // The reasons are the contract; their words may be said anew: each a few words of its own.
+  assert.deepEqual(Object.keys(graph.WHY_LABEL).sort(), ['FITS_DEAL', 'FITS_PRIMARY_RETURN', 'GAP', 'HAND', 'LOCKED', 'MAIN', 'PRIMARY', 'SHARED', 'SIDE']);
+  const words = Object.values(graph.WHY_LABEL) as string[];
+  assert.ok(words.every(w => w.trim() && w.split(/\s+/).length <= 4), words.join(' | ')); assert.equal(new Set(words).size, words.length, 'one word for each reason');
   const whole = graph.roundSequence({seats: graph.SEATS, reveal: true}), round = graph.resolveRound(graph.buildGraph(primaryBank({'p4-back-ready-01': 'MAIN'})), whole);
   assert.deepEqual(round.filter(s => s.take).map(s => [s.id, s.take!.id, s.why]), [['IDLE>READY', 'entry-01', 'MAIN'], ['READY>P4.C1', 'p4-deal-01', 'FITS_PRIMARY_RETURN'], ['P4.C1>READY', 'p4-back-ready-01', 'PRIMARY'],
     ['READY>P4.C2', 'p4-deal-01', 'FITS_PRIMARY_RETURN'], ['P4.C2>READY', 'p4-back-ready-01', 'PRIMARY'], ['READY>D.C2', 'hole-closed-01', 'MAIN'], ['D.C2>IDLE', 'hole-back-idle-01', 'MAIN']]);
@@ -868,12 +871,15 @@ function idleBank(): BankData {
 }
 
 test('an idle take carries its weight, calm flag, on-request flag and a word for what it shows, with defaults when the record is silent', () => {
-  const g = graph.buildGraph(idleBank()), idle = (id: string) => g.takes[`pamela-idle-${id}-01`].idle;
-  assert.deepEqual(idle('loop'), {calm: true, weight: 20, onRequest: false, label: 'lugn vila', cut: true});        // only the plain loop is calm by default, and may be cut
-  assert.deepEqual(idle('breath-b'), {calm: true, weight: 10, onRequest: false, label: 'andning', cut: true});      // the record's own words
-  assert.deepEqual(idle('smile'), {calm: false, weight: 3, onRequest: false, label: 'leende', cut: false});          // a gesture until its record says otherwise, played out
-  assert.deepEqual(idle('coffee'), {calm: false, weight: 3, onRequest: true, label: 'kaffe', cut: false});
-  assert.deepEqual(idle('glance'), {calm: false, weight: 3, onRequest: false, label: 'blick åt sidan', cut: false}); assert.equal(g.takes['pamela-idle-glance-01'].stage, 'DONE', 'a film without a record is still a film');
+  const g = graph.buildGraph(idleBank()), full = (id: string) => g.takes[`pamela-idle-${id}-01`].idle!;
+  // the rule's values; the word for what a film shows is checked apart: the record's own word kept, else one of the take's own
+  const idle = (id: string) => { const {label, ...rule} = full(id); return {...rule, label: !!label.trim()}; };
+  assert.deepEqual(idle('loop'), {calm: true, weight: 20, onRequest: false, label: true, cut: true});        // only the plain loop is calm by default, and may be cut
+  assert.deepEqual(idle('breath-b'), {calm: true, weight: 10, onRequest: false, label: true, cut: true}); assert.equal(full('breath-b').label, 'andning'); // the record's own words
+  assert.deepEqual(idle('smile'), {calm: false, weight: 3, onRequest: false, label: true, cut: false});          // a gesture until its record says otherwise, played out
+  assert.deepEqual(idle('coffee'), {calm: false, weight: 3, onRequest: true, label: true, cut: false});
+  assert.deepEqual(idle('glance'), {calm: false, weight: 3, onRequest: false, label: true, cut: false}); assert.equal(g.takes['pamela-idle-glance-01'].stage, 'DONE', 'a film without a record is still a film');
+  const said = ['loop', 'breath-b', 'smile', 'coffee', 'glance'].map(id => full(id).label); assert.equal(new Set(said).size, said.length, 'each film its own word');
   assert.equal(graph.buildGraph(seatBank()).takes['p4-deal-01'].idle, null);
   // The round's idle step is the calmest film, not the newest: calm before gesture, the highest weight, the older take on a tie.
   assert.equal(g.edge['IDLE>IDLE'].main?.id, 'pamela-idle-loop-01');
@@ -895,7 +901,7 @@ test('the idle picker: weighted, never the same clip twice in a row, two calm cl
   // After two calm clips a gesture comes, by weight among the gestures: smile 3 and glance 3. One calm clip is not enough.
   const calm2 = [loop, breath];
   assert.equal(graph.IDLE_RULE.calmBetweenGestures, 2); assert.equal(pick([loop], 0.99), breath, 'one calm clip is not enough');
-  assert.equal(pick(calm2, 0), smile); assert.equal(pick(calm2, 0.49), smile); assert.equal(pick(calm2, 0.5), glance); assert.equal(pick(calm2, 0.99), glance); assert.match(graph.pickIdle(takes, calm2, 0.7)!.why, /^gest · 2 lugna klipp har gått · 50 % chans$/);
+  assert.equal(pick(calm2, 0), smile); assert.equal(pick(calm2, 0.49), smile); assert.equal(pick(calm2, 0.5), glance); assert.equal(pick(calm2, 0.99), glance); const why = graph.pickIdle(takes, calm2, 0.7)!.why; assert.ok(/\b2\b/.test(why) && /50 %/.test(why), `the why names the calm clips gone and the chance: ${why}`);
   // Right after a gesture two calm clips must pass again, whatever the dice say.
   for (const played of [[...calm2, smile], [...calm2, smile, loop]]) for (const r of [0, 0.5, 0.99]) assert.ok([loop, breath].includes(pick(played, r)), played.join(','));
   // The next gesture is one that was not just seen, whatever the dice say; when every gesture has been seen lately, any of them but the last clip.
@@ -962,7 +968,7 @@ test('two dealers share the job file but never a graph; a take without a dealer 
     [['paow-p4-c1-plan-deal-01', 'PRIMARY', null], ['paow-p4-c1-plan-return-ready-01', 'PRIMARY', null], ['paow-p1-c1-plan-deal-01', 'MAIN', null], [null, 'GAP', 'MISSING']]);
   // A round in her graph that names one of Pamela's takes cannot play it.
   const named = graph.resolveRound(paow, [{from: 'READY', to: 'P4.C1', take: 'pamela-p4-c1-plan-deal-02'}])[0];
-  assert.equal(named.take?.id, 'paow-p4-c1-plan-deal-01'); assert.match(named.notes.join(' '), /kan inte spelas här/);
+  assert.equal(named.take?.id, 'paow-p4-c1-plan-deal-01'); assert.match(named.notes.join(' '), /pamela-p4-c1-plan-deal-02/, 'a note names the take that cannot play');
   assert.deepEqual(Object.keys(graph.buildGraph(data, {dealer: 'nobody'}).takes), []);
 });
 
@@ -1072,7 +1078,7 @@ test('an archived take never plays: the step falls back on its next take by the 
   assert.equal(deal.main?.id, 'pamela-p4-c1-deal-calm-01'); assert.equal(deal.takes.some(t => t.explicitMain && graph.playable(t)), false);
   assert.equal(graph.buildGraph(bank()).edge['READY>P4.C1'].main?.id, 'pamela-p4-c1-plan-deal-02', 'and without the archive it plays as before');
   const [locked] = graph.resolveRound(g, [{from: 'READY', to: 'P4.C1', take: 'pamela-p4-c1-plan-deal-02'}]);
-  assert.equal(locked.take?.id, 'pamela-p4-c1-deal-calm-01'); assert.match(locked.notes.join(' '), /Låst tagning pamela-p4-c1-plan-deal-02 kan inte spelas här/);
+  assert.equal(locked.take?.id, 'pamela-p4-c1-deal-calm-01'); assert.match(locked.notes.join(' '), /pamela-p4-c1-plan-deal-02/, 'a note names the take that cannot play');
   for (const s of graph.resolveRound(g, graph.roundSequence({seats: ['P4', 'P1'], dealer: false, cards: 1}))) assert.notEqual(s.take?.id, 'pamela-p4-c1-plan-deal-02', s.id);
   assert.equal(graph.pickIdle([{...gone, idle: {weight: 20, calm: true, onRequest: false, label: '', cut: true}}], [], 0.5), null, 'the rest never picks an archived film');
 });

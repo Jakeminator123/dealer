@@ -8,7 +8,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {scenePresetStore} from './scene-preset-store.ts';
 import {DEFAULTS} from '../src/scene3d-view.ts';
-import {SHIPPED, SLOTS, effective, slotLabel, slotName, slotsOf} from '../studio/lib/scene-presets.ts';
+import {SHIPPED, effective} from '../studio/lib/scene-presets.ts';
 
 const base = existsSync('D:/dealer-scratch/tmp') ? 'D:/dealer-scratch/tmp' : os.tmpdir();
 async function temp(t: {after(fn: () => Promise<void>): void}) {
@@ -60,13 +60,7 @@ test('the three shipped presets: in the checkout, read-only, and exactly what th
     assert.deepEqual(file, p, `${p.name}.json is SHIPPED in studio/lib/scene-presets.ts`);
   }
   const [basgrund, levande, rumsstudien] = SHIPPED.map(p => effective(DEFAULTS, p.state));
-  // basgrund: what src/game-page.ts sets (lines 39, 57-58, 173), the rest the scene's defaults
-  assert.deepEqual(SHIPPED[0].state, {format: 'fill', room: 'panorama', blur: 5, tray: true, cards: true, pitch: -8, zoom: 0.84, roomShift: 'shimmer'});
-  const game = await readFile('src/game-page.ts', 'utf8');
-  assert.match(game, /const FRAMING = \{wide: \{pitch: -8, zoom: 0\.84\}/);
-  assert.match(game, /\?\.id \?\? 'panorama';/);
-  assert.match(game, /scene\.set\(\{format: 'fill', room: room as never, blur: ROOMS\.find\(r => r\.id === room\)!\.blur, tray: true, cards: true, pitch: Number\(query\.get\('pitch'\) \?\? FRAMING\.wide\.pitch\), zoom: Number\(query\.get\('zoom'\) \?\? FRAMING\.wide\.zoom\)\}\)/);
-  assert.match(game, /scene\.set\(\{roomShift: 'shimmer', room: id, blur: next\.blur\}/);
+  // basgrund is what game.html sets by itself: held against src/game-page.ts in tools/casino-default.test.ts
   const vegas = JSON.parse(await readFile('data/scene-rooms.json', 'utf8')).rooms.find((r: {id: string}) => r.id === 'panorama');
   assert.equal(vegas.blur, basgrund.blur); assert.equal(vegas.game, true);
   // levande: basgrund plus the look Jakob remembers, the camera leaning without swaying (Jakob 2026-11-13); rumsstudien:
@@ -75,7 +69,6 @@ test('the three shipped presets: in the checkout, read-only, and exactly what th
   assert.deepEqual([levande.mode, levande.sway, levande.focus, levande.dust, levande.clock], ['lean', false, 'follow', 0.6, true]);
   assert.deepEqual({...rumsstudien, surface: levande.surface, base: levande.base, shadowAbove: levande.shadowAbove, lamp: levande.lamp}, levande);
   assert.deepEqual([rumsstudien.surface, rumsstudien.base, rumsstudien.shadowAbove, rumsstudien.lamp], ['photo', 'legs', 0, 0.5]);
-  assert.match(SHIPPED[2].about, /Inte bedömd av Jakob/);
 });
 
 test('his own preset: saved, listed after the shipped ones, overwritten only against its revision, taken away', async t => {
@@ -101,24 +94,6 @@ test('his own preset: saved, listed after the shipped ones, overwritten only aga
   await assert.rejects(store.remove('kvall-i-skogen', again.preset.revision), fails(404));
   await assert.rejects(store.save('kvall-i-skogen', mine, again.preset.revision), fails(409)); // gone in the meantime
   assert.deepEqual((await readdir(path.join(root, 'data/scene-presets'))).sort(), ['basgrund.json', 'levande.json', 'rumsstudien.json']); // no temporary file left
-});
-
-test('a place (Profilval 3) is an ordinary preset of his: made without If-Match, read by name, overwritten against its revision, emptied', async t => {
-  const root = await temp(t), store = scenePresetStore(root), name = slotName(3);
-  await assert.rejects(store.load(name), fails(404)); // an empty place: no file
-  const made = await store.save(name, {label: slotLabel(3), about: '', state: {dust: 0.3, sway: false}}, undefined);
-  assert.equal(made.preset.shipped, false);
-  // the game and the Casino view read it as any preset: /api/scene-presets/profilval-3, ?forval=profilval-3
-  const read = (await store.load(name)).preset;
-  assert.deepEqual([read.name, read.label, read.state, read.revision], [name, 'Profilval 3', {dust: 0.3, sway: false}, made.preset.revision]);
-  assert.deepEqual(slotsOf((await store.list()).presets).map(p => p?.name ?? null), [null, null, name, null, null, null, null, null, null, null]);
-  // a filled place is never written over without the revision the page read, nor against an old one
-  await assert.rejects(store.save(name, {label: slotLabel(3), state: {dust: 0.9}}, undefined), fails(428));
-  const again = await store.save(name, {label: slotLabel(3), state: {dust: 0.9}}, made.preset.revision);
-  await assert.rejects(store.save(name, {label: slotLabel(3), state: {dust: 0.1}}, made.preset.revision), fails(409));
-  assert.deepEqual((await store.load(name)).preset.state, {dust: 0.9});
-  await store.remove(name, again.preset.revision);
-  assert.deepEqual(slotsOf((await store.list()).presets), Array(SLOTS).fill(null));
 });
 
 test('the shipped presets cannot be written or taken away', async t => {

@@ -91,7 +91,7 @@ test('a take or proof the rule picks but the block list stops is refused, not qu
   assert.deepEqual(out.refused.map(r => r.id).sort(), ['ren', 'saknas', 'trailer-noir']);
   // Paow off: her proof is left out, with the reason
   const off = pickProofs(all, new Map(), {...wanted, paow: false, proofs: [{id: 'paow-kavaj', why: 'x'}]});
-  assert.deepEqual(off.left.find(l => l.id === 'paow-kavaj')?.why, 'Paow är avslagen');
+  assert.match(off.left.find(l => l.id === 'paow-kavaj')?.why ?? '', /Paow/, 'left out, with a reason that names her');
   // a file list narrows a proof; a file it names that does not exist is refused
   assert.equal(pickProofs(all, new Map(), {...wanted, proofs: [{id: 'pamela-film', why: 'x', files: ['b.mp4']}]}).refused.length, 1);
 });

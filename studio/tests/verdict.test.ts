@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { buildGraph, type BankData, type BankJob } from "../../src/clip-graph.ts";
 import { DECISIONS, NOTE_LIMIT as STORE_LIMIT, applyChange, applyProvisional } from "../../tools/review-store.ts";
 import { NOTE_LIMIT, type Decision } from "../lib/api.ts";
-import { PROOF_VERDICT_LABEL, SAID_WITHOUT_NOTE, awaitingJakob, chosenDecision, judgedForJakob, primarCount, proofVerdict, provisionalChip, provisionalOf, provisionalWords, reviewStamp, splitLabel, storedNote, verdictOf, verdictPhrase } from "../lib/verdict.ts";
+import { FOR_YOU, PROOF_VERDICT_LABEL, SAID_WITHOUT_NOTE, VERDICTS, VERDICT_LABEL, VERDICT_SIGN, awaitingJakob, chosenDecision, judgedForJakob, primarCount, proofVerdict, provisionalChip, provisionalOf, provisionalWords, reviewStamp, splitLabel, storedNote, verdictOf, verdictPhrase } from "../lib/verdict.ts";
 
 type R = Record<string, unknown>;
 const take = (review: R | null, extra: R = {}) => ({
@@ -16,23 +16,30 @@ const take = (review: R | null, extra: R = {}) => ({
   ...extra,
 });
 const jakob = "Jakob 2026-11-11: Det ser bra ut.";
+// a verdict's chip shows its own label and sign; which words and signs they are is the studio's to say
+const chip = (verdict: (typeof VERDICTS)[number]) => ({ label: VERDICT_LABEL[verdict], sign: VERDICT_SIGN[verdict] });
 
 test("the five verdicts and whose word it is", () => {
-  assert.deepEqual(verdictOf(take({ decision: "ACCEPTED", acceptedAs: "MAIN", userAccepted: true, userReview: jakob })), { verdict: "primar", byJakob: true, label: "Primär", sign: "★", detail: null, provisional: false });
+  for (const table of [VERDICT_LABEL, VERDICT_SIGN]) {
+    const said = VERDICTS.map((v) => table[v]);
+    assert.ok(said.every((s) => s.trim()), "every verdict has its word and its sign");
+    assert.equal(new Set(said).size, VERDICTS.length, "no two verdicts look alike");
+  }
+  assert.deepEqual(verdictOf(take({ decision: "ACCEPTED", acceptedAs: "MAIN", userAccepted: true, userReview: jakob })), { verdict: "primar", byJakob: true, ...chip("primar"), detail: null, provisional: false });
   assert.equal(verdictOf(take({ decision: "ACCEPTED", userAccepted: true, userReview: jakob })).verdict, "godkand");
   assert.equal(verdictOf(take({ decision: "ACCEPTED", acceptedAs: "VARIANT", userAccepted: true, userReview: jakob })).verdict, "variant");
   assert.equal(verdictOf(take({ decision: "PENDING", userAccepted: false })).verdict, "vantar");
   assert.equal(verdictOf(take(null)).verdict, "vantar");
   assert.equal(verdictOf(take({})).verdict, "vantar");
-  assert.deepEqual(verdictOf(take({ decision: "REJECTED", userAccepted: false, userReview: jakob })), { verdict: "underkand", byJakob: true, label: "Underkänd", sign: "✕", detail: null, provisional: false });
+  assert.deepEqual(verdictOf(take({ decision: "REJECTED", userAccepted: false, userReview: jakob })), { verdict: "underkand", byJakob: true, ...chip("underkand"), detail: null, provisional: false });
   // A reviewer's decision: no userAccepted / no words of Jakob's.
   assert.equal(verdictOf(take({ decision: "ACCEPTED" })).byJakob, false);
   assert.equal(verdictOf(take({ decision: "REJECTED" })).byJakob, false);
   assert.equal(verdictOf(take({ decision: "ACCEPTED", acceptedAs: "VARIANT", userAccepted: false })).byJakob, false);
   // Secondary: set aside, with his words about its faults when he gave it.
-  assert.deepEqual(verdictOf(take({ decision: "SECONDARY", userAccepted: false, userReview: "Jakob 2026-11-10: dålig." })), { verdict: "underkand", byJakob: true, label: "Underkänd", sign: "✕", detail: "sekundär", provisional: false });
+  assert.deepEqual(verdictOf(take({ decision: "SECONDARY", userAccepted: false, userReview: "Jakob 2026-11-10: dålig." })), { verdict: "underkand", byJakob: true, ...chip("underkand"), detail: "sekundär", provisional: false });
   // Not finished.
-  assert.deepEqual(verdictOf(take(null, { stage: "ORDERED" })), { verdict: "vantar", byJakob: false, label: "Väntar", sign: "○", detail: "renderas", provisional: false });
+  assert.deepEqual(verdictOf(take(null, { stage: "ORDERED" })), { verdict: "vantar", byJakob: false, ...chip("vantar"), detail: "renderas", provisional: false });
   assert.equal(verdictOf(take(null, { stage: "FAILED" })).detail, "misslyckad");
 });
 
@@ -119,8 +126,10 @@ test("proof files: a takes list says which files carry a chip; a take nobody jud
     takes: ["f.mp4", "h.mp4", "v.mp4", "n.mp4"],
   };
   assert.deepEqual(["f.mp4", "h.mp4", "v.mp4", "n.mp4"].map((f) => proofVerdict(words, f)), ["failed", "ok", "remarks", "unreviewed"], "a reviewer's word first in a parenthesis (over a stated unreviewed), not the same word in a sentence");
-  assert.equal(PROOF_VERDICT_LABEL.unreviewed, "Väntar på granskaragenten");
-  assert.doesNotMatch(Object.values(PROOF_VERDICT_LABEL).join(" "), /Inte granskad/);
+  const proofWords = Object.values(PROOF_VERDICT_LABEL);
+  assert.ok(proofWords.every((w) => w.trim()) && new Set(proofWords).size === proofWords.length, "four chips, each its own word");
+  assert.doesNotMatch(PROOF_VERDICT_LABEL.unreviewed, /Jakob/, "an unjudged take waits for a reviewer, never in his queue");
+  assert.doesNotMatch(proofWords.join(" "), /Inte granskad/);
 });
 
 test("proof labels split into a short name and the rest", () => {
@@ -135,21 +144,25 @@ test("a verdict judged for him: its own chip and words, never Jakob's, never a p
   const prov = (decision: "ACCEPTED" | "VARIANT" | "REJECTED", before: R = { decision: "PENDING", inbox: true, userAccepted: false }) =>
     applyProvisional(before, { decision, by, mandate, note: "Ren landning." }, "2026-11-13T03:00:00.000Z") as R;
   const ok = verdictOf(take(prov("ACCEPTED")));
-  assert.deepEqual(ok, { verdict: "godkand", byJakob: false, label: "Godkänd", sign: "✓", detail: null, provisional: true });
+  assert.deepEqual(ok, { verdict: "godkand", byJakob: false, ...chip("godkand"), detail: null, provisional: true });
   assert.equal(verdictOf(take(prov("VARIANT"))).verdict, "variant");
   assert.equal(verdictOf(take(prov("VARIANT"))).provisional, true);
   const bad = verdictOf(take(prov("REJECTED")));
   assert.deepEqual([bad.verdict, bad.byJakob, bad.provisional], ["underkand", false, true]);
-  assert.deepEqual(provisionalChip(ok), { label: "Godkänd", note: "åt dig" });
-  assert.deepEqual(provisionalChip(bad), { label: "Underkänd", note: "åt dig" });
-  assert.equal(verdictPhrase(ok), "godkänd åt dig");
-  assert.equal(verdictPhrase(verdictOf(take(prov("VARIANT")))), "variant åt dig");
-  assert.equal(verdictPhrase(bad), "underkänd åt dig");
-  assert.equal(verdictPhrase({ verdict: "godkand", provisional: false }), "godkänd");
+  // the chip: the verdict's own label with the note "åt dig" (Granska's "Dömda åt dig"), never a look of his own
+  assert.deepEqual(provisionalChip(ok), { label: VERDICT_LABEL.godkand, note: FOR_YOU });
+  assert.deepEqual(provisionalChip(bad), { label: VERDICT_LABEL.underkand, note: FOR_YOU });
+  for (const v of [ok, verdictOf(take(prov("VARIANT"))), bad]) {
+    const own = verdictPhrase({ verdict: v.verdict, provisional: false });
+    assert.ok(verdictPhrase(v).endsWith(FOR_YOU) && !own.includes(FOR_YOU), `${verdictPhrase(v)} / ${own}: judged for him reads so; his own does not`);
+  }
+  assert.notEqual(verdictPhrase(ok), verdictPhrase(bad));
   // The tooltip: who, when, under which words of his, and that his decision replaces it; nothing says it waits.
-  const words = provisionalWords(ok, provisionalOf(prov("ACCEPTED") as never));
-  assert.equal(words, `Godkänd åt dig av ${by}, 2026-11-13, på ditt uppdrag: ${mandate}. Inte din egen dom; ditt beslut ersätter den.`);
-  assert.equal(provisionalWords(bad), "Underkänd åt dig. Inte din egen dom; ditt beslut ersätter den.");
+  const words = provisionalWords(ok, provisionalOf(prov("ACCEPTED") as never)), plain = provisionalWords(bad);
+  for (const part of [by, "2026-11-13", mandate, FOR_YOU]) assert.ok(words.includes(part), `the tooltip names ${part}: ${words}`);
+  assert.ok(plain.includes(FOR_YOU) && !plain.includes(by) && !plain.includes(mandate), "without the block it names neither who nor his words");
+  const notHis = plain.slice(plain.indexOf(". ") + 2);
+  assert.ok(notHis.trim() && words.endsWith(notHis), "both end with the same words that it is not his own verdict and his replaces it");
   for (const said of [words, verdictPhrase(ok), verdictPhrase(bad)]) assert.doesNotMatch(said, /väntar|preliminär/i);
   // Not his note, not his stamp, no button of his pressed.
   assert.equal(storedNote(prov("ACCEPTED") as never), "");

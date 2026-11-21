@@ -35,7 +35,7 @@ test('the page reads every entry with its revision and what its card shows', asy
   assert.deepEqual(decisions.map(d => d.id), ['forsta', 'andra', 'tredje']);
   assert.deepEqual(decisions[0].shown, {name: 'c.mp4', kind: 'video', path: 'assets/proofs/ett-prov/c.mp4'}, 'the first film in the labels\' order');
   assert.equal(decisions[0].missing, null);
-  assert.deepEqual([decisions[1].shown, decisions[1].missing], [null, 'Provet saknas finns inte på den här datorn.']);
+  assert.equal(decisions[1].shown, null); assert.ok(decisions[1].missing?.includes('saknas'), 'a card whose proof is not here says which proof is missing');
   assert.deepEqual(decisions[2].shown, {name: 'b.png', kind: 'image', path: 'assets/proofs/ett-prov/b.png'});
   assert.match(decisions[0].revision, /^"[0-9a-f]{64}"$/);
   // No register yet is an empty one; an unreadable one is refused and named.

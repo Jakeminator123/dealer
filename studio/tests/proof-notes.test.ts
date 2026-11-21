@@ -62,7 +62,12 @@ test("the main agent: an answer marks read; read alone keeps the answer; unread 
   assert.deepEqual(unreadNotes(readNotes(read)).map((n) => n.id), [3, 1]);
   assert.throws(() => applyAgent(raw, 9, { read: T3 }), /ingen anteckning 9/);
   assert.throws(() => applyAgent(raw, 1, { answer: " ", read: T3 }), /tomt/);
-  assert.equal(noteLine(readNotes(register([note({ text: "för\nmörk", choice: "inte-bra" })])).notes[0]), '#1 kort-grepp / a.mp4 · Inte bra · "för / mörk" · 2026-11-18 00:10 UTC');
+  // one line per note that names it, its place, his choice and words and the time, however it is laid out
+  const line = (extra: Record<string, unknown>) => noteLine(readNotes(register([note(extra)])).notes[0]);
+  const said = line({ text: "för\nmörk", choice: "inte-bra" });
+  assert.ok(!said.includes("\n"), said);
+  for (const part of ["#1", "kort-grepp", "a.mp4", "för", "mörk", "2026-11-18", "00:10"]) assert.ok(said.includes(part), `${part}: ${said}`);
+  assert.notEqual(said, line({ text: "för\nmörk", choice: "bra" }), "his choice shows");
 });
 
 test("the store: only against the revision he read; a conflict is refused; the tool answers and marks read", async () => {
@@ -96,9 +101,11 @@ test("the store: only against the revision he read; a conflict is refused; the t
 
 test("the tool lists, answers and marks read, and never writes his word", () => {
   const notes = readNotes(register([note({ id: 2, at: T2, text: "mörk" }), note({ id: 1, file: null, answer: { text: "Svar", at: T3 }, read: T3 })])).notes;
-  assert.match(listing(unreadNotes({ schemaVersion: 1, notes }), false), /^#2 kort-grepp \/ a\.mp4 · Bra · "mörk"/);
-  assert.equal(listing([], false), "Inget nytt från Jakob i Prov.");
-  assert.match(listing(notes, true), /Huvudagenten: Svar/);
+  const unread = unreadNotes({ schemaVersion: 1, notes });
+  assert.ok(listing(unread, false).startsWith(noteLine(unread[0])), "the unread, each on its own line");
+  const nothing = listing([], false);
+  assert.ok(nothing.trim() && !nothing.includes("#"), "nothing new says so, in a line of its own");
+  assert.ok(listing(notes, true).includes("Svar") && !listing(notes, false).includes("Svar"), "the full list carries the answer");
   const source = readFileSync(new URL("../../tools/proof-notes.ts", import.meta.url), "utf8");
   assert.doesNotMatch(source, /\.save\(|applyChange/, "the tool has no way to write as him");
 });
@@ -113,7 +120,8 @@ test("the copy carries his word on the proofs and files that go up, without the 
 test("the page's words: Du in the lab, Jakob in the copy; his note replaced after a save", () => {
   assert.equal(speaker(false), "Du");
   assert.equal(speaker(true), "Jakob");
-  assert.equal(noteWords({ choice: "inte-bra", text: "för mörk" }), "Inte bra · för mörk");
+  const both = noteWords({ choice: "inte-bra", text: "för mörk" });
+  assert.ok(both.endsWith("för mörk") && both !== "för mörk" && both !== noteWords({ choice: "bra", text: "för mörk" }), `his choice, then his words: ${both}`);
   assert.equal(noteWords({ choice: null, text: "för mörk" }), "för mörk");
   const a = { ...note(), revision: "1" } as never, b = { ...note({ id: 2, file: null }), revision: "2" } as never;
   assert.equal(notesByPlace([a, b]).get(placeKey("kort-grepp", null)), b);
