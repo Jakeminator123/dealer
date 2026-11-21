@@ -3872,7 +3872,7 @@
         {
           "id": "paow-a3-p4",
           "role": "landning",
-          "name": "A3 · P4",
+          "name": "A3P4C1",
           "path": "assets/anchors/paow-a3-p4/anchor.png",
           "node": "LAND(P4.C1)",
           "card": "P4.C1",
@@ -3890,7 +3890,7 @@
         {
           "id": "paow-a3-p1",
           "role": "landning",
-          "name": "A3 · P1",
+          "name": "A3P1C1",
           "path": "assets/anchors/paow-a3-p1/anchor.png",
           "node": "LAND(P1.C1)",
           "card": "P1.C1",
@@ -3908,7 +3908,7 @@
         {
           "id": "paow-a3-p5",
           "role": "landning",
-          "name": "A3 · P5",
+          "name": "A3P5C1",
           "path": "assets/anchors/paow-a3-p5/anchor.png",
           "node": "LAND(P5.C1)",
           "card": "P5.C1",
@@ -4204,7 +4204,7 @@
         {
           "id": "paow-a3-p4-23b",
           "role": "landning",
-          "name": "A3 · P4 (ur montaget, äldre försök 2)",
+          "name": "A3P4C1 (ur montaget, äldre försök 2)",
           "path": "assets/anchors/paow-a3-p4-23b/anchor.png",
           "node": "LAND(P4.C1)",
           "card": "P4.C1",
@@ -4219,7 +4219,7 @@
         {
           "id": "paow-a3-p4-23c",
           "role": "landning",
-          "name": "A3 · P4 (ur montaget, äldre försök 2) c",
+          "name": "A3P4C1 (ur montaget, äldre försök 2) c",
           "path": "assets/anchors/paow-a3-p4-23c/anchor.png",
           "node": "LAND(P4.C1)",
           "card": "P4.C1",
@@ -4234,7 +4234,7 @@
         {
           "id": "paow-a3-p4-ur-film-1120",
           "role": "landning",
-          "name": "A3 · P4 (ur film från A2.3)",
+          "name": "A3P4C1 (ur film från A2.3)",
           "path": "assets/anchors/paow-a3-p4-ur-film-1120/anchor.png",
           "node": "LAND(P4.C1)",
           "card": "P4.C1",

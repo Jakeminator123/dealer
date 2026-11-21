@@ -342,7 +342,7 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   `data/media-roles.json` och B är ersatt. Givarna till varje plats görs från C.
 - **Ett ankare heter alltid A och sitt nummer** (2026-11-21, kväll, till sessionen dealer-37): "Jag tror att du har
   helt och hållet fel när det kommer till A och B och C och så vidare. Jag använder inte sådana. Det är alltid ett
-  stort A. För ett ankare." Ankarna heter A1, A2.1, A2.2, A2.3 och A3 · P1–P7. Bokstäverna A, B och C efter 2.3 var
+  stort A. För ett ankare." Ankarna heter A1, A2.1, A2.2, A2.3 och A3P1C1–A3P7C1. Bokstäverna A, B och C efter 2.3 var
   agenternas arbetsnamn på tre försök och ska inte stå i det han läser: det som gäller heter A2.3. Register-id:n
   (`paow-ankare-2-3-c`) står kvar som id.
 - **Dealern från en annan stol** (Prov `dealer-fran-stol-1`, 2026-11-18, kl. 02.46): första bilden "Ser "okej" ut som

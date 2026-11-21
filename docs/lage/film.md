@@ -9,10 +9,10 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
 - Metoden som håller: en giv bara dit på Kling 4 med första och sista bild och 3D-banans dockfilm som referensfilm, i
   UTDRAGEN takt (given över drygt 2 s, en obruten rörelse). Filmmodellen kopierar bilderna och dockfilmen; två extra
   meningar ändrade ingenting (pilot-03, 2026-11-20).
-- Ett ankare heter alltid A och numret (A1, A2.3, A3 · P4), aldrig med en bokstav efter (Jakob 2026-11-21). A2.3 är
+- Ett ankare heter alltid A och numret (A1, A2.3, A3P4C1), aldrig med en bokstav efter (Jakob 2026-11-21). A2.3 är
   bilden med id `paow-ankare-2-3-c` (hans ja i Beslut 2026-11-21): en riktig ruta ur en film från A1 som dockans raka
   ingång styrde. Bokstaven i id:t är ett arbetsnamn; de två äldre försöken (`-2-3-a`, arkiverat, och `-2-3-b`, ett
-  montage, ersatt) används inte. A3 · P4 är `paow-a3-p4-ur-film-1120`; `-23b` och `-23c` är byggda på montaget.
+  montage, ersatt) används inte. A3P4C1 är `paow-a3-p4-ur-film-1120`; `-23b` och `-23c` är byggda på montaget.
 - Given från A2.3 till plats 4 (Prov `paow-giv-2-3c-p4-pilot-20261120`): pilot 02 med dockan `svep24d`, där vänster
   hand går lågt hem, har Jakobs ja (Beslut 2026-11-21: "Ja, tre sekunder är lagom"); granskaren gav 4/5. Pilot 01
   med `svep24c` föll (3/5): vänster underarm försvann.
