@@ -15,6 +15,15 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 
 ## Arbetet och dokumenten
 
+- **Testerna skars ner till en kärna, och en ny Blob med ett träd per dealer** (2026-11-21, kväll): "Försök antingen
+  gör en quickfix och radera alla tester eller om du kan skriva ett kommando så jag på annat sätt kan svärma mappen med
+  tester […] men tveka inte att bara radera dem.. kan inte låsningar jag har i projektet bero på detta? Kan ju bara
+  bygga upp nya?" Gjort så: 93 testfiler borttagna (`032aadb`), kvar är de som skyddar publiceringen, spelets regler,
+  hans domar och val, beställningarna och dokumentens tak. Om media: "ny blob", och "respektive dealer får egna
+  nodträd […] A1 […] är starten för ett träd, sedan […] A2.1 och A2.2, som sedan förgrenar sig"; problemet är
+  "okopplade filmer samt halvkopplat som kommit från andra benämningar", och varianterna är han "rädd för att
+  förlora". Läst så: inget material raderas på datorn; nätet får bara det aktiva trädet per dealer; varianter
+  följer med när han säger det (kortet i Beslut).
 - **Mappen dealer, testerna och media på nätet** (2026-11-21, kl. 16.55): "Varför jobbar ni inte alltid i mappen
   'dealer'? – visst, ska en branch/worktree eller nått användas uttryckligen kanske det ska arbetas på andra ställen,
   men liksom mer som best practice-sätt." Om testerna: CI på GitHub "kostar pengar och ska göras väldigt sällan";
