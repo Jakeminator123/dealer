@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MODELS, credits } from "../../../src/order-model.ts";
+import { MODELS, credits, stepOf } from "../../../src/order-model.ts";
 import { asApiError } from "../../lib/api.ts";
 import { referenceName } from "../../lib/bordet.ts";
 import { labUrl } from "../../lib/lab.ts";
-import { createOrder, orderSaveFailure, previewOrder, type CreatedOrders, type Order, type OrderPreview as Preview, type OrderPreviewInput } from "../../lib/orders.ts";
+import { createOrder, orderLine, orderSaveFailure, previewOrder, type CreatedOrders, type Order, type OrderPreview as Preview, type OrderPreviewInput } from "../../lib/orders.ts";
 import { Button, Sheet } from "../ui";
 import { PictureCard } from "./Pictures";
 
@@ -93,7 +93,7 @@ export function OrderPreview({ input, names = {}, note = null, onClose, onCreate
       }
     >
       {note ? <p data-ordering className="mb-4 rounded-sm bg-[#3a2a1a] px-2.5 py-1.5 text-sm text-[#f0b07a]">{note} Utkasten kan sparas, men inget kan godkännas så länge.</p> : null}
-      {loading ? <p role="status" className="text-sm text-dim">Hämtar text, bilder och värden från labbservern …</p> : null}
+      {loading ? <p role="status" className="text-sm text-dim">Hämtar texten och bilderna …</p> : null}
       {error ? <p role="alert" className="mb-4 text-sm text-[#f0b07a]">{error.message}{error.retrySave ? " Svaret saknas; utkastet kan redan vara sparat. Försök igen med samma underlag för att få tillbaka resultatet." : ""}</p> : null}
       <div className="flex flex-col gap-8">
         {preview?.orders.map((order, i) => {
@@ -102,7 +102,12 @@ export function OrderPreview({ input, names = {}, note = null, onClose, onCreate
           const reference = order.reference.status === "FINNS" ? order.reference : null;
           return (
             <section key={order.id} className="flex flex-col gap-3">
-              <h3 className="text-md font-semibold text-ink">{order.title}</h3>
+              {/* his notation and the step's name, not the title the store builds (it still says "Ankare 1 → 2.1") */}
+              <h3 className="flex flex-wrap items-baseline gap-x-2 text-md font-semibold text-ink">
+                <span>{names[order.dealer] ?? order.dealer}</span>
+                {orderLine(order) ? <span className="font-mono">{orderLine(order)}</span> : null}
+                <span className="text-sm font-normal text-dim">{stepOf(order.step.key)?.label ?? order.step.label}</span>
+              </h3>
               {before && values(before) !== values(order) ? <p className="text-sm text-dim">Förra förhandsvisningen · {values(before)}</p> : null}
               <p className="text-sm tabular-nums text-ink">{values(order)}</p>
               {changes ? <p className="text-sm text-brass-hi">Ändrat underlag · {changes}</p> : null}

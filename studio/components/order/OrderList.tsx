@@ -11,10 +11,11 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { useBank } from "../../lib/bank.ts";
 import { labUrl } from "../../lib/lab.ts";
+import { swedishMoment } from "../../lib/mode.ts";
 import { HANDOVER, costWords, orderLine, orderingState, picturesInOrder, sections, styleWords, type OrderAnswer, type OrdersAnswer, type Picture } from "../../lib/orders.ts";
-import { MODELS, approvalWords, credits, scaleWords } from "../../../src/order-model.ts";
+import { MODELS, approvalWords, credits, scaleWords, stepOf } from "../../../src/order-model.ts";
 import { Card, EmptyState } from "../ui";
-import { StatusChip } from "./Pictures";
+import { StatusChip, pictureName } from "./Pictures";
 import { Production } from "./Production";
 import { QueueFrame } from "./QueueFrame";
 
@@ -24,20 +25,23 @@ function Thumb({ picture }: { picture: Picture }) {
     <div className="relative aspect-[1764/1174] min-w-0 flex-1 overflow-hidden rounded-md border border-line bg-well">
       {src ? (
         // eslint-disable-next-line @next/next/no-img-element -- a lab file; a static export cannot optimise
-        <img src={src} alt={picture.label} className="size-full object-cover" loading="lazy" />
+        <img src={src} alt={pictureName(picture)} className="size-full object-cover" loading="lazy" />
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-[repeating-linear-gradient(135deg,#0c110f_0_8px,#0a0e0c_8px_16px)] text-2xs text-faint">
           <Clock className="size-4 text-vantar" />
           Väntar på {picture.waits?.label}
         </div>
       )}
-      <span className="absolute bottom-1 left-1 right-1 truncate rounded-xs bg-black/65 px-1 text-2xs text-ink">{picture.label}</span>
+      <span className="absolute bottom-1 left-1 right-1 truncate rounded-xs bg-black/65 px-1 text-2xs text-ink">{pictureName(picture)}</span>
     </div>
   );
 }
 
-function OrderCard({ answer, onOpen }: { answer: OrderAnswer; onOpen: () => void }) {
+function OrderCard({ answer, dealerName, onOpen }: { answer: OrderAnswer; dealerName: string; onOpen: () => void }) {
   const { order } = answer;
+  // The card names the dealer and the step in words; the line under it is the film in his notation. The title stored with
+  // the order is a free text of the day it was made, in older words, and is not shown.
+  const draft = !order.approval && order.status === "UTKAST";
   const pics = picturesInOrder(order.pictures);
   const shown = order.kind === "FILM" ? pics.filter((p) => p.goesAs !== "referenceImage") : pics;
   const model = MODELS[order.generation.model];
@@ -53,14 +57,21 @@ function OrderCard({ answer, onOpen }: { answer: OrderAnswer; onOpen: () => void
       <div className="mt-3 flex items-start gap-2">
         {order.kind === "FILM" ? <Film className="mt-0.5 size-4 shrink-0 text-dim" /> : <ImageIcon className="mt-0.5 size-4 shrink-0 text-dim" />}
         <div className="min-w-0 flex-1">
-          <p className="truncate font-display text-md font-semibold text-ink">{order.title}</p>
+          <p className="truncate font-display text-md font-semibold text-ink">{`${dealerName} · ${stepOf(order.step.key)?.label ?? order.step.label}`}</p>
           {order.group ? <p className="truncate text-xs text-brass-hi">Grupp: {order.group.label}</p> : null}
           {orderLine(order) ? <p className="mt-0.5 font-mono text-sm leading-5 text-ink">{orderLine(order)}</p> : null}
           <p className="mt-0.5 truncate text-xs text-dim">
-            {what} · {styleWords(order)}
+            {what} · Text: {styleWords(order)}
             {order.reference.status === "FINNS" ? " · referensfilm" : ""}
           </p>
-          {order.approval?.by === "huvudagent" ? <p className="mt-0.5 truncate text-xs text-dim" title={order.approval.mandate}>{approvalWords(order.approval)}</p> : null}
+          {order.approval?.by === "huvudagent" ? <p className="mt-0.5 truncate text-xs text-dim">{approvalWords(order.approval)}</p> : null}
+          {/* a draft says when it was made and whether it left the card plan: an old one made on a rule since replaced shows it here */}
+          {draft ? (
+            <p data-draft-made className="mt-0.5 truncate text-xs text-dim">
+              Utkast {swedishMoment(order.created) ?? order.created.slice(0, 10)}
+              {order.motion && !order.motion.fromPlan ? <span className="text-[#f0b07a]"> · ändrat från kortplanen</span> : null}
+            </p>
+          ) : null}
           {order.status === "AVBRUTEN" && order.setAside ? <p className="mt-0.5 text-xs text-dim">Avbruten: {order.setAside.why}</p> : null}
           {order.motion?.cardScale && order.motion.cardScale !== 1 ? <p className="mt-0.5 text-xs text-[#f0b07a]">Prov: kortet {scaleWords(order.motion.cardScale)} av planens</p> : null}
         </div>
@@ -79,10 +90,11 @@ export function OrderList({ menu, all, onOpen }: { menu: ReactNode; all: OrdersA
   const { dealer } = useBank();
   const dealerName = all.dealers?.find((d) => d.id === dealer)?.name ?? dealer;
   const ordering = orderingState(all);
+  const names = new Map((all.dealers ?? []).map((d) => [d.id, d.name]));
   const cards = (s: (typeof list)[number]) => (
     <div className="grid grid-cols-[repeat(auto-fill,minmax(330px,1fr))] gap-4">
       {s.orders.map((a) => (
-        <OrderCard key={a.order.id} answer={a} onOpen={() => onOpen(a.order.id)} />
+        <OrderCard key={a.order.id} answer={a} dealerName={names.get(a.order.dealer) ?? a.order.dealer} onOpen={() => onOpen(a.order.id)} />
       ))}
     </div>
   );

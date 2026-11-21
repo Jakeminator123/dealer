@@ -2,7 +2,7 @@
 
 // Bordet's films to order (lib/bordet.ts). WishRows is step 3's list for the chosen card (its three films from one anchor:
 // the deal, the return to that anchor, the return to rest) and for the films without a card: one row per film in his
-// notation with its five marks (Första bild, Slutbild, Referensfilm, Text, Pris; ready or missing, the words on the mark),
+// notation with its five marks (Första bild, Slutbild, Referensfilm, Text, Pris; ready or missing, the words written on the mark),
 // the first thing missing where it cannot be ordered yet and its price where it can, and "Lägg till" to put it on the list.
 // FilmStrip is that list, under the picture: the films chosen across cards, their cards ringed on the stage, the sum, and
 // "Förhandsvisa": the one way to a draft (the lab server's exact drafts, read before they are saved). One line over the list
@@ -19,7 +19,10 @@ export type Made = Record<string, string>;
 /** Kön with a draft open ("Det här skickas"), where it is approved. */
 export const queueHref = (order: string) => `/bordet/?lage=ko&order=${encodeURIComponent(order)}`;
 
-/** A row's five marks as small chips: ready (✓) or missing (✗), with its few words on the chip. */
+/**
+ * A row's five marks as small chips: ready (✓) or missing (✗), the name and its few words written out on the chip
+ * ("Slutbild A3P4C2", "Pris 64 krediter"), since a phone has no hover.
+ */
 export function Marks({ marks }: { marks: readonly Mark[] }) {
   return (
     <ul className="flex flex-wrap gap-1" aria-label="Det filmen behöver">
@@ -28,12 +31,12 @@ export function Marks({ marks }: { marks: readonly Mark[] }) {
           key={m.name}
           data-mark={m.name}
           data-ready={m.ready ? "1" : "0"}
-          title={`${m.name}: ${m.words}`}
-          className={cn("inline-flex h-5 items-center gap-1 rounded-sm border px-1.5 text-2xs", m.ready ? "border-godkand/30 bg-godkand/10 text-[#6cc595]" : "border-anmarkning/35 bg-anmarkning/10 text-[#f0b07a]")}
+          className={cn("inline-flex min-h-5 items-center gap-1 rounded-sm border px-1.5 py-px text-2xs", m.ready ? "border-godkand/30 bg-godkand/10 text-[#6cc595]" : "border-anmarkning/35 bg-anmarkning/10 text-[#f0b07a]")}
         >
           <span aria-hidden>{m.ready ? "✓" : "✗"}</span>
-          {m.name}
-          <span className="sr-only">{`${m.ready ? "klar" : "saknas"}: ${m.words}`}</span>
+          <span className="sr-only">{m.ready ? "klar: " : "saknas: "}</span>
+          <span>{m.name}</span>
+          {m.words ? <span data-mark-words className="text-ink/80">{m.words}</span> : null}
         </li>
       ))}
     </ul>
@@ -126,7 +129,7 @@ export function FilmStrip({
   const open = rows.filter((r) => !made[r.key]);
   const ready = open.filter((r) => r.body);
   return (
-    <section aria-label="Beställningen" className="flex min-h-0 flex-1 flex-col border-t border-line bg-surface/60">
+    <section aria-label="Beställningen" className="flex shrink-0 flex-col border-t border-line bg-surface/60 lg:landscape:min-h-0 lg:landscape:flex-1 lg:landscape:shrink">
       <header ref={head} className="flex min-h-10 shrink-0 flex-wrap items-center gap-x-3 gap-y-1 px-3 py-1.5">
         <h2 className="text-2xs font-semibold uppercase tracking-[0.08em] text-faint">Beställningen</h2>
         <span data-sum className="shrink-0 whitespace-nowrap text-sm tabular-nums text-ink">
@@ -144,12 +147,12 @@ export function FilmStrip({
           </Button>
         </div>
       </header>
-      <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-2">
+      <div className="px-2 pb-2 lg:landscape:min-h-0 lg:landscape:flex-1 lg:landscape:overflow-y-auto">
         <ol ref={list} data-list-rows>
           {rows.length ? (
             rows.map((r) => <Row key={r.key} row={r} on={chosen === r.key} made={made[r.key] ?? null} onChoose={() => onChoose(r)} onRemove={() => onRemove(r)} />)
           ) : (
-            <li className="px-2 py-2 text-sm text-faint">Inga filmer än. Välj ett kort och lägg till under Beställ.</li>
+            <li className="px-2 py-2 text-sm text-faint">Välj ett kort och lägg till under Beställ.</li>
           )}
         </ol>
       </div>
@@ -171,7 +174,9 @@ function Row({ row, on, made, onChoose, onRemove }: { row: FilmRow; on: boolean;
       ) : null}
       <span className="min-w-0 flex-1 truncate text-xs text-dim" title={`${row.label} · ${row.recipe}`}>
         {row.recipe}
-        {row.reference ? <span className="ml-1.5 text-[#9ec5ff]">· referensfilm</span> : null}
+        {row.resolved.takes > 1 ? <span className="ml-1.5">· {row.resolved.takes} tagningar</span> : null}
+        {/* the recipe names its reference rule already ("referensfilm: dockan"); the chip says one was found where it does not */}
+        {row.reference && !/referensfilm/i.test(row.recipe) ? <span className="ml-1.5 text-[#9ec5ff]">· referensfilm</span> : null}
         {row.chosen ? <span className="ml-1.5 text-brass-hi">· ändrad</span> : null}
       </span>
       {made ? (

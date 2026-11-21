@@ -15,6 +15,7 @@ import { createElement, useEffect, useMemo, useRef, useState, useSyncExternalSto
 import { cleanVal, describeGranska, describeJamfor, describeKarta, describeProv, viewName, type Val } from "../components/bot/describe.ts";
 import { getProofs, type Proof } from "./api.ts";
 import { useBank } from "./bank.ts";
+import { useTrees } from "../components/map/useTrees.ts";
 import type { Vy } from "./bot-client.ts";
 
 export { stepFacts } from "../components/bot/describe.ts";
@@ -106,7 +107,10 @@ function useQuery(): string {
 
 function FromAddress({ vy }: { vy: ViewKey }) {
   const query = useQuery();
-  const { graph } = useBank();
+  const { graph, dealer, readAt } = useBank();
+  // Karta's tree by its name ("Ingången"), not its id: the same read as the rail's, so no extra request.
+  const trees = useTrees(vy === "karta" ? dealer : null, readAt).answer?.trees;
+  const treeNames = useMemo(() => (trees ? new Map(trees.map((v) => [v.tree.id, v.tree.name])) : undefined), [trees]);
   const [list, setList] = useState<Proof[] | null>(null);
   useEffect(() => {
     if (vy !== "prov") return;
@@ -118,12 +122,12 @@ function FromAddress({ vy }: { vy: ViewKey }) {
   }, [vy]);
   const val = useMemo(() => {
     const p = new URLSearchParams(query);
-    if (vy === "karta") return describeKarta(graph, p);
+    if (vy === "karta") return describeKarta(graph, p, treeNames);
     if (vy === "granska") return describeGranska(graph, p);
     if (vy === "jamfor") return describeJamfor(graph, p);
     if (vy === "prov") return describeProv(list, p);
     return {};
-  }, [vy, graph, list, query]);
+  }, [vy, graph, list, query, treeNames]);
   useViewContext({ vy, val });
   return null;
 }

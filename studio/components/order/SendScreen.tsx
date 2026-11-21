@@ -16,9 +16,10 @@ import { asApiError } from "../../lib/api.ts";
 import { labUrl } from "../../lib/lab.ts";
 import { swedishMoment } from "../../lib/mode.ts";
 import { referenceName } from "../../lib/bordet.ts";
+import { mandateText } from "../../lib/verdict.ts";
 import { cardCode } from "../../lib/names.ts";
 import { approveOrder, changeOrder, costWords, motionWords, orderLine, orderingState, picturesInOrder, refreshOrder, storedParts, styleWords, type OrderAnswer, type OrdersAnswer } from "../../lib/orders.ts";
-import { MODELS, REF_VERDICT_LABEL, approvalWords, SHAPE_LABEL, TAKES_MAX, credits, genitive, groupBudget, scaleWords, seatWords, stepOf, takeStates, waitWords } from "../../../src/order-model.ts";
+import { MODELS, REF_VERDICT_LABEL, SHOWN_LABEL, approvalWords, SHAPE_LABEL, TAKES_MAX, credits, genitive, groupBudget, scaleWords, seatWords, stepOf, takeStates, waitWords } from "../../../src/order-model.ts";
 import { Badge, Button, Dialog, SegmentedControl, TextArea, cn, useToast } from "../ui";
 import { PictureCard, StatusChip } from "./Pictures";
 import { PromptText } from "./PromptText";
@@ -35,6 +36,8 @@ function Section({ title, aside, children, className }: { title: ReactNode; asid
     </section>
   );
 }
+
+const capital = (s: string) => (s ? `${s[0].toUpperCase()}${s.slice(1)}` : s);
 
 /** A draft's own choices (its takes, Jakob's addition); mounted anew when the saved addition changes, so the field starts from what is saved. */
 function Edit({ answer, onSaved }: { answer: OrderAnswer; onSaved: (a: OrderAnswer) => void }) {
@@ -87,6 +90,13 @@ export function SendScreen({ menu, answer, all, onBack, onOpen, onSaved }: { men
   const scale = order.motion?.cardScale ?? 1;
   const oneWay = order.step.shape === "ONE_WAY" && order.motion && stepOf(order.step.key)?.start !== "LAND";
   const ordering = orderingState(all);
+  // The heading in his notation from the step and the card, never the title stored with the order: a free text from the
+  // one who made it, in older words ("ankare 2.3 C") and sometimes with a film's id.
+  const line = orderLine(order);
+  const stepLabel = stepOf(order.step.key)?.label ?? order.step.label;
+  const dealerName = dealer?.name ?? names[order.dealer] ?? order.dealer;
+  const heading = `${dealerName} · ${line ?? stepLabel}`;
+  const doll = order.reference.status === "FINNS" && order.reference.dealer === "docka";
   const p = order.generation.params;
   // The model's length and size in words ("4 s · 1080p"); the call itself is the store's.
   const values = [typeof p.duration === "number" ? `${String(p.duration).replace(".", ",")} s` : null, p.resolution ?? p.imageSize ?? null].filter((v) => v !== null && v !== undefined).map(String);
@@ -126,11 +136,11 @@ export function SendScreen({ menu, answer, all, onBack, onOpen, onSaved }: { men
   return (
     <QueueFrame
       menu={menu}
-      bar={<span className="text-sm font-medium text-ink">Det här skickas</span>}
+      bar={<span className="text-sm font-medium text-ink">{order.approval ? "Det här skickades" : "Det här skickas"}</span>}
       status={
         <>
           <StatusChip answer={answer} />
-          <span className="truncate text-ink">{order.title}</span>
+          <span className="truncate text-ink">{heading}</span>
         </>
       }
       actions={
@@ -151,7 +161,10 @@ export function SendScreen({ menu, answer, all, onBack, onOpen, onSaved }: { men
     >
       <div className="flex flex-col gap-7">
         <div className="flex flex-col gap-1.5">
-          {orderLine(order) ? <p className="font-mono text-lg font-semibold leading-7 text-ink">{orderLine(order)}</p> : null}
+          <p className="flex flex-wrap items-baseline gap-x-3">
+            {line ? <span className="font-mono text-lg font-semibold leading-7 text-ink">{line}</span> : null}
+            <span className="text-sm text-dim">{stepLabel}</span>
+          </p>
           <p className="flex flex-wrap items-center gap-2 text-sm text-dim">
             <Badge tone="neutral" size="md">Text: {styleWords(order)}</Badge>
             {choices ? (
@@ -181,7 +194,6 @@ export function SendScreen({ menu, answer, all, onBack, onOpen, onSaved }: { men
                   key={a.order.id}
                   type="button"
                   onClick={() => onOpen(a.order.id)}
-                  title={`${a.order.title}${a.order.motion?.pass ? " · handbyte" : ""}`}
                   className={cn("h-7 rounded-md border px-2 text-xs tabular-nums", a.order.id === order.id ? "border-brass/60 bg-brass/12 text-brass-hi" : "border-line text-ink hover:bg-raised", a.order.approval && "opacity-60")}
                 >
                   {(a.order.motion?.target ? cardCode(a.order.motion.target) : null) ?? "utan kort"}
@@ -242,12 +254,15 @@ export function SendScreen({ menu, answer, all, onBack, onOpen, onSaved }: { men
               <div className="flex flex-col gap-1.5 text-sm text-dim">
                 <p>
                   {referenceName({ dealer: order.reference.dealer ?? order.dealer, edge: order.reference.from?.edge ?? `READY>${order.reference.goesTo}`, goesTo: order.reference.goesTo }, names)} · {String(order.reference.seconds).replace(".", ",")} s
-                  {order.reference.approvedStraight ? " · rakt godkänd" : " · inte rakt godkänd"}
+                  {doll ? null : order.reference.approvedStraight ? " · rakt godkänd" : " · inte rakt godkänd"}
                 </p>
-                {order.reference.dealer && order.reference.dealer !== order.dealer ? (
-                  <p className="text-[#f0b07a]">{genitive(names[order.reference.dealer] ?? order.reference.dealer)} film, tillåten som referens: texten säger att den bara visar rörelsen. Hennes hand kan läcka in.</p>
+                {/* the doll's film is rendered from the plan, not a take from the bank: no verdict of his, no hand to leak in */}
+                {doll ? (
+                  <p>Dockans film: den visar bara rörelsen.</p>
+                ) : order.reference.dealer && order.reference.dealer !== order.dealer ? (
+                  <p className="text-[#f0b07a]">{capital(genitive(names[order.reference.dealer] ?? order.reference.dealer))} film, tillåten som referens: texten säger att den bara visar rörelsen. Handen i den filmen kan läcka in.</p>
                 ) : null}
-                {order.reference.from ? (
+                {order.reference.from && !doll ? (
                   <p className="text-xs text-faint">
                     Jakob: {REF_VERDICT_LABEL[order.reference.from.verdict]}{order.reference.from.words ? ` ”${order.reference.from.words}”` : ""}
                   </p>
@@ -308,32 +323,37 @@ export function SendScreen({ menu, answer, all, onBack, onOpen, onSaved }: { men
               ) : null}
             </Section>
 
-            {order.notes.length ? (
-              <Section title="Om beställningen">
-                <ul className="flex flex-col gap-1.5 text-xs leading-5 text-dim">
-                  {order.notes.map((n) => (
-                    <li key={n}>{n}</li>
+            {order.approval ? (
+              <Section title="Godkänd">
+                <p className="text-sm text-ink">
+                  {approvalWords(order.approval)} {swedishMoment(order.approval.at) ?? order.approval.at}
+                </p>
+                {order.approval.mandate ? <p className="text-xs text-dim">Uppdraget: {mandateText(order.approval.mandate)}</p> : null}
+                <ul className="flex flex-col gap-1 text-sm">
+                  {takeStates(order, answer.receipt).map((s, i) => (
+                    <li key={i} className="flex items-center gap-2">
+                      <span className="w-20 text-dim">Tagning {i + 1}</span>
+                      <Badge tone={s === "OSÄKER" ? "remark" : s === "MISSLYCKAD" ? "bad" : "neutral"}>{SHOWN_LABEL[s] ?? s}</Badge>
+                    </li>
                   ))}
                 </ul>
               </Section>
             ) : null}
 
-            {order.approval ? (
-              <Section title="Godkänd">
-                <p className="text-sm text-ink" title={order.approval.mandate ?? undefined}>
-                  {approvalWords(order.approval)} {swedishMoment(order.approval.at) ?? order.approval.at}
-                </p>
-                {order.approval.mandate ? <p className="text-xs text-dim">Uppdraget: {order.approval.mandate}</p> : null}
-                <ul className="flex flex-col gap-1 text-sm">
-                  {takeStates(order, answer.receipt).map((s, i) => (
-                    <li key={i} className="flex items-center gap-2">
-                      <span className="w-20 text-dim">Tagning {i + 1}</span>
-                      <Badge tone={s === "OSÄKER" ? "remark" : s === "MISSLYCKAD" ? "bad" : "neutral"}>{s}</Badge>
-                    </li>
+            {/* What the store wrote into the order when it was made: frozen with it, in the words of that day (an older
+                order's notes name files and ids), so folded away rather than shown as the order's description. */}
+            {order.notes.length ? (
+              <details data-notes className="group text-xs leading-5 text-dim">
+                <summary className="cursor-pointer select-none text-xs font-medium uppercase tracking-[0.08em] text-faint hover:text-dim">Mer om beställningen</summary>
+                <ul className="mt-2 flex flex-col gap-1.5">
+                  {order.notes.map((n) => (
+                    <li key={n}>{n}</li>
                   ))}
                 </ul>
-              </Section>
-            ) : draft ? (
+              </details>
+            ) : null}
+
+            {draft ? (
               <Edit key={`${order.id}:${order.prompt.extra ?? ""}`} answer={answer} onSaved={onSaved} />
             ) : null}
           </div>
@@ -344,7 +364,7 @@ export function SendScreen({ menu, answer, all, onBack, onOpen, onSaved }: { men
         open={asking}
         onOpenChange={setAsking}
         title="Godkänn och lägg i kön?"
-        description={order.title}
+        description={heading}
         footer={
           <>
             <Button variant="quiet" onClick={() => setAsking(false)}>
@@ -357,9 +377,9 @@ export function SendScreen({ menu, answer, all, onBack, onOpen, onSaved }: { men
         }
       >
         <p>
-          {costWords(order)}, högst {credits(order.cost.worstTotal)}. Efter godkännandet kan inget i beställningen ändras: bilderna, texten och värdena låses.
+          {costWords(order)}, högst {credits(order.cost.worstTotal)}. Efter godkännandet kan inget i beställningen ändras: bilderna, texten, modellen och priset låses.
         </p>
-        <p className="mt-2 text-dim">Inget skickas förrän du säger &quot;lägg kön&quot; till filmagenten eller huvudagenten.</p>
+        <p className="mt-2 text-dim">Inget skickas förrän du säger &quot;lägg kön&quot; till huvudagenten.</p>
       </Dialog>
     </QueueFrame>
   );

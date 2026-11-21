@@ -25,6 +25,9 @@ import { firstTree, useTrees } from "../map/useTrees";
 import { CardMark } from "../placement/CardMark";
 import { Badge, Skeleton, cn } from "../ui";
 
+/** The A3 candidates in Material that do not hold yet, where the production answer counts them (candidates); else 0. */
+const candidatesOf = (list: List): number => ("candidates" in list && typeof list.candidates === "number" ? list.candidates : 0);
+
 const W = 1764,
   H = 1174;
 const CARD_FILL = CARD_COLOUR;
@@ -89,8 +92,8 @@ function StepCard({ row, plan, dealer, onOpen }: { row: ProductionRow; plan: Pla
             {row.state === "DOM" ? "Döm i Granska" : "Se i Granska"}
           </Link>
         ) : order ? (
-          <button type="button" onClick={() => onOpen(order.id)} className="self-start truncate text-xs text-brass-hi hover:underline" title={row.orders.map((o) => o.title).join(" · ")}>
-            {row.orders.length > 1 ? `${row.orders.length} beställningar` : order.title}
+          <button type="button" onClick={() => onOpen(order.id)} className="self-start truncate text-xs text-brass-hi hover:underline">
+            {row.orders.length > 1 ? `${row.orders.length} beställningar` : "Öppna beställningen"}
           </button>
         ) : null}
       </div>
@@ -162,7 +165,7 @@ export function Production({ dealer, dealerName, plan, onOpen }: { dealer: strin
           <span className="text-sm text-dim">· {dealerName}</span>
         </button>
         {tree ? (
-          <Link href={dealerHref(`/karta/?trad=${encodeURIComponent(tree.tree.id)}`, dealer)} className="text-sm tabular-nums text-ink hover:underline" title="Steg med film (Primär, Godkänd eller Variant) av de 36 i hans mått, i trädet spelet spelar; samma tal som Karta och menyn">
+          <Link href={dealerHref(`/karta/?trad=${encodeURIComponent(tree.tree.id)}`, dealer)} className="text-sm tabular-nums text-brass-hi hover:underline" title="Steg med film (Primär, Godkänd eller Variant) i trädet spelet spelar: samma tal som Karta och menyn">
             {tree.tree.name} {countWord(tree.count)} steg
           </Link>
         ) : (
@@ -188,7 +191,13 @@ export function Production({ dealer, dealerName, plan, onOpen }: { dealer: strin
               <AnchorTile key={a.at} anchor={a} />
             ))}
             <p className="mb-1 max-w-[420px] text-xs leading-4 text-dim">
-              {list.counts.missing} saknas på Kartan · landningsbilder: {list.landings.length ? list.landings.map((t) => nodeCode(t)).join(", ") : "ingen landningsbild finns än"}. Varje plats andra kort spelar första kortets film.
+              {`${list.counts.missing} saknas på Kartan · landningsbilder som gäller: ${list.landings.length ? list.landings.map((t) => nodeCode(t)).join(", ") : "ingen än"}`}
+              {candidatesOf(list) ? ` · ${candidatesOf(list)} ${candidatesOf(list) === 1 ? "kandidat" : "kandidater"}` : ""}
+              {" i "}
+              <Link href={`/material/?dealer=${encodeURIComponent(dealer)}`} className="text-brass-hi hover:underline">
+                Material
+              </Link>
+              {". En plats andra kort spelar det första kortets film."}
             </p>
           </div>
           {rows.length ? (

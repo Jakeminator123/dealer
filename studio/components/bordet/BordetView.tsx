@@ -64,6 +64,15 @@ export const MODES: readonly { value: Mode; label: string }[] = [
 const SHOWN_MODES = isSnapshot ? MODES.filter((m) => m.value !== "ko") : MODES;
 const isMode = (v: string | null): v is Mode => SHOWN_MODES.some((m) => m.value === v);
 const isScene = (m: Mode): m is SceneKind => m === "scen" || m === "rafilm" || m === "efterarbete";
+/** The dealer's hole card: its film (HALKORT, turned up from rest) is listed among the card's films when it is chosen. */
+const HOLE_CARD: Place = "D.C2";
+/**
+ * Step 2's line on what the motion follows, with what step 3 knows: where the recipe wants a reference film for the deal
+ * and none is found for the place, the line says so, so that the two steps never say opposite things.
+ */
+function withReference(line: string | null, deal: FilmRow | null): string | null {
+  return line && deal?.wanted && !deal.reference ? `${line} · men ingen referensfilm till platsen finns än` : line;
+}
 
 type Params = { get(name: string): string | null };
 /** The address asks for Kön: ?lage=ko, and Beställ's old words (?lage=bestall&ko=1, ?order=<id>, ?ny=1&som=<id>). */
@@ -106,10 +115,27 @@ function writeAddress(mode: Mode, place: Place) {
 
 type StepId = "place" | "motion" | "order";
 
+/**
+ * A film's exceptions with one more, and without those the form hides after it (Sends.tsx), so that nothing unseen goes
+ * with the draft: tur och retur has no Slutbild, bara dit no card size, and another model its own lengths and reference
+ * films (both back to the recipe's).
+ */
+function withPatch(was: RowChoice, patch: RowChoice): RowChoice {
+  const next: RowChoice = { ...was, ...patch };
+  if (patch.shape === "ROUND_TRIP") delete next.end;
+  if (patch.shape === "ONE_WAY") delete next.cardScale;
+  if ("model" in patch && patch.model !== was.model) {
+    if (!("duration" in patch)) delete next.duration;
+    if (!("reference" in patch)) delete next.reference;
+  }
+  return next;
+}
+
 export function BordetView() {
   const params = useSearchParams();
   const [first] = useState(() => oldOrder(params));
-  const [mode, setMode] = useState<Mode>(() => modeOf(params));
+  // An old Ny beställning link (?ny=1&steg=…&plats=…) opens Kortplan at its card even when /bestall/ added ko=1 to it.
+  const [mode, setMode] = useState<Mode>(() => (first ? "kortplan" : modeOf(params)));
   // A link to Kön while the view is open (an order's "Utkast gjort", "Öppna i Kön") opens Kön.
   const askedQueue = asksQueue(params);
   const [seenAsk, setSeenAsk] = useState(askedQueue);
@@ -131,6 +157,15 @@ export function BordetView() {
   const draft = useDraft();
   const toast = useToast();
   const { dealer, dealers, bank, graph } = useBank();
+  // The rail's switch to another dealer: the drafts made, the exceptions (their pictures and films are the other dealer's)
+  // and an open preview go; the list of films stays, since it names steps and cards only.
+  const [seenDealer, setSeenDealer] = useState(dealer);
+  if (dealer !== seenDealer) {
+    setSeenDealer(dealer);
+    setMade({});
+    setChoices({});
+    setPending(null);
+  }
   useEffect(() => writeAddress(mode, place), [mode, place]);
   const readOrders = useCallback(
     () =>
@@ -191,7 +226,11 @@ export function BordetView() {
 
   const save = async () => {
     const result = await draftActions.save();
-    if (result.ok) toast({ tone: "ok", title: "Kortplanen är sparad" });
+    if (result.ok) {
+      toast({ tone: "ok", title: "Kortplanen är sparad" });
+      // the rows read the plan from the orders' answer (its sides, hands, text and marks): read it again
+      void readOrders();
+    }
     else toast({ tone: "bad", title: result.conflict ? "Planen har ändrats på annat håll" : "Kortplanen sparades inte", detail: result.message });
   };
 
@@ -199,8 +238,10 @@ export function BordetView() {
   // What goes to Runway for the chosen film, before and after its draft is made.
   const names = Object.fromEntries((orders?.dealers ?? []).map((x) => [x.id, x.name]));
   const intent = plan && place !== SHOE ? (plan.targets[place]?.intent ?? null) : null;
-  const cardRows = useMemo(() => cardWishes(place, intent, dealer).map(rowOf), [place, intent, dealer, rowOf]);
-  const otherRows = useMemo(() => otherWishes().map(rowOf), [rowOf]);
+  // The hole card's film (turned up from rest) belongs to DC2: with DC2 chosen it stands among the card's own films.
+  const hole = place === HOLE_CARD;
+  const cardRows = useMemo(() => [...cardWishes(place, intent, dealer), ...(hole ? otherWishes().filter((w) => w.step === "HALKORT") : [])].map(rowOf), [place, intent, dealer, rowOf, hole]);
+  const otherRows = useMemo(() => otherWishes().filter((w) => !(hole && w.step === "HALKORT")).map(rowOf), [rowOf, hole]);
   const chosen = rows.find((r) => r.key === chosenRow) ?? cardRows.find((r) => r.key === chosenRow) ?? otherRows.find((r) => r.key === chosenRow) ?? null;
   const madeAnswer = chosen && made[chosen.key] ? (orders?.orders.find((a) => a.order.id === made[chosen.key]) ?? null) : null;
   // Förra filmen: the film's last order (the same dealer, step and card, not set aside), with the takes that came of it.
@@ -213,7 +254,7 @@ export function BordetView() {
       bank={bankFacts}
       dealer={dealer}
       choice={choices[chosen.key] ?? {}}
-      onChoice={(patch) => setChoices((was) => ({ ...was, [chosen.key]: patch ? { ...(was[chosen.key] ?? {}), ...patch } : {} }))}
+      onChoice={(patch) => setChoices((was) => ({ ...was, [chosen.key]: patch ? withPatch(was[chosen.key] ?? {}, patch) : {} }))}
       made={madeAnswer}
       all={orders}
       last={last}
@@ -417,7 +458,7 @@ function TableBody({
                 id={place}
                 editable={editable}
                 lit={paths.run?.id === place ? paths.lit : null}
-                line={motionLine(dealer, place, intent, methods ?? null)}
+                line={withReference(motionLine(dealer, place, intent, methods ?? null), cardRows[0] ?? null)}
                 anchor={nodeCode(ANCHOR_NODE[wishAnchor(dealer, place, intent)])}
               />
             ),
@@ -429,7 +470,7 @@ function TableBody({
           {
             id: "order" as const,
             title: "Beställ",
-            summary: cardRows.length ? sumWords(cardRows) : null,
+            summary: cardRows.length ? `${placeCode(place)}: ${sumWords(cardRows)}` : null,
             body: (
               <div className="flex flex-col gap-3 px-4 pb-4">
                 {ordering && !ordering.open ? (
@@ -442,7 +483,7 @@ function TableBody({
                   <>
                     <WishRows title={placeName(place)} rows={cardRows} listed={listed} made={made} chosen={chosenRow} onChoose={chooseRow} onAdd={onAdd} />
                     <p data-sum className="text-sm tabular-nums text-dim">
-                      {sumWords(cardRows)}
+                      {placeCode(place)}: {sumWords(cardRows)}
                     </p>
                   </>
                 ) : !shoe ? (
@@ -455,7 +496,7 @@ function TableBody({
                 ) : null}
                 <details key={String(othersOpen)} open={othersOpen || shoe} className="rounded-md border border-line px-3 py-2">
                   <summary className="cursor-pointer text-sm text-ink">
-                    Utan kort <span className="text-xs text-dim">· {otherRows.length} filmer: ingångar, utgångar, vila, hålkortet</span>
+                    Övriga filmer <span className="text-xs text-dim">· {otherRows.length} filmer: ingångar, utgångar, vila{otherRows.some((r) => r.wish.step === "HALKORT") ? ", hålkortet" : ""}</span>
                   </summary>
                   <div className="mt-2">
                     <WishRows title={null} rows={otherRows} listed={listed} made={made} chosen={chosenRow} onChoose={chooseRow} onAdd={onAdd} />

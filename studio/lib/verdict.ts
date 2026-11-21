@@ -35,6 +35,11 @@ export const jakobSaid = (review: Review | null | undefined): boolean => typeof 
 
 /** A provisional verdict (tools/review-store.ts applyProvisional): by whom, when, under which words of his, and why. */
 export type Provisional = { by: string; at: string; mandate: string; note: string };
+/**
+ * A mandate in words, without the task's id the main agent stores in front of it ("dealer-37-20261120: pilot 02 till
+ * plats 4" reads "pilot 02 till plats 4"); his own words ("Jakob 2026-11-13: …") are kept whole.
+ */
+export const mandateText = (mandate: string): string => mandate.replace(/^[^:\s]+:\s*/, "");
 /** The provisional verdict a take carries, or null; his own word always wins over one left behind. */
 export function provisionalOf(review: Review | null | undefined): Provisional | null {
   const p = review?.provisional;
@@ -79,7 +84,7 @@ export function provisionalChip(v: Pick<VerdictInfo, "verdict">): { label: strin
  */
 export function provisionalWords(v: Pick<VerdictInfo, "verdict">, p: Provisional | null = null): string {
   const said = verdictPhrase({ verdict: v.verdict, provisional: true });
-  const head = [`${said[0].toUpperCase()}${said.slice(1)}${p?.by ? ` av ${p.by}` : ""}`, p?.at ? p.at.slice(0, 10) : "", p?.mandate ? `på ditt uppdrag: ${p.mandate}` : ""];
+  const head = [`${said[0].toUpperCase()}${said.slice(1)}${p?.by ? ` av ${p.by}` : ""}`, p?.at ? p.at.slice(0, 10) : "", p?.mandate ? `på ditt uppdrag: ${mandateText(p.mandate)}` : ""];
   return `${head.filter(Boolean).join(", ")}. Inte din egen dom; ditt beslut ersätter den.`;
 }
 

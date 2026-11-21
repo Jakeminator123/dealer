@@ -64,7 +64,7 @@ function TableDepth({ plan, off }: { plan: PlacementPlan; off: boolean }) {
   const own = planTaper({ targets: plan.targets, tableProjection: undefined });
   const marks = [
     { value: own, label: "Din plan", set: null },
-    { value: TABLE_PERSPECTIVE.max, label: "Verkligt", set: TABLE_PERSPECTIVE.max },
+    { value: TABLE_PERSPECTIVE.max, label: "Riktigt kort", set: TABLE_PERSPECTIVE.max },
   ];
   return (
     <div className="flex flex-col gap-1.5">
@@ -205,6 +205,8 @@ export function MotionPanel({ plan, id, editable, lit, line, anchor }: { plan: P
           ))}
         </ol>
       </Section>
+      {/* copying a dealer's card to the players would make every player's card land as the hole card: players only */}
+      {PLAYER_TARGETS.includes(id) ? (
       <Section title="Alla spelarkort">
         <Button
           size="sm"
@@ -219,6 +221,7 @@ export function MotionPanel({ plan, id, editable, lit, line, anchor }: { plan: P
           Samma rörelse på alla 14
         </Button>
       </Section>
+      ) : null}
     </>
   );
 }
@@ -253,7 +256,7 @@ export function TablePanel({ plan, editable }: { plan: PlacementPlan; editable: 
           />
         ) : null}
         {lens ? <TableDepth plan={plan} off={off} /> : null}
-        <p className="text-2xs text-faint">Byte av bord avmarkerar alla platser.</p>
+        <p className="text-2xs text-faint">Slår du om Verkligt perspektiv eller byter riktning blir alla platser okontrollerade igen.</p>
       </Section>
       {flat ? null : (
         <Section title="Spelarkorten">

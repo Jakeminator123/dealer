@@ -12,7 +12,7 @@ import { describeEdge, type Edge, type Take } from "../../../src/clip-graph.ts";
 import type { Decision } from "../../lib/api.ts";
 import { takeEdgeName, factsLine, takeFacts, takeNames } from "../../lib/names.ts";
 import { comparePair, playableFilm, reviewerNotes } from "../../lib/review.ts";
-import { VERDICT_LABEL, provisionalOf, provisionalWords, verdictOf, type Verdict } from "../../lib/verdict.ts";
+import { VERDICT_LABEL, mandateText, provisionalOf, provisionalWords, verdictOf, type Verdict } from "../../lib/verdict.ts";
 import { compareHref } from "../compare/ChoiceList";
 import { FilmPlayer, type FilmMark, type FilmPlayerHandle } from "../player";
 import { DecisionBar, TakeChip } from "../takes";
@@ -136,7 +136,7 @@ export function TakeReview({
           <div className="mb-3 rounded-md border border-dashed border-line-strong bg-well px-3 py-2 text-sm leading-5">
             <p className="text-xs text-faint">{provisionalWords(verdictOf(take), { ...provisional, mandate: "" })}</p>
             {provisional.note ? <p className="mt-1 text-dim">{provisional.note}</p> : null}
-            {provisional.mandate ? <p className="mt-1 text-2xs text-faint">På ditt uppdrag: {provisional.mandate}</p> : null}
+            {provisional.mandate ? <p className="mt-1 text-2xs text-faint">På ditt uppdrag: {mandateText(provisional.mandate)}</p> : null}
           </div>
         ) : null}
         <DecisionBar ref={barRef} take={take} compact onSaved={onSaved} />

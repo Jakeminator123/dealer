@@ -10,15 +10,18 @@
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { CARD_SCALES, SHAPE_LABEL, STYLE_LABEL, TAKES_MAX, modelsFor, referenceCandidates, scaleWords, stepOf, stylesFor, type BankFacts, type RefCandidate } from "../../../src/order-model.ts";
+import { CARD_SCALES, SHAPE_LABEL, STYLE_LABEL, TAKES_MAX, modelsFor, openEndWords, referenceCandidates, scaleWords, stepOf, stylesFor, type BankFacts, type RefCandidate } from "../../../src/order-model.ts";
 import { referenceName, type FilmRow, type RowChoice } from "../../lib/bordet.ts";
 import { labUrl } from "../../lib/lab.ts";
 import { scoreWords, verdictWords, type LedgerRow } from "../../lib/ledger.ts";
-import { picturesInOrder, storedParts, type OrderAnswer, type OrdersAnswer } from "../../lib/orders.ts";
+import { orderLine, picturesInOrder, storedParts, type OrderAnswer, type OrdersAnswer } from "../../lib/orders.ts";
 import { PictureCard, StatusChip } from "../order/Pictures";
 import { PromptText } from "../order/PromptText";
 import { Badge, SegmentedControl, Select, TextArea, buttonClasses, cn } from "../ui";
 import { queueHref } from "./FilmList";
+
+/** The last-picture choice "Utan slutbild" (RowChoice.end null, the command's --no-end). */
+const NO_END = "utan-slutbild";
 
 function Part({ title, aside, children }: { title: string; aside?: ReactNode; children: ReactNode }) {
   return (
@@ -119,7 +122,7 @@ export function RowSends({
       ) : null}
       <details data-exceptions className="rounded-md border border-line px-3 py-2" open={row.chosen}>
         <summary className="cursor-pointer text-sm text-ink">
-          Receptet <span className="text-xs text-dim">· {row.recipe}</span>
+          Receptet <span className="text-xs text-dim">· {row.recipe}{line.takes > 1 ? ` · ${line.takes} tagningar` : ""}</span>
           <span className="ml-2 text-xs text-brass-hi">{row.chosen ? "undantag gjort" : "gör ett undantag"}</span>
         </summary>
         <div className="mt-3 flex flex-col gap-3 text-sm">
@@ -146,14 +149,15 @@ export function RowSends({
           ) : null}
           {model?.videos ? (
             <Row label="Referensfilm">
-              <Select size="sm" aria-label="Referensfilm" value={line.reference?.take ?? ""} onChange={(v) => onChoice({ reference: v || null })} options={[{ value: "", label: "Ingen" }, ...candidates.map((c) => ({ value: c.take, label: referenceName(c, names), hint: c.kind === "RENDERED" ? "dockan" : c.verdict === "GODKÄND" ? "godkänd" : c.verdict.toLowerCase() }))]} className="w-56" />
+              <Select size="sm" aria-label="Referensfilm" value={line.reference?.take ?? ""} onChange={(v) => onChoice({ reference: v || null })} options={[{ value: "", label: "Ingen" }, ...candidates.map((c) => ({ value: c.take, label: referenceName(c, names), hint: c.kind === "RENDERED" ? (c.doll ? `dockan ${c.doll}` : "dockan") : c.verdict === "GODKÄND" ? "godkänd" : c.verdict.toLowerCase() }))]} className="w-56" />
             </Row>
           ) : null}
-          {deal && line.shape === "ONE_WAY" && (line.endChoices.length || choice.end) ? (
-            <Row label="Sista bild">
-              <Select size="sm" aria-label="Sista bild" value={choice.end ?? ""} onChange={(v) => onChoice({ end: v || undefined })} options={[{ value: "", label: "Platsens egen (receptet)" }, ...line.endChoices.map((e) => ({ value: e.id, label: e.name ?? e.id, hint: "kandidat, undantag" }))]} className="w-56" />
+          {deal && line.shape === "ONE_WAY" ? (
+            <Row label="Slutbild">
+              <Select size="sm" aria-label="Slutbild" value={choice.end === null ? NO_END : (choice.end ?? "")} onChange={(v) => onChoice({ end: v === NO_END ? null : v || undefined })} options={[{ value: "", label: "Platsens egen (receptet)" }, ...line.endChoices.map((e, i) => ({ value: e.id, label: e.name ?? `Kandidat ${i + 1}`, hint: "kandidat, undantag" })), { value: NO_END, label: "Utan slutbild", hint: "undantag" }]} className="w-56" />
             </Row>
           ) : null}
+          {deal && line.shape === "ONE_WAY" && choice.end === null && row.wish.target ? <p className="text-xs text-dim">Undantag: {openEndWords(row.wish.target)}.</p> : null}
           {deal && line.shape === "ROUND_TRIP" ? (
             <Row label="Kortets storlek">
               <SegmentedControl size="sm" label="Kortets storlek i den här beställningen" value={choice.cardScale ?? 1} onChange={(f) => onChoice({ cardScale: f })} options={CARD_SCALES.map((f) => ({ value: f, label: scaleWords(f) }))} />
@@ -206,7 +210,8 @@ export function DraftSends({ answer, all, names, takes = [] }: { answer: OrderAn
     <div data-draft className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2">
         <StatusChip answer={answer} />
-        <span className="truncate text-sm text-ink">{order.title}</span>
+        {/* his notation, not the title stored with the order (older words, sometimes a film's id) */}
+        <span className="truncate font-mono text-sm text-ink">{orderLine(order) ?? stepOf(order.step.key)?.label ?? order.step.label}</span>
       </div>
       {takes.length ? (
         <Part title="Filmen som kom">

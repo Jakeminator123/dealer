@@ -19,6 +19,12 @@ import { Badge, IconButton, cn } from "../ui";
 const W = 1764,
   H = 1174;
 
+/**
+ * A picture's name: its name in Material today where the orders' answer gives it (named), else the label frozen with the
+ * order, which an older order wrote in older words ("Paows ankare 2.3", "A3 · P4").
+ */
+export const pictureName = (picture: Picture): string => ("named" in picture && typeof picture.named === "string" && picture.named) || picture.label;
+
 /** Whose a picture is, so that a mix-up cannot pass unseen: green for the dealer's own, amber for an arm only, red else. */
 export function OwnerChip({ owner, dealer, className }: { owner: Owner | null | undefined; dealer: string; className?: string }) {
   const { text, tone } = ownerWords(owner, dealer);
@@ -101,7 +107,7 @@ export function PictureCard({ picture, owner, dealer, planned, className }: { pi
   return (
     <figure className={cn("flex min-w-0 flex-col gap-2", className)}>
       <figcaption className="flex flex-wrap items-center gap-2">
-        <span className="font-display text-md font-semibold text-ink">{picture.label}</span>
+        <span className="font-display text-md font-semibold text-ink">{pictureName(picture)}</span>
         {owner !== undefined && dealer ? <OwnerChip owner={owner} dealer={dealer} /> : null}
         {drawn ? (
           <Badge tone="brass" className="ml-auto">
@@ -111,9 +117,9 @@ export function PictureCard({ picture, owner, dealer, planned, className }: { pi
       </figcaption>
       <div className="relative aspect-[1764/1174] overflow-hidden rounded-lg border border-line bg-well">
         {src ? (
-          <button type="button" onClick={() => setOpen(true)} className="block size-full cursor-zoom-in" aria-label={`Visa ${picture.label} stort`}>
+          <button type="button" onClick={() => setOpen(true)} className="block size-full cursor-zoom-in" aria-label={`Visa ${pictureName(picture)} stort`}>
             {/* eslint-disable-next-line @next/next/no-img-element -- a lab file; next/image cannot optimise in a static export */}
-            <img src={src} alt={picture.label} draggable={false} className="size-full object-contain" />
+            <img src={src} alt={pictureName(picture)} draggable={false} className="size-full object-contain" />
           </button>
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[repeating-linear-gradient(135deg,#0c110f_0_10px,#0a0e0c_10px_20px)] text-center">
@@ -156,7 +162,7 @@ export function PictureCard({ picture, owner, dealer, planned, className }: { pi
           Det gröna är justerat till ankarets.
         </p>
       ) : null}
-      {src ? <PictureViewer src={src} title={picture.label} open={open} onOpenChange={setOpen} /> : null}
+      {src ? <PictureViewer src={src} title={pictureName(picture)} open={open} onOpenChange={setOpen} /> : null}
     </figure>
   );
 }

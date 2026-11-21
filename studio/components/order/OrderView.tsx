@@ -8,7 +8,7 @@ import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { asApiError, type ApiError } from "../../lib/api.ts";
 import { useViewContext } from "../../lib/context.ts";
-import { getOrders, shownWords, type OrderAnswer, type OrdersAnswer } from "../../lib/orders.ts";
+import { getOrders, orderLine, shownWords, type OrderAnswer, type OrdersAnswer } from "../../lib/orders.ts";
 import { ErrorState, Skeleton } from "../ui";
 import { OrderList } from "./OrderList";
 import { QueueFrame } from "./QueueFrame";
@@ -46,7 +46,7 @@ export function OrderView({ menu }: { menu: ReactNode }) {
 
   const all = state.status === "ready" ? state.all : null;
   const open = all && asked ? (all.orders.find((a) => a.order.id === asked) ?? null) : null;
-  useViewContext({ vy: "Kön", val: { beställning: open?.order.title, status: open ? shownWords(open) : undefined, antal: all ? String(all.orders.length) : undefined } });
+  useViewContext({ vy: "Kön", val: { beställning: open ? (orderLine(open.order) ?? open.order.step.label) : undefined, status: open ? shownWords(open) : undefined, antal: all ? String(all.orders.length) : undefined } });
 
   // A saved answer replaces its order in the list at once; the list is then read again for the sums.
   const saved = (answer: OrderAnswer) => {

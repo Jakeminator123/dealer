@@ -644,8 +644,9 @@ vriden tills kortet ligger; `LONG_EDGE` kortet rullas kring långsidan på väge
 `FLIP_ABOUT` i `src/order-model.ts` har orden Beställ visar). Förvalen kommer från stegets recept (`recipeFor`,
 `data/order-methods.json`): en giv tar receptets hand hela vägen och receptets vändning, planens kort ger bara det
 receptet lämnar åt Kortplan, ett handbyte är aldrig förval och vändningen är inget val i studion; `fromPlan` säger
-om valen är planens. Ny beställning föreslår handbyte där kortet landar mer än ett halvt kort till vänster
-om hennes mitt (mitten mellan dealerns två kort), alltså P1–P3 i dagens plan. "Alla sju" gör ett utkast per plats med
+om valen är planens. `crossesBody` (`src/order-model.ts`) säger om kortet landar mer än ett halvt kort till vänster
+om hennes mitt (mitten mellan dealerns två kort), alltså P1–P3 i dagens plan; inget sätts eller föreslås av den.
+"Alla sju" gör ett utkast per plats med
 samma `group`. Texten skrivs av `promptFor` i `src/order-prompts.ts` (dagens mall i `TEMPLATE_VERSION`, och vilken
 den är står i handboken §2; en order återges med sin egen version; orden i `SAY`, reglerna i `tools/film-prompting.md`),
 samma funktion som visar texten innan utkastet finns, i stilen `prompt.style`: Kort (förval, bara rörelsen, inga
