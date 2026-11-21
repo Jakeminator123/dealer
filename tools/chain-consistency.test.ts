@@ -279,7 +279,7 @@ test('Bordet\'s default round and Beställ\'s row deal a card from the anchor th
       assert.equal(R.roundFromText(B.roundFor(card, d.id), R.readyRounds()).steps[0]?.from, pose, `${d.name} ${card}: Bordet's round ${B.roundFor(card, d.id)}`);
     }
   }
-  assert.equal(B.roundFor('P6.C1', 'paow'), 'A2.2 - P6C1 - A2.2');
+  assert.equal(B.roundFor('P6.C1', 'paow'), 'A2.2 - A3P6C1 - A2.2'); // his notation since 2026-11-21: the card's anchor is A3 + player + card
 });
 // FYND 2: the seams and hands now reach the step's gaps (tools/game-film.test.ts); showing them on the page waits for his yes.
 test.todo('FYND 2: the game page shows a step\'s gaps (a card laid without a hand, a stand-in, a seam, the other hand) behind a key in the address, once Jakob has said yes in Beslut');
