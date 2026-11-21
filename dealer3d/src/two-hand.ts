@@ -42,9 +42,12 @@ export type DealFrame = {card: CardAt; L: Limb; R: Limb; h: Vec3; g: Vec3};
 export type Beat = {to: string; a: number; b: number; c: number; d: number; e: number; l: number; turned: number; f: number; g: number; h: number; i: number | null};
 export type Place = {id: string; at: Vec3; real: RealCard};
 
-/** P4.C2 uses the landing grip only. The original closed-grip pilot stays at P4.C1. The sweep lays the first card of any seat (2026-11-21: the deal of seat 4 made for seats 1 to 7). */
+/** Where each contact grip may lay a card. The original closed-grip pilot stays at P4.C1, and the landing grip lays P4.C2 as it
+ *  did. The sweep (the drag with a hand change) lays the first or the second card of any seat: 2026-11-21 the deal of seat 4 was
+ *  made for seats 1 to 7, and the same evening Jakob had the drag with a hand change dealt from A2.3 to P4.C2, so a seat's second
+ *  card is laid as its first (dealer3d/tools/deal-film.ts lends it the first card's moments). */
 export const contactGripFits = (target: string, grip: NonNullable<Rolled['contactGrip']>): boolean =>
-  target === 'P4.C1' || (target === 'P4.C2' && grip === 'landing') || (grip === 'sweep' && /^P[1-7]\.C1$/.test(target));
+  target === 'P4.C1' || (target === 'P4.C2' && grip === 'landing') || (grip === 'sweep' && /^P[1-7]\.C[12]$/.test(target));
 /**
  * For a film in another tempo than the real dealer's (the moments it is given are then its own). `flowing`: the card does
  * not stand still between being stood up and falling: the raising goes straight over into the fall. In her own tempo the
@@ -325,7 +328,7 @@ export function twoHandDeal(lens: Lens, start: Still, places: Place[], lead: num
   // between the way it lies when the hands change and the way it lies on its place (with handOverYaw 180 that is its own
   // long side), the edge on her left going up: seen from the bank it is never drawn larger than lying.
   const rolling = single && !!pace.roll, rollFlat = cardAxes(yawHand + Math.PI, 0, false), rollTaken = {up: 0.012, in: W / 2};
-  if (pace.contactGrip && (!rolling || places.length !== 1 || !contactGripFits(places[0].id, pace.contactGrip))) throw Error('Contact grip needs one roll: to P4.C1, a sweep to the first card of a seat, or a landing grip at P4.C2.');
+  if (pace.contactGrip && (!rolling || places.length !== 1 || !contactGripFits(places[0].id, pace.contactGrip))) throw Error('Contact grip needs one roll: to P4.C1, a sweep to the first or second card of a seat, or a landing grip at P4.C2.');
   if (pace.sharedChange && pace.contactGrip !== 'sweep') throw Error('A shared hand change needs the sweep grip.');
   const sweeps = pace.contactGrip === 'sweep', shares = sweeps && !!pace.sharedChange, S = {...M.shared, ...pace.shared}, soft = shares && !!S.soft, supportsLanding = pace.contactGrip === 'landing' || sweeps, pinched = pace.contactGrip ? contactGripOf(flatR, supportsLanding) : null;
   // sweep: the hand on the card, a share `m` of the way from the grip that turns it (thumb beside the index, the hand on its

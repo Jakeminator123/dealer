@@ -247,6 +247,15 @@
       "seconds": 3,
       "lays": "RH",
       "check": null
+    },
+    {
+      "id": "docka-2-3-p4c2-svep24d",
+      "edge": "READY-C>P4.C2",
+      "path": "assets/references/docka/docka-2-3-p4c2-svep24d/source.mp4",
+      "sha256": "8e69f28cc71d9b1e0cd88b98ab56fb9455ddc40ea39534b09f2ab7b3d2a34fcf",
+      "seconds": 3,
+      "lays": "RH",
+      "check": null
     }
   ]
 }

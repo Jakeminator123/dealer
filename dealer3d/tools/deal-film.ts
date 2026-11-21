@@ -4,7 +4,8 @@
 //   node dealer3d/tools/deal-film.ts --to all --seconds 8 --lead 27 --out dealer3d/data/giv-fran-2-3-alla.json
 //   node dealer3d/tools/deal-film.ts --to P5.C1 --seconds 3 --right-at 1180,887,83 --out dealer3d/data/giv-fran-2-3-p5.json
 //   node dealer3d/tools/deal-film.ts --to P5.C1 --seconds 3 --right-at 1180,887,83 --beats 5.5,17.5,22.5,34.5,37.5,48.8,54.5,66.5 --out dealer3d/data/giv-fran-2-3-p5-langsam.json
-// --to: one place of the plan (it takes the real moments of the seat that lies as it does: P4 takes S4's), or "all": the
+// --to: one place of the plan (it takes the real moments of the seat that lies as it does: P4 takes S4's, and a seat's second
+//   card, with --contact-grip sweep or at P4.C2 landing, its first card's), or "all": the
 //   seven seats in the order a dealer deals them (seat 7, at her left by the shoe, first) and then her own card.
 // --right-at: the film begins with her right hand where the approved anchor picture has it (dealer3d/src/two-hand.ts, startOnAnchor).
 // --lead: the frame on which her left fingers "lie on the first card" (the film stands in pose 2.3 until the card moves).
@@ -38,11 +39,13 @@ const pose = JSON.parse(await readFile(new URL(`../data/${poseFilm ?? 'till-anka
 const planBytes = await readFile(planPath ?? new URL('../../placements/default.json', import.meta.url));
 const plan = JSON.parse(planBytes.toString('utf8').replace(/^\uFEFF/, ''));
 const last = pose.frames[pose.frameCount - 1], all = spots(plan, lens), spot = (id: string) => { const s = all.find(s => s.id === id); if (!s) throw Error(`The plan has no place ${id}.`); return s.at; };
-const contactMode = arg('--contact-grip'), secondCardPilot = to === 'P4.C2';
-if (secondCardPilot && contactMode !== 'landing') throw Error('--to P4.C2 needs --contact-grip landing.');
+// A seat's second card (P1.C2 to P7.C2) is laid with the sweep (Jakob 2026-11-21: the drag with a hand change from A2.3 to P4.C2),
+// or at P4.C2 with the landing grip as before; secondCardPilot is that landing pilot, with its own body and elbows below.
+const contactMode = arg('--contact-grip'), secondCard = /^P[1-7]\.C2$/.test(to), secondCardPilot = to === 'P4.C2' && contactMode === 'landing';
+if (secondCard && contactMode !== 'sweep' && !secondCardPilot) throw Error(`--to ${to} needs --contact-grip sweep${to === 'P4.C2' ? ' or landing' : ''}.`);
 // The real dealer's S1 is the seat at her left, by the shoe: the plan's seat 7. Her own card is the plan's D.C1.
-// The second card at P4 borrows the S4 timing and handover only. Its own plan spot is passed to the solver.
-const realOf = (id: string) => { const timing = secondCardPilot && id === 'P4.C2' ? 'P4.C1' : id, m = /^P([1-7])\.C1$/.exec(timing); return REAL_DEAL[timing === 'D.C1' ? 7 : m ? 7 - Number(m[1]) : -1] ?? (() => { throw Error(`No real card to take the moments of for ${id}.`); })(); };
+// A second card borrows its seat's first card's timing and handover only (P4.C2 takes S4's). Its own plan spot is passed to the solver.
+const realOf = (id: string) => { const timing = secondCard && id === to ? id.replace(/\.C2$/, '.C1') : id, m = /^P([1-7])\.C1$/.exec(timing); return REAL_DEAL[timing === 'D.C1' ? 7 : m ? 7 - Number(m[1]) : -1] ?? (() => { throw Error(`No real card to take the moments of for ${id}.`); })(); };
 // --meet 1, --push <metres>, --swing <degrees>, and for version -e --single 1, --real-take 1, --reach <metres>, --carry <metres>, --turned-at <metres>, and for version -f --roll 1, --grip-bend <0-1>, --hand-over-yaw <degrees>, --body <side,twist,forward degrees>, --tuck <weight> (with --beats): see Pace in dealer3d/src/two-hand.ts.
 // --beats: the film's own moments in frames, for a film slower than the real dealer (b,c,d,e,l,f,g,h as in dealer3d/src/real-deal.ts; a is frame 0). Where the hands
 // change is still the real card's; the card does not stand still between being stood up and falling, and the left hand goes back to the shoe as much slower as the film is.
@@ -54,7 +57,7 @@ const ids = to === 'all' ? ['P7.C1', 'P6.C1', 'P5.C1', 'P4.C1', 'P3.C1', 'P2.C1'
 if (process.argv.includes('--contact-grip')) {
   const mode = contactMode === 'landing' || contactMode === 'sweep' ? contactMode : true;
   if (!(contactMode === '1' || mode !== true) || !own || !contactGripFits(to, mode) || !pace.single || !pace.meeting || !pace.roll) {
-    throw Error('--contact-grip 1|landing|sweep requires --to P4.C1 (P4.C2 with landing, the first card of any seat with sweep), --beats, --meet 1, --single 1 and --roll 1.');
+    throw Error('--contact-grip 1|landing|sweep requires --to P4.C1 (P4.C2 with landing, the first or second card of any seat with sweep), --beats, --meet 1, --single 1 and --roll 1.');
   }
   pace.contactGrip = mode;
 }

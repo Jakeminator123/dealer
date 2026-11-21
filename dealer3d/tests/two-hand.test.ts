@@ -16,7 +16,7 @@ import {CARD, TABLE_LENS, add, filmEye, length, mul, see, sub, type Vec3} from '
 import {FINGERS, LIMITS, joints, type ArmPose} from '../src/capture.ts';
 import {sideSeen, type CardPose} from '../src/deal.ts';
 import {REAL_DEAL, type RealCard} from '../src/real-deal.ts';
-import {shoeHolds, startOnAnchor, twoHandDeal, type Pace} from '../src/two-hand.ts';
+import {contactGripFits, shoeHolds, startOnAnchor, twoHandDeal, type Pace} from '../src/two-hand.ts';
 import {track} from '../src/hand-pose.ts';
 
 type Limb = {s: Vec3; e: Vec3; w: Vec3; k: number; p: Vec3[]};
@@ -83,6 +83,19 @@ const lowPilot: typeof uprightPilot = await load('giv-fran-2-3-p4-grepp-svep-d')
 // and 8 px nearer her, her trunk content with 50 cm reach (else it leans 14 degrees) and her left hand home in a lower arc.
 // Seats 6 and 7 are not laid: before the shoe her right arm reaches them only across her body.
 const seatPilots = await Promise.all([1, 2, 3, 5].map(async n => [`P${n}`, await load(`giv-fran-2-3-p${n}-grepp-svep-d`) as typeof uprightPilot] as const));
+// The second card at seat 4, laid as V (Jakob 2026-11-21: the drag with a hand change from A2.3 to P4.C2) with S4's moments, its
+// place 4 cm to the right of P4.C1, and her trunk content with 46.5 cm reach (else it leans 9.6 degrees; so it leans as at P4.C1).
+const secondSeatPilot: typeof uprightPilot = await load('giv-fran-2-3-p4c2-grepp-svep-d');
+
+test('the sweep lays the first or the second card of a seat, the landing grip P4.C2 and the closed grip P4.C1', () => {
+  for (const seat of [1, 2, 3, 4, 5, 6, 7]) for (const card of [1, 2]) assert.ok(contactGripFits(`P${seat}.C${card}`, 'sweep'), `the sweep lays P${seat}.C${card}`);
+  for (const target of ['P4.C3', 'D.C1', 'D.C2', 'P8.C1', 'all']) assert.ok(!contactGripFits(target, 'sweep'), `the sweep does not lay ${target}`);
+  assert.ok(contactGripFits('P4.C2', 'landing') && !contactGripFits('P5.C2', 'landing') && !contactGripFits('P4.C2', true), 'the landing grip lays P4.C2 only, and the closed grip not there');
+  assert.ok(contactGripFits('P4.C1', true) && contactGripFits('P4.C1', 'landing') && !contactGripFits('P5.C1', true), 'the closed-grip pilot stays at P4.C1');
+  const cli = fileURLToPath(new URL('../tools/deal-film.ts', import.meta.url)), out = join(tmpdir(), 'dealer-p4c2-never-written.json');
+  assert.throws(() => execFileSync(process.execPath, [cli, '--to', 'P4.C2', '--seconds', '3', '--beats', '2,12,24,38,26,63,64,70', '--meet', '1', '--single', '1', '--roll', '1', '--contact-grip', '1', '--out', out], {stdio: 'pipe'}), /needs --contact-grip sweep or landing/);
+  assert.throws(() => execFileSync(process.execPath, [cli, '--to', 'P5.C2', '--seconds', '3', '--beats', '2,12,24,38,26,63,64,70', '--out', out], {stdio: 'pipe'}), /needs --contact-grip sweep\./);
+});
 for (const [name, film, grip] of [['G', pilot, true], ['H', landingPilot, 'landing'], ['S', sweepPilot, 'sweep'], ['T', sharedPilot, 'sweep']] as const) {
   test(`P4 pilot ${name} reproduces from its recorded place and pace`, () => {
     assert.deepEqual(film.to, ['P4.C1']);
@@ -156,7 +169,7 @@ test('P4 H keeps the index at the same point through release and flat landing, w
   assert.ok(Math.abs(flatPose.centre[1] - CARD.thickness / 2) < tolerance, 'the card lies flat on the felt');
 });
 
-for (const [name, film, closes] of [['P4 S', sweepPilot, 5], ['P4 T', sharedPilot, 1], ['P4 U', uprightPilot, 1], ['P4 V', lowPilot, 1], ...seatPilots.map(([seat, film]) => [seat, film, 1] as const)] as const) test(`${name} keeps the pinch through the whole turn, never holds the card still, and lays it without turning the hand back`, () => {
+for (const [name, film, closes] of [['P4 S', sweepPilot, 5], ['P4 T', sharedPilot, 1], ['P4 U', uprightPilot, 1], ['P4 V', lowPilot, 1], ...seatPilots.map(([seat, film]) => [seat, film, 1] as const), ['P4 C2', secondSeatPilot, 1]] as const) test(`${name} keeps the pinch through the whole turn, never holds the card still, and lays it without turning the hand back`, () => {
   const beat = film.beats[0], grasp = Math.ceil(beat.l + closes), atFelt = Math.floor(beat.g), flat = Math.ceil(beat.h), last = film.frameCount - 1;
   const tipHeight = CARD.thickness / 2 + sphereRadius(8), frames = film.frames;
   const backUp = (p: Vec3[]) => { const n = cross(sub(p[5], p[0]), sub(p[17], p[0])); return Math.acos(Math.max(-1, Math.min(1, n[1] / length(n) * Math.sign(cross(sub(frames[0].R.p[5], frames[0].R.p[0]), sub(frames[0].R.p[17], frames[0].R.p[0]))[1])))) * 180 / Math.PI; };
@@ -203,7 +216,7 @@ test('P4 T: both hands have the card at the hand change, and her left hand keeps
   assert.deepEqual(frames[frames.length - 1].L.p, frames[0].L.p);
 });
 
-for (const [name, film, to] of [['P4 U', uprightPilot, 'P4.C1'], ['P4 V', lowPilot, 'P4.C1'], ...seatPilots.map(([seat, film]) => [seat, film, `${seat}.C1`] as const)] as const) test(`${name} begins on the last frame of the upright pose film and reproduces from its recorded pace`, () => {
+for (const [name, film, to] of [['P4 U', uprightPilot, 'P4.C1'], ['P4 V', lowPilot, 'P4.C1'], ...seatPilots.map(([seat, film]) => [seat, film, `${seat}.C1`] as const), ['P4 C2', secondSeatPilot, 'P4.C2']] as const) test(`${name} begins on the last frame of the upright pose film and reproduces from its recorded pace`, () => {
   const pace = film.pace as (Pace & {real: RealCard}) | null;
   assert.deepEqual(film.to, [to]);
   assert.equal(film.poseFilm, 'till-ankare-2-3-c');
@@ -233,7 +246,7 @@ for (const [name, film, to] of [['P4 U', uprightPilot, 'P4.C1'], ['P4 V', lowPil
 // place, 9.1 mm in a frame at seat 1, 7.0 at seat 2 and 6.0 at seat 3 against at most 5 at seats 4 and 5: it is in their films, not hidden)
 const seatFilm = Object.fromEntries(seatPilots);
 for (const [name, film, windowMore, foreLeast, bothFor, leanLeast, brake, homeAfter] of [['P4 U', uprightPilot, 1, 24, 5, 7, 0.005, 30], ['P4 V', lowPilot, 3, 38, 8, 7, 0.005, 30],
-  ['P1', seatFilm.P1, 2, 38, 6, 7, 0.0092, 29], ['P2', seatFilm.P2, 2, 38, 7, 5, 0.0071, 29], ['P3', seatFilm.P3, 3, 38, 7, 2.5, 0.0061, 30], ['P5', seatFilm.P5, 2, 38, 8, 7, 0.005, 29]] as const) test(`${name}: upright at the start, a calm lean while the card is laid, one calm movement to the card, both hands at the change with the pinch in sight, and arms that are whole in the picture`, () => {
+  ['P1', seatFilm.P1, 2, 38, 6, 7, 0.0092, 29], ['P2', seatFilm.P2, 2, 38, 7, 5, 0.0071, 29], ['P3', seatFilm.P3, 3, 38, 7, 2.5, 0.0061, 30], ['P5', seatFilm.P5, 2, 38, 8, 7, 0.005, 29], ['P4 C2', secondSeatPilot, 2, 38, 8, 7, 0.005, 30]] as const) test(`${name}: upright at the start, a calm lean while the card is laid, one calm movement to the card, both hands at the change with the pinch in sight, and arms that are whole in the picture`, () => {
   const frames = film.frames, beat = film.beats[0], grasp = Math.ceil(beat.l + 1), pace = film.pace as Pace, deg = 180 / Math.PI;
   // Her trunk: upright until the frame the film names, then toward the place without swaying back, never more than 9 degrees and never more than a third of a degree in a frame.
   const lean = frames.map(f => { const up = sub(mul(add(f.L.s, f.R.s), 0.5), film.hip); return Math.acos(up[1] / length(up)) * deg; });
@@ -275,7 +288,7 @@ for (const [name, film, windowMore, foreLeast, bothFor, leanLeast, brake, homeAf
 
 // A film model drew U's left arm as ending at the elbow where the doll's forearm was two thirds of its length in the picture and its hand hung, fingers down, from a wrist lifted over the card.
 const leftPx = (p: Vec3) => see(eye, p)!, leftSeen = (f: typeof lowPilot.frames[number]) => { const a = leftPx(f.L.e), b = leftPx(f.L.w); return Math.hypot(a.x - b.x, a.y - b.y); };
-for (const [name, film] of [['P4 V', lowPilot], ...seatPilots] as const) test(`${name}: her left forearm is as long in the picture as in the pose in every frame, and her left hand goes out and home flat and low, its back up`, () => {
+for (const [name, film] of [['P4 V', lowPilot], ...seatPilots, ['P4 C2', secondSeatPilot]] as const) test(`${name}: her left forearm is as long in the picture as in the pose in every frame, and her left hand goes out and home flat and low, its back up`, () => {
   const unit = (a: Vec3) => mul(a, 1 / length(a)), back = (f: typeof lowPilot.frames[number]) => unit(cross(sub(f.L.p[5], f.L.w), sub(f.L.p[17], f.L.w))), rest = film.frames[0];
   assert.ok(back(rest)[1] > 0.9, 'at rest on the shoe the back of her left hand is up');
   for (const [i, f] of film.frames.entries()) { const at = `frame ${i}`, b = back(f), fingers = unit(sub(f.L.p[9], f.L.w));
@@ -351,7 +364,7 @@ test('the H timing can lay its own P4.C2 card with independent IK and a frozen p
   assert.throws(() => execFileSync(process.execPath, [...args, '--contact-grip', 'landing', '--hand-over-yaw', '140'], {stdio: 'pipe'}), /needs --hand-over-yaw 180/);
 });
 
-for (const [name, film] of [['P4 G', pilot], ['P4 H', landingPilot], ['P4 S', sweepPilot], ['P4 T', sharedPilot], ['P4 U', uprightPilot], ['P4 V', lowPilot], ...seatPilots] as const) test(`${name} keeps hand sizes, arm limits and clearances`, () => {
+for (const [name, film] of [['P4 G', pilot], ['P4 H', landingPilot], ['P4 S', sweepPilot], ['P4 T', sharedPilot], ['P4 U', uprightPilot], ['P4 V', lowPilot], ...seatPilots, ['P4 C2', secondSeatPilot]] as const) test(`${name} keeps hand sizes, arm limits and clearances`, () => {
   const rightInsideShoe = shoeHolds(TABLE_LENS);
   for (const [side, sign] of [['L', -1], ['R', 1]] as const) {
     const sizes = bones(start[side].p), twists: number[] = [];
