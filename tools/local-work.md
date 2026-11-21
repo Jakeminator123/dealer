@@ -35,21 +35,17 @@ Efter mediearbete: rensa egna färdiga mellanresultat, flytta och registrera den
 Äldre unika original granskas efter användning, inte efter en automatisk åldersgräns. D: kan vara ett uttryckligt
 arkivval för sådant som ska bevaras men inte används; flytt är inte en minskning av den totala mängden.
 
-## Granskade äldre arbetsträd
+## Äldre träd och grenar
 
-De tre äldre träden under `.codex/worktrees/` är jämförda med main 2026-11-19. Ingen ny funktionskod behöver tas in:
+De tre äldre Codex-träden (dealer-evidence, dealer-linsnavigation, dealer-order-snapshot) jämfördes med main
+2026-11-19. Det som tillförde något är infört (bland annat `1267ff4` och `20a44ad`); äldre filer därifrån återförs
+inte. Utkasten är säkrade i `private/recovery/worktrees-2026-11-19/drafts.bundle`, med fil- och snapshotlista i
+`manifest.json`. Git har bara `dealer` och byggträdet `dealer-bygg` som arbetsträd.
 
-| Träd | Innehåll | Var det finns nu |
-| --- | --- | --- |
-| dealer-evidence | Körkvitton, evidensindex, mediegranskning | Infört i `1267ff4`, sedan förbättrat |
-| dealer-linsnavigation | Scenval, geometri, 3D-grepp och rendering | Infört i bland annat `20a44ad`, `2b4352e`, `b1e782b` |
-| dealer-order-snapshot | Fryst orderunderlag och förhandsvisning | Infört i `20a44ad`, sedan förbättrat |
-
-Den extra filen `giv-fran-2-3-p4-grepp-pilot.json` motsvarar G-versionens rörelse; G har dessutom planhash och
-avsiktsmetadata. Äldre Casino-filer saknar senare rättningar för uppspelningsval och länkar. Återför inte dem.
-Utkasten är säkrade lokalt i `private/recovery/worktrees-2026-11-19/drafts.bundle`, med fil- och snapshotlista i
-`manifest.json`. Trädens enda ignorerade fil, evidensindexet, är separat kopierad och hashjämförd där. De äldre
-arbetskopiorna är avvecklade. Endast huvudmappen är kvar som aktivt arbetsträd.
+Räddningsgrenen `codex/rescue-dealer-3d-a55c463` och bundle-filen bredvid projektet bevarar historiken. Hela dess
+`dealer3d/` finns redan i main (`bfec2a0`, samma Git-träd), så ingen merge behövs. Detta är Dealers `dealer3d/`, inte
+`C:/Users/jakem/Desktop/3d-dealer`: båda får utvecklas separat, och en överföring är en uttrycklig, granskad kopia med
+ursprung, aldrig ett korsvis beroende.
 
 ## Automatisk återkoppling från webbläsaren
 
@@ -111,14 +107,3 @@ i projektets `assets/`. Det väljer ingen disk, följer inga länkar, hoppar öv
 namngivna sökvägar och processer samt filer yngre än tre dygn. Varje borttagen fil kvitteras under
 `.runtime/cleanup/`. Kontrollera först att den valda mappen ägs av detta projekt; verktyget kan inte avgöra
 ägarskap åt operatören. Kvittots byteantal är filernas logiska storlek, inte uppmätt frigjort diskutrymme.
-
-## Den räddade Dealer-grenen
-
-Kontrollerat 2026-11-19: `codex/rescue-dealer-3d-a55c463` har 48 commits utanför mains anor (31 vanliga och
-17 merge-commits). Det betyder inte 48 saknade ändringar. Hela `dealer3d/` vid `a55c463` är redan införd i main
-vid `bfec2a0`: båda har Git-trädet `2ee30263bd32ebce19b660b6e09b32158983f838`, och filjämförelsen är tom.
-Main har därefter fått bland annat returcykel, grepprov och tester. Ingen ny merge eller cherry-pick behövs för
-den räddade 3D-koden. Räddningsgrenen och den lilla bundle-filen bevarar historiken.
-
-Detta är Dealers `dealer3d/`, inte `C:/Users/jakem/Desktop/3d-dealer`. Båda får utvecklas separat.
-Eventuella framtida överföringar är uttryckliga, granskade kopior med ursprung, aldrig korsvisa beroenden.

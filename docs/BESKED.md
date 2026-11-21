@@ -15,6 +15,14 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 
 ## Arbetet och dokumenten
 
+- **Nattens mål: allt i steg med underagenter, avslutat med push till `main`** (2026-11-21, kl. 19.45): "Gör nu allt
+  detta i de steg och med bra modeller som underagenter. Sätt upp detta om ett /goal att arbeta med i ca 6h eller till
+  det börjar bli för komplicerat för dig att hålla i all kontext. Alltså sätt din egen målbeskrivning typ.. Avsluta
+  gärna allt med en push till main på master". Stegen är de han gav samma kväll (Labbet och studion, "Bordet ska
+  byggas om …"), och dockan lades till kl. 19.55 (Filmerna och given). Läst så (huvudagentens tolkning): PR,
+  sammanslagning och push till `main` är beställda för det arbetet; beställningarna görs inom mandatet, som
+  huvudagenten förnyar före första ordern, och huvudagenten satte själv ett tak på 1 500 krediter för natten.
+
 - **Datorn bär bara det som det arbetas med; resten ligger på den nya Blobben, och det ersatta gallras** (2026-11-21,
   sent): "idag ser jag att 'assets' har sjukt mkt material. Ska man inte göra så att det raderas massa om nya versioner
   kommer in lite automatiskt? Eller typ att någonting gör att mappen inte blir så tung? Eller jag menar allt ska ju
@@ -49,6 +57,7 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   Förtydligande samma dag: "arbetar kontinuerligt i mappen på C" och "allt normalt, men gärna med omtanke om att
   repot arbetar med just videomaterial". Vanliga grenar och bra ändringar från andra IDE:er får användas; granska
   och inför det som faktiskt tillför något. Rensa färdiga mellanresultat löpande och håll materialet överblickbart.
+  Arbetsmappen preciserades 2026-11-21 (beskedet ovan): `dealer` på `main`, ett extra träd bara när det uttryckligen behövs.
 
 - **Sammanhängande lokal räddning** (2026-11-18, Codex): "Styr upp det här och gör det så bra som möjligt för att spela
   upp Black Jack"; "Samordna arbetet så att vi har kontroll, även med flera metoder." Jakob gav fria händer för lokala
@@ -121,7 +130,8 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   typ". Den chatten gör alltså den samlade kontrollen och committar; varje session lämnar sin fillista dit.
 - **Ny orkestrerande session, och Node 24.22.3 i hela projektet** (2026-11-20, till sessionen dealer-37 när chatten
   ovan stängdes): "Jag vill att du gör flera saker och använder underagenter för allt. Du ska mest orkestrera det som
-  sker." Den sessionen tar därmed över den samlade kontrollen och commits. Om Node samma gång: "prova att installera
+  sker." Den sessionen tog därmed över den samlade kontrollen och commits (vem som är huvudagent nu står i HANDOFF,
+  "Vem äger vad"). Om Node samma gång: "prova att installera
   den nya node-versionen och testa att allt fungerar. Om det gör det, byt över till den nyare node-versionen överallt."
 
 ## Labbet och studion
@@ -359,7 +369,8 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   ska vara så att hon tittar mot kortet/skon/handen […] Just hennes ankare 2.2 är dåligt i alla fall på grund av att
   hon inte har en "styvare" handhållning för att "stryka/dra trycka ut kortet ur skon, och att hennes blick inte är
   just mot skon"". Ett nytt ankare 2.2 görs; hans två anteckningar om kandidaterna (lyft armbågen; händerna lika stora
-  och tummen synlig) står i Prov `paow-ankare-2-2-blick`. Kandidaterna föll ([film](lage/film.md)); nästa försök tas ur en film.
+  och tummen synlig) står i Prov `paow-ankare-2-2-blick`. Rättat 2026-11-21: kandidat A (`paow-ankare-2-2-blick-a`)
+  gäller sedan Jakob 2026-11-20 kl. 08.34 (Material), B och C föll ([film](lage/film.md)).
 - **Ankare 2.3** (2026-11-18, cirka kl. 01.10, till sessionen MODEL; hans ord som MODEL:s rapport återger dem): "Jag
   vill att du skapar ett nytt ankare, ankare 2.3, och inget annat. Ankare 2.3 ska göra ett undantag, där ankare 1 får
   gå till ankare 2.3. Ankare 1 ska nu vara paushänder som är tatuerade, om du kan hitta det. En videofilm ska
@@ -402,6 +413,17 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   dealern tar och betalar, insamling av korten, och en andra spelarfigur, "Astrid", som kommer in från sidan och satsar.
 
 ## Filmerna och given
+
+- **Dockan ska se naturlig ut och ha dealerns mått, och en vald docka ersätter Siluett i studion** (2026-11-21,
+  kl. 19.55): "om docka ska användas. Kolla då om dockan kan göras bättre så dockan inte ser onaturlig ut.. typ lite
+  'kuvad'. Kanske kan man ta mått för respektive dealer? Jag har ett annat projekt du kan granska för detta som heter
+  'ultimate-reality'. Du får fria händer att använda dig av den SAM 3D-metod de använder för en ny docka. Men tänk
+  också på att dessa dockor som produceras där kommer ha massa leder för fingrar och ansikte också. Men framförallt
+  kanske vi kan ha en dummydocka nu för PAOW som gissar hennes mått typ. Denna eller en docka ska förslagsvis in
+  istället för den siluett vi nu har i studion, där man ska kunna ändra docka också." Läst så (huvudagentens
+  tolkning): dockan blir en namngiven uppsättning mått per dealer, dagens står kvar som den är, och projektet
+  `ultimate-reality` är en läsreferens (inga länkar eller beroenden dit). "Nej, vita dockan räcker" (2026-11-18)
+  gäller fortsatt: en vit docka, inte en klädd människa.
 
 - **Handleden vrider kortet** (2026-11-17): "Oavsett om hon nyper eller släpar ut kortet, alltså om hon kommer från
   ankaret 2.1 eller 2.2, måste hon vrida över handleden. Jag har pratat med dig i flera timmar om det här, men det
@@ -474,7 +496,7 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 - **Ett slutbildsankare per plats, en gång för alla** (2026-11-18, cirka kl. 04.25, om att given från 2.3 saknade slutbild):
   "kan du inte skapa som en bra och logisk slutbildsankare (A3P'n') för respektive possition som sätts in på något
   sätt? Kan du inte bara lösa detta en gång för alla! Lös allt och ta oss vidare. VIll se nya filmer. Ska inte bättre
-  modell än Nao Banana användas elelr använder vi någon annan?" Varje kortplats får ett ankare 3 (A3 · P1 till P7 och
+  modell än Nao Banana användas elelr använder vi någon annan?" Varje kortplats får ett ankare 3 (A3P1C1 till A3P7C1 och
   dealerns kort): bilden en giv slutar på, med handen som lade kortet vid kortet, registrerad per plats och hand och
   använd av varje giv dit. Bildmodellen väljs efter ett prov med flera modeller på en plats, inte av vana.
 - **Ingången på halva tiden, eller en film genom hela rörelsen** (Granska 2026-11-18, cirka kl. 05.13, hans dom

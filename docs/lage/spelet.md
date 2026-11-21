@@ -41,8 +41,8 @@ Huvudagentens bana: spelet, scenens filmlager, nätkopian och stängda banor. Ko
 `/meta.json` på kopian visar commit. Den äldre publika sajten visar 22 filmer från `b65fd9b` (`evidence/public-release.json`).
 Talet i [TAL](../TAL.md) och vyn Lipsync. Under `D:/dealer-scratch/tmp/` finns
 `tal/LASMIG-OVERLAMNING-2026-11-17.md`, `tal/korare/`, `tal/realtid/PLAN.md` och `tal/stabilt/LASMIG.md`.
-Scenbanan finns i `levande-objekt/`, skarvarna i `ljus/`, rummets film i `rumsliv/`. Chefsfilmens inspelare ligger i
-`huvudagent11/chefsfilm/inspelare/` och kopians kontroller i `huvudagent11/look/`. Trailern finns i [film.md](film.md).
+Scenbanan finns i `levande-objekt/`, skarvarna i `levande-objekt/ljus/`, rummets film i `levande-objekt/rumsliv/`.
+Chefsfilmens inspelare ligger i `huvudagent11/chefsfilm/inspelare/` och kopians kontroller i `huvudagent11/look/`.
 Scoutgamings huvudagent har fått besked att integration återstår och att insatsrutor bör vara data per bord och filmbank.
 
 **Fällor.**

@@ -2,22 +2,21 @@
 
 Banan MODEL, avslutad 2026-11-18 på Jakobs ord. Allt arbete ligger på D:; i repot finns bara proven och ankaret.
 
-**Läget.** En riktig dealer är mätt ur en YouTube-film, ankare 2.3 för Paow (båda händerna vid skon) har Jakobs ja, och
-given från 2.3 till plats 5 har fyra tagningar, där den fjärde håller i den automatiska kontrollen.
+**Läget.** En riktig dealer är mätt ur en YouTube-film, banans A2.3 för Paow (båda händerna vid skon) fick Jakobs ja
+men är ersatt, och given från det till plats 5 har fyra tagningar, där den fjärde håller i den automatiska kontrollen.
 - Mätningen: hon delar med två händer, 0,77 s per kort (0,62–0,90 per varv). Vänster hand stryker ut kortet och för
   det plant på filten 7–31 cm från skon; båda händerna reser det på en kortsida; höger hand bär och fäller det framåt,
   ände över ände, och lägger det med fingertopparna kvar. Hålkortet vänds inte och förs bara av vänster hand, kant i
   kant med det öppna. Andra kortet läggs ovanpå det första, 6–7,5 cm mot dealern, och rör det inte. Huvudet följer
   platsen. Filmen visar inte tummens läge eller ögonens riktning.
-- Ankare 2.3: `assets/anchors/paow-ankare-2-3-a/` (kvitto bredvid), ruta 94 ur ingångsfilmen från ankare 1.
+- Banans A2.3: `assets/anchors/paow-ankare-2-3-a/` (kvitto bredvid), ruta 94 ur ingångsfilmen från ankare 1. Jakob
+  arkiverade det 2026-11-20 (Material); gällande A2.3 är `paow-ankare-2-3-c` sedan 2026-11-21 ([film](film.md)).
 - Kostnad: ankaret 105 krediter (20 för ett utsnitt som föll, 85 för filmen); given 256 (fyra tagningar à 64).
   Saldot hos Runway var 5 392 när banan stängdes.
 
-**Nästa steg.** I den här ordningen:
-1. Gjort 2026-11-18: A3PnC1 per plats och hand, vägen in i banken för en tagning beställd utanför Beställ, och ingången
-   omgjord genom Bordet ([film](film.md)). Kvar: oberoende granskning av de tre nya filmerna.
-2. En tagning per återstående plats med samma recept, på en långsam docka från 3D-banan per plats.
-3. Kortet i skons fönster har en ljus överkant i ankare 1 och 2.3 (bankens platta): rättas i ankarbilden.
+**Nästa steg.** Banan är stängd; givarna från A2.3 till varje plats och ankarna A3PnC1 fortsätter i [film](film.md).
+Kvar härifrån: kortet i skons fönster hade en ljus överkant i ankare 1 och i banans A2.3 (bankens platta); pröva
+gällande A2.3 (`-c`) innan något rättas i en ankarbild.
 
 **Väntar på Jakob.** Inget utanför Beslut.
 
@@ -41,12 +40,8 @@ given från 2.3 till plats 5 har fyra tagningar, där den fjärde håller i den 
   stötar; 4 (höger hand möter kortet, rest i fyra rutor, lagt på platsen) kant ruta 34–37, lagt från ruta 45.
 
 **Fällor.**
-- Kling tappar vändningen i den riktiga dealerns takt: dockans giv ska ta drygt två sekunder av tre, och kortet får
-  inte stå still när det är rest.
-- Utan sista bild blir kortet i skons fönster vitt och det lagda kortet fel.
+- Klings takt, sista bilden och `dealCheck`: se Fällor i [film](film.md).
 - Kling kopierar dockans fel (grepp, stopp, glidning): se dockans ark före varje beställning.
-- `dealCheck` skrivs bara när `step.key` börjar med `GIV-`, och den räknar kortets yta bara på mättat blått: läs
-  storleken som ett golv.
 - `toneTo` fräter ur ansiktet på en filmruta; tonen tas ur filmens tonlås (`--lock`).
 - YouTube-filmen och rutorna ur den (`yt-referens/film`, `rutor`, `ark`, `stillbilder`) går aldrig in i Git,
   `assets/` eller ett Prov.

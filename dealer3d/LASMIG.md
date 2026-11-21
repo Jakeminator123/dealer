@@ -9,8 +9,11 @@ Skriven 2026-11-18 kl. 05 av en underagent till huvudagenten (banans egen chatt 
 den här sidan och `AGENTS.md`; resten står i commitmeddelandena och i varje filmmapps `KLAR-*.txt` på slaskdisken.
 
 **Läget.**
-- Dockan delar med två händer från pose 2.3 (`src/two-hand.ts`, takten ur en riktig dealer i `src/real-deal.ts`). Gällande
-  version är **-f** (Jakob 2026-11-18: vilken vändning som helst, bara den blir bra): vänster hand för kortet plant till
+- Gällande docka för givarna från A2.3 är **svep24d** (`data/giv-fran-2-3-p<n>-grepp-svep-d.json` för P1–P5 och
+  `-p4c2-`, id `docka-2-3-p<n>c1-svep24d` i `data/rendered-references.json`): pilot 02 till plats 4 med den har Jakobs
+  ja (Beslut 2026-11-21). Läget för givarna står i [film](../docs/lage/film.md) (rättat 2026-11-21).
+- Dockan delar med två händer från pose 2.3 (`src/two-hand.ts`, takten ur en riktig dealer i `src/real-deal.ts`). Den
+  äldre versionen **-f** (Jakob 2026-11-18: vilken vändning som helst, bara den blir bra): vänster hand för kortet plant till
   höger hand och släpper; höger hand ensam RULLAR kortet ett halvt varv kring långsidan, så att bankens kamera aldrig ritar
   det större än liggande; given 2,2 s, stilla slut 0,7 s; slutbilden: höger fingertoppar på kortet, vänster hand på nästa
   kort i skons fönster, kroppen vriden mot platsen där det behövs.
@@ -20,8 +23,8 @@ den här sidan och `AGENTS.md`; resten står i commitmeddelandena och i varje fi
 - Äldre versioner: -b till -d till plats 5 (ände över ände, båda händerna reser kortet), -e till plats 4 och 1 (ände över
   ände i höger hand; kortet ritas 1,4 gånger liggande); jämförelsen `ut/giv-fran-2-3-p4/jamforelse-e-f-kortets-storlek.png`.
   Den avlästa given från ankare 2.1 (`src/capture.ts`) är orörd. Inget betalt är lagt av banan.
-- **Provet en giv, två stolar** (2026-11-20, Jakobs "Ja kör" i Beslut; prov `3d-prov-en-giv-tva-stolar-20261120`, inte
-  sett av honom än): given till plats 4 med ett 3D-kort från stol 4 och stol 1. SAM 3D Body över filmen
+- **Provet en giv, två stolar** (2026-11-20, Jakobs "Ja kör" i Beslut; prov `3d-prov-en-giv-tva-stolar-20261120`; hans
+  "ja" på kortet samma dag, och 2026-11-21 "SAM-dockan ska in, men inte nu" i BESKED): given till plats 4 med ett 3D-kort från stol 4 och stol 1. SAM 3D Body över filmen
   `paow-giv-2-3-p4-h24-cykel-02-01` (varannan ruta) ser ut som en människa som ger från båda stolarna (underagentens
   betyg 4/5 och 3/5); det köpta klippet, som saknar kort, sko och licenstext, gör det inte (2/5 och 1/5).
 
@@ -30,13 +33,12 @@ vit-figuren bli bättre med att sköta kordineringen med kort/fingrar". Först a
 kortets ena sida och fingrarna på den andra genom hela vändningen, och handleden och underarmen vrider kortet (handen
 förblir vänd tills kortet ligger); ingen ring som kortet rullar i, och inga fingrar som byter sida om kanten.
 
-**Nästa steg, i ordning.** Vänta på Jakobs ord om -f.
+**Nästa steg, i ordning.** Dockfilmerna `svep24d` till P1–P3 och P5 granskas oberoende ([film](../docs/lage/film.md)).
 1. Plats 1 (och se plats 2): en kropp som kan resa sig och luta sig över bordet (en ny led i `src/body.ts`).
 2. Höger hand under rullningen sluter sig till en ring om kortets kortsida (`gripBend` 0,6): prova ett plattare grepp.
 3. Svepet (flera kort i en film) i -f: `tools/deal-film.ts --beats` tar i dag ETT kort.
 4. Dockans filmer in i `data/rendered-references.json` gör huvudagenten; id som `docka-2-3-p4c1-f`, aldrig samma id två gånger.
-5. Efter provet 2026-11-20, om Jakob säger ja i Beslut: spara SAM:s ledvinklar (`tools/prov-sam.py` sparar i dag punkter
-   och yta) och låt dem styra en riggad, klädd figur; ingen klädd figur har hans ja än.
+5. SAM-dockan: Jakob vill ha in den, men inte nu (BESKED, 2026-11-21); dagens docka styr givarna tills vidare.
 
 **Väntar på Jakob.** Inget utanför Beslut.
 
@@ -54,7 +56,7 @@ parametrarna för äldre filmer står i deras `KLAR-f.txt` på slaskdisken:
 - Headless Chrome bara under låset, en körning i taget. Banan skriver bara i `dealer3d/` och på slaskdisken.
 - Titta på arket och närbilden i full storlek innan ett tal skickas vidare: "inom gränserna" har inte räckt.
 - Kling tar efter dockans fel: grepp, stopp, glidning och kortets storlek.
-- Första bilden i en beställning är ankaret (`assets/anchors/paow-ankare-2-3-a/anchor.png`), aldrig dockans ruta.
+- Första bilden i en beställning är ankaret (A2.3, `assets/anchors/paow-ankare-2-3-c/anchor.png`), aldrig dockans ruta.
 - Verktyget räknar rutor från 0, arken och filnamnen från 1. En levererad film görs inte om under samma namn.
 - Datafilerna bär sina platser (`places`), så `tests/two-hand.test.ts` läser inte `placements/default.json`;
   `world.test.ts` och `deal-film.ts` gör det (en ny datafil tar alltså Jakobs sparade plan i det träd den läggs i).

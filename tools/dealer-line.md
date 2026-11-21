@@ -80,9 +80,10 @@ i första ordern (4/5, Jakob godkände).
 
 **5b. Ankare 2.2 (släp, `READY-B`).** Beställ, steg `ANKARE-2.2`: samma modell som 2.1 och `@anchor` = ankare 1 som
 gäller, men handen ligger över kortet vid skons öppning; posebilden är den andra dealerns utklippta underarm och hand
-lagd på dealerns egen sko och kort ur ankaret (`poseOnShoe` i `tools/order-images.ts`) (V). Paows ankare 2.2 gäller (`paow-ankare-2-2-t1` i
-Material, nod `READY-B`), men bara 1 av 6 tagningar i tre ordrar höll, och bara efter skolagning och lokala lagningar:
-bildmodellen ritade om skon varje gång (handboken 3.7) (V). Från ankare 2.2 ges en plats i rundan när ingången, given,
+lagd på dealerns egen sko och kort ur ankaret (`poseOnShoe` i `tools/order-images.ts`) (V). Paows första ankare 2.2
+(`paow-ankare-2-2-t1`, nod `READY-B`) gällde 2026-11-13 till 2026-11-20 och bär bankens filmer från 2.2; sedan dess
+gäller det tatuerade `paow-ankare-2-2-blick-a` (Material). Av tagningarna till t1 höll bara 1 av 6 i tre ordrar, och
+bara efter skolagning och lokala lagningar: bildmodellen ritade om skon varje gång (handboken 3.7) (V). Från ankare 2.2 ges en plats i rundan när ingången, given,
 returen och utgången från 2.2 är dömda (`SEAT_HUB` i `src/game-director.ts`, SYSTEM); för Paow är det plats 6, med
 `paow-giv-2-2-p6-02` (V).
 
@@ -110,9 +111,9 @@ steget (som säger ankaret) och kortets plats; allt annat är stegets enda recep
 det som kommer att skickas, och ett avsteg görs medvetet under "Receptet · gör ett undantag" (handboken §2). Stegen som kan
 beställas står i `STEPS` i `src/order-model.ts` (vad en film går mellan, aldrig hur den beställs), och de kort en giv kan
 gå till i `SEAT_TARGETS`; en giv är bara dit, och `GIV-2.1` går också till hålkortet `D.C2`, som landar stängt (V).
-Ankare 2.3 har två steg: ingången `INGANG-2.3` (ankare 1 → 2.3) och given med två händer `GIV-2.3`; given väntar på en
-referensfilm som visar den och på en slutbild per plats med höger hand vid kortet. Hålkortets
-vändning (`HALKORT`, `IDLE>REVEAL(D.C2)`) har bara hålkortet ritat på sina bilder (V).
+Ankare 2.3 har två steg: ingången `INGANG-2.3` (ankare 1 → 2.3) och given med två händer `GIV-2.3`; given tas med
+3D-banans dockfilm som referensfilm och ett A3 per plats som sista bild. Till plats 4 har den Jakobs ja (2026-11-21);
+övriga platser görs likadant ([läget](../docs/lage/film.md)). Hålkortets vändning (`HALKORT`, `IDLE>REVEAL(D.C2)`) har bara hålkortet ritat på sina bilder (V).
 `node tools/produce.ts <dealer> --draft` gör utkast där metoden gäller, `--draft --trial <steg|plats>` ett provutkast;
 den godkänner aldrig (V). Utkastet blir `data/orders/<id>.json` med bilderna i `assets/orders/<id>/`. Texten skrivs av
 `promptFor` (`src/order-prompts.ts`) med dagens mall, aldrig för hand; orden står i `SAY`, och vilken mall som gäller
@@ -238,7 +239,7 @@ Där en källa bara är text eller ett skript utanför repot står det "inget i 
 | Vad | Värde | Källa (det som avgör) |
 |---|---|---|
 | Bankens ruta, film och ankare | 1764 × 1174 | `FILM` i `src/scene3d-geometry.ts`; `readRgb` i `tools/order-images.ts` (vägrar annan storlek när en order byggs); `image` i `data/scene-contract.json`. Material varnar bara (`sizeWarning`) |
-| Planens ruta (Placering, Dator) | 1762 × 1174, V6:s ruta | `VIEWS.native` i `src/placement-model.ts`; film-x = plan-x × 1763/1761 (`image.note` i scenkontraktet, `planQuad` i `tools/order-images.ts`). Glöms faktorn: högst 2 px fel vid högerkanten |
+| Planens ruta (Bordets Kortplan) | 1762 × 1174, V6:s ruta | `VIEWS.native` i `src/placement-model.ts`; film-x = plan-x × 1763/1761 (`image.note` i scenkontraktet, `planQuad` i `tools/order-images.ts`). Glöms faktorn: högst 2 px fel vid högerkanten |
 | Bildfrekvens | WAN 3: 30/s. Kling 4 och Kling 3.0 4K: 24/s | `film.fps` i `fetched.json`. Banken behåller varje films takt och rutnummer (`source.fps`, `fpsOf` i `src/game-film.ts`, `Part.fps` i `src/scene3d-film.ts`, förval 30). `tools/film-after.ts` behåller leveransens takt |
 | WAN 3 levererar | 1764 × 1174 med `ratio: "adaptive"`; H.264, inget ljud; 7 s = 210 rutor; de två sista mörknar | `fetched.json` för `paow-giv-2-1-p4-12`; `MODELS.wan3` |
 | Kling 4 levererar | 1764 × 1172, 24/s, 7 s = 169 rutor, H.264, bt709, ljud alltid på; formen följer första bilden | `fetched.json` för `paow-giv-2-1-p4-13`; `MODELS['kling-4']` |

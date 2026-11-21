@@ -40,8 +40,8 @@ Beslut, labbservern och rutinverktygen. Här står bara det som gäller nu; det 
 
 **Var saker ligger.** Studions kod i `studio/`, labbserverns adresser i `tools/lab-routes.ts`, sidorna bredvid studion
 (`/scene3d.html`, `/sound.html`, `/props.html`) i `pages/`. Rutinverktygen: `node tools/studio-from-commit.ts --trad
-<rent IDE-arbetsträd>` (studion byggs ur en commit i ett rent träd), `node
-tools/lab-look.ts` (skärmbilder av labbsidor under låset), `node tools/push-clean.ts --trad <rent IDE-arbetsträd>` (push),
+<byggträdet dealer-bygg>` (studion byggs ur en commit i ett rent träd), `node
+tools/lab-look.ts` (skärmbilder av labbsidor under låset), `node tools/push-clean.ts --trad <byggträdet dealer-bygg>` (push),
 `node tools/proof-notes.ts` (hans anteckningar i Prov) och `node tools/media-audit.ts` (vad en mapp i `assets/` är och
 vad som använder den). På slaskdisken, under `D:/dealer-scratch/tmp/`: `labbgrund/` (utredningarna
 `placering/RAPPORT.md` och `grund/RAPPORT.md`), `prov-egna-ord/waiting-list.txt`, `stadning/` (`FORSLAG.md`,

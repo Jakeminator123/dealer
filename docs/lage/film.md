@@ -16,12 +16,11 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
 - Given från A2.3 till plats 4 (Prov `paow-giv-2-3c-p4-pilot-20261120`): pilot 02 med dockan `svep24d`, där vänster
   hand går lågt hem, har Jakobs ja (Beslut 2026-11-21: "Ja, tre sekunder är lagom"); granskaren gav 4/5. Pilot 01
   med `svep24c` föll (3/5): vänster underarm försvann.
-- Äldre underlag: given till plats 4 och 1 från första försöket (Prov `giv-fran-2-3-p4-p1`) fick Jakobs Inte bra,
-  kortet flippar utanpå fingrarna. P4.C2 Cykel01 är vald framför Cykel02 (bevis i `paow-c2-film-regrip-20261118`).
+- P4.C2 Cykel01 är vald framför Cykel02 (bevis i `paow-c2-film-regrip-20261118`).
 - En sidovinkel görs av en färdig film i Runways videoredigerare (`edit_video`): plats 4 cirka 40° (Prov
   `sidovinkel-ur-film`, Jakob: "mycket bra"). Vinkeln och kortets plats träffas inte exakt.
-- Den tatuerade uppsättningen är förstahandsvalet; ankare 2.1 och 2.2 och hela banken har de äldre händerna och
-  spelas än.
+- Den tatuerade uppsättningen är förstahandsvalet. Dess A2.2 är `paow-ankare-2-2-blick-a` (gäller, Jakob 2026-11-20
+  i Material); A2.1 och hela banken har de äldre händerna och spelas än.
 - Pengar: ram 3 000 krediter genom API-nyckeln (utvecklarprojektet; Runway-MCP är inte inloggat), 800 per timme.
   Använt 2026-11-20: 669; saldo 3 480 kl. 17.07 UTC (91 drogs samma dag utan kvitto i projektets liggare). Mandatet
   `dealer-37-20261120` löpte ut 2026-11-21 12.00 UTC och förnyas av huvudagenten inför seriens beställningar.

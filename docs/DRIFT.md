@@ -50,7 +50,7 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   `studio/node_modules`. Före PR kör agenten `npm run check`.
 - **Push medan andra skriver** (2026-11-13). I huvudträdet stoppar kontrollen så länge någon sessions testindata
   skiljer sig från HEAD eller en ospårad fil ligger där, och det gör den nästan alltid en dag med flera
-  sessioner. Huvudagenten pushar då från ett uttryckligen valt rent IDE-arbetsträd med `node tools/push-clean.ts
+  sessioner. Huvudagenten pushar då från ett uttryckligen valt rent arbetsträd (byggträdet) med `node tools/push-clean.ts
   [<commit>] --trad <mapp> [--dry-run]`: trädet ställs detached på commiten (förval `main`) och måste vara rent, `npm
   ci` körs om paketlistan har ändrats eller `node_modules` saknas, sedan `npm run check` (sviten en gång) och `git push
   origin HEAD:main`, och sist lokal och fjärrens SHA. Verktyget stannar vid första steg som faller med en rad som börjar
@@ -130,7 +130,7 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   servrar, och stoppa aldrig via processnamn eller port.
 - **Studion byggd ur det incheckade** (2026-11-17). Servern lämnar ut huvudträdets `studio/out`, och ett bygge där bär
   med sig varje sessions halvfärdiga studiofiler till Jakobs flik. `node tools/studio-from-commit.ts [<commit>] --trad
-  <mapp> [--ut <mapp>]` bygger commiten (förval `main`) i ett uttryckligen valt rent IDE-arbetsträd (detached, `npm ci` där en
+  <mapp> [--ut <mapp>]` bygger commiten (förval `main`) i ett uttryckligen valt rent arbetsträd (byggträdet) (detached, `npm ci` där en
   paketlista har ändrats eller `node_modules` saknas, `npm --prefix studio run build`) och byter in resultatet i
   huvudträdets `studio/out` först när bygget har lyckats: kopian läggs bredvid som `out.ny`, den gamla mappen flyttas
   undan och den nya in. Ett bygge eller en flytt som faller lämnar det som visas orört, och `studio/out/bygge.json`
@@ -182,7 +182,7 @@ bilder och filmer som används eller kan användas ligger i `assets/` (AGENTS). 
 | GitHub connector + CLI | Båda autentiserade som `Jakeminator123`; repo skapat privat, därefter ändrat till publikt av Jakob och bekräftat 2026-11-10. |
 | Runway connector | Autentiserad workspace `Jakob`, ID `67037521`. Inloggning och skrivschema kontrolleras var för sig; modellistan från `whoami` bevisar inte att klienten kan skicka modellens parametrar. |
 | Runway MCP-server | `https://mcp.runwayml.com/mcp`, appkontots krediter (workspace `Jakob`). Claude har servern som `runway`, Codex som `Runway`; inloggningen tillhör respektive klient och är inte gemensam. Kontrollera den aktuella sessionen före beställning. `https://dev.runwayml.com/mcp/claude` är en annan server (utvecklarportalen), inte för generering. |
-| Direkt API | Ingen kod anropar Runways API längre; allt beställs genom MCP-servern. `RUNWAY_API_KEY` ligger kvar i den Git-ignorerade `.env.local` och drar developer-projektets krediter, en annan pott än appkontots; API-svaret ger inget projekt- eller workspace-ID, så nyckeln bevisar inte samma saldo. Kvitto från 2026-11-10: `.runtime/connection-check.json`. |
+| Direkt API | Ingen kod i repot anropar Runways API. Sedan 2026-11-20 får beställningar gå genom API-nyckeln när MCP-inloggningen saknas ([BESKED](BESKED.md), "API-nyckeln, 3 000 krediter och granskning utan kö"); klienten och liggaren ligger utanför repot i `.runtime/ankare-2-3-c/api/`. `RUNWAY_API_KEY` ligger i den Git-ignorerade `.env.local` och drar developer-projektets krediter, en annan pott än appkontots; API-svaret ger inget projekt- eller workspace-ID, så nyckeln bevisar inte samma saldo. Kvitto från 2026-11-10: `.runtime/connection-check.json`. |
 
 **Modellkunskap och API (kontrollerat 2026-11-19).** [Runway Dev-pluginen](https://docs.dev.runwayml.com/guides/plugin/)
 ger dokumentation, modellfält, priser och API-jobbdiagnostik; den genererar inte filmer. Cursor installerar med
@@ -221,8 +221,7 @@ vid ruta 3296, i två format, utan ny API-generering.
 ingen kod läser dem: flaggan spärrar ingen generering. Spärren är `enabled` i `data/order-policy.json`.
 
 Sökning i Codex på Windows: välj `rg.exe` vars sökväg matchar `*\OpenAI\Codex\bin\*\rg.exe` (`Get-Command rg.exe -All`)
-och lägg dess mapp först i processens PATH, annars `Select-String`; ändra inte bestående PATH. (Flyttad från AGENTS
-2026-11-13: den gäller ett verktyg på en dator.)
+och lägg dess mapp först i processens PATH, annars `Select-String`; ändra inte bestående PATH.
 
 ## Filmbeställning
 
@@ -236,7 +235,8 @@ förs in i handbokens tabeller, inte här. Vad som skickades och hur det gick: s
 
 - **En väg: Beställ.** Utkast i Bordets Beställ (`data/orders/<id>.json`), godkänt med Jakobs klick eller av
   huvudagenten på hans uppdrag (`tools/order-approve.ts`) inom `data/order-policy.json`, lagt och hämtat av en
-  beställningsagent genom Runways MCP-server på appkontot. Betalda anrop utanför Beställ rapporteras till huvudagenten
+  beställningsagent genom Runways MCP-server på appkontot, eller genom API-nyckeln när MCP-inloggningen saknas (se
+  Direkt API ovan). Betalda anrop utanför Beställ rapporteras till huvudagenten
   med belopp (AGENTS, "Det som skyddar Jakob").
 - **Kvitton från äldre vägar** (API-jobben i `data/clip-jobs.json`, orderfilerna och liggarna på D:) är källbevis och
   står kvar; ett osäkert anrop beställs aldrig om, och `request.lock` eller SUBMITTING tas aldrig bort. Pamelas ankare
@@ -284,7 +284,7 @@ beställningsagentens instruktion; här står det som rör banken, uppspelningen
   ska ligga i public-deploy eller byggpaketet. Den statiska sajten kräver ingen skrivnyckel.
 - Sidan är gamla labbet som det var vid den senaste publiceringen och byggs inte längre härifrån: byggverktyget
   (`tools/build-public.ts`) gick med gamla labbet 2026-11-17 och finns kvar i Git-historiken. Den sparar kortplanen i
-  besökarens webbläsare, aldrig på datorn; export/import flyttar en plan till Placering. Att ta ned sidan är en
+  besökarens webbläsare, aldrig på datorn. Att ta ned sidan är en
   deploy-åtgärd och Jakobs beslut. Studions publicerade kopia är [den låsta kopian](#den-låsta-kopian-på-nätet).
 - Aliaset `dealer-scoutgaming.vercel.app` är skyddat och ska inte delas som publik länk. Senaste deployment och den
   gamla sidans avveckling (också det borttagna projektet `scoutgaming/scout-dealerlab`) står i
@@ -466,7 +466,7 @@ kopia. Därefter prövas sidor och filmsökning som förut; fel version efter ti
 
 ## D: och städning
 
-Sedan Jakobs besked 2026-11-19 sker arbetet i IDE:ns projektmapp eller arbetsträd och tillfälligt arbete i
+Arbetet sker i mappen `dealer` på C: (Jakob 2026-11-19 och 2026-11-21) och tillfälligt arbete i
 `.runtime/<uppgift>/`. D:-sökvägar nedan beskriver äldre material och delade tjänster, inte arbetsförval.
 Arbetsrutin, radering av verifierat oanvänt material och hashkontrollerad rensning av dubbla mediefiler:
 [Lokal arbetsplats och städning](../tools/local-work.md).

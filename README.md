@@ -34,12 +34,12 @@ Arkivet är det tidigare projektet på D: (snyggare-dealer). Sidorna har kvar si
 | --- | --- |
 | [AGENTS](AGENTS.md) | Arbetsregler för agenter. |
 | [HANDOFF](HANDOFF.md) | Startsidan, en sida (högst 120 rader och 900 ord, `tools/handoff.test.ts`): läget i korthet, nästa steg, vem som äger vad och pekarna vidare. Läs den först. |
-| [Läget per bana](docs/lage/) | En lägesfil per bana i fast form (Läget, Nästa steg, Väntar på Jakob, Var saker ligger, Fällor), högst 60 rader och 800 ord: [film](docs/lage/film.md), [kort](docs/lage/kort.md), [labbet och studion](docs/lage/labbet-och-studion.md), [spelet](docs/lage/spelet.md); 3D-banans är [dealer3d/LASMIG.md](dealer3d/LASMIG.md). |
+| [Läget per bana](docs/lage/) | En lägesfil per bana i fast form (Läget, Nästa steg, Väntar på Jakob, Var saker ligger, Fällor), högst 60 rader och 800 ord: [film](docs/lage/film.md), [kort](docs/lage/kort.md), [labbet och studion](docs/lage/labbet-och-studion.md), [spelet](docs/lage/spelet.md) och den stängda [mätningen](docs/lage/matning.md); 3D-banans är [dealer3d/LASMIG.md](dealer3d/LASMIG.md). |
 | [Jakobs besked](docs/BESKED.md) | Hans gällande besked per ämne, med datum och hans egna ord; ersatta besked står kvar sist. Slås upp när ett besked är i fråga. |
 | [Kända brister](docs/BRISTER.md) | Varje känd brist: var den syns, vad som är prövat och vad som stänger den. |
 | [SYSTEM](docs/SYSTEM.md) | Kontrakt: koordinater, register, 3D-scenen, spelet, klippbanken och ordlistan. |
 | [DRIFT](docs/DRIFT.md) | Rutiner och anslutningar: Git och kontroller, labbservern, Runway och publicering. |
-| [Lokal arbetsplats och medier](tools/local-work.md) | Arbete på C:, vanliga grenar, andra IDE:ers ändringar och `npm run media:status` för lagringsöversikten. |
+| [Lokal arbetsplats och medier](tools/local-work.md) | Arbete i mappen `dealer` på C:, äldre träd och grenar, andra IDE:ers ändringar och `npm run media:status` för lagringsöversikten. |
 | [Löpande bandet](tools/dealer-line.md) | Den enda vägen från en bild av en person till en dealer som spelar en runda: femton rader först, sedan stationer, format, namn och kommandon. |
 | [Tal](docs/TAL.md) | Dealerns repliker med talfilm och ljud: hur en talfilm görs, hur spelet spelar den och vad som går i ett spel i rörelse. |
 | [Filmmodellerna](docs/FILMMODELLER.md) | Vad varje filmmodell används till och kostar, hur dess filmer ser ut i banken, vad som håller och faller, och kontrollen för en film från en ny modell. Läs den före ett modellval. |
@@ -53,8 +53,7 @@ Arkivet är det tidigare projektet på D: (snyggare-dealer). Sidorna har kvar si
   där), härledda tagningar (bland dem allt från Beställ) och API-tidens kredittak. `data/orders/<id>.json` är studions beställningar;
   `data/dealers.json` och `data/media-roles.json` säger vilka dealers som finns och vilka bilder som gäller;
   `data/order-methods.json` är metoden som beställs per steg, och `data/order-policy.json` taken för betald generering.
-- `placements/default.json` är Jakobs kortplan (16 kortplatser) och sparas från studions Bordet, del Kortplan (på kopian
-  Placering).
+- `placements/default.json` är Jakobs kortplan (16 kortplatser) och sparas från studions Bordet, del Kortplan.
 - `data/decisions.json` är det som väntar på Jakobs svar, ett kort per sak i studions Beslut. Agenter lägger till och tar
   bort poster; bara sidan skriver hans svar (`tools/decision-store.ts`, läsaren och reglerna i
   `tools/decision-register.ts`).
@@ -108,7 +107,8 @@ Dokumenten länkar till dessa i stället för att föra egna statusregister. Med
   samma meny utan Lipsync, Bordet utan Beställ och utan sparning, och i stället för Beslut **Önskemål** och boten (Fråga).
 - Filmgranskningen har steg ±1 bildruta, kapitel och hastighet 0,25×/0,5×/1×. URL-parametrarna `clip` och `frame` pekar
   ut klipp och granskningsruta.
-- `npm test` kör offlinetesterna (placeringar, klippbank, kortspår, scen, spelmotor, labbserver och publiceringsskydd).
+- `npm test` kör kärnan offline: publiceringsskyddet, spelets regler, hans domar och val, beställningarna, kortplanen
+  och dokumentens tak.
   `npm run hooks:install` aktiverar lokal pre-push; `npm run check` kontrollerar commitintervallet före push/PR. Se
   [rutinen](docs/DRIFT.md#git-och-kontroller).
 - `npm run verify` kontrollerar registrerade lokala filer. `npm run verify -- --frames` återrenderar 18 kontrollrutor

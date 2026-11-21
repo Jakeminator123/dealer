@@ -177,8 +177,9 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   returen börjar (`cutFrameOf`, `src/cut-frame.ts`). Stänger: landningsbilder med tatuerade händer för plats 3–5.
 - **Händerna byter mellan gamla och nya filmer.** Syns: varje film i banken har otatuerade, större händer, medan
   keystonebilderna och ankare 1 som gäller har tatuerade; en skarv mellan gammalt och nytt visar bytet. Prövat: att måla
-  tatueringar i färdiga filmer har fallit två gånger (2 av 5). Stänger: en hel uppsättning ur de tatuerade bilderna;
-  ankare 2.1 med de händerna finns inte än.
+  tatueringar i färdiga filmer har fallit två gånger (2 av 5). Stänger: en hel uppsättning ur de tatuerade bilderna.
+  A2.2 (`paow-ankare-2-2-blick-a`) och A2.3 (`paow-ankare-2-3-c`) har dem (rättat 2026-11-21); A2.1 med de händerna
+  finns inte än.
 - **Skuggan under armarna** sitter i grundbilden (armbågarna på ett bord bakom kanten, 40–44 bildpunkter ovanför rad
   831,5). Syns: i varje film av Paow. Prövat: keystonebilderna med tatuerade händer är gjorda utan skuggan. Stänger: nya
   ankare och filmer ur dem.

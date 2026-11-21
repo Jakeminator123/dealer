@@ -22,9 +22,9 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
 - D.C3 är redigerbart i Kortplan och Beställ; äldre planer bevarar de 16 korten och får dess tidigare spelposition. Sparad D.C3 styr senare dealer-kort. Tre lokala geometrier jämförs i Prov `paow-dc3-tre-geometrier-20261119` (372 krediter); inget Primär-byte.
 - Filmkortet är gult och blått, och den blå sidan bär ett rosa kryss och en röd cirkel (`CARD_RGB`, `cardMark` i
   `src/placement-model.ts`; [BESKED](../BESKED.md), "Märket på blå sidan"; prövat i tre filmer utanför Beställ, se BRISTER). Spelets rygg med SG står kvar.
-- Jakob sparade planen från Bordet 2026-11-18 kl. 01.30. Den skiljer sig från den incheckade i handbytet på ett kort
-  och i P6.C1 (3 px); avsmalningen är 0,87 som förut (0,90 står bara som P6.C1:s eget fält, som regeln inte läser).
-  Hans sparade plan och domar tas med vid avslut på hans uttryckliga begäran 2026-11-19.
+- Jakobs senast sparade plan (Bordet, 2026-11-21 kl. 19.16) är incheckad i `f020312`: P4.C2 har handbyte och vänds
+  vid läggningen, och D.C3 finns. Avsmalningen är 0,87 (0,90 står i den stående vyns fält). Hans plan och domar tas
+  med vid avslut på hans uttryckliga begäran 2026-11-19.
 - `data/media-fit.json` säger för varje bild, ankare, giv och referens om den stämmer med dagens kortplan, och Material
   visar det som en bricka ("äldre plan", "annan kamera", "avviker").
 - Labbprovet `kortprov` (Scen, av som förval) lagar det ritade kortet i handen: vändningen ur mätningen, papperets ljus med minne. Prov `kort-fram-bak-20261120`; hur i [BRISTER](../BRISTER.md), "Kortet".

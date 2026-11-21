@@ -486,7 +486,7 @@ Native centrum `(0.5,0.5)` ger `(880.5,586.5)` före rasteravrundning. Native-pu
 `(820/1761,147/1173)`. Utsnitt med `left/top/width/height` beskriver pixelkanter, inte denna pixelcentrumkonvention.
 Bordets fysiska plan och 3D-kameran kräver egna kalibreringar; normaliserad bildrymd är inte ett perspektivmått.
 
-Placeringseditorns utkast finns i `placements/default.json`; vyprofiler och pixelkonvertering finns i
+Jakobs kortplan, sparad från Bordets Kortplan, finns i `placements/default.json`; vyprofiler och pixelkonvertering finns i
 `src/placement-model.ts`. Geometri lagras separat per `native`/`portrait`; hand-/sidavsikt och materialval hålls skilda
 från geometrin. Alla standardplatser börjar ogranskade (`reviewed=false`), inte uppmätta. `angle` är grader medurs i
 bildens y-ned-rymd; `width`/`height` är andelar av respektive vys pixelcentrumspann. `taper` formar konturen och bevisar
@@ -549,7 +549,7 @@ sak.
 | Ord | Betydelse |
 | --- | --- |
 | Ingångsbild, keystone, ankare | Jakobs ord 2026-11-12. Ingångsbild: vilken bild som helst av personen. Keystone: förlagor i hög upplösning på vitt, stående och sittande; en förlaga spelas aldrig. Hans ord är att ankaret tas ur en video av keystonen (så står det i studions ordlista); Paows ankare är redigerade stillbilder (löpande bandet, station 4–5b), och vilken väg som gäller har han inte avgjort. Ankare: rutan i bankens format (1764×1174, grönt, bankens sko) som filmer börjar och slutar på. |
-| Ankare 1, 2.1, 2.2 | Vila (`IDLE`); nyp i skons fönster (`READY`, `grip: PINCH`); handen över kortet i skons öppning, släp (`READY-B`, `grip: DRAG`). I löpande text heter de ankare 1, ankare 2.1 (nyp) och ankare 2.2 (släp). Äldre namn på samma ankare: Keystone 1/2, variant A/B, VILA/REDO, REDO B. |
+| Ankare 1, 2.1, 2.2, 2.3, A3PnCm | Vila (`IDLE`); nyp i skons fönster (`READY`, `grip: PINCH`); handen över kortet i skons öppning, släp (`READY-B`, `grip: DRAG`); båda händerna vid skon (`READY-C`); slutbilden vid plats n, kort m (A3P4C1). Skrivs A1, A2.1, A2.2, A2.3: alltid A och numret, aldrig en bokstav efter; en vinkel från plats 2 skrivs S2-A2.2 ([BESKED](BESKED.md), "Ett ankare heter alltid A och sitt nummer"). Äldre namn på samma ankare: Keystone 1/2, variant A/B, VILA/REDO, REDO B. |
 | Ingång, utgång, hon kommer, hon går | Ingång: filmen från ankare 1 till ankare 2.1 eller 2.2 (`IDLE>READY`, `IDLE>READY-B`). Utgång: filmen från ankare 2.1 eller 2.2 tillbaka till ankare 1 (`READY>IDLE`, `READY-B>IDLE`; stegen `UTGANG` och `UTGANG-2.2`). När hon reser sig och lämnar bordet heter det att hon går (`IDLE>AWAY`), och när hon kommer in och sätter sig att hon kommer (`AWAY>IDLE`). |
 | Riktning, lutning, perspektiv | Kortets tre mått: vart kortsidan pekar på bordet; hur mycket kortet reser sig från bordet (0° = plant); hur mycket smalare den bortre kanten är (Jakob 2026-11-12: "perspektiv är bättre"). Lutning saknar reglage. |
 | `IDLE`, `READY` | Vila respektive redo. Äldre VILA/REDO är alias, inte nya tillstånd. |
@@ -639,7 +639,7 @@ efter Jakobs sex steg nyp, dra, för fram, vrid, vänd upp, lägg, förvalet fö
 vriden tills kortet ligger; `LONG_EDGE` kortet rullas kring långsidan på vägen, som en nyckel; `FLIP_LABEL` och
 `FLIP_ABOUT` i `src/order-model.ts` har orden Beställ visar). Förvalen kommer från stegets recept (`recipeFor`,
 `data/order-methods.json`): en giv tar receptets hand hela vägen och receptets vändning, planens kort ger bara det
-receptet lämnar åt Placering, ett handbyte är aldrig förval och vändningen är inget val i studion; `fromPlan` säger
+receptet lämnar åt Kortplan, ett handbyte är aldrig förval och vändningen är inget val i studion; `fromPlan` säger
 om valen är planens. Ny beställning föreslår handbyte där kortet landar mer än ett halvt kort till vänster
 om hennes mitt (mitten mellan dealerns två kort), alltså P1–P3 i dagens plan. "Alla sju" gör ett utkast per plats med
 samma `group`. Texten skrivs av `promptFor` i `src/order-prompts.ts` (dagens mall i `TEMPLATE_VERSION`, och vilken

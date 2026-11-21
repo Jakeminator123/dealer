@@ -91,7 +91,8 @@ shows it" i stället för en slät blå sida. Utan märke i bilden är varje tex
 `paow-ankare-2-3-b`; raden i [film-prov.md](film-prov.md), Oavgjort): kortet ligger till slut med kryss och prick som i
 sista bilden i alla tre (V, mätt); i handen ritas krysset fyra till nio gånger större och krymper när kortet släpps
 (V); märket hindrade inte att ytan bytte färg utan kantläge i en film och visade en vit sida i en annan (V). Genom
-Beställ är ingen film beställd med märket; första ordern där är provet.
+Beställ bär sju ordrar märket (`prompt.faceMark`), bland dem piloterna till plats 4 från A2.3, där
+`paow-giv-2-3c-p4-pilot-02` har Jakobs ja (Beslut 2026-11-21) (V, läst i `data/orders/` 2026-11-21).
 
 GIV-2.3 med KORT har en fast kortändevändning sedan mall 11. Ett uttryckligt val av LONG_EDGE eller AT_PLACE avvisas före
 sparning; MINIMAL låter referensfilmen beskriva vändningen. Den frysta placeringsplanens avsikt behålls separat.
@@ -287,9 +288,10 @@ tagningar vänder kortet en gång vid platsen så som en hand kan, med kortet in
   bilden. Fel: turkos i 3–5 rutor kring kanten, en ljus kant upp till 34 % runt kortet i tagning 2 (ruta 72), kortet
   växer cirka 24 % på släpet i tagning 2 (referensens släpta kort är självt för stort). Bara P4 är prövat; Paow har
   ingen snittruta från 2.2 till någon annan plats.
-- Förutsättning: ett ankare 2.2 som gäller; Paows gäller sedan 2026-11-13 (`paow-ankare-2-2-t1`, 3.7). Skon i b17 hade
-  öppen front (V). Med fönsterskon, kortet öppet och vänt vid platsen: P1 0 av 1, P4 och P6 Variant för Jakob men med
-  tryckt kort, och P6 med enfärgat kort när tillägget om enfärgat kort står i ordern (§5, omgång 12–15).
+- Förutsättning: ett ankare 2.2 som gäller; Paows gällde 2026-11-13 till 2026-11-20 (`paow-ankare-2-2-t1`, 3.7; sedan
+  dess `paow-ankare-2-2-blick-a`). Skon i b17 hade öppen front (V). Med fönsterskon, kortet öppet och vänt vid
+  platsen: P1 0 av 1, P4 och P6 Variant för Jakob men med tryckt kort, och P6 med enfärgat kort när tillägget om
+  enfärgat kort står i ordern (§5, omgång 12–15).
 
 ### 3.5 Retur
 - **I samma film som given (tur och retur):** Jakob har godkänt 16 av 21 returer, två som Primär (`paow-giv-2-1-p4-04`:
@@ -328,12 +330,13 @@ This is an edit of the picture @anchor. Keep everything in @anchor exactly as it
 - **Ankare 2.1:** `paow-ankare-2-1` gav 4/5 och 2/5 (dubbla kort); Jakob godkände tagning 1 och underkände tagning 2
   (V).
 - **Ankare 2.2:** 1 av 6 tagningar i tre ordrar, och bara efter lagning; varje gång ritade bildmodellen om skon, också
-  när ankare 2.1 var `@anchor` (§5, V). `paow-ankare-2-2` tagning 1 (Pamelas öppna sko ritad) gäller sedan skolagningen
-  satt ankare 1:s sko och kort i fönstret, ett förpass med `fillDark` vid snitt 828 fått kroppen att sluta på rad 831
-  och tre lokala lagningar gjorts (kavajens hörnsteg 24 × 10 px, glipan vid pekfingret, manschettskarven): granskaren
-  3/5 för provfilmer, Jakob: gäller (besked 15:47; `paow-ankare-2-2-t1`) (V, kvittot och Material). Oprövat: en ruta ur
-  en film som börjar på ankare 2.1, eftersom filmen behåller skon där första rutan har den (S). En runda kan dela en
-  plats från ankare 2.2 (`SEAT_HUB`, SYSTEM), i dag Paows plats 6, när ingången, given, returen och utgången är dömda.
+  när ankare 2.1 var `@anchor` (§5, V). `paow-ankare-2-2` tagning 1 (Pamelas öppna sko ritad; ersatt 2026-11-20 av
+  `paow-ankare-2-2-blick-a`) gällde sedan skolagningen satt ankare 1:s sko och kort i fönstret, ett förpass med
+  `fillDark` vid snitt 828 fått kroppen att sluta på rad 831 och tre lokala lagningar gjorts (kavajens hörnsteg 24 ×
+  10 px, glipan vid pekfingret, manschettskarven): granskaren 3/5 för provfilmer, Jakob: gäller (besked 15:47;
+  `paow-ankare-2-2-t1`) (V, kvittot och Material). Oprövat: en ruta ur en film som börjar på ankare 2.1, eftersom
+  filmen behåller skon där första rutan har den (S). En runda kan dela en plats från ankare 2.2 (`SEAT_HUB`, SYSTEM),
+  i dag Paows plats 6, när ingången, given, returen och utgången är dömda.
 - **Före vändningen** (3.3): ingen pose finns i banken; en ruta ur Jakobs egen film (3.8), utklippt till handen, är
   förslaget (S).
 
