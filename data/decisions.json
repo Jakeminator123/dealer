@@ -3,10 +3,33 @@
   "about": "What waits for Jakob: one entry per question (kind beslut) or per thing only he can do (kind gora), shown as one card each in the studio's view Beslut (/studio/beslut/, lab only). The list's order is the order of urgency, the most urgent first. An entry: id, kind, question (at most 14 words), leads (one sentence: what his answer leads to), optionally proof (a folder under assets/proofs/) with file, page (an address in the lab, e.g. game.html?table=casino), link (an address outside, shown as text to open on his phone) and cost (free text), chips (two to four {value, label} for beslut, one to four for gora), asked (date), from (the lane that asks) and answer. An agent adds an entry with answer null, changes only its own entries, reads the file right before editing it and keeps the form JSON.stringify gives with two spaces; it closes an entry by taking it out once his answer is carried out, and the commit says what he answered. Only the page writes answer ({value, note, at}, tools/decision-store.ts); no agent sets, changes or clears an answer he has given. The strict reader is tools/decision-register.ts. The repo is public: no secret, personal detail or path of this machine.",
   "decisions": [
     {
+      "id": "ny-blob-aktivt-trad-per-dealer",
+      "kind": "beslut",
+      "question": "Ska nätet få en ny Blob med bara det aktiva trädet per dealer?",
+      "leads": "Ja ger ett provbygge med fillista och storlek; uppladdning sker först på ordet publicera, och inget raderas på datorn.",
+      "chips": [
+        {
+          "value": "ja",
+          "label": "Ja, gör provbygget"
+        },
+        {
+          "value": "ja-varianter",
+          "label": "Ja, med varianterna"
+        },
+        {
+          "value": "nej",
+          "label": "Vänta"
+        }
+      ],
+      "asked": "2026-11-21",
+      "from": "huvudagenten",
+      "answer": null
+    },
+    {
       "id": "paow-giv-2-3c-p4-pilot-02",
       "kind": "beslut",
       "question": "Är given till plats 4 bra nog att göra övriga platser likadant?",
-      "leads": "Ja gör samma giv till övriga platser från ankare 2.3 C; granskaren ger 4/5, vänster hand väntar en halv sekund vid skon.",
+      "leads": "Ja gör samma giv till övriga platser från A2.3; granskaren ger 4/5, vänster hand väntar en halv sekund vid skon.",
       "proof": "paow-giv-2-3c-p4-pilot-20261120",
       "file": "2-pilot-02-landningen-plats-4.png",
       "page": "studio/granska/?prov=paow-giv-2-3c-p4-pilot-20261120&fil=1-pilot-02-given-till-plats-4.mp4",
@@ -35,37 +58,6 @@
         "value": "ja",
         "note": "",
         "at": "2026-11-21T14:56:54.792Z"
-      }
-    },
-    {
-      "id": "paow-ankare-2-3-c",
-      "kind": "beslut",
-      "question": "Ska nya ankare 2.3 C ersätta B, så att givarna görs därifrån?",
-      "leads": "Ja gör piloten till plats 4 och sedan övriga platser från C; granskaren ger 4/5, handen kommer snett från sidan och inte rakt uppifrån.",
-      "proof": "paow-ankare-2-3-c-20261120",
-      "file": "1-ankare-1-2-3-b-och-2-3-c.png",
-      "page": "studio/granska/?prov=paow-ankare-2-3-c-20261120&fil=3-ingangen-ankare-1-till-2-3-c.mp4",
-      "cost": "cirka 70 krediter för piloten, sedan 110–180 per plats",
-      "chips": [
-        {
-          "value": "ja",
-          "label": "Ja, använd C"
-        },
-        {
-          "value": "hand",
-          "label": "Ja, men handen uppifrån"
-        },
-        {
-          "value": "nej",
-          "label": "Nej, gör om"
-        }
-      ],
-      "asked": "2026-11-20",
-      "from": "film",
-      "answer": {
-        "value": "ja",
-        "note": "",
-        "at": "2026-11-21T14:56:35.093Z"
       }
     },
     {

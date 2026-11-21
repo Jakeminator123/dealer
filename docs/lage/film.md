@@ -9,15 +9,15 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
 - Metoden som håller: en giv bara dit på Kling 4 med första och sista bild och 3D-banans dockfilm som referensfilm, i
   UTDRAGEN takt (given över drygt 2 s, en obruten rörelse). Filmmodellen kopierar bilderna och dockfilmen; två extra
   meningar ändrade ingenting (pilot-03, 2026-11-20).
-- Ankare 2.3: C (`paow-ankare-2-3-c`) gäller sedan Jakobs "Ja, använd C" i Beslut 2026-11-21: en riktig ruta ur en
-  film från ankare 1 som dockans raka ingång styrde. A är arkiverad; B, ett montage, är ersatt (underarmen saknas,
-  axellinjen lutar 5,7°). Landningen för plats 4 är `paow-a3-p4-ur-film-1120`, ur en film från C; `paow-a3-p4-23b`
-  och `-23c` är byggda på B och används inte.
-- Givar från C till plats 4 (Prov `paow-giv-2-3c-p4-pilot-20261120`): pilot 02 med dockan `svep24d`, där vänster
+- Ett ankare heter alltid A och numret (A1, A2.3, A3 · P4), aldrig med en bokstav efter (Jakob 2026-11-21). A2.3 är
+  bilden med id `paow-ankare-2-3-c` (hans ja i Beslut 2026-11-21): en riktig ruta ur en film från A1 som dockans raka
+  ingång styrde. Bokstaven i id:t är ett arbetsnamn; de två äldre försöken (`-2-3-a`, arkiverat, och `-2-3-b`, ett
+  montage, ersatt) används inte. A3 · P4 är `paow-a3-p4-ur-film-1120`; `-23b` och `-23c` är byggda på montaget.
+- Given från A2.3 till plats 4 (Prov `paow-giv-2-3c-p4-pilot-20261120`): pilot 02 med dockan `svep24d`, där vänster
   hand går lågt hem, har Jakobs ja (Beslut 2026-11-21: "Ja, tre sekunder är lagom"); granskaren gav 4/5. Pilot 01
   med `svep24c` föll (3/5): vänster underarm försvann.
-- Äldre underlag: given till plats 4 och 1 från 2.3 A (Prov `giv-fran-2-3-p4-p1`) fick Jakobs Inte bra, kortet
-  flippar utanpå fingrarna. P4.C2 Cykel01 är vald framför Cykel02 (bevis i `paow-c2-film-regrip-20261118`).
+- Äldre underlag: given till plats 4 och 1 från första försöket (Prov `giv-fran-2-3-p4-p1`) fick Jakobs Inte bra,
+  kortet flippar utanpå fingrarna. P4.C2 Cykel01 är vald framför Cykel02 (bevis i `paow-c2-film-regrip-20261118`).
 - En sidovinkel görs av en färdig film i Runways videoredigerare (`edit_video`): plats 4 cirka 40° (Prov
   `sidovinkel-ur-film`, Jakob: "mycket bra"). Vinkeln och kortets plats träffas inte exakt.
 - Den tatuerade uppsättningen är förstahandsvalet; ankare 2.1 och 2.2 och hela banken har de äldre händerna och
@@ -26,9 +26,9 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
   Använt 2026-11-20: 669; saldo 3 480 kl. 17.07 UTC (91 drogs samma dag utan kvitto i projektets liggare). Mandatet
   `dealer-37-20261120` löpte ut 2026-11-21 12.00 UTC och förnyas av huvudagenten inför seriens beställningar.
 
-**Nästa steg.** Samma giv från C till övriga platser. Betalda tagningar först på Jakobs "kör" (2026-11-21).
+**Nästa steg.** Samma giv från A2.3 till övriga platser. Betalda tagningar först på Jakobs "kör" (2026-11-21).
 1. Dockfilmerna `docka-2-3-p{1,2,3,5}c1-svep24d` finns (2026-11-21, ännu inte oberoende granskade; vid P1–P3 bromsar
-   höger handled 6–9 mm på en ruta mot gränsen 5). P6 och P7 går inte från C: höger arm måste korsa kroppen framför skon.
+   höger handled 6–9 mm på en ruta mot gränsen 5). P6 och P7 går inte med höger hand: den måste korsa kroppen.
 2. Per plats: en tagning utan sista bild för landningen, landningen (`tools/landing-make.ts`), och givens tagning med
    första och sista bild. Varje omgång granskas oberoende och döms åt Jakob (`review-put`), inte i hans kö.
 3. Sedan returerna från platserna till 2.3, ingången 1 → 2.3 klippt ur ankarets film, returen 2.3 → 1, fem
@@ -49,7 +49,7 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
 - Granska första och sista bilden led för led mot gällande ankare före filmen (`tools/film-review.md`, Metod): ett
   fel i ankaret syns aldrig som skillnad mellan film och bild, och den automatiska kontrollen ser inte en arm.
 - Ett ankare görs som en riktig ruta ur en film från ankare 1, inte som ett montage ur bildmodellen. Dockan ska då ha
-  rak bål: filmmodellen förstorar en lutning (3° i dockan blev 10° i 2.3 A).
+  rak bål: filmmodellen förstorar en lutning (3° i dockan blev 10° i första försöket till A2.3).
 - Referensfilmen ska sluta som sista bilden, och blicken måste stå i texten eller bilderna: Kling tar handens och
   kortets rörelse ur referensfilmen, inte huvudet. Utan sista bild blev kortet i skons fönster vitt.
 - En dockfilm i den riktiga dealerns takt (given klar på 1 s, sedan stilla) ger ett stopp med kortet rest och en

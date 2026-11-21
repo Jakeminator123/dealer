@@ -3855,7 +3855,7 @@
         {
           "id": "paow-ankare-2-3-a",
           "role": "ankare-2.3",
-          "name": "Ankare 2.3, båda händerna vid skon före första kortet (A)",
+          "name": "A2.3, äldre försök 1: båda händerna vid skon före första kortet",
           "path": "assets/anchors/paow-ankare-2-3-a/anchor.png",
           "node": "READY-C",
           "state": "arkiverad",
@@ -4173,7 +4173,7 @@
         {
           "id": "paow-ankare-2-3-b",
           "role": "ankare-2.3",
-          "name": "Ankare 2.3 (B): vänster hand uppifrån på kortet",
+          "name": "A2.3, äldre försök 2 (montage): vänster hand uppifrån på kortet",
           "path": "assets/anchors/paow-ankare-2-3-b/anchor.png",
           "node": "READY-C",
           "state": "ersatt",
@@ -4187,7 +4187,7 @@
         {
           "id": "paow-ankare-2-3-c",
           "role": "ankare-2.3",
-          "name": "Ankare 2.3 (C): vänster hand uppifrån på kortet, rak bål",
+          "name": "A2.3: vänster hand uppifrån på kortet, rak bål",
           "path": "assets/anchors/paow-ankare-2-3-c/anchor.png",
           "node": "READY-C",
           "state": "gäller",
@@ -4204,7 +4204,7 @@
         {
           "id": "paow-a3-p4-23b",
           "role": "landning",
-          "name": "A3 · P4 (2.3 B)",
+          "name": "A3 · P4 (ur montaget, äldre försök 2)",
           "path": "assets/anchors/paow-a3-p4-23b/anchor.png",
           "node": "LAND(P4.C1)",
           "card": "P4.C1",
@@ -4219,7 +4219,7 @@
         {
           "id": "paow-a3-p4-23c",
           "role": "landning",
-          "name": "A3 · P4 (2.3 B) c",
+          "name": "A3 · P4 (ur montaget, äldre försök 2) c",
           "path": "assets/anchors/paow-a3-p4-23c/anchor.png",
           "node": "LAND(P4.C1)",
           "card": "P4.C1",
@@ -4234,7 +4234,7 @@
         {
           "id": "paow-a3-p4-ur-film-1120",
           "role": "landning",
-          "name": "A3 · P4 (ur film från 2.3 C)",
+          "name": "A3 · P4 (ur film från A2.3)",
           "path": "assets/anchors/paow-a3-p4-ur-film-1120/anchor.png",
           "node": "LAND(P4.C1)",
           "card": "P4.C1",
