@@ -23,7 +23,7 @@ type Common = {
   onFocus: () => void;
   label: string;
 };
-export type SeatData = Common & { seat: string; fields: Field[]; mode: "SEAT" | "CARD"; reach: number | null; filled: number; of: number };
+export type SeatData = Common & { seat: string; fields: Field[]; reach: number | null; filled: number; of: number };
 export type DealerData = Common & { fields: Field[]; filled: number; of: number };
 export type HubData = Common & {
   node: string;
@@ -39,7 +39,7 @@ export type DealerNodeType = Node<DealerData, "dealer">;
 export type HubNodeType = Node<HubData, "hub">;
 
 // Every edge needs a handle to hang on; the lines themselves are drawn from the layout, so the handles stay invisible.
-function Hooks() {
+export function Hooks() {
   return (
     <>
       <Handle type="target" position={Position.Top} isConnectable={false} className="!pointer-events-none !size-px !min-h-0 !min-w-0 !border-0 !opacity-0" />
@@ -109,22 +109,16 @@ export function SeatNode({ data }: NodeProps<SeatNodeType>) {
       <FieldBox field={c1} node={data.box} className="items-center border border-line bg-raised">
         <span className="text-[12px] font-semibold text-ink">C1</span>
       </FieldBox>
-      {data.mode === "CARD" ? (
-        <FieldBox field={c2} node={data.box} className="items-center border border-line bg-raised">
-          <span className="text-[12px] font-semibold text-ink">C2</span>
-        </FieldBox>
-      ) : (
-        <FieldBox field={c2} node={data.box} className="items-stretch gap-[5px] border border-dashed border-line-strong px-1.5">
-          <span className="flex items-center justify-between gap-1 text-[11px] leading-none">
-            <b className="font-semibold text-ink">C2</b>
-            <span className={cn("inline-flex items-center gap-px whitespace-nowrap tabular-nums", far ? "font-medium text-[#f0b07a]" : "text-faint")}>
-              {far ? <TriangleAlert className="size-2.5" aria-label="över 50 px" /> : null}
-              {data.reach === null ? "flytt ?" : `+${data.reach} px`}
-            </span>
+      <FieldBox field={c2} node={data.box} className="items-stretch gap-[5px] border border-dashed border-line-strong px-1.5">
+        <span className="flex items-center justify-between gap-1 text-[11px] leading-none">
+          <b className="font-semibold text-ink">C2</b>
+          <span className={cn("inline-flex items-center gap-px whitespace-nowrap tabular-nums", far ? "font-medium text-[#f0b07a]" : "text-faint")}>
+            {far ? <TriangleAlert className="size-2.5" aria-label="över 50 px" /> : null}
+            {data.reach === null ? "flytt ?" : `+${data.reach} px`}
           </span>
-          <span className="whitespace-nowrap text-[10px] leading-none tracking-[-0.01em] text-dim">delar C1:s film</span>
-        </FieldBox>
-      )}
+        </span>
+        <span className="whitespace-nowrap text-[10px] leading-none tracking-[-0.01em] text-dim">delar C1:s film</span>
+      </FieldBox>
     </Frame>
   );
 }

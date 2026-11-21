@@ -187,6 +187,7 @@ if(has('--restart')){
    // Film orders and the state of a candidate picture (tools/order-routes.ts): answered there when the address is theirs.
    if(url.pathname==='/api/orders/ledger'){await (await import('./order-ledger.ts')).serveLedger(req,res);return;} // Protokoll (tools/order-ledger.ts), before the orders' own routes, which would take "ledger" for an order id.
    if(await handleOrders(req,res,url))return;
+   if(url.pathname==='/api/trees'){await (await import('./dealer-tree.ts')).serveTrees(req,res,url);return;} // Karta's trees: nodes, 36 steps and number per tree (tools/dealer-tree.ts)
    if(url.pathname==='/api/placements'){
     res.setHeader('Content-Type','application/json; charset=utf-8');
     // A proposal beside Jakob's draft (placements/proposals/<name>.json): read-only, for a lab page that is asked for it by name. His draft is the plan without a name, and the only one that can be saved.

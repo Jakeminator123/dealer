@@ -23,7 +23,6 @@ export type MapView = {
   layout: MapLayout;
   /** What each line, the rest and each experiment says (KartaView: what the game plays, the secondary films' count). */
   infos: Map<string, EdgeInfo>;
-  mode: "SEAT" | "CARD";
   points: PlanPoints;
   /** The film whose panel is open (on the map: the film it plays, for a seat's second card). */
   active: string | null;
@@ -36,8 +35,8 @@ export type MapView = {
   onHover: (id: string | null) => void;
 };
 
-/** Fits the whole map into the free part of the canvas. */
-export function useFitMap(layout: MapLayout, sheetOpen: boolean) {
+/** Fits the whole map (the bank's or a tree's) into the free part of the canvas. */
+export function useFitMap(layout: Pick<MapLayout, "width" | "height">, sheetOpen: boolean) {
   const { setViewport } = useReactFlow();
   const width = useStore((s) => s.width);
   const height = useStore((s) => s.height);
@@ -55,14 +54,14 @@ export function useFitMap(layout: MapLayout, sheetOpen: boolean) {
 }
 
 export function MapCanvas(view: MapView) {
-  const { graph, layout, infos, mode, points, active, focus, hover, sheetOpen, onPick, onFocus, onHover } = view;
+  const { graph, layout, infos, points, active, focus, hover, sheetOpen, onPick, onFocus, onHover } = view;
   const zoom = useStore((s) => s.transform[2]);
   const width = useStore((s) => s.width);
   const height = useStore((s) => s.height);
   const { getViewport, setViewport } = useReactFlow();
   const fit = useFitMap(layout, false);
 
-  // Fit when the map is first sized, when the layout changes (mode, plan) and when the window is resized.
+  // Fit when the map is first sized, when the layout changes (the plan) and when the window is resized.
   const fitted = useRef("");
   useEffect(() => {
     const key = `${layout.width}x${layout.height}@${width}x${height}`;
@@ -71,7 +70,7 @@ export function MapCanvas(view: MapView) {
     fit(0);
   }, [fit, layout.width, layout.height, width, height]);
 
-  // When the whole map only fits far out (one film per card), a chosen seat is brought close enough to read; letting it
+  // When the whole map only fits far out (a narrow window), a chosen seat is brought close enough to read; letting it
   // go fits the whole map again.
   const near = useRef(false);
   useEffect(() => {
@@ -138,7 +137,7 @@ export function MapCanvas(view: MapView) {
         const node: SeatNodeType = {
           ...base,
           type: "seat",
-          data: { ...common, ...counted, seat: n.seat, fields: n.fields, mode, reach: seatReach(points, n.seat), label: `${n.seat}, spelare ${n.seat.slice(1)}: ${counted.filled} av ${counted.of} filmer spelar. Visa bara platsens filmer.` },
+          data: { ...common, ...counted, seat: n.seat, fields: n.fields, reach: seatReach(points, n.seat), label: `${n.seat}, spelare ${n.seat.slice(1)}: ${counted.filled} av ${counted.of} filmer spelar. Visa bara platsens filmer.` },
         };
         return node;
       }
@@ -164,7 +163,7 @@ export function MapCanvas(view: MapView) {
       };
       return node;
     });
-  }, [layout, infos, focus, inFocus, mode, points, graph, active, onFocus, onPick]);
+  }, [layout, infos, focus, inFocus, points, graph, active, onFocus, onPick]);
 
   const edges = useMemo<Edge[]>(() => {
     const rails: RailEdgeType[] = layout.rails.map((rail) => ({ id: rail.id, source: rail.id === "rail-ready" ? "READY" : "IDLE", target: "P1", type: "rail", data: { rail }, selectable: false, focusable: false, deletable: false }));

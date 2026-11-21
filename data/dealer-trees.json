@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "about": "Each dealer's named trees (Jakob 2026-11-21: several trees per dealer, each with a name, about three at most; everything else is loose material that can later be deleted). A tree is a set of anchors from data/media-roles.json, by entry id: the root (A1) and the anchors it branches into, written in his notation by tools/dealer-tree.ts from the graph's nodes (IDLE = A1, READY = A2.1, READY-B = A2.2, READY-C = A2.3, a card node such as P4.C1 = A3P4C1). Films are not listed here: the tool finds every film whose first and last pictures are the tree's anchors. state: spelas (the game plays it), byggs (being made), vilar (resting). name is what Jakob sees and his to change. shares: the id of another tree of the same dealer whose anchors and films this one plays too; opening: a media-roles film outside the bank that leads into the root (the film before the game). An anchor may carry seat (1-7) when its picture is seen from that seat instead of the straight camera; the tool then writes S2-A2.2. seat is set only where a register says the angle. Read by tools/dealer-tree.ts, which writes its report to .runtime/dealer-trad/.",
+  "about": "Each dealer's named trees (Jakob 2026-11-21: several trees per dealer, each with a name, about three at most; everything else is loose material that can later be deleted). A tree is a set of anchors from data/media-roles.json, by entry id: the root (A1) and the anchors it branches into, written in his notation by tools/dealer-tree.ts from the graph's nodes (IDLE = A1, READY = A2.1, READY-B = A2.2, READY-C = A2.3, a card node such as P4.C1 = A3P4C1). Films are not listed here: the tool finds every film whose first and last pictures are the tree's anchors. state: spelas (the game plays it), byggs (being made), vilar (resting). name is what Jakob sees and his to change. shares: the id of another tree of the same dealer whose anchors and films this one plays too; opening: a media-roles film outside the bank that leads into the root (the film before the game). An anchor may carry seat (1-7) when its picture is seen from that seat instead of the straight camera; the tool then writes S2-A2.2. seat is set only where a register says the angle. A tree is measured against his measure (src/dealer-trees.ts, 'en giv per kort'): 36 steps from its first A2.x anchor, the anchor at the shoe; its other A2.x anchors stand in for it where its own film is missing (the Casino gives P6C1 from A2.2). Read by tools/dealer-tree.ts, which writes its report to .runtime/dealer-trad/ and serves GET /api/trees to Karta.",
   "dealers": {
     "pamela": {
       "trees": [
@@ -30,7 +30,7 @@
             {"entry": "paow-nyp-ung-1"},
             {"entry": "paow-ankare-2-2-t1"}
           ],
-          "note": "What the game plays today: the older hands. Material calls paow-vila-ung-2 and paow-ankare-2-2-t1 ersatt, yet every film of this tree was made from them."
+          "note": "What the game plays today: the older hands. Every film of this tree was made from these pictures, and the tree keeps them, although Material calls paow-vila-ung-2 and paow-ankare-2-2-t1 ersatt (by the Tatuerad tree's A1 and A2.2)."
         },
         {
           "id": "ingangen",
@@ -45,16 +45,17 @@
           "note": "The way into the Casino through the film before the game (/trailer): the film ends on the Casino's A1 and the game goes on with the Casino's own films."
         },
         {
-          "id": "a2-3",
-          "name": "A2.3",
+          "id": "tatuerad",
+          "name": "Tatuerad",
           "state": "byggs",
           "root": "paow-vila-tatuerad",
           "anchors": [
             {"entry": "paow-vila-tatuerad"},
             {"entry": "paow-ankare-2-3-c"},
+            {"entry": "paow-ankare-2-2-blick-a"},
             {"entry": "paow-a3-p4-ur-film-1120"}
           ],
-          "note": "The tattooed set with two hands (A2.3). The A3 anchor for P4 is taken from the first deal of the current A2.3."
+          "note": "The tattooed set (Jakob 2026-11-21): A1 paow-vila-tatuerad; A2.3 paow-ankare-2-3-c with two hands, the anchor at the shoe; A2.2 paow-ankare-2-2-blick-a (\"A2.2 ska vara som 2.1 fast med tatueringarna\"). The A3 anchor for P4 is taken from the first deal of the current A2.3."
         }
       ]
     }

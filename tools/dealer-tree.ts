@@ -1,10 +1,12 @@
 // Each dealer's named trees (data/dealer-trees.json) and where every film stands against them. Read only: it writes nothing in
 // the registers; its report goes to .runtime/dealer-trad/ (LASMIG.md in Jakob's words, trad.json with everything).
 //   node tools/dealer-tree.ts [--dealer <id>]
+// The same placing answers Karta's trees (GET /api/trees?dealer=<id>, serveTrees): each tree's nodes and its 36 steps against
+// his measure with their state (src/dealer-trees.ts treeView), and for a step without a film what an order of it has and lacks.
 //
 // A tree is a set of anchors from Material (data/media-roles.json): A1, A2.x and, where one is chosen, an A3 per player and card.
-// Names come from the graph's nodes as studio/lib/names.ts writes them (nodeCode), with "A3" before a card's node: IDLE = A1,
-// READY = A2.1, READY-B = A2.2, READY-C = A2.3, P4.C1 = A3P4C1, D.C1 = A3DC1; an anchor seen from a seat is S2-A2.2.
+// Names come from the graph's nodes (src/dealer-trees.ts nodeCode, the studio's words): IDLE = A1, READY = A2.1, READY-B = A2.2,
+// READY-C = A2.3, P4.C1 = A3P4C1, D.C1 = A3DC1; an anchor seen from a seat is S2-A2.2.
 //
 // Every record in motions/ lands in one group, read from the registers and never from a file name:
 //   kopplad      its edge's anchors are the tree's: the pictures its order started and ended on (data/orders/<id>.json
@@ -21,22 +23,23 @@
 // verdictOf (studio/lib/verdict.ts). Sizes are stat sizes, each file once (a hard link is counted where it is first met);
 // no media file is opened. A kept collection (assets/noir/, Jakob 2026-11-21) is named but never loose material.
 import {existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync} from 'node:fs';
+import type {IncomingMessage, ServerResponse} from 'node:http';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {buildGraph, type BankData, type Take} from '../src/clip-graph.ts';
+import {countWord, isCard, isTreeHub, levelOf, nodeCode, nodesOf, orderCommand, stepName as stepWords, treeView, type Delivery, type MeasureStep, type Need, type OrderFacts, type TreeAnswer, type TreeDef, type TreeRegister, type TreeState, type TreeStep, type TreeTake, type TreeView, type Verdict as TreeVerdict} from '../src/dealer-trees.ts';
+import {ANCHOR_NODE, costOf, modelFor, paramsOf, stepOf, type Policy, type StepKey} from '../src/order-model.ts';
+import {METHOD_STATUS_LABEL, methodFor, readMethods, recipeFor, referenceWaits, secondsOf, type MethodRegister} from '../src/order-methods.ts';
 import {GAME_VOICE, PHASE_LINE, spokenFilms, type SpeechTake} from '../src/speech-lines.ts';
+import {reviewerNote} from '../studio/lib/ledger.ts';
 import {gameGraph, usesOf, type Use} from '../studio/lib/primaries.ts';
-import {nodeCode} from '../studio/lib/names.ts';
 import {verdictOf} from '../studio/lib/verdict.ts';
 import {audit} from './media-audit.ts';
 import {readBank} from './produce.ts';
 import {gameTakes} from './studio-freeze.ts';
 
 // ── The register ────────────────────────────────────────────────────────────
-export type TreeState = 'spelas' | 'byggs' | 'vilar';
-export type TreeAnchor = {entry: string; seat?: number};
-export type TreeDef = {id: string; name: string; state: TreeState; root: string; anchors: TreeAnchor[]; shares?: string; opening?: string; note?: string};
-export type TreeRegister = {schemaVersion: 1; about: string; dealers: Record<string, {trees: TreeDef[]}>};
+export type {TreeAnchor, TreeDef, TreeRegister, TreeState} from '../src/dealer-trees.ts';
 type Entry = {id: string; dealer: string; role: string; node?: string; card?: string; state?: string; path?: string; frame?: number; builtOn?: string[]; name?: string; note?: string; source?: {from?: string}};
 
 const STATES: TreeState[] = ['spelas', 'byggs', 'vilar'];
@@ -65,22 +68,13 @@ export function checkTrees(register: TreeRegister, entries: Map<string, Entry>, 
   return out;
 }
 
-// ── His notation ────────────────────────────────────────────────────────────
-const CARD = /^(P[1-7]|D)\.C[1-3]$/;
-const HUBS = new Set(['IDLE', 'READY', 'READY-B', 'READY-C']);
+// ── His notation (src/dealer-trees.ts) ──────────────────────────────────────
 const OUTER = new Set(['AWAY', 'REVEAL(D.C2)']);
-export const isCard = (node: string) => CARD.test(node);
+export {isCard, nodesOf};
 /** A node as he writes it: A1, A2.1, A2.3, A3P4C1, A3DC1, Borta, DC2 upp; seen from a seat, S2-A2.2. */
-// The studio's nodeCode may already write a card node as A3P4C1; "A3" is added only when it does not.
-export const code = (node: string, seat?: number) => { const n = nodeCode(node); return `${seat ? `S${seat}-` : ''}${isCard(node) && !n.startsWith('A3') ? `A3${n}` : n}`; };
-/** The take's two nodes, with the anchor variant the graph stores under READY put back (take.hub). */
-export function nodesOf(edge: string, hub?: string | null): [string, string] {
-  const cut = edge.indexOf('>'), [from, to] = cut < 0 ? [edge, edge] : [edge.slice(0, cut), edge.slice(cut + 1)];
-  return [hub && from === 'READY' ? hub : from, hub && to === 'READY' ? hub : to];
-}
-export const stepName = (edge: string, hub?: string | null) => { const [a, b] = nodesOf(edge, hub); return `${code(a)} → ${code(b)}`; };
-/** The node an entry of Material stands for: a landing is its card's node, an anchor its pose's (an A1 with a card lying is A1). */
-const levelOf = (e: Entry): string | null => e.role === 'landning' ? (e.card ?? null) : e.node ?? null;
+export const code = nodeCode;
+/** A take's step in his words: the edge, with the anchor variant it was written from put back ("A2.3 → A3P4C1"). */
+export const stepName = (edge: string, hub?: string | null) => { const [a, b] = nodesOf(edge, hub); return stepWords(a, b); };
 /** An entry's name in the report: a landing without a card is "A3P4, kort ej angivet". */
 const entryCode = (e: Entry, seat?: number): string => {
   if (e.role === 'landning' && !e.card) { const seatOf = /P[1-7]|D/.exec(e.node ?? '')?.[0]; return `A3${seatOf ?? ''}, kort ej angivet`; }
@@ -169,8 +163,13 @@ type Order = {id: string; dealer?: string; status?: string; step?: {edge?: strin
 type Ref = {file?: {path?: string}; frame?: {video?: string; index?: number}} | null | undefined;
 type Job = {id: string; clip?: string; source?: {clip?: string}; first?: Ref; last?: Ref};
 
-export async function buildReport(only: string | null = null) {
-  for (const k of KEPT) for (const f of scan(k).files) keptKeys.add(f.key);
+type Placed = {group: Group; tree: Tree | null; via: string | null; reason: string | null; proposal: string | null; anchors: string[]};
+
+/**
+ * What the placing reads (the registers and the bank the lab serves, JSON only: no folder is walked, no size counted) and the
+ * placing itself: the pictures a record stands on (evidence) and where a step with those pictures lands (place).
+ */
+async function readWorld(only: string | null) {
   const dealersFile = json<{dealers: {id: string; name?: string}[]}>('data/dealers.json');
   const dealers = (dealersFile?.dealers ?? []).map(d => d.id).filter(d => !only || d === only);
   const roles = json<{dealers: Record<string, {entries: Omit<Entry, 'dealer'>[]}>}>('data/media-roles.json');
@@ -211,17 +210,8 @@ export async function buildReport(only: string | null = null) {
   for (const [id, m] of Object.entries(bank.motions ?? {})) { const speech = records.get(id)?.speech; if (speech) (m as {speech?: unknown}).speech = speech; }
   const jobs = new Map<string, Job>([...bank.jobs, ...bank.derived, ...bank.edits].map(j => [j.id, j]));
 
-  const takes = new Map<string, {take: Take; dealer: string}>(), plays = new Map<string, Set<string>>(), games = new Map<string, ReturnType<typeof gameGraph>>();
-  for (const dealer of dealers) {
-    for (const take of Object.values(buildGraph(bank, {dealer}).takes)) takes.set(take.id, {take, dealer});
-    plays.set(dealer, gameTakes(bank, dealer)); games.set(dealer, gameGraph(bank, dealer));
-  }
-  const useCache = new Map<string, Map<string, Use>>();
-  const useOf = (dealer: string, take: Take): Use | null => {
-    const key = `${dealer} ${take.edge}`;
-    if (!useCache.has(key)) { const g = games.get(dealer)!; useCache.set(key, g.edge[take.edge] ? usesOf(g, take.edge) : new Map()); }
-    return useCache.get(key)!.get(take.id) ?? null;
-  };
+  const takes = new Map<string, {take: Take; dealer: string}>();
+  for (const dealer of dealers) for (const take of Object.values(buildGraph(bank, {dealer}).takes)) takes.set(take.id, {take, dealer});
 
   // The pictures a record stands on, found through its order, its job, the deal it starts on, its clip or its rest film.
   const memo = new Map<string, Map<string, string>>();
@@ -251,16 +241,15 @@ export async function buildReport(only: string | null = null) {
   };
   const lineageOld = (e: Entry) => [e, ...(e.builtOn ?? []).map(b => entries.get(b)).filter((x): x is Entry => !!x)].find(x => x.state === 'arkiverad' || x.state === 'ersatt') ?? null;
 
-  type Placed = {group: Group; tree: Tree | null; via: string | null; reason: string | null; proposal: string | null; anchors: string[]};
   function place(dealer: string, edge: string, hub: string | null | undefined, ev: Map<string, string>): Placed {
     const nodes = [...new Set(nodesOf(edge, hub))], anchors = [...ev.keys()];
     let cands = owners(dealer), likely = owners(dealer);
     const foreign: string[] = [], derived: string[] = [], experiments: string[] = [];
     for (const n of nodes) {
-      if (!HUBS.has(n) && !OUTER.has(n) && !isCard(n)) { experiments.push(n); continue; }
+      if (!isTreeHub(n) && !OUTER.has(n) && !isCard(n)) { experiments.push(n); continue; }
       if (OUTER.has(n)) continue;
       const here = anchors.map(a => entries.get(a)!).filter(e => levelOf(e) === n);
-      if (HUBS.has(n)) likely = likely.filter(t => t.at.has(n));
+      if (isTreeHub(n)) likely = likely.filter(t => t.at.has(n));
       if (here.length) {
         const ok = cands.filter(t => here.some(e => fits(e, t, n)));
         if (ok.length) { cands = ok; continue; }
@@ -270,16 +259,33 @@ export async function buildReport(only: string | null = null) {
           foreign.push(old && other ? `äldre försök till ${code(n)}: ${e.id}${old.id === e.id ? ` (${old.state})` : `, gjord på ${old.id} (${old.state})`}`
             : `${isCard(n) ? 'landar på' : 'står på'} ${e.id}${e.state ? ` (${e.state})` : ''}, som inte är trädets ${code(n)}`);
         }
-      } else if (HUBS.has(n)) { cands = cands.filter(t => t.at.has(n)); derived.push(n); }
+      } else if (isTreeHub(n)) { cands = cands.filter(t => t.at.has(n)); derived.push(n); }
     }
     const step = stepName(edge, hub), propose = (list: Tree[], why = '') => list.length === 1 ? `${list[0].name}: ${step}${why} (förslag)` : list.length ? `${list.map(t => t.name).join(' eller ')}: ${step} (förslag)` : null;
     if (experiments.length) return {group: 'halvkopplad', tree: null, via: null, reason: `experimentets nod ${experiments.join(', ')}: ingen nivå i ett träd`, proposal: propose(likely), anchors};
     if (foreign.length) return {group: 'halvkopplad', tree: null, via: null, reason: foreign.join('; '), proposal: propose(likely), anchors};
-    if (cands.length === 1) return {group: 'kopplad', tree: cands[0], via: derived.length ? (derived.length === nodes.filter(n => HUBS.has(n)).length ? 'härledd ur noden' : `bild, ${derived.map(n => code(n)).join(' och ')} härledd ur noden`) : 'bild', reason: null, proposal: null, anchors};
+    if (cands.length === 1) return {group: 'kopplad', tree: cands[0], via: derived.length ? (derived.length === nodes.filter(n => isTreeHub(n)).length ? 'härledd ur noden' : `bild, ${derived.map(n => code(n)).join(' och ')} härledd ur noden`) : 'bild', reason: null, proposal: null, anchors};
     if (cands.length > 1) return {group: 'halvkopplad', tree: null, via: null, reason: `ingen bild för ${derived.map(n => code(n)).join(' och ')}, som flera träd har`, proposal: propose(cands), anchors};
-    const missing = nodes.filter(n => HUBS.has(n) && !owners(dealer).some(t => t.at.has(n)));
+    const missing = nodes.filter(n => isTreeHub(n) && !owners(dealer).some(t => t.at.has(n)));
     return {group: 'halvkopplad', tree: null, via: null, reason: missing.length ? `dealern har inget träd med ${missing.map(n => code(n)).join(', ')}` : 'ankarna hör till olika träd', proposal: null, anchors};
   }
+
+  return {dealersFile, dealers, entries, register, trees, treeOf, owners, orders, picture, bank, records, jobs, takes, evidence, place};
+}
+
+export async function buildReport(only: string | null = null) {
+  for (const k of KEPT) for (const f of scan(k).files) keptKeys.add(f.key);
+  const world = await readWorld(only), {dealersFile, dealers, entries, trees, treeOf, owners, orders, picture, bank, records, jobs, takes, evidence, place} = world;
+  // Each tree's number against his measure, the same Karta shows (src/dealer-trees.ts treeCount).
+  const counts = Object.fromEntries(dealers.flatMap(d => viewsOf(world, d).map(v => [`${d}/${v.tree.id}`, countWord(v.count)])));
+  const plays = new Map<string, Set<string>>(), games = new Map<string, ReturnType<typeof gameGraph>>();
+  for (const dealer of dealers) { plays.set(dealer, gameTakes(bank, dealer)); games.set(dealer, gameGraph(bank, dealer)); }
+  const useCache = new Map<string, Map<string, Use>>();
+  const useOf = (dealer: string, take: Take): Use | null => {
+    const key = `${dealer} ${take.edge}`;
+    if (!useCache.has(key)) { const g = games.get(dealer)!; useCache.set(key, g.edge[take.edge] ? usesOf(g, take.edge) : new Map()); }
+    return useCache.get(key)!.get(take.id) ?? null;
+  };
 
   const rows: Row[] = [];
   const seen = new Set<string>();
@@ -288,7 +294,7 @@ export async function buildReport(only: string | null = null) {
     const p = place(dealer, take.edge, take.hub, evidence(id)), v = takeVerdict(take), use = useOf(dealer, take);
     const own = folder(`assets/motions/${id}`), inGame = plays.get(dealer)!.has(id), played = inGame && use?.kind !== 'never';
     // No picture where two trees share the level: a film the game plays points at the one tree the game plays (still a proposal).
-    const hubs = nodesOf(take.edge, take.hub).filter(n => HUBS.has(n)), live = owners(dealer).filter(t => t.state === 'spelas' && hubs.every(n => t.at.has(n)));
+    const hubs = nodesOf(take.edge, take.hub).filter(n => isTreeHub(n)), live = owners(dealer).filter(t => t.state === 'spelas' && hubs.every(n => t.at.has(n)));
     const proposal = p.group === 'halvkopplad' && p.reason?.startsWith('ingen bild för') && played && live.length === 1 ? `${live[0].name}: ${stepName(take.edge, take.hub)} (förslag: spelet spelar den)` : p.proposal;
     rows.push({id, dealer, kind: 'tagning', group: p.group, tree: p.tree?.id ?? null, step: stepName(take.edge, take.hub), edge: take.edge, verdict: v.text, good: v.good, judge: v.judge,
       variant: !!take.variant, inGame, plays: played, use: use ? use.word : null, mb: mb(own.bytes), via: p.via, reason: p.reason, proposal,
@@ -433,7 +439,132 @@ export async function buildReport(only: string | null = null) {
   };
 
   return {made: new Date().toISOString(), only, dealers, trees: trees.map(({at: m, ids: _ids, ...t}) => ({...t, levels: Object.fromEntries([...m].map(([n, e]) => [code(n, t.anchors.find(a => a.entry === e)?.seat), e]))})),
-    entries, rows, outside, unknownElsewhere, receiptsOnly, motionsNoFilm, kept, dolls: dollRows, ways, seats};
+    counts, entries, rows, outside, unknownElsewhere, receiptsOnly, motionsNoFilm, kept, dolls: dollRows, ways, seats};
+}
+
+// ── Karta's trees (GET /api/trees) ──────────────────────────────────────────
+type World = Awaited<ReturnType<typeof readWorld>>;
+type RefFilm = {id: string; edge: string; seconds?: number; check?: {pass?: boolean}};
+type Receipt = {takes?: {take?: number; status?: string; file?: string | null; history?: unknown; review?: unknown}[]};
+
+/** A take's verdict for the trees: verdictOf's, where a failed take counts as underkand (it never came). */
+function treeVerdict(take: Take): Pick<TreeTake, 'verdict' | 'byJakob' | 'provisional'> {
+  const v = verdictOf(take);
+  return {verdict: take.stage === 'FAILED' ? 'underkand' : v.verdict as TreeVerdict, byJakob: v.byJakob, provisional: v.provisional};
+}
+
+/** The dealer's takes of the bank, each placed in the tree its pictures say (null: in none). */
+function placedTakes(w: World, dealer: string): TreeTake[] {
+  const out: TreeTake[] = [];
+  for (const [id, {take, dealer: d}] of w.takes) {
+    if (d !== dealer) continue;
+    const p = w.place(dealer, take.edge, take.hub, w.evidence(id)), [from, to] = nodesOf(take.edge, take.hub);
+    out.push({id, tree: p.group === 'kopplad' ? p.tree!.id : null, from, to, ...treeVerdict(take), archived: !!take.archived});
+  }
+  return out;
+}
+
+const FELL = /faller|föll|inte användbar|underkän|not usable/i;
+/**
+ * The dealer's orders delivered that are not in the bank yet, placed by their two pictures: a take that came (HÄMTAD on)
+ * whose reviewer note (studio/lib/ledger.ts reviewerNote) does not say it fell. One that fell is no prov: it waits for nothing.
+ */
+function deliveries(w: World, dealer: string): Delivery[] {
+  const inBank = new Set([...w.records.values()].map(r => r.order?.id).filter((x): x is string => !!x)), out: Delivery[] = [];
+  for (const o of w.orders.values()) {
+    const edge = o.step?.edge;
+    if ((o.dealer ?? o.id.split('-')[0]) !== dealer || !edge || o.status === 'AVBRUTEN' || inBank.has(o.id)) continue;
+    const receipt = json<Receipt>(`assets/orders/${o.id}/receipt.json`);
+    const waiting = (receipt?.takes ?? []).some(t => !!t.file && ['HÄMTAD', 'EFTERARBETAD', 'MÄTT', 'GRANSKAD'].includes(t.status ?? '') && !FELL.test(reviewerNote(t.history, t.review) ?? ''));
+    if (!waiting) continue;
+    const ev = new Map<string, string>();
+    for (const as of ['startFrame', 'endFrame'] as const) { const e = w.picture(o, as); if (e) ev.set(e, `beställningen ${o.id}`); }
+    const p = w.place(dealer, edge, null, ev), [from, to] = nodesOf(edge);
+    out.push({order: o.id, tree: p.group === 'kopplad' ? p.tree!.id : null, from, to, ...(o.title ? {title: o.title} : {})});
+  }
+  return out;
+}
+
+/** The anchor at the shoe as Beställ writes it: READY-C → "2.3". */
+const SHOE: Record<string, string> = Object.fromEntries(Object.entries(ANCHOR_NODE).map(([a, n]) => [n, a]));
+/** A step of the measure as Beställ's step (src/order-model.ts STEPS), null where Beställ has none (A2.3 → A1). */
+export function stepKeyOf(step: Pick<MeasureStep, 'kind'>, hub: string): StepKey | null {
+  const a = SHOE[hub];
+  const key = {vila: 'VILA', halkort: 'HALKORT', ingang: `INGANG-${a}`, giv: `GIV-${a}`, retur: `RETUR-${a}`, utgang: a === '2.1' ? 'UTGANG' : `UTGANG-${a}`}[step.kind];
+  return stepOf(key)?.key ?? null;
+}
+
+type Facts = {dealer: string; methods: MethodRegister | null; prices: Policy['prices']; refs: RefFilm[]; takes: TreeTake[]; entries: Map<string, Entry>};
+/** What an order of a step has and lacks, its estimated price and the command for a draft: read, never ordered. */
+function orderFacts(f: Facts, view: Pick<TreeView, 'hub' | 'nodes'>, step: TreeStep): OrderFacts {
+  const key = stepKeyOf(step, view.hub), def = key ? stepOf(key) : null;
+  const target = step.kind === 'halkort' ? 'D.C2' : step.card;
+  const method = key ? methodFor(f.methods, key, target) : null, recipe = key ? recipeFor(f.methods, key, target) : null;
+  const pic = (node: string) => view.nodes.find(n => n.node === node)?.entry ?? null;
+  const has = (node: string): Need => {
+    const e = pic(node), state = e ? f.entries.get(e)?.state : null;
+    return e ? {ok: true, what: `${nodeCode(node)}: ${e}${state && state !== 'gäller' ? ` (${state} i Material)` : ''}`} : {ok: false, what: `ingen bild för ${nodeCode(node)} i trädet`};
+  };
+  const drawn = (node: string, card: string): Need => {
+    const base = has(node);
+    return base.ok ? {ok: true, what: `${nodeCode(node)} med ${nodeCode(card)} ritat (Beställ ritar det)`} : base;
+  };
+  const last = recipe?.lastPicture ?? (step.kind === 'giv' ? 'ritat-kort' : 'ankare');
+  const [first, end]: [Need, Need] =
+    step.kind === 'halkort' ? [drawn('IDLE', 'D.C2'), drawn('IDLE', 'D.C2')]
+    : step.kind === 'giv' ? [has(step.from), last === 'platsens-slutbild' ? has(step.to) : drawn(step.from, step.to)]
+    : [has(step.from), has(step.to)];
+
+  // The reference film: the dummy's film of exactly this step (the last listed first, one that failed its check left out), or
+  // where the rule takes one, a film of the step that Jakob approved himself.
+  const rule = recipe?.reference ?? null;
+  const dummy = f.refs.filter(r => r.edge === step.id && r.check?.pass !== false).at(-1) ?? null;
+  const banked = rule === 'samma-plats-rakt-godkänd' || rule === 'renderad-eller-samma-plats'
+    ? f.takes.find(t => t.from === step.from && t.to === step.to && t.byJakob && !t.provisional && (t.verdict === 'godkand' || t.verdict === 'primar')) ?? null : null;
+  const useDummy = rule !== 'ingen' && rule !== 'samma-plats-rakt-godkänd' ? dummy : null;
+  const reference: Need = rule === 'ingen' ? {ok: true, what: 'behövs inte: receptet tar ingen'}
+    : useDummy ? {ok: true, what: `dockans film ${useDummy.id}${useDummy.seconds ? ` (${useDummy.seconds} s)` : ''}`}
+    : banked ? {ok: true, what: `hans godkända film ${banked.id}`}
+    : rule && def ? {ok: false, what: referenceWaits(rule, def)}
+    : {ok: false, what: dummy ? `dockans film ${dummy.id} finns, men receptet saknas` : 'ingen dockfilm för steget'};
+
+  const status = method?.status ?? null;
+  const model = recipe && def ? modelFor(def, recipe.model) : null;
+  const seconds = model && recipe ? secondsOf(model, recipe.seconds, useDummy?.seconds ? {seconds: useDummy.seconds} : null) : null;
+  const recipeNeed: Need & {status: string | null} = !key ? {ok: false, what: 'Beställ har inget sådant steg', status}
+    : def?.off ? {ok: false, what: def.off, status}
+    : recipe ? {ok: true, what: [recipe.model, recipe.resolution, seconds ? `${seconds} s` : null, `${recipe.takes} ${recipe.takes === 1 ? 'tagning' : 'tagningar'}`, METHOD_STATUS_LABEL[recipe.method.status]].filter(Boolean).join(' · '), status}
+    : {ok: false, what: status ? METHOD_STATUS_LABEL[status] : 'inget recept skrivet', status};
+  const cost = model && recipe && def ? costOf({model: recipe.model, params: paramsOf(def, model, {duration: seconds ?? undefined, resolution: recipe.resolution})}, recipe.takes, f.prices) : null;
+  return {step: key, first, last: end, reference, recipe: recipeNeed, price: cost ? cost.worstTotal : null, command: orderCommand(f.dealer, step.from, step.to)};
+}
+
+/** Every tree of a dealer as Karta draws it, from what the placing already read. */
+function viewsOf(w: World, dealer: string): TreeView[] {
+  const defs = w.register.dealers[dealer]?.trees ?? [];
+  if (!defs.length) return [];
+  const takes = placedTakes(w, dealer), sent = deliveries(w, dealer);
+  const facts: Facts = {dealer, takes, entries: w.entries,
+    methods: readMethods(json('data/order-methods.json')).register,
+    prices: json<Policy>('data/order-policy.json')?.prices ?? [],
+    refs: json<{films?: RefFilm[]}>('data/rendered-references.json')?.films ?? []};
+  return defs.map(def => {
+    const view = treeView(dealer, def, defs, w.entries, takes, sent);
+    return {...view, steps: view.steps.map(s => s.state === 'finns' ? s : {...s, order: orderFacts(facts, view, s)})};
+  });
+}
+
+/** GET /api/trees?dealer=<id>: the dealer's trees with their nodes, 36 steps and number. */
+export async function treeAnswer(dealer: string): Promise<TreeAnswer> {
+  return {schemaVersion: 1, dealer, made: new Date().toISOString(), trees: viewsOf(await readWorld(dealer), dealer)};
+}
+
+export async function serveTrees(req: IncomingMessage, res: ServerResponse, url: URL): Promise<void> {
+  const send = (status: number, body: unknown) => { res.writeHead(status, {'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store'}); res.end(JSON.stringify(body)); };
+  if (req.method !== 'GET') return send(405, {error: 'Bara GET.'});
+  const dealer = url.searchParams.get('dealer') ?? '';
+  if (!/^[a-z0-9-]+$/.test(dealer)) return send(400, {error: 'Ange ?dealer=<id>.'});
+  try { send(200, await treeAnswer(dealer)); } catch (e) { send(500, {error: e instanceof Error ? e.message : String(e)}); }
 }
 
 // ── The report in his words ─────────────────────────────────────────────────
@@ -448,29 +579,23 @@ export function lasmig(r: Report): string {
   const L: string[] = [], dealerName = (d: string) => d[0].toUpperCase() + d.slice(1);
   const treeName = (id: string | null) => r.trees.find(t => t.id === id)?.name ?? '–';
   L.push(`# Dealerträd`, '', `Byggd ${r.made.slice(0, 16).replace('T', ' ')} av \`node tools/dealer-tree.ts${r.only ? ` --dealer ${r.only}` : ''}\`. Läser bara; skriver inget i registren. Träden och deras namn står i \`data/dealer-trees.json\`; allt annat räknas ut ur registren. Alla poster med skäl: \`trad.json\` bredvid.`, '');
+  L.push('Steg för steg mot hans mått (vilka av de 36 stegen som finns, är prov eller saknas, och vad en beställning av ett saknat steg har) visar Karta i studion, ur `GET /api/trees`.', '');
   L.push('Grupperna: **kopplad** = filmens ankare är trädets. **halvkopplad** = ett ankare som inget träd har (äldre försök, ersatt eller arkiverad bild), en experimentnod, ingen bild där två träd delar nivån, eller ingen tagning i banken; med troligt steg som förslag. **okopplad** = ingen kant alls, eller en filmmapp utan post. MB är storleken på disk, varje fil en gång: en fil med två hårda länkar räknas där den först möts.', '');
 
   for (const dealer of r.dealers) {
     const rows = r.rows.filter(x => x.dealer === dealer), trees = r.trees.filter(t => t.dealer === dealer);
     L.push(`## ${dealerName(dealer)}`, '');
-    L.push('| Träd | Läge | Ankare | Steg med film | Tagningar (kopplade) | Spelas | MB (tagningar och källfilmer) |', '|---|---|---|---|---|---|---|');
+    L.push('| Träd | Läge | Ankare | Måttet (steg med film av 36) | Tagningar (kopplade) | Spelas | MB (tagningar och källfilmer) |', '|---|---|---|---|---|---|---|');
     for (const t of trees) {
       const own = t.shares ? rows.filter(x => x.tree === t.shares && x.group === 'kopplad') : rows.filter(x => x.tree === t.id && x.group === 'kopplad');
-      const takes = own.filter(x => x.kind === 'tagning'), steps = new Set(takes.map(x => x.step));
+      const takes = own.filter(x => x.kind === 'tagning');
       const levels = Object.entries(t.levels).map(([c, e]) => `${c} ${e}${r.entries.get(e)?.state && r.entries.get(e)!.state !== 'gäller' ? ` (${r.entries.get(e)!.state})` : ''}`).join(' · ');
-      L.push(`| ${t.name}${t.shares ? ` (delar ${treeName(t.shares)})` : ''} | ${t.state} | ${levels} | ${steps.size}${t.opening ? ' + början' : ''} | ${takes.length} | ${takes.filter(x => x.plays).length} | ${fmt(sum(own))} |`);
+      L.push(`| ${t.name}${t.shares ? ` (delar ${treeName(t.shares)})` : ''} | ${t.state} | ${levels} | ${r.counts[`${dealer}/${t.id}`] ?? '–'}${t.opening ? ' + början' : ''} | ${takes.length} | ${takes.filter(x => x.plays).length} | ${fmt(sum(own))} |`);
     }
     L.push('');
     for (const t of trees.filter(t => !t.shares)) {
-      const takes = rows.filter(x => x.tree === t.id && x.group === 'kopplad' && x.kind === 'tagning');
-      if (!takes.length) { L.push(`**${t.name}**: inga kopplade filmer i banken.`, ''); continue; }
-      const by = new Map<string, typeof takes>(); for (const x of takes) by.set(x.step!, [...(by.get(x.step!) ?? []), x]);
-      L.push(`**${t.name}** · steg för steg`, '', '| Steg | Tagningar | Spelas | Primär | Godkänd | Variant | Ej dömd | Inte bra |', '|---|---|---|---|---|---|---|---|');
-      const count = (l: typeof takes, w: string) => l.filter(x => x.verdict.includes(w)).length;
-      for (const [step, l] of [...by].sort((a, b) => a[0].localeCompare(b[0], 'sv'))) L.push(`| ${step} | ${l.length} | ${l.filter(x => x.plays).length} | ${count(l, 'Primär')} | ${count(l, 'Godkänd')} | ${count(l, 'Variant')} | ${count(l, 'ej dömd')} | ${count(l, 'Inte bra')} |`);
-      const derived = takes.filter(x => x.via?.includes('härledd')).length;
-      if (derived) L.push('', `${derived} av filmerna har ingen ankarbild i sin post för någon nod; trädet följer då av noden, eftersom bara ${t.name} har den nivån (står som "härledd ur noden" i trad.json).`);
-      L.push('');
+      const derived = rows.filter(x => x.tree === t.id && x.group === 'kopplad' && x.kind === 'tagning' && x.via?.includes('härledd')).length;
+      if (derived) L.push(`**${t.name}**: ${derived} av filmerna har ingen ankarbild i sin post för någon nod; trädet följer då av noden, eftersom bara ${t.name} har den nivån (står som "härledd ur noden" i trad.json).`, '');
     }
     for (const w of r.ways.filter(w => trees.some(t => t.id === w.tree))) {
       L.push(`**${w.name}** · filmen före spelet`, '', `- Början: \`${w.film}\` (${w.path}), slutar på trädets A1 (\`${w.ends}\`), samma A1 som ${treeName(w.home)}.`,
@@ -544,10 +669,11 @@ export function lasmig(r: Report): string {
       '| Docka | Steg | Träd | MB | Varför |', '|---|---|---|---|---|');
     for (const d of r.dolls) L.push(`| \`${d.id}\` | ${d.step} | ${d.tree ? treeName(d.tree) : 'äldre försök / inget'} | ${fmt(d.mb)} | ${cell(d.why).slice(0, 140)} |`);
   }
-  L.push('', '## Hur verktyget avgör', '', '- Ett ankare hör till trädet när det står bland trädets ankare i registret. En landning (A3) eller ett A1/A2.x med ett kort liggande hör också dit när den är byggd på trädets ankare och inte ersatt eller arkiverad; ett träd som pekar ut sitt eget A3 (A2.3: A3P4C1) tar bara det.',
+  L.push('', '## Hur verktyget avgör', '', '- Ett ankare hör till trädet när det står bland trädets ankare i registret. En landning (A3) eller ett A1/A2.x med ett kort liggande hör också dit när den är byggd på trädets ankare och inte ersatt eller arkiverad; ett träd som pekar ut sitt eget A3 (Tatuerad: A3P4C1) tar bara det.',
     '- Filmens bilder läses ur beställningens `pictures[].from`, jobbets första och sista bild, given den börjar i, källfilmen den är skuren ur och vilofilmen talet ligger på. Filnamn läses aldrig som bevis.',
     '- "Spelas" är spelets eget svar över labbets bank: filmen finns i spelets bank (`gameTakes`) och spelet väljer den också (`usesOf` säger inte "Spelas inte"). En film i banken som aldrig väljs står som "i spelets bank men väljs aldrig". Primär och domarna läses, rörs aldrig.',
-    '- Namnen byggs ur grafens noder som `studio/lib/names.ts` skriver dem, med "A3" framför kortets nod (P4.C1 → A3P4C1). Studions egen visning (`nodeCode`, `edgeName`) skriver i dag "P4C1" utan "A3".');
+    '- Namnen byggs ur grafens noder (`src/dealer-trees.ts` nodeCode), med "A3" framför kortets nod (P4.C1 → A3P4C1), som Karta skriver dem.',
+    '- Måttet: 36 steg per träd (vila, ingång, 16 givar, 16 returer, utgång, hålkortet) från trädets första A2.x-ankare; ett steg finns när en film på det är Primär, Godkänd eller Variant, är prov när en film väntar på dom eller en levererad beställning väntar utanför banken, och saknas annars.');
   return L.join('\n') + '\n';
 }
 

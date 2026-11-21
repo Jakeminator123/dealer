@@ -1,7 +1,8 @@
 "use client";
 
 // The left rail: whose studio it is at the top (DealerSwitch: Pamela | Paow), the views with the active one marked, counts
-// where they help (the chosen dealer's takes waiting for Jakob beside Granska, steps with a Primär beside Karta), whether
+// where they help (the chosen dealer's takes waiting for Jakob beside Granska, beside Karta the number of the tree the game
+// plays, "22/36 steg", from src/dealer-trees.ts countWord, as Karta's row shows it), whether
 // the lab answers, and at the bottom the two pages beside the studio, Ljud and Modeller (same tab). A view's link keeps the
 // chosen dealer in the address. In the online copy (lib/mode.ts) those pages are not there, so their links are not drawn;
 // instead the bot is there: the view
@@ -16,8 +17,10 @@ import { dealerHref } from "../../lib/dealer.ts";
 import { isSnapshot } from "../../lib/mode.ts";
 import { waitingCount } from "../../lib/decisions.ts";
 import { awaitingJakob, primarCount } from "../../lib/verdict.ts";
+import { countWord } from "../../../src/dealer-trees.ts";
 import { useBot } from "../bot/BotProvider";
 import { useDecisions } from "../decisions/useDecisions";
+import { firstTree, useTrees } from "../map/useTrees";
 import { useRequests } from "../requests/RequestsProvider";
 import { cn } from "../ui/cn";
 import { Tooltip } from "../ui/Tooltip";
@@ -30,8 +33,9 @@ export const VIEWS: readonly View[] = [
   // Bordet (2026-11-17): the one view of the table, in the lab and in the copy. Its parts hold what Placering (Kortplan), Scen
   // (Scen, Råfilm, Efterarbete) and Beställ were; their old addresses lead there (/, /scen/, /placering/, /bestall/).
   { href: "/bordet/", label: "Scen & bord", hint: "Ändra scen, bord, kortplan och utdelning; beställ och efterarbeta filmer", icon: LayoutPanelLeft },
-  // Karta holds Primära too since 2026-11-17 (each step with its Primär and secondary films); /primara/ leads there.
-  { href: "/karta/", label: "Karta", hint: "Nodträdet: Primär och sekundära filmer per steg, och hur spelet använder dem", icon: Workflow },
+  // Karta holds Primära too since 2026-11-17 (each step with its Primär and secondary films); /primara/ leads there. Since
+  // 2026-11-21 it draws the dealer's trees, one at a time, against the 36 steps of his measure.
+  { href: "/karta/", label: "Karta", hint: "Nodträden: vilka av de 36 stegen som har film, och vad ett saknat steg behöver", icon: Workflow },
   // Granska holds the proofs too since 2026-11-17 (its part Prov); /prov/ leads there.
   { href: "/granska/", label: "Granska", hint: "Filmer som väntar på ditt beslut, och proven", icon: ScanEye },
   { href: "/material/", label: "Material", hint: "Per dealer: ingångsbild, keystone, ankare, filmer och referenser", icon: Images },
@@ -147,12 +151,16 @@ export function Rail() {
   const onDecisions = trim(pathname ?? "/") === trim(DECISIONS_VIEW.href);
   const decisions = useDecisions();
   const waitingDecisions = decisions.answer ? waitingCount(decisions.answer.decisions) : 0;
-  const { graph, status, error, dealer } = useBank();
+  const { graph, status, error, dealer, readAt } = useBank();
+  // Karta's number is its tree's: the tree the game plays, as Karta's row counts it. Where the lab has no trees (the online
+  // copy) Karta draws the bank's map, and the number is its Primär count, as that map's header says.
+  const trees = useTrees(dealer, readAt);
+  const tree = firstTree(trees.answer);
   const counts = useMemo(() => {
     if (!graph) return null;
     const p = primarCount(graph);
-    return { waiting: awaitingJakob(graph).length, primar: `${p.set}/${p.total} primära` };
-  }, [graph]);
+    return { waiting: awaitingJakob(graph).length, karta: tree ? `${countWord(tree.count)} steg` : trees.state === "off" ? `${p.set}/${p.total} primära` : null };
+  }, [graph, tree, trees.state]);
   const offline = !!error;
 
   return (
@@ -173,7 +181,7 @@ export function Rail() {
               view={view}
               href={dealerHref(view.href, dealer)}
               active={active === view.href}
-              count={view.href === "/granska/" ? (counts && counts.waiting > 0 ? String(counts.waiting) : null) : view.href === "/karta/" ? (counts?.primar ?? null) : null}
+              count={view.href === "/granska/" ? (counts && counts.waiting > 0 ? String(counts.waiting) : null) : view.href === "/karta/" ? (counts?.karta ?? null) : null}
               tone={view.href === "/granska/" ? "brass" : "neutral"}
             />
           </li>
