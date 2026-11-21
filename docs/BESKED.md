@@ -269,6 +269,11 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 
 ## Dealern och ankarna
 
+- **S är sätet, kameravinkeln ett ankare ses ifrån** (2026-11-21, kväll): "Oklart om vi har och använder ankare för
+  respektive plats. Detta vill jag vi ska återkomma till, men eller låt oss kalla detta för S = Seat. Med andra ord
+  ska det kunna vara 'S2-A2.2', det är alltså kameravinkel/seat för spelare 2 som ser på en vinkel av ankaret där
+  dealern är i en position för att ta ut kortet." Läst så: P är spelaren som får kortet (A3P2C1), S är sätet som
+  bilden ses ifrån (S2-A2.2); utan S är det den raka kameran. Inget byggs för sätena nu: han vill återkomma.
 - **Flera namngivna träd per dealer, löst material för sig, och en Blob för både datorn och nätet** (2026-11-21,
   kväll): "man ska kunna ha flera träd per dealer. men att de olika träden får heta saker.. kanske kan man ha 3 träd
   per dealer + allt annat löst material som man sedan ska kunna radera enkelt. Vi kan göra så att vi lokalt och från
