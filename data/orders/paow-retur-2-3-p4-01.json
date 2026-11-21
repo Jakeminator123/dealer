@@ -1,0 +1,173 @@
+{
+  "schemaVersion": 1,
+  "title": "Paow · Prov: höger hand tillbaka till skon · A3P4C1",
+  "summary": "Gör en film av Paow: från kortet på plats 4 till ankare 2.3.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "RETUR-2.3",
+    "label": "Prov: höger hand tillbaka till skon",
+    "edge": "P4.C1>READY-C",
+    "shape": "ONE_WAY",
+    "cutInto": [
+      "P4.C1>READY-C"
+    ],
+    "makes": null
+  },
+  "motion": {
+    "grip": "PINCH",
+    "hand": "RH",
+    "pass": false,
+    "turn": false,
+    "flipAxis": null,
+    "target": "P4.C1",
+    "side": "FRONT",
+    "fromPlan": false
+  },
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · A3P4C1 (ur film från A2.3) (A3-kandidat)",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-retur-2-3-p4-01/first.png",
+      "sha256": "d553de4fb8a37b382fe560ab93c333c168685341f851b3869c439671263089e8",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-a3-p4-ur-film-1120",
+        "path": "assets/orders/paow-giv-2-3c-p4-pilot-02/last.png",
+        "note": "Fryst slutbild ur den godkända given"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Slutbild · Paows A2.3 + kortet öppet på plats 4",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-retur-2-3-p4-01/last.png",
+      "sha256": "507de700452506eb9a787dbe90754f6e34f9a4464eaa1570287f48db0a3db608",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-ankare-2-3-c",
+        "path": "assets/anchors/paow-ankare-2-3-c/anchor.png",
+        "note": "Vänster hand uppifrån på kortet, rak bål (gäller)",
+        "built": "ankare 2.3 + kortet P4.C1 där planen säger"
+      },
+      "waits": null,
+      "drawn": {
+        "target": "P4.C1",
+        "side": "FRONT",
+        "as": "verkligt perspektiv: ett verkligt kort genom bordets lins, formen 87 % (src/card-plan.ts)",
+        "plan": {
+          "path": "placements/default.json",
+          "sha256": "461541d5db823936e5e29a32970c2b60e8a88b9352d213cfc8e094f6e7747a62",
+          "updatedAt": "2026-11-21T18:16:55.501Z"
+        },
+        "texture": {
+          "video": "assets/motions/pamela-p4-c1-plan-return-idle-01/source.mp4",
+          "frame": 89,
+          "sha256": "0b3cba9be4a969334bf1ba23623b80be6d0bd119a3c4dd8236db27145d479aa7",
+          "quadFrom": "assets/anchors/pamela-idle-p4-c1-plan-01/receipt.json"
+        },
+        "quad": [
+          [
+            820.4,
+            1066.2
+          ],
+          [
+            893.9,
+            1066.2
+          ],
+          [
+            898.3,
+            1138.1
+          ],
+          [
+            813.8,
+            1138.1
+          ]
+        ],
+        "centre": [
+          856.6,
+          1102.2
+        ],
+        "measured": {
+          "centre": [
+            856.7,
+            1103.5
+          ],
+          "area": 6180,
+          "box": [
+            85,
+            75
+          ],
+          "changedElsewhere": 0
+        },
+        "measuredOffsetPx": 1.3,
+        "mark": {
+          "cross": [
+            255,
+            120,
+            200
+          ],
+          "dot": [
+            225,
+            30,
+            35
+          ]
+        }
+      }
+    }
+  ],
+  "reference": {
+    "status": "INGEN",
+    "why": "Ingen referensfilm vald."
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "kling-4",
+    "params": {
+      "resolution": "1080p",
+      "duration": 3
+    }
+  },
+  "prompt": {
+    "template": "film-retur-kort@13",
+    "style": "KORT",
+    "text": "Locked camera, one continuous shot. Her hand on the blue card lifts off it, and the card stays where it lies. That hand glides back low over the felt, palm down, and settles at the shoe beside her other hand, as in the last frame.",
+    "sha256": "f84d2e1d9be3017061df550ea696e75c608064db50415b7f0c33c51778d1f0fb",
+    "extra": null,
+    "middle": false,
+    "faceMark": true
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 64,
+    "total": 64,
+    "worstPerTake": 71,
+    "worstTotal": 71,
+    "basis": "21,3 krediter per s × 3 s. Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12."
+  },
+  "limits": {
+    "maxCredits": 71,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Recept retur-2.3 (prov).",
+    "Provundantag: A3-kandidaten A3P4C1 (ur film från A2.3) används som första bild, byte för byte ur den godkända givens slutbild.",
+    "Returprovet är en tagning och kan godkännas; en serie väntar tills provet har hållit."
+  ],
+  "createdBy": "huvudagenten, tools/order-new.ts",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-21T21:50:00.663Z",
+    "orderSha256": "503d17250450c88fff383379d6733eec6cb5ad513850288afe985cc880b524be",
+    "mandate": "Jakob 2026-11-21: beställningar på det nya sättet genom kommandon tills Paows träd är fullt. Huvudagenten dealer-b0 godkänner inom mandatet dealer-b0-20261121. Returprovet A3P4C1 till A2.3, en tagning."
+  },
+  "status": "GODKÄND",
+  "id": "paow-retur-2-3-p4-01",
+  "created": "2026-11-21T21:50:00.146Z"
+}

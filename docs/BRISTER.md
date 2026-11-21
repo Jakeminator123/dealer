@@ -140,13 +140,17 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 ## Filmerna och banken
 
 - **En giv utan sista bild kan lägga kortet fel** (2026-11-21, ordern `paow-giv-2-3-p5-02`). Dockan landade på
-  kortplanens P5C1, men filmmodellen lade kortet 32 bildpunkter närmare henne; givarna till P1C1 och P4C2, beställda
-  på samma sätt, landade 4 och 8 bildpunkter från platsen. Efterarbetets kontroll fäller en sådan tagning (gränsen är
+  kortplanens P5C1, men filmmodellen lade kortet 32 bildpunkter närmare henne; givarna till P1C1, P2C1, P3C1 och P4C2,
+  beställda på samma sätt, landade 1,5 till 9 bildpunkter från platsen. Efterarbetets kontroll fäller en sådan tagning (gränsen är
   15). Stänger: A3P5C1 gjord som stillbild först, och given beställd med den som sista bild.
 - **Dockans vändning görs med fingrarna** (2026-11-21). I dockfilmerna `svep24d` från A2.3 svänger kortet under
   stilla fingrar med handryggen mot kameran, mitt i flykten (3–5 kortbredder från platsen). Filmmodellen kopierar det:
   kortet blir halvgenomskinligt i fyra till sex rutor kring kantrutan. Jakobs regel är att handleden vänder kortet.
   Stänger: en omgjord dockfilm där handleden vrids och vändningen sker nära platsen, prövad på en plats först.
+- **Landningsverktyget stoppar ytterplatserna** (2026-11-21). A3P1C1 och A3P2C1 ur filmernas slutruta faller på
+  kontrollen av bildrutan: hon lutar sig mot platsen, så huvud och axlar täcker ankarets till 58 och 69 % (gränsen är
+  75 %), och hennes kontur korsar skarven vid skon. Kontrollen är inte sänkt. Stänger: ett beslut om hur en lutning
+  mot en ytterplats ska mätas (till exempel mot dockans hållning för platsen), och en skarv som följer armen dit.
 - **H24-P4 är en Variant, ingen färdig helkedja.** Given fick 4/5 av huvudagent och oberoende granskare; en rosa fläck
   intill skon finns även i det frysta A3-slutankaret. Lokal lagning blev inte säker. Ingång, retur och nycklad spelbild
   är inte godkända som kedja. Bevis: `assets/orders/paow-giv-2-3-p4-h24-03/take-1/review/review.md`.
