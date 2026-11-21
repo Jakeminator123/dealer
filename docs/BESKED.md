@@ -269,6 +269,18 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 
 ## Dealern och ankarna
 
+- **Flera namngivna träd per dealer, löst material för sig, och en Blob för både datorn och nätet** (2026-11-21,
+  kväll): "man ska kunna ha flera träd per dealer. men att de olika träden får heta saker.. kanske kan man ha 3 träd
+  per dealer + allt annat löst material som man sedan ska kunna radera enkelt. Vi kan göra så att vi lokalt och från
+  sajten på och via vercel kör från samma blobb - den nya." Som exempel på parallella träd nämner han det som spelas
+  i Casino och "de kanske aningen annorlunda klipp som finns i slutet på PAOW-filmens ingång till Casinot". Läst så:
+  träden står med namn i ett register och filmerna räknas ur ankarna; nya Bloben bär de träd som spelas, ingången
+  med; löst material listas men raderas först på hans ord, och det han har dömt bra hålls isär från resten. Att
+  datorn läser samma Blob utreds först; uppladdning kräver hans ord.
+- **A3 är ankaret där ett kort har landat, och det skrivs ihop med spelare och kort** (2026-11-21, kväll): "Vad menar
+  du A3 är? nej alltså 'A3P2C1' är t.ex. 'Ankare 3, Player 2, card 1'". Läst så: A3 är en nivå i trädet med ett
+  ankare per spelare och kort (A3P1C1 … A3P7C2, och dealerns); det skrivs ihop, utan punkt eller mellanrum, och bara
+  "A3" eller "A3 per plats" säger för lite.
 - **Paow är dealern, Pamela är pausad** (2026-11-12): "Vi pausar Pamela när vi är klara. Sedan går vi vidare med Paow."
   och om Paows utseende "jag vill ha de yngre och nättare bilderna". Om Pamelas filmer på sajten (2026-11-17): "Jag
   vill ha kvar dem." Pamelas öppna frågor tas upp först när han häver pausen.
