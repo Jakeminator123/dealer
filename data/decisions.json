@@ -31,7 +31,11 @@
       ],
       "asked": "2026-11-20",
       "from": "film",
-      "answer": null
+      "answer": {
+        "value": "ja",
+        "note": "",
+        "at": "2026-11-21T14:56:54.792Z"
+      }
     },
     {
       "id": "paow-ankare-2-3-c",
@@ -58,7 +62,11 @@
       ],
       "asked": "2026-11-20",
       "from": "film",
-      "answer": null
+      "answer": {
+        "value": "ja",
+        "note": "",
+        "at": "2026-11-21T14:56:35.093Z"
+      }
     },
     {
       "id": "kortet-i-handen-provet-i-spelet",
@@ -85,7 +93,11 @@
       ],
       "asked": "2026-11-20",
       "from": "kortets undersökning",
-      "answer": null
+      "answer": {
+        "value": "nej",
+        "note": "Jag vet faktist inte och vad som påverkas.. men jag ser att framförallt att kortets handrygg fortfarande darrar och så vidare.. Har inte vi jobbat och gjort om saker som skulle lösa sånt?",
+        "at": "2026-11-21T14:59:18.527Z"
+      }
     },
     {
       "id": "neutral-mun-tre-repliker",

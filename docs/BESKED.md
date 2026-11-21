@@ -301,6 +301,11 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   en tagning inom huvudagentens tak. Kandidaten, händerna, ansiktet och bilden i spelets storlek märkte han som Bra i
   Prov `paow-ankare-2-3` 2026-11-18, kl. 02.24, och i Beslut kl. 02.39 svarade han "Ja, registrera" på bilden med
   omgjort efterarbete (`assets/anchors/paow-ankare-2-3-a/`).
+- **Ankare 2.3 görs om, och C gäller** (2026-11-20, kl. 14.55, när piloten till plats 4 från B tappade vänster arm):
+  "Det är möjligt att hela grunden för det här ankaret är fel och taget utifrån en vinkel som jag testade. Kanske ska
+  du göra om hela ankaret, `2.3`, och sedan utifrån det göra allting på nytt." På kortet `paow-ankare-2-3-c` i Beslut
+  (2026-11-21, kl. 15.56) svarade han "Ja, använd C": C, en riktig filmruta med rak bål, gäller i
+  `data/media-roles.json` och B är ersatt. Givarna till varje plats görs från C.
 - **Dealern från en annan stol** (Prov `dealer-fran-stol-1`, 2026-11-18, kl. 02.46): första bilden "Ser "okej" ut som
   referensmaterial till en tagning från första s isidan typ", och om sista bilden: "tänk på att detta är ovanifrån och
   inte från samam vinkel". Vägen med en stillbild från sidan och dockans film från samma öga får fortsätta, men sidans
@@ -360,6 +365,10 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   angående utdelning till de olika positionerna. Alternativt kan du skapa en 15-sekunders film där hon delar ut till
   kort nummer ett i alla positioner." En giv beställs på 3 s (det kortaste Kling 4 tar), och filmen med kort ett till
   alla platser prövas som en tagning.
+- **Given till plats 4 från 2.3 C, tre sekunder** (Beslut 2026-11-21, kl. 15.56, `paow-giv-2-3c-p4-pilot-02`): på
+  frågan om given är bra nog att göra övriga platser likadant svarade han "Ja, tre sekunder är lagom". Övriga platser
+  görs med samma metod: en dockfilm där vänster hand går lågt hem, och Kling 4 på 3 s med första och sista bild.
+  Svaret "Nej, vänster hand väntar i luften" (granskarens anmärkning, en halv sekund vid skon) fanns och valdes inte.
 - **Given från 2.3 till plats 5, från två håll** (2026-11-18, cirka kl. 02.45): "Skapa en video när den här dealen går
   till plats nummer fem, kort ett. Jag vill ha en tagning från ankare 2.3 till den här positionen, eller
   kortpositionen ett, och spelare fem. Jag vill se detta från en sidovinkel och en rakt fram." Två tagningar av samma

@@ -9,29 +9,30 @@ gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.
 - Metoden som håller: en giv bara dit på Kling 4 med första och sista bild och 3D-banans dockfilm som referensfilm, i
   UTDRAGEN takt (given över drygt 2 s, en obruten rörelse). Filmmodellen kopierar bilderna och dockfilmen; två extra
   meningar ändrade ingenting (pilot-03, 2026-11-20).
-- Ankare 2.3: A är arkiverad. B, ett montage efter Jakobs provbild, föll 2026-11-20: underarmen saknas och axellinjen
-  lutar 5,7° mot ankare 1. C (`paow-ankare-2-3-c`) är en riktig ruta ur en film från ankare 1 som dockans raka ingång
-  styrde; granskaren gav 4/5. Landningen för plats 4 är `paow-a3-p4-ur-film-1120`, ur en film från C;
-  `paow-a3-p4-23b` och `-23c` är byggda på B och används inte.
-- Givar från C till plats 4 (Prov `paow-giv-2-3c-p4-pilot-20261120`): pilot 01 med dockan `svep24c` föll hos
-  granskaren (3/5), vänster hand hängde så att armen såg avklippt ut. Pilot 02 med `svep24d`, där handen går lågt
-  hem, fick 4/5 och väntar på Jakob i Beslut; vänster hand väntar en halv sekund vid skon.
+- Ankare 2.3: C (`paow-ankare-2-3-c`) gäller sedan Jakobs "Ja, använd C" i Beslut 2026-11-21: en riktig ruta ur en
+  film från ankare 1 som dockans raka ingång styrde. A är arkiverad; B, ett montage, är ersatt (underarmen saknas,
+  axellinjen lutar 5,7°). Landningen för plats 4 är `paow-a3-p4-ur-film-1120`, ur en film från C; `paow-a3-p4-23b`
+  och `-23c` är byggda på B och används inte.
+- Givar från C till plats 4 (Prov `paow-giv-2-3c-p4-pilot-20261120`): pilot 02 med dockan `svep24d`, där vänster
+  hand går lågt hem, har Jakobs ja (Beslut 2026-11-21: "Ja, tre sekunder är lagom"); granskaren gav 4/5. Pilot 01
+  med `svep24c` föll (3/5): vänster underarm försvann.
 - Äldre underlag: given till plats 4 och 1 från 2.3 A (Prov `giv-fran-2-3-p4-p1`) fick Jakobs Inte bra, kortet
   flippar utanpå fingrarna. P4.C2 Cykel01 är vald framför Cykel02 (bevis i `paow-c2-film-regrip-20261118`).
 - En sidovinkel görs av en färdig film i Runways videoredigerare (`edit_video`): plats 4 cirka 40° (Prov
   `sidovinkel-ur-film`, Jakob: "mycket bra"). Vinkeln och kortets plats träffas inte exakt.
 - Den tatuerade uppsättningen är förstahandsvalet; ankare 2.1 och 2.2 och hela banken har de äldre händerna och
   spelas än.
-- Pengar: mandatet `dealer-37-20261120` i `data/order-policy.json` gäller till 2026-11-21 12.00 UTC, 3 000 krediter
-  och 800 per timme, genom API-nyckeln (utvecklarprojektet; Runway-MCP är inte inloggat). Använt 2026-11-20: 669.
-  Saldo 3 480 kl. 17.07 UTC; 91 krediter drogs samma dag utan kvitto i projektets liggare.
+- Pengar: ram 3 000 krediter genom API-nyckeln (utvecklarprojektet; Runway-MCP är inte inloggat), 800 per timme.
+  Använt 2026-11-20: 669; saldo 3 480 kl. 17.07 UTC (91 drogs samma dag utan kvitto i projektets liggare). Mandatet
+  `dealer-37-20261120` löpte ut 2026-11-21 12.00 UTC och förnyas av huvudagenten inför seriens beställningar.
 
-**Nästa steg.** Ett mål i taget: EN giv till plats 4 som Jakob godkänner i spelets storlek.
-1. Jakobs svar på pilot 02 (med takten: 3 eller 4 s) och på ankare C. Fäller han den väntande vänsterhanden: en
-   dockfilm där handen går hem direkt när den släpper kortet (ruta 29), och en ny tagning.
-2. Därefter övriga platser: varje plats behöver en dockfilm (svepet finns bara för P4.C1) och en landningsbild ur en
-   film. Sedan ingången 1 → 2.3 klippt ur ankarets film, returen 2.3 → 1, fem kameravinklar (`/vinklar.html`),
-   hålkortet, andra kortet och dealerns tredje kort.
+**Nästa steg.** Samma giv från C till övriga platser: P1, P2, P3, P5, P6 och P7.
+1. En dockfilm per plats som `svep24d` (3D-banan, gratis), granskad ruta för ruta: vänster underarm sedd från sidan,
+   handen plan och låg, rak bål.
+2. Per plats: en tagning utan sista bild för landningen, landningen (`tools/landing-make.ts`), och givens tagning med
+   första och sista bild. Varje omgång granskas oberoende och döms åt Jakob (`review-put`), inte i hans kö.
+3. Sedan returerna från platserna till 2.3, ingången 1 → 2.3 klippt ur ankarets film, returen 2.3 → 1, fem
+   kameravinklar (`/vinklar.html`), hålkortet, andra kortet och dealerns tredje kort.
 
 **Väntar på Jakob.** Aktuella frågor finns i Beslut; filmdomar lämnas i Granska.
 
