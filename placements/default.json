@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "pamela-table",
   "space": "image-normalized-bottom-up",
-  "updatedAt": "2026-11-18T00:35:37.644Z",
+  "updatedAt": "2026-11-21T18:16:55.501Z",
   "shoe": {
     "native": {
       "u": 0.733,
@@ -291,11 +291,11 @@
         "takeHand": "LH",
         "startSide": "BACK",
         "endSide": "FRONT",
-        "pass": false,
+        "pass": true,
         "turn": true,
-        "grip": "PINCH",
-        "turnAt": "AIR",
-        "flipAxis": "FREE"
+        "grip": "DRAG",
+        "turnAt": "PLACE",
+        "flipAxis": "LONG_EDGE"
       },
       "material": {
         "bend": 0.14,
@@ -581,6 +581,42 @@
         "endSide": "BACK",
         "pass": false,
         "turn": false,
+        "grip": "PINCH",
+        "turnAt": "AIR",
+        "flipAxis": "FREE"
+      },
+      "material": {
+        "bend": 0.14,
+        "gloss": 0.35
+      }
+    },
+    "D.C3": {
+      "geometry": {
+        "native": {
+          "u": 0.6063528077141237,
+          "v": 0.21057118499573746,
+          "width": 0.0492,
+          "height": 0.06119999999999999,
+          "angle": 0,
+          "taper": 0.87,
+          "reviewed": false
+        },
+        "portrait": {
+          "u": 0.5660000000000001,
+          "v": 0.49,
+          "width": 0.06,
+          "height": 0.04,
+          "angle": 0,
+          "taper": 0.9,
+          "reviewed": false
+        }
+      },
+      "intent": {
+        "takeHand": "LH",
+        "startSide": "BACK",
+        "endSide": "FRONT",
+        "pass": false,
+        "turn": true,
         "grip": "PINCH",
         "turnAt": "AIR",
         "flipAxis": "FREE"

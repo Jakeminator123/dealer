@@ -126,6 +126,20 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 
 ## Labbet och studion
 
+- **Bordet ska byggas om så att en beställning går att kontrollera, och hela vyn genomlysas** (2026-11-21, kväll, två
+  meddelanden). Först, om plats 4 kort 2: "Det står att ingen metod finns, och det står 'prövas' och lite annat. Jag ser
+  att det inte finns någon slutbild för hur Ankare 3 ska se ut, så det måste åtgärdas … det känns som att det är
+  krångliga ord … när du fått en rapport från honom vill jag att du bygger om allt så att vi verkligen kan verifiera att
+  allt blir korrekt. Jag vill behålla enkelheten och att det ska vara logiskt." Sedan: "gå igenom UI och UX för denna
+  sida och undersida. En total genomlysning ska göras efter felaktigheter/legacy och skit. Vill hålla allt enkelt men
+  allt måste vara logiskt och bra." Han vill också att gammalt och felaktiga sökvägar raderas, att testerna inte låser
+  det nya ("om inte radera alla tester, se så de inte låser nytt bra saker"), och att metoder och texter granskas så
+  att texterna blir "så bra som möjligt utan att vara onödigt avancerade". Ordningen han gav: en PR för allt, en
+  utomstående buggranskare på den, och sammanslagning "när vi kommit till en nivå vi känner oss nöjda med". Därefter
+  en vy där de olika nodträden syns, och sist beställningar "på det nya sättet och helst genom typ kommandon" som
+  följer studions nya form, tills Paows träd är fullt: "bara en giv per kort för respektive spelare", eftersom han
+  tänker ordna kortförflyttningar senare. Huvudagenten orkestrerar ("Du ska nu mest agera orchestrator").
+
 - **Korten i Beslut är bara för provmaterial** (2026-11-21, kväll, till sessionen dealer-37, om kortet "Ska nätet få en
   ny Blob med bara det aktiva trädet per dealer?"): "Altså allt som har att göra med en AI på sidan så att säga ska bara
   göras för provmaterial av filmer och sånt. Sånt här ska den inte ha att göra med alls!" Läst så: ett kort i Beslut
@@ -277,6 +291,14 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   proven är 2 000 krediter i stället för 260; varje anrop står i en liggare, och kostnaden berättas efter varje omgång.
 
 ## Dealern och ankarna
+
+- **Släpet med handbyte ges från A2.3, och A2.2 är som A2.1 fast med tatueringarna** (2026-11-21, kväll): "då ska den
+  där beställningen med släpande hand göras från A2.3. Du kan få ändra det till A2.3 då. Men A2.2 ska vara som 2.1 fast
+  med tatueringarna." Bakgrund: han trodde att A2.3 var borttaget; det han arkiverade i Karta 2026-11-19 var ett äldre
+  försök, och A2.3 är bilden `paow-ankare-2-3-c` som han sa ja till samma dag. Läst så (huvudagentens tolkning): ett
+  kort vars plan säger handbyte beställs från A2.3, där vänster hand drar ut kortet och höger lägger det; A2.2 i den
+  tatuerade uppsättningen (`paow-ankare-2-2-blick-a`, som han satte till gäller 2026-11-20) är enhandsgiven, samma roll
+  som A2.1. Hur uppsättningarna visas hör till trädvyn.
 
 - **S är sätet, kameravinkeln ett ankare ses ifrån** (2026-11-21, kväll): "Oklart om vi har och använder ankare för
   respektive plats. Detta vill jag vi ska återkomma till, men eller låt oss kalla detta för S = Seat. Med andra ord
