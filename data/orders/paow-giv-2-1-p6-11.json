@@ -162,5 +162,10 @@
   "created": "2026-11-18T00:28:30.655Z",
   "createdBy": "Jakob, studions vy Beställ",
   "approval": null,
-  "status": "UTKAST"
+  "status": "AVBRUTEN",
+  "setAside": {
+    "at": "2026-11-21T20:15:01.530Z",
+    "by": "huvudagenten",
+    "why": "Utkast från 2026-11-18 med handbyte från A2.1. Sedan Jakobs besked 2026-11-21 går handbyte från A2.3; utkastet ska inte stå som klart att godkänna."
+  }
 }
