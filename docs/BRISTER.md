@@ -141,7 +141,7 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 
 - **En giv utan sista bild kan lägga kortet fel** (2026-11-21, ordern `paow-giv-2-3-p5-02`). Dockan landade på
   kortplanens P5C1, men filmmodellen lade kortet 32 bildpunkter närmare henne; givarna till P1C1, P2C1, P3C1 och P4C2,
-  beställda på samma sätt, landade 1,5 till 9 bildpunkter från platsen. Efterarbetets kontroll fäller en sådan tagning (gränsen är
+  beställda på samma sätt, landade 1,5 till 13 bildpunkter från platsen. Efterarbetets kontroll fäller en sådan tagning (gränsen är
   15). Stänger: A3P5C1 gjord som stillbild först, och given beställd med den som sista bild.
 - **Dockans vändning görs med fingrarna** (2026-11-21). I dockfilmerna `svep24d` från A2.3 svänger kortet under
   stilla fingrar med handryggen mot kameran, mitt i flykten (3–5 kortbredder från platsen). Filmmodellen kopierar det:

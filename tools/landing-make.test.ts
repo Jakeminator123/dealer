@@ -113,6 +113,14 @@ test('at a seat near the shoe the laying hand is never taken for the hand at the
   assert.deepEqual(at(made.rgb, 1480, 945), SKIN, 'the laying hand below the shoe stays');
 });
 
+// A frame where the film has laid the card and her hand has already left it is no landing picture: the card's own white
+// rim, near the edge closest to her, was counted as fingertips (885 pixels against the least 120).
+test('a card the film laid, with its white rim, is not her fingertips', () => {
+  const RIM = [238, 226, 224], anchor = picture(HEAD), source = picture(HEAD, [RIM, 870, 1054, 80, 82], [BLUE, 876, 1060, 68, 70]);
+  const c = checkLanding(source, anchor, anchor, QUAD, WINDOW);
+  assert.ok(c.fails.some((f) => /inga fingertoppar/.test(f)), c.fails.join('; '));
+});
+
 // New in round three: on frame 68 the white rim of the card the film laid, warm from her skin beside it, was kept as skin (85
 // pixels with R, G and B over 200), and the line where her fingertips met it stayed pink.
 test('the white rim of the source\'s card becomes felt round the drawn card, her fingertips stay, and their edge on the rim meets the felt', () => {

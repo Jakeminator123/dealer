@@ -360,7 +360,8 @@ export function checkLanding(source: Rgb, anchor: Rgb, result: Rgb, quad: readon
   let tipsPixels = 0;
   for (let y = Math.max(0, Math.floor(Math.min(...ys) - L.tipsRadius)); y <= Math.min(H - 1, Math.ceil(Math.max(...ys))); y++) for (let x = Math.max(0, Math.floor(Math.min(...xs) - L.tipsRadius)); x <= Math.min(W - 1, Math.ceil(Math.max(...xs) + L.tipsRadius)); x++) {
     const i = y * W + x;
-    if (distToSegment(x, y, edge) <= L.tipsRadius && !isScreen(source, i) && !isCardBlue(source, i)) tipsPixels++;
+    // The card the film laid is not her fingertips: its blue, its white rim and its marks are left out of the count.
+    if (distToSegment(x, y, edge) <= L.tipsRadius && !isScreen(source, i) && !isCardBlue(source, i) && !isCardLike(source, i) && !isCardMark(source, i)) tipsPixels++;
   }
   const win = new Uint8Array(W * H), [wx, wy, ww, wh] = windowBox;
   for (let y = wy; y < wy + wh; y++) for (let x = wx; x < wx + ww; x++) win[y * W + x] = 1;
