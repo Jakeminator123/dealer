@@ -2,15 +2,14 @@
 
 // const editor = useSceneEditor(firstLook): the scene editor of Bordet's Scen, Råfilm and Efterarbete (components/bordet/SceneBody.tsx), without a scene of its own.
 // The view's stage builds the one scene and hands it here (editor.onScene); the editor drives that same object: every key
-// of its state as a control (studio/lib/scene-keys.ts) in the panel, presets and his ten numbered places (Profilval 1–10)
-// in the bar over the scene (PresetBar) with basgrund, what the game shows today, as the baseline (a key that differs from
-// it carries a brass dot and its own "återställ"), "Jämför med basgrund" (or hold B), the objects on the table and the
-// cards' bend and gloss. Loading a preset or a place makes it the look's origin: what has changed since is measured from
-// it, and the bar's "Återställ" for a place goes back to it. Nothing here changes the game: a look reaches game.html only
-// when Jakob has approved it and someone moves it there; "Spela i Casino" shows it there to try. The look travels in the
-// address (address.ts): editor.lookText says it, and editor.ask takes a new one from outside. Saved: his own presets and
-// places (data/scene-presets/, on his click; a place is the preset profilval-<n>) and, on a confirmed click, the cards'
-// bend and gloss in his placement plan. In the online copy nothing is saved.
+// of its state as a control (studio/lib/scene-keys.ts) in the panel (Scen: all groups but the cards' and chips'; Efterarbete:
+// only those), every saved look as a chip in the bar over the scene (PresetBar) with basgrund, what the game shows today, as
+// the baseline (a key that differs from it carries a brass dot and its own "återställ"), "Jämför med basgrund" (or hold B),
+// the objects on the table and the cards' bend and gloss. Loading a preset makes it the look's origin: what has changed
+// since is measured from it. Nothing here changes the game but "Använd i Casino", on his click; "Prova i Casino" shows the
+// look there to try. The look travels in the address (address.ts): editor.lookText says it, and editor.ask takes a new one
+// from outside. Saved: his own presets (data/scene-presets/, on his click, "Spara som…"), Casino's ("Använd i Casino") and,
+// on a confirmed click, the cards' bend and gloss in his card plan. In the online copy nothing is saved.
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import type { PlacementPlan } from "../../../src/placement-model.ts";
 import type { RegisterRoom } from "../../../src/scene3d-room.ts";
@@ -20,7 +19,7 @@ import { casinoAddress } from "../../lib/casino.ts";
 import { isSnapshot } from "../../lib/mode.ts";
 import { placesOf } from "../../lib/rounds.ts";
 import { BUILT_BLUR, sameValue, type GroupId, type SceneKey } from "../../lib/scene-keys.ts";
-import { BASE, BRED_LINS, CASINO_PRESET, SHIPPED, differences, effective, initialSceneState, isShipped, matchPreset, patchOf, scenePageAddress, slotLabel, slotOf } from "../../lib/scene-presets.ts";
+import { BASE, BRED_LINS, CASINO_PRESET, SHIPPED, differences, effective, initialSceneState, isShipped, matchPreset, patchOf, scenePageAddress } from "../../lib/scene-presets.ts";
 import type { Scene } from "../stage";
 import { SegmentedControl, Skeleton, Switch, useToast } from "../ui";
 import { askedPart, lookPart, type LookAsk } from "./address.ts";
@@ -28,7 +27,6 @@ import { CardMaterial, useCardMaterial } from "./CardMaterial";
 import { ControlPanel, type Extra } from "./ControlPanel";
 import { createExtras, type Extras, type ExtrasNote, type ExtrasState, type TrayModel } from "./extras.ts";
 import { KeyRow } from "./KeyControl";
-import { NotYet } from "./NotYet";
 import { createPatcher } from "./patcher.ts";
 import { PresetBar } from "./PresetBar";
 import { deletePreset, listPresets, savePreset, type Preset } from "./presetApi.ts";
@@ -234,7 +232,7 @@ export function useSceneEditor(firstLook: () => LookAsk, page: { geometri?: stri
   // Casino's preset carries the perspective Scen shows, however it is saved (Jakob 2026-11-21): Bred lins as geometri=kontrakt,
   // Standard as no word at all, so that a file without it means Standard as before. His other presets carry no perspective.
   const bred = page.geometri === BRED_LINS;
-  // A named preset or a place (name profilval-<n>): revision is the one last read when the name exists, null for a new one.
+  // A named preset: revision is the one last read when the name exists, null for a new one.
   const saveAs = async (name: string, label: string, about: string, revision: string | null) => {
     if (!current || !defaults) return;
     try {
@@ -245,10 +243,8 @@ export function useSceneEditor(firstLook: () => LookAsk, page: { geometri?: stri
     }
     await reloadPresets();
     setOrigin(name);
-    const place = slotOf(name);
-    toast(place ? { tone: "ok", title: `Sparat i ${slotLabel(place)}` } : { tone: "ok", title: `Sparat som ${label}`, detail: "Finns bland förvalen; adressen pekar på det." });
+    toast({ tone: "ok", title: `Sparat som ${label}`, detail: "Finns bland förvalen." });
   };
-  // A named preset or a place ("Töm"), against the revision last read.
   const useInCasino = async () => {
     if (!canSave || savingCasino || !presetsRead || !current || !defaults) return;
     setSavingCasino(true);
@@ -261,6 +257,7 @@ export function useSceneEditor(firstLook: () => LookAsk, page: { geometri?: stri
       setSavingCasino(false);
     }
   };
+  // One of his own, against the revision last read.
   const remove = async (p: Preset) => {
     if (!p.revision) return;
     try {
@@ -348,7 +345,6 @@ export function useSceneEditor(firstLook: () => LookAsk, page: { geometri?: stri
   const bar = (
     <PresetBar
       presets={presets}
-      listed={presetsRead}
       active={active}
       origin={originPreset?.name ?? BASE}
       changed={changedFromOrigin}
@@ -362,23 +358,15 @@ export function useSceneEditor(firstLook: () => LookAsk, page: { geometri?: stri
       onResetAll={() => pick(BASE)}
     />
   );
-  // The panel with only what is laid over the film (Bordet's Efterarbete): the cards' and chips' group.
+  // The panel with only what is laid over the film (Bordet's Efterarbete): the cards' and chips' group. Their look is changed
+  // only there (Jakob 2026-11-17, "Knappen Efterarbete"), so Scen's panel has every group but that one.
   const afterwork =
     current && baseline ? (
       <ControlPanel current={current} baseline={baseline} differ={differ} rooms={rooms} extras={extraRows} onChange={change} onReset={(k) => change(k, baseline[k])} only={["kort"]} />
     ) : null;
   const panel =
     current && baseline ? (
-      <ControlPanel
-        current={current}
-        baseline={baseline}
-        differ={differ}
-        rooms={rooms}
-        extras={extraRows}
-        onChange={change}
-        onReset={(k) => change(k, baseline[k])}
-        footer={<NotYet />}
-      />
+      <ControlPanel current={current} baseline={baseline} differ={differ} rooms={rooms} extras={extraRows} onChange={change} onReset={(k) => change(k, baseline[k])} without={["kort"]} />
     ) : (
       <div className="flex flex-col gap-3 p-4" aria-busy>
         <Skeleton className="h-8 w-full rounded-md" />

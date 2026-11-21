@@ -262,7 +262,8 @@ const StepBox = memo(function StepBox({
         <span className="flex min-w-0 items-center gap-1.5">
           <TakeChip take={take} size="sm" />
         </span>
-        <span className={cn("truncate text-2xs", seg.why === "LOCKED" ? "text-brass-hi/90" : "text-faint")}>{WHY_LABEL[seg.why]}</span>
+        {/* why this take plays; "primär" is left out, the verdict chip above already says Primär */}
+        {seg.why === "PRIMARY" ? null : <span className={cn("truncate text-2xs", seg.why === "LOCKED" ? "text-brass-hi/90" : "text-faint")}>{WHY_LABEL[seg.why]}</span>}
       </span>
     </button>
   );

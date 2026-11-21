@@ -1,10 +1,11 @@
 "use client";
 
 // <DealerSwitch />: whose studio this is, at the top of the rail under the mark: one button per dealer the bank holds takes
-// of (Paow | Pamela: a paused dealer after the others, lib/dealer.ts dealerEntries), the chosen one marked, and beside a
-// name the number of takes waiting for Jakob's word when there are
-// any. A paused dealer (data/dealers.json) says so quietly: a small pause sign, the words in the tooltip. A click chooses
-// the dealer for every view (lib/bank.ts setDealer: the address and the memory follow).
+// of, the chosen one marked, and beside a name the number of takes waiting for Jakob's word when there are any. A paused
+// dealer (data/dealers.json; Pamela) shows only while she is the chosen one (Jakob 2026-11-18: "en pausad dealer visas
+// bara när en adress nämner den"): an address names her (?dealer=pamela, or one of her takes), or an earlier click on her
+// is remembered, and then the address carries her word (lib/bank.ts). She then says so quietly: a small pause sign, the
+// words in the tooltip. A click chooses the dealer for every view (lib/bank.ts setDealer: the address and the memory follow).
 import { useBank } from "../../lib/bank.ts";
 import { isSnapshot } from "../../lib/mode.ts";
 import { cn } from "../ui/cn";
@@ -25,7 +26,7 @@ export function DealerSwitch() {
   return (
     <div role="group" aria-label="Dealer: vems studio" className="mx-2 flex flex-col gap-2">
       <span className="text-center text-[9.5px] font-semibold uppercase leading-3 tracking-[0.12em] text-faint">Dealer</span>
-      {dealers.map((d) => {
+      {dealers.filter((d) => !d.paused || d.id === dealer).map((d) => {
         const on = d.id === dealer;
         const tip = (
           <span className="flex max-w-64 flex-col gap-0.5">

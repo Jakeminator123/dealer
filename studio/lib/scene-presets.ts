@@ -2,9 +2,9 @@
 // data/scene-presets/<name>.json and served by the lab server (tools/scene-preset-store.ts, /api/scene-presets). Three
 // ship with the lab and cannot be changed: basgrund (what the game shows today), levande (basgrund with the look Jakob
 // remembers of the 3D lab, the camera leaning but not swaying) and rumsstudien (levande with the room study's table, not
-// yet judged by him). The Scen view's baseline is basgrund: what differs from it is marked. Jakob's ten numbered places,
-// Profilval 1–10 (2026-11-13), are presets of his own like any other, each under the name profilval-<n> (slotOf), so that
-// ?forval=profilval-3 plays place 3 wherever a preset is read. A look also travels as an address,
+// yet judged by him). The Scen view's baseline is basgrund: what differs from it is marked. A look saved in one of Jakob's
+// numbered places (Profilval 1–10, 2026-11-13) is a preset of his own like any other, under the name profilval-<n> (slotOf),
+// so that ?forval=profilval-1 plays it wherever a preset is read. A look also travels as an address,
 // /scen/?forval=levande&dust=0.8, and as the 3D page's own, scene3d.html?…. Pure: no DOM, no network.
 import { GEOMETRY_WORDS } from "../../src/card-plan.ts";
 import type { SceneState } from "../../src/scene3d-view.ts";
@@ -130,9 +130,10 @@ export function slugOf(label: string): string {
 }
 
 // ── Places ──
-// Jakob 2026-11-13: "Profilval 1" … "Profilval 10", ten numbered places for a look, to save, load and go back to. A place
-// is no store of its own: place n is his preset profilval-<n> (what "Spara som…" makes of the name "Profilval 3" too),
-// counted among his own (OWN_LIMIT) and read by name like any preset. A file that is not there is an empty place.
+// Jakob 2026-11-13: "Profilval 1" … "Profilval 10", ten numbered places for a look. A place is no store of its own: place n
+// is his preset profilval-<n> (what "Spara som…" makes of the name "Profilval 3" too), counted among his own (OWN_LIMIT)
+// and read by name like any preset. Since 2026-11-21 Scen saves a look one way, "Spara som…", and shows a filled place as a
+// chip among the others (components/scene-editor/PresetBar.tsx); these helpers name the places for the store's test.
 export const SLOTS = 10;
 export const slotName = (n: number) => `profilval-${n}`;
 export const slotLabel = (n: number) => `Profilval ${n}`;
@@ -150,14 +151,6 @@ export function slotsOf<T extends { name: string }>(presets: readonly T[]): (T |
   }
   return slots;
 }
-/** The place a save offers first: the one the look started from, else the first empty one, else none. */
-export function slotToSave(origin: string, slots: readonly unknown[]): number | null {
-  const from = slotOf(origin);
-  if (from) return from;
-  const empty = slots.findIndex((p) => !p);
-  return empty < 0 ? null : empty + 1;
-}
-
 // ── States ──
 /** The whole state a preset gives: the scene's defaults with the preset's keys over them. */
 export const effective = (defaults: SceneState, state: Partial<SceneState>): SceneState => ({ ...defaults, ...state });

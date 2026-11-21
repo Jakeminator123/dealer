@@ -146,7 +146,7 @@ export function RoundPicker({
           <TextField
             aria-label="Rundan i din notation"
             wrapperClassName="flex-1"
-            placeholder="A1 - A2.1 - P4C1 - A2.1 - A1"
+            placeholder="A1 - A2.1 - A3P4C1 - A2.1 - A1"
             value={text}
             onChange={(e) => {
               const value = e.target.value;
@@ -355,7 +355,6 @@ function NextNodes({
       ) : null}
       {items.some((i) => i.via) ? <p className="text-2xs text-dim">↗ Via annat ankare. Hela vägen läggs till när du väljer kortet.</p> : null}
       {items.some((i) => !i.plays) ? <p className="text-2xs text-faint">Streckad: ingen spelbar väg från detta ankare.</p> : null}
-      {cards.get('D.C3') && !cards.get('D.C3')!.plays ? <p className="text-2xs text-faint">DC3: nästa steg, ingen ordinarie film ännu. Egna C2/C3-filmer för spelarna krävs inte nu.</p> : null}
     </div>
   );
 }

@@ -1,16 +1,20 @@
 "use client";
 
-// The cards' bend and gloss. They are no keys of the scene: each card has its own in Jakob's placement plan
+// The cards' bend and gloss. They are no keys of the scene: each card has its own in Jakob's card plan
 // (placements/default.json, targets[id].material, read by the rendered cards in src/scene3d-deal.ts), and one bend and one
 // gloss go to all sixteen cards. Here two sliders set all sixteen at once; it is the one writer of them (Bordet's Efterarbete). The plan is his file: it is written only
-// when he presses "Spara till planen" and confirms, through /api/placements against the revision read, and the game reads
+// when he presses "Spara i kortplanen" and confirms, through /api/placements against the revision read, and the game reads
 // the same plan. The scene shows a change before it is saved because it hands out the plan it was built with (the third
 // argument of SceneCanvas's onReady, passed on by the Stage's onScene); without it the change shows on the next build.
+// Kortplan writes the same file from its draft (components/placement/useDraft.ts). So that neither save undoes the other: while
+// Kortplan holds unsaved changes this save is closed and says why, and after this save Kortplan's draft (then without
+// changes) is read again, so that it carries the new bend and gloss and the new revision.
 import { Save } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TARGETS, type PlacementPlan } from "../../../src/placement-model.ts";
 import { asApiError, getPlacements } from "../../lib/api.ts";
 import { decimal } from "../../lib/scene-keys.ts";
+import { draftActions, useDraft } from "../placement/useDraft.ts";
 import { Button, Dialog, Slider, useToast } from "../ui";
 import { KeyRow } from "./KeyControl";
 import { cardLookOf, savePlan, withCardLook, type CardLook } from "./presetApi.ts";
@@ -35,7 +39,7 @@ export function useCardMaterial({ live, onSaved }: { live: PlacementPlan | null;
       setLook(cardLookOf(p.plan).look);
       setFault(null);
     } catch (error) {
-      setFault(asApiError(error, "Placeringsplanen").message);
+      setFault(asApiError(error, "Kortplanen").message);
     }
   }, []);
   useEffect(() => {
@@ -72,7 +76,7 @@ export function useCardMaterial({ live, onSaved }: { live: PlacementPlan | null;
         setLook(cardLookOf(next.plan).look);
         onSavedRef.current();
       } catch (error) {
-        const e = asApiError(error, "Placeringsplanen");
+        const e = asApiError(error, "Kortplanen");
         if (e.kind === "conflict") void read();
         throw e;
       }
@@ -86,15 +90,17 @@ export function CardMaterial({ state, cardsOn, canSave }: { state: CardMaterialS
   const toast = useToast();
   const [asking, setAsking] = useState(false);
   const [busy, setBusy] = useState(false);
+  // Kortplan's draft of the same file: with unsaved changes there, this save would make them unsavable.
+  const kortplan = useDraft();
   const { look, facts, fault } = state;
   if (fault) return <p className="py-2 text-sm text-[#ef8b8b]">{fault}</p>;
-  if (!look || !facts) return <p className="py-2 text-sm text-faint">Läser placeringsplanen…</p>;
+  if (!look || !facts) return <p className="py-2 text-sm text-faint">Läser kortplanen…</p>;
   const before = `böjning ${range(facts.range.bend, 3)}, glans ${range(facts.range.gloss, 2)}`;
   return (
     <div className="flex flex-col">
       <KeyRow
         label="Kortens böjning"
-        help="Hur mycket ett kort i handen böjer sig. Samma värde på alla 16 kort i placeringsplanen."
+        help="Hur mycket ett kort i handen böjer sig. Samma värde på alla 16 kort i kortplanen."
         differs={look.bend !== facts.look.bend}
         value={decimal(look.bend, 3)}
         onReset={() => state.set({ bend: facts.look.bend })}
@@ -104,7 +110,7 @@ export function CardMaterial({ state, cardsOn, canSave }: { state: CardMaterialS
       </KeyRow>
       <KeyRow
         label="Kortens glans"
-        help="Kortens blanka yta mot rummets ljus. Samma värde på alla 16 kort i placeringsplanen."
+        help="Kortens blanka yta mot rummets ljus. Samma värde på alla 16 kort i kortplanen."
         differs={look.gloss !== facts.look.gloss}
         value={decimal(look.gloss, 2)}
         onReset={() => state.set({ gloss: facts.look.gloss })}
@@ -121,8 +127,8 @@ export function CardMaterial({ state, cardsOn, canSave }: { state: CardMaterialS
         </p>
         {canSave ? (
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="secondary" icon={<Save />} disabled={!state.changed} onClick={() => setAsking(true)}>
-              Spara till planen
+            <Button size="sm" variant="secondary" icon={<Save />} disabled={!state.changed || kortplan.dirty} onClick={() => setAsking(true)}>
+              Spara i kortplanen
             </Button>
             {state.changed ? (
               <Button size="sm" variant="quiet" onClick={state.undo}>
@@ -131,12 +137,15 @@ export function CardMaterial({ state, cardsOn, canSave }: { state: CardMaterialS
             ) : null}
           </div>
         ) : null}
+        {canSave && kortplan.dirty ? (
+          <p className="text-xs text-[#f0b07a]">Kortplan har osparade ändringar. Spara dem eller gå till sparat där först.</p>
+        ) : null}
       </div>
       <Dialog
         open={asking}
         onOpenChange={setAsking}
-        title="Spara kortens material i planen?"
-        description="Placeringsplanen är din fil, och spelet läser samma plan: korten ändras där också."
+        title="Spara kortens böjning och glans?"
+        description="Kortplanen är din fil, och spelet läser samma plan: korten ändras där också."
         footer={
           <>
             <Button variant="quiet" onClick={() => setAsking(false)}>
@@ -149,7 +158,9 @@ export function CardMaterial({ state, cardsOn, canSave }: { state: CardMaterialS
                 setBusy(true);
                 try {
                   await state.save();
-                  toast({ tone: "ok", title: "Sparat i placeringsplanen", detail: `Alla 16 kort: böjning ${decimal(look.bend, 3)}, glans ${decimal(look.gloss, 2)}` });
+                  // Kortplan's draft had no changes (else the button is closed): it is read again with the new values.
+                  void draftActions.load();
+                  toast({ tone: "ok", title: "Sparat i kortplanen", detail: `Alla 16 kort: böjning ${decimal(look.bend, 3)}, glans ${decimal(look.gloss, 2)}` });
                   setAsking(false);
                 } catch (error) {
                   toast({ tone: "bad", title: "Planen sparades inte", detail: asApiError(error).message });

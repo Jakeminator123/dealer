@@ -4,10 +4,11 @@
 // large as the window allows, one column on the right where things are changed. Since 2026-11-17 it is the whole of the
 // view Scen (whose address / now leads here): a round plays large in the lab's 3D scene, or as the films are on their green
 // (Råfilm), with one transport; under it the round as a strip of its steps; over it the presets (Basgrund, Levande,
-// Rumsstudien, his own); in the column the rounds to play and every key of the scene (Scen), the rounds alone (Råfilm), or
-// only what is laid over the film (Efterarbete: the cards' and chips' look, "Kort och marker", with the cards' bend and gloss
-// in the plan). One scene: the stage builds it and the editor (components/scene-editor) drives that same object, so it
-// stays when Scen and Efterarbete change places.
+// Rumsstudien, his own; not on a flat picture, where they do nothing); in the column the rounds to play and every key of
+// the scene but the cards' and chips' (Scen), the rounds alone (Råfilm), or only what is laid over the film (Efterarbete:
+// "Kort och marker", with the cards' bend and gloss in the plan; Jakob 2026-11-17: their look is changed only there). One
+// scene: the stage builds it and the editor (components/scene-editor) drives that same object, so it stays when Scen and
+// Efterarbete change places.
 // The address is Scen's: the round (?runda=<his notation>, ?kant=<edge>&tagning=<take> to play a take where it belongs)
 // and the look (?forval=levande&dust=0.8, components/scene-editor/address.ts), written beside Bordet's own words (lage,
 // plats). Without a round in the address it plays the chosen card's deal and back from the anchor the game deals it from
@@ -40,7 +41,7 @@ import { readSceneCardTrial, withSceneCardTrial } from "../../lib/scene-card-tri
 import { RoundPicker, RoundStrip } from "../round";
 import { joinParts, readLook, roundPart, useSceneEditor } from "../scene-editor";
 import { Stage, createClock, type StageHandle } from "../stage";
-import { Button, ErrorState, IconButton, Skeleton, Tooltip, buttonClasses, cn, useToast } from "../ui";
+import { Button, ErrorState, IconButton, Skeleton, Tooltip, buttonClasses, useToast } from "../ui";
 
 export type SceneKind = "scen" | "rafilm" | "efterarbete";
 
@@ -149,12 +150,15 @@ export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: Scene
     setRoundText(addressOf(next, "3d").slice(1));
   };
 
+  // On a wide screen the picture and the column sit side by side and each scrolls on its own; on a narrow one (as Kortplan)
+  // the column follows under the picture in one scroll. The toolbar and the presets' row break onto a second line rather
+  // than being clipped or drawn over the column.
   return (
-    <div className="grid h-full grid-cols-[minmax(0,1fr)_380px]">
-      <div className="flex min-h-0 min-w-0 flex-col">
-        <div className="flex h-11 shrink-0 items-center gap-3 overflow-x-auto border-b border-line px-3">
+    <div className="grid h-full min-h-0 grid-cols-1 content-start overflow-y-auto lg:grid-cols-[minmax(0,1fr)_380px] lg:content-stretch lg:overflow-hidden">
+      <div className="flex min-w-0 flex-col lg:min-h-0">
+        <div className="flex min-h-11 shrink-0 flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-line px-3 py-2">
           {toolbar}
-          <span data-round className="min-w-0 truncate text-sm text-dim" title={notation}>
+          <span data-round className="min-w-40 flex-1 basis-40 truncate text-sm text-dim" title={notation}>
             <span className="font-medium text-ink">{notation || "Ingen runda"}</span>
             {parts.length ? ` · ${roundFacts(parts)}` : ""}
             {few ? <span className="text-faint"> · {few}</span> : null}
@@ -164,29 +168,29 @@ export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: Scene
               Färdig film: bara Råfilm
             </span>
           ) : null}
-          <div className="ml-auto flex shrink-0 items-center gap-1.5">
+          <div className="ml-auto flex flex-wrap items-center justify-end gap-1.5">
             {kind !== "rafilm" && (
-              <div role="group" aria-label="Bordsperspektiv" className="flex items-center gap-0.5 rounded-md border border-line p-0.5">
+              <div role="group" aria-label="Bordsperspektiv" className="flex shrink-0 items-center gap-0.5 rounded-md border border-line p-0.5">
                 {[["lins", "Standard"], ["kontrakt", "Bred lins"]].map(([word, label]) => (
                   <Link key={word} href={withGeometry(`/bordet/?${searchText}`, word)} aria-current={(geometri === "kontrakt" ? "kontrakt" : "lins") === word ? "true" : undefined}
-                    title={word === "lins" ? "Scens förval, och den gemensamma geometrin för kortplan och beställningar. Prova i Casino visar den; Använd i Casino sparar den som Casinos perspektiv." : "Tidigare, bredare perspektiv med mer ovala ringar; kort, ringar och filmkamera följer samma bord. Prova i Casino visar det; Använd i Casino sparar det som Casinos perspektiv. Kortplan och beställningar stannar på Standard."}
+                    title={word === "lins" ? "Grunden. Kortplan och beställningar använder den." : "Bredare perspektiv med mer ovala ringar. Kortplan och beställningar stannar på Standard."}
                     className={buttonClasses({variant: (geometri === "kontrakt" ? "kontrakt" : "lins") === word ? "secondary" : "quiet", size: "sm"})}>{label}</Link>
                 ))}
               </div>
             )}
             {!isSnapshot && kind !== "rafilm" && (
-              <Button size="sm" disabled={!editor.ready || editor.savingCasino} loading={editor.savingCasino} onClick={() => void editor.useInCasino()} title={`Spara hela den här visningen som Casinos förval, med ${perspective}. Gäller nästa gång du öppnar Casino, och i Casinot på nätet efter nästa publicering.`}>
+              <Button size="sm" disabled={!editor.ready || editor.savingCasino} loading={editor.savingCasino} onClick={() => void editor.useInCasino()} title={`Casino visar den här looken, med ${perspective}, nästa gång du öppnar det. Casinot på nätet får den vid nästa publicering.`}>
                 Använd i Casino
               </Button>
             )}
-            <Tooltip content={`Spelet med spelmotorn och marker, i den här looken och med ${perspective}. Sparar ingenting.`}>
+            <Tooltip content={`Spela en runda i den här looken, med ${perspective}. Sparar ingenting.`}>
               <Link href={trialAddress(editor.casino, geometri)} className={buttonClasses({ variant: "secondary", size: "sm" })}>
                 <Spade />
                 Prova i Casino
               </Link>
             </Tooltip>
             {!isSnapshot ? (
-              <Tooltip content="Casinot på nätet (dealer-lake.vercel.app/casino) i en ny flik: Casinos sparade visning som den var vid senaste publiceringen">
+              <Tooltip content="Casinot på nätet i en ny flik, som det var vid senaste publiceringen">
                 <a href={ONLINE_CASINO} target="_blank" rel="noopener noreferrer" className={buttonClasses({ variant: "quiet", size: "sm" })}>
                   <Globe />
                   På nätet
@@ -204,16 +208,14 @@ export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: Scene
             ) : null}
           </div>
         </div>
-        {/* The presets apply to the 3D scene; in Råfilm the bar stays where it is, dimmed, so that the picture does not jump. */}
-        <div inert={flat} className={cn("shrink-0 transition-opacity duration-150", flat && "opacity-40")} title={flat ? "Förvalen gäller 3D" : undefined}>
-          {editor.bar}
-        </div>
+        {/* The presets apply to the 3D scene: on a flat picture (Råfilm, a finished film) they do nothing, and the row is not there. */}
+        {flat ? null : editor.bar}
         {status === "error" && !graph ? (
           <ErrorState className="min-h-0 flex-1" title="Klippbanken kunde inte läsas" error={error} onRetry={() => void reload()} />
         ) : (
-          <div className="flex min-h-0 flex-1 flex-col" {...editor.pointer}>
+          <div className="flex flex-col lg:min-h-0 lg:flex-1" {...editor.pointer}>
             {/* The renderer reads the geometry when the scene is created. */}
-            <Stage key={geometri} ref={stage} className="min-h-0 flex-1" parts={parts} mode={mode} clock={clock} initial={editor.initial} onScene={editor.onScene} onSceneChange={editor.onSceneChange}>
+            <Stage key={geometri} ref={stage} className="aspect-video lg:aspect-auto lg:min-h-0 lg:flex-1" parts={parts} mode={mode} clock={clock} initial={editor.initial} onScene={editor.onScene} onSceneChange={editor.onSceneChange}>
               {editor.comparing && !flat ? (
                 <div className="pointer-events-none absolute left-1/2 top-4 -translate-x-1/2 rounded-full border border-brass/50 bg-black/70 px-4 py-1.5 text-sm font-semibold text-brass-hi shadow-pop backdrop-blur-sm">Basgrund</div>
               ) : null}
@@ -236,13 +238,13 @@ export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: Scene
           )}
         </div>
       </div>
-      <aside className="flex min-h-0 flex-col border-l border-line bg-surface">
+      <aside className="flex flex-col border-t border-line bg-surface lg:min-h-0 lg:border-l lg:border-t-0">
         {kind === "efterarbete" ? (
           // only what is laid over the film: the cards' and chips' look, with the cards' bend and gloss in the plan
           <div className="min-h-0 flex-1 overflow-y-auto">{editor.afterwork ?? <Skeleton className="m-4 h-10 rounded-md" />}</div>
         ) : kind === "scen" ? (
           <div className="flex min-h-0 flex-1 flex-col">
-            <div className="max-h-[45%] shrink-0 overflow-y-auto border-b border-line px-4 py-3">
+            <div className="shrink-0 overflow-y-auto border-b border-line px-4 py-3 lg:max-h-[45%]">
               <RoundPicker rounds={rounds} current={round} problems={round?.errors ?? []} onPick={pick} />
             </div>
             {editor.panel}
