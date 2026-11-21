@@ -2,7 +2,7 @@
 // an explicitly selected IDE worktree, so unfinished files in the main checkout cannot turn the publication check
 // red, and no one's open file goes out. The steps of the main agent's pusha-fran-rent-trad.sh (2026-11-13 to 11-17), the
 // same stops and words: the tree set to the commit and clean, npm ci when the package list changed (or node_modules is
-// missing), npm test, npm run check, git push origin HEAD:main, then the local and the remote SHA. Each step's log lies in
+// missing), npm run check (which runs the suite of npm test once), git push origin HEAD:main, then the local and the remote SHA. Each step's log lies in
 // push-logg beside the tree. Never a force push, never --no-verify; the pre-push hook runs the check once more.
 //
 //   node tools/push-clean.ts [<commit>] [--trad <mapp>] [--dry-run]
@@ -63,12 +63,12 @@ export function pushClean(root: string, options: Options, io: Io): number {
       const ci = step('npm-ci.log', 'npm', ['ci']);
       if (ci.code !== 0) throw new Stop(['STOPP: npm ci', ...tail(ci.out, 20)].join('\n'));
     }
-    const test = step('npm-test.log', 'npm', ['test']);
-    say(testSummary(test.out));
-    if (test.code !== 0) throw new Stop([`STOPP: npm test (kod ${test.code})`, ...testFailures(test.out)].join('\n'));
+    // The check runs the whole suite (the files of npm test), once; the pre-push hook then reuses its receipt for the same
+    // HEAD instead of running it again (tools/publication-check.ts reusablePass; Jakob 2026-11-21: tests seldom).
     const check = step('npm-check.log', 'npm', ['run', 'check', '--', '--base', base]);
+    if (testSummary(check.out)) say(testSummary(check.out));
     for (const line of tail(check.out, 6)) say(line);
-    if (check.code !== 0) throw new Stop([`STOPP: npm run check (kod ${check.code})`, ...checkRed(check.out)].join('\n'));
+    if (check.code !== 0) throw new Stop([`STOPP: npm run check (kod ${check.code})`, ...testFailures(check.out), ...checkRed(check.out)].join('\n'));
     if (options.dryRun) say('torrkörning: git push origin HEAD:main körs inte');
     else {
       const push = step('push.log', 'git', ['push', 'origin', 'HEAD:main']);

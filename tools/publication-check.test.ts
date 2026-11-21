@@ -5,7 +5,7 @@ import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {execFileSync} from 'node:child_process';
 import {stripTypeScriptTypes} from 'node:module';
-import {inspectBlob,parsePush,dirtyTestInputs,scanRange,listedTests,CANONICAL} from './publication-check.ts';
+import {inspectBlob,parsePush,dirtyTestInputs,scanRange,listedTests,reusablePass,REUSE_HOURS,CANONICAL} from './publication-check.ts';
 
 function fixture(t:TestContext){
   const root=mkdtempSync(path.join(tmpdir(),'dealer-publication-test-'));
@@ -112,4 +112,23 @@ test('every TypeScript file that Node runs directly parses',()=>{
   const broken:string[]=[];
   for(const file of files){try{stripTypeScriptTypes(readFileSync(file,'utf8'));}catch(error){broken.push(file+': '+String((error as Error).message).split('\n')[0]);}}
   assert.deepEqual(broken,[],'files that do not parse');
+});
+
+test('the pre-push hook reuses only a passing check of this very HEAD, clean and recent; else the suite runs', () => {
+  const head='a'.repeat(40),now=Date.parse('2026-11-21T17:00:00Z'),at=(hours:number)=>new Date(now-hours*3600e3).toISOString();
+  const good={id:'ok',kind:'publication',status:'pass',revision:head,dirtyInputs:[],finishedAt:at(1),counts:{fail:0}};
+  assert.equal(reusablePass([good],head,now)?.id,'ok');
+  assert.equal(reusablePass([{...good,dirtyInputs:['placements/default.json']}],head,now)?.id,'ok','his card plan is the one exception, as in the check');
+  for(const [why,bad] of [
+    ['another HEAD',{...good,revision:'b'.repeat(40)}],
+    ['an ordinary test run, not the check',{...good,kind:'tests'}],
+    ['a failed or invalidated run',{...good,status:'invalidated'}],
+    ['a failing test',{...good,counts:{fail:1}}],
+    ['a dirty input',{...good,dirtyInputs:['tools/x.ts']}],
+    ['no list of inputs',{...good,dirtyInputs:undefined}],
+    ['too old',{...good,finishedAt:at(REUSE_HOURS+0.1)}],
+    ['from the future',{...good,finishedAt:at(-1)}],
+    ['no time',{...good,finishedAt:'x'}],
+  ] as const) assert.equal(reusablePass([bad],head,now),null,why);
+  assert.equal(reusablePass([],head,now),null);
 });

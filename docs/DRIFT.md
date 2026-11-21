@@ -24,8 +24,8 @@ eller webbplats.
 
 ## Git och kontroller
 
-Jakob har godkänt automatisk push som agentens avslutningsrutin för färdiga egna ändringar. Flödet är `npm test` →
-uttrycklig staging av egna filer → commit → `npm run check` → vanlig push → verifierad fjärr-SHA och CI. Ingen
+Jakob har godkänt automatisk push som agentens avslutningsrutin för färdiga egna ändringar. Flödet är uttrycklig
+staging av egna filer → commit → `npm run check` (hela sviten, en gång) → vanlig push → verifierad fjärr-SHA. Ingen
 bakgrundsbevakare eller automatisk commit av sparade filer används. Andras arbete och Jakobs placeringsutkast följer
 inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och generering.
 
@@ -52,10 +52,10 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   skiljer sig från HEAD eller en ospårad fil ligger där, och det gör den nästan alltid en dag med flera
   sessioner. Huvudagenten pushar då från ett uttryckligen valt rent IDE-arbetsträd med `node tools/push-clean.ts
   [<commit>] --trad <mapp> [--dry-run]`: trädet ställs detached på commiten (förval `main`) och måste vara rent, `npm
-  ci` körs om paketlistan har ändrats eller `node_modules` saknas, sedan `npm test`, `npm run check` och `git push
+  ci` körs om paketlistan har ändrats eller `node_modules` saknas, sedan `npm run check` (sviten en gång) och `git push
   origin HEAD:main`, och sist lokal och fjärrens SHA. Verktyget stannar vid första steg som faller med en rad som börjar
-  STOPP och lägger varje stegs logg i `push-logg` bredvid trädet; `--dry-run` gör allt utom `git push`. Återanvänd ett
-  lämpligt träd eller skapa det via IDE:n vid behov, och städa det när uppgiften är klar. Ingen disk väljs automatiskt;
+  STOPP och lägger varje stegs logg i `push-logg` bredvid trädet; `--dry-run` gör allt utom `git push`. Trädet är byggträdet
+  `C:/Users/jakem/dev/super-feature-sg/dealer-bygg` (AGENTS), som står kvar mellan gångerna. Ingen disk väljs automatiskt;
   verktyget vägrar huvudträdet och ett träd ur ett annat repo. Det som pushas är
   incheckade commits, aldrig någons öppna filer.
   Förkontrollen får fjärrens verifierade `main`-SHA som `--base`, så ett detached träd inte behöver granska hela
@@ -134,8 +134,7 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   paketlista har ändrats eller `node_modules` saknas, `npm --prefix studio run build`) och byter in resultatet i
   huvudträdets `studio/out` först när bygget har lyckats: kopian läggs bredvid som `out.ny`, den gamla mappen flyttas
   undan och den nya in. Ett bygge eller en flytt som faller lämnar det som visas orört, och `studio/out/bygge.json`
-  säger vilken commit som visas. Återanvänd ett lämpligt träd eller skapa det via IDE:n vid behov. `--trad` krävs;
-  verktyget väljer inte arbetsplats eller disk. Se [lokal arbetsplats](../tools/local-work.md).
+  säger vilken commit som visas. Trädet är byggträdet `C:/Users/jakem/dev/super-feature-sg/dealer-bygg` (AGENTS); `--trad` krävs. Se [lokal arbetsplats](../tools/local-work.md).
   Push och bygge använder trädet i turordning. Loggarna ligger i `studio-logg` bredvid; ett körkvitto med full SHA
   sparas i huvudträdets journal efter varje påbörjat bygge. Renhet och indata kontrolleras direkt före och efter
   bygget; ändrade filer stoppar bytet även om HEAD är oförändrad. Servern startas inte om.

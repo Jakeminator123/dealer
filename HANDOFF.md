@@ -81,7 +81,7 @@ ett kort där (skillen `visa-for-jakob`), och kortet tas ut när svaret är utf�
 Rutinen står i skillen `avsluta-arbete`. I korthet:
 
 1. Vänta in eller stoppa egna underagenter. Checka in färdigt eget arbete; bevara Jakobs plan och befintliga orderutkast.
-2. `npm test`, uttrycklig staging av egna filer, commit, `npm run check`, push, och kontrollera fjärrens SHA.
+2. Uttrycklig staging av egna filer, commit, `npm run check`, push, och kontrollera fjärrens SHA.
 3. Skriv läget där det hör hemma, och ersätt i stället för att lägga till: banans läge i lägesfilen, ett nytt besked
    i BESKED, en ny brist i BRISTER, en fråga till Jakob som kort i Beslut. Den här sidan ändras bara där en rad inte
    längre gäller.

@@ -2,9 +2,10 @@
 
 ## Arbetsplats
 
-Arbeta normalt i Dealer-mappen på C:. Kontrollera rot och Git-remote först. En gren är en versionspekare, ingen ny
-kopia av medierna. Vanliga kortlivade grenar i samma mapp går bra; byt inte gren över någon annans pågående ändringar.
-Ett extra arbetsträd behövs när parallellt arbete eller öppna utkast behöver isoleras. Återanvänd då ett lämpligt träd.
+Allt arbete görs i mappen `dealer` på C: (AGENTS, "Git och samarbete"). Kontrollera rot och Git-remote först. En gren
+är en versionspekare, ingen ny kopia av medierna; byt inte gren över någon annans pågående ändringar. Ett eget
+arbetsträd bara när ett arbete uttryckligen behöver isoleras. Byggträdet
+`C:/Users/jakem/dev/super-feature-sg/dealer-bygg` är bara för `push-clean` och `studio-from-commit`, och står kvar.
 Ändringar från andra IDE:er jämförs med main, granskas och testas. Använd merge för en sammanhängande gren,
 cherry-pick för en avgränsad commit eller en granskad patch för osparade ändringar. Kopiera inte tillbaka äldre hela filer.
 `push-clean.ts` och `studio-from-commit.ts`

@@ -88,9 +88,9 @@ behöver veta och namnger högst tre filer eller avsnitt att läsa.
 
 ## Git och samarbete
 
-- Arbeta normalt i Dealer-mappen på C:. Vanliga kortlivade grenar i samma mapp går bra. Ett extra arbetsträd behövs
-  bara vid parallellt eller isolerat arbete; återanvänd ett lämpligt träd. D: är inget förval. Bra ändringar från
-  andra IDE:er tas in efter diffgranskning och tester; IDE:n avgör inte om kod får återanvändas.
+- Allt arbete görs i mappen `dealer` på C:, på `main`; en gren eller ett eget träd bara när ett arbete uttryckligen
+  behöver isoleras. Byggträdet `../dealer-bygg` är bara för `push-clean` och `studio-from-commit` (DRIFT).
+- Checka in egna färdiga filer direkt, i små commits, så att `dealer` oftast är rent.
 - Tillfälliga arbetsfiler hör hemma i `.runtime/<uppgift>/` i projektet. Avsluta med verifierad städning av egna
   kopior och byggrester. Medier städas enligt `tools/local-work.md`; en gammal fil är inte automatiskt oanvänd.
   Efter mediearbete: `npm run media:status` ger storlek, syfte och förändring sedan föregående inventering.
@@ -100,9 +100,8 @@ behöver veta och namnger högst tre filer eller avsnitt att läsa.
 - `main` är den enda långlivade grenen. En kortlivad gren för ett avgränsat arbete slås ihop i `main` eller tas bort.
 - Installera kontrollen en gång per checkout: `npm run hooks:install` (pre-push kör då publiceringskontrollen,
   `tools/publication-check.ts`).
-- Avsluta färdigt arbete så här: `npm test`, uttrycklig staging av egna filer, commit, `npm run check`, push, och
-  kontrollera fjärrens SHA. Kontrollen körs på den här datorn; GitHub kör ingen egen (Jakob 2026-11-18). Samma
-  kontroll före en PR.
+- Avsluta färdigt arbete så här: uttrycklig staging av egna filer, commit, `npm run check` (hela sviten, en gång),
+  push och fjärrens SHA. Stoppar kontrollen på andras öppna filer: `push-clean` från byggträdet. GitHub kör ingen.
 - Ingen force-push, ingen `--no-verify`, ingen filbevakare och ingen automatisk commit av utkast.
 - Rött i kontrollen stoppar; utred orsaken och rätta den. Sänk aldrig en kontroll eller ändra en referens bara för att
   få grönt. En verklig kvarvarande begränsning skrivs kort i `docs/BRISTER.md`.
@@ -114,8 +113,8 @@ behöver veta och namnger högst tre filer eller avsnitt att läsa.
 - Ny kod skrivs i TypeScript. Undantaget är skripten i `tools/python/`, som kräver MediaPipe.
 - Node enligt `package.json` (Volta, `v24.22.3`); kontrollera med `node -p process.version`.
 - Högst fyra render- eller testarbetare samtidigt: datorn delas med labbservern och andra sessioner.
-- Verifiera det beteende du ändrat med ett avgränsat test eller en körning. Full rendering och deploy kräver egen
-  verifiering; `npm test` täcker dem inte.
+- Verifiera en ändring med en körning eller de berörda testfilerna, inte hela sviten. Nya tester bara för det som ska
+  bestå: kontrakt, spelregler, Jakobs godkända resultat, publiceringsskyddet. Rendering och deploy verifieras för sig.
 
 ## Svar till Jakob
 

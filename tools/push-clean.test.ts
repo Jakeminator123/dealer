@@ -6,7 +6,7 @@ import type {Exec} from './clean-tree.ts';
 const ROOT = 'C:/repo', TREE = 'D:/scratch/push-trad', SHA = 'a'.repeat(40), OLD = 'b'.repeat(40);
 const TEST_LOG = 'ℹ tests 3\nℹ suites 0\nℹ pass 3\nℹ fail 0\nℹ skipped 0\n';
 type Answer = {code?: number; out?: string};
-// A fake repo and tree: every command is recorded, and answers can be changed per command ("npm test", "git push" …).
+// A fake repo and tree: every command is recorded, and answers can be changed per command ("npm run check", "git push" …).
 function world(answers: Record<string, Answer> = {}, present = (p: string) => true) {
   const calls: string[] = [], said: string[] = [], logs: Record<string, string> = {};
   const run: Exec = (cmd, args, cwd) => {
@@ -20,8 +20,7 @@ function world(answers: Record<string, Answer> = {}, present = (p: string) => tr
     if (key === 'git rev-parse --show-toplevel') return {code: 0, out: cwd === ROOT ? ROOT : TREE};
     if (key === 'git rev-parse HEAD') return {code: 0, out: (calls.some(c => c.includes('checkout')) ? SHA : OLD) + '\n'};
     if (key.startsWith('git diff --quiet')) return {code: 0, out: ''};
-    if (key === 'npm test') return {code: 0, out: TEST_LOG};
-    if (key.startsWith('npm run check')) return {code: 0, out: 'a\nb\nc\nd\ne\nf\nKontrollen är grön.\n'};
+    if (key.startsWith('npm run check')) return {code: 0, out: TEST_LOG + 'a\nb\nc\nd\ne\nf\nKontrollen är grön.\n'};
     if (key.startsWith('git ls-remote')) return {code: 0, out: `${calls.some(c => c.includes('git push')) ? SHA : OLD}\trefs/heads/main\n`};
     return {code: 0, out: ''};
   };
@@ -42,7 +41,7 @@ test('a dry run does every step in order but never git push, and still reads bot
   const w = world();
   assert.equal(w.go({dryRun: true}), 0, w.text());
   assert.ok(!w.calls.some(c => c.includes('git push')), w.calls.join('\n'));
-  const order = ['checkout -q --detach ' + SHA, 'status --porcelain', 'npm test', 'npm run check', 'rev-parse HEAD', 'ls-remote origin refs/heads/main'];
+  const order = ['checkout -q --detach ' + SHA, 'status --porcelain', 'npm run check', 'rev-parse HEAD', 'ls-remote origin refs/heads/main'];
   let at = -1;
   for (const part of order) { const next = w.calls.findIndex((c, i) => i > at && c.includes(part)); assert.ok(next > at, `${part} after the step before it:\n${w.calls.join('\n')}`); at = next; }
   assert.ok(w.calls.filter(c => /npm|checkout|status/.test(c)).every(c => c.startsWith('tree:')), 'everything runs in the clean tree');
@@ -51,7 +50,8 @@ test('a dry run does every step in order but never git push, and still reads bot
   assert.match(w.text(), /torrkörning: git push origin HEAD:main körs inte/);
   assert.match(w.text(), new RegExp(`lokalt: ${SHA}\nfjärr:  ${OLD}\nklart \\d\\d:\\d\\d:\\d\\d$`));
   assert.ok(w.calls.includes(`tree: npm run check -- --base ${OLD}`), 'the detached check uses the verified remote base');
-  assert.ok(!('push.log' in w.logs) && 'npm-test.log' in w.logs && 'npm-check.log' in w.logs);
+  assert.ok(!('push.log' in w.logs) && !('npm-test.log' in w.logs) && 'npm-check.log' in w.logs);
+  assert.ok(!w.calls.some(c => c.endsWith('npm test')), 'the suite runs once, inside the check');
 });
 
 test('a real run pushes HEAD to main, without force or --no-verify', () => {
@@ -73,8 +73,8 @@ test('each stop stops before the next step, with the words the script printed', 
   const cases: Array<[string, Record<string, Answer>, RegExp, string]> = [
     ['checkout', {'git checkout': {code: 1}}, /^STOPP: checkout$/m, 'npm'],
     ['a dirty tree', {'git status --porcelain': {out: ' M tools/x.ts\n'}, 'git status --short': {out: ' M tools/x.ts\n'}}, /STOPP: arbetsträdet är inte rent\n M tools\/x.ts/, 'npm'],
-    ['npm ci', {'git diff --quiet': {code: 1}, 'npm ci': {code: 1, out: 'npm error x\n'}}, /paketlistan har ändrats: npm ci\nSTOPP: npm ci\nnpm error x/, 'npm test'],
-    ['npm test', {'npm test': {code: 1, out: '✖ a test fails\nℹ tests 3\nℹ pass 2\nℹ fail 1\n'}}, /ℹ tests 3 ℹ pass 2 ℹ fail 1\nSTOPP: npm test \(kod 1\)\n✖ a test fails/, 'npm run check'],
+    ['npm ci', {'git diff --quiet': {code: 1}, 'npm ci': {code: 1, out: 'npm error x\n'}}, /paketlistan har ändrats: npm ci\nSTOPP: npm ci\nnpm error x/, 'npm run check'],
+    ['a test in the check', {'npm run check': {code: 1, out: '✖ a test fails\nℹ tests 3\nℹ pass 2\nℹ fail 1\n[RÖD] Testkörningen misslyckades.\n'}}, /ℹ tests 3 ℹ pass 2 ℹ fail 1\n[\s\S]*STOPP: npm run check \(kod 1\)\n✖ a test fails/, 'git push'],
     ['the check', {'npm run check': {code: 1, out: '[RÖD] tools/x.ts: Ändrad testfil\n'}}, /STOPP: npm run check \(kod 1\)\n\[RÖD\] tools\/x\.ts/, 'git push'],
     ['the push', {'git push': {code: 1, out: 'rejected\n'}}, /rejected\nSTOPP: git push \(kod 1\)$/, 'tree: git ls-remote'],
   ];
@@ -122,7 +122,7 @@ test('an unreadable remote stops before testing or pushing; a different final SH
     const w = world({'repo: git ls-remote': answer});
     assert.equal(w.go(), 1);
     assert.match(w.text(), /fjärrens main kunde inte verifieras/);
-    assert.ok(!w.calls.some(c => c.includes('npm test') || c.includes('git push')));
+    assert.ok(!w.calls.some(c => c.includes('npm run check') || c.includes('git push')));
   }
   const raced = world({'tree: git ls-remote': {out: `${OLD}\trefs/heads/main\n`}});
   assert.equal(raced.go(), 1);

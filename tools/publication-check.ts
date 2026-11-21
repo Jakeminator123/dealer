@@ -1,5 +1,5 @@
 import {execFileSync, spawnSync} from 'node:child_process';
-import {readFileSync, mkdirSync} from 'node:fs';
+import {existsSync, readFileSync, readdirSync, mkdirSync, statSync} from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
@@ -55,6 +55,35 @@ export function parsePush(input:string):Array<{local:string;remote:string}> {
 // has the explicit committed-input exception. While another session or the UI writes, use push-clean's clean checkout.
 export function dirtyTestInputs(names:string[]):string[] {
   return names.filter(name=>name!=='placements/default.json');
+}
+
+// A push runs the suite once (Jakob 2026-11-21: the tests are to be run seldom, not three times for one push). The
+// pre-push hook does not run it again when the check (npm run check, also inside push-clean) has already passed it for
+// this very HEAD: a receipt of kind publication with status pass, the same revision, no dirty input but the card plan
+// and at most REUSE_HOURS old. The scan of the outgoing commits and the stop for dirty inputs still run on every push,
+// and npm run check itself always runs the suite.
+export const REUSE_HOURS=6;
+export type PassReceipt={id?:string;kind?:string;status?:string;revision?:string;dirtyInputs?:string[];finishedAt?:string;counts?:{fail?:number}};
+export function reusablePass(receipts:PassReceipt[],head:string,now:number):PassReceipt|null {
+  return receipts.find(r=>{
+    const at=Date.parse(r.finishedAt??'');
+    return r.kind==='publication'&&r.status==='pass'&&r.revision===head&&(r.counts?.fail??0)===0
+      &&Array.isArray(r.dirtyInputs)&&dirtyTestInputs(r.dirtyInputs).length===0
+      &&Number.isFinite(at)&&now-at>=0&&now-at<=REUSE_HOURS*3600e3;
+  })??null;
+}
+// The receipts of the last REUSE_HOURS in the main checkout's journal (tools/evidence-store.ts writes them there, also
+// from a linked worktree). A receipt that cannot be read is skipped: the suite then simply runs.
+function recentReceipts(root:string,now:number):PassReceipt[] {
+  const runs=path.join(path.dirname(git(root,'rev-parse','--path-format=absolute','--git-common-dir').trim()),'.runtime','evidence','runs');
+  if(!existsSync(runs))return [];
+  return readdirSync(runs).filter(name=>name.endsWith('.json')).flatMap(name=>{
+    try{
+      const file=path.join(runs,name);
+      if(now-statSync(file).mtimeMs>REUSE_HOURS*3600e3)return [];
+      return [JSON.parse(readFileSync(file,'utf8')) as PassReceipt];
+    }catch{return [];}
+  });
 }
 
 export function scanRange(root:string,head:string,base:string):Finding[] {
@@ -122,7 +151,9 @@ function main() {
   const env={...process.env,DEALER_TEST_KIND:'publication',DEALER_TEST_REVISION:head};
   const scratch=path.join(root,'.runtime','tmp');mkdirSync(scratch,{recursive:true});env.TEMP=scratch;env.TMP=scratch;
   const tests=listedTests(git(root,'show',`${head}:package.json`));
-  const test=spawnSync(process.execPath,['--test','--test-concurrency=4','--test-reporter=spec','--test-reporter=./tools/test-receipt-reporter.ts','--test-reporter-destination=stdout','--test-reporter-destination=stderr',...tests],{cwd:root,env,stdio:'inherit'});
+  const reused=prePush?reusablePass(recentReceipts(root,Date.now()),head,Date.now()):null;
+  if(reused)console.log(`Testsviten gick grön för samma HEAD i kontrollen ${reused.finishedAt} (körkvitto ${reused.id}); den körs inte en gång till.`);
+  const test=reused?{error:undefined,status:0}:spawnSync(process.execPath,['--test','--test-concurrency=4','--test-reporter=spec','--test-reporter=./tools/test-receipt-reporter.ts','--test-reporter-destination=stdout','--test-reporter-destination=stderr',...tests],{cwd:root,env,stdio:'inherit'});
   if(test.error||test.status!==0)throw Error('Testkörningen misslyckades. Kontrollera både produktkod och test/hook innan publicering.');
   if(git(root,'rev-parse','HEAD').trim()!==head||changedTestInputs(root).length)throw Error('Kod eller HEAD ändrades under kontrollen; kör om på stabil version.');
   console.log(`Kontrollerad HEAD ${head}; ${findings.filter(f=>f.level==='YELLOW').length} varningar. Eventuella Node-varningar visas separat. Detta verifierar inte media, rendering eller deploy.`);
