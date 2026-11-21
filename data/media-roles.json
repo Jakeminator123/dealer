@@ -4160,6 +4160,20 @@
           }
         },
         {
+          "id": "paow-film-giv-2-3c-p4-pilot-02-t1",
+          "role": "film",
+          "name": "Paow · A2.3 → A3P4C1 · piloten med dockans referensfilm",
+          "path": "assets/films/paow/giv-2-3c-p4-pilot-02-t1/source.mp4",
+          "still": 40,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "OBEROENDE GRANSKARE (inte Jakobs dom): pilot, given 4/5, användbar med anmärkningar. Vänster underarm syns i varje ruta 26-46. Vänster hand väntar i luften vid skon ruta 30-41 (0,5 s) innan den går hem; kortet blir ett streck under högerhandens fingrar 38-40 och kommer upp blått; kortet 2,1 px från planen, stilla från ruta 56. Hela noten i kvittot.",
+          "source": {
+            "from": "beställningen paow-giv-2-3c-p4-pilot-02, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-21"
+          }
+        },
+        {
           "id": "paow-film-intro-noir-3-startruta",
           "role": "arbetsmaterial",
           "name": "Startrutan till filmen före spelet",
