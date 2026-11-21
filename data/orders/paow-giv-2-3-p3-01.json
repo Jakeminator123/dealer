@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "title": "Paow · Två händer, ett kort till platsen · A3P3C1",
+  "summary": "Gör en film av Paow: ett kort från ankare 2.3 till plats 3, bara dit.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "GIV-2.3",
+    "label": "Två händer, ett kort till platsen",
+    "edge": "READY-C>P3.C1",
+    "shape": "ONE_WAY",
+    "cutInto": [
+      "READY-C>P3.C1"
+    ],
+    "makes": null
+  },
+  "motion": {
+    "grip": "TWO_HANDS",
+    "hand": "LH",
+    "pass": true,
+    "turn": true,
+    "flipAxis": "FREE",
+    "target": "P3.C1",
+    "side": "FRONT",
+    "fromPlan": false,
+    "planned": {
+      "grip": "PINCH",
+      "flipAxis": "FREE"
+    }
+  },
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows A2.3",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-giv-2-3-p3-01/first.png",
+      "sha256": "656b10a6a3dd2484111ad8f6cee8995663ab8a482bf4abe4e4f2ff9d96f03fc3",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-ankare-2-3-c",
+        "path": "assets/anchors/paow-ankare-2-3-c/anchor.png",
+        "note": "Vänster hand uppifrån på kortet, rak bål (gäller)"
+      },
+      "waits": null
+    }
+  ],
+  "reference": {
+    "status": "FINNS",
+    "clips": [
+      "docka-2-3-p3c1-svep24d"
+    ],
+    "path": "assets/orders/paow-giv-2-3-p3-01/reference.mp4",
+    "sha256": "7b161967f51d050eef9111fff00caa56c0ae4857bc3dace7f8698b16e5d0665e",
+    "seconds": 3,
+    "goesTo": "P3.C1",
+    "approvedStraight": false,
+    "dealer": "docka",
+    "from": {
+      "film": "docka-2-3-p3c1-svep24d",
+      "path": "assets/references/docka/docka-2-3-p3c1-svep24d/source.mp4",
+      "sha256": "7b161967f51d050eef9111fff00caa56c0ae4857bc3dace7f8698b16e5d0665e",
+      "edge": "READY-C>P3.C1",
+      "verdict": "EJ_DÖMD",
+      "words": null,
+      "frames": null,
+      "also": []
+    }
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "kling-4",
+    "params": {
+      "resolution": "1080p",
+      "duration": 3
+    }
+  },
+  "prompt": {
+    "template": "film-giv-kort@12",
+    "style": "KORT",
+    "text": "Locked camera, one continuous shot. Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing. Her hand at the shoe strokes the yellow card out of the window and slides it flat on the felt to the middle in front of her, where her other hand meets it. There both hands tip the card up onto its short end, and her other hand, palm down, carries it on towards its place a little to the left of the middle of the picture; on that way the card goes on over the same short end, end over end, in one unbroken turn that begins with the yellow side up and ends with the blue side up. She lays the card flat at its place, and her fingertips come to rest on it. The hand from the shoe lets go once the card stands on its end and settles back at the shoe. Her head stays bowed and turns towards the place where the card will lie. Only one card moves: a small card, about half as long as her hand, which keeps the same size all the way from the shoe to its place. Its back is blank solid yellow, right out to its corners, and its face is solid blue with a small pink cross in the middle and a small red dot in one corner; the next card in the window is the same blank yellow.",
+    "sha256": "92af162834bf530b1599a4afe7605467199951f039b203c8fcde2fefe174aea7",
+    "extra": null,
+    "middle": false,
+    "place": [
+      643.2,
+      1057.6
+    ],
+    "faceMark": true
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 64,
+    "total": 64,
+    "worstPerTake": 71,
+    "worstTotal": 71,
+    "basis": "21,3 krediter per s × 3 s. Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12."
+  },
+  "limits": {
+    "maxCredits": 71,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Recept giv-2.3 (prov).",
+    "Undantag från receptet: utan sista bild: filmen slutar där modellen lämnar kortet, och A3P3C1 görs efteråt ur filmens sista ruta."
+  ],
+  "createdBy": "huvudagenten, tools/order-new.ts",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-21T21:26:26.459Z",
+    "orderSha256": "96ebdf40bb3e000dd0e2a19dfaf7a225a558b931a354d5f6f0ab40e71c455a6e",
+    "mandate": "Jakob 2026-11-21: beställningar genom kommandon tills Paows träd är fullt, en giv per kort och spelare; hans ja 15.56 i Beslut på receptet från A2.3 (övriga platser likadant); plats 1 höll i oberoende granskning; dockfilmen oberoende sedd; mandatet dealer-b0-20261121"
+  },
+  "status": "GODKÄND",
+  "id": "paow-giv-2-3-p3-01",
+  "created": "2026-11-21T21:26:11.749Z"
+}
