@@ -207,7 +207,7 @@ export function cardWishes(place: Place, planned: object | null, dealer: string)
   return ([`GIV-${from}`, `RETUR-${from}`, "RETUR-1"] as StepKey[]).filter((k) => stepOf(k)).map((step) => ({ step, target: place }));
 }
 /** The films without a card, in the order a round meets them: the entries, the ways out, rest, the hole card's turn. */
-export const OTHER_STEPS: readonly StepKey[] = ["INGANG-2.1", "INGANG-2.2", "INGANG-2.3", "UTGANG", "UTGANG-2.2", "VILA", "HALKORT"];
+export const OTHER_STEPS: readonly StepKey[] = ["INGANG-2.1", "INGANG-2.2", "INGANG-2.3", "UTGANG", "UTGANG-2.2", "UTGANG-2.3", "VILA", "HALKORT"];
 export const otherWishes = (): FilmWish[] => OTHER_STEPS.filter((k) => stepOf(k) && !stepOf(k)!.off).map((step) => ({ step, target: null }));
 
 /** The bank's edges a film is filed under, as nodes: a deal tur och retur gives anchor → card → anchor. */

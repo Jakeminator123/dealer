@@ -15,7 +15,8 @@ import { orderRoutes } from './order-routes.ts';
 import { defaultPlan } from '../src/placement-model.ts';
 import { ARM_ALONE, ARM_AT_SHOE, POSE_ARM_WHAT, POSE_WHAT, SHOE_AT_ANCHOR, SLEEVE_AT_SHOE, orderStore, orderHash } from './order-store.ts';
 import { orderPrompt, promptFor } from '../src/order-prompts.ts';
-import { newOrderOf } from './order-new.ts';
+import { requestOf } from '../src/order-model.ts';
+import { newOrderOf, treesOf } from './order-new.ts';
 import { mediaRoles } from './media-roles.ts';
 import { replacedBy, allowed, isDecidable } from '../studio/components/material/state.ts';
 
@@ -748,6 +749,57 @@ test('the MINIMAL two-hand deal accepts the H24 long-edge reference', async (t) 
   assert.deepEqual(await readFile(path.join(root, order.reference.path)), film);
 });
 
+test('a deal with no last picture (end: null): the reference film shows the way, the text names no last frame, the seat needs no A3 yet', async (t) => {
+  const { root, call, request } = await lab(t);
+  // An anchor 2.3 that holds, so that the first picture does not wait and the draft can be approved.
+  const media = register();
+  media.dealers.paow.entries.push({ id: 'paow-2-3', role: 'ankare-2.3', name: 'Ankare 2.3', path: 'assets/anchors/paow-vila-ung-2/anchor.png', node: 'READY-C', state: 'gäller' });
+  await writeFile(path.join(root, 'data/media-roles.json'), JSON.stringify(media));
+  const id = 'docka-2-3-p4c2-svep24d';
+  const ref = `assets/references/docka/${id}/source.mp4`;
+  const film = Buffer.from('three seconds of the dummy laying the second card');
+  await mkdir(path.dirname(path.join(root, ref)), { recursive: true });
+  await writeFile(path.join(root, ref), film);
+  await writeFile(path.join(root, 'data/rendered-references.json'), JSON.stringify({
+    schemaVersion: 1, films: [{ id, edge: 'READY-C>P4.C2', path: ref, sha256: sha(film), seconds: 3, lays: 'RH', check: null }],
+  }));
+  const input = { dealer: 'paow', step: 'GIV-2.3', target: 'P4.C2', side: 'FRONT' };
+  // Without the exception the seat has no end picture, as before.
+  const refused = await request('POST', '/api/orders/preview', { body: input });
+  assert.equal(refused.status, 400);
+  assert.match(refused.json.error, /har ingen slutbild/);
+  for (const template of [12, 13]) {
+    const made = await call('POST', '/api/orders', { body: { ...input, end: null, reference: id, template } });
+    assert.equal(made.status, 201, made.json.error);
+    const { order } = made.json;
+    assert.deepEqual(order.pictures.map((p: { goesAs: string }) => p.goesAs), ['startFrame']);
+    assert.deepEqual(order.reference.clips, [id]);
+    assert.equal(order.prompt.template, `film-giv-kort@${template}`);
+    assert.doesNotMatch(order.prompt.text, /last frame|last picture/i);
+    assert.match(order.prompt.text, /^Locked camera, one continuous shot. Video 1 shows only the movement/);
+    assert.ok(order.notes.some((n: string) => /utan sista bild: .*A3P4C2 görs efteråt ur filmens sista ruta/.test(n)), order.notes.join('\n'));
+    // Changed and written again, it stays without a last picture and its text with it.
+    const changed = await call('PUT', `/api/orders/${order.id}`, { body: { takes: 2 }, match: made.json.revision });
+    assert.equal(changed.status, 200, changed.json.error);
+    assert.equal(changed.json.order.prompt.text, order.prompt.text);
+    // It is approved like any draft, and its call sends a first picture and no last one.
+    const approved = await call('POST', `/api/orders/${order.id}/approve`, { match: changed.json.revision });
+    assert.equal(approved.status, 200, approved.json.error);
+    assert.equal(approved.json.order.status, 'GODKÄND');
+    const args = requestOf(approved.json.order, 1).args;
+    assert.ok('startFrame' in args && !('endFrame' in args) && 'referenceVideos' in args, JSON.stringify(Object.keys(args)));
+  }
+  // Without a reference film nothing shows the way there; and only a deal bara dit goes without a last picture.
+  const blind = await request('POST', '/api/orders/preview', { body: { ...input, end: null, reference: null } });
+  assert.equal(blind.status, 400);
+  assert.match(blind.json.error, /Utan sista bild visar referensfilmen vägen/);
+  const entry = await request('POST', '/api/orders/preview', { body: { dealer: 'paow', step: 'INGANG-2.3', end: null } });
+  assert.equal(entry.status, 400);
+  assert.match(entry.json.error, /bara för en giv bara dit/);
+  assert.equal(newOrderOf(['paow', 'A2.3 - A3P4C2', '--no-end']).input.end, null);
+  assert.throws(() => newOrderOf(['paow', 'A2.3 - A3P4C2', '--no-end', '--end', 'x']), /Välj --end eller --no-end/);
+});
+
 test('C2 two-hand drafts store the actual handoff and retain the legacy prompt', async (t) => {
   const { root, call, request } = await lab(t);
   const planPath = path.join(root, 'placements/default.json'), plan = JSON.parse(await readFile(planPath, 'utf8'));
@@ -1436,8 +1488,31 @@ test('the template is a choice per order (12 or 13), kept when the draft is chan
   assert.equal(refreshed.status, 200, refreshed.json.error);
   assert.equal(refreshed.json.order.prompt.template, 'film-giv-kort@13');
   // tools/order-new.ts: the words of the command line are the order the routes take.
-  assert.deepEqual(newOrderOf(['paow', 'GIV-2.3', 'P4.C2', '--mall', '13', '--takes', '1', '--dry']), { input: { dealer: 'paow', step: 'GIV-2.3', target: 'P4.C2', template: 13, takes: 1, createdBy: 'huvudagenten, tools/order-new.ts' }, dry: true });
+  // Changed in round two (2026-11-21): the command also says the tree it holds the pictures to (--trad), null when none.
+  assert.deepEqual(newOrderOf(['paow', 'GIV-2.3', 'P4.C2', '--mall', '13', '--takes', '1', '--dry']), { input: { dealer: 'paow', step: 'GIV-2.3', target: 'P4.C2', template: 13, takes: 1, createdBy: 'huvudagenten, tools/order-new.ts' }, dry: true, tree: null });
   assert.equal(newOrderOf(['paow', 'RETUR-2.3', 'P4.C2', '--no-reference']).input.reference, null);
   assert.throws(() => newOrderOf(['paow', 'GIV-2.3', '--mall']), /--mall behöver ett värde/);
   assert.throws(() => newOrderOf(['paow', 'GIV-2.3', 'P4.C2', '--skicka']), /Okänd flagga --skicka/);
+  // His notation: one film, its step chosen by the anchor it starts from (or, for a return, the anchor it goes to).
+  const said = (...args: string[]) => { const { input } = newOrderOf(['paow', ...args]); return [input.step, input.target]; };
+  assert.deepEqual(said('A2.3 - A3P4C2', '--mall', '12'), ['GIV-2.3', 'P4.C2']);
+  assert.deepEqual(said('A2.3', '→', 'A1'), ['UTGANG-2.3', null]);
+  assert.deepEqual(said('A2.1 - A3P4C1'), ['GIV-2.1', 'P4.C1']);
+  assert.deepEqual(said('A3P4C1 - A2.3'), ['RETUR-2.3', 'P4.C1']);
+  assert.deepEqual(said('A3P4C1 - A1'), ['RETUR-1', 'P4.C1']);
+  assert.deepEqual(said('A1 - A2.3'), ['INGANG-2.3', null]);
+  assert.throws(() => said('A2.3 - A3P4C2 - A2.3'), /2 filmer/);
+  assert.throws(() => said('A2 - A1'), /A2\.1 \(nyp\)/);
+  assert.throws(() => said('A3P4C1 - A3P4C2'), /ingen film/);
+  assert.equal(newOrderOf(['paow', 'A2.3 - A1', '--trad', 'tatuerad']).tree, 'tatuerad');
+  // --trad: an anchor picture outside the named tree stops the draft; the card's picture is only named, since a tree takes
+  // its A3 from the films made for it.
+  const treeRoot = await mkdtemp(path.join(os.tmpdir(), 'order-new-trad-'));
+  t.after(() => rm(treeRoot, { recursive: true, force: true }));
+  await mkdir(path.join(treeRoot, 'data'));
+  await writeFile(path.join(treeRoot, 'data', 'dealer-trees.json'), JSON.stringify({ dealers: { paow: { trees: [{ id: 'casino', anchors: [{ entry: 'gammal-2-3' }] }, { id: 'tatuerad', anchors: [{ entry: 'ny-2-3' }] }] } } }));
+  const deal = (first: string) => ({ dealer: 'paow', step: { key: 'GIV-2.3' }, pictures: [{ goesAs: 'startFrame', label: 'Första bild', from: { entry: first } }, { goesAs: 'endFrame', label: 'Sista bild', from: { entry: 'ny-a3' } }] }) as never;
+  assert.deepEqual(treesOf(treeRoot, deal('ny-2-3'), 'tatuerad').map((p) => p.trees), [['tatuerad'], []]);
+  assert.throws(() => treesOf(treeRoot, deal('gammal-2-3'), 'tatuerad'), /hör inte till trädet "tatuerad"/);
+  assert.throws(() => treesOf(treeRoot, deal('ny-2-3'), 'bred'), /har inget träd "bred"/);
 });

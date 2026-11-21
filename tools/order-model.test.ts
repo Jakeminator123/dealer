@@ -7,7 +7,7 @@ import { committedFiles, committedText } from './committed.ts';
 import { createHash } from 'node:crypto';
 import {
   archivedReferenceIds,
-  ALL_SEVEN, CARD_SCALES, cutFrameOf, cutFrameWords, endsOnOf, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, SHAPE_LABEL, MODELS, SEAT_TARGETS, STEPS, TEXT_STYLES, plannedDiffers, plannedOf, bodyLine, canonical, checkPolicy, costOf, crossesBody, cutIntoOf, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, groupBudget, handChoiceOf, handsOf, hashInput, isArchived, cutCheckKey, readCutChecks, landingMissing, landingOf, lengthFor, lengthOfReference, modelFor, modelsFor, paramsOf, priceOf, referenceCandidates, requestOf, scaleQuad, scaleWords, seatEndMissing, seatEndOf, seatEndWords, seatList, seatWords, shownOf, spentOn, stepOf, styleOf, stylesFor, summaryOf, takeStates, tidyMotion, validateOrder, verdictOf, waitWords,
+  ALL_SEVEN, CARD_SCALES, cutFrameOf, cutFrameWords, endsOnOf, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, SHAPE_LABEL, MODELS, SEAT_TARGETS, STEPS, TEXT_STYLES, plannedDiffers, plannedOf, bodyLine, canonical, checkPolicy, costOf, crossesBody, cutIntoOf, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, groupBudget, handChoiceOf, handsOf, hashInput, isArchived, cutCheckKey, readCutChecks, landingMissing, landingOf, lengthFor, lengthOfReference, modelFor, modelsFor, paramsOf, priceOf, referenceCandidates, requestOf, scaleQuad, scaleWords, seatEndMissing, seatEndOf, seatEndWords, seatList, seatWords, shownOf, spentOn, stepOf, stepOfEdge, styleOf, stylesFor, summaryOf, takeStates, tidyMotion, validateOrder, verdictOf, waitWords,
   type BankFacts, type Order, type Policy, type Receipt,
 } from '../src/order-model.ts';
 import * as model from '../src/order-model.ts';
@@ -505,8 +505,19 @@ test('the steps a round needs: the hole card as a deal\'s target, its turn from 
   assert.deepEqual([outDrag.kind, outDrag.from, outDrag.to, outDrag.card, edgeOf(outDrag, null)], ['FILM', '2.2', '1', false, 'READY-B>IDLE']);
   assert.deepEqual(cutIntoOf(outDrag, null, 'ONE_WAY'), [], 'one edge');
   assert.match(summaryOf(outDrag, 'Paow', null), /från ankare 2\.2 till ankare 1/);
+  // The way out from the two-hand anchor (round two, 2026-11-21): anchor 2.3 to anchor 1, READY-C>IDLE.
+  const outBoth = stepOf('UTGANG-2.3')!;
+  assert.deepEqual([outBoth.kind, outBoth.from, outBoth.to, outBoth.card, edgeOf(outBoth, null)], ['FILM', '2.3', '1', false, 'READY-C>IDLE']);
+  assert.match(summaryOf(outBoth, 'Paow', null), /från ankare 2\.3 till ankare 1/);
+  // A film between two nodes is one step (his notation, tools/order-new.ts): the anchor it starts from chooses the deal,
+  // the anchor it goes to the return.
+  const edges: [string, string][] = [['READY-C', 'P4.C2'], ['READY', 'P4.C1'], ['READY-B', 'P6.C1'], ['P4.C1', 'READY-C'], ['P4.C1', 'IDLE'], ['READY-C', 'IDLE'], ['IDLE', 'READY-C'], ['IDLE', 'IDLE'], ['P4.C1', 'P4.C2']];
+  assert.deepEqual(edges.map(([from, to]) => stepOfEdge(from, to)), [
+    { step: 'GIV-2.3', target: 'P4.C2' }, { step: 'GIV-2.1', target: 'P4.C1' }, { step: 'GIV-2.2', target: 'P6.C1' }, { step: 'RETUR-2.3', target: 'P4.C1' },
+    { step: 'RETUR-1', target: 'P4.C1' }, { step: 'UTGANG-2.3', target: null }, { step: 'INGANG-2.3', target: null }, { step: 'VILA', target: null }, null,
+  ]);
   // Short or minimal only, as every new film; a still Kort only.
-  for (const s of [turn, out, outDrag]) assert.deepEqual(stylesFor(s.kind, s), ['KORT', 'MINIMAL']);
+  for (const s of [turn, out, outDrag, outBoth]) assert.deepEqual(stylesFor(s.kind, s), ['KORT', 'MINIMAL']);
   assert.deepEqual(stylesFor('FILM', stepOf('VILA')), ['KORT', 'MINIMAL']);
   assert.deepEqual(stylesFor('STILL'), ['KORT']);
   // A reference film is chosen from the bank's takes of that edge.

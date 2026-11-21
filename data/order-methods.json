@@ -560,6 +560,32 @@
       "setAt": "2026-11-17"
     },
     {
+      "id": "utgang-2.3",
+      "step": "UTGANG-2.3",
+      "seats": null,
+      "status": "prov",
+      "model": "wan3",
+      "resolution": "1080p",
+      "style": "KORT",
+      "template": 12,
+      "seconds": 4,
+      "takes": 1,
+      "turn": null,
+      "hand": null,
+      "shape": null,
+      "reference": "ingen",
+      "lastPicture": "ankare",
+      "extra": "The yellow card in the window is plain, one flat solid yellow from edge to edge.",
+      "evidence": {
+        "orders": [],
+        "reviewer": [],
+        "owner": [],
+        "note": "Ankare 2.3 till 1: båda händerna lämnar skon och går till vila, så att en runda som ges från 2.3 kan sluta i vila (huvudagenten på Jakobs uppdrag 2026-11-21, \"A2.3 → A1\"). Samma recept som utgången från 2.2 (WAN 3, kort text, 4 s, enfärgat kort i fönstret); texten säger att båda händerna går till vila. Ingen tagning än: receptet är ett prov tills en tagning har hållit."
+      },
+      "setBy": "underagent på huvudagentens uppdrag (omgång två, etapp A)",
+      "setAt": "2026-11-21"
+    },
+    {
       "id": "halkort",
       "step": "HALKORT",
       "seats": null,

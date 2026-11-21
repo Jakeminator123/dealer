@@ -14,7 +14,7 @@
 //
 // A return is a film of its own: from the seat's landing picture back to an anchor. A deal "bara dit" (oneWay) ends on the
 // landing picture. A reference film adds one sentence (SAY.reference) in every style: it shows the movement only. The way
-// out (UTGANG, READY>IDLE; UTGANG-2.2, READY-B>IDLE, from the drag) and the hole card's turn from rest (HALKORT,
+// out (UTGANG, READY>IDLE; UTGANG-2.2, READY-B>IDLE, from the drag; UTGANG-2.3, READY-C>IDLE, both hands) and the hole card's turn from rest (HALKORT,
 // IDLE>REVEAL(D.C2)) came after template 3 and are written Kort or Minimal only.
 //
 // A deal follows the hand chosen: the left hand all the way, the right hand all the way, or handbyte (the left hand takes
@@ -327,6 +327,9 @@ export const SAY = {
   leaveShoe: "Her thumb and forefinger let the yellow card settle back into the shoe's window, and her hand comes back low over the felt, palm down, and rests flat on the felt, as in the last frame.",
   // The way out from the drag (READY-B>IDLE, anchor 2.2 to anchor 1): the hand lies flat over the card in the window.
   leaveDrag: "Her fingertips lift off the yellow card in the shoe's window, which stays where it lies, and her hand comes back low over the felt, palm down, and rests flat on the felt, as in the last frame.",
+  // The way out from both hands at the shoe (READY-C>IDLE, anchor 2.3 to anchor 1): both hands come to rest.
+  leaveBoth: "Her fingertips lift off the yellow card in the shoe's window, which stays where it lies, and both her hands come back low over the felt, palms down, and rest flat on the felt, as in the last frame.",
+  leaveBothMinimal: 'Both her hands go from the shoe back to the table, as in the last frame.',
   eyesUp: 'Her eyes come up from the shoe towards the players.',
   leaveMinimal: 'Her hand goes from the yellow card in the shoe back to the table, as in the last frame.',
   // The hole card turned open from rest (IDLE>REVEAL(D.C2)): the reach, the turn at the place (turnAtPlace), the way back.
@@ -809,10 +812,12 @@ function entryText(input: PromptInput, to: '2.1' | '2.2' | '2.3', style: TextSty
  * anchor 2.2 (READY-B>IDLE) the fingertips lift off the card the hand lies over; then the hand comes back low to rest on
  * the felt. Written Kort or Minimal only: the steps came after template 3. Minimal says the same for both.
  */
-function exitText(input: PromptInput, style: TextStyle, from: '2.1' | '2.2' = '2.1'): Prompt {
+function exitText(input: PromptInput, style: TextStyle, from: '2.1' | '2.2' | '2.3' = '2.1'): Prompt {
+  // From anchor 2.3 both hands are at the shoe and both come to rest: no hand rests the whole time.
+  const both = from === '2.3';
   const parts: Part[] = style === 'MINIMAL'
-    ? [{ text: SAY.cameraMinimal, from: [] }, referencePart(input), { text: SAY.leaveMinimal, from: [] }, extraPart(input)]
-    : [{ text: SAY.camera, from: [] }, referencePart(input), { text: from === '2.2' ? SAY.leaveDrag : SAY.leaveShoe, from: [] }, { text: SAY.eyesUp, from: [] }, { text: SAY.otherRests, from: [] }, extraPart(input)];
+    ? [{ text: SAY.cameraMinimal, from: [] }, referencePart(input), { text: both ? SAY.leaveBothMinimal : SAY.leaveMinimal, from: [] }, extraPart(input)]
+    : [{ text: SAY.camera, from: [] }, referencePart(input), { text: both ? SAY.leaveBoth : from === '2.2' ? SAY.leaveDrag : SAY.leaveShoe, from: [] }, { text: SAY.eyesUp, from: [] }, { text: both ? '' : SAY.otherRests, from: [] }, extraPart(input)];
   return { template: templateOf('film-utgang', style === 'MINIMAL' ? 'MINIMAL' : 'KORT'), style: style === 'MINIMAL' ? 'MINIMAL' : 'KORT', text: joined(parts), parts };
 }
 
@@ -940,6 +945,8 @@ function written(input: PromptInput): Prompt {
       return exitText(input, style);
     case 'UTGANG-2.2':
       return exitText(input, style, '2.2');
+    case 'UTGANG-2.3':
+      return exitText(input, style, '2.3');
     case 'HALKORT':
       return revealText(input, style);
     case 'VILA':
@@ -983,7 +990,10 @@ export function orderPrompt(
   const place = drawn ? { x: drawn.centre[0], y: drawn.centre[1] } : kept ? { x: kept[0], y: kept[1] } : planPlace;
   const m = order.motion;
   const deal = order.step.key === 'GIV-2.1' || order.step.key === 'GIV-2.2' || order.step.key === 'GIV-2.3';
-  return promptFor({
+  // A deal with a first picture and no last one (tools/order-store.ts, end: null); a line that lists no pictures yet (Bordet's
+  // row) is not one.
+  const open = deal && order.step.shape === 'ONE_WAY' && order.pictures.some((p) => p.goesAs === 'startFrame') && !order.pictures.some((p) => p.goesAs === 'endFrame');
+  const p = promptFor({
     dealer, step: order.step.key, model: order.generation.model,
     motion: m ? { grip: m.grip, hand: m.hand, pass: !!m.pass, turn: m.turn, flipAxis: m.flipAxis, side: m.side } : null,
     place, extra: order.prompt.extra,
@@ -994,4 +1004,23 @@ export function orderPrompt(
     faceMark: !!order.prompt.faceMark,
     version: stored,
   });
+  return open ? withoutLastFrame(p) : p;
+}
+
+/**
+ * A deal bara dit with no last picture (tools/order-store.ts, end: null; the seat's A3 is made afterwards from the film's
+ * last frame): the recipe's text with what it says of the last frame taken out. The reference film, made to the seat, shows
+ * where the card goes (the store refuses one without; naming it once more makes the text say it twice), template 12 says
+ * the place in words, and the card keeps its size. A case these words do not cover still names the last frame, and the
+ * store refuses it rather than send a text that points at a picture that is not there.
+ */
+const NO_LAST_FRAME: readonly [RegExp, string][] = [
+  [/, where the last frame shows it(?=[,;.])/g, ''],
+  [/ the size it has in the last frame/g, ' the same size'],
+  [/, as (?:in the last frame|the last frame shows it)(?=[,;.])/g, ''],
+];
+export function withoutLastFrame(prompt: Prompt): Prompt {
+  const strip = (text: string) => NO_LAST_FRAME.reduce((t, [re, to]) => t.replace(re, to), text);
+  const parts = prompt.parts.map((p) => ({ ...p, text: strip(p.text) }));
+  return { ...prompt, parts, text: joined(parts) };
 }

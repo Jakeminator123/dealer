@@ -323,7 +323,7 @@ export const approvalWords = (a: Pick<Approval, 'by'>) => (a.by === 'huvudagent'
 export type Anchor = '1' | '2.1' | '2.2' | '2.3';
 /** How the card leaves the shoe: PINCH from 2.1, DRAG from 2.2; TWO_HANDS from 2.3 (the hand at the shoe strokes it out, the other takes, turns and lays it). */
 export type Grip = 'PINCH' | 'DRAG' | 'TWO_HANDS';
-export type StepKey = 'INGANG-2.1' | 'INGANG-2.2' | 'INGANG-2.3' | 'GIV-2.1' | 'GIV-2.2' | 'GIV-2.3' | 'RETUR-2.1' | 'RETUR-2.2' | 'RETUR-2.3' | 'RETUR-1' | 'UTGANG' | 'UTGANG-2.2' | 'HALKORT' | 'VILA' | 'ANKARE-2.1' | 'ANKARE-2.2';
+export type StepKey = 'INGANG-2.1' | 'INGANG-2.2' | 'INGANG-2.3' | 'GIV-2.1' | 'GIV-2.2' | 'GIV-2.3' | 'RETUR-2.1' | 'RETUR-2.2' | 'RETUR-2.3' | 'RETUR-1' | 'UTGANG' | 'UTGANG-2.2' | 'UTGANG-2.3' | 'HALKORT' | 'VILA' | 'ANKARE-2.1' | 'ANKARE-2.2';
 /**
  * A step says what a film or still is between: its anchors, whether it carries a card and with which grip, and for a still
  * the picture it makes. How it is ordered (model, resolution, seconds, shape, takes, reference film, last picture, template)
@@ -383,6 +383,9 @@ export const STEPS: readonly StepDef[] = [
   // The way out from the drag at the shoe (READY-B>IDLE, anchor 2.2 to anchor 1), so that a round can go through 2.2 by rest
   // (the main agent's decision 2026-11-13): the hand that lies over the card in the window lifts off it and comes to rest.
   { key: 'UTGANG-2.2', group: 'Utgång', label: 'Ankare 2.2 → 1: handen lämnar kortet i skon och vilar', kind: 'FILM', from: '2.2', to: '1', card: false, styles: ['KORT', 'MINIMAL'] },
+  // The way out from both hands at the shoe (READY-C>IDLE, anchor 2.3 to anchor 1), so that a round dealt from 2.3 can end at
+  // rest (the main agent on Jakob's order 2026-11-21, "A2.3 → A1"): both hands leave the shoe and come to rest.
+  { key: 'UTGANG-2.3', group: 'Utgång', label: 'Ankare 2.3 → 1: båda händerna lämnar skon och vilar', kind: 'FILM', from: '2.3', to: '1', card: false, styles: ['KORT', 'MINIMAL'] },
   {
     key: 'HALKORT', group: 'Hålkortet', label: 'Hålkortet vänds upp från vila, handen tillbaka', kind: 'FILM', from: '1', to: '1', card: false, target: 'D.C2', edge: 'IDLE>REVEAL(D.C2)',
     cards: [{ target: 'D.C2', before: 'BACK', after: 'FRONT' }], styles: ['KORT', 'MINIMAL'],
@@ -392,6 +395,23 @@ export const STEPS: readonly StepDef[] = [
   { key: 'ANKARE-2.2', group: 'Bild', label: 'Ankare 2.2 (släp)', kind: 'STILL', from: '1', to: null, card: false, ratio: '4:3', imageSize: '4K', makes: { role: 'ankare-2.2', node: 'READY-B', label: 'ankare 2.2' } },
 ];
 export const stepOf = (key: string): StepDef | null => STEPS.find((s) => s.key === key) ?? null;
+/**
+ * The step a film between two of the graph's nodes is ordered as, and its card: "READY-C" → "P4.C2" is GIV-2.3 to P4.C2 (the
+ * anchor chooses the step), "P4.C2" → "READY-C" RETUR-2.3, "P4.C2" → "IDLE" RETUR-1, "IDLE" → "READY-C" INGANG-2.3,
+ * "READY-C" → "IDLE" UTGANG-2.3, "IDLE" → "IDLE" VILA, "IDLE" → "REVEAL(D.C2)" HALKORT. Null where no step makes it. For
+ * his notation ("A2.3 - A3P4C2", read by parseJakob in studio/lib/names.ts) in tools/order-new.ts.
+ */
+export function stepOfEdge(from: string, to: string): { step: StepKey; target: string | null } | null {
+  const isCard = (n: string) => /^(?:P[1-7]|D)\.C[1-3]$/.test(n);
+  for (const s of STEPS) {
+    if (s.kind !== 'FILM') continue;
+    if (s.edge) { if (s.edge === `${from}>${to}`) return { step: s.key, target: null }; continue; }
+    if (s.card && s.start === 'LAND') { if (isCard(from) && to === ANCHOR_NODE[s.to ?? s.from]) return { step: s.key, target: from }; continue; }
+    if (s.card) { if (from === ANCHOR_NODE[s.from] && isCard(to)) return { step: s.key, target: to }; continue; }
+    if (from === ANCHOR_NODE[s.from] && to === ANCHOR_NODE[s.to ?? s.from]) return { step: s.key, target: null };
+  }
+  return null;
+}
 /** The anchors in Jakob's words: "ankare 2.1 (nyp): tummen och pekfingret på kortet i skons fönster". */
 export const ANCHOR_WORDS: Record<Anchor, string> = {
   '1': 'ankare 1 (vila): båda händerna på bordet',

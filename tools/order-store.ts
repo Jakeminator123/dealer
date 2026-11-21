@@ -119,9 +119,12 @@ export type NewOrder = {
   /**
    * A deal bara dit: the seat's A3 candidate (a landing picture for the seat and the laying hand that does not hold yet) named
    * as its last picture, a deliberate exception ("med kandidaten som sista bild") said in the draft's notes; absent: the seat's
-   * own end picture (the A3 that holds, else the cut frame).
+   * own end picture (the A3 that holds, else the cut frame). null: no last picture at all (the main agent's exception of
+   * 2026-11-21 for a seat with no A3 yet, tools/order-new.ts --no-end): the film ends where the model leaves the card, the
+   * reference film shows the way there, the text says no last frame (src/order-prompts.ts withoutLastFrame), and the seat's
+   * A3 is made afterwards from the delivered film's last frame (tools/landing-make.ts).
    */
-  end?: string;
+  end?: string | null;
   id?: string;
   title?: string;
   group?: { id: string; label: string } | null;
@@ -578,7 +581,10 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     let faceMark = false;
     const giv = order.step.key.startsWith('GIV-'), retur = order.step.key.startsWith('RETUR-');
     const shows = giv ? end : retur ? order.pictures.find((p) => p.goesAs === 'startFrame') : undefined;
-    if (shows && target && order.motion?.side === 'FRONT') {
+    // A deal with no last picture says the marks as well: its A3 is made afterwards with the plan's card drawn on the seat,
+    // marks and all (tools/landing-make.ts), as pilot 02's last picture showed them.
+    if (giv && !end && order.step.shape === 'ONE_WAY' && target && order.motion?.side === 'FRONT') faceMark = true;
+    else if (shows && target && order.motion?.side === 'FRONT') {
       const kept = files?.get(shows.name);
       if (giv && drawn) faceMark = !!drawn.mark;
       else if (kept || shows.path) { try { faceMark = markSeen(await readRgb(kept ?? path.join(root, ...shows.path!.split('/'))), planQuad((snapshot ?? await readPlan(root)).plan, target)); } catch { faceMark = false; } }
@@ -699,12 +705,13 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     // bank's own film to the seat. A seat with neither says so.
     const oneWayDeal = deal && shape === 'ONE_WAY';
     // The seat's A3 for the hand that lays the card; or, as a named exception, an A3 candidate for that seat and hand.
-    if (input.end !== undefined && (typeof input.end !== 'string' || !oneWayDeal)) throw new StoreError(400, 'Sista bilden väljs bara för en giv bara dit, som en A3-kandidat för platsen.');
+    if (input.end !== undefined && ((input.end !== null && typeof input.end !== 'string') || !oneWayDeal)) throw new StoreError(400, 'Sista bilden väljs bara för en giv bara dit, som en A3-kandidat för platsen eller ingen alls.');
+    const open = oneWayDeal && input.end === null;
     const named = input.end ? a3Candidates(register.dealers[dealer.id]?.entries ?? [], target, lays).find((e) => e.id === input.end && isPicture(e)) ?? null : null;
     if (input.end && !named) throw new StoreError(400, `${input.end} är ingen A3-kandidat för ${seatWords(target)} med ${lays === 'RH' ? 'höger' : 'vänster'} hand vid kortet.`);
-    const seatLanding = named ?? (oneWayDeal ? landingEntry(register, dealer.id, target, lays) : null);
-    const cuts = oneWayDeal && !seatLanding ? cutFrameOf(bank!, { dealer: dealer.id, step, target, hand: lays }) : [];
-    if (oneWayDeal && !seatLanding && !cuts.length) throw new StoreError(400, `${seatEndMissing(dealer.name, target, step.from, lays)}${lays === 'RH' && twoHands ? ` Från ankare 2.3 lägger höger hand kortet: platsen behöver sin A3 (${a3Name(target!)}) med höger hand vid kortet (node tools/landing-make.ts).` : ''}`);
+    const seatLanding = named ?? (oneWayDeal && !open ? landingEntry(register, dealer.id, target, lays) : null);
+    const cuts = oneWayDeal && !open && !seatLanding ? cutFrameOf(bank!, { dealer: dealer.id, step, target, hand: lays }) : [];
+    if (oneWayDeal && !open && !seatLanding && !cuts.length) throw new StoreError(400, `${seatEndMissing(dealer.name, target, step.from, lays)}${lays === 'RH' && twoHands ? ` Från ankare 2.3 lägger höger hand kortet: platsen behöver sin A3 (${a3Name(target!)}) med höger hand vid kortet (node tools/landing-make.ts).` : ''}`);
     if (input.reference !== undefined && input.reference !== null && typeof input.reference !== 'string') throw new StoreError(400, 'Referensfilmen ska vara en tagnings id.');
     const cardScale = input.cardScale ?? 1;
     if (!(CARD_SCALES as readonly unknown[]).includes(cardScale)) throw new StoreError(400, `Kortets storlek ska vara ${CARD_SCALES.map((f) => scaleWords(f)).join(', ')}.`);
@@ -750,6 +757,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       if (recipe.reference === 'ingen' && chosen) exceptions.push('en referensfilm fast receptet inte har någon');
       if (input.duration !== undefined && input.duration !== secondsOf(model, recipe.seconds, chosen)) exceptions.push(`${input.duration} s i stället för ${secondsOf(model, recipe.seconds, chosen)} s`);
       if (takes !== recipe.takes) exceptions.push(`${takes} tagningar i stället för ${recipe.takes}`);
+      if (open) exceptions.push(`utan sista bild: filmen slutar där modellen lämnar kortet, och ${a3Name(target!)} görs efteråt ur filmens sista ruta (node tools/landing-make.ts)`);
       if (named) exceptions.push(`med kandidaten som sista bild: ${named.name} (${named.id}), en kandidat som Jakob inte har gjort gällande`);
       if (deal && !twoHands && recipe.hand && (pass || hand !== recipe.hand)) exceptions.push(`${pass ? 'handbyte' : hand === 'RH' ? 'höger hand hela vägen' : 'vänster hand hela vägen'} i stället för ${recipe.hand === 'LH' ? 'handen vid skon hela vägen' : 'andra handen hela vägen'}`);
     }
@@ -801,6 +809,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
         // What Placering said for the card's grip and turn, kept with a deal so that where it differs stays said.
         if (step.start !== 'LAND') motion.planned = plannedOf({ grip: intent.grip, turnAt: intent.turnAt, flipAxis: intent.flipAxis, side: intent.endSide });
         if (step.start === 'LAND') pictures.push((await anchorPicture('last.png', (w) => `Sista bild · ${w}`, 'endFrame', step.to ?? step.from)).picture);
+        else if (open) { /* no last picture: the film ends where the model leaves the card */ }
         else if (shape === 'ONE_WAY' && seatLanding) pictures.push(await landingPicture(seatLanding, 'last.png', named ? `Sista bild · ${named.name}, kandidat (inte gällande)` : `Sista bild · ${landingWords}`, 'endFrame'));
         else if (shape === 'ONE_WAY') pictures.push(await cutPicture(save, cuts, target!, side, register, dealer, snapshot, watch));
         else {
@@ -875,6 +884,9 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       status: 'UTKAST',
     };
     draft.prompt = await textOf(draft, dealer, extra, snapshot, files);
+    // Without a last picture the reference film is what shows the way to the seat, and the text may not point at a last frame.
+    if (open && reference.status !== 'FINNS') throw new StoreError(400, `Utan sista bild visar referensfilmen vägen till ${seatWords(target)}: ${model.label} med en referensfilm, eller en sista bild.`);
+    if (open && /last frame|last picture/i.test(draft.prompt.text)) throw new StoreError(400, `Texten utan sista bild är inte skriven för det här fallet (mall ${mall}, ${style}): den nämner fortfarande sista bilden.`);
     // A chosen template with no text of its own for this film writes today's words: said, so that a trial of it is not a trial of nothing.
     if (mall !== TEMPLATE_VERSION) {
       const today = orderPrompt({ ...draft, prompt: { ...draft.prompt, template: '' } }, dealer, draft.prompt.place ? { x: draft.prompt.place[0], y: draft.prompt.place[1] } : null);

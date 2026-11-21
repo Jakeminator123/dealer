@@ -91,6 +91,7 @@
       "sha256": "587d1ebadaaec339859cbbf575e243db16ff71b4437d1b12ec22bd679366f1e5",
       "seconds": 4,
       "lays": "RH",
+      "shape": "ROUND_TRIP",
       "check": null
     },
     {
@@ -100,6 +101,7 @@
       "sha256": "f982eb628e14f62c8a843aaed385dc2c34ee5ac204aa61574f16618e4cef4de3",
       "seconds": 4,
       "lays": "RH",
+      "shape": "ROUND_TRIP",
       "check": null
     },
     {

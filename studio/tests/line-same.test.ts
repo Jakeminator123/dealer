@@ -196,8 +196,9 @@ test("Bordet's row and the store agree for every standard step and card, and the
     made[key] = stored;
     compared++;
   }
-  // Three entries, two ways out and rest; the pinch to seat 1 and seat 4; the drag and the two-hand deal to seat 4.
-  assert.equal(compared, 10, `${compared} orders compared`);
+  // Three entries, three ways out and rest; the pinch to seat 1 and seat 4; the drag and the two-hand deal to seat 4.
+  // Changed 2026-11-21 (round two): A2.3 → A1 is a step of its own (UTGANG-2.3, both hands leave the shoe), so 10 became 11.
+  assert.equal(compared, 11, `${compared} orders compared`);
   assert.equal(texts, compared, `${texts} of ${compared} texts compared word for word`);
   assert.equal(Object.keys(refused).length, 9 * 3 - 4 + 3 * 9, "every other card waits or has no method, in the row and in the store alike");
   // The dealer's first card: its only cut frame does not hold, and it has no landing picture (in his notation since

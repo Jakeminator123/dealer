@@ -15,7 +15,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { FLIP_AXES, MODELS, STEPS, type FlipAxis, type Shape, type StepKey, type TextStyle } from '../src/order-model.ts';
 import { readMethods, recipeFor } from '../src/order-methods.ts';
-import { TEMPLATE_CHOICES, TEMPLATE_VERSION, orderPrompt, promptFor, type DealMotion } from '../src/order-prompts.ts';
+import { TEMPLATE_CHOICES, TEMPLATE_VERSION, orderPrompt, promptFor, withoutLastFrame, type DealMotion } from '../src/order-prompts.ts';
 
 /** Where each card of the plan lies, in bank pixels (the plan of 2026-11-11, rounded): far left to far right, the dealer's own close to her. */
 const PLACES: Record<string, { x: number; y: number }> = {
@@ -190,7 +190,7 @@ test('every exception a draft can still say against its recipe keeps the text fr
 
 test('the films without a card say each thing once too: the entries (2.3 with them), the ways out, the returns, the hole card, rest', () => {
   const others: { step: StepKey; motion?: DealMotion }[] = [
-    ...(['INGANG-2.1', 'INGANG-2.2', 'INGANG-2.3', 'UTGANG', 'UTGANG-2.2', 'HALKORT', 'VILA'] as const).map((step) => ({ step })),
+    ...(['INGANG-2.1', 'INGANG-2.2', 'INGANG-2.3', 'UTGANG', 'UTGANG-2.2', 'UTGANG-2.3', 'HALKORT', 'VILA'] as const).map((step) => ({ step })),
     ...(['RETUR-2.1', 'RETUR-2.2', 'RETUR-2.3', 'RETUR-1'] as const).flatMap((step) => [{ hand: 'LH' as const, pass: false }, { hand: 'LH' as const, pass: true }].map((h) => ({ step, motion: { grip: 'PINCH' as const, ...h, turn: false, flipAxis: null, side: 'FRONT' as const } }))),
   ];
   // A return whose first picture shows the marks says them (Bordet's review 2026-11-21), and still says each thing once.
@@ -334,6 +334,20 @@ test('template 13 is a choice per order beside 12, never the default: the four t
   assert.equal(stored('film-retur-kort@13').template, 'film-retur-kort@13');
   assert.equal(stored('film-retur-kort@11').template, `film-retur-kort@${TEMPLATE_VERSION}`);
   assert.equal(stored('').template, `film-retur-kort@${TEMPLATE_VERSION}`);
+});
+
+test('a deal with no last picture (round two, 2026-11-21): the two-hand deal from 2.3 in 12 and 13 names no last frame and still says each thing once', async () => {
+  const { recipe } = await cases();
+  const twoHand = recipe.filter((c) => c.step === 'GIV-2.3' && c.shape === 'ONE_WAY' && c.motion.side === 'FRONT' && c.reference);
+  assert.ok(twoHand.length >= 7, `${twoHand.length} two-hand deals with a reference film`);
+  for (const c of twoHand) for (const version of [12, 13]) {
+    // The marks are said: the seat's A3 is made afterwards with the plan's card drawn on it, marks and all.
+    const p = withoutLastFrame(textOf({ ...c, faceMark: true, version }));
+    assert.doesNotMatch(p.text, /last frame|last picture/i, `${c.target} @${version}:\n${p.text}`);
+    assert.match(p.text, /Video 1/, `${c.target} @${version}: the reference film shows the way`);
+    assert.deepEqual(faults(p.text, { oneWay: true, closed: false }), [], `${c.target} @${version}:\n${p.text}`);
+    assert.equal(p.text, p.parts.filter((x) => x.text).map((x) => x.text).join(' '), 'the parts are the text');
+  }
 });
 
 test('template 13 says each thing once in every case the line allows, as 12 does', async () => {
