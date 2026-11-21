@@ -422,8 +422,9 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   kanske vi kan ha en dummydocka nu för PAOW som gissar hennes mått typ. Denna eller en docka ska förslagsvis in
   istället för den siluett vi nu har i studion, där man ska kunna ändra docka också." Läst så (huvudagentens
   tolkning): dockan blir en namngiven uppsättning mått per dealer, dagens står kvar som den är, och projektet
-  `ultimate-reality` är en läsreferens (inga länkar eller beroenden dit). "Nej, vita dockan räcker" (2026-11-18)
-  gäller fortsatt: en vit docka, inte en klädd människa.
+  `ultimate-reality` är en läsreferens (inga länkar eller beroenden dit). Hans nej 2026-11-18 gällde Meshy-modellen
+  av Paow, inte en klädd figur: 2026-11-20 svarade han "Ja, gå vidare" i Beslut (kortet `3d-avlast-giv-kladd-figur`)
+  om att de avlästa lederna styr en klädd figur. Se också "SAM-dockan ska in, men inte nu" under Dealern och ankarna.
 
 - **Handleden vrider kortet** (2026-11-17): "Oavsett om hon nyper eller släpar ut kortet, alltså om hon kommer från
   ankaret 2.1 eller 2.2, måste hon vrida över handleden. Jag har pratat med dig i flera timmar om det här, men det
