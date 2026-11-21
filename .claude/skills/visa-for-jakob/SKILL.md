@@ -22,7 +22,8 @@ för servern och för svaret i [`AGENTS.md`](../../../AGENTS.md), "Labbservern" 
    `D:/dealer-scratch` visas inte för honom (SYSTEM, vyn Prov; README, Studion).
 5. **En stillbild bredvid varje film han ska döma,** och ett nytt utseende för alla visas i spelets storlek och i
    rörelse innan det gäller (`docs/BESKED.md`, "Arbetet och dokumenten" och "Läpparna och talet").
-6. **Det som väntar på hans svar är ett kort i Beslut,** en post i `data/decisions.json` med en kort fråga (högst 14 ord) och
+6. **Ett prov (film, bild) som väntar på hans dom är ett kort i Beslut;** teknik, publicering och arbetssätt frågas i
+   chatten, aldrig som kort (`docs/BESKED.md`, "Labbet och studion"). Kortet är en post i `data/decisions.json` med en kort fråga (högst 14 ord) och
    en bild ur ett prov (`proof`, `file`); agenter lägger till och tar bort poster, bara sidan skriver hans svar (README, Register;
    reglerna i huvudet på `tools/decision-register.ts`). Läs hans svar och anteckningar där innan du svarar honom, och ta ut kortet när det är
    utfört. Hans ord i Prov (Bra, Inte bra, kommentarer) läses med `node tools/proof-notes.ts` före svaret och besvaras

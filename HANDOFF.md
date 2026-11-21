@@ -55,9 +55,9 @@ Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-
 
 ## Väntar på Jakob
 
-Det som väntar på honom är kort i Beslut. Läs dem i studions vy Beslut (`/studio/beslut/`) eller i
-registret `data/decisions.json`: fältet `answer` bär hans val och hans anteckning. En fråga till honom ställs bara som
-ett kort där (skillen `visa-for-jakob`), och kortet tas ut när svaret är utfört.
+Prov han ska döma är kort i Beslut. Läs dem i studions vy Beslut (`/studio/beslut/`) eller i
+registret `data/decisions.json`: fältet `answer` bär hans val och hans anteckning. Bara filmer och bilder blir kort
+(skillen `visa-for-jakob`); teknik och arbetssätt frågas i chatten. Kortet tas ut när svaret är utfört.
 
 ## Läs för ditt ämne
 

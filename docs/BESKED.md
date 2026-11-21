@@ -117,6 +117,11 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 
 ## Labbet och studion
 
+- **Korten i Beslut är bara för provmaterial** (2026-11-21, kväll, till sessionen dealer-37, om kortet "Ska nätet få en
+  ny Blob med bara det aktiva trädet per dealer?"): "Altså allt som har att göra med en AI på sidan så att säga ska bara
+  göras för provmaterial av filmer och sånt. Sånt här ska den inte ha att göra med alls!" Läst så: ett kort i Beslut
+  bär en film eller en bild han ska se och döma; frågor om teknik, publicering, Blob och arbetssätt ställs i chatten.
+  Kortet togs ut samma kväll.
 - **Handöverlägget av i grunden** (2026-11-19): "Ta bort det svarta kortöverlägget som standard så jag slipper speciallänkar. Behåll korten som ligger på bordet."
   Scen har separata reglage för Kort på bordet och Överlägg i handen. Det senare är av som standard, även i Casino;
   filmens gula/blå originalkort kan synas under utdelningen. Huvudvyn heter Scen & bord; adressen `/bordet/` består.
