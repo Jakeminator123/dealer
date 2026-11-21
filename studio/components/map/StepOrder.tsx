@@ -2,14 +2,17 @@
 
 // The panel of a step of a tree that has no film (saknas) or one that waits (prov): its first and last picture side by side,
 // what an order of it has and lacks (first and last picture, reference film, recipe) as the lab reads them
-// (tools/dealer-tree.ts orderFacts), the estimated price, and the command that makes a draft of it, with a copy button. The
-// panel only shows: it orders nothing, approves nothing and runs no command (Beställ and tools/order-new.ts do that).
-import { ArrowRight, Check, Copy, Film, X } from "lucide-react";
+// (tools/dealer-tree.ts orderFacts), and, unless the tree rests, the estimated price and the command that makes a draft of
+// it, with a copy button. The step's takes that did not hold lie in Granska, a link away. The panel only shows: it orders
+// nothing, approves nothing and runs no command (Beställ and tools/order-new.ts do that).
+import { ArrowRight, ArrowUpRight, Check, Copy, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import type { Need, TreeView, ViewStep } from "../../../src/dealer-trees.ts";
-import { Button, Sheet, buttonClasses, cn, useToast } from "@/components/ui";
+import { Button, Sheet, cn, useToast } from "@/components/ui";
+import { useBank } from "@/lib/bank";
 import type { EntryAnswer } from "@/lib/media";
+import { takeName } from "@/lib/names";
 import { ProofStill } from "../proofs";
 import { coverOfEntry } from "../material/Tile";
 
@@ -40,10 +43,25 @@ function Row({ label, need }: { label: string; need: Need }) {
   );
 }
 
-export function StepOrder({ view, step, media, onClose, onOpenFilms }: { view: TreeView; step: ViewStep | null; media: ReadonlyMap<string, EntryAnswer>; onClose: () => void; onOpenFilms: (() => void) | null }) {
+/** The command with its quoted step kept on one line: "A1 - A1" and "A2.3 - A3P4C2" are never broken. */
+function Command({ text }: { text: string }) {
+  const at = text.indexOf('"');
+  return at < 0 ? text : (
+    <>
+      {text.slice(0, at)}
+      <span className="whitespace-nowrap">{text.slice(at)}</span>
+    </>
+  );
+}
+
+export function StepOrder({ view, step, media, onClose }: { view: TreeView; step: ViewStep | null; media: ReadonlyMap<string, EntryAnswer>; onClose: () => void }) {
   const toast = useToast();
+  const { graph } = useBank();
   const [copied, setCopied] = useState<string | null>(null);
   const shown = step && step.state !== "finns" ? step : null;
+  // The take waiting for his verdict, by its name in his words (never its id).
+  const waits = shown?.state === "prov" && shown.take ? shown.take : null;
+  const waiting = waits ? (graph?.takes[waits] ?? null) : null;
   const pic = (node: string) => {
     const n = view.nodes.find((x) => x.node === node);
     return { entry: n?.entry ? (media.get(n.entry) ?? null) : null, code: n?.code ?? node };
@@ -76,11 +94,11 @@ export function StepOrder({ view, step, media, onClose, onOpenFilms }: { view: T
                 <span>
                   Väntar på din dom:{" "}
                   <Link href={`/granska/?tagning=${encodeURIComponent(shown.take)}`} className="font-medium text-brass-hi hover:underline">
-                    {shown.take}
+                    {waiting ? takeName(waiting, graph?.edge[waiting.edge]?.takes) : "öppna i Granska"}
                   </Link>
                 </span>
               ) : null}
-              {shown.deliveries.length ? <span className="text-dim">Levererad, inte i banken än: {shown.deliveries.join(", ")}</span> : null}
+              {shown.deliveries.length ? <span className="text-dim">Levererad, inte i banken än{shown.deliveries.length > 1 ? ` (${shown.deliveries.length})` : ""}</span> : null}
             </div>
           ) : null}
 
@@ -94,32 +112,40 @@ export function StepOrder({ view, step, media, onClose, onOpenFilms }: { view: T
                 <Row label="Referensfilm" need={order.reference} />
                 <Row label="Recept" need={order.recipe} />
               </ul>
-              <p className="text-sm text-dim">
-                {order.price !== null ? (
-                  <>
-                    Pris: <span className="font-medium tabular-nums text-ink">≈ {order.price} krediter</span> (skattat, värsta fallet)
-                  </>
-                ) : (
-                  "Pris: kan inte skattas utan recept."
-                )}
-              </p>
-              <div className="flex flex-col gap-1.5">
-                <span className="text-xs text-dim">Ett utkast av steget görs med</span>
-                <div className="flex items-stretch gap-2">
-                  <code className="min-w-0 flex-1 select-all break-all rounded-md border border-line bg-well px-2.5 py-2 font-mono text-[12.5px] leading-5 text-ink">{order.command}</code>
-                  <Button variant="secondary" size="md" icon={copied === order.command ? <Check /> : <Copy />} onClick={() => void copy(order.command)} className="h-auto">
-                    Kopiera
-                  </Button>
-                </div>
-                <span className="text-xs text-faint">Utkastet godkänns och läggs i Beställ; panelen beställer inget.</span>
-              </div>
+              {view.tree.state !== "vilar" ? (
+                <>
+                  <p className="text-sm text-dim">
+                    {order.price !== null ? (
+                      <>
+                        Pris: <span className="font-medium tabular-nums text-ink">≈ {order.price} krediter</span> (skattat, värsta fallet)
+                      </>
+                    ) : (
+                      "Pris: kan inte skattas utan recept."
+                    )}
+                  </p>
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-xs text-dim">Ett utkast av steget görs med</span>
+                    <div className="flex items-stretch gap-2">
+                      <code className="min-w-0 flex-1 select-all break-words rounded-md border border-line bg-well px-2.5 py-2 font-mono text-[12.5px] leading-5 text-ink">
+                        <Command text={order.command} />
+                      </code>
+                      <Button variant="secondary" size="md" icon={copied === order.command ? <Check /> : <Copy />} onClick={() => void copy(order.command)} className="h-auto">
+                        Kopiera
+                      </Button>
+                    </div>
+                    <span className="text-xs text-faint">Utkastet godkänns och läggs i Beställ; panelen beställer inget.</span>
+                  </div>
+                </>
+              ) : null}
             </>
           ) : null}
 
-          {onOpenFilms ? (
-            <button type="button" onClick={onOpenFilms} className={buttonClasses({ variant: "quiet", size: "sm", className: "self-start" })}>
-              <Film /> Stegets filmer i banken
-            </button>
+          {/* A step without a film whose takes all fell (rejected, failed): they lie in Granska; Karta's films panel shows none of them. */}
+          {shown.takes > 0 && !waits ? (
+            <Link href={{ pathname: "/granska/", query: { vy: "alla" } }} className="inline-flex items-center gap-1 self-start text-xs text-faint hover:text-ink">
+              {shown.takes} {shown.takes === 1 ? "tagning" : "tagningar"} i Granska
+              <ArrowUpRight className="size-3" />
+            </Link>
           ) : null}
         </div>
       ) : null}

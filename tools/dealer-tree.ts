@@ -501,9 +501,11 @@ function orderFacts(f: Facts, view: Pick<TreeView, 'hub' | 'nodes'>, step: TreeS
   const target = step.kind === 'halkort' ? 'D.C2' : step.card;
   const method = key ? methodFor(f.methods, key, target) : null, recipe = key ? recipeFor(f.methods, key, target) : null;
   const pic = (node: string) => view.nodes.find(n => n.node === node)?.entry ?? null;
+  // The picture by its name in Material ("A2.3: vänster hand uppifrån på kortet, rak bål"), never its id.
   const has = (node: string): Need => {
-    const e = pic(node), state = e ? f.entries.get(e)?.state : null;
-    return e ? {ok: true, what: `${nodeCode(node)}: ${e}${state && state !== 'gäller' ? ` (${state} i Material)` : ''}`} : {ok: false, what: `ingen bild för ${nodeCode(node)} i trädet`};
+    const e = pic(node), entry = e ? f.entries.get(e) : null, code = nodeCode(node), name = entry?.name ?? null, state = entry?.state ?? null;
+    const shown = name?.startsWith(code) ? name : name ? `${code}: ${name}` : code;
+    return e ? {ok: true, what: `${shown}${state && state !== 'gäller' ? ` (${state} i Material)` : ''}`} : {ok: false, what: `ingen bild för ${code} i trädet`};
   };
   const drawn = (node: string, card: string): Need => {
     const base = has(node);
@@ -523,16 +525,18 @@ function orderFacts(f: Facts, view: Pick<TreeView, 'hub' | 'nodes'>, step: TreeS
     ? f.takes.find(t => t.from === step.from && t.to === step.to && t.byJakob && !t.provisional && (t.verdict === 'godkand' || t.verdict === 'primar')) ?? null : null;
   const useDummy = rule !== 'ingen' && rule !== 'samma-plats-rakt-godkänd' ? dummy : null;
   const reference: Need = rule === 'ingen' ? {ok: true, what: 'behövs inte: receptet tar ingen'}
-    : useDummy ? {ok: true, what: `dockans film ${useDummy.id}${useDummy.seconds ? ` (${useDummy.seconds} s)` : ''}`}
-    : banked ? {ok: true, what: `hans godkända film ${banked.id}`}
+    : useDummy ? {ok: true, what: `dockans film${useDummy.seconds ? ` (${useDummy.seconds} s)` : ''}`}
+    : banked ? {ok: true, what: 'hans godkända film'}
     : rule && def ? {ok: false, what: referenceWaits(rule, def)}
-    : {ok: false, what: dummy ? `dockans film ${dummy.id} finns, men receptet saknas` : 'ingen dockfilm för steget'};
+    : {ok: false, what: dummy ? 'dockans film finns, men receptet saknas' : 'ingen dockfilm för steget'};
 
   const status = method?.status ?? null;
   const model = recipe && def ? modelFor(def, recipe.model) : null;
   const seconds = model && recipe ? secondsOf(model, recipe.seconds, useDummy?.seconds ? {seconds: useDummy.seconds} : null) : null;
   const recipeNeed: Need & {status: string | null} = !key ? {ok: false, what: 'Beställ har inget sådant steg', status}
-    : def?.off ? {ok: false, what: def.off, status}
+    // Beställ's sheet does not order the step (def.off): a return is ordered with the command below, from the approved deal to
+    // this step's own card and its end picture. Said for the card, without a path (def.off names one card for every return).
+    : def?.off ? {ok: false, what: step.kind === 'retur' ? `provet beställs med kommandot nedan, ur den godkända given till ${nodeCode(step.card ?? step.from)} och dess slutbild` : def.off, status}
     : recipe ? {ok: true, what: [recipe.model, recipe.resolution, seconds ? `${seconds} s` : null, `${recipe.takes} ${recipe.takes === 1 ? 'tagning' : 'tagningar'}`, METHOD_STATUS_LABEL[recipe.method.status]].filter(Boolean).join(' · '), status}
     : {ok: false, what: status ? METHOD_STATUS_LABEL[status] : 'inget recept skrivet', status};
   const cost = model && recipe && def ? costOf({model: recipe.model, params: paramsOf(def, model, {duration: seconds ?? undefined, resolution: recipe.resolution})}, recipe.takes, f.prices) : null;

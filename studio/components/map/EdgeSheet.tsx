@@ -1,7 +1,8 @@
 "use client";
 
 // The side panel of one step (an edge of the graph) on Karta: the step in Jakob's words ("A2.1 → P4C1"), ‹ › to the step
-// before and after it in the node tree, what plays there now and why, the Primär large, and beside it the secondary films
+// before and after it in the node tree, what plays there now and why (on a tree the game does not play: that it does not,
+// KartaView's idle), the Primär large, and beside it the secondary films
 // (lib/primaries.ts stepFilms): at most three, the rest behind "Visa fler", each with how the game uses it. Rejected,
 // waiting and replaced takes are not here: one link says how many there are and leads to Granska. A take the address names
 // that is not on this page says so and links there. Every still plays (in place, or over the whole window: FilmViewer, ‹ ›
@@ -25,8 +26,11 @@ import { useMakePrimary } from "./useMakePrimary";
 import { ArchivedTakes, useArchive } from "./ArchiveTake";
 import { useOlder } from "./useOlder";
 
-/** The steps before and after this one in the node tree, and the next one without a Primär (KartaView). */
-export type Around = { prev: string | null; next: string | null; unchosen: string | null };
+/**
+ * The steps before and after this one in the node tree, and the next one without a Primär (KartaView). names: a tree's own
+ * words for its steps by edge ("A2.3 → A3P4C2"), in place of the bank's edge name (the bank's map gives none).
+ */
+export type Around = { prev: string | null; next: string | null; unchosen: string | null; names?: Record<string, string> };
 
 // Wide enough for a secondary film's still and three of its buttons on one row; the fourth (Arkivera was added) wraps under them.
 export const SHEET_W = 540;
@@ -45,12 +49,15 @@ export function EdgeSheet({
   onPickEdge,
   title,
   note,
+  idle = null,
 }: {
   graph: Graph | null;
   /** The chosen step's films (KartaView: stepFilms), null when none is chosen. */
   step: StepFilms | null;
   /** What plays on it now (KartaView: edgeInfo on the game's graph). */
   info: EdgeInfo | null;
+  /** In place of "Spelas nu": why the game plays nothing of this tree (Karta's trees the game does not play). */
+  idle?: string | null;
   takeId: string | null;
   /** The steps before and after it in the node tree (lib/primaries.ts treeOrder). */
   around: Around;
@@ -67,7 +74,7 @@ export function EdgeSheet({
   return (
     <Sheet open={!!step} onOpenChange={(open) => !open && onClose()} title={edge ? (title ?? edgeName(edge)) : ""} subtitle={subtitle} width={SHEET_W}>
       {step && note ? <p className="mb-3 rounded-md border border-line bg-raised px-3 py-2 text-sm text-dim">{note}</p> : null}
-      {step && info && graph ? <SheetBody key={step.edge.id} graph={graph} step={step} info={info} takeId={takeId} around={around} onPickTake={onPickTake} onPickEdge={onPickEdge} /> : null}
+      {step && info && graph ? <SheetBody key={step.edge.id} graph={graph} step={step} info={info} idle={idle} takeId={takeId} around={around} onPickTake={onPickTake} onPickEdge={onPickEdge} /> : null}
     </Sheet>
   );
 }
@@ -76,6 +83,7 @@ function SheetBody({
   graph,
   step,
   info,
+  idle,
   takeId,
   around,
   onPickTake,
@@ -84,6 +92,7 @@ function SheetBody({
   graph: Graph;
   step: StepFilms;
   info: EdgeInfo;
+  idle: string | null;
   takeId: string | null;
   around: Around;
   onPickTake: (id: string | null) => void;
@@ -143,7 +152,7 @@ function SheetBody({
   return (
     <div className="flex flex-col gap-5">
       <AroundNav around={around} onPickEdge={onPickEdge} />
-      <NowBlock graph={graph} edge={edge} info={info} onPickEdge={onPickEdge} />
+      {idle ? <p className="text-xs text-dim">{idle}</p> : <NowBlock graph={graph} edge={edge} info={info} onPickEdge={onPickEdge} />}
       {away?.archived ? (
         <p className="-mt-2 text-xs text-dim">
           {takeName(away, graph.edge[away.edge]?.takes)} är arkiverad och spelas inte.{isSnapshot ? "" : " Den ligger under Arkiverade längst ned, där den går att ta tillbaka."}
@@ -240,7 +249,7 @@ function AroundNav({ around, onPickEdge }: { around: Around; onPickEdge: (id: st
     id ? (
       <button type="button" onClick={() => onPickEdge(id)} className={cn(buttonClasses({ variant: "quiet", size: "sm" }), "tabular-nums", dir === "next" && "ml-auto")} title={dir === "prev" ? "Steget före i trädet" : "Nästa steg i trädet"}>
         {dir === "prev" ? <ChevronLeft /> : null}
-        {edgeName(id)}
+        {around.names?.[id] ?? edgeName(id)}
         {dir === "next" ? <ChevronRight /> : null}
       </button>
     ) : null;

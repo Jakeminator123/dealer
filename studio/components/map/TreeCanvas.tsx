@@ -34,7 +34,7 @@ const STATE_WORD = { finns: "finns", prov: "prov, väntar på dom", saknas: "sak
 export function stepTitle(s: ViewStep): string {
   const whose = s.byJakob ? "" : s.provisional ? ", dömd åt honom" : s.verdict && s.verdict !== "vantar" ? ", granskarens" : "";
   const said = s.verdict ? ` (${VERDICT_LABEL[s.verdict]}${whose}${s.via ? `, från ${nodeCode(s.via)}` : ""})` : "";
-  const sent = s.deliveries.length ? `; levererad: ${s.deliveries.join(", ")}` : "";
+  const sent = s.deliveries.length ? "; levererad, inte i banken än" : "";
   return `${s.name}: ${STATE_WORD[s.state]}${said}${sent}`;
 }
 
@@ -49,14 +49,27 @@ type CardsData = { box: TreeBox; pics: Pic[]; dim: boolean };
 type PictureNodeType = Node<PictureData, "picture">;
 type CardsNodeType = Node<CardsData, "cards">;
 
+/**
+ * How much a picture's labels grow as the map is zoomed out (fitted to a narrow window, zoom ≈ 0.5 at 900), so that a name
+ * stays about 10 px on the screen: 1 at zoom 1 and closer, at most 2. Rounded, so that a zoom only redraws the pictures when
+ * the size changes.
+ */
+const labelScale = (zoom: number) => Math.round(Math.min(2, Math.max(1, 1 / zoom)) * 10) / 10;
+
 /** A picture of Material, or an empty box with the node's name when the tree has none for it. */
 function Picture({ pic, code, small = false }: { pic: Pic; code: string; small?: boolean }) {
+  const scale = useStore((s) => labelScale(s.transform[2]));
   const cover = pic.entry ? coverOfEntry(pic.entry) : null;
   const state = pic.node?.state && pic.node.state !== "gäller" ? pic.node.state : null;
+  // A card (80 wide) holds "A3P1C1" up to 18 px; grown, the state's mark moves to the foot so the two never overlap.
+  const grown = scale > 1;
+  // Material's name mostly starts with the code ("A2.3: Vänster hand uppifrån …"): said once, never the picture's id.
+  const name = pic.entry?.name ?? null;
+  const named = name?.startsWith(code) ? name : name ? `${code}: ${name}` : code;
   return (
     <div
       className={cn("relative h-full w-full overflow-hidden rounded-md", cover ? "border border-line-strong bg-well" : "border border-dashed border-line-strong bg-transparent")}
-      title={pic.node?.entry ? `${code}: ${pic.entry?.name ?? pic.node.entry}${state ? ` (${state} i Material)` : ""}` : `${code}: ingen bild i trädet`}
+      title={pic.node?.entry ? `${named}${state ? ` (${state} i Material)` : ""}` : `${code}: ingen bild i trädet`}
     >
       {cover ? (
         <ProofStill cover={cover} fps={pic.entry?.fps ?? 30} className={cn("absolute inset-0", (state === "ersatt" || state === "arkiverad") && "saturate-[0.7]")} />
@@ -66,16 +79,17 @@ function Picture({ pic, code, small = false }: { pic: Pic; code: string; small?:
         </span>
       ) : null}
       <span
-        className={cn(
-          "pointer-events-none absolute left-1 top-1 rounded-xs px-1 font-semibold leading-[15px] tracking-[0.01em]",
-          cover ? "bg-black/65 text-ink backdrop-blur-sm" : "text-dim",
-          small ? "text-[10px]" : "text-[12px]",
-        )}
+        className={cn("pointer-events-none absolute left-1 top-1 rounded-xs px-1 font-semibold tracking-[0.01em]", cover ? "bg-black/65 text-ink backdrop-blur-sm" : "text-dim")}
+        style={{ fontSize: small ? 10 * Math.min(1.8, scale) : 12 * scale, lineHeight: grown ? 1.4 : "15px" }}
       >
         {code}
       </span>
       {state ? (
-        <span className="pointer-events-none absolute right-1 top-1 rounded-xs bg-black/65 px-1 text-[10px] leading-[15px] text-faint backdrop-blur-sm" aria-label={state}>
+        <span
+          className={cn("pointer-events-none absolute right-1 rounded-xs bg-black/65 px-1 text-faint backdrop-blur-sm", grown ? "bottom-1" : "top-1")}
+          style={{ fontSize: Math.min(18, 10 * scale), lineHeight: grown ? 1.4 : "15px" }}
+          aria-label={state}
+        >
           {small ? (state === "kandidat" ? "◐" : "↺") : state}
         </span>
       ) : null}
@@ -131,7 +145,8 @@ function StepChip({ step, active, dim, onClick, onHover }: { step: ViewStep; act
       )}
     >
       {step.state === "saknas" ? (
-        <span aria-hidden className="size-4 rounded-full border border-dashed border-underkand" />
+        // The light red of the panel's "saknas", wide enough to show against the dark map and over a green picture (the rest's chip).
+        <span aria-hidden className="size-4 rounded-full border-[1.5px] border-dashed border-[#ef8b8b]" />
       ) : (
         <PlayDot tag={{ kind: "take", verdict: step.state === "finns" ? (step.verdict ?? "godkand") : "vantar", byJakob: step.state === "finns" ? step.byJakob : false }} />
       )}
@@ -218,12 +233,14 @@ export function TreeCanvas({ view, layout, media, active, hover, sheetOpen, onPi
     };
     // The other anchors at the shoe say which steps they give (Casino: A2.2 gives A3P6C1).
     const gives = (node: string) => view.steps.filter((s) => s.via === node).map((s) => nodeCode(s.card ?? s.to));
+    // The film the round opens with, by its name in Material (none while Material loads, never its id).
+    const opening = view.tree.opening ? (media.get(view.tree.opening)?.name ?? null) : null;
     return layout.boxes.map((b): Node => {
       const base = { id: b.id, position: { x: b.box.x, y: b.box.y }, width: b.box.w, height: b.box.h, draggable: false, selectable: false, connectable: false, focusable: false, deletable: false };
       const dim = !!active && !litNodes.has(b.id);
       if (b.kind === "plats" || b.kind === "dealer") return { ...base, type: "cards", data: { box: b, pics: b.cards.map((c) => pic(c.card)), dim } } satisfies CardsNodeType;
       const given = b.kind === "annan" ? gives(b.node!) : [];
-      const note = b.kind === "annan" ? (given.length ? `ger ${given.join(", ")}` : "ger inget steg") : b.kind === "vila" && view.tree.opening ? `början: ${media.get(view.tree.opening)?.name ?? view.tree.opening}` : null;
+      const note = b.kind === "annan" ? (given.length ? `ger ${given.join(", ")}` : "ger inget steg") : b.kind === "vila" && opening ? `början: ${opening}` : null;
       return { ...base, type: "picture", data: { box: b, pic: pic(b.node!), dim, note, label: nodeCode(b.node!) } } satisfies PictureNodeType;
     });
   }, [layout, view, media, active, litNodes]);

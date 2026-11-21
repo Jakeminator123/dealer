@@ -147,10 +147,18 @@ function TreeKarta({ answer }: { answer: TreeAnswer }) {
   const bankPrimary = films && !films.primary ? primaryOf(films.edge) : null;
   const filmNote = bankPrimary ? `Stegets Primär i banken, ${takeName(bankPrimary, films!.edge.takes)}, hör till ett annat träd. Gör primär här ersätter den.` : null;
   const info = edgeId && graph && played && graph.edge[edgeId] ? edgeInfo(played.edge[edgeId] ? played : graph, edgeId, hubs, true) : null;
-  // ‹ › in the films' panel walk the tree's steps that have a film, in the measure's order.
+  // ‹ › in the films' panel walk the tree's steps that have a film, in the measure's order, named in the tree's own words
+  // (Tatuerad's "A2.3 → A3P4C2", not the bank's edge "A2.1 → A3P4C2").
   const order = useMemo(() => [...new Set(view.steps.filter((s) => s.state === "finns" && graph?.edge[s.edge]).map((s) => s.edge))], [view.steps, graph]);
+  const names = useMemo(() => {
+    const out: Record<string, string> = {};
+    for (const s of view.steps) if (s.state === "finns" && !(s.edge in out)) out[s.edge] = s.name;
+    return out;
+  }, [view.steps]);
   const at = edgeId ? order.indexOf(edgeId) : -1;
-  const around: Around = { prev: at > 0 ? order[at - 1] : null, next: at >= 0 && at < order.length - 1 ? order[at + 1] : null, unchosen: null };
+  const around: Around = { prev: at > 0 ? order[at - 1] : null, next: at >= 0 && at < order.length - 1 ? order[at + 1] : null, unchosen: null, names };
+  // What plays now is the game's: a tree the game does not play has no "Spelas nu" of its own (the game's edge plays A2.1).
+  const idle = view.tree.state === "spelas" ? null : `Spelet spelar inte ${view.tree.name} ${view.tree.state === "byggs" ? "än" : "nu"}.`;
 
   const sheetOpen = !!films || (!!step && step.state !== "finns");
   const fit = useFitMap(layout, false);
@@ -171,7 +179,6 @@ function TreeKarta({ answer }: { answer: TreeAnswer }) {
         step={films ? null : step}
         media={media}
         onClose={() => set({ steg: null })}
-        onOpenFilms={step && step.takes > 0 && graph?.edge[step.edge] ? () => set({ kant: step.edge, tagning: null }) : null}
       />
       <EdgeSheet
         graph={graph}
@@ -179,6 +186,7 @@ function TreeKarta({ answer }: { answer: TreeAnswer }) {
         title={filmStep?.name}
         note={filmNote}
         info={info}
+        idle={idle}
         takeId={takeId}
         around={around}
         onClose={() => set({ kant: null, tagning: null, steg: null })}
