@@ -13,7 +13,7 @@
   "maxPerOrder": 2000,
   "minBalance": 0,
   "timeZone": "Europe/Stockholm",
-  "balance": { "credits": 2997, "at": "2026-11-21T19:53:54Z", "source": "Runways API (GET /v1/organization), utvecklarprojektet som API-nyckeln drar från, läst av nattens beställare åt huvudagenten dealer-b0 efter ordern paow-giv-2-3-p4-c2-01 (68 krediter). Mandatet dealer-b0-20261121: högst 1 500 krediter, 800 per timme, till 23.30 UTC; 68 använda. Mellan 2026-11-20 kl. 17.07 UTC (3 480) och 2026-11-21 kl. 19.29 UTC (3 065) drogs 415 krediter av andra sessioner; vilka anrop det var är inte utrett här. Webbappens pott (workspace 67037521) stod på 3 748 den 2026-11-19 och är inte läst sedan dess." },
+  "balance": { "credits": 2861, "at": "2026-11-21T20:58:22Z", "source": "Runways API (GET /v1/organization), utvecklarprojektet som API-nyckeln drar från, läst av nattens beställare åt huvudagenten dealer-b0 efter ordrarna paow-giv-2-3-p1-02 och paow-giv-2-3-p5-02 (68 krediter var). Mandatet dealer-b0-20261121: högst 1 500 krediter, 800 per timme, till 23.30 UTC; 204 använda (tre tagningar à 68). Mellan 2026-11-20 kl. 17.07 UTC (3 480) och 2026-11-21 kl. 19.29 UTC (3 065) drogs 415 krediter av andra sessioner; vilka anrop det var är inte utrett här. Webbappens pott (workspace 67037521) stod på 3 748 den 2026-11-19 och är inte läst sedan dess." },
   "prices": [
     { "model": "kling-4", "resolution": "1080p", "perSecond": 21.3, "listedPerSecond": 23.5, "source": "Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12." },
     { "model": "kling-4", "resolution": "720p", "perSecond": 15.7, "listedPerSecond": 15.7, "source": "Listpris i verktyget generate_video 2026-11-12; inte mätt i någon liggare." },
