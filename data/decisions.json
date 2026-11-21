@@ -61,41 +61,6 @@
       "answer": null
     },
     {
-      "id": "paow-giv-2-3c-p4-pilot-02",
-      "kind": "beslut",
-      "question": "Är given till plats 4 bra nog att göra övriga platser likadant?",
-      "leads": "Ja gör samma giv till övriga platser från A2.3; granskaren ger 4/5, vänster hand väntar en halv sekund vid skon.",
-      "proof": "paow-giv-2-3c-p4-pilot-20261120",
-      "file": "2-pilot-02-landningen-plats-4.png",
-      "page": "studio/granska/?prov=paow-giv-2-3c-p4-pilot-20261120&fil=1-pilot-02-given-till-plats-4.mp4",
-      "cost": "Piloten kostade 68 krediter; varje ny plats cirka 70–140",
-      "chips": [
-        {
-          "value": "ja",
-          "label": "Ja, tre sekunder är lagom"
-        },
-        {
-          "value": "fyra",
-          "label": "Ja, men ge den fyra sekunder"
-        },
-        {
-          "value": "hand",
-          "label": "Nej, vänster hand väntar i luften"
-        },
-        {
-          "value": "nej",
-          "label": "Nej, något annat"
-        }
-      ],
-      "asked": "2026-11-20",
-      "from": "film",
-      "answer": {
-        "value": "ja",
-        "note": "",
-        "at": "2026-11-21T14:56:54.792Z"
-      }
-    },
-    {
       "id": "kortet-i-handen-provet-i-spelet",
       "kind": "beslut",
       "question": "Ska kortets nya vändning och stadiga ljus slås på i spelet?",
