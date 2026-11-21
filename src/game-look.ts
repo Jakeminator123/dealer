@@ -13,6 +13,7 @@
 // (src/game-page.ts), and fan=<px> is the cards' fan step (src/game-table.ts); fan is the scene's fan shadow only as a
 // switch word (0, 1, true, false).
 import type {SceneState} from './scene3d-view.ts';
+import {GEOMETRY_WORDS} from './card-plan.ts';
 
 export type LookKey = keyof SceneState;
 export type KeyKind =
@@ -95,13 +96,18 @@ export function readLook(params: Params, rooms?: readonly string[]): Look {
   return {asked, forval, keys: keys as Partial<SceneState>, ignored: ignored.filter(word => !(word in keys))};
 }
 
-/** A preset as /api/scene-presets/<name> answers ({preset: {state}}): its keys that fit, and those that do not. null when it is no preset. */
-export function presetFrom(answer: unknown, rooms?: readonly string[]): {state: Partial<SceneState>; dropped: string[]} | null {
-  const state = (answer as {preset?: {state?: unknown}} | null)?.preset?.state;
+/**
+ * A preset as /api/scene-presets/<name> answers ({preset: {state, geometri?}}): its keys that fit, and those that do not, and
+ * the table's geometry it was saved with (geometri=kontrakt is Bred lins; src/card-plan.ts tableGeometry reads it when the
+ * address has no word of its own). null when it is no preset.
+ */
+export function presetFrom(answer: unknown, rooms?: readonly string[]): {state: Partial<SceneState>; dropped: string[]; geometri?: string} | null {
+  const preset = (answer as {preset?: {state?: unknown; geometri?: unknown}} | null)?.preset, state = preset?.state;
   if (!state || typeof state !== 'object' || Array.isArray(state)) return null;
   const kept: Record<string, unknown> = {}, dropped: string[] = [];
   for (const [word, value] of Object.entries(state)) if (isLookKey(word) && fits(KEYS[word], value, rooms)) kept[word] = value; else dropped.push(word);
-  return {state: kept as Partial<SceneState>, dropped};
+  const geometri = typeof preset?.geometri === 'string' && Object.hasOwn(GEOMETRY_WORDS, preset.geometri) ? preset.geometri : undefined;
+  return {state: kept as Partial<SceneState>, dropped, ...(geometri ? {geometri} : {})};
 }
 
 /**

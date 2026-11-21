@@ -35,10 +35,14 @@ export type GateContext = {
 export const ROBOTS = {'X-Robots-Tag': 'noindex, nofollow'} as const;
 export const OPEN = new Set(['/robots.txt']);
 /**
- * The game alone, for someone who is only to play: the look, the table and the dealer of the link Jakob himself uses for the
- * Casino view (2026-11-13). /casino leads here, and so does every login with one of the game's passwords.
+ * The game alone, for someone who is only to play: Casino's saved look (the preset casino, as the studio's Casino view opens it,
+ * with the perspective saved with it, Bred lins or Standard; src/game-page.ts), the Casino's table and Paow. Jakob 2026-11-21:
+ * what he sets in Scen and saves with Använd i Casino is what the Casino on the internet shows after the next publishing. Until
+ * then this was his link of 2026-11-13 (forval=levande&dx=-0.0624&dy=0.016); the saved look carries no dx or dy, so the door
+ * gives none either and shows what the studio's Casino shows. /casino leads here, and so does every login with one of the
+ * game's passwords.
  */
-export const GAME_HOME = '/game.html?forval=levande&dx=-0.0624&dy=0.016&table=casino&dealer=paow';
+export const GAME_HOME = '/game.html?forval=casino&table=casino&dealer=paow';
 /**
  * The game with the film before it (src/game-intro.ts): the short noir trailer, which ends in the game's own picture in the room
  * Monaco with life in the room, so this address asks for that room and no other look. Jakob 2026-11-13: "så att man övergår till

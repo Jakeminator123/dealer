@@ -15,8 +15,13 @@
 // game shows (Jakob 2026-11-17: "Spela i casino bör rimligtvis vara samma som i casino, alltså som det är i runtime"), so
 // "Spela i Casino" opens what the rail's Casino opens until a key
 // is changed. The round plays the chosen dealer's films (lib/bank.ts); a step without a film is a gap, shown as one.
+// The table's perspective (Standard or Bred lins, ?geometri=lins|kontrakt) is Scen's own, Standard unless the address says Bred
+// lins (Jakob 2026-11-19: an alternative, not the base; the card plan and the orders stay on Standard). Since Jakob 2026-11-21
+// ("Kan du göra så att 'Casino' eller 'Prova i Casino' faktiskt går med och för om man har 'Bred lins'?") it goes along:
+// Prova i Casino always names it, and Använd i Casino saves it with Casino's look (lib/scene-presets.ts geometri), so that
+// the rail's Casino, and the copy's Casino after its next publishing, play it.
 // Loaded only when one of the three is chosen (Bordet loads it on demand), so that Kortplan stays light.
-import { Copy, ExternalLink, Spade } from "lucide-react";
+import { Copy, ExternalLink, Globe, Spade } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -24,13 +29,13 @@ import { resolveRound } from "../../../src/clip-graph.ts";
 import { tableGeometry } from "../../../src/card-plan.ts";
 import { sceneWords } from "../../lib/bordet.ts";
 import { useBank } from "../../lib/bank.ts";
-import { readGeometryWord, withGeometry } from "../../lib/casino.ts";
+import { ONLINE_CASINO, readGeometryWord, trialAddress, withGeometry } from "../../lib/casino.ts";
 import { stepFacts, useViewContext } from "../../lib/context.ts";
 import { BANK_DEALER, filmsLine, openingRound, ownSteps, withDealer } from "../../lib/dealer.ts";
 import { isSnapshot } from "../../lib/mode.ts";
 import { formatJakob } from "../../lib/names.ts";
 import { addressOf, contextRound, isReference, no3d, readAddress, readyRounds, roundFacts, roundFromText, roundParts, viewFor, type Round } from "../../lib/rounds.ts";
-import { CASINO_PRESET } from "../../lib/scene-presets.ts";
+import { BRED_LINS, CASINO_PRESET } from "../../lib/scene-presets.ts";
 import { readSceneCardTrial, withSceneCardTrial } from "../../lib/scene-card-trial.ts";
 import { RoundPicker, RoundStrip } from "../round";
 import { joinParts, readLook, roundPart, useSceneEditor } from "../scene-editor";
@@ -51,6 +56,7 @@ function scenePart(all: URLSearchParams): URLSearchParams {
 export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: SceneKind; toolbar: ReactNode; roundText: string }) {
   const search = useSearchParams();
   const geometri = readGeometryWord(search);
+  const perspective = geometri === BRED_LINS ? "Bred lins" : "Standard";
   const searchText = search.toString();
   const query = scenePart(new URLSearchParams(searchText)).toString();
   const params = useMemo(() => new URLSearchParams(query), [query]);
@@ -64,7 +70,7 @@ export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: Scene
   const [chosen, setChosen] = useState<Round | null>(null);
   const [clock] = useState(() => createClock());
   const stage = useRef<StageHandle>(null);
-  const editor = useSceneEditor(() => lookOf(params));
+  const editor = useSceneEditor(() => lookOf(params), { geometri });
 
   // The address changed from outside (a link, back and forth in the history): it decides again. What this body wrote itself
   // is already on screen.
@@ -163,22 +169,30 @@ export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: Scene
               <div role="group" aria-label="Bordsperspektiv" className="flex items-center gap-0.5 rounded-md border border-line p-0.5">
                 {[["lins", "Standard"], ["kontrakt", "Bred lins"]].map(([word, label]) => (
                   <Link key={word} href={withGeometry(`/bordet/?${searchText}`, word)} aria-current={(geometri === "kontrakt" ? "kontrakt" : "lins") === word ? "true" : undefined}
-                    title={word === "lins" ? "Gemensam geometri för kortplan, beställningar och Casino." : "Tidigare, bredare perspektiv med mer ovala ringar. Ett visningsalternativ; ändrar inte Casinos sparade grund."}
+                    title={word === "lins" ? "Scens förval, och den gemensamma geometrin för kortplan och beställningar. Prova i Casino visar den; Använd i Casino sparar den som Casinos perspektiv." : "Tidigare, bredare perspektiv med mer ovala ringar; kort, ringar och filmkamera följer samma bord. Prova i Casino visar det; Använd i Casino sparar det som Casinos perspektiv. Kortplan och beställningar stannar på Standard."}
                     className={buttonClasses({variant: (geometri === "kontrakt" ? "kontrakt" : "lins") === word ? "secondary" : "quiet", size: "sm"})}>{label}</Link>
                 ))}
               </div>
             )}
             {!isSnapshot && kind !== "rafilm" && (
-              <Button size="sm" disabled={!editor.ready || editor.savingCasino || geometri === "kontrakt"} loading={editor.savingCasino} onClick={() => void editor.useInCasino()} title={geometri === "kontrakt" ? "Bred lins är ett separat visningsalternativ. Välj Standard för att spara Casinos gemensamma grund; Prova i Casino visar alternativet tillfälligt." : "Spara hela den här visningen som Casinos förval. Gäller även nästa gång du öppnar Casino."}>
+              <Button size="sm" disabled={!editor.ready || editor.savingCasino} loading={editor.savingCasino} onClick={() => void editor.useInCasino()} title={`Spara hela den här visningen som Casinos förval, med ${perspective}. Gäller nästa gång du öppnar Casino, och i Casinot på nätet efter nästa publicering.`}>
                 Använd i Casino
               </Button>
             )}
-            <Tooltip content="Spelet med spelmotorn och marker, i den här looken">
-              <Link href={withGeometry(editor.casino, geometri)} className={buttonClasses({ variant: "secondary", size: "sm" })}>
+            <Tooltip content={`Spelet med spelmotorn och marker, i den här looken och med ${perspective}. Sparar ingenting.`}>
+              <Link href={trialAddress(editor.casino, geometri)} className={buttonClasses({ variant: "secondary", size: "sm" })}>
                 <Spade />
                 Prova i Casino
               </Link>
             </Tooltip>
+            {!isSnapshot ? (
+              <Tooltip content="Casinot på nätet (dealer-lake.vercel.app/casino) i en ny flik: Casinos sparade visning som den var vid senaste publiceringen">
+                <a href={ONLINE_CASINO} target="_blank" rel="noopener noreferrer" className={buttonClasses({ variant: "quiet", size: "sm" })}>
+                  <Globe />
+                  På nätet
+                </a>
+              </Tooltip>
+            ) : null}
             <IconButton label="Kopiera länken: samma runda och look" icon={<Copy />} variant="quiet" size="sm" onClick={copyLink} />
             {!isSnapshot && editor.scenePage ? (
               <Tooltip content="Samma look på 3D-sidan, med alla reglage">

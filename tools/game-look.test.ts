@@ -64,6 +64,26 @@ test('a preset as the lab hands it out: its state kept, a key that does not fit 
   for (const answer of [null, {}, {preset: null}, {preset: {state: []}}, {error: 'Det finns inget förval med det namnet.'}]) assert.equal(presetFrom(answer), null);
 });
 
+test('a preset saved with Bred lins (Använd i Casino, Jakob 2026-11-21) hands the game its geometry word; one without has none', () => {
+  const casino = {schemaVersion: 1, name: 'casino', label: 'Casino', about: 'Casinos sparade visning, vald i Scen & bord.', state: {room: 'panorama', pitch: -8, zoom: 0.84, format: 'fill'}, updatedAt: '2026-11-19T17:14:04.461Z'};
+  assert.deepEqual(presetFrom({preset: casino}), {state: casino.state, dropped: []}, 'the file as it was: no word, Standard');
+  assert.deepEqual(presetFrom({preset: {...casino, geometri: 'kontrakt', revision: null}}), {state: casino.state, dropped: [], geometri: 'kontrakt'});
+  assert.equal(presetFrom({preset: {...casino, geometri: 'lins'}})?.geometri, 'lins');
+  for (const geometri of ['bred', 'constructor', 1, null]) assert.equal(presetFrom({preset: {...casino, geometri}})?.geometri, undefined, String(geometri));
+});
+
+test('game.html: one geometry for the scene and the lying cards, the address\'s word before the preset\'s', async () => {
+  const page = await readFile('src/game-page.ts', 'utf8');
+  assert.match(page, /const geometry = tableGeometry\(location\.search, preset\?\.geometri \?\? null\);/);
+  assert.match(page, /layout = createLayout\(plan, \{fan: fanStep, geometry\}\);/);
+  assert.match(page, /const scene = createScene\(canvas, picture, \{[^\n]*onMissingRoom: \(\) => \{\}, geometry\}\);/);
+  // a preset is asked for only with ?forval and read only when the address names one, so a page without (the film before the
+  // game, cloud/studio/gate.ts TRAILER_HOME) never gets a saved geometry
+  assert.match(page, /forval \? fetch\(`api\/scene-presets\/\$\{encodeURIComponent\(forval\)\}`\)/);
+  assert.match(page, /preset = lookCode && look\?\.forval \? lookCode\.presetFrom\(presetAnswer, roomIds\) : null;/);
+  assert.equal(readLook(params('intro=noir-3&room=monaco&roomLife=1&table=casino&dealer=paow')).forval, null);
+});
+
 test('the look over the game: a preset is a whole look, keys alone lie over the game\'s own', () => {
   const blurOf = (room: string) => ({panorama: 5, la: 4, hall: 11}[room] ?? 11);
   for (const p of SHIPPED) assert.deepEqual(lookState(DEFAULTS, p.state, {}, blurOf), effective(DEFAULTS, p.state), `${p.name} as the Scen view shows it`);

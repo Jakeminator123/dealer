@@ -7,10 +7,19 @@
 // ?forval=profilval-3 plays place 3 wherever a preset is read. A look also travels as an address,
 // /scen/?forval=levande&dust=0.8, and as the 3D page's own, scene3d.html?…. Pure: no DOM, no network; tests in
 // studio/tests/scene-presets.test.ts.
+import { GEOMETRY_WORDS } from "../../src/card-plan.ts";
 import type { SceneState } from "../../src/scene3d-view.ts";
 import { SCENE_KEYS, checkValue, decodeValue, encodeValue, hasControl, isSceneKey, keySpec, sameValue, type SceneKey } from "./scene-keys.ts";
 
-export type ScenePreset = { schemaVersion: 1; name: string; label: string; about: string; state: Partial<SceneState>; updatedAt: string };
+/**
+ * geometri: the table's geometry the game plays the look with, as the address's word (src/card-plan.ts GEOMETRY_WORDS:
+ * "kontrakt" is Scen's Bred lins, "lins" Standard). Left out, Standard: every file written before 2026-11-21 means that. Only
+ * Casino's is written, by Använd i Casino in Scen with Bred lins chosen (Jakob 2026-11-21); the game page reads it when its
+ * address has no geometri of its own (src/game-page.ts). It is no scene key: Scen's own perspective stays its address's.
+ */
+export type ScenePreset = { schemaVersion: 1; name: string; label: string; about: string; state: Partial<SceneState>; geometri?: string; updatedAt: string };
+/** Scen's Bred lins as the geometry word a preset and an address carry. */
+export const BRED_LINS = "kontrakt";
 
 export const PRESET_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 export const NAME_LIMIT = 40;
@@ -94,7 +103,9 @@ export function validatePreset(value: unknown, name: string, rooms?: readonly st
   if (!PRESET_NAME.test(name) || name.length > NAME_LIMIT) errors.push(`namnet får bara ha a–z, 0–9 och bindestreck, högst ${NAME_LIMIT} tecken`);
   if (!value || typeof value !== "object" || Array.isArray(value)) return { preset: null, errors: [...errors, "förvalet ska vara ett objekt"] };
   const v = value as Record<string, unknown>;
-  for (const key of Object.keys(v)) if (!["schemaVersion", "name", "label", "about", "state", "updatedAt"].includes(key)) errors.push(`okänt fält ${key.slice(0, 40)}`);
+  for (const key of Object.keys(v)) if (!["schemaVersion", "name", "label", "about", "state", "geometri", "updatedAt"].includes(key)) errors.push(`okänt fält ${key.slice(0, 40)}`);
+  const geometri = v.geometri === undefined ? undefined : typeof v.geometri === "string" && Object.hasOwn(GEOMETRY_WORDS, v.geometri) ? v.geometri : null;
+  if (geometri === null) errors.push(`geometri ska vara ${Object.keys(GEOMETRY_WORDS).join(" eller ")}`);
   if (v.schemaVersion !== undefined && v.schemaVersion !== 1) errors.push("schemaVersion ska vara 1");
   if (v.name !== undefined && v.name !== name) errors.push("namnet i förvalet och i adressen skiljer sig");
   const label = typeof v.label === "string" ? v.label.trim() : "";
@@ -104,7 +115,7 @@ export function validatePreset(value: unknown, name: string, rooms?: readonly st
   if (hasControl(label)) errors.push("label får inte ha styrtecken");
   const checked = validateState(v.state, rooms);
   errors.push(...checked.errors);
-  return errors.length ? { preset: null, errors } : { preset: { schemaVersion: 1, name, label, about: about ?? "", state: checked.state }, errors };
+  return errors.length ? { preset: null, errors } : { preset: { schemaVersion: 1, name, label, about: about ?? "", state: checked.state, ...(geometri ? { geometri } : {}) }, errors };
 }
 
 /** A name for a file from what he called it: "Kvällsljus i skogen" → "kvallsljus-i-skogen". */

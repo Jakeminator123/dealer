@@ -2,11 +2,20 @@
 // the keys that differ from it, as Bordet's Scen writes them: lib/scene-presets.ts) and the table, so a calibrated look can
 // be sent as a link. From it: the game in the frame (/game.html?forval=…&inbaddad=1&…&table=…, read by src/game-look.ts)
 // and the same look in Bordet's Scen (/bordet/?lage=scen&forval=…&…). Another view reaches the Casino with casinoAddress(preset, keys).
+// The table's perspective (Standard or Bred lins, geometri=lins or kontrakt) is the address's word when it has one, else the one
+// the preset was saved with (Casino's, by Använd i Casino in Scen; Jakob 2026-11-21), else Standard: shownGeometry here, and
+// src/game-page.ts in the frame reads the same.
 // Pure: no DOM, no network; tests in studio/tests/casino.test.ts.
 import type { SceneState } from "../../src/scene3d-view.ts";
 import { SCENE_KEYS, encodeValue } from "./scene-keys.ts";
-import { CASINO_PRESET, readAddress } from "./scene-presets.ts";
+import { CASINO_PRESET, readAddress, type ScenePreset } from "./scene-presets.ts";
 import { GEOMETRY_WORD, GEOMETRY_WORDS } from "../../src/card-plan.ts";
+
+/**
+ * The Casino on the internet: the copy's door /casino (cloud/studio/gate.ts GAME_HOME), the game with Casino's saved look as it
+ * was when the copy was last published. The local studio links to it ("På nätet") so that Jakob can see it there.
+ */
+export const ONLINE_CASINO = "https://dealer-lake.vercel.app/casino";
 
 /** A table name as the lab server takes it (tools/preview.ts tableName): one game session per name. */
 export const TABLE_NAME = /^[a-z0-9-]{1,40}$/;
@@ -70,6 +79,19 @@ export function withGeometry(href: string, geometri: string | undefined): string
   const query = new URLSearchParams(queryAt < 0 ? "" : base.slice(queryAt + 1));
   query.set(GEOMETRY_WORD, geometri);
   return `${pathname}?${query}${hash}`;
+}
+
+/**
+ * Prova i Casino from Scen: the Casino with Scen's look and always Scen's perspective in words, Standard as geometri=lins too,
+ * so that a Casino saved with Bred lins shows the trial as Scen shows it.
+ */
+export const trialAddress = (casino: string, geometri: string | undefined): string => withGeometry(casino, geometri && Object.hasOwn(GEOMETRY_WORDS, geometri) ? geometri : "lins");
+
+/** The perspective the game in the frame plays: the address's word, else the word the look's preset was saved with, else none (Standard). */
+export function shownGeometry(look: Pick<CasinoLook, "forval" | "geometri">, presets: readonly Pick<ScenePreset, "name" | "geometri">[]): string | undefined {
+  if (look.geometri) return look.geometri;
+  const saved = presets.find((p) => p.name === look.forval)?.geometri;
+  return saved && Object.hasOwn(GEOMETRY_WORDS, saved) ? saved : undefined;
 }
 
 /** "?forval=levande&dust=0.8&table=casino": the view's own question; forval always, so the link says which preset. */

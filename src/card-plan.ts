@@ -25,14 +25,21 @@ import { FILM, TABLE_LENS, pixelToFelt, realCardQuad, type Lens, type Pixel } fr
  *   same outline in the lab, in the game and in the scene.
  * Jakob chose 'lens' after comparison B (2026-11-19). Explicit geometri=kontrakt remains for old proofs and references;
  * ordinary lab and Casino addresses need no geometry word. Camera/view variations are saved scene presets.
+ * The studio's Scen calls 'contract' Bred lins and 'lens' Standard. Since Jakob 2026-11-21 Casino's saved look may carry
+ * Bred lins (the preset's geometri, studio/lib/scene-presets.ts, written by Använd i Casino); the card plan and the orders
+ * stay on 'lens'.
  */
 export type TableGeometry = 'contract' | 'lens';
 export const TABLE_GEOMETRY: TableGeometry = 'lens';
 export const GEOMETRY_WORD = 'geometri', GEOMETRY_WORDS: Readonly<Record<string, TableGeometry>> = { lins: 'lens', kontrakt: 'contract' };
-/** The geometry a page follows: its address's word (geometri=lins or geometri=kontrakt), else TABLE_GEOMETRY. `search` is the address's query; left out, the page's own (there is none in Node). */
-export function tableGeometry(search: string | null = (globalThis as { location?: { search?: string } }).location?.search ?? null): TableGeometry {
-  const word = search ? new URLSearchParams(search).get(GEOMETRY_WORD) : null;
-  return (word !== null && GEOMETRY_WORDS[word]) || TABLE_GEOMETRY;
+const geometryOf = (word: string | null | undefined): TableGeometry | null => (typeof word === 'string' && Object.hasOwn(GEOMETRY_WORDS, word) ? GEOMETRY_WORDS[word] : null);
+/**
+ * The geometry a page follows: its address's word (geometri=lins or geometri=kontrakt), else the word a saved look carries
+ * (`saved`: a scene preset's geometri, read by the game page), else TABLE_GEOMETRY. `search` is the address's query; left
+ * out, the page's own (there is none in Node).
+ */
+export function tableGeometry(search: string | null = (globalThis as { location?: { search?: string } }).location?.search ?? null, saved: string | null = null): TableGeometry {
+  return geometryOf(search ? new URLSearchParams(search).get(GEOMETRY_WORD) : null) ?? geometryOf(saved) ?? TABLE_GEOMETRY;
 }
 /**
  * Efterarbete's "Kortens storlek" as a share of the rule's card. The setting is written against the contract's card, of which

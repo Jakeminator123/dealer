@@ -4,7 +4,7 @@
 // With focus on, they go through a full-size target and are blurred by their own distance from the focus.
 import * as T from 'three';
 import {DEALER_LENS_ESTIMATE, FILM, aimCorrection, betSpots, cameraFromContract, cardFocusPixel, cardPixel, cardSpots, cloudLevel, edgeRowOf, filmToScene, flickerLevel, lensCamera, sceneToSpot, solveCamera, spotToScene, viewFovDeg, viewUnder, type CardTrack, type FilmCamera} from './scene3d-geometry.ts';
-import {cardGrow, tableGeometry} from './card-plan.ts';
+import {cardGrow, tableGeometry, type TableGeometry} from './card-plan.ts';
 import {TABLE_LENS} from './table-lens.ts';
 import {EVEN, createFilmLayers, createPlayers, evenFor, frameAt, lightOnDealer, matchLeft, roomFlashAt, roomGlow, toneMatch, toneOf, toneUnder, type FilmTone, type Part, type RoomGlow, type ToneMatch} from './scene3d-film.ts';
 import {createFanLight} from './scene3d-light.ts';
@@ -78,7 +78,7 @@ export const DEFAULTS: SceneState = {
   tableModel: 'standard', modelCloth: 'filt', modelWood: 'valnot', modelRail: 'brun',
 };
 // rooms: the panorama rooms of the register (data/scene-rooms.json, readRegister in scene3d-room.ts); without it the first three, at urls.
-export type SceneData = {contract: Parameters<typeof cameraFromContract>[0]; plan: Parameters<typeof cardSpots>[0]; urls: {plate: string; panorama: string; la: string; skog: string}; rooms?: Panorama[]; onChange: () => void; onMissingRoom: (room: RoomId) => void};
+export type SceneData = {contract: Parameters<typeof cameraFromContract>[0]; plan: Parameters<typeof cardSpots>[0]; urls: {plate: string; panorama: string; la: string; skog: string}; rooms?: Panorama[]; onChange: () => void; onMissingRoom: (room: RoomId) => void; geometry?: TableGeometry};
 
 const W = FILM.width, H = FILM.height, RAD = Math.PI / 180;
 // How the prefiltered room is turned against the sphere that shows it, radians. Checked 2026-11-11 with a black test picture
@@ -176,10 +176,11 @@ export function createScene(canvas: HTMLCanvasElement, host: HTMLElement, data: 
   const players = createPlayers(texture => film.setTexture(texture), data.onChange, {refused: (part, video) => voice.refused(part, video)});
   const mouth = createMouthLayer(shown => film.setMouth(shown), {audio: sound}); // a spoken line's mouth on the part on screen (src/scene3d-mouth.ts)
   let camera: FilmCamera = DEALER_LENS_ESTIMATE, pitch = 0, edgeZ = -1, guides: T.Group | null = null, track: CardTrack | null = null;
-  // The page's geometry (src/card-plan.ts TABLE_GEOMETRY, or the address's geometri word), read once: 'lens' makes the plan's camera
+  // The page's geometry (src/card-plan.ts TABLE_GEOMETRY, or the address's geometri word; the game page gives its own, which
+  // may come from the saved look), read once: 'lens' makes the plan's camera
   // the table's lens, in real metres, the drawn cards rest by the card plan's rule, and Kortens storlek is a share of the plan's
   // card (cardGrow; the earlier way 'film' keeps the contract's card and its own size); 'contract' is the scene as it was.
-  const geometry = tableGeometry();
+  const geometry = data.geometry ?? tableGeometry();
   let focusNow = NaN, focusWhat = '', lastSeconds = NaN, moved = false;
   // Rendered cards, three ways: 'scene' makes each card an object in the scene under the film (scene3d-deal.ts); 'film' draws
   // the card into the film frame (scene3d-cards.ts), the earlier way, kept to compare; 'matte' (a trial) draws over the film's own

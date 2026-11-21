@@ -15,6 +15,7 @@ import {createScene, DEFAULTS, type SceneState} from './scene3d-view.ts';
 import {readRegister} from './scene3d-room.ts';
 import {FILM, cameraFromContract, filmPixel, filmToScene, sceneToSpot, solveCamera, spotToScene, viewUnder, type FilmCamera} from './scene3d-geometry.ts';
 import {createLayout, slotOf} from './game-table.ts';
+import {tableGeometry} from './card-plan.ts';
 import {cardRecords, judgedBank, speakMoments, talkOn} from './game-director.ts';
 import {cardsChoice, cardWords, createFilm, type FilmPlayers, type Said} from './game-film.ts';
 import {chipsFor, mountOverlay, type Action, type Anchors} from './game-overlay.ts';
@@ -70,6 +71,9 @@ const registered = readRegister(register).rooms, roomIds = lookCode ? [...lookCo
 const look = lookCode?.readLook(query, roomIds) ?? null, preset = lookCode && look?.forval ? lookCode.presetFrom(presetAnswer, roomIds) : null;
 const asked: Partial<SceneState> = lookCode && look ? lookCode.lookState(DEFAULTS, preset?.state ?? null, look.keys, id => registered.find(r => r.id === id)?.blur ?? lookCode.BUILT_BLUR[id] ?? 11) : {};
 const lookNote = lookCode && look ? lookCode.lookNotice(look.asked, !!preset, [...look.ignored, ...(preset?.dropped ?? [])]) : forval !== null ? 'Förvalet kunde inte läsas: spelet visar sitt eget utseende.' : null;
+// The table's geometry (src/card-plan.ts), one for the scene and the lying cards: the address's word, else the one the preset
+// was saved with (Casino's, when Jakob chose Bred lins in Scen and pressed Använd i Casino; Jakob 2026-11-21), else Standard.
+const geometry = tableGeometry(location.search, preset?.geometri ?? null);
 // The 360-degree rooms Jakob has let into the game (game: true in data/scene-rooms.json); a new room is tried in the lab first,
 // and a look that chooses one is shown with it.
 const panoramas = registered.filter(r => r.game || r.id === asked.room);
@@ -82,7 +86,7 @@ const DEALERS = [{id: 'pamela', label: 'Pamela', note: 'Hela rundan', thumb: 'as
 const dealerMemory = (() => { try { return localStorage.getItem('dealer.dealer'); } catch { return null; } })();
 let dealer = DEALERS.find(d => d.id === query.get('dealer'))?.id ?? DEALERS.find(d => d.id === dealerMemory)?.id ?? DEALERS.find(d => d.id === FIRST_DEALER)?.id ?? DEALER;
 const nameOf = (id: string) => DEALERS.find(d => d.id === id)?.label ?? id;
-const plan = placements.plan ?? placements, judged = judgedBank(bank), graphs = new Map<string, Graph>(), layout = createLayout(plan, {fan: fanStep});
+const plan = placements.plan ?? placements, judged = judgedBank(bank), graphs = new Map<string, Graph>(), layout = createLayout(plan, {fan: fanStep, geometry});
 const graphOf = (id: string) => { let g = graphs.get(id); if (!g) { g = buildGraph(judged, {dealer: id}); graphs.set(id, g); } return g; };
 const graph = graphOf(dealer);
 // A rest film can ask the scene to show another room for a moment (FilmEffect in src/clip-graph.ts: the champagne film's flash turns
@@ -104,7 +108,7 @@ const spokenOf = (keyOrPhase: string): Spoken | null => talking && lines ? lines
 // ── the picture: the 3D scene, seen a little from above so that all seven bet rings and the bar have room ──
 // The scene fills the picture box (#picture). On a larger screen that is the whole stage and the console lies over its lower edge;
 // on a phone it is the part of the stage the console leaves free (frame, below), so that nothing of the console covers the table.
-const scene = createScene(canvas, picture, {contract, plan, urls: {plate: 'assets/scene/room.png', panorama: 'assets/scene/panorama-vegas.jpg', la: 'assets/scene/panorama-la.jpg', skog: 'assets/scene/panorama-skog.jpg'}, rooms: sceneRooms, onChange: () => {}, onMissingRoom: () => {}});
+const scene = createScene(canvas, picture, {contract, plan, urls: {plate: 'assets/scene/room.png', panorama: 'assets/scene/panorama-vegas.jpg', la: 'assets/scene/panorama-la.jpg', skog: 'assets/scene/panorama-skog.jpg'}, rooms: sceneRooms, onChange: () => {}, onMissingRoom: () => {}, geometry});
 // The framings (FRAMING) stand at the top, where the stage is told its shape before the film before the game is laid.
 // A look's pitch and zoom are its lying framing; its yaw, dy and dz are where the view comes to rest (all 0 in the game's own).
 const lying = {pitch: asked.pitch ?? FRAMING.wide.pitch, zoom: asked.zoom ?? FRAMING.wide.zoom}, home = {yaw: asked.yaw ?? 0, dy: asked.dy ?? 0, dz: asked.dz ?? 0};

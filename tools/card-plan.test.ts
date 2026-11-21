@@ -155,6 +155,20 @@ test('the default follows the lens Jakob chose in comparison B; the old geometry
   assert.equal(tableGeometry(null), TABLE_GEOMETRY); assert.equal(tableGeometry(''), TABLE_GEOMETRY); assert.equal(tableGeometry('?kort=liggande'), TABLE_GEOMETRY);
   assert.equal(tableGeometry('?geometri=lins'), 'lens'); assert.equal(tableGeometry('?dealer=paow&geometri=lins&kort=hand'), 'lens');
   assert.equal(tableGeometry('?geometri=kontrakt'), 'contract'); assert.equal(tableGeometry('?geometri=annat'), TABLE_GEOMETRY);
+  for (const word of ['constructor', '__proto__', 'toString']) assert.equal(tableGeometry(`?geometri=${word}`), TABLE_GEOMETRY, word);
+});
+
+test('a saved look\'s geometry (Casino\'s Bred lins, Jakob 2026-11-21) counts only where the address has no word of its own', () => {
+  // the game page: tableGeometry(location.search, the preset's geometri)
+  assert.equal(tableGeometry('?forval=casino&table=casino', 'kontrakt'), 'contract', 'the plain Casino link plays the saved Bred lins');
+  assert.equal(tableGeometry('?forval=casino&geometri=lins', 'kontrakt'), 'lens', 'Prova i Casino with Standard keeps Standard');
+  assert.equal(tableGeometry('?forval=casino&geometri=kontrakt', null), 'contract', 'Prova i Casino with Bred lins');
+  assert.equal(tableGeometry('?forval=casino&geometri=annat', 'kontrakt'), 'contract', 'a word the page does not know is no word');
+  assert.equal(tableGeometry('?forval=casino', null), TABLE_GEOMETRY, 'a preset saved before 2026-11-21 is Standard');
+  assert.equal(tableGeometry('?forval=casino', 'annat'), TABLE_GEOMETRY); assert.equal(tableGeometry('?forval=casino', 'constructor'), TABLE_GEOMETRY);
+  // the film before the game (cloud/studio/gate.ts TRAILER_HOME) names neither a preset nor a geometry: as before, the default
+  const trailer = '?intro=noir-3&room=monaco&roomLife=1&table=casino&dealer=paow';
+  assert.equal(tableGeometry(trailer, null), tableGeometry(trailer)); assert.equal(tableGeometry(trailer, null), 'lens');
 });
 
 test('the game as it was: the older rule gives the same lying cards pixel for pixel, also where a place is made up', () => {

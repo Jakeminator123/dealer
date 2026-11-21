@@ -2,11 +2,12 @@
 // The game page's side, reading the same address, is tested in tools/game-look.test.ts.
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { tableGeometry } from "../../src/card-plan.ts";
 import { DEFAULTS } from "../../src/scene3d-view.ts";
 import { readLook } from "../../src/game-look.ts";
 import { cardsChoice, cardWords } from "../../src/game-film.ts";
-import { CASINO_TABLE, casinoAddress, casinoSearch, freshTable, gameSrc, readCasino, readGeometryWord, scenHref, withGeometry } from "../lib/casino.ts";
+import { CASINO_TABLE, ONLINE_CASINO, casinoAddress, casinoSearch, freshTable, gameSrc, readCasino, readGeometryWord, scenHref, shownGeometry, trialAddress, withGeometry } from "../lib/casino.ts";
 import { SHIPPED, effective, patchOf, readAddress, scenePageAddress } from "../lib/scene-presets.ts";
 
 const params = (text: string) => new URLSearchParams(text);
@@ -100,6 +101,50 @@ test("Casino, Scen and the lab links retain the explicit geometry with the selec
   }
   assert.equal(withGeometry("/scene3d.html", readGeometryWord(params("geometri=annat"))), "/scene3d.html");
   assert.equal(withGeometry("/scene3d.html?geometri=kontrakt#bordet", "lins"), "/scene3d.html?geometri=lins#bordet");
+});
+
+test("Prova i Casino from Scen names Scen's perspective, Standard too, and the frame plays it whatever Casino has saved", () => {
+  const lab = "http://127.0.0.1:4319";
+  for (const [shown, word, mode] of [["kontrakt", "kontrakt", "contract"], ["lins", "lins", "lens"], [undefined, "lins", "lens"]] as const) {
+    const trial = new URL(trialAddress(casinoAddress("casino", { dust: 0.4 }), shown), lab);
+    assert.equal(trial.search, `?forval=casino&dust=0.4&geometri=${word}`, String(shown));
+    const look = readCasino(trial.searchParams);
+    assert.equal(look.geometri, word);
+    const frame = new URL(gameSrc(look), lab);
+    // the game page: the address's word before the preset's (src/game-page.ts), so a Casino saved with Bred lins does not take over
+    for (const saved of [null, "kontrakt", "lins"]) assert.equal(tableGeometry(frame.search, saved), mode, `${shown} over ${saved}`);
+  }
+  assert.equal(trialAddress("/game/?forval=casino", "annat"), "/game/?forval=casino&geometri=lins");
+});
+
+test("the plain Casino link: no word in the address, the perspective saved with the preset, and Kalibrera i Scen carries it", () => {
+  const lab = "http://127.0.0.1:4319", plain = readCasino(params(""));
+  const bred = [{ name: "basgrund" }, { name: "casino", geometri: "kontrakt" }], standard = [{ name: "basgrund" }, { name: "casino" }];
+  assert.equal(shownGeometry(plain, bred), "kontrakt");
+  assert.equal(shownGeometry(plain, standard), undefined, "saved with Standard: no word");
+  assert.equal(shownGeometry(readCasino(params("geometri=lins")), bred), "lins", "the address's word first");
+  assert.equal(shownGeometry(readCasino(params("forval=levande")), bred), undefined, "another preset has its own");
+  assert.equal(shownGeometry(plain, [{ name: "casino", geometri: "constructor" }]), undefined);
+  // the frame is the same address either way; the game page reads the preset's word itself
+  const frame = new URL(gameSrc(plain), lab);
+  assert.equal(frame.searchParams.has("geometri"), false);
+  assert.equal(tableGeometry(frame.search, "kontrakt"), "contract");
+  assert.equal(tableGeometry(frame.search, null), "lens");
+  assert.equal(new URL(scenHref({ ...plain, geometri: shownGeometry(plain, bred) }), lab).searchParams.get("geometri"), "kontrakt");
+  assert.equal(new URL(scenHref({ ...plain, geometri: shownGeometry(plain, standard) }), lab).searchParams.has("geometri"), false);
+});
+
+test("Scen's buttons: Använd i Casino is open under Bred lins, Prova i Casino names the perspective, På nätet is the lab's only", () => {
+  const scen = readFileSync(new URL("../components/bordet/SceneBody.tsx", import.meta.url), "utf8");
+  assert.match(scen, /<Button size="sm" disabled=\{!editor\.ready \|\| editor\.savingCasino\} /, "Bred lins no longer closes Använd i Casino");
+  assert.match(scen, /<Link href=\{trialAddress\(editor\.casino, geometri\)\}/);
+  assert.match(scen, /useSceneEditor\(\(\) => lookOf\(params\), \{ geometri \}\)/);
+  assert.match(scen, /\{!isSnapshot \? \(\s*<Tooltip[^>]*>\s*<a href=\{ONLINE_CASINO\} target="_blank"/);
+  const editor = readFileSync(new URL("../components/scene-editor/useSceneEditor.tsx", import.meta.url), "utf8");
+  assert.match(editor, /\.\.\.\(name === CASINO_PRESET && bred \? \{ geometri: BRED_LINS \} : \{\}\)/, "only Casino's preset carries the perspective");
+  const casino = readFileSync(new URL("../components/casino/CasinoView.tsx", import.meta.url), "utf8");
+  assert.match(casino, /\{!isSnapshot \? \(\s*<a href=\{ONLINE_CASINO\} target="_blank"/);
+  assert.equal(ONLINE_CASINO, "https://dealer-lake.vercel.app/casino");
 });
 
 test("casinoAddress, from another view: the active preset and only the keys that differ from it", () => {

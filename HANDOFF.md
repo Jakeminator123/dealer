@@ -11,7 +11,7 @@ Läs AGENTS.md, den här sidan och EN lägesfil för din bana. Ersätt inaktuell
 - Labbet är en vy, Bordet, där en film beställs längs en rak linje: steget och kortets plats, receptet ger resten.
 - Den tatuerade uppsättningen är hans förstahandsval, och ankare 2.3 gäller. Vägen från det finns (ett slutbildsankare,
   A3, per plats; beställt genom Bordet), men givarna till plats 4 och 1 fick hans Inte bra och ingången hans nej.
-- Kortplan, spel och scen följer B-linsen. **Använd i Casino** sparar visningen; **Bred lins** är ett separat tillval.
+- Kortplan och order följer B-linsen. **Använd i Casino** sparar visningen, även Bred lins, för Casino och `/casino`.
 - Kopian på nätet är publicerad på `c9d006d` den 2026-11-20 på Jakobs ord, utan nya filmer; kontrollen utifrån
   20/20 och åtkomsten oförändrad. Telefonmått, fysisk telefon och ljud återstår ([spelet](docs/lage/spelet.md)).
 - Kontrollen före en push körs bara på datorn. Kontots tokengräns delas av alla sessioner: få underagenter.

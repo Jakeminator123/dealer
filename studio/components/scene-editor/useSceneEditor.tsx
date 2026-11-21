@@ -20,7 +20,7 @@ import { casinoAddress } from "../../lib/casino.ts";
 import { isSnapshot } from "../../lib/mode.ts";
 import { placesOf } from "../../lib/rounds.ts";
 import { BUILT_BLUR, sameValue, type GroupId, type SceneKey } from "../../lib/scene-keys.ts";
-import { BASE, CASINO_PRESET, SHIPPED, differences, effective, initialSceneState, isShipped, matchPreset, patchOf, scenePageAddress, slotLabel, slotOf } from "../../lib/scene-presets.ts";
+import { BASE, BRED_LINS, CASINO_PRESET, SHIPPED, differences, effective, initialSceneState, isShipped, matchPreset, patchOf, scenePageAddress, slotLabel, slotOf } from "../../lib/scene-presets.ts";
 import type { Scene } from "../stage";
 import { SegmentedControl, Skeleton, Switch, useToast } from "../ui";
 import { askedPart, lookPart, type LookAsk } from "./address.ts";
@@ -45,7 +45,8 @@ const typing = (t: EventTarget | null) =>
 
 export type SceneEditor = ReturnType<typeof useSceneEditor>;
 
-export function useSceneEditor(firstLook: () => LookAsk) {
+/** page.geometri: the page's perspective word (Scen's Standard or Bred lins), saved with Casino's preset. */
+export function useSceneEditor(firstLook: () => LookAsk, page: { geometri?: string } = {}) {
   const toast = useToast();
 
   // ── the look asked for: the address, read once and again when it changes from outside (ask) ──
@@ -230,11 +231,14 @@ export function useSceneEditor(firstLook: () => LookAsk) {
   // ── saving ──
   const canSave = !isSnapshot;
   const [savingCasino, setSavingCasino] = useState(false);
+  // Casino's preset carries the perspective Scen shows, however it is saved (Jakob 2026-11-21): Bred lins as geometri=kontrakt,
+  // Standard as no word at all, so that a file without it means Standard as before. His other presets carry no perspective.
+  const bred = page.geometri === BRED_LINS;
   // A named preset or a place (name profilval-<n>): revision is the one last read when the name exists, null for a new one.
   const saveAs = async (name: string, label: string, about: string, revision: string | null) => {
     if (!current || !defaults) return;
     try {
-      await savePreset(name, { label, about, state: patchOf(current, defaults) }, revision);
+      await savePreset(name, { label, about, state: patchOf(current, defaults), ...(name === CASINO_PRESET && bred ? { geometri: BRED_LINS } : {}) }, revision);
     } catch (error) {
       void reloadPresets(); // made or changed in another tab: the bar shows it as the lab holds it, and the next try can work
       throw error;
@@ -250,7 +254,7 @@ export function useSceneEditor(firstLook: () => LookAsk) {
     setSavingCasino(true);
     try {
       await saveAs(CASINO_PRESET, "Casino", "Casinos sparade visning, vald i Scen & bord.", presetOf(CASINO_PRESET)?.revision ?? null);
-      toast({ tone: "ok", title: "Casino använder den här visningen", detail: "Sparat för nästa gång du öppnar Casino." });
+      toast({ tone: "ok", title: "Casino använder den här visningen", detail: `Med ${bred ? "Bred lins" : "Standard"}. Sparat för nästa gång du öppnar Casino; Casinot på nätet får det vid nästa publicering.` });
     } catch (error) {
       toast({ tone: "bad", title: "Casino-valet kunde inte sparas", detail: asApiError(error).message });
     } finally {

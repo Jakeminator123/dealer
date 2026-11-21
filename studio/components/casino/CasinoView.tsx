@@ -9,16 +9,17 @@
 // dealer chosen in the rail (?dealer=, passed on to the game page, src/game-page.ts), with her own films only: a step she has no
 // film for is cut or laid without a hand, never played with another dealer's film. The address's ?dealer= is the rail's word:
 // it is neither a look key nor dropped when the view writes its address.
-import { Expand, Plus, SlidersHorizontal } from "lucide-react";
+import { Expand, Globe, Plus, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { asApiError } from "../../lib/api.ts";
 import { useBank } from "../../lib/bank.ts";
-import { casinoSearch, freshTable, gameSrc, readCasino, scenHref, type CasinoLook } from "../../lib/casino.ts";
+import { ONLINE_CASINO, casinoSearch, freshTable, gameSrc, readCasino, scenHref, shownGeometry, type CasinoLook } from "../../lib/casino.ts";
 import { useViewContext } from "../../lib/context.ts";
 import { DEALER_PARAM, withDealer, withoutDealer } from "../../lib/dealer.ts";
-import { SHIPPED } from "../../lib/scene-presets.ts";
+import { isSnapshot } from "../../lib/mode.ts";
+import { BRED_LINS, SHIPPED } from "../../lib/scene-presets.ts";
 import { listPresets, type Preset } from "../scene-editor/presetApi.ts";
 import { Page } from "../shell";
 import { Button, Select, Spinner, buttonClasses, useToast } from "../ui";
@@ -60,16 +61,21 @@ function Casino() {
 
   // ── presets: the three that ship at once, his own when the lab answers ──
   const [presets, setPresets] = useState<Preset[]>(shipped);
+  const [listed, setListed] = useState(false);
   useEffect(() => {
     let gone = false;
     listPresets().then(
-      (answer) => !gone && setPresets(answer.presets),
+      (answer) => !gone && (setPresets(answer.presets), setListed(true)),
       (error) => !gone && toast({ tone: "bad", title: "Förvalen kunde inte läsas", detail: asApiError(error).message }),
     );
     return () => {
       gone = true;
     };
   }, [toast]);
+  // The perspective the game in the frame plays (lib/casino.ts shownGeometry; src/game-page.ts reads the same): the address's
+  // word, else the one the preset was saved with. Kalibrera i Scen opens Scen with it.
+  const geometri = shownGeometry(look, presets);
+  const perspective = look.geometri || listed ? (geometri === BRED_LINS ? "Bred lins" : "Standard") : null;
   const options = useMemo(() => {
     const list = presets.map((p) => ({ value: p.name, label: p.label, hint: p.shipped ? undefined : "eget" }));
     return list.some((o) => o.value === look.forval) ? list : [...list, { value: look.forval, label: look.forval, hint: "finns inte" }];
@@ -95,15 +101,28 @@ function Casino() {
           <span>{name}</span>
           <span>·</span>
           <span className="tabular-nums">bord {look.table}</span>
+          {perspective ? (
+            <>
+              <span>·</span>
+              <span className={geometri === BRED_LINS ? "text-brass-hi" : undefined} title={look.geometri ? "Perspektivet som adressen anger" : "Perspektivet som sparades med förvalet (Använd i Casino i Scen)"}>
+                {perspective}
+              </span>
+            </>
+          ) : null}
           {dropped.length ? <span className="text-faint">· okänt i adressen: {dropped.join(", ")}</span> : null}
         </>
       }
       actions={
         <>
           <Select size="sm" aria-label="Förval" className="w-40" value={look.forval} options={options} onChange={(forval) => go({ forval, patch: {}, table: look.table, ignored: [] })} />
-          <Link href={scenHref(look)} className={buttonClasses({ variant: "quiet", size: "sm" })} title="Öppna samma look i Bordets Scen och kalibrera den vidare">
+          <Link href={scenHref({ ...look, geometri })} className={buttonClasses({ variant: "quiet", size: "sm" })} title="Öppna samma look, med samma perspektiv, i Bordets Scen och kalibrera den vidare">
             <SlidersHorizontal /> Kalibrera i Scen
           </Link>
+          {!isSnapshot ? (
+            <a href={ONLINE_CASINO} target="_blank" rel="noopener noreferrer" className={buttonClasses({ variant: "quiet", size: "sm" })} title="Casinot på nätet (dealer-lake.vercel.app/casino) i en ny flik: Casinos sparade visning som den var vid senaste publiceringen">
+              <Globe /> På nätet
+            </a>
+          ) : null}
           <Button size="sm" variant="quiet" icon={<Plus />} title="Ett nytt bord: ny spelomgång med nytt saldo och ny sko" onClick={() => go({ ...look, table: freshTable() })}>
             Nytt bord
           </Button>

@@ -30,6 +30,27 @@ test('Casino is an editable saved look, protected against deletion and stale wri
   await assert.rejects(store.remove('casino',second.preset.revision),fails(403));
 });
 
+test('Använd i Casino with Bred lins keeps geometri=kontrakt with the look; saved with Standard again, the file is as before', async t => {
+  const root = await temp(t), store = scenePresetStore(root), file = path.join(root, 'data/scene-presets/casino.json');
+  // Casino's file as it stood before 2026-11-21: no word, which means Standard
+  const before = {schemaVersion: 1, name: 'casino', label: 'Casino', about: 'Casinos sparade visning, vald i Scen & bord.', state: {room: 'panorama', roomShift: 'shimmer', blur: 5, tray: true, cards: true, pitch: -8, zoom: 0.84, format: 'fill'}, updatedAt: '2026-11-19T17:14:04.461Z'};
+  await writeFile(file, JSON.stringify(before, null, 2) + '\n');
+  const old = (await store.load('casino')).preset;
+  assert.equal(old.geometri, undefined); assert.deepEqual(old.state, before.state);
+  // what the studio sends from Scen with Bred lins chosen (studio/components/scene-editor/useSceneEditor.tsx saveAs)
+  const bred = await store.save('casino', {label: before.label, about: before.about, state: before.state, geometri: 'kontrakt'}, old.revision);
+  assert.equal(bred.preset.geometri, 'kontrakt');
+  const written = JSON.parse(await readFile(file, 'utf8'));
+  assert.deepEqual(Object.keys(written), ['schemaVersion', 'name', 'label', 'about', 'state', 'geometri', 'updatedAt']);
+  assert.equal((await store.load('casino')).preset.geometri, 'kontrakt');
+  assert.equal((await store.list()).presets.find(p => p.name === 'casino')?.geometri, 'kontrakt', 'the list the Casino view and the copy read');
+  // and with Standard: no word again, the same fields as the file before
+  const standard = await store.save('casino', {label: before.label, about: before.about, state: before.state}, bred.preset.revision);
+  assert.equal(standard.preset.geometri, undefined);
+  assert.deepEqual(Object.keys(JSON.parse(await readFile(file, 'utf8'))), Object.keys(before));
+  await assert.rejects(store.save('casino', {...mine, geometri: 'bred'}, standard.preset.revision), (e: unknown) => fails(400)(e) && /geometri ska vara lins eller kontrakt/.test((e as Error).message));
+});
+
 test('the three shipped presets: in the checkout, read-only, and exactly what the brief says', async () => {
   const store = scenePresetStore(process.cwd()), {presets, problems} = await store.list();
   assert.deepEqual(problems, []);

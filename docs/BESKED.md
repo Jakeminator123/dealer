@@ -455,6 +455,10 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   ska kunna ändras i Scen & bord och sparas för Casino. Ringar och kort följer samma bord och kamera; ingen separat
   ovaleffekt för bara markeringarna. Han vill att Casino använder det som faktiskt ställts in där. Hans förtydligande:
   det bredare, mer ovala perspektivet ska finnas som alternativ, inte automatiskt som grund (Scen: **Bred lins**).
+- **Bred lins följer med till Casino** (2026-11-21, kl. 16.10): "Kan du göra så att 'Casino' eller 'Prova i Casino'
+  faktiskt går med och för om man har 'Bred lins'?" Spärren som stängde Använd i Casino under Bred lins tas bort: Prova
+  i Casino visar Bred lins, och Använd i Casino sparar den som Casinos förval när han själv väljer det. Standard är
+  kvar som förval i Scen, och kortplan och beställningar följer fortfarande B-linsen.
 
 - **B-linsen som utgångspunkt nu** (2026-11-19): Jakob vill att nya filmer följer en överenskommen standard och
   väljer tills vidare linsen i D.C3-prov B. Han bedömer B:s rörelse som rätt; kortet kan behöva granskas. C vänder
@@ -567,6 +571,19 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 
 ## Kopian och nätet
 
+- **Casinot på nätet visar det som är inställt i studion** (2026-11-21, kl. 16.20): "Jag vill också att det som jag
+  tex nu har inställt … är det som faktiskt ska kunna publiceras ut till nätet … bara det att casinolayouten ändras
+  till det som faktiskt är inställt här lokalt i studion", med en länk eller knapp för att se Casinot på nätet; "ställer
+  jag in detta och 'publicerar' så ska just den breda linsen vara det som syns". Läst så: det som sparas med Använd i
+  Casino (Bred lins inräknad) är det som dörren `/casino` på kopian visar efter nästa publicering. Strax efter:
+  Prova i Casino är bra för att testa lokalt, "men jag vill kunna få ut alla förändringar till officiella
+  internetcasinot", alltså hela det pushade läget och inte bara looken. Själva publiceringen sker fortfarande bara på
+  hans uttryckliga ord.
+- **Ingången genom filmen före spelet står kvar** (2026-11-21, kl. 16.30): "kan man kanske göra så allt är som det är
+  för den videon när den kommer till casinot – alltså att det är det casino man kommer till där som ska gälla för just
+  'den ingången' – i alla fall för nu. Anledningen är att videon slutar på en frame som är mycket eller helt lik det
+  casino man kommer till. I övrigt så vill jag genomföra förändringen vi gör i ordinarie casino." Dörren `/trailer`
+  läser därför inget sparat förval och ingen Bred lins; ändringen gäller studions Casino, Prova i Casino och `/casino`.
 - **Sju filmer till mobilkopian** (2026-11-19, Codex): "Ja, publicera dessa sju filmer". Beskedet gäller exakt de
   sju namngivna källfilmerna, 24,1 MB, till `dealer-lake.vercel.app`; befintligt inloggningsskydd bevaras.
   Filförteckning och verifiering finns i `assets/proofs/paow-mobile-studio-20261118/publication-20261119.json`.

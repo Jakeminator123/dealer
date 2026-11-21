@@ -5,7 +5,7 @@ import {copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, realpathS
 import {tmpdir} from 'node:os';
 import {basename, dirname, join} from 'node:path';
 import {secrets, passwordsOf, signCookie, verifyCookie, samePassword, passwordScope, signGameCookie, cookieScope, readCookies, TryLimit, MAX_AGE, COOKIE, TRIES, WINDOW} from '../cloud/studio/lock.ts';
-import {gate, openOf, GAME_HOME, TRAILER_HOME, type GateContext, type MediaMap} from '../cloud/studio/gate.ts';
+import {gate, gameMay, openOf, GAME_HOME, TRAILER_HOME, type GateContext, type MediaMap} from '../cloud/studio/gate.ts';
 import {loginPage, safeNext} from '../cloud/studio/login-page.ts';
 
 // Throwaway values for the tests only; the real ones live in the Vercel project's environment.
@@ -267,6 +267,10 @@ test('with a game password the game and what it loads pass; the studio and every
     assert.equal(answer.status, 303, path); assert.equal(answer.headers.get('location'), GAME_HOME, path);
   }
   assert.equal((await gate(ask('/casino', {headers: {cookie}}), ctx)).headers.get('location'), GAME_HOME);
+  // /casino is Casino's saved look with the Casino's table and Paow, and the perspective saved with it (Jakob 2026-11-21): no
+  // geometry word and no dx or dy of its own, so nothing in the address outranks what Använd i Casino saved
+  assert.equal(GAME_HOME, '/game.html?forval=casino&table=casino&dealer=paow');
+  assert.equal(gameMay('/api/scene-presets/casino'), true, 'the game page fetches the saved look behind the game\'s password too');
   // the bot and the inbox are shut, and nothing is written
   for (const path of ['/api/bot', '/api/utkast', '/api/onskemal']) assert.equal((await gate(ask(path, {method: 'POST', headers: {cookie}}), ctx)).status, 403, path);
   assert.equal((await gate(ask('/api/clip-bank/review/x', {method: 'POST', headers: {cookie}}), ctx)).status, 405);
@@ -278,6 +282,7 @@ test('with a game password the game and what it loads pass; the studio and every
   // /trailer is the second door: the game with the film before it. The login keeps that address, also with the game's password,
   // and the film itself is something the game loads.
   assert.match(TRAILER_HOME, /^\/game\.html\?intro=noir-3&room=monaco&roomLife=1&/);
+  assert.equal(TRAILER_HOME, '/game.html?intro=noir-3&room=monaco&roomLife=1&table=casino&dealer=paow', 'the film before the game stays as it is (Jakob 2026-11-21): no preset, no geometry word');
   const trailer = await gate(ask('/trailer'), ctx);
   assert.equal(trailer.status, 401); assert.ok((await trailer.text()).includes(`name="next" value="${TRAILER_HOME.replaceAll('&', '&amp;')}"`));
   assert.equal((await gate(login('spela', TRAILER_HOME), ctx)).headers.get('location'), TRAILER_HOME);

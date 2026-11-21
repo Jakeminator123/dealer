@@ -10,7 +10,9 @@ import {readFileSync} from 'node:fs';
 import {DEFAULTS} from '../src/scene3d-view.ts';
 import {lookState, presetFrom} from '../src/game-look.ts';
 import {CASINO_TABLE, casinoSearch, gameSrc, readCasino} from '../studio/lib/casino.ts';
-import {BASE, CASINO_PRESET, SHIPPED} from '../studio/lib/scene-presets.ts';
+import {BASE, BRED_LINS, CASINO_PRESET, SHIPPED, validatePreset} from '../studio/lib/scene-presets.ts';
+import {tableGeometry} from '../src/card-plan.ts';
+import {findLeaks, readRelease, scrub} from './studio-freeze.ts';
 
 const page = readFileSync('src/game-page.ts', 'utf8');
 const rooms = JSON.parse(readFileSync('data/scene-rooms.json', 'utf8')).rooms as {id: string; blur?: number}[];
@@ -61,6 +63,29 @@ test('the Casino carries the geometry word on to the game in the frame, and keep
   assert.equal(new URLSearchParams(casinoSearch(look)).get('geometri'), 'lins');
   const other = readCasino(new URLSearchParams('geometri=annat'));
   assert.equal(other.geometri, undefined, 'only the words the game page knows'); assert.equal(new URL(gameSrc(other), 'http://lab').searchParams.has('geometri'), false);
+});
+
+test('Använd i Casino with Bred lins: the plain Casino link plays Bred lins, and saved with Standard again it plays Standard', () => {
+  // the plain Casino (the rail's Casino, no parameters): its frame names no geometry, so the game page takes the preset's
+  const plain = new URL(gameSrc(readCasino(new URLSearchParams(''))), 'http://lab').search;
+  assert.equal(new URLSearchParams(plain).has('geometri'), false);
+  const saved = (geometri?: string) => presetFrom({preset: {state: basgrund.state, ...(geometri ? {geometri} : {})}})!;
+  assert.equal(tableGeometry(plain, saved(BRED_LINS).geometri ?? null), 'contract', 'saved with Bred lins');
+  assert.equal(tableGeometry(plain, saved().geometri ?? null), 'lens', 'saved with Standard: no word, the file as it was');
+  // Prova i Casino and a Casino address with its own word play that word over the saved one
+  assert.equal(tableGeometry(new URL(gameSrc(readCasino(new URLSearchParams('geometri=lins'))), 'http://lab').search, BRED_LINS), 'lens');
+});
+
+test('the saved perspective goes up with the copy: validated, scrubbed and still there, so the Casino on the net plays it', () => {
+  const release = readRelease(JSON.parse(readFileSync('data/studio-release.json', 'utf8')));
+  assert.equal(release.presets, true, 'the presets go up with the copy (tools/build-studio-snapshot.ts)');
+  const {preset, errors} = validatePreset({schemaVersion: 1, name: CASINO_PRESET, label: 'Casino', about: 'Casinos sparade visning.', state: basgrund.state, geometri: BRED_LINS}, CASINO_PRESET);
+  assert.deepEqual(errors, []);
+  // as tools/build-studio-snapshot.ts writes api/scene-presets/<name>.json and the list
+  const one = scrub({preset: {...preset!, revision: null}}, release), list = scrub({schemaVersion: 1, presets: [{...preset!, revision: null}], problems: []}, release);
+  assert.equal(one.preset.geometri, BRED_LINS); assert.equal(list.presets[0].geometri, BRED_LINS);
+  assert.deepEqual(findLeaks(one, release), []); assert.deepEqual(findLeaks(list, release), []);
+  assert.equal(tableGeometry('?forval=casino&table=casino&dealer=paow', presetFrom(one)!.geometri ?? null), 'contract');
 });
 
 test('Bordet\'s Scen starts from the same preset as the Casino when its address names no look', () => {

@@ -42,8 +42,8 @@ export async function listPresets(): Promise<{ presets: Preset[]; problems: stri
   }
 }
 
-/** Saves one of his own; revision: the one last read when the name exists (an overwrite), null for a new name. */
-export async function savePreset(name: string, body: { label: string; about: string; state: ScenePreset["state"] }, revision: string | null): Promise<Preset> {
+/** Saves one of his own; revision: the one last read when the name exists (an overwrite), null for a new name. geometri: Casino's perspective (lib/scene-presets.ts). */
+export async function savePreset(name: string, body: { label: string; about: string; state: ScenePreset["state"]; geometri?: string }, revision: string | null): Promise<Preset> {
   const answer = await call<{ preset: Preset }>(`api/scene-presets/${encodeURIComponent(name)}`, "Förvalet", {
     method: "PUT",
     headers: { "content-type": "application/json", ...(revision ? { "if-match": revision } : {}) },

@@ -16,8 +16,8 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
 - Perspektiv smalnar den bortre kanten kring kortets mitt: 80–96 % för alla kort, med Din plan (87 %, även förval) och Verkligt (96 %).
 - Spelet och scenen följer nu B-linsen (`TABLE_GEOMETRY = lens`): kort, extra kort, split och filmkamera. Insatsringarna
   är cirklar på samma bord, projicerade till ovaler. Kortplan = spel = scen inom 0,01 px; filmhändernas rörelse återstår.
-- **Använd i Casino** sparar Scen-vyn i `data/scene-presets/casino.json`; vanlig Casino-länk läser den. Kameravinkel,
-  rum och kortvisning följer med. **Bred lins** visar äldre, mer ovalt perspektiv som tillval; **Standard** återgår till B.
+- **Använd i Casino** sparar Scen-vyn i `data/scene-presets/casino.json`, även Bred lins (`geometri: "kontrakt"`);
+  Casino-länken och `/casino` läser den. Kortplan och order står på B.
 - Kortplan har en vy; Dator | Mobil och `vy=mobil` är borta. En framtida mobilvy härleds ur samma kort och lins.
 - D.C3 är redigerbart i Kortplan och Beställ; äldre planer bevarar de 16 korten och får dess tidigare spelposition. Sparad D.C3 styr senare dealer-kort. Tre lokala geometrier jämförs i Prov `paow-dc3-tre-geometrier-20261119` (372 krediter); inget Primär-byte.
 - Filmkortet är gult och blått, och den blå sidan bär ett rosa kryss och en röd cirkel (`CARD_RGB`, `cardMark` i

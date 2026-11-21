@@ -320,7 +320,8 @@ Allt går att läsa och spela, inget går att ändra, och inga kostnader visas.
   "för bara casinot"): miljövariabeln `DEALER_LOSEN_SPEL`, i samma form som `DEALER_LOSEN` och satt på samma sätt (`printf
   '<ord>' | vercel env add DEALER_LOSEN_SPEL production --cwd .runtime/studio-deploy`, sedan en ny deploy). Ordet skrivs
   inte i repot. Adressen `/casino` leder till spelsidan ensam, utan studion runt (`GAME_HOME` i `cloud/studio/gate.ts`:
-  utseendet, bordet och dealern i Jakobs egen länk till Casino-vyn), och inloggningssidan heter då Blackjack. Med ett
+  Casinos sparade visning med dess perspektiv, Casinos bord och Paow; sedan 2026-11-21, före det hans länk från 13/11),
+  och inloggningssidan heter då Blackjack. Med ett
   sådant lösenord släpps spelsidan och det den läser igenom (moduler, banken, filmer, spår); studion, varje annan sida och
   boten leder tillbaka till spelet eller är stängda. Ett ord som står i båda variablerna öppnar allt. Att byta eller ta
   bort variabeln avslutar bara spelets inloggningar; de andra står kvar. Publiceringens kontroll prövar det med
