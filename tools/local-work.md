@@ -77,8 +77,10 @@ Tillfälliga kopior ligger i `.runtime/<uppgift>/`; färdiga filmer och användb
 Rapporten kan köras cykliskt utan radering; det finns ingen åldersregel som ensam får radera unika filmer.
 
 `assets/noir/` är Jakobs samling av noir-filmerna (2026-11-21: "hitta alla noir-filmer och lägga dem i en speciell
-mapp"): varje film en gång, med `LASMIG.md`. Den bevaras och är inte löst material; filerna som redan fanns i
-projektet är hårda länkar dit, så originalen i proven och spelets ingång ligger kvar.
+mapp"), med `LASMIG.md`: v4 av trailern och det som kom efter, originalet på 30 sekunder och klippen v4 är byggd av.
+Det som kom före v4 och alla lätta kopior raderades samma kväll på hans ord. Samlingen bevaras och är inte löst
+material; filerna som redan fanns i projektet är hårda länkar dit, så originalen i provet och spelets ingång ligger
+kvar. Bygget av v4 läser ljud och typsnitt ur slaskdiskens `tmp/trailer-2/`: de mapparna raderas inte.
 
 `media-audit.ts` visar användning men är inte ensam ett raderingstillstånd: exempelvis en gammal Prov-mapp
 kan fortfarande visas och ha anteckningar. Kontrollera spelbank, scen, Material, Prov/Beslut, användardomar,
