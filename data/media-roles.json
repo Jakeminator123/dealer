@@ -4668,6 +4668,24 @@
             "from": "ruta 72 ur pilotgiven från ankare 2.3 C, tagning 1 (Runway-uppdrag 2e5704dc; receipt.json bredvid bilden)",
             "when": "2026-11-20"
           }
+        },
+        {
+          "id": "paow-a3-p4c2-ur-paow-giv-2-3-p4-c2-01",
+          "role": "landning",
+          "name": "A3P4C2 (ur film från A2.3)",
+          "path": "assets/anchors/paow-a3-p4c2-ur-paow-giv-2-3-p4-c2-01/anchor.png",
+          "node": "LAND(P4.C2)",
+          "card": "P4.C2",
+          "hand": "RH",
+          "state": "kandidat",
+          "builtOn": [
+            "paow-ankare-2-3-c"
+          ],
+          "note": "A3 för P4C2, höger hand vid kortet: ruta 68 ur given från A2.3 (släpet med handbyte), gjord med landningsverktyget. Handen vid skon, skon och fönstrets kort är ankarbildens egna (skarv tvärs över ärmen); kortet är planens. OBEROENDE GRANSKARE (inte Jakobs dom): 4/5, håller. Små fel kvar: skuggan vid skon är klippt, övergången vid manschetten och pekfingrets raka kant.",
+          "source": {
+            "from": "ruta 68 ur given A2.3 → A3P4C2, tagning 1",
+            "when": "2026-11-21"
+          }
         }
       ]
     },
