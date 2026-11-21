@@ -4202,6 +4202,34 @@
           }
         },
         {
+          "id": "paow-film-giv-2-3-p2-01-t1",
+          "role": "film",
+          "name": "Paow · A2.3 → A3P2C1, tagning 1",
+          "path": "assets/films/paow/giv-2-3-p2-01-t1/source.mp4",
+          "still": 40,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "OBEROENDE GRANSKARE (inte Jakobs dom): given 4/5, godkänd. Ett kort ur skon, fönstret gult hela vägen, inget slutklipp, stilla i rutorna 60–72. Fel: fingrarna vänder kortet med handleden stilla (33–44), kortet nästan osynligt i 37–39 och landar 9 px närmare henne. A3P2C1 ur ruta 72, ingen kortning.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-21"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-3-p3-01-t1",
+          "role": "film",
+          "name": "Paow · A2.3 → A3P3C1, tagning 1",
+          "path": "assets/films/paow/giv-2-3-p3-01-t1/source.mp4",
+          "still": 40,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "OBEROENDE GRANSKARE (inte Jakobs dom): given 3/5, godkänd med anmärkningar. Landar 1,5 px från P3C1, stilla från ruta 64, inget slutklipp, fönstret gult. Fel: fingrarna vänder kortet under stilla hand (37–41, som dockan), kortet blekt och halvgenomskinligt 39–43, och högra handens ros blir en mandala från ruta 46 och följer med in i A3P3C1 ur slutrutan.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-21"
+          }
+        },
+        {
           "id": "paow-film-intro-noir-3-startruta",
           "role": "arbetsmaterial",
           "name": "Startrutan till filmen före spelet",
