@@ -23,24 +23,24 @@
       "sha256": "afdde928fe0ed582e7094d7445319ea4583293101ddfea111c4bdd5d92666e22"
     },
     {
-      "id": "paow-mun-goodluck-sv-giv-2-1-p4-04-01",
+      "id": "paow-mun-goodluck-sv-giv-2-1-p4-04-01-neutral",
       "dealer": "paow",
       "film": "assets/motions/paow-giv-2-1-p4-04-01/source.mp4",
       "line": "goodluck",
       "language": "sv",
       "voice": "Paow",
-      "path": "assets/speech/paow/patches/paow-mun-goodluck-sv-giv-2-1-p4-04-01/patch.json",
-      "sha256": "3f81a8a1858c5c98fb4250e543d9f42f69c12ec79414b94ffed665e3e0c33690"
+      "path": "assets/speech/paow/patches/paow-mun-goodluck-sv-giv-2-1-p4-04-01-neutral/patch.json",
+      "sha256": "aa191702de74031da4bd86b8c78fa7b87ac71c9e0458082ae87f1100cd21cc65"
     },
     {
-      "id": "paow-mun-goodluck-sv-ingang-2-1-02-01",
+      "id": "paow-mun-goodluck-sv-ingang-2-1-02-01-neutral",
       "dealer": "paow",
       "film": "assets/motions/paow-ingang-2-1-02-01/source.mp4",
       "line": "goodluck",
       "language": "sv",
       "voice": "Paow",
-      "path": "assets/speech/paow/patches/paow-mun-goodluck-sv-ingang-2-1-02-01/patch.json",
-      "sha256": "c64daa824d14f72515af5559245d0dbe8e6d21a84efecb6326c2dfea6e5cb24f"
+      "path": "assets/speech/paow/patches/paow-mun-goodluck-sv-ingang-2-1-02-01-neutral/patch.json",
+      "sha256": "11c243645ebab38d6a7e20d6affd8e410e3b7432bfc1c6360e0ad08fb8916a83"
     }
   ]
 }

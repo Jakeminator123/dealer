@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-goodluck-sv-16",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-goodluck-sv-16/source.mp4",
+    "sha256": "06fa5605c2293ab97a22bf471bb85143ef9b5ee872e3ea955c88d72c6f971327",
+    "bytes": 8029910,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 83,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Insatserna är stängda. Lycka till vid mitt bord!"
+    }
+  },
+  "speech": {
+    "line": "goodluck",
+    "language": "sv",
+    "text": "Insatserna är stängda. Lycka till vid mitt bord!",
+    "voice": "Paow",
+    "heard": "Insatserna är stängda. Lycka till vid mitt bord.",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 2.933
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte dömd av Jakob i Granska. Den neutrala munnen (rendererns låda som den är, samma grind) ur paow-tal-goodluck-sv-14, med samma ljud; filmen är provets paow-mouth-neutral-goodluck14-20261118/neutral.mp4. Jakob valde den neutrala munnen i Beslut efter jämförelsen i spelets storlek.",
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten på Jakobs ord",
+      "at": "2026-11-21T17:12:28.053Z",
+      "mandate": "Jakob 2026-11-19 i Beslut, kortet neutral-mun-tre-repliker (\"Ska de tre replikerna bytas till den neutrala munnen till höger?\"): ja, efter jämförelsen i spelets storlek (assets/proofs/paow-mouth-neutral-trio-20261118); 2026-11-21: \"Okej kör\".",
+      "note": "Ersätter paow-tal-goodluck-sv-14 i spelet. Vägen tillbaka: sätt review.decision till REJECTED här, så säger spelet paow-tal-goodluck-sv-14 igen."
+    }
+  },
+  "postProcessing": "the renderer's face laid back into the rest film's own frames as it is, without the lips recipe (assets/speech/paow/paow-tal-goodluck-sv-16/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-goodluck-sv-16/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

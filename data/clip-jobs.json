@@ -7117,6 +7117,48 @@
       "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
     },
     {
+      "id": "paow-tal-placebets-sv-15",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-placebets-sv-15",
+      "frames": [
+        0,
+        47
+      ],
+      "purpose": "Talfilm på begäran: Lägg era insatser, tack. Neutral mun (tools/speech.ts, Paow; Jakob i Beslut 2026-11-19).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-hej-sv-11",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-hej-sv-11",
+      "frames": [
+        0,
+        42
+      ],
+      "purpose": "Talfilm på begäran: Hej och välkommen till bordet! Neutral mun (tools/speech.ts, Paow; Jakob i Beslut 2026-11-19).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-goodluck-sv-16",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-goodluck-sv-16",
+      "frames": [
+        0,
+        82
+      ],
+      "purpose": "Talfilm på begäran: Insatserna är stängda. Lycka till vid mitt bord! Neutral mun (tools/speech.ts, Paow; Jakob i Beslut 2026-11-19).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
       "id": "paow-utgang-01-01",
       "kind": "RETURN",
       "from": "READY",

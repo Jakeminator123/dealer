@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-tal-placebets-sv-15",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-tal-placebets-sv-15/source.mp4",
+    "sha256": "535dde07031c52af52850fc3437f88e8544dfa566f465d352919ce90d03fac05",
+    "bytes": 4576763,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 48,
+    "audio": true,
+    "provider": "tools/speech.ts: Scoutgaming's lip-sync renderer on this machine, voice from ElevenLabs",
+    "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "onRequest": true,
+      "calm": true,
+      "weight": 0,
+      "label": "säger: Lägg era insatser, tack."
+    }
+  },
+  "speech": {
+    "line": "placebets",
+    "language": "sv",
+    "text": "Lägg era insatser, tack.",
+    "voice": "Paow",
+    "heard": "Lägg era insatser, tack",
+    "restFilm": "paow-vila-01-01",
+    "soundStartsAtSeconds": 0.22,
+    "soundEndsAtSeconds": 1.497
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte dömd av Jakob i Granska. Den neutrala munnen (rendererns låda som den är, samma grind) ur paow-tal-placebets-sv-13, med samma ljud; filmen är provets paow-mouth-candidate-20261118/neutral.mp4. Jakob valde den neutrala munnen i Beslut efter jämförelsen i spelets storlek.",
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten på Jakobs ord",
+      "at": "2026-11-21T17:12:28.053Z",
+      "mandate": "Jakob 2026-11-19 i Beslut, kortet neutral-mun-tre-repliker (\"Ska de tre replikerna bytas till den neutrala munnen till höger?\"): ja, efter jämförelsen i spelets storlek (assets/proofs/paow-mouth-neutral-trio-20261118); 2026-11-21: \"Okej kör\".",
+      "note": "Ersätter paow-tal-placebets-sv-13 i spelet. Vägen tillbaka: sätt review.decision till REJECTED här, så säger spelet paow-tal-placebets-sv-13 igen."
+    }
+  },
+  "postProcessing": "the renderer's face laid back into the rest film's own frames as it is, without the lips recipe (assets/speech/paow/paow-tal-placebets-sv-15/receipt.json, laidBack)",
+  "generationRef": "assets/motions/paow-tal-placebets-sv-15/generation.json",
+  "scoutIntegrated": false,
+  "published": false
+}

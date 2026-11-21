@@ -3544,6 +3544,48 @@
           }
         },
         {
+          "id": "paow-tal-placebets-sv-15",
+          "role": "film",
+          "name": "Tal: Lägg era insatser, tack. Neutral mun",
+          "path": "assets/motions/paow-tal-placebets-sv-15/source.mp4",
+          "still": 24,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Den neutrala munnen: vilan paow-vila-01-01 med rendererns mun inlagd som den är (utan läppreceptet), bara kring det som hörs, samma ljud som paow-tal-placebets-sv-13, 48 rutor i 24 per sekund. Jakobs ja i Beslut 2026-11-19 (neutral-mun-tre-repliker) efter jämförelsen paow-mouth-neutral-trio-20261118; filmen är provets paow-mouth-candidate-20261118/neutral.mp4.",
+          "source": {
+            "from": "tools/speech.ts layBack (lips null) ur paow-tal-placebets-sv-13",
+            "when": "2026-11-21"
+          }
+        },
+        {
+          "id": "paow-tal-hej-sv-11",
+          "role": "film",
+          "name": "Tal: Hej och välkommen till bordet! Neutral mun",
+          "path": "assets/motions/paow-tal-hej-sv-11/source.mp4",
+          "still": 22,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Den neutrala munnen: vilan paow-vila-01-01 med rendererns mun inlagd som den är (utan läppreceptet), bara kring det som hörs, samma ljud som paow-tal-hej-sv-09, 43 rutor i 24 per sekund. Jakobs ja i Beslut 2026-11-19 (neutral-mun-tre-repliker) efter jämförelsen paow-mouth-neutral-trio-20261118; filmen är provets paow-mouth-neutral-hej09-20261118/neutral.mp4.",
+          "source": {
+            "from": "tools/speech.ts layBack (lips null) ur paow-tal-hej-sv-09",
+            "when": "2026-11-21"
+          }
+        },
+        {
+          "id": "paow-tal-goodluck-sv-16",
+          "role": "film",
+          "name": "Tal: Insatserna är stängda. Lycka till vid mitt bord! Neutral mun",
+          "path": "assets/motions/paow-tal-goodluck-sv-16/source.mp4",
+          "still": 42,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Den neutrala munnen: vilan paow-vila-01-01 med rendererns mun inlagd som den är (utan läppreceptet), bara kring det som hörs, samma ljud som paow-tal-goodluck-sv-14, 83 rutor i 24 per sekund. Jakobs ja i Beslut 2026-11-19 (neutral-mun-tre-repliker) efter jämförelsen paow-mouth-neutral-trio-20261118; filmen är provets paow-mouth-neutral-goodluck14-20261118/neutral.mp4.",
+          "source": {
+            "from": "tools/speech.ts layBack (lips null) ur paow-tal-goodluck-sv-14",
+            "when": "2026-11-21"
+          }
+        },
+        {
           "id": "paow-tal-vetej-sv-11",
           "role": "film",
           "name": "Tal: Det kan jag tyvärr inte svara på, men korten ljuger aldrig.",

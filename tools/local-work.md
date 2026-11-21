@@ -76,6 +76,10 @@ Efter varje avslutad filmbeställning: kör `npm run media:status`, kontrollera 
 Tillfälliga kopior ligger i `.runtime/<uppgift>/`; färdiga filmer och användbara prov ligger i `assets/` med en roll.
 Rapporten kan köras cykliskt utan radering; det finns ingen åldersregel som ensam får radera unika filmer.
 
+`assets/noir/` är Jakobs samling av noir-filmerna (2026-11-21: "hitta alla noir-filmer och lägga dem i en speciell
+mapp"): varje film en gång, med `LASMIG.md`. Den bevaras och är inte löst material; filerna som redan fanns i
+projektet är hårda länkar dit, så originalen i proven och spelets ingång ligger kvar.
+
 `media-audit.ts` visar användning men är inte ensam ett raderingstillstånd: exempelvis en gammal Prov-mapp
 kan fortfarande visas och ha anteckningar. Kontrollera spelbank, scen, Material, Prov/Beslut, användardomar,
 beställningar, referenser och pågående arbete. V6 och nu använda original skyddas. Spara skälet och exakta sökvägar.
