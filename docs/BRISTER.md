@@ -287,7 +287,8 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 - **Startflaggan mäter genomsnittlig bildändring, inte stillastående hand.** D.C3-proven ger 125/25/168 flaggade
   startrutor trots tidigare handrörelse. Texten är förtydligad; tröskeln och kontrollen är oförändrade. Använd
   rutgranskning för tempo. Efterarbetets äldre planmått läser dessutom rå planfil: D.C3 kan saknas där tills kortet
-  sparats i labbet. `dealCheck` jämför det landade kortet mot orderns faktiska slutbild, även för D.C3.
+  sparats i labbet. `dealCheck` jämför det landade kortet mot orderns faktiska slutbild, även för D.C3; en order utan slutbild mäts
+  mot kortplanens kort (`cardFrom` i kvittot säger vilket).
 
 - **En ordergrupp är inte en filsystemtransaktion.** Förhandsvisningens källor valideras före första skrivningen,
   labbets Material- och orderskrivningar delar kö och sparomtag returnerar samma ID:n. Ett processavbrott mitt i

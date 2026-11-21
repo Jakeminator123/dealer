@@ -3,7 +3,8 @@
 // frames without Python. Orders nothing and spends nothing.
 //   node tools/film-after.ts <order id> <take> [flags]
 // Reads data/orders/<id>.json (the model, first.png and the anchor it was copied from, last.png, the motion's target) and the
-// delivery assets/orders/<id>/take-<n>/source.mp4, which is only read. Writes beside it, never over anything:
+// delivery assets/orders/<id>/take-<n>/source.mp4, which is only read. A deal ordered without a last picture (order-new.ts
+// --no-end, a seat's first landing) is checked against the card plan's card instead (dealCheckOf). Writes beside it, never over anything:
 //   after.mp4   the bank's frame (1764 × 1174) at the delivery's own rate, no sound; H.264 CRF 12, preset slow, 4:2:0, encoded by
 //               FFmpeg from BGR frames exactly as the script did, so the same frames give the same file
 //   after.json  the receipt: the treatment and why, every flag, the frames cut, the scaling, the tone lock's gain and lift, the
@@ -34,6 +35,8 @@ import {probe, sha256File, type Probe} from './film-fix.ts';
 import {orderTake, OrderError} from './order-collect.ts';
 import {BANK, TREATMENTS, resizeCubic, smoothGreen, toneLock, levelFrame, NO_TONE, cornerMean, endCheck, stillAnchorTail, edgeCheck, filmMeasure, seam, round, cardBlobs, type Tone, type PlanTarget} from '../src/film-after.ts';
 import {checkDeal, type DealCheck, type FrameCard} from '../src/deal-check.ts';
+import {planQuad, readPlan, type Pt} from './order-images.ts';
+import type {PlacementPlan} from '../src/placement-model.ts';
 
 const ROOT = process.cwd();
 const childEnv = () => {
@@ -208,7 +211,7 @@ export async function afterWork(id: string, take: number, options: Options = {},
     filmmatt: {...measure.result(seats, plan), startSeam: f0 ? seam(f0, first.data) : null, endSeam: fl && last ? seam(fl, last.data) : null},
     ...(comparison ? {comparison} : {}),
     // The automatic check of a deal (src/deal-check.ts): a take that fails it goes to no reviewer; remarks go with it.
-    ...(isDeal(order) ? {dealCheck: dealCheckOf(order, measure.dealFrames(), last, rate)} : {}),
+    ...(isDeal(order) ? {dealCheck: dealCheckOf(order, measure.dealFrames(), last, rate, last ? null : await planCardFor(root, order))} : {}),
     review: 'Efterarbetet ersätter ingen granskning: varje ruta granskas i full upplösning (tools/order-clerk.md, avsnitt 6–8).'};
   if (record.output.frames !== written) throw Error(`after.mp4 har ${record.output.frames} rutor, ${written} skrevs.`);
   return record;
@@ -218,12 +221,47 @@ export async function afterWork(id: string, take: number, options: Options = {},
 /** A deal from the pinch or the drag (its step key in the order). */
 const isDeal = (order: {step?: {key?: string}}) => /^GIV-/.test(String(order.step?.key ?? ''));
 /**
- * The check of a deal: the card per frame from the pass, against the last picture's card (the largest blue outside the
- * shoe on last.png, by the same colour rule; the plan's rule drew it as a real card at its place). Without last.png there
- * is nothing to land on, and the check says so.
+ * Where the plan lays a card, as an order's last picture would have drawn it (tools/order-images.ts planQuad: through the
+ * table's lens on "Plant bord", in film pixels): the outline, its box (left, top, right, bottom, as cardBlobs gives a card's),
+ * the outline's middle (an order's place) and its area. Measured against six drawn last pictures of 2026-11-21 (P4.C1, P4.C2,
+ * D.C3) the box lies 0–2 px from the card cardBlobs finds on last.png and the area 1–2 % under it. Null when the plan has no
+ * such place.
  */
-export function dealCheckOf(order: {motion?: unknown}, deal: {frames: FrameCard[]; changePerFrame: number[]}, last: {width: number; height: number; data: Uint8Array} | null, fps: number): DealCheck {
+export type PlanCard = {target: string; quad: Pt[]; bbox: [number, number, number, number]; centre: [number, number]; n: number; plan?: {path: string; sha256: string}};
+export function planCardOf(plan: PlacementPlan, target: string): PlanCard | null {
+  if (!plan.targets?.[target]?.geometry?.native) return null;
+  const q = planQuad(plan, target), xs = q.map(p => p[0]), ys = q.map(p => p[1]);
+  let twice = 0; for (let i = 0; i < q.length; i++) { const [x0, y0] = q[i], [x1, y1] = q[(i + 1) % q.length]; twice += x0 * y1 - x1 * y0; }
+  return {target, quad: q.map(([x, y]) => [round(x, 1), round(y, 1)] as Pt), bbox: [Math.round(Math.min(...xs)), Math.round(Math.min(...ys)), Math.round(Math.max(...xs)), Math.round(Math.max(...ys))],
+    centre: [round(xs.reduce((s, v) => s + v, 0) / q.length, 1), round(ys.reduce((s, v) => s + v, 0) / q.length, 1)], n: Math.round(Math.abs(twice) / 2)};
+}
+/** The plan's card for an order's motion.target, from placements/default.json; null without a target or a plan. */
+async function planCardFor(root: string, order: {motion?: unknown}): Promise<PlanCard | null> {
+  const target = (order.motion as {target?: unknown} | null)?.target;
+  if (typeof target !== 'string' || !existsSync(path.join(root, 'placements', 'default.json'))) return null;
+  const {plan, file} = await readPlan(root), card = planCardOf(plan, target);
+  return card && {...card, plan: file};
+}
+
+/** Whether an order has a last picture: one that goes to the model as its end frame (order-new.ts --no-end leaves it out). */
+const hasEnd = (order: {pictures?: unknown}) => Array.isArray(order.pictures) && order.pictures.some(p => (p as {goesAs?: string} | null)?.goesAs === 'endFrame');
+/**
+ * The check of a deal: the card per frame from the pass, against the last picture's card (the largest blue outside the
+ * shoe on last.png, by the same colour rule; the plan's rule drew it as a real card at its place). An order with a last
+ * picture whose file is missing, or whose card cannot be measured, has nothing to land on, and the check says so. An order
+ * without a last picture (a seat's first landing, made from the film's last frame afterwards) lands on the plan's card
+ * (`planCard`, planCardOf) by the same check and thresholds; the result then says so in `cardFrom`, and its texts name the
+ * plan's card instead of the last picture's.
+ */
+export function dealCheckOf(order: {motion?: unknown; pictures?: unknown}, deal: {frames: FrameCard[]; changePerFrame: number[]}, last: {width: number; height: number; data: Uint8Array} | null, fps: number, planCard: PlanCard | null = null): DealCheck & {cardFrom?: string; planCard?: PlanCard} {
   const side = (order.motion as {side?: string} | null)?.side === 'BACK' ? 'BACK' : 'FRONT';
+  if (!last && !hasEnd(order)) {
+    const target = String((order.motion as {target?: unknown} | null)?.target ?? '(inget mål)');
+    if (!planCard) return {pass: false, fails: [{code: 'ingen-plats-i-planen', text: `Ordern har ingen sista bild och kortplanen ingen plats ${target}: inget att jämföra landningen med.`}], remarks: [], measures: {}};
+    const check = checkDeal(deal.frames, {fps, side, lastCard: {bbox: planCard.bbox, centre: planCard.centre, n: planCard.n}, changePerFrame: deal.changePerFrame});
+    const named = (f: DealCheck['fails'][number]) => ({...f, text: f.text.replaceAll('sista bildens kort', 'kortplanens kort')});
+    return {...check, fails: check.fails.map(named), remarks: check.remarks.map(named), cardFrom: `kortplanen, ${planCard.target} (ingen sista bild)`, planCard};
+  }
   const card = last ? cardBlobs(last.data, last.width, last.height).filter(b => b.c === (side === 'BACK' ? 'Y' : 'B') && !b.inShoe).sort((a, b) => b.area - a.area)[0] : null;
   if (!card?.box) return {pass: false, fails: [{code: 'ingen-sista-bild', text: 'Sista bildens kort går inte att mäta: inget att jämföra landningen med.'}], remarks: [], measures: {}};
   return checkDeal(deal.frames, {fps, side, lastCard: {bbox: card.box, centre: [card.x, card.y], n: card.area}, changePerFrame: deal.changePerFrame});
@@ -269,7 +307,7 @@ if (import.meta.main) {
       efterarbete: r.efterarbete, slutkoll: r.slutkoll.after, kantkollLast: r.kantkoll.lastFrame && {dark: r.kantkoll.lastFrame.darkGreenPixelsAboveEdge, bodyEnds: r.kantkoll.lastFrame.bodyEnds},
       filmmatt: {frozenFrames: r.filmmatt.frozenFrames, green: r.filmmatt.green, landing: r.filmmatt.landing, startSeam: r.filmmatt.startSeam, endSeam: r.filmmatt.endSeam},
       comparison: r.comparison && {identicalFile: r.comparison.identicalFile, frames: r.comparison.frames, identicalFrames: r.comparison.identicalFrames, meanAbs: r.comparison.meanAbs, maxAbs: r.comparison.maxAbs, differingShare: r.comparison.differingShare},
-      dealCheck: r.dealCheck && {pass: r.dealCheck.pass, fails: r.dealCheck.fails, remarks: r.dealCheck.remarks}}, null, 2));
+      dealCheck: r.dealCheck && {pass: r.dealCheck.pass, cardFrom: r.dealCheck.cardFrom, fails: r.dealCheck.fails, remarks: r.dealCheck.remarks}}, null, 2));
     if (!rest.includes('--out')) console.log(`Nästa: node tools/order-put.ts status ${id} ${takeText} EFTERARBETAD --file ${posix(film)} --note "tools/film-after.ts (${r.model}): ..."`);
     // A deal that fails the automatic check is not given to a reviewer (src/deal-check.ts): say so and why.
     if (r.dealCheck && !r.dealCheck.pass) console.log(`Kontrollen fäller tagningen (${r.dealCheck.fails.map((f: {code: string}) => f.code).join(', ')}): ingen granskare. Sedan: node tools/order-put.ts status ${id} ${takeText} MÄTT --note "faller automatiskt: ${r.dealCheck.fails.map((f: {text: string}) => f.text).join(' ')}"`);
