@@ -42,6 +42,7 @@ export function Stage({
   clock: given,
   autoplay = true,
   className,
+  pictureClassName,
   children,
   ref,
 }: {
@@ -57,6 +58,8 @@ export function Stage({
   clock?: Clock;
   autoplay?: boolean;
   className?: string;
+  /** The picture alone, without the transport under it: where a page sets the picture's own shape (16:9 on a narrow screen). */
+  pictureClassName?: string;
   /** Laid over the picture area. */
   children?: ReactNode;
   ref?: Ref<StageHandle>;
@@ -159,7 +162,7 @@ export function Stage({
   const gapPart = gap !== null ? parts[gap] : null;
   return (
     <div className={cn("flex min-h-0 flex-col", className)}>
-      <div className="relative min-h-0 flex-1 bg-well">
+      <div className={cn("relative min-h-0 flex-1 bg-well", pictureClassName)}>
         {want3d ? (
           <SceneCanvas
             className={cn("absolute inset-0", mode !== "3d" && "invisible")}

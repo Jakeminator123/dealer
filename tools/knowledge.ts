@@ -227,7 +227,7 @@ export function bankSections(graph: Graph, release: Blocked, removed: Removed): 
     `- Dömda åt Jakob av huvudagenten och en granskare (väntar inte på honom, hans beslut ersätter domen; Granska, Alla, Dömda åt dig): ${forJakob.length}.`,
     `- Experimentsteg utanför modellen: ${graph.experiments.length}.`,
     // Jakob's words (2026-11-12): a "steg" is one move between two anchors; a film or a take is what plays there.
-    'Ankare: A1 = vila (IDLE), A2.1 = nyp i skons fönster (READY), A2.2 = hand över kortet (READY-B). Ett steg är en rörelse mellan två ankare och skrivs till exempel A2.1 → P4C1 (READY>P4.C1); varje steg kan ha flera tagningar, och en av dem spelas. Syns i vyerna Karta och Primära.',
+    'Ankare: A1 = vila (IDLE), A2.1 = nyp i skons fönster (READY), A2.2 = hand över kortet (READY-B), A2.3 = två händer vid skon (READY-C), och A3 där kortet har landat, skrivet med platsen och kortet (A3P4C1). Ett steg är en rörelse mellan två ankare och skrivs till exempel A2.1 → A3P4C1 (READY>P4.C1); varje steg kan ha flera tagningar, och en av dem spelas. Syns i vyerna Karta och Primära.',
   ].join('\n');
   const rows = ['| Steg | Id | Spelas nu | Dom | Tagningar |', '| --- | --- | --- | --- | --- |'];
   const detail: Built[] = [];
@@ -287,7 +287,7 @@ export function proofSections(proofs: readonly Proof[], onSite: ReadonlySet<stri
 /** Five lines of the builder's own about each view, used when studio/lib/guide.ts gives none. */
 export const OWN_VIEWS: {namn: string; adress: string; text: string}[] = [
   {namn: 'Bordet', adress: '/studio/bordet/', text: 'En vy med delarna Kortplan (var korten ligger), Scen (en runda i 3D-scenen, med rum, ljus, bord, kort och kamera och förval), Råfilm (filmerna som de är) och Efterarbete (det som läggs över filmen). Rundan skrivs med Jakobs ord, till exempel A1 - A2.1 - P4C1 - A1.'},
-  {namn: 'Karta', adress: '/studio/karta/', text: 'Nodkartan: ankarna (A1 vila, A2.1 nyp, A2.2 släp) och kortplatserna, med en linje per steg. Klicka på en linje för stegets Primär (det som spelas, som bara Jakob väljer), de andra tagningarna och domarna.'},
+  {namn: 'Karta', adress: '/studio/karta/', text: 'Varje dealers nodträd, ett i taget: A1, trädets ankare vid skon och varje kort, och trädets 36 steg som linjer, så att det syns vad som finns och vad som saknas (till exempel Casino 22/36). Klicka på en linje för stegets Primär (det som spelas, som bara Jakob väljer) och de andra tagningarna, eller för vad en beställning till ett saknat steg har och saknar.'},
   {namn: 'Jämför', adress: '/studio/jamfor/', text: 'Två tagningar sida vid sida på samma ruta, eller på samma plats, med beslutet för kandidaten under.'},
   {namn: 'Granska', adress: '/studio/granska/', text: 'Tagningar som väntar på Jakobs dom, en i taget, och delen Prov: prov från arbetet, nyast först, med en dom per fil. I kopian sparas inga beslut.'},
 ];

@@ -262,8 +262,9 @@ const StepBox = memo(function StepBox({
         <span className="flex min-w-0 items-center gap-1.5">
           <TakeChip take={take} size="sm" />
         </span>
-        {/* why this take plays; "primär" is left out, the verdict chip above already says Primär */}
-        {seg.why === "PRIMARY" ? null : <span className={cn("truncate text-2xs", seg.why === "LOCKED" ? "text-brass-hi/90" : "text-faint")}>{WHY_LABEL[seg.why]}</span>}
+        {/* why this take plays, only when the reason is out of the ordinary: "primär" is said by the verdict chip above, and
+            "huvudtagning" (the step's usual pick) under a Variant chip read as a contradiction */}
+        {seg.why === "PRIMARY" || seg.why === "MAIN" ? null : <span className={cn("truncate text-2xs", seg.why === "LOCKED" ? "text-brass-hi/90" : "text-faint")}>{WHY_LABEL[seg.why]}</span>}
       </span>
     </button>
   );

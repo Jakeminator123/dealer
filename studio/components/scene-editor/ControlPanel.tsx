@@ -67,25 +67,29 @@ export function ControlPanel({
     return { ...g, list, more, changed: [...differ].filter((k) => keySpec(k)!.group === g.id).length };
   }).filter((g) => !searching || g.list.length || g.more.length);
 
+  // A panel of one group (Efterarbete's Kort och marker) is short enough to read; a search field would only weigh it down.
+  const single = only?.length === 1;
   return (
     <div className="flex min-h-0 flex-col">
-      <div className="relative border-b border-line px-4 py-3">
-        <TextField
-          size="sm"
-          aria-label="Sök reglage"
-          placeholder="Sök reglage, t.ex. damm eller glans"
-          icon={<Search />}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Escape") setQuery("");
-          }}
-          className={query ? "pr-8" : undefined}
-        />
-        {query ? (
-          <IconButton label="Töm sökningen" icon={<X />} size="sm" className="absolute right-5 top-[14px] size-6" onClick={() => setQuery("")} />
-        ) : null}
-      </div>
+      {single ? null : (
+        <div className="relative border-b border-line px-4 py-3">
+          <TextField
+            size="sm"
+            aria-label="Sök reglage"
+            placeholder="Sök reglage, t.ex. damm eller lampa"
+            icon={<Search />}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") setQuery("");
+            }}
+            className={query ? "pr-8" : undefined}
+          />
+          {query ? (
+            <IconButton label="Töm sökningen" icon={<X />} size="sm" className="absolute right-5 top-[14px] size-6" onClick={() => setQuery("")} />
+          ) : null}
+        </div>
+      )}
       <ScrollArea className="flex-1">
         {searching && !groups.length ? <p className="px-4 py-6 text-sm text-faint">Inget reglage heter så.</p> : null}
         {groups.map((g) => {

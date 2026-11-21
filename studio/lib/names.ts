@@ -62,15 +62,21 @@ export function takeEdgeName(take: Pick<Take, "edge" | "hub">): string {
 // The words dropped are the same for every take of one edge, so names stay apart. Should two takes of one edge still read
 // the same, both are shown by their id without "pamela-" (takeNames). Another dealer's films are named after the order they
 // came from (tools/register-order.ts: "paow-giv-p4-01-deal" on READY>P4.C1); for them her name, the order's step ("giv",
-// "ingang 2 1") and the seat on its own repeat the edge too, so that one is "Giv 01" as Pamela's is. Pamela's names stay as they were.
-export type TakeLike = Pick<Take, "id" | "edge" | "kind"> & { dealer?: string };
+// "ingang 2 1", "utgang 2 2"), the seat on its own and the hub a return goes back to ("ready c") repeat the edge too, so that one
+// is "Giv 01" as Pamela's is. The graph keeps A2.2's and A2.3's takes on A2.1's edge (take.hub), so a take written at one of
+// them says its anchor in his notation after the first word ("Giv A2.3 01 01", never "2 3" or a trailing "c"), and the doll's
+// cycle ("h24 cykel") is "docka". Pamela's names stay as they were.
+export type TakeLike = Pick<Take, "id" | "edge" | "kind"> & { dealer?: string; hub?: Take["hub"] };
 
-// The order steps' words in another dealer's ids, by what the edge does; a run is dropped only where it stands whole.
-const ORDER_WORDS: Partial<Record<EdgeKind, string[][]>> = {
-  DEAL: [["giv", "2", "1"], ["giv", "2", "2"], ["giv"]],
-  RETURN: [["giv", "2", "1"], ["giv", "2", "2"], ["giv"]],
-  ENTRY: [["ingang", "2", "1"], ["ingang", "2", "2"], ["ingang"]],
-};
+// The order step's word in another dealer's ids, by what the edge does, with the anchor it was ordered from when the id
+// names it ("giv 2 3", "giv 2 3c", "utgang 2 2"): the first one that stands whole is dropped.
+const ORDER_WORDS: Partial<Record<EdgeKind, string[]>> = { DEAL: ["giv"], RETURN: ["giv", "utgang"], ENTRY: ["ingang"] };
+function dropStep(words: string[], steps: readonly string[]): void {
+  const at = words.findIndex((w) => steps.includes(w));
+  if (at < 0) return;
+  const anchor = words[at + 1] === "2" && /^\d[a-z]?$/.test(words[at + 2] ?? "");
+  words.splice(at, anchor ? 3 : 1);
+}
 function dropRun(words: string[], run: readonly string[]): boolean {
   const at = words.findIndex((_, i) => run.every((w, k) => words[i + k] === w));
   if (at >= 0) words.splice(at, run.length);
@@ -79,6 +85,7 @@ function dropRun(words: string[], run: readonly string[]): boolean {
 
 const WORDS: [RegExp, string][] = [
   [/\bdeep breath\b/g, "djupt andetag"],
+  [/\bh24( cykel)?\b/g, "docka"],
   [/\bhand resettle\b/g, "handen läggs om"],
   [/\bfrom trial\b/g, "ur prov"],
   [/\bshoe plate\b/g, "skoplåt"],
@@ -141,14 +148,16 @@ export function takeName(take: TakeLike, siblings?: readonly TakeLike[]): string
     if (at >= 0) words.splice(at, 2);
     else if (other) dropRun(words, [card[0]]);
   }
-  if (other && take.kind) for (const run of ORDER_WORDS[take.kind] ?? []) if (dropRun(words, run)) break;
+  if (other && take.kind) dropStep(words, ORDER_WORDS[take.kind] ?? []);
+  const hub = other && take.hub ? /^READY-([A-Z])$/.exec(take.hub) : null;
+  if (hub) dropRun(words, ["ready", hub[1].toLowerCase()]);
   for (const word of drop) {
     const at = words.indexOf(word);
     if (at >= 0) words.splice(at, 1);
   }
   let rest = words.join(" ");
   for (const [word, swedish] of WORDS) rest = rest.replace(word, swedish);
-  const text = [lead, rest].filter(Boolean).join(" ").trim() || take.id.replace(/^pamela-/, "");
+  const text = [lead, hub ? nodeCode(hub[0]) : "", rest].filter(Boolean).join(" ").trim() || take.id.replace(/^pamela-/, "");
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 

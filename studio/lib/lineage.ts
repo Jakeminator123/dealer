@@ -6,7 +6,7 @@
 // bygger på det ankaret i så fall gråas"): a take is marked by its own first and last pictures. An anchor made from a
 // keystone that no longer holds gets a chip of its own (builtOn), and its takes are not marked for that reason.
 // The mark is information, not a verdict: the take keeps playing until he chooses otherwise.
-import { entryKey, isStanding, ROLE_LABEL, type Entry, type JobPicture } from "./media.ts";
+import { entryKey, isStanding, ROLE_LABEL, roleWords, type Entry, type JobPicture } from "./media.ts";
 
 /** A take's first and last picture as the job file, an order or a derived take writes it. */
 export type TakeLike = { id: string; clip?: string; frames?: [number, number]; first?: JobPicture; last?: JobPicture };
@@ -71,8 +71,9 @@ export function holderInstead<T extends StateLike>(entries: readonly T[], entry:
   return samePlace(entries, entry).find((e) => e.id !== entry.id && e.state === "gäller") ?? null;
 }
 
-/** The chip on a take built on a picture that no longer holds: "äldre ankare 2.2" (lower case, short). */
-export const olderChip = (entry: Pick<Entry, "role">): string => `äldre ${ROLE_LABEL[entry.role].toLowerCase().replace(/^landningar$/, "landning")}`;
+/** The chip on a take built on a picture that no longer holds: "äldre A2.2", "äldre keystone" (an anchor in his notation, else lower case, short). */
+export const olderChip = (entry: Pick<Entry, "role">): string =>
+  `äldre ${entry.role.startsWith("ankare-") ? `A${entry.role.slice("ankare-".length)}` : ROLE_LABEL[entry.role].toLowerCase().replace(/^landningar$/, "landning")}`;
 
 export type Older = { side: "first" | "last"; built: string; holds: string; chip: string };
 /** Why a take is marked: each of its two pictures whose place another picture holds now. Empty when it is built on what holds (or cannot be traced). */
@@ -107,5 +108,5 @@ export function consequenceOfHolding<T extends StateLike>(entries: readonly T[],
 export function fromOlderChip<T extends StateLike & { builtOn?: readonly string[] }>(entry: T, entries: readonly T[]): string | null {
   const byId = new Map(entries.map((e) => [e.id, e]));
   const older = (entry.builtOn ?? []).map((id) => byId.get(id)).find((e) => e && holderInstead(entries, e));
-  return older ? `från äldre ${ROLE_LABEL[older.role].toLowerCase()}` : null;
+  return older ? `från äldre ${roleWords(older.role)}` : null;
 }

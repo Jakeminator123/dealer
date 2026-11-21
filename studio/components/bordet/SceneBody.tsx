@@ -162,7 +162,7 @@ export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: Scene
       <div className="flex min-w-0 flex-col lg:min-h-0">
         <div className="flex min-h-11 shrink-0 flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-line px-3 py-2">
           {toolbar}
-          <span data-round className="min-w-40 flex-1 basis-40 truncate text-sm text-dim" title={notation}>
+          <span data-round className="min-w-40 flex-1 basis-auto truncate text-sm text-dim" title={notation}>
             <span className="font-medium text-ink">{notation || "Ingen runda"}</span>
             {parts.length ? ` · ${roundFacts(parts)}` : ""}
             {few ? <span className="text-faint"> · {few}</span> : null}
@@ -219,7 +219,8 @@ export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: Scene
         ) : (
           <div className="flex flex-col lg:min-h-0 lg:flex-1" {...editor.pointer}>
             {/* The renderer reads the geometry when the scene is created. */}
-            <Stage key={geometri} ref={stage} className="aspect-video lg:aspect-auto lg:min-h-0 lg:flex-1" parts={parts} mode={mode} clock={clock} initial={editor.initial} onScene={editor.onScene} onSceneChange={editor.onSceneChange}>
+            {/* On a narrow screen the picture itself is 16:9, as in the game, and the transport sits under it. */}
+            <Stage key={geometri} ref={stage} className="lg:min-h-0 lg:flex-1" pictureClassName="aspect-video max-lg:flex-none lg:aspect-auto" parts={parts} mode={mode} clock={clock} initial={editor.initial} onScene={editor.onScene} onSceneChange={editor.onSceneChange}>
               {editor.comparing && !flat ? (
                 <div className="pointer-events-none absolute left-1/2 top-4 -translate-x-1/2 rounded-full border border-brass/50 bg-black/70 px-4 py-1.5 text-sm font-semibold text-brass-hi shadow-pop backdrop-blur-sm">Basgrund</div>
               ) : null}
@@ -248,7 +249,9 @@ export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: Scene
           <div className="min-h-0 flex-1 overflow-y-auto">{editor.afterwork ?? <Skeleton className="m-4 h-10 rounded-md" />}</div>
         ) : kind === "scen" ? (
           <div className="flex min-h-0 flex-1 flex-col">
-            <div className="shrink-0 overflow-y-auto border-b border-line px-4 py-3 lg:max-h-[45%]">
+            {/* The picker keeps its full height; only a low window with Referensfilmer open lets it scroll, and the search
+                field and one group always stay in sight. */}
+            <div className="shrink-0 border-b border-line px-4 py-3 lg:max-h-[calc(100%-8rem)] lg:overflow-y-auto">
               <RoundPicker rounds={rounds} current={round} problems={round?.errors ?? []} onPick={pick} />
             </div>
             {editor.panel}

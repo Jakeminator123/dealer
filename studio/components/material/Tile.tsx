@@ -13,17 +13,18 @@ import { Badge, buttonClasses, cn, type BadgeTone } from "../ui";
 
 export const TILE_HEIGHT = 150;
 
-export type ChipState = State | "saknas" | "finns";
+export type ChipState = State | "saknas" | "finns" | "delvis";
 const STATE: Record<ChipState, { tone: BadgeTone; sign: string; word: string }> = {
   gäller: { tone: "ok", sign: "✓", word: "gäller" },
   finns: { tone: "ok", sign: "✓", word: "finns" },
+  delvis: { tone: "remark", sign: "◐", word: "delvis" },
   kandidat: { tone: "remark", sign: "◐", word: "kandidat" },
   ersatt: { tone: "neutral", sign: "↺", word: "ersatt" },
   arkiverad: { tone: "neutral", sign: "▣", word: "arkiverad" },
   saknas: { tone: "bad", sign: "✕", word: "saknas" },
 };
 
-/** A state as sign AND colour: gäller ✓, finns ✓, kandidat ◐, ersatt ↺, arkiverad ▣, saknas ✕. */
+/** A state as sign AND colour: gäller ✓, finns ✓, delvis ◐, kandidat ◐, ersatt ↺, arkiverad ▣, saknas ✕. */
 export function StateChip({ state, size = "sm", className }: { state: ChipState; size?: "sm" | "md"; className?: string }) {
   const s = STATE[state];
   return (

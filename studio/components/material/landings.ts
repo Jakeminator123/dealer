@@ -7,12 +7,15 @@
 import { SEAT_TARGETS, a3Candidates, a3Name, seatEndOf, stepOf, type BankFacts, type SeatEnd } from "../../../src/order-model.ts";
 import type { RoleStatus } from "../../lib/media.ts";
 
+/** The station's state: as a role's, and "delvis" while some seats have an end picture and others do not. */
+export type SeatEndsState = RoleStatus | "delvis";
+
 type EntryLike = { id: string; role: string; node?: string; state?: string; card?: string; hand?: string; name?: string };
 /** One seat: its card, its short name, where a deal from anchor 2.1 (the pinch), 2.2 (the drag) and 2.3 (two hands, the right lays) ends, and its A3 candidates for the right hand. */
 export type SeatEndRow<E> = { target: string; label: string; pinch: SeatEnd<E> | null; drag: SeatEnd<E> | null; two: SeatEnd<E> | null; candidates: E[] };
 
-/** "P4", "Dealer", "Hålkort": a seat as the order views name it; a player's second card by its A3, as Jakob writes it ("A3P4C2"). */
-export const seatLabel = (target: string): string => (target === "D.C1" ? "Dealer" : target === "D.C2" ? "Hålkort" : target === "D.C3" ? "Dealer 3" : /^P\d\.C2$/.test(target) ? a3Name(target) : target.replace(/\.C1$/, ""));
+/** "P4", "DC1", "DC2": a seat by its place, the dealer's cards as in Kortplan; a player's second card by its A3, as Jakob writes it ("A3P4C2"). */
+export const seatLabel = (target: string): string => (/^D\.C\d$/.test(target) ? target.replace(".", "") : /^P\d\.C2$/.test(target) ? a3Name(target) : target.replace(/\.C1$/, ""));
 
 /**
  * Every seat a deal can be ordered to, and a player's second card where a landing picture is made for it (its own A3 since
@@ -36,10 +39,14 @@ export function seatEnds<E extends EntryLike>(entries: readonly E[], bank: BankF
   }));
 }
 
-/** How the station stands: a landing picture holds for some seat, some seat has an end picture at all, or none has. */
-export function seatEndsStatus(rows: readonly SeatEndRow<unknown>[]): { status: RoleStatus; have: number; total: number } {
+/**
+ * How the station stands: no seat has an end picture (saknas), some have and some not (delvis), or every seat has one, a
+ * landing picture holding for some seat (gäller) or only cut frames (finns). Never ✓ while a seat lacks its end picture.
+ */
+export function seatEndsStatus(rows: readonly SeatEndRow<unknown>[]): { status: SeatEndsState; have: number; total: number } {
   const have = rows.filter((r) => r.pinch || r.drag || r.two).length;
-  const status: RoleStatus = rows.some((r) => r.pinch?.kind === "LANDNING" || r.drag?.kind === "LANDNING" || r.two?.kind === "LANDNING") ? "gäller" : have ? "finns" : "saknas";
+  const landing = rows.some((r) => r.pinch?.kind === "LANDNING" || r.drag?.kind === "LANDNING" || r.two?.kind === "LANDNING");
+  const status: SeatEndsState = !have ? "saknas" : have < rows.length ? "delvis" : landing ? "gäller" : "finns";
   return { status, have, total: rows.length };
 }
 

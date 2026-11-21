@@ -15,23 +15,24 @@ import { ProofStill } from "../proofs";
 import { buttonClasses, cn } from "../ui";
 import type { BankFacts } from "../../../src/order-model.ts";
 import { seatGroups, takeCount } from "./films.ts";
-import { endWord, seatEnds, seatEndsCount, seatEndsStatus, type SeatEndRow } from "./landings.ts";
+import { endWord, seatEnds, seatEndsCount, seatEndsStatus, type SeatEndRow, type SeatEndsState } from "./landings.ts";
 import { StateChip, Tile, coverOfEntry, filmLine, type TileMark } from "./Tile";
 import { fromOlderChip, olderOf, type Lineage } from "../../lib/lineage.ts";
 
 const rowId = (role: Role) => `roll-${role.replace(".", "-")}`;
 const scrollTo = (role: Role) => document.getElementById(rowId(role))?.scrollIntoView({ behavior: "smooth", block: "start" });
 
-const SIGN_TONE: Record<RoleStatus, string> = {
+const SIGN_TONE: Record<SeatEndsState, string> = {
   gäller: "border-godkand/45 bg-godkand/10 text-[#6cc595]",
   finns: "border-godkand/30 bg-godkand/6 text-[#6cc595]",
+  delvis: "border-anmarkning/45 bg-anmarkning/10 text-[#f0b07a]",
   kandidat: "border-anmarkning/45 bg-anmarkning/10 text-[#f0b07a]",
   saknas: "border-underkand/45 bg-underkand/10 text-[#ef8b8b]",
 };
-const SIGN: Record<RoleStatus, string> = { gäller: "✓", finns: "✓", kandidat: "◐", saknas: "✕" };
+const SIGN: Record<SeatEndsState, string> = { gäller: "✓", finns: "✓", delvis: "◐", kandidat: "◐", saknas: "✕" };
 
 /** The chain from the first picture to the films, each step with how it stands; a click goes to its row. */
-export function ChainStrip({ dealer, bankTakes, landings }: { dealer: DealerAnswer; bankTakes: number; /** The landings counted seat by seat (seatEndsStatus). */ landings?: { status: RoleStatus; have: number; total: number } }) {
+export function ChainStrip({ dealer, bankTakes, landings }: { dealer: DealerAnswer; bankTakes: number; /** The landings counted seat by seat (seatEndsStatus). */ landings?: { status: SeatEndsState; have: number; total: number } }) {
   return (
     <nav aria-label="Kedjan" className="flex flex-wrap items-center gap-1.5">
       {CHAIN.map((role, i) => {
@@ -96,7 +97,7 @@ export function OrderFrom({ dealer, onOpen }: { dealer: DealerAnswer; onOpen: (e
   );
 }
 
-function RowFrame({ role, step, status, count, missing, last = false, children }: { role: Role; step: number | null; status: RoleStatus | null; count: ReactNode; missing?: string; last?: boolean; children: ReactNode }) {
+function RowFrame({ role, step, status, count, missing, last = false, children }: { role: Role; step: number | null; status: SeatEndsState | null; count: ReactNode; missing?: string; last?: boolean; children: ReactNode }) {
   return (
     <section id={rowId(role)} className="relative grid scroll-mt-4 grid-cols-[230px_minmax(0,1fr)] gap-6 py-5">
       {step !== null && !last ? <span aria-hidden className="absolute bottom-0 left-[13px] top-12 w-px bg-line-strong" /> : null}
@@ -238,8 +239,8 @@ function SeatEndTile({ row, bank, onOpen }: { row: SeatEndRow<EntryAnswer>; bank
         <span className="text-md font-semibold text-ink">{row.label}</span>
         <span className={cn("text-xs", END_TONE[word])}>{word}</span>
       </span>
-      {/* From anchor 2.2 (the drag) a seat ends on the drag's own film: said where it differs from the pinch. */}
-      <span className="text-2xs text-faint">{[row.pinch || row.drag ? (row.drag ? (row.pinch ? "2.1 och 2.2" : "2.2") : "2.1") : null, row.two ? "2.3 (A3)" : row.candidates.length ? "A3 kandidat" : null].filter(Boolean).join(" · ") || " "}</span>
+      {/* From anchor A2.2 (the drag) a seat ends on the drag's own film: said where it differs from the pinch. */}
+      <span className="text-2xs text-faint">{[row.pinch || row.drag ? (row.drag ? (row.pinch ? "A2.1 och A2.2" : "A2.2") : "A2.1") : null, row.two ? "A2.3" : row.candidates.length ? "A3 kandidat" : null].filter(Boolean).join(" · ") || " "}</span>
     </>
   );
   const frame = "flex h-full w-full flex-col gap-1 rounded-md border border-line bg-surface px-2 py-2 text-left";
@@ -256,7 +257,7 @@ function SeatEndTile({ row, bank, onOpen }: { row: SeatEndRow<EntryAnswer>; bank
 
 /**
  * The films: the bank in numbers per seat, the map one click away; for a dealer without films in the bank, what lies
- * outside it. Under that, the films of the register (role film) that lie in the repo folder but not in the bank.
+ * outside it (where, on hover only: a path is no word for him). Under that, the films of the register (role film) that lie in the repo folder but not in the bank.
  */
 export function FilmsRow({ dealer, graph, step, open, onOpen, lineage = {} }: { dealer: DealerAnswer; graph: Graph | null; step: number; open: string | null; onOpen: (entry: EntryAnswer) => void; lineage?: Lineage }) {
   const [shown, setShown] = useState(false);
@@ -314,7 +315,7 @@ export function FilmsRow({ dealer, graph, step, open, onOpen, lineage = {} }: { 
             </div>
             {outside ? (
               <div className="flex flex-col gap-2 rounded-md border border-line bg-surface px-4 py-3" style={{ maxWidth: 720 }}>
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3" title={outside.path}>
                   <FolderOpen className="size-5 shrink-0 text-brass" />
                   <span className="text-md text-ink">
                     <span className="font-semibold tabular-nums">{outFilms} filmer till</span> ligger i arbetsmappen, inte införda
@@ -324,7 +325,6 @@ export function FilmsRow({ dealer, graph, step, open, onOpen, lineage = {} }: { 
                     {shown ? "Dölj omgångarna" : "Per omgång"}
                   </button>
                 </div>
-                <span className="font-mono text-xs text-faint">{outside.path}</span>
                 {shown ? (
                   <ul className="mt-1 flex flex-col divide-y divide-line text-sm">
                     <li className="pb-2 text-xs text-dim">{outside.note}</li>
@@ -350,7 +350,7 @@ export function FilmsRow({ dealer, graph, step, open, onOpen, lineage = {} }: { 
         {loose.length ? (
           <div className="flex flex-col gap-2">
             <span className="text-sm text-dim">
-              <span className="font-semibold tabular-nums text-ink">{loose.length} {loose.length === 1 ? "film" : "filmer"}</span> utanför banken, i repomappen
+              <span className="font-semibold tabular-nums text-ink">{loose.length} {loose.length === 1 ? "film" : "filmer"}</span> utanför banken
             </span>
             <Strip>
               {loose.map((e) => {
@@ -367,7 +367,7 @@ export function FilmsRow({ dealer, graph, step, open, onOpen, lineage = {} }: { 
 
 /**
  * A film of the register (role film, assets/motions/<clip>/source.mp4) built on a picture that no longer holds: one chip per
- * mark ("äldre ankare 1", studio/lib/lineage.ts olderOf), a click opening the picture it was built on.
+ * mark ("äldre A1", studio/lib/lineage.ts olderOf), a click opening the picture it was built on.
  */
 export function marksOfFilm(entry: EntryAnswer, entries: readonly EntryAnswer[], lineage: Lineage, onOpen: (entry: EntryAnswer) => void): TileMark[] {
   const clip = /^assets\/motions\/([^/]+)\//.exec(entry.path ?? "")?.[1];

@@ -15,15 +15,17 @@ export const isRole = (value: unknown): value is Role => typeof value === "strin
 export const ROLE_LABEL: Record<Role, string> = {
   ingangsbild: "Ingångsbild",
   keystone: "Keystone",
-  "ankare-1": "Ankare 1",
-  "ankare-2.1": "Ankare 2.1",
-  "ankare-2.2": "Ankare 2.2",
-  "ankare-2.3": "Ankare 2.3",
+  "ankare-1": "A1",
+  "ankare-2.1": "A2.1",
+  "ankare-2.2": "A2.2",
+  "ankare-2.3": "A2.3",
   landning: "Landningar",
   film: "Filmer",
   referens: "Referenser",
   arbetsmaterial: "Övrigt",
 };
+/** The label inside a sentence: lower case, except an anchor, which keeps its A (A2.1, never a2.1). */
+export const roleWords = (role: Role): string => (role.startsWith("ankare-") ? ROLE_LABEL[role] : ROLE_LABEL[role].toLowerCase());
 
 /** One line under the role's name: what it is, in Jakob's words of 2026-11-12. */
 export const ROLE_ABOUT: Record<Role, string> = {

@@ -121,13 +121,16 @@ export function MaterialView() {
   const bankFacts: BankFacts | null = bank ? { ...(bank as BankFacts), cutChecks: CUT_CHECKS } : null;
   const landings = seatEndsStatus(seatEnds(live.entries, bankFacts, dealer.id));
   const missingRoles = CHAIN.filter((r) => (r === "landning" ? landings.status : roleStatus(live, r, bankTakes)) === "saknas");
+  // The header says the chain is whole only when it is: a station where some seats still lack their end picture is named.
+  const partly = landings.status === "delvis" ? `Landningar ${landings.have} av ${landings.total}` : null;
+  const chainLine = missingRoles.length || partly ? [missingRoles.length ? `saknas: ${missingRoles.length} av ${CHAIN.length} i kedjan` : null, partly].filter(Boolean).join(" · ") : "hela kedjan finns";
   const step = (role: Role) => CHAIN.indexOf(role) + 1;
   return (
     <Page
       title="Material"
       status={
         <span className="truncate">
-          {dealer.name} · {missingRoles.length ? `saknas: ${missingRoles.length} av ${CHAIN.length} i kedjan` : "hela kedjan finns"}
+          {dealer.name} · {chainLine}
         </span>
       }
       actions={
