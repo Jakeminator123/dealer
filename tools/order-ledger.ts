@@ -6,7 +6,7 @@
 //   node tools/order-ledger.ts --efter modell        the summary by one fact: metod, modell, text, vandning, referens, langd
 //   node tools/order-ledger.ts --steg giv --dealer paow   only those takes (steg: ingang, giv, retur, vila, bild)
 //   node tools/order-ledger.ts --json                the rows, the summary and the problems as JSON
-// The lab server answers GET /api/orders/ledger with serveLedger (tools/preview.ts). Tests: tools/order-ledger.test.ts.
+// The lab server answers GET /api/orders/ledger with serveLedger (tools/preview.ts). No test of its own holds it now (tools/order-ledger.test.ts is gone).
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

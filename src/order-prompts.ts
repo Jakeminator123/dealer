@@ -27,7 +27,7 @@
 // along the felt under the fingertips and is taken between thumb and fingers on the way. The pose picture of a still is a
 // cut-out: only the dealing forearm and hand of another dealer at the window shoe, the rest of her filled with green
 // (tools/order-images.ts cutFigure; for 2.2 laid on the dealer's own shoe and card, poseOnShoe), so that only the hand's
-// place and grip can be taken from it. Tests: tools/order-prompts.test.ts.
+// place and grip can be taken from it. Tests: tools/order-line.test.ts (every text the line allows) and tools/order-routes.test.ts.
 import type { FlipAxis, Grip, StepKey, TextStyle } from './order-model.ts';
 
 /**
@@ -100,6 +100,16 @@ import type { FlipAxis, Grip, StepKey, TextStyle } from './order-model.ts';
  * chooses. Untried as texts.
  */
 export const TEMPLATE_VERSION = 12;
+/**
+ * The templates a new order may be written with, chosen per order (NewOrder.template; absent: TEMPLATE_VERSION).
+ * 13 (2026-11-21, the review of the method, .runtime/metod-granskning section 4): shorter texts that leave to the pictures
+ * and the reference film what they already show, for four cases: the deal from 2.3 and the deal by the hand at the shoe
+ * from 2.1 (open, bara dit, the marks in the last picture, the card at the plan's size), the return to 2.3 and the
+ * return to rest after the right hand laid the card (open). Every other case, and a closed card or a missing mark, is
+ * written as 12 writes it and named @13. Not the default: pilot 02's text (12) stays until a trial shows 13 is as good or
+ * better. An order keeps its choice when its text is written again (orderPrompt).
+ */
+export const TEMPLATE_CHOICES: readonly number[] = [TEMPLATE_VERSION, 13];
 /** The version of the long text (template 3, 2026-11-13); Utförlig writes it unchanged. */
 export const LONG_VERSION = 3;
 export type Dealer = { name: string; look: string };
@@ -336,6 +346,17 @@ export const SAY = {
   stillPose: '@pose is a cut-out on plain green that shows only a forearm and hand at the same window shoe; take from it only where the hand is and how the wrist and fingers hold the card. Her own sleeve, skin and hand stay as in @anchor, and her forearm continues up to her own elbow and shoulder.',
   stillStandard: 'Her elbows hang free at her sides and her forearms come down to the felt. Her jacket continues down to the straight horizontal line where her body is cut off in @anchor. The green is one even colour right up to her outline, her hands, the card and the shoe. Soft, even frontal studio light; natural skin with fine texture, sharp eyes, matte black cloth with soft folds.',
   stillCard: 'There is one card, the one in the window, with the size and shape it has in @anchor.',
+  // Template 13 (TEMPLATE_CHOICES), word for word as the review of the method wrote it (2026-11-21, its section 4).
+  v13: {
+    strokeTurnLay: 'Her hand at the shoe strokes the yellow card out, and her other hand turns it over in one unbroken turn and lays it flat, blue side up, where the last frame shows it, with her fingertips resting on it.',
+    pinchTurnLay: 'Her hand at the shoe takes the yellow card between thumb and fingers and carries it low over the felt; on the way her wrist turns over once and the card turns with it in one unbroken turn, and she lays it flat, blue side up, where the last frame shows it, with her fingertips resting on it.',
+    card: 'Only one card moves, and it keeps the size it has in the last frame. Its back is blank solid yellow, right out to its corners, and its face is solid blue with a small pink cross in the middle and a small red dot in one corner, as the last frame shows it; the next card in the window is the same blank yellow.',
+    liftOff: 'Her hand on the blue card lifts off it, and the card stays where it lies.',
+    back: {
+      '2.3': 'That hand glides back low over the felt, palm down, and rests flat in front of her, as in the last frame.',
+      '1': 'Both her hands come back low over the felt, palm down, and rest flat in front of her, as in the last frame.',
+    },
+  },
 } as const;
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -483,15 +504,24 @@ const fromEleven = (input: PromptInput) => (input.version ?? TEMPLATE_VERSION) >
 const fromTwelve = (input: PromptInput) => (input.version ?? TEMPLATE_VERSION) >= 12;
 /** The card's colours in Minimal, and "Only one card moves" with them in Kort: plain from template 9, before as templates 4 to 8 said them. */
 /**
- * The card's look where the last picture carries the blue side's marks (Jakob 2026-11-20: a small pink cross and a small
- * red circle on the blue side, "på så sätt kommer videon ha svårare att fuska med vilken sida av kortet som syns"): the
- * blank-card sentence of template 10 with the face said as the picture shows it, so that text and picture agree. Only an
- * open deal, and only where the picture has the marks; every other text is word for word what it was. Untried as a text.
+ * The card's look where a picture carries the blue side's marks (Jakob 2026-11-20: a small pink cross and a small red
+ * circle on the blue side, "på så sätt kommer videon ha svårare att fuska med vilken sida av kortet som syns"): the card's
+ * sentence with the face said as the picture shows it, so that text and picture agree. A deal's last picture shows it (the
+ * blank-card sentence of template 10, and from 2026-11-21 the plain card of a handbyte, of the other hand and of a turn at
+ * the place), a return's first picture (Bordet's review 2026-11-21: every text whose picture shows the open card with its
+ * marks says them). Only an open card, and only where the picture has the marks; every other text is word for word what it
+ * was, the deal with two hands from 2.3 too (its pilots were sent with these words). Untried as a text but for 2.3.
  */
 const BLANK_SIDES = 'blank, solid yellow on one side and solid blue on the other, each colour reaching right out to its corners, and the next card in the window is the same blank yellow.';
 const MARKED_SIDES = 'back is blank solid yellow, right out to its corners, and its face is solid blue with a small pink cross in the middle and a small red dot in one corner, as the last frame shows it; the next card in the window is the same blank yellow.';
-const cardLook = (input: PromptInput, text: string) =>
-  input.faceMark && (input.motion ?? DEFAULT_MOTION).side === 'FRONT' ? text.replace(`It is ${BLANK_SIDES}`, `Its ${MARKED_SIDES}`).replace(`The card is ${BLANK_SIDES}`, `The card's ${MARKED_SIDES}`) : text;
+const FACE_MARKS = 'a small pink cross in the middle and a small red dot in one corner';
+const plainMarked = (frame: 'first' | 'last') =>
+  `The card's back is plain, one flat solid yellow from edge to edge, and its face is one flat solid blue from edge to edge with ${FACE_MARKS}, as the ${frame} frame shows it; the next card in the window is the same plain solid yellow.`;
+const marked = (input: PromptInput) => !!input.faceMark && (input.motion ?? DEFAULT_MOTION).side === 'FRONT';
+const cardLook = (input: PromptInput, text: string, frame: 'first' | 'last' = 'last') =>
+  marked(input) ? text.replace(`It is ${BLANK_SIDES}`, `Its ${MARKED_SIDES}`).replace(`The card is ${BLANK_SIDES}`, `The card's ${MARKED_SIDES}`).replace(PLAIN_CARD, plainMarked(frame)) : text;
+/** A return's short text has no sentence of the card's look: where its first picture has the marks, one says them. */
+const returnMarks = (input: PromptInput) => (marked(input) ? `The card's blue face has ${FACE_MARKS}, as the first frame shows it.` : '');
 const cardColours = (input: PromptInput) => (fromNine(input) ? SAY.colours : SAY.v8.colours);
 const cardMoves = (input: PromptInput) => (fromNine(input) ? SAY.oneCardMoves : SAY.v8.oneCardMoves);
 
@@ -712,6 +742,7 @@ function returnText(input: PromptInput, to: '1' | '2.1' | '2.2' | '2.3', style: 
     const parts: Part[] = [
       { text: SAY.camera, from: [] },
       { text: SAY.liftOffRight(colour), from: ['side'] },
+      { text: returnMarks(input), from: ['side'] },
       { text: fromTwelve(input) ? SAY.glideBeside : SAY.v11.glideBeside, from: [] },
       extraPart(input),
     ];
@@ -719,8 +750,8 @@ function returnText(input: PromptInput, to: '1' | '2.1' | '2.2' | '2.3', style: 
   }
   if (style === 'MINIMAL') {
     const colours = byColour(input);
-    const card = colours ? SAY.v6.cardIs(m.side === 'BACK' ? SAY.v6.sides.liesClosed : SAY.v6.sides.liesOpen) : cardColours(input);
-    const parts: Part[] = [{ text: SAY.cameraMinimal, from: [] }, referencePart(input), { text: card, from: colours ? ['side'] : [] }, { text: SAY.leaveCard, from: [] }, extraPart(input)];
+    const card = colours ? SAY.v6.cardIs(m.side === 'BACK' ? SAY.v6.sides.liesClosed : SAY.v6.sides.liesOpen) : cardLook(input, cardColours(input), 'first');
+    const parts: Part[] = [{ text: SAY.cameraMinimal, from: [] }, referencePart(input), { text: card, from: colours || marked(input) ? ['side'] : [] }, { text: SAY.leaveCard, from: [] }, extraPart(input)];
     return { template: templateOf('film-retur', 'MINIMAL'), style, text: joined(parts), parts };
   }
   const glide = lays === 'LH' || to === '1' ? SAY.glideTo[to] : SAY.glideOther(to);
@@ -731,6 +762,7 @@ function returnText(input: PromptInput, to: '1' | '2.1' | '2.2' | '2.3', style: 
     { text: SAY.camera, from: [] },
     referencePart(input),
     { text: SAY.liftOff(colour), from: ['side'] },
+    { text: returnMarks(input), from: ['side'] },
     { text: glide, from: ['hand'] },
     { text: other, from: ['hand'] },
     extraPart(input),
@@ -842,8 +874,45 @@ export function promptFor(input: PromptInput): Prompt {
   return input.version && input.version !== TEMPLATE_VERSION && p.template.endsWith(today) ? { ...p, template: p.template.slice(0, -today.length) + '@' + input.version } : p;
 }
 
+/**
+ * Template 13's own text (TEMPLATE_CHOICES), or null where 13 has none and the text is 12's: the deal from 2.3 and the
+ * deal by the hand at the shoe from 2.1 when the card lands open, bara dit, at the plan's size with the marks in the last
+ * picture; the return to 2.3; the return to rest after the right hand laid the card. Each open card only.
+ */
+function thirteen(input: PromptInput): Prompt | null {
+  if ((input.style ?? 'KORT') !== 'KORT') return null;
+  const m = input.motion ?? DEFAULT_MOTION;
+  if (m.side !== 'FRONT') return null;
+  if (input.step === 'GIV-2.3' || input.step === 'GIV-2.1') {
+    if (!input.oneWay || !input.faceMark || (input.cardScale !== undefined && input.cardScale !== 1)) return null;
+    const own = handsIn(m).takes === 'LH' && !m.pass && m.grip === 'PINCH' && m.flipAxis !== 'AT_PLACE';
+    if (input.step === 'GIV-2.1' && !own) return null;
+    const parts: Part[] = [
+      { text: SAY.camera, from: [] },
+      referencePart(input),
+      { text: input.step === 'GIV-2.3' ? SAY.v13.strokeTurnLay : SAY.v13.pinchTurnLay, from: ['hand', 'turn', 'shape'] },
+      { text: SAY.v13.card, from: ['side'] },
+      extraPart(input),
+    ];
+    return { template: templateOf('film-giv', 'KORT'), style: 'KORT', text: joined(parts), parts };
+  }
+  if (input.step === 'RETUR-2.3' || (input.step === 'RETUR-1' && handsIn(m).lays === 'RH')) {
+    const parts: Part[] = [
+      { text: SAY.camera, from: [] },
+      referencePart(input),
+      { text: SAY.v13.liftOff, from: ['side'] },
+      { text: SAY.v13.back[input.step === 'RETUR-2.3' ? '2.3' : '1'], from: ['hand'] },
+      extraPart(input),
+    ];
+    return { template: templateOf('film-retur', 'KORT'), style: 'KORT', text: joined(parts), parts };
+  }
+  return null;
+}
+
 function written(input: PromptInput): Prompt {
   const style = input.style ?? 'KORT';
+  const own13 = input.version === 13 ? thirteen(input) : null;
+  if (own13) return own13;
   switch (input.step) {
     case 'ANKARE-2.1':
     case 'ANKARE-2.2':
@@ -904,7 +973,11 @@ export function orderPrompt(
   options: { asStored?: boolean } = {},
 ): Prompt {
   const at = (order.prompt.template ?? '').lastIndexOf('@');
-  const stored = options.asStored && at >= 0 ? Number(order.prompt.template!.slice(at + 1)) || undefined : undefined;
+  const named = at >= 0 ? Number(order.prompt.template!.slice(at + 1)) || undefined : undefined;
+  // A template chosen for the order (TEMPLATE_CHOICES: 13 beside today's 12) is kept when its text is written again; an
+  // older one is not, and a draft written with it is written with today's.
+  const chosen = named !== undefined && named !== TEMPLATE_VERSION && TEMPLATE_CHOICES.includes(named) ? named : undefined;
+  const stored = options.asStored ? named : chosen;
   const drawn = order.pictures.find((p) => p.goesAs === 'endFrame')?.drawn ?? null;
   const kept = options.asStored ? order.prompt.place ?? null : null;
   const place = drawn ? { x: drawn.centre[0], y: drawn.centre[1] } : kept ? { x: kept[0], y: kept[1] } : planPlace;

@@ -1,5 +1,5 @@
 // Jakob's names for what the clip bank holds: anchors (nodes), films between them (edges), single takes, and his way of
-// writing a round ("A2.1 - P4C1 - A2.1 - P4C2 - A2.1"). Pure: no DOM, no network; tests in studio/tests/names.test.ts.
+// writing a round ("A2.1 - A3P4C1 - A2.1 - A3P4C2 - A2.1"). Pure: no DOM, no network; tested through studio/tests/archive.test.ts and tools/chain-consistency.test.ts.
 import { REVEAL_NODE, parseEdge, parseNode, parseSequence, type EdgeKind, type Step, type Take } from "../../src/clip-graph.ts";
 import { ANCHOR_WORDS } from "./words.ts";
 

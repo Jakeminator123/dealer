@@ -5,13 +5,16 @@
 // say what a film is between, and the store, Bordet and the production list all take their defaults from recipeFor here.
 // Pure: the register's check against the steps, models and styles that exist, the recipe for a step and a seat, the reference
 // film the recipe's rule finds (referenceByRule), the film's length (secondsOf), and the words the production list
-// (tools/produce.ts) and Beställ show. No fs, no network. Tests: tools/order-methods.test.ts.
-import { FLIP_AXES, FLIP_LABEL, MODELS, STEPS, TAKES_MAX, lengthFor, lengthOfReference, modelFor, referenceCandidates, stepOf, stylesFor, type BankFacts, type FlipAxis, type ModelDef, type RefCandidate, type Shape, type StepDef, type StepKey, type TextStyle } from './order-model.ts';
+// (tools/produce.ts) and Beställ show. No fs, no network. Tests: tools/order-line.test.ts, tools/order-routes.test.ts and studio/tests/line-same.test.ts.
+import { FLIP_AXES, FLIP_LABEL, MODELS, STEPS, TAKES_MAX, a3Name, lengthFor, lengthOfReference, modelFor, referenceCandidates, stepOf, stylesFor, type BankFacts, type FlipAxis, type ModelDef, type RefCandidate, type Shape, type StepDef, type StepKey, type TextStyle } from './order-model.ts';
 import { TEMPLATE_VERSION } from './order-prompts.ts';
 
 export const METHOD_STATUSES = ['gäller', 'prov', 'saknas'] as const;
 export type MethodStatus = (typeof METHOD_STATUSES)[number];
-export const METHOD_STATUS_LABEL: Record<MethodStatus, string> = { gäller: 'gäller', prov: 'prövas', saknas: 'ingen metod än' };
+/** In Jakob's words (2026-11-21, Bordet's review): "på prov", and a step without a recipe "kan inte beställas än". */
+export const METHOD_STATUS_LABEL: Record<MethodStatus, string> = { gäller: 'gäller', prov: 'på prov', saknas: 'kan inte beställas än' };
+/** Why a step without a recipe, or one that is off, has no row to send. */
+export const NOT_YET = 'kan inte beställas än';
 /** The classes of seats whose evidence differs: the middle seats, the far seats, the dealer's own cards. */
 export const SEAT_CLASSES = ['mitten', 'ytter', 'dealer'] as const;
 export type SeatClass = (typeof SEAT_CLASSES)[number];
@@ -25,9 +28,9 @@ export const REFERENCE_RULES = ['ingen', 'samma-plats-rakt-godkänd', 'renderad-
 export type ReferenceRule = (typeof REFERENCE_RULES)[number];
 export const REFERENCE_LABEL: Record<ReferenceRule, string> = {
   ingen: 'ingen referensfilm',
-  'samma-plats-rakt-godkänd': 'referensfilm: en rakt godkänd giv till samma plats',
-  'renderad-eller-samma-plats': 'referensfilm: dockan till platsen, annars en rakt godkänd giv dit',
-  renderad: 'referensfilm: dockan till platsen',
+  'samma-plats-rakt-godkänd': 'referensfilm: en godkänd giv',
+  'renderad-eller-samma-plats': 'referensfilm: dockan, annars en godkänd giv',
+  renderad: 'referensfilm: dockan',
 };
 /** What a step waits for where its rule finds no reference film, in Jakob's words. */
 export const REFERENCE_WAITS: Record<Exclude<ReferenceRule, 'ingen'>, string> = {
@@ -213,8 +216,11 @@ export function recipeHands(step: Pick<StepDef, 'card' | 'start' | 'grip'>, reci
 export function referenceByRule(bank: BankFacts | null, rule: ReferenceRule, want: { dealer: string; step: StepDef; target: string | null; model: Pick<ModelDef, 'referenceSeconds' | 'videos'> | null; shape?: Shape | null; lays?: 'LH' | 'RH' | null }): RefCandidate | null {
   if (rule === 'ingen' || !bank || !want.model?.videos) return null;
   const rendered = rule === 'renderad' || rule === 'renderad-eller-samma-plats', banked = rule !== 'renderad';
+  // A deal bara dit never takes a round trip: neither a take cut from one (the whole film goes) nor the dummy's film that goes
+  // back to its anchor (its register says ROUND_TRIP). Match 0 is the step's own edge: for GIV-2.3 the dummy's film to exactly
+  // that card from anchor 2.3, of which the one listed last comes first (referenceCandidates).
   return referenceCandidates(bank, want).find((c) =>
-    c.match === 0 && c.fits && !(c.check && !c.check.pass) && (want.shape !== 'ONE_WAY' || !c.frames) && (c.lays ?? 'LH') === (want.lays ?? 'LH')
+    c.match === 0 && c.fits && !(c.check && !c.check.pass) && (want.shape !== 'ONE_WAY' || (!c.frames && c.shape !== 'ROUND_TRIP')) && (c.lays ?? 'LH') === (want.lays ?? 'LH')
     && (c.kind === 'RENDERED' ? rendered : banked && c.approvedStraight && c.verdict === 'GODKÄND')) ?? null;
 }
 
@@ -227,16 +233,23 @@ export function secondsOf(model: Pick<ModelDef, 'durations'>, recipeSeconds: num
   return recipeSeconds === null ? null : lengthFor(model, recipeSeconds);
 }
 
+/** The turn of anchor 2.3 in Jakob's words: the hand at the shoe strokes the card out, the other turns it and lays it. */
+export const TWO_HAND_TURN = 'höger hand vänder kortet och lägger det';
 /**
- * "Kling 4 · 1080p · 3 s · bara dit · sista bild: platsens egen slutbild · referensfilm: … · mall 10 · prov: 1 tagning": a
- * method's recipe in one line, or why there is none.
+ * "Kling 4 · 1080p · 3 s · bara given, slutar på A3P4C2 · höger hand vänder kortet och lägger det · referensfilm: dockan": a
+ * method's recipe in one line, or "kan inte beställas än". Only what steers the film: the text style, the template and the
+ * takes are left out (Jakob 2026-11-21: Bordet's text-heavy rows read as ugly to him; the order's page has them). `line`:
+ * the model and the length the order gets where they are not the recipe's (a reference film's own length, an exception),
+ * so that the row says what the order freezes.
  */
-export function recipeWords(m: Method | null): string {
-  if (!m || m.status === 'saknas' || !m.model) return 'ingen metod än';
-  const style = m.style === 'KORT' ? 'kort text' : m.style === 'MINIMAL' ? 'minimal text' : null;
-  const turn = m.turn && m.turn !== 'plan' ? FLIP_LABEL[m.turn].toLowerCase() : null;
-  const shape = m.shape === 'ONE_WAY' ? 'bara dit' : m.shape === 'ROUND_TRIP' ? 'tur och retur' : null;
-  const hand = m.hand === 'LH' ? 'handen vid skon hela vägen' : m.hand === 'RH' ? 'andra handen hela vägen' : null;
-  const takes = m.takes ? (m.status === 'prov' ? `prov: ${m.takes} tagning${m.takes === 1 ? '' : 'ar'}` : `${m.takes} tagningar`) : null;
-  return [MODELS[m.model]?.label ?? m.model, m.resolution, m.seconds ? `${m.seconds} s` : null, shape, hand, turn, m.lastPicture && m.lastPicture !== 'ankare' ? LAST_PICTURE_LABEL[m.lastPicture] : null, m.reference === 'ingen' ? null : REFERENCE_LABEL[m.reference], style, m.template ? `mall ${m.template}` : null, takes].filter(Boolean).join(' · ');
+export function recipeWords(m: Method | null, target: string | null = null, line: { model?: string | null; seconds?: number | null } = {}): string {
+  if (!m || m.status === 'saknas' || !m.model) return NOT_YET;
+  const step = stepOf(m.step), model = line.model ?? m.model, seconds = line.seconds ?? m.seconds;
+  const turn = step?.grip === 'TWO_HANDS' ? TWO_HAND_TURN : m.turn && m.turn !== 'plan' ? FLIP_LABEL[m.turn].toLowerCase() : null;
+  // Bara dit or tur och retur is a deal's: a return starts on the card and goes one way (its line says where).
+  const deal = !!step?.card && step.start !== 'LAND';
+  const shape = !deal ? null : m.shape === 'ONE_WAY' ? (target ? `bara given, slutar på ${a3Name(target)}` : 'bara given') : m.shape === 'ROUND_TRIP' ? 'tur och retur' : null;
+  const hand = m.hand === 'LH' ? 'utan handbyte' : m.hand === 'RH' ? 'höger hand hela vägen' : null;
+  const last = m.lastPicture && m.lastPicture !== 'ankare' && m.shape !== 'ONE_WAY' ? LAST_PICTURE_LABEL[m.lastPicture] : null;
+  return [MODELS[model]?.label ?? model, m.resolution, seconds ? `${seconds} s` : null, shape, hand, turn, last, m.reference === 'ingen' ? null : REFERENCE_LABEL[m.reference]].filter(Boolean).join(' · ');
 }

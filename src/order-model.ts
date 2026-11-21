@@ -752,8 +752,13 @@ export type BankFacts = {
   /** The picture checks of cut frames, by cutCheckKey (data/cut-frames.json): a frame that does not hold is left out of cutFrameOf. */
   cutChecks?: Record<string, CutCheck>;
 };
-/** A rendered reference film as its register lists it (data/rendered-references.json, read by tools/order-store.ts). lays: the hand that lays the card (absent: the left). */
-export type RenderedReference = { id: string; edge: string; path: string; sha256: string; seconds: number; fromDeal?: string; capture?: string; lays?: 'LH' | 'RH'; check?: { pass: boolean; clean?: boolean; codes?: string[] } | null };
+/**
+ * A rendered reference film as its register lists it (data/rendered-references.json, read by tools/order-store.ts). lays: the
+ * hand that lays the card (absent: the left). shape: ROUND_TRIP for a film that goes back to the anchor it started on after the
+ * card lies (the dummy's "cykel"); absent, the film ends with the card laid, as a deal bara dit does. A deal bara dit never takes
+ * a round trip as its reference (src/order-methods.ts referenceByRule): the whole film goes, and it would end at the shoe.
+ */
+export type RenderedReference = { id: string; edge: string; path: string; sha256: string; seconds: number; fromDeal?: string; capture?: string; lays?: 'LH' | 'RH'; shape?: Shape; check?: { pass: boolean; clean?: boolean; codes?: string[] } | null };
 /**
  * The pose with the card just drawn out onto the felt, which the bank's drag deals start from ("DRAWN>LAND(P4.C1)"): as a
  * reference such a film shows the drag to the seat, so it counts as a deal from anchor 2.2 (trial 2A, 2026-11-17, held with one).
@@ -775,6 +780,8 @@ export type RefCandidate = {
   check?: { pass: boolean; clean?: boolean; codes?: string[] } | null;
   /** The hand that lays the card in the film (the bank's motion.releaseHand; the left where nothing is said). */
   lays?: 'LH' | 'RH';
+  /** A rendered film that goes back to its anchor after the card lies (RenderedReference.shape); absent: it ends with the card laid. */
+  shape?: Shape | null;
   seconds: number | null; frames: [number, number] | null; also: string[]; fits: boolean; sha256: string | null;
 };
 /** Jakob's verdict from a take's review: underkänd, godkänd straight or as a variant, else not judged; his words without the date. */
@@ -842,7 +849,7 @@ export function referenceCandidates(bank: BankFacts, want: { dealer: string; ste
     const match = e.id === w.id ? 0 : e.base === w.base ? 1 : null;
     if (match === null) continue;
     out.push({ take: r.id, film: r.id, path: r.path, dealer: 'docka', edge: r.edge, goesTo: e.target, kind: 'RENDERED', fromDeal: r.fromDeal ?? null, match, verdict: 'EJ_DÖMD', approvedStraight: false, words: null,
-      check: r.check ?? null, lays: r.lays ?? 'LH', seconds: r.seconds, frames: null, also: [], fits: !range || (r.seconds >= range[0] && r.seconds <= range[1]), sha256: r.sha256 });
+      check: r.check ?? null, lays: r.lays ?? 'LH', shape: r.shape ?? null, seconds: r.seconds, frames: null, also: [], fits: !range || (r.seconds >= range[0] && r.seconds <= range[1]), sha256: r.sha256 });
   }
   const rank = (c: RefCandidate) => [c.match, c.kind === 'RENDERED' ? 0 : 1, ...key(c).slice(1)];
   out.sort((a, b) => { const ka = rank(a), kb = rank(b); for (let i = 0; i < ka.length; i++) if (ka[i] !== kb[i]) return ka[i] - kb[i]; if (a.kind === 'RENDERED' && b.kind === 'RENDERED') return (listed.get(b.take) ?? 0) - (listed.get(a.take) ?? 0); return a.take.localeCompare(b.take); });
@@ -916,7 +923,8 @@ export function spentOn(orders: readonly Pick<Order, 'approval' | 'cost' | 'stat
 }
 
 export type PolicyCheck = { ok: boolean; refusals: string[]; spentToday: number; afterToday: number; balance: number; balanceAfter: number };
-function mandateWords(budget: MandateBudget): string {
+/** Where the mandate stands, in one line: missing, not begun, run out, or what is left of it this hour and in all. */
+export function mandateWords(budget: MandateBudget): string {
   if (budget.status === 'missing') return 'Inget giltigt beställningsmandat. Nya betalda anrop är spärrade.';
   if (budget.status === 'unreadable') return 'Mandatet eller dess orderkvitton kunde inte verifieras. Nya betalda anrop är spärrade.';
   const mandate = budget.mandate!;
@@ -1204,6 +1212,11 @@ export type OrdersAnswer = {
   rendered?: RenderedReference[];
   methods?: import('./order-methods.ts').MethodRegister | null;
   cutChecks?: BankFacts['cutChecks'];
+  /**
+   * The landing pictures (A3) that show the blue side's marks at their card, by the register's id (tools/order-images.ts
+   * markSeen, as the store reads a draft's picture when it writes the text): Bordet's row writes the same text with it.
+   */
+  marks?: Record<string, boolean>;
 };
 
 /** Words for a credit sum: "1 000". */

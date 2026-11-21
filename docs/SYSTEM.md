@@ -176,8 +176,12 @@ Spelet med flera dealers (2026-11-13):
 - **Giv från ankare 2.2 (släp).** `SEAT_HUB` i `src/game-director.ts` är en karta per dealer över vilka platser som
   ges från ankare 2.2 (noden `READY-B`: handen över kortet i skons fönster, kortet dras ut plant) i stället för från
   ankare 2.1 (`READY`, nypet). I dag gäller den bara Paows plats 6 (`P6.C1`), på Jakobs ord 2026-11-13. Kartan är källan
-  för vilket ankare ett kort ges från också i Bordets förvalda runda och i Beställs rad för kortet (`dealPose`); planens
-  grepp är det inte. Platsens första kort står för hela
+  för vilket ankare spelet ger ett kort från (`dealPose`; `dealAnchor` i `studio/lib/orders.ts`); planens grepp är det
+  inte, och det är inte längre ett val i Bordet. I Bordet väljer kortets handbyte ankaret för dess filmer (Jakob
+  2026-11-21; `wishAnchor` i `studio/lib/bordet.ts`): med handbyte går kortets tre filmer (given, returen till samma
+  ankare och returen till vila) från ankare 2.3, aldrig från 2.2; utan handbyte från kartans ankare. Bordets förvalda
+  runda (`roundFor`) stannar på spelets ankare tills banken har kortets filmer från 2.3 åt båda hållen (`hasRound`), och
+  steg 3 säger på en rad att spelet ger kortet från ett annat ankare i dag (`gameLine`). Platsens första kort står för hela
   platsen: andra kortet, och senare kort som spelar platsens film, går samma väg. Kartan gäller bara när dealerns bank
   har fyra dömda filmer (Jakobs dom eller en som getts åt honom, se `judgedBank`): ingången `IDLE>READY-B`, given
   `READY-B>P6.C1`, returen `P6.C1>READY-B` och utgången `READY-B>IDLE`. Saknas någon av dem ges platsen som förut:

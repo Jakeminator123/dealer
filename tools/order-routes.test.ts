@@ -15,6 +15,7 @@ import { orderRoutes } from './order-routes.ts';
 import { defaultPlan } from '../src/placement-model.ts';
 import { ARM_ALONE, ARM_AT_SHOE, POSE_ARM_WHAT, POSE_WHAT, SHOE_AT_ANCHOR, SLEEVE_AT_SHOE, orderStore, orderHash } from './order-store.ts';
 import { orderPrompt, promptFor } from '../src/order-prompts.ts';
+import { newOrderOf } from './order-new.ts';
 import { mediaRoles } from './media-roles.ts';
 import { replacedBy, allowed, isDecidable } from '../studio/components/material/state.ts';
 
@@ -491,7 +492,7 @@ test('a deal: the hand, handbyte and how the card lands, defaulted from the plan
   // The hand and the side from the plan; the turn from the recipe (a drag turns close to its place, handbook §5).
   assert.deepEqual([m.hand, m.pass, m.side, m.turn, m.fromPlan, m.flipAxis], ['LH', false, 'FRONT', true, true, 'AT_PLACE']);
   assert.match(one.order.notes.join(' '), /Undantag från receptet: modell WAN 3 i stället för Kling 4; tur och retur i stället för bara dit; ingen referensfilm fast receptet vill ha en; 6 s i stället för 3 s; 2 tagningar i stället för 1\./, 'every exception is named in the draft');
-  assert.equal(one.order.title, 'Paow · Släp, ett kort till platsen · plats 1 · tur och retur · WAN 3', 'the title says the exception, and no deal is named "och tillbaka" any more');
+  assert.equal(one.order.title, 'Paow · Släp, ett kort till platsen · A3P1C1 · tur och retur · WAN 3', 'the title says the exception, and no deal is named "och tillbaka" any more; the card in his notation (2026-11-21)');
   const sheet = promptFor({ dealer: list.dealers[1], step: 'GIV-2.2', model: 'wan3', motion: m, place: { x: seats['P1.C1'].centre[0], y: seats['P1.C1'].centre[1] }, style: 'KORT' });
   assert.equal(one.order.prompt.text, sheet.text, 'the sheet shows exactly what is stored');
   // From anchor 2.1 the recipe turns the card on the way.
@@ -963,7 +964,7 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   const line = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1' } });
   assert.equal(line.status, 201);
   const f = line.json.order;
-  assert.deepEqual([f.step.shape, f.step.cutInto, f.title, f.summary], ['ONE_WAY', ['READY>P4.C1'], 'Paow · Nyp, ett kort till platsen · plats 4', 'Gör en film av Paow: ett kort från ankare 2.1 till plats 4, bara dit.']);
+  assert.deepEqual([f.step.shape, f.step.cutInto, f.title, f.summary], ['ONE_WAY', ['READY>P4.C1'], 'Paow · Nyp, ett kort till platsen · A3P4C1', 'Gör en film av Paow: ett kort från ankare 2.1 till plats 4, bara dit.']);
   assert.deepEqual(f.generation, { provider: 'runway-app', tool: 'generate_video', model: 'kling-4', params: { resolution: '1080p', duration: 4 } }, 'the reference film is 4 s, and so is the film');
   assert.deepEqual([f.takes, f.prompt.style, f.prompt.template, f.motion.flipAxis, f.motion.hand, f.motion.pass], [1, 'KORT', 'film-giv-kort@12', 'FREE', 'LH', false]);
   assert.deepEqual(f.pictures.map((p: { name: string; label: string; sha256: string }) => [p.name, p.label, p.sha256]), [['first.png', 'Första bild · Paows ankare 2.1', sha(files['paow-nyp-ny'])], ['last.png', 'Sista bild · Paows landning på plats 4', sha(landing)]], 'seat 4 ends on seat 4\'s own landing picture');
@@ -1018,7 +1019,7 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   const wanAnswer = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', model: 'wan3' } });
   assert.equal(wanAnswer.status, 201, wanAnswer.json.error);
   const wan = wanAnswer.json.order;
-  assert.deepEqual([wan.title, wan.reference.status, wan.generation.params.duration], ['Paow · Nyp, ett kort till platsen · plats 4 · WAN 3', 'INGEN', 3]);
+  assert.deepEqual([wan.title, wan.reference.status, wan.generation.params.duration], ['Paow · Nyp, ett kort till platsen · A3P4C1 · WAN 3', 'INGEN', 3]);
   assert.match(wan.notes[1], /^Undantag från receptet: modell WAN 3 i stället för Kling 4; ingen referensfilm fast receptet vill ha en\.$/);
   // (Tur och retur as an exception, with its title and its notes: the test of the hand and "Alla sju" above.)
   // The last picture of a deal bara dit shows a hand and a side: they are not changed on the draft.
@@ -1360,13 +1361,13 @@ test('Jakob\'s click through the route is always his: a body saying otherwise is
 });
 
 test('the steps a round needs: a deal to the hole card, its turn from rest and the way out; and the production list through the routes', async (t) => {
-  const { root, call } = await lab(t);
+  const { call } = await lab(t);
   // Her anchors are candidates here: every picture waits, and the text says the place from the plan.
   const hole = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'D.C2', ...TUR } })).json;
   assert.equal(hole.order.id, 'paow-giv-2-1-d-c2-01');
   assert.deepEqual([hole.order.step.edge, hole.order.step.cutInto], ['READY>D.C2', ['READY>D.C2', 'D.C2>READY']]);
   assert.deepEqual([hole.order.motion.side, hole.order.motion.turn, hole.order.motion.flipAxis], ['BACK', false, null], 'it lands closed, as the plan says');
-  assert.match(hole.order.title, /dealerns hålkort/);
+  assert.match(hole.order.title, / · A3DC2( · |$)/); // the title names the card in his notation since 2026-11-21
   // Laid on the felt in front of the shoe and slid to its place (template 7: carried, round 6's closed takes tilted).
   assert.match(hole.order.prompt.text, /lays it flat on the felt in front of the shoe and slides it under her fingertips, flat and yellow side up, to its place close in front of her, in the middle of the picture, where the last frame shows it\. She stops it there and lifts her fingertips off it\./);
   const turn = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'HALKORT' } });
@@ -1405,4 +1406,38 @@ test('the steps a round needs: a deal to the hole card, its turn from rest and t
   assert.equal(drafted.status, 200);
   assert.deepEqual(drafted.json.made, [], 'her anchors are only candidates: nothing can be ordered with a method that holds');
   assert.equal((await call('GET', '/api/orders')).json.orders.filter((a: { order: { status: string } }) => a.order.status === 'GODKÄND').length, 0, 'nothing approved');
+});
+
+test('the template is a choice per order (12 or 13), kept when the draft is changed or written again; the command line chooses it too', async (t) => {
+  const { call, request } = await lab(t);
+  const input = { dealer: 'paow', step: 'GIV-2.3', target: 'P4.C1', ...TUR };
+  for (const [body, why] of [[{ ...input, template: 14 }, /Mallen är 12 eller 13/], [{ ...input, template: 13, style: 'MINIMAL' }, /bara för en film i den korta texten/], [{ dealer: 'paow', step: 'ANKARE-2.1', template: 13 }, /bara för en film/]] as const) {
+    const refused = await request('POST', '/api/orders/preview', { body });
+    assert.equal(refused.status, 400);
+    assert.match(refused.json.error, why);
+  }
+  const twelve = await call('POST', '/api/orders', { body: input });
+  assert.equal(twelve.status, 201, twelve.json.error);
+  assert.equal(twelve.json.order.prompt.template, 'film-giv-kort@12');
+  const made = await call('POST', '/api/orders', { body: { ...input, template: 13 } });
+  assert.equal(made.status, 201, made.json.error);
+  const { order, revision } = made.json;
+  // A round trip has no text of its own in 13: 12's words, named @13, and the draft says so and names the exception.
+  assert.equal(order.prompt.template, 'film-giv-kort@13');
+  assert.equal(order.prompt.text, twelve.json.order.prompt.text);
+  assert.ok(order.notes.some((n: string) => /Mall 13 har ingen egen text för den här filmen/.test(n)), order.notes.join('\n'));
+  assert.ok(order.notes.some((n: string) => /mall 13 i stället för 12/.test(n)), order.notes.join('\n'));
+  const changed = await call('PUT', `/api/orders/${order.id}`, { body: { takes: 2 }, match: revision });
+  assert.equal(changed.status, 200, changed.json.error);
+  assert.equal(changed.json.order.prompt.template, 'film-giv-kort@13');
+  const read = await call('GET', `/api/orders/${order.id}`);
+  assert.equal(read.json.refresh, null, 'a chosen template is not an older one');
+  const refreshed = await call('POST', `/api/orders/${order.id}/refresh`, { match: changed.json.revision });
+  assert.equal(refreshed.status, 200, refreshed.json.error);
+  assert.equal(refreshed.json.order.prompt.template, 'film-giv-kort@13');
+  // tools/order-new.ts: the words of the command line are the order the routes take.
+  assert.deepEqual(newOrderOf(['paow', 'GIV-2.3', 'P4.C2', '--mall', '13', '--takes', '1', '--dry']), { input: { dealer: 'paow', step: 'GIV-2.3', target: 'P4.C2', template: 13, takes: 1, createdBy: 'huvudagenten, tools/order-new.ts' }, dry: true });
+  assert.equal(newOrderOf(['paow', 'RETUR-2.3', 'P4.C2', '--no-reference']).input.reference, null);
+  assert.throws(() => newOrderOf(['paow', 'GIV-2.3', '--mall']), /--mall behöver ett värde/);
+  assert.throws(() => newOrderOf(['paow', 'GIV-2.3', 'P4.C2', '--skicka']), /Okänd flagga --skicka/);
 });

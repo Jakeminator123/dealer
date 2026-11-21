@@ -2,7 +2,7 @@
 // common one"; 2026-11-17: the glossary must follow how he uses the words). Each entry is one thing: the one Swedish word the
 // studio uses for it (his most settled word where he has one), one line of what it is and where he sees it, the other words
 // he himself uses for the same thing (sager, shown as "Säger också"), and the names it has in code, files and documents
-// (aven, "Kallas också"). Every name leads to one entry only (studio/tests/words.test.ts). The anchors' settled words come
+// (aven, "Kallas också"). Every name leads to one entry only (kept by hand: no test holds it). The anchors' settled words come
 // from docs/BESKED.md "Dealern och ankarna" and docs/SYSTEM.md "Ordlista och gräns mot Scout"; the rest is checked against the code and
 // registers it names. The rail's "Ordlista" shows the table (components/shell/Glossary.tsx) and the bot reads it through
 // lib/guide.ts, so no text here may carry a machine path, a lab address or a name the copy blocks. Data and one search, no DOM.
@@ -56,7 +56,7 @@ export const WORDS: readonly Word[] = [
   { grupp: "Steg och filmer", ord: "54 och 33", betyder: "Modellen har 54 steg: giv, retur till A2.1 och retur till A1 för vart och ett av 16 kort, och sex till (ingång, utgång, vilan, hon kommer, hon går, hålkortets vändning). En dealer behöver 33 filmer: en plats andra kort spelar första kortets, utom hålkortet.", sager: [], aven: ["modellens 54", "en film per plats"] },
   { grupp: "Steg och filmer", ord: "Ingång", betyder: "Filmen från vilan till skon: A1 → A2.1 eller A1 → A2.2.", sager: [], aven: ["ENTRY", "IDLE>READY", "INGANG-2.1"] },
   { grupp: "Steg och filmer", ord: "Giv", betyder: "Filmen där kortet går från skon ut till sin plats: A2.1 → A3P4C1 med nyp, A2.2 → A3P4C1 med släp. Beställs tur och retur eller bara dit.", sager: ["utgiven", "dela ut"], aven: ["DEAL", "utdelning", "GIV-2.1"] },
-  { grupp: "Steg och filmer", ord: "Tur och retur", betyder: "En giv där handen kommer tillbaka i samma film, skriven A2.2 → P3C2 → A2.2. I banken blir filmen två tagningar: given och returen.", sager: [], aven: ["ROUND_TRIP"] },
+  { grupp: "Steg och filmer", ord: "Tur och retur", betyder: "En giv där handen kommer tillbaka i samma film, skriven A2.2 → A3P3C2 → A2.2. I banken blir filmen två tagningar: given och returen.", sager: [], aven: ["ROUND_TRIP"] },
   { grupp: "Steg och filmer", ord: "Bara dit", betyder: "En giv som slutar när kortet ligger, på platsens egen slutbild: platsens landningsbild, annars snittrutan ur bankens egen film dit. Så beställs en giv enligt receptet.", sager: [], aven: ["ONE_WAY"] },
   { grupp: "Steg och filmer", ord: "Retur", betyder: "Filmen där handen går tillbaka från kortet på bordet: till nypet (A2.1), över skon (A2.2) eller till vila (A1).", sager: ["tillbakagången", "retreat"], aven: ["RETURN", "P4.C1>READY", "RETUR-2.1"] },
   { grupp: "Steg och filmer", ord: "Utgång", betyder: "Filmen från skon tillbaka till vilan, utan kort: A2.1 → A1 eller A2.2 → A1.", sager: [], aven: ["exit", "READY>IDLE", "UTGANG-2.2"] },
@@ -144,7 +144,7 @@ export const WORDS: readonly Word[] = [
   { grupp: "Labbet och vyerna", ord: "Gäller", betyder: "En bild i Material som gäller för sin roll: den nya beställningar använder. Kandidat: föreslagen. Ersatt: gällde förut.", sager: [], aven: ["kandidat", "ersatt"] },
   { grupp: "Labbet och vyerna", ord: "Beställ", betyder: "Bordets del där en film eller bild beställs: filmerna med det som skickas, Ny beställning, Det här skickas och kön till Runway. Bara i labbet.", sager: [], aven: [] },
   { grupp: "Labbet och vyerna", ord: "Beställning", betyder: "En order på en film eller bild: steg, bilder, text, modell och antal tagningar. När den är godkänd ändras den aldrig.", sager: ["order"], aven: ["utkast"] },
-  { grupp: "Labbet och vyerna", ord: "Metod", betyder: "Hur ett steg beställs (modell, text, längd, tagningar) och om sättet gäller, prövas eller saknas, per steg och slags plats.", sager: ["beställningsmetod"], aven: ["order-methods.json"] },
+  { grupp: "Labbet och vyerna", ord: "Metod", betyder: "Hur ett steg beställs (modell, text, längd, tagningar) och om sättet gäller, är på prov eller saknas (då kan steget inte beställas än), per steg och slags plats.", sager: ["beställningsmetod", "på prov", "kan inte beställas än"], aven: ["order-methods.json"] },
   { grupp: "Labbet och vyerna", ord: "Protokoll", betyder: "Varje tagning ur varje beställning: vad som skickades, hur det gick, granskarens poäng och Jakobs dom. Länken finns i Beställ.", sager: [], aven: ["ledger"] },
   { grupp: "Labbet och vyerna", ord: "Casino", betyder: "Spelet: blackjack med spelmotorn, marker och reglage, i valt förval.", sager: ["spelet", "blackjacken"], aven: ["game.html"] },
   { grupp: "Labbet och vyerna", ord: "Beslut", betyder: "Det som väntar på Jakobs svar: ett kort per sak med en bild; han svarar med en knapp och en anteckning. Bara i labbet.", sager: [], aven: ["decisions.json"] },

@@ -10,7 +10,7 @@
 // its hash is the order as written here, and order.outside says when, by whom and from which ledger. Every file is checked
 // against the ledger's hash before it is copied; nothing is written when one differs, and an order or folder that exists is
 // never written over. The text is the one sent, never promptFor's. Times without a zone in the ledger are Swedish time.
-// Tests: tools/order-import.test.ts.
+// No test of its own holds it now (tools/order-import.test.ts is gone); run it with --dry first.
 import {readFile, writeFile, mkdir, copyFile, rm} from 'node:fs/promises';
 import {existsSync} from 'node:fs';
 import {createHash} from 'node:crypto';

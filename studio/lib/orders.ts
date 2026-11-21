@@ -1,17 +1,17 @@
-// Beställ (/bestall/): the view's calls to the lab server (tools/order-routes.ts) and the pure words and rows it shows.
+// Beställ (/bordet/?lage=bestall, Bordet's queue; the old /bestall/ leads there): the view's calls to the lab server (tools/order-routes.ts) and the pure words and rows it shows.
 // The order's shape, the exact call per take and the cost come from ../../src/order-model.ts (built in, never copied):
 // "Det här skickas" lists the arguments requestOf() gives, so the screen shows what the ordering agent will send. The
 // text and its marks come from ../../src/order-prompts.ts, the same function the store writes a draft's text with. A new
 // order can be asked for by address (presetOf, and back again with presetAddress); whose each picture is is said in words
-// (ownerWords); what an order makes in Jakob's notation, "A2.2 → P3C2 → A2.2", with one plain sentence (routeOf).
-// In the online copy nothing is asked for or written. Tests: studio/tests/orders.test.ts.
+// (ownerWords); what an order makes in Jakob's notation, "A2.2 → A3P3C2 → A2.2", with one plain sentence (routeOf).
+// In the online copy nothing is asked for or written. Tests: tools/order-routes.test.ts (the calls) and studio/tests/line-same.test.ts.
 import { ApiError, asApiError } from "./api.ts";
 import { labUrl } from "./lab.ts";
 import { isSnapshot } from "./mode.ts";
 import { nodeCode } from "./names.ts";
 import { GRIP_LABEL } from "./placement.ts";
 import {
-  ANCHOR_NODE, ANCHOR_ROLE, FLIP_LABEL, defaultFlip, HAND_LABEL, LANDS_LABEL, REF_VERDICT_LABEL, STYLE_LABEL, genitive, MODELS, SEAT_TARGETS, SHOWN_LABEL, STEPS, credits, cutIntoOf, edgeOf, handChoiceOf, plannedDiffers, requestOf, seatList, seatWords, secondsWords, stepOf, styleOf, summaryOf, waitWords,
+  ANCHOR_NODE, ANCHOR_ROLE, FLIP_LABEL, defaultFlip, HAND_LABEL, mandateWords, LANDS_LABEL, REF_VERDICT_LABEL, STYLE_LABEL, genitive, MODELS, SEAT_TARGETS, SHOWN_LABEL, STEPS, credits, cutIntoOf, edgeOf, handChoiceOf, plannedDiffers, requestOf, seatList, seatWords, secondsWords, stepOf, styleOf, summaryOf, waitWords,
   type Anchor, type FlipAxis, type Grip, type HandChoice, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type SeatPlan, type Shape, type Shown, type StepDef, type StepKey, type TextStyle,
 } from "../../src/order-model.ts";
 import { orderPrompt, wordCount, type Choice, type Part } from "../../src/order-prompts.ts";
@@ -111,12 +111,31 @@ export const PRODUCTION_CHIP: Record<import("../../tools/produce.ts").RowState, 
   KAN: { tone: "brass", sign: "●", word: "kan beställas nu" },
   PROV: { tone: "remark", sign: "◐", word: "kan provas" },
   VÄNTAR: { tone: "wait", sign: "…", word: "väntar på bild" },
-  INGEN_METOD: { tone: "bad", sign: "?", word: "ingen metod än" },
+  INGEN_METOD: { tone: "bad", sign: "?", word: "kan inte beställas än" },
   INTE_BYGGD: { tone: "neutral", sign: "–", word: "inte byggd" },
 };
 /** "5 av 33 klara · 5 av 21 krävs för en runda": the list's count in one line. */
 export function productionCount(counts: Pick<import("../../tools/produce.ts").Production["counts"], "done" | "total" | "neededDone" | "needed">): string {
   return `${counts.done} av ${counts.total} klara · ${counts.neededDone} av ${counts.needed} som en runda kräver`;
+}
+
+/**
+ * Whether anything can be approved now, whatever it costs, in one line for Bordet's step 3 and the preview (the day's cap in
+ * data/order-policy.json is set so high that "0 av 1 000 000" says nothing; the mandate is what limits). Closed: the
+ * policy unread or turned off, the mandate missing, not begun or run out, its credits used, the day's cap reached, or the
+ * balance at its floor. Open: what is left of the mandate (src/order-model.ts mandateWords).
+ */
+export function orderingState(a: Pick<OrdersAnswer, "policy" | "day" | "balance"> | null): { open: boolean; words: string } {
+  const p = a?.policy;
+  if (!a || !p) return { open: false, words: "Beställningsreglerna kunde inte läsas (data/order-policy.json)." };
+  if (!p.enabled) return { open: false, words: "Beställningar är avstängda (data/order-policy.json)." };
+  const b = p.mandateBudget;
+  if (b && b.status !== "active") return { open: false, words: mandateWords(b) };
+  if (b && b.available <= 0) return { open: false, words: `Mandatet är förbrukat. ${mandateWords(b)}` };
+  if (a.day.spent >= a.day.cap) return { open: false, words: `Dagens tak är nått: ${credits(a.day.spent)} av ${credits(a.day.cap)} krediter intecknade.` };
+  const balance = a.balance?.credits ?? p.balance.credits;
+  if (balance <= p.minBalance) return { open: false, words: `Saldot ${credits(balance)} krediter är nere vid golvet ${credits(p.minBalance)}.` };
+  return { open: true, words: b ? mandateWords(b) : `I dag ${credits(a.day.spent)} av ${credits(a.day.cap)} krediter intecknade.` };
 }
 
 // ── Words ───────────────────────────────────────────────────────────────────
@@ -244,7 +263,7 @@ const gripLabel = (grip: Grip): string => (grip === "TWO_HANDS" ? "A2.3 två hä
 const split = (edge: string): [string, string] => [edge.slice(0, edge.indexOf(">")), edge.slice(edge.indexOf(">") + 1)];
 export type Route = { nodes: string[]; line: string; sentence: string };
 /**
- * What an order makes, in Jakob's notation and one plain sentence: "A2.2 → P3C2 → A2.2" and "Släp: ett kort till plats 3,
+ * What an order makes, in Jakob's notation and one plain sentence: "A2.2 → A3P3C2 → A2.2" and "Släp: ett kort till plats 3,
  * kort 2, och tillbaka över skon." The nodes are the edges the film is filed under (the model's cutIntoOf and edgeOf), each
  * written as the studio writes a node (names.ts nodeCode), so parseJakob reads the line back; several seats ("Alla sju")
  * as the first and last card. A still: the anchor it is made from and the picture it makes. Any other film says the
@@ -272,7 +291,7 @@ export function routeOf(step: StepDef, targets: readonly string[], shape: Shape 
 }
 
 /**
- * A stored order in his notation, "A2.1 → P4C1" (a still: "A1 → bild A2.2"): what it goes between, shown on the order's card
+ * A stored order in his notation, "A2.1 → A3P4C1" (a still: "A1 → bild A2.2"): what it goes between, shown on the order's card
  * and at the top of "Det här skickas" in place of its stored summary, which for an order made before 2026-11-18 describes the
  * movement in words that were never sent. Null for an order whose step is unknown.
  */
@@ -307,7 +326,7 @@ export const dealAnchor = (dealer: string, card: string): Exclude<Anchor, "1"> =
 export const SHEET_DEALER = "paow";
 
 /**
- * What /bestall/?ny=1&dealer=paow&steg=GIV-2.2&plats=P4.C1 asks for (plats=alla: the first card to every player;
+ * What /bordet/?lage=bestall&ko=1&ny=1&dealer=paow&steg=GIV-2.2&plats=P4.C1 asks for (plats=alla: the first card to every player;
  * plats=P3.C2: a seat's second card; modell=kling-3-4k: that model, when it can make the step). A seat without a step gets
  * the deal from the anchor the game deals that card from (dealAnchor; with plats=alla the first seat's). Null without ny=1.
  */
@@ -338,7 +357,7 @@ export function presetAddress(v: { dealer: string; step: StepKey; target: string
   if (v.all) p.set("plats", "alla");
   else if (v.target) p.set("plats", v.target);
   if (v.model) p.set("modell", v.model);
-  return `/bestall/?${p.toString()}`;
+  return `/bordet/?lage=bestall&ko=1&${p.toString()}`;
 }
 
 /**

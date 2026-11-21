@@ -94,8 +94,13 @@
       "evidence": {
         "orders": ["paow-ingang-2-3-01"],
         "reviewer": [],
-        "owner": [],
-        "note": "Ankare 1 till ankare 2.3 (båda händerna vid skon precis före draget, blicken på handen som stryker ut kortet; Jakobs beställning 2026-11-18). Beställd en gång genom Beställ (paow-ingang-2-3-01: Kling 4, 3 s, dockans film som referens; inte dömd). Längden är referensfilmens; receptets 3 s är det kortaste Kling 4 tar och det som beställdes (receptet sade 4 s förut, längden på dockans första film till 2.3, som Jakob fann för långsam 2026-11-18 och som dockans film på 3,0 s ersatte; se referensfilmens kvitto). Mätt 2026-11-20 (promptgranskningen, bildskillnad ruta för ruta): i den levererade filmen pågår rörelsen 1,4 s av 3,0 s och bilden står stilla de sista 1,4 s; dockans filmer till 2.3 rör sig 1,3 s av 3 s och 2,1 s av 4 s. Det är en levererad film och två referensfilmer, inte tre leveranser: stillheten kommer ur referensfilmen, inte ur texten, och kortas den filmen kan modellen ändå inte ta under 3 s."
+        "owner": [
+          {
+            "take": "paow-ingang-2-3-01-01",
+            "words": "Jakob 2026-11-18: Från ruta 45 är hon i samma possition hela tiden. Rimligen ska denna göras på halva tiden, eller görqas utifrån A1 till A2.3 och till sedan A3P'n' som sedan klipps eller nått"
+          }
+        ],
+        "note": "Ankare 1 till ankare 2.3 (båda händerna vid skon precis före draget, blicken på handen som stryker ut kortet; Jakobs beställning 2026-11-18). Beställd en gång genom Beställ (paow-ingang-2-3-01: Kling 4, 3 s, dockans film som referens; Jakob underkände tagning 1 i Granska 2026-11-18, docs/BESKED.md \"Ingången på halva tiden, eller en film genom hela rörelsen\"). Längden är referensfilmens; receptets 3 s är det kortaste Kling 4 tar och det som beställdes (receptet sade 4 s förut, längden på dockans första film till 2.3, som Jakob fann för långsam 2026-11-18 och som dockans film på 3,0 s ersatte; se referensfilmens kvitto). Mätt 2026-11-20 (promptgranskningen, bildskillnad ruta för ruta): i den levererade filmen pågår rörelsen 1,4 s av 3,0 s och bilden står stilla de sista 1,4 s; dockans filmer till 2.3 rör sig 1,3 s av 3 s och 2,1 s av 4 s. Det är en levererad film och två referensfilmer, inte tre leveranser: stillheten kommer ur referensfilmen, inte ur texten, och kortas den filmen kan modellen ändå inte ta under 3 s."
       },
       "setBy": "huvudagentens underagent (rak linje), på Jakobs ord 2026-11-18 om för många val; ur handboken §5 och de tidigare raderna",
       "setAt": "2026-11-18"

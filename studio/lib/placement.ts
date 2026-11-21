@@ -1,7 +1,7 @@
 // The thin helpers of Bordet's Kortplan (the plan on the picture): places in Jakob's words, the draft with its undo and what differs from the saved plan,
 // the handles' arithmetic, numbers with a decimal comma, the view's address, what the cards can be laid over (the neutral
 // backdrop, the V6 picture, the films). The plan's own rules (where a card is drawn, how an edit
-// is made) are src/placement-model.ts. Pure: no DOM, no network; tests in studio/tests/placement.test.ts.
+// is made) are src/placement-model.ts. Pure: no DOM, no network; the motion's words are tested in studio/tests/bordet-line.test.ts.
 import { DEALER, dealHub, isCurrent, playable, takeRole, ROLE_LABEL, type Graph } from "../../src/clip-graph.ts";
 import { SEAT_HUB } from "../../src/game-director.ts";
 import { ANCHOR_NODE, defaultFlip, seatWords, type FlipAxis } from "../../src/order-model.ts";
@@ -167,9 +167,13 @@ export function nudged(plan: PlacementPlan, id: Place, view: View, key: string, 
 }
 
 // ── The motion, in his words ────────────────────────────────────────────────
-/** The shoe anchor a card is taken from: A2.1 nyp (pinched in the window) or A2.2 släp (slid out of the mouth). */
-export const anchorOf = (intent: Pick<Intent, "grip">) => (intent.grip === "DRAG" ? "A2.2" : "A2.1");
-/** The grip by its label, the same in Kortplan's "Grepp vid skon" and where Beställ says how a step and the plan differ. */
+/**
+ * The shoe anchor a card is taken from when nothing else is known: A2.3 with handbyte (Jakob 2026-11-21: with handbyte the
+ * card goes from A2.3, never "A2.2 släp"), else the plan's grip. Bordet knows the dealer and passes the anchor its films go
+ * from (lib/bordet.ts wishAnchor) to motionSteps instead.
+ */
+export const anchorOf = (intent: Pick<Intent, "grip" | "pass">) => (intent.pass ? "A2.3" : intent.grip === "DRAG" ? "A2.2" : "A2.1");
+/** The grip by its label, where Beställ's queue says how a stored order and the plan differed (no longer a choice in Kortplan). */
 export const GRIP_LABEL: Record<Intent["grip"], string> = { PINCH: "A2.1 nyp", DRAG: "A2.2 släp" };
 /**
  * How a card of the plan is turned, in the order's one word (src/order-model.ts FlipAxis, the same labels FLIP_LABEL in
@@ -181,17 +185,20 @@ export function editFlip(plan: PlacementPlan, id: string, axis: FlipAxis): Place
   if (axis === "AT_PLACE") return editIntent(plan, id, "turnAt", "PLACE");
   return editIntent(editIntent(plan, id, "turnAt", "AIR"), id, "flipAxis", axis);
 }
-/** The turn on a step chip: FLIP_LABEL's words, short. */
-const TURN_WORD: Record<FlipAxis, string> = { AT_PLACE: "vid platsen", FREE: "på vägen · handleden", LONG_EDGE: "på vägen · långsidan" };
 export type MotionStep = { id: string; label: string; detail: string };
-/** The card's way from the shoe and back (motionNodes), in Swedish; `code` is the model's own line for the exact reading. */
-export function motionSteps(id: string, intent: Intent): { steps: MotionStep[]; code: string } {
-  const anchor = anchorOf(intent);
+/** How the hand at the shoe takes the card from each anchor. */
+const TAKE_WORD: Record<string, string> = { "A2.1": "Nyp", "A2.2": "Släp", "A2.3": "Drar ut" };
+/**
+ * The card's way from the shoe and back (motionNodes), in Swedish; `code` is the model's own line for the exact reading.
+ * `anchor`: the anchor the card's films go from ("A2.3"; lib/bordet.ts wishAnchor), else anchorOf. The turn says only what
+ * the plan steers (the sides); where and how it turns is the recipe's and its reference film's (lib/bordet.ts motionLine).
+ */
+export function motionSteps(id: string, intent: Intent, anchor: string = anchorOf(intent)): { steps: MotionStep[]; code: string } {
   const words: Record<string, (detail: string) => MotionStep> = {
     ready: () => ({ id: "ready", label: anchor, detail: sideWord(intent.startSide) }),
-    take: () => ({ id: "take", label: intent.grip === "DRAG" ? "Släp" : "Nyp", detail: handWord(intent.takeHand) }),
+    take: () => ({ id: "take", label: TAKE_WORD[anchor] ?? "Nyp", detail: handWord(intent.takeHand) }),
     pass: () => ({ id: "pass", label: "Handbyte", detail: `${handWord(intent.takeHand)} → ${handWord(intent.takeHand === "LH" ? "RH" : "LH")}` }),
-    turn: () => ({ id: "turn", label: "Vänd", detail: TURN_WORD[flipOf(intent)] }),
+    turn: () => ({ id: "turn", label: "Vänd", detail: `${sideWord(intent.startSide)} → ${sideWord(intent.endSide)}` }),
     land: () => ({ id: "land", label: "Landar", detail: `${nodeCode(id)} · ${sideWord(intent.endSide)}` }),
     release: (detail) => ({ id: "release", label: "Släpper", detail: handWord(detail as Hand) }),
     return: () => ({ id: "return", label: "Tillbaka", detail: anchor }),
@@ -199,14 +206,15 @@ export function motionSteps(id: string, intent: Intent): { steps: MotionStep[]; 
   return { steps: motionNodes(id, intent).map((n) => words[n.id](n.detail)), code: sequence(id, intent) };
 }
 /**
- * Where the game deals a card from anchor 2.2 (the drag) while the plan says nyp: the game's own map per dealer (SEAT_HUB in
- * src/game-director.ts; Paow's seat 6 today, a seat's second card with its first). One line per such dealer, for Placering to
- * show at the place; the plan is not changed by it.
+ * Where the game deals a card from A2.2 instead of A2.1: the game's own map per dealer (SEAT_HUB in src/game-director.ts;
+ * Paow's seat 6 today, a seat's second card with its first). One line per such dealer, for Kortplan to show at the place;
+ * the plan is not changed by it. A card without handbyte has its films from that anchor (lib/bordet.ts wishAnchor); with
+ * handbyte from A2.3, which step 3 says (gameLine). The plan's grip is no longer a choice and is not compared.
  */
 export function gameDealNotes(plan: PlacementPlan, id: Place): string[] {
   const t = id === SHOE ? null : plan.targets[id];
-  if (!t || t.intent.grip === "DRAG") return [];
-  return Object.entries(SEAT_HUB).flatMap(([dealer, hubs]) => (dealHub(id, hubs) === ANCHOR_NODE["2.2"] ? [`I spelet ger ${nameOf(dealer)} ${seatWords(id)} från ankare 2.2 (släp); planen säger nyp.`] : []));
+  if (!t) return [];
+  return Object.entries(SEAT_HUB).flatMap(([dealer, hubs]) => (dealHub(id, hubs) === ANCHOR_NODE["2.2"] ? [`I spelet ger ${nameOf(dealer)} ${seatWords(id)} från A2.2.`] : []));
 }
 
 // ── What lies under the cards ───────────────────────────────────────────────

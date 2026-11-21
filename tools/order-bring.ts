@@ -12,7 +12,7 @@
 //   node tools/order-bring.ts <order> <take> [--split <frame>] [--film <file>] [--name <name>] [--title "<title>"]
 //                             [--note "<note>"] [--prov <proof id>] [--inford] [--dry]
 // Never writes over a decision of Jakob's (register-order refuses), never sets gäller, never approves anything.
-// Tests: tools/order-bring.test.ts.
+// No test of its own holds it now (tools/order-bring.test.ts is gone); run it with --dry first.
 import { readFile, writeFile, mkdir, rename, copyFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { createHash, randomUUID } from 'node:crypto';

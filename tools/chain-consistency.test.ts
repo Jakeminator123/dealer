@@ -51,7 +51,6 @@ const game = (dealer: string) => { let g = gameOf.get(dealer); if (!g) { g = bui
 const review = (id: string) => bank.motions?.[id]?.review;
 const hasVerdict = (id: string) => { const r = review(id); return !!r && r.inbox !== true && String(r.decision ?? 'PENDING').toUpperCase() !== 'PENDING'; };
 const onRequest = (id: string) => bank.motions?.[id]?.motion?.idle?.onRequest === true;
-const jakobs = (id: string) => { const r = review(id); return r?.userAccepted === true || typeof r?.userReview === 'string'; };
 // Anchors by number as the order model names them: role in Material and node in the graph (1 → ankare-1, IDLE).
 const anchors = Object.keys(ANCHOR_ROLE) as (keyof typeof ANCHOR_ROLE)[];
 const roleOfNode = new Map(anchors.map(a => [ANCHOR_NODE[a], ANCHOR_ROLE[a]]));
@@ -281,7 +280,7 @@ test('Bordet\'s default round and Beställ\'s row deal a card from the anchor th
   }
   assert.equal(B.roundFor('P6.C1', 'paow'), 'A2.2 - A3P6C1 - A2.2'); // his notation since 2026-11-21: the card's anchor is A3 + player + card
 });
-// FYND 2: the seams and hands now reach the step's gaps (tools/game-film.test.ts); showing them on the page waits for his yes.
+// FYND 2: the seams and hands now reach the step's gaps (src/game-film.ts; no test of its own holds them now); showing them on the page waits for his yes.
 test.todo('FYND 2: the game page shows a step\'s gaps (a card laid without a hand, a stand-in, a seam, the other hand) behind a key in the address, once Jakob has said yes in Beslut');
 // FYND 4, fixed by the branch rak-linje: an archived take could still be offered as a reference film or give a deal its last picture.
 test('an archived take is never a reference film or a cut frame: with every take of the bank archived, the order model offers none', () => {
@@ -296,7 +295,7 @@ test('an archived take is never a reference film or a cut frame: with every take
   assert.deepEqual(ask({...bank, motions}), []);
 });
 // FYND 5: the dealer change stood in with films he had rejected (EXIT_TRIAL, pamela-table-leave-wide-01, and the first entrance with
-// a film, pamela-table-arrive-01). The behaviour is tools/game-film.test.ts's; here, that the page brings no film of its own to it.
+// a film, pamela-table-arrive-01). The behaviour is src/game-film.ts's (no test of its own holds it now); here, that the page brings no film of its own to it.
 test('the game page brings no film of its own to the dealer change: it plays the bank\'s judged films or none, and says the gap', () => {
   const page = readFileSync('src/game-page.ts', 'utf8');
   assert.doesNotMatch(page, /EXIT_TRIAL/, 'the exit trial is the 3D page\'s, never the game\'s');

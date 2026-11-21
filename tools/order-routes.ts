@@ -30,7 +30,7 @@ import { orderStore, type NewOrder, type StoreOptions } from './order-store.ts';
 import { makeDrafts, productionList, readProduction } from './produce.ts';
 
 const BODY_LIMIT = 16384;
-const NEW_KEYS = ['dealer', 'step', 'target', 'hand', 'pass', 'side', 'seats', 'flipAxis', 'model', 'duration', 'resolution', 'takes', 'extra', 'title', 'base', 'style', 'shape', 'reference', 'cardScale', 'end', 'continues'];
+const NEW_KEYS = ['dealer', 'step', 'target', 'hand', 'pass', 'side', 'seats', 'flipAxis', 'model', 'duration', 'resolution', 'takes', 'extra', 'title', 'base', 'style', 'template', 'shape', 'reference', 'cardScale', 'end', 'continues'];
 
 export function orderRoutes(options: { root: string; origin: string } & StoreOptions) {
   const { root, origin } = options;

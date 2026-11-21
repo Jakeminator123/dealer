@@ -1,7 +1,7 @@
 // Rounds for Bordet's scene: a round built as a path through the nodes (what can follow a node, and
 // whether the bank has a film for that step), the ready-made ones as examples, the one his notation or the address asks
 // for, a take played in its context, and the card places the bank needs to say how far a seat's second card is moved.
-// Pure: no DOM, no network; tests in studio/tests/rounds.test.ts.
+// Pure: no DOM, no network; tested through studio/tests/archive.test.ts and tools/chain-consistency.test.ts.
 //
 // A reference (film) is not a round of the bank: one finished, composited film (room, table, rendered cards) played as it
 // is, in Råfilm only (in the 3D scene it would be keyed and projected, which is wrong for a finished picture).

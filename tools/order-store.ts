@@ -42,11 +42,11 @@ import { mediaRoles } from './media-roles.ts';
 import { readMandateBudget } from './order-mandate.ts';
 import {
   ANCHOR_NODE, ANCHOR_ROLE, CARD_SCALES, EXTRA_LIMIT, MODELS, FILE_NAME, FLIP_AXES, ORDER_ID, RETURN_23_BLOCK, SEAT_TARGETS, SHORT_TWO_HAND_TURN_HELP, TAKES_MAX, scaleWords, shortTwoHandTurnProblem,
-  bodyLine, canonical, checkPolicy, costOf, crossesBody, cutFrameOf, cutFrameWords, cutIntoOf, tidyMotion, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, hashInput, landingMissing, landingOf, a3Candidates, a3Name, archivedReferenceIds, isArchived, modelFor, modelsFor, paramsOf, plannedOf, readCutChecks, referenceCandidates, seatEndMissing, seatList, seatWords, secondsWords, shownOf, spentOn, stepOf, stylesFor, summaryOf, twoHandDealSideProblem, twoHandDraftProblem, twoHandMotion, validateOrder, waitingOf,
+  LANDING_ROLE, bodyLine, canonical, checkPolicy, costOf, crossesBody, cutFrameOf, cutFrameWords, cutIntoOf, tidyMotion, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, hashInput, landingMissing, landingOf, a3Candidates, a3Name, archivedReferenceIds, isArchived, modelFor, modelsFor, paramsOf, plannedOf, readCutChecks, referenceCandidates, seatEndMissing, seatList, seatWords, secondsWords, shownOf, spentOn, stepOf, stylesFor, summaryOf, twoHandDealSideProblem, twoHandDraftProblem, twoHandMotion, validateOrder, waitingOf,
   type Anchor, type BankFacts, type CutFrame, type Drawn, type FlipAxis, type Motion, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Policy, type PoseAnswer, type Receipt, type RefCandidate, type Reference, type RenderedReference, type SeatPlan, type Shape, type StepDef, type StepKey, type TextStyle, type Waits,
 } from '../src/order-model.ts';
 import { readMethods, recipeFor, recipeHands, referenceByRule, referenceWaits, secondsOf, type MethodRegister } from '../src/order-methods.ts';
-import { handsIn, orderPrompt } from '../src/order-prompts.ts';
+import { TEMPLATE_CHOICES, TEMPLATE_VERSION, handsIn, orderPrompt } from '../src/order-prompts.ts';
 import { checkCutFrame, patchShoe } from '../src/cut-frame.ts';
 import { CUT, H, LAY, TEXTURE, W, armAlone, cardTexture, cutFigure, drawCard, drawCards, markSeen, matchGreen, pictureBytes, planQuad, pngOf, poseOnShoe, readPlan, readRgb, type CardOutline, type Pt, type Texture } from './order-images.ts';
 import type { PlacementPlan } from '../src/placement-model.ts';
@@ -108,6 +108,8 @@ export type NewOrder = {
   pose?: Source | null;
   /** The text's style (default: Kort for a film; a still has one text). */
   style?: TextStyle;
+  /** The template the text is written with (src/order-prompts.ts TEMPLATE_CHOICES; absent: the recipe's, today's): 13 is a choice per order, a film in the short text. */
+  template?: number;
   /** A deal: bara dit, ending on the seat's own end picture (the recipe), or tur och retur (an exception). */
   shape?: Shape;
   /** A reference film (referenceCandidates), for a model that takes one. Absent: the one the recipe's rule finds; null: none (an exception). */
@@ -191,12 +193,18 @@ const fromPlanOf = (plan: PlacementPlan, m: Pick<Motion, 'target' | 'hand' | 'pa
 
 /** The anchor ("1", "2.1", "2.2") an anchor role stands for. */
 const ANCHOR_OF: Record<string, Anchor> = { 'ankare-1': '1', 'ankare-2.1': '2.1', 'ankare-2.2': '2.2', 'ankare-2.3': '2.3' };
-/** A rendered reference film as its register must list it: under assets/references/docka/<id>/ with its hash and length. */
+/**
+ * A rendered reference film as its register must list it: under assets/references/docka/<id>/ with its hash and length, and
+ * where it says its shape, ROUND_TRIP or ONE_WAY (a round trip is never the reference of a deal bara dit, referenceByRule).
+ */
 const isRendered = (f: unknown): f is RenderedReference => {
   const r = f as Partial<RenderedReference> | null;
-  return !!r && typeof r === 'object' && typeof r.id === 'string' && ORDER_ID.test(r.id) && typeof r.edge === 'string' && r.path === `assets/references/docka/${r.id}/source.mp4` && typeof r.sha256 === 'string' && /^[0-9a-f]{64}$/.test(r.sha256) && typeof r.seconds === 'number' && r.seconds > 0;
+  return !!r && typeof r === 'object' && typeof r.id === 'string' && ORDER_ID.test(r.id) && typeof r.edge === 'string' && r.path === `assets/references/docka/${r.id}/source.mp4` && typeof r.sha256 === 'string' && /^[0-9a-f]{64}$/.test(r.sha256) && typeof r.seconds === 'number' && r.seconds > 0
+    && (r.shape === undefined || r.shape === 'ROUND_TRIP' || r.shape === 'ONE_WAY');
 };
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+/** Whether a landing picture shows the blue side's marks, by file, frame, change and the card's outline (marksOf). */
+const MARKS = new Map<string, boolean>();
 
 /** "Paows ankare 1 · kandidat 2", "Paows ankare 2.1": which of the dealer's pictures a draft uses. */
 export function anchorWords(dealerName: string, at: string, entry: Pick<Entry, 'name' | 'state'> | null): string {
@@ -559,16 +567,21 @@ export function orderStore(root: string, options: StoreOptions = {}) {
    * own: an A3). The plan's point is stored with the text (prompt.place), so that the sent words reproduce whatever the
    * plan says later.
    */
-  async function textOf(order: Pick<Order, 'step' | 'motion' | 'generation' | 'pictures' | 'prompt' | 'reference'>, dealer: DealerInfo, extra: string | null, snapshot?: PlanSnapshot): Promise<Order['prompt']> {
+  async function textOf(order: Pick<Order, 'step' | 'motion' | 'generation' | 'pictures' | 'prompt' | 'reference'>, dealer: DealerInfo, extra: string | null, snapshot?: PlanSnapshot, files?: ReadonlyMap<string, Buffer>): Promise<Order['prompt']> {
     const end = order.pictures.find((p) => p.goesAs === 'endFrame'), drawn = end?.drawn ?? null;
     const target = order.motion?.target ?? stepOf(order.step.key)?.target ?? null;
     const planPlace = !drawn && target ? planCentre((snapshot ?? await readPlan(root)).plan, target) : null;
     // An open deal whose last picture shows the blue side's marks (the pink cross, the red circle) says them: the card drawn
-    // with them, or seen in the picture's own pixels where it draws no card of its own (an A3, a film's frame).
+    // with them, or seen in the picture's own pixels where it draws no card of its own (an A3, a film's frame). A return
+    // says them where its first picture, the seat's landing picture, shows them (Bordet's review, 2026-11-21). A draft not yet
+    // saved reads its pictures where they are kept until then (files): the preview's text is the order's.
     let faceMark = false;
-    if (end && target && order.motion?.side === 'FRONT' && order.step.key.startsWith('GIV-')) {
-      if (drawn) faceMark = !!drawn.mark;
-      else if (end.path) { try { faceMark = markSeen(await readRgb(path.join(root, ...end.path.split('/'))), planQuad((snapshot ?? await readPlan(root)).plan, target)); } catch { faceMark = false; } }
+    const giv = order.step.key.startsWith('GIV-'), retur = order.step.key.startsWith('RETUR-');
+    const shows = giv ? end : retur ? order.pictures.find((p) => p.goesAs === 'startFrame') : undefined;
+    if (shows && target && order.motion?.side === 'FRONT') {
+      const kept = files?.get(shows.name);
+      if (giv && drawn) faceMark = !!drawn.mark;
+      else if (kept || shows.path) { try { faceMark = markSeen(await readRgb(kept ?? path.join(root, ...shows.path!.split('/'))), planQuad((snapshot ?? await readPlan(root)).plan, target)); } catch { faceMark = false; } }
     }
     const { template, style, text } = orderPrompt({ ...order, prompt: { ...order.prompt, extra, faceMark } }, dealer, planPlace);
     return { template, style, text, sha256: sha(text), extra, middle: false, ...(planPlace ? { place: [planPlace.x, planPlace.y] as [number, number] } : {}), ...(faceMark ? { faceMark: true } : {}) };
@@ -623,7 +636,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     const target = step.target ?? (step.card ? (input.target ?? null) : null);
     await watch?.(path.join(root, 'placements/default.json'));
     const snapshot = await readPlan(root), { plan } = snapshot;
-    if (step.card && (!target || !plan.targets[target])) throw new StoreError(400, 'Välj en plats på bordet (P1.C1 … D.C2).');
+    if (step.card && (!target || !plan.targets[target])) throw new StoreError(400, 'Välj en plats på bordet (A3P1C1 … A3DC2).');
     if (step.cards?.some((c) => !plan.targets[c.target])) throw new StoreError(400, `Planen saknar ${step.cards.filter((c) => !plan.targets[c.target]).map((c) => c.target).join(' och ')}.`);
     // The step's one recipe (data/order-methods.json): everything the order does not say itself comes from it, and what the
     // order says against it is a deliberate exception, named in the draft's notes. A step without a recipe has no default.
@@ -631,6 +644,11 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     const noRecipe = `${step.label} har ingen metod än (data/order-methods.json), så inget är förvalt`;
     const style = input.style ?? recipe?.style ?? defaultStyle(step.kind);
     if (!stylesFor(step.kind, step).includes(style)) throw new StoreError(400, step.styles ? `${step.label} skrivs ${step.styles.join(' eller ')}.` : step.kind === 'STILL' ? 'En bild skrivs KORT.' : 'Texten är KORT eller MINIMAL; den långa texten (UTFÖRLIG) skrivs inte längre för en ny beställning.');
+    // The template: today's unless the order chooses another (TEMPLATE_CHOICES), written into the draft's prompt so that
+    // the text keeps it when written again (orderPrompt).
+    const mall = input.template ?? recipe?.template ?? TEMPLATE_VERSION;
+    if (!TEMPLATE_CHOICES.includes(mall)) throw new StoreError(400, `Mallen är ${TEMPLATE_CHOICES.join(' eller ')}.`);
+    if (mall !== TEMPLATE_VERSION && (step.kind !== 'FILM' || style !== 'KORT')) throw new StoreError(400, `Mall ${mall} skrivs bara för en film i den korta texten (KORT).`);
     const returnStart = return23 ? await frozenReturnStart(register, dealer.id, target!, input, watch) : null;
     // Other returns start on the seat's landing picture that holds.
     const landing = step.start === 'LAND' && !return23 ? landingEntry(register, dealer.id, target) : null;
@@ -726,6 +744,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       if (model.id !== recipe.model) exceptions.push(`modell ${model.label} i stället för ${MODELS[recipe.model]?.label ?? recipe.model}`);
       if (deal && shape !== recipe.shape) exceptions.push(`${shape === 'ONE_WAY' ? 'bara dit' : 'tur och retur'} i stället för ${recipe.shape === 'ONE_WAY' ? 'bara dit' : 'tur och retur'}`);
       if (style !== recipe.style) exceptions.push(`texten ${style} i stället för ${recipe.style}`);
+      if (mall !== recipe.template) exceptions.push(`mall ${mall} i stället för ${recipe.template}`);
       if (recipe.turn && input.flipAxis && input.flipAxis !== recipe.turn) exceptions.push(`vändningen ${input.flipAxis} i stället för ${recipe.turn}`);
       if (recipe.reference !== 'ingen' && !chosen) exceptions.push('ingen referensfilm fast receptet vill ha en');
       if (recipe.reference === 'ingen' && chosen) exceptions.push('en referensfilm fast receptet inte har någon');
@@ -836,7 +855,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     const edge = edgeOf(step, target);
     const draft: PreparedOrder['draft'] = {
       schemaVersion: 1,
-      title: input.title ?? `${dealer.name} · ${step.label}${target && step.card ? ` · ${seatWords(target)}` : ''}${deal && shape === 'ROUND_TRIP' ? ' · tur och retur' : ''}${recipe && model.id !== recipe.model ? ` · ${model.label}` : ''}${cardScale !== 1 ? ` · prov: kortet ${scaleWords(cardScale)}` : ''}`,
+      title: input.title ?? `${dealer.name} · ${step.label}${target && step.card ? ` · ${a3Name(target)}` : ''}${deal && shape === 'ROUND_TRIP' ? ' · tur och retur' : ''}${recipe && model.id !== recipe.model ? ` · ${model.label}` : ''}${cardScale !== 1 ? ` · prov: kortet ${scaleWords(cardScale)}` : ''}`,
       summary: summaryOf(step, dealer.name, motion, shape),
       group: input.group ?? null,
       dealer: dealer.id,
@@ -846,7 +865,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       pictures,
       reference,
       generation: { provider: 'runway-app', tool: model.tool, model: model.id, params },
-      prompt: { template: '', style, text: '', sha256: '', extra, middle: false },
+      prompt: { template: mall !== TEMPLATE_VERSION ? `@${mall}` : '', style, text: '', sha256: '', extra, middle: false },
       takes,
       cost,
       limits: { maxCredits: cost.worstTotal, stopBelowCredits: policy.minBalance },
@@ -855,7 +874,12 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       approval: null,
       status: 'UTKAST',
     };
-    draft.prompt = await textOf(draft, dealer, extra, snapshot);
+    draft.prompt = await textOf(draft, dealer, extra, snapshot, files);
+    // A chosen template with no text of its own for this film writes today's words: said, so that a trial of it is not a trial of nothing.
+    if (mall !== TEMPLATE_VERSION) {
+      const today = orderPrompt({ ...draft, prompt: { ...draft.prompt, template: '' } }, dealer, draft.prompt.place ? { x: draft.prompt.place[0], y: draft.prompt.place[1] } : null);
+      if (today.text === draft.prompt.text) draft.notes.push(`Mall ${mall} har ingen egen text för den här filmen: texten är mall ${TEMPLATE_VERSION}:s, ord för ord.`);
+    }
     const sourceRevision = sha(canonical({ input, dealer, recipe, plan: snapshot.file.sha256, policy, chosen }));
     return { draft, prefix, id: input.id, files, sourceRevision };
   }
@@ -1322,6 +1346,26 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     return { order, revision, hash, shown: shownOf(order, problems, receipt), problems, warnings, waiting, receipt, check, owners, refresh: why };
   }
 
+  /**
+   * Which landing pictures (A3, gäller or kandidat) of the dealers show the blue side's marks at their card, by register id:
+   * what the store's text says of the card (textOf, markSeen) and Bordet's row says with it. Read once per file and card.
+   */
+  async function marksOf(register: Register | null, dealerIds: readonly string[]): Promise<Record<string, boolean>> {
+    const out: Record<string, boolean> = {};
+    const plan = await readPlan(root).then((s) => s.plan).catch(() => null);
+    if (!register || !plan) return out;
+    for (const id of dealerIds) for (const e of register.dealers[id]?.entries ?? []) {
+      if (e.role !== LANDING_ROLE || (e.state !== 'gäller' && e.state !== 'kandidat') || !e.card || !plan.targets[e.card] || !isPicture(e)) continue;
+      try {
+        const file = path.join(root, ...e.path!.split('/')), facts = await stat(file), quad = planQuad(plan, e.card);
+        const key = [e.path, e.frame ?? '', facts.mtimeMs, facts.size, JSON.stringify(quad)].join('|');
+        if (!MARKS.has(key)) MARKS.set(key, markSeen(await readRgb(await pictureBytes(root, { path: e.path!, frame: e.frame })), quad));
+        out[e.id] = MARKS.get(key)!;
+      } catch { /* a picture that cannot be read shows no marks */ }
+    }
+    return out;
+  }
+
   async function list(): Promise<OrdersAnswer> {
     const problems: string[] = [];
     const configured = await readPolicy();
@@ -1349,6 +1393,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       schemaVersion: 1, orders, policy, day: { date, spent, cap: policy?.dailyCapCredits ?? 0 }, balance, problems,
       dealers: dealers.map(({ id, name, look, paused }) => ({ id, name, look, paused: paused ?? null })),
       plan,
+      marks: await marksOf(register, dealers.map((d) => d.id)),
       rendered: await readRendered(),
       poses: posesOf(register, dealers),
       methods: await readMethodRegister(),
