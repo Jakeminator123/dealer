@@ -376,7 +376,7 @@ export const STEPS: readonly StepDef[] = [
   // It can be ordered where a landing picture holds for the seat (landingMissing says what is lacking otherwise).
   { key: 'RETUR-2.1', group: 'Retur från landningen', label: 'Tillbaka till nypet', kind: 'FILM', from: '2.1', to: '2.1', start: 'LAND', card: true, grip: 'PINCH' },
   { key: 'RETUR-2.2', group: 'Retur från landningen', label: 'Tillbaka över skon', kind: 'FILM', from: '2.2', to: '2.2', start: 'LAND', card: true, grip: 'DRAG' },
-  { key: 'RETUR-2.3', group: 'Retur från landningen', label: 'Prov: höger hand tillbaka till skon', kind: 'FILM', from: '2.3', to: '2.3', start: 'LAND', card: true, styles: ['KORT'], off: 'Provet beställs med kommandot (node tools/order-new.ts paow "A3P4C1 - A2.3"), som själv hittar den godkända given och dess frysta slutbild.' },
+  { key: 'RETUR-2.3', group: 'Retur från landningen', label: 'Prov: höger hand tillbaka till skon', kind: 'FILM', from: '2.3', to: '2.3', start: 'LAND', card: true, styles: ['KORT'], off: 'Provet beställs med kommandot, som själv hittar den godkända given och dess frysta slutbild.' },
   { key: 'RETUR-1', group: 'Retur från landningen', label: 'Tillbaka till vila', kind: 'FILM', from: '1', to: '1', start: 'LAND', card: true, grip: 'PINCH' },
   // The steps a round needs that Beställ could not order before 2026-11-13 (the dealer's second card is GIV-2.1 to D.C2):
   // the hand leaving the shoe for rest (READY>IDLE), and the hole card turned open from rest and the hand back to rest
@@ -438,7 +438,7 @@ const handOf = (e: HandOf): 'LH' | 'RH' => (e.hand === 'RH' ? 'RH' : 'LH');
 /** "A3P4C1", "A3DC1": what the anchor a card ends on is called, as Jakob writes it (2026-11-21: anchor 3, player 4, card 1). */
 export const a3Name = (target: string): string => `A3${target.replace('.', '')}`;
 /** A deal bara dit with no last picture (tools/order-store.ts end: null; Bordet's "Utan slutbild"): the note the draft gets and the row shows. */
-export const openEndWords = (target: string): string => `utan sista bild: filmen slutar där modellen lämnar kortet, och ${a3Name(target)} görs efteråt ur filmens sista ruta (node tools/landing-make.ts)`;
+export const openEndWords = (target: string): string => `utan sista bild: filmen slutar där modellen lämnar kortet, och ${a3Name(target)} görs efteråt ur filmens sista ruta`;
 const isLanding = <E extends { role: string; node?: string; card?: string } & HandOf>(e: E, target: string, hand: 'LH' | 'RH') => e.role === LANDING_ROLE && e.node === landingNode(target) && e.card === target && handOf(e) === hand;
 /** The landing picture of a seat that holds for a hand: role landning, node LAND(<seat>), state gäller, the card on that seat, that hand at it. */
 export function landingOf<E extends { role: string; node?: string; state?: string; card?: string } & HandOf>(entries: readonly E[], target: string | null | undefined, hand: 'LH' | 'RH' = 'LH'): E | null {

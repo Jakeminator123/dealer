@@ -84,7 +84,9 @@ For take n of an order:
      (`IDLE>REVEAL(D.C2)`) are films of one edge (`step.edge`, `cutInto` empty): they go into the bank without `--split`.
      HALKORT's `first.png` and `last.png` are her anchor 1 with both dealer cards drawn, the hole card closed and then open.
 3. **After the call:**
-   - It answered with a task id: `node tools/order-put.ts placed <id> <n> <taskId> <creditsRemaining>` at once.
+   - It answered with a task id: `node tools/order-put.ts placed <id> <n> <taskId> <creditsRemaining> --via mcp` at once
+     (`--via api` when the call went through the developer API client instead of Runway's MCP server; the bank says which
+     credit pot paid).
    - It answered with an error and no task: `node tools/order-put.ts failed <id> <n> "<error verbatim>"`. Do not retry; a
      changed argument is a new order that Jakob approves.
    - No answer, a timeout, anything unclear: write nothing more. The take stays OSÄKER. Report it; never place it again.

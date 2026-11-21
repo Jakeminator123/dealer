@@ -74,6 +74,11 @@ async function lab(t: { after(fn: () => Promise<void> | void): void }, transport
   const policy = JSON.parse(await readFile(policyFile, 'utf8'));
   policy.mandate = {id: 'test-route-mandate', startsAt: '2026-11-12T00:00:00Z', endsAt: '2026-11-13T00:00:00Z', rollingHourCredits: 800, totalCredits: 2500};
   await writeFile(policyFile, JSON.stringify(policy));
+  // Every dealer of the lab can be ordered for, paused Pamela too: the pause has a test of its own.
+  const dealersFile = path.join(root, 'data/dealers.json');
+  const dealerList = JSON.parse(await readFile(dealersFile, 'utf8'));
+  for (const d of dealerList.dealers) d.paused = null;
+  await writeFile(dealersFile, JSON.stringify(dealerList));
   // A declared fixture, independent of Jakob's saved or newly committed hand choices.
   const fixturePlan = defaultPlan();
   Object.assign(fixturePlan.targets['P4.C2'].intent, {endSide: 'FRONT', turn: true}); // both player cards are open in these route tests
@@ -403,6 +408,24 @@ test('drafts, changes and approval go through the routes with their guards', asy
   const unknown = await call('POST', '/api/orders', { body: { dealer: 'petra', step: 'VILA' } });
   assert.equal(unknown.status, 400);
   assert.equal(unknown.json.error, 'petra finns inte i data/dealers.json, så inget kan beställas för henne här.');
+});
+
+test('nothing new is drafted for a paused dealer: neither a preview nor a draft, one seat or several', async (t) => {
+  const { root, call, request } = await lab(t);
+  const made = await call('POST', '/api/orders', { body: { dealer: 'pamela', step: 'VILA' } });
+  assert.equal(made.status, 201, 'made before the pause');
+  const file = path.join(root, 'data/dealers.json');
+  const dealers = JSON.parse(await readFile(file, 'utf8'));
+  dealers.dealers.find((d: { id: string }) => d.id === 'pamela').paused = 'Jakob 2026-11-12: inget nytt beställs för Pamela.';
+  await writeFile(file, JSON.stringify(dealers));
+  for (const body of [{ dealer: 'pamela', step: 'VILA' }, [{ dealer: 'pamela', step: 'VILA' }], { dealer: 'pamela', step: 'GIV-2.1', seats: [{ target: 'P1.C1' }, { target: 'P2.C1' }] }]) {
+    const refused = await request('POST', '/api/orders/preview', { body });
+    assert.equal(refused.status, 409, JSON.stringify(body));
+    assert.equal(refused.json.error, 'Pamela är pausad: inget nytt beställs.');
+  }
+  assert.deepEqual(await readdir(path.join(root, 'data/orders')), [`${made.json.order.id}.json`], 'her draft stays as it was, and nothing new is written');
+  assert.equal((await request('GET', `/api/orders/${made.json.order.id}`)).status, 200);
+  assert.equal((await request('POST', '/api/orders/preview', { body: { dealer: 'paow', step: 'ANKARE-2.1', base: 'paow-vila-ung-2' } })).status, 200, 'another dealer is not paused');
 });
 
 test('Material: a picture made to hold replaces the others of its place; any can be set aside, archived and taken back, against the revision', async (t) => {
@@ -882,11 +905,13 @@ test('the return to 2.3 copies the preceding deal’s RH ending, ends on the anc
   const a3 = { id: 'paow-a3-p4', role: 'landning', name: 'A3P4C1', path: 'assets/anchors/paow-a3-p4/anchor.png', node: 'LAND(P4.C1)', card: 'P4.C1', hand: 'RH', state: 'kandidat' };
   const left = { ...a3, id: 'paow-a3-p4-lh', hand: 'LH' };
   const different = { ...a3, id: 'paow-a3-p4-other' };
-  media.dealers.paow.entries.push(ready, a3, left, different);
+  // Another anchor 2.3, approved in Material after the draft is made.
+  const readyNew = { ...ready, id: 'paow-ankare-2-3-b', name: 'Ankare 2.3 ny', path: 'assets/anchors/paow-ankare-2-3-b/anchor.png', state: 'kandidat' };
+  media.dealers.paow.entries.push(ready, a3, left, different, readyNew);
   const registerFile = path.join(root, 'data/media-roles.json');
   await writeFile(registerFile, JSON.stringify(media));
   const readyBytes = files['paow-vila-ung-2'], a3Bytes = files['paow-nyp-ny'];
-  for (const [entry, bytes] of [[ready, readyBytes], [a3, a3Bytes]] as const) {
+  for (const [entry, bytes] of [[ready, readyBytes], [a3, a3Bytes], [readyNew, files['paow-vila-ung-1']]] as const) {
     const file = path.join(root, entry.path);
     await mkdir(path.dirname(file), { recursive: true });
     await writeFile(file, bytes);
@@ -947,8 +972,34 @@ test('the return to 2.3 copies the preceding deal’s RH ending, ends on the anc
   const persisted = saved.json.order;
   assert.deepEqual(await readFile(path.join(root, persisted.pictures[0].path)), a3Bytes);
   assert.equal(sha(await readFile(path.join(root, persisted.pictures[1].path))), order.pictures[1].sha256);
+  // The saved draft keeps the hand and the side of its first picture, as the preview does.
+  for (const changes of [{ side: 'BACK' }, { hand: 'LH' }, { pass: true }]) {
+    const refused = await call('PUT', `/api/orders/${persisted.id}`, { body: changes, match: saved.json.revision });
+    assert.equal(refused.status, 400, JSON.stringify(changes));
+    assert.match(refused.json.error, /En retur följer sin första bild/);
+  }
+  // Fetching the pictures again says the card once; the queue names the A3 by its name in Material, and the last picture,
+  // the anchor with the card drawn, by its own words.
+  const fetched = await call('POST', `/api/orders/${persisted.id}/refresh`, { match: saved.json.revision });
+  assert.equal(fetched.status, 200, fetched.json.error);
+  assert.equal(fetched.json.order.pictures[1].label, persisted.pictures[1].label);
+  const queued = (await call('GET', '/api/orders')).json.orders.find((a: { order: { id: string } }) => a.order.id === persisted.id);
+  assert.deepEqual(queued.order.pictures.map((p: { named: string | null }) => p.named), ['A3P4C1', null]);
+  // Jakob approves another anchor 2.3 in Material: the return ends on it, with the card drawn anew.
+  const decided = await call('PUT', `/api/media/${readyNew.id}/state`, { body: { state: 'gäller' }, match: (await mediaRoles(root).answer()).revision! });
+  assert.equal(decided.status, 200, decided.json.error);
+  assert.ok(decided.json.followed.includes(persisted.id), JSON.stringify(decided.json.followed));
+  const moved = (await call('GET', `/api/orders/${persisted.id}`)).json;
+  const end = moved.order.pictures[1];
+  assert.equal(end.from.entry, readyNew.id);
+  assert.ok(end.from.built && end.drawn, JSON.stringify(end.from));
+  assert.equal(end.replaced.entry, ready.id);
+  assert.notEqual(end.sha256, persisted.pictures[1].sha256);
+  assert.equal(end.label, 'Slutbild · Paows A2.3 + kortet öppet på plats 4');
+  assert.equal(moved.refresh, null);
+  assert.ok(!moved.warnings.some((w: string) => w.startsWith('Slutbild')), moved.warnings.join('\n'));
   // A series waits for the trial; the trial, one take, is approved.
-  const series = await call('PUT', `/api/orders/${persisted.id}`, { body: { takes: 2 }, match: saved.json.revision });
+  const series = await call('PUT', `/api/orders/${persisted.id}`, { body: { takes: 2 }, match: moved.revision });
   assert.equal(series.status, 200, series.json.error);
   const blocked = await call('POST', `/api/orders/${persisted.id}/approve`, { match: series.json.revision });
   assert.equal(blocked.status, 409);
@@ -1054,6 +1105,20 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   assert.deepEqual(r.notes, ['Inget recept finns för Tillbaka till nypet: varje värde är valt för den här beställningen.']);
   assert.equal(back.json.shown, 'KLAR_ATT_TRYCKA');
   assert.equal(back.json.refresh, null);
+  // A return made while its anchor is only a candidate waits for it; approved in Material, the anchor comes with the card drawn.
+  register.dealers.paow.entries.find((e: { id: string }) => e.id === 'paow-nyp-ny').state = 'kandidat';
+  await writeFile(path.join(root, 'data/media-roles.json'), JSON.stringify(register, null, 2));
+  const waiting = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'RETUR-2.1', target: 'P4.C1', model: 'wan3', duration: 3 } });
+  assert.equal(waiting.status, 201, waiting.json.error);
+  assert.deepEqual([waiting.json.order.pictures[1].path, waiting.json.order.pictures[1].waits?.role], [null, 'ankare-2.1']);
+  const anchored = await call('PUT', '/api/media/paow-nyp-ny/state', { body: { state: 'gäller' }, match: (await mediaRoles(root).answer()).revision! });
+  assert.equal(anchored.status, 200, anchored.json.error);
+  assert.ok(anchored.json.followed.includes(waiting.json.order.id), JSON.stringify(anchored.json.followed));
+  const arrived = (await call('GET', `/api/orders/${waiting.json.order.id}`)).json.order.pictures[1];
+  assert.deepEqual([arrived.from.entry, !!arrived.from.built, !!arrived.drawn, arrived.label], ['paow-nyp-ny', true, true, 'Slutbild · Paows A2.1 + kortet öppet på plats 4']);
+  assert.equal(arrived.sha256, r.pictures[1].sha256, 'the same anchor with the same card as the return made while it held');
+  register.dealers.paow.entries.find((e: { id: string }) => e.id === 'paow-nyp-ny').state = 'gäller';
+  await writeFile(path.join(root, 'data/media-roles.json'), JSON.stringify(register, null, 2));
 
   // THE LINE: the dealer, the step and the card. Everything else is the recipe: Kling 4, 1080p, bara dit, one take (a
   // trial), the seat's own end picture, the reference film its rule finds, and the film as long as that reference.
@@ -1489,19 +1554,13 @@ test('the steps a round needs: a deal to the hole card, its turn from rest and t
   assert.match(outDrag.prompt.text, /^Locked camera, one continuous shot\. Her fingertips lift off the yellow card in the shoe's window/);
   assert.match(outDrag.summary, /ankare 2\.2/);
 
-  // The production list: read by anyone of the lab, drafts only from the lab's own origin, never an approval.
+  // The production list: read by anyone of the lab.
   const list = await call('GET', '/api/production?dealer=paow');
   assert.equal(list.status, 200);
   assert.equal(list.json.list.rows.length, 33);
   assert.deepEqual(list.json.list.rows.find((r: { edge: string }) => r.edge === 'IDLE>REVEAL(D.C2)').orders.map((x: { id: string }) => x.id), ['paow-halkort-01'], 'the draft is in flight for its step');
   assert.equal(list.json.list.rows.find((r: { edge: string }) => r.edge === 'IDLE>REVEAL(D.C2)').state, 'UTKAST');
   assert.equal((await call('GET', '/api/production?dealer=nobody')).status, 400);
-  assert.equal((await call('POST', '/api/production/draft', { body: { dealer: 'paow' }, from: 'http://evil.example' })).status, 403);
-  assert.equal((await call('POST', '/api/production/draft', { body: { dealer: 'paow', step: 'VILA' } })).status, 400, 'nothing but the dealer can be asked for');
-  const drafted = await call('POST', '/api/production/draft', { body: { dealer: 'paow' } });
-  assert.equal(drafted.status, 200);
-  assert.deepEqual(drafted.json.made, [], 'her anchors are only candidates: nothing can be ordered with a method that holds');
-  assert.equal((await call('GET', '/api/orders')).json.orders.filter((a: { order: { status: string } }) => a.order.status === 'GODKÄND').length, 0, 'nothing approved');
 });
 
 test('the template is a choice per order (12 or 13), kept when the draft is changed or written again; the command line chooses it too', async (t) => {

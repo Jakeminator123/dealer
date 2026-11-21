@@ -17,7 +17,7 @@
 //   … --again                                                     also where a draft or an order is already in flight
 //   … --root <folder>                                             another checkout (a temporary copy of the data)
 // It never approves. Every draft says in createdBy that the production list made it. The lab server answers
-// GET /api/production?dealer=<id> and POST /api/production/draft with the same functions (tools/order-routes.ts).
+// GET /api/production?dealer=<id> with the same functions (tools/order-routes.ts).
 // productionList is pure; the reading is readProduction.
 import { readFile } from 'node:fs/promises';
 import { existsSync, realpathSync } from 'node:fs';
@@ -102,7 +102,6 @@ export type ProductionInput = {
   orders: readonly OrderLike[];
   /** Each card as the plan lays it (Placering, the store's plan answer): its side, what the pictures draw, and its hands, what the store takes when a draft says none. */
   seats?: Readonly<Record<string, { side: 'FRONT' | 'BACK'; hand?: 'LH' | 'RH'; pass?: boolean }>>;
-  createdBy?: string;
   /** What the dealer's round deals from another pose at the shoe, by the game's rule (hubDeals in src/game-director.ts); none: every step as its edge plays. */
   hubs?: Hubs;
 };
@@ -192,7 +191,7 @@ export function roundFilms(graph: Graph, hubs: Hubs = {}): string[] {
  * which the store fills in (tools/order-store.ts create: model, length, shape, takes, the reference film its rule finds, the
  * seat's end picture). A trial gets a title that says so.
  */
-export function draftOf(input: Pick<ProductionInput, 'dealer' | 'createdBy'>, row: Pick<ProductionRow, 'label' | 'edge'>, at: { step: StepKey; target: string | null }, method: Method, reference: string | null, trial: boolean): NewOrder {
+export function draftOf(input: Pick<ProductionInput, 'dealer'>, row: Pick<ProductionRow, 'label' | 'edge'>, at: { step: StepKey; target: string | null }, method: Method, reference: string | null, trial: boolean): NewOrder {
   const def = stepOf(at.step)!;
   const short = [MODELS[method.model!]?.label ?? method.model, reference ? 'referensfilm' : null].filter(Boolean).join(' + ');
   return {
@@ -201,7 +200,7 @@ export function draftOf(input: Pick<ProductionInput, 'dealer' | 'createdBy'>, ro
     ...(def.card && at.target ? { target: at.target } : {}),
     ...(trial ? { title: `${input.dealer.name} · prov: ${row.label.replace(' · ', ' till ').toLowerCase()} · ${short}`.slice(0, 120) } : {}),
     notes: trial ? ['Ett prov: en tagning, en ändring mot jämförelsen i metodens belägg.'] : [],
-    createdBy: `${input.createdBy ?? 'Produktionslistan (node tools/produce.ts --draft)'}${trial ? ', prov' : ''}: steg ${row.edge}, metod ${method.id}`,
+    createdBy: `Produktionslistan (node tools/produce.ts --draft)${trial ? ', prov' : ''}: steg ${row.edge}, metod ${method.id}`,
   };
 }
 
@@ -347,7 +346,7 @@ export async function readBank(root: string): Promise<BankData> {
 }
 
 /** Everything the list joins, read from a checkout: the bank and its graph, the methods, Material, the orders, the plan. */
-export async function readProduction(root: string, dealerId: string, options: { store?: ReturnType<typeof orderStore>; createdBy?: string } = {}): Promise<{ input: ProductionInput; problems: string[] }> {
+export async function readProduction(root: string, dealerId: string, options: { store?: ReturnType<typeof orderStore> } = {}): Promise<{ input: ProductionInput; problems: string[] }> {
   const problems: string[] = [];
   const store = options.store ?? orderStore(root);
   const dealers = (await readJson<{ dealers?: { id: string; name: string }[] }>(path.join(root, 'data', 'dealers.json')))?.dealers ?? [];
@@ -364,7 +363,7 @@ export async function readProduction(root: string, dealerId: string, options: { 
   return {
     input: {
       dealer: { id: known.id, name: known.name }, graph, bank: { ...(bank as BankFacts), rendered: all.rendered ?? [], cutChecks: readCutChecks(await readJson(path.join(root, 'data', 'cut-frames.json'))) }, methods: methodsRead.register, hubs: hubDeals(bank, dealerId),
-      entries: register?.dealers[dealerId]?.entries ?? [], orders: all.orders.map((a) => ({ order: a.order, shown: a.shown })), seats: all.plan?.seats ?? {}, createdBy: options.createdBy,
+      entries: register?.dealers[dealerId]?.entries ?? [], orders: all.orders.map((a) => ({ order: a.order, shown: a.shown })), seats: all.plan?.seats ?? {},
     },
     problems,
   };

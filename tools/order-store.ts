@@ -231,6 +231,7 @@ export const noReferenceWhy = (model: string) => (MODELS[model]?.videos ? 'Ingen
 /** Only the dealers data/dealers.json knows can be ordered for (the register may hold others, such as a separate track). */
 export const unknownDealer = (id: unknown) =>
   `${typeof id === 'string' && id ? id.slice(0, 40) : 'Dealern'} finns inte i data/dealers.json, så inget kan beställas för henne här.`;
+const pausedDealer = (name: string) => `${name} är pausad: inget nytt beställs.`;
 /** A seat's landing picture that holds for a hand (role landning, LAND(<seat>), gäller, the card on that seat, that hand at it), as a picture. */
 export function landingEntry(register: Register, dealer: string, target: string | null, hand: 'LH' | 'RH' = 'LH'): Entry | null {
   const found = landingOf(register.dealers[dealer]?.entries ?? [], target, hand);
@@ -250,10 +251,11 @@ export function resolveWaits(register: Register, waits: Waits): Entry | null {
 /**
  * What a draft's anchor picture should follow now: the entry it was made from (an anchor of the draft's own dealer, no
  * card), and the entry of that role that holds now when it is another one, or the same one approved since (only its name
- * in the label changes). Null when nothing has changed or the picture is not a dealer's anchor.
+ * in the label changes). Null when nothing has changed or the picture is not a dealer's anchor. A picture built on an
+ * anchor (a return's last picture: the anchor with the card drawn) follows only another anchor, never only its name.
  */
 export function followOf(register: Register, dealer: string, picture: Pick<Picture, 'from' | 'waits' | 'path' | 'label'>, dealerName: string): { was: Entry; now: Entry; at: Anchor; swap: boolean } | null {
-  if (picture.from?.built || !picture.from?.entry || !picture.path) return null;
+  if (!picture.from?.entry || !picture.path) return null;
   const found = entryOf(register, picture.from.entry);
   if (!found || found.dealer !== dealer || found.entry.card) return null;
   const at = ANCHOR_OF[found.entry.role];
@@ -261,6 +263,7 @@ export function followOf(register: Register, dealer: string, picture: Pick<Pictu
   const now = holding(register, dealer, found.entry.role, found.entry.node);
   if (!now) return null;
   if (now.id !== found.entry.id) return { was: found.entry, now, at, swap: true };
+  if (picture.from.built) return null;
   return endsInWords(picture.label, dealerName, at, now) ? null : { was: found.entry, now, at, swap: false };
 }
 
@@ -660,6 +663,8 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     if (!return23 && input.continues !== undefined) throw new StoreError(400, 'Föregående giv väljs bara för returprovet till 2.3.');
     const dealers = await readDealers(watch), dealer = dealers.find((d) => d.id === input.dealer);
     if (!dealer) throw new StoreError(400, unknownDealer(input.dealer));
+    // A paused dealer (data/dealers.json paused, his words and date) gets nothing new; her drafts and orders stay as they are.
+    if (dealer.paused) throw new StoreError(409, pausedDealer(dealer.name));
     const policy = await readPolicy(watch);
     if (!policy) throw new StoreError(500, 'data/order-policy.json kunde inte läsas.');
     const register = await readRegister(watch);
@@ -741,7 +746,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     if (input.end && !named) throw new StoreError(400, `${input.end} är ingen A3-kandidat för ${seatWords(target)} med ${lays === 'RH' ? 'höger' : 'vänster'} hand vid kortet.`);
     const seatLanding = named ?? (oneWayDeal && !open ? landingEntry(register, dealer.id, target, lays) : null);
     const cuts = oneWayDeal && !open && !seatLanding ? cutFrameOf(bank!, { dealer: dealer.id, step, target, hand: lays }) : [];
-    if (oneWayDeal && !open && !seatLanding && !cuts.length) throw new StoreError(400, `${seatEndMissing(dealer.name, target, step.from, lays)}${lays === 'RH' && twoHands ? ` Från ankare 2.3 lägger höger hand kortet: platsen behöver sin A3 (${a3Name(target!)}) med höger hand vid kortet (node tools/landing-make.ts).` : ''}`);
+    if (oneWayDeal && !open && !seatLanding && !cuts.length) throw new StoreError(400, `${seatEndMissing(dealer.name, target, step.from, lays)}${lays === 'RH' && twoHands ? ` Från ankare 2.3 lägger höger hand kortet: platsen behöver sin A3 (${a3Name(target!)}) med höger hand vid kortet.` : ''}`);
     if (input.reference !== undefined && input.reference !== null && typeof input.reference !== 'string') throw new StoreError(400, 'Referensfilmen ska vara en tagnings id.');
     const cardScale = input.cardScale ?? 1;
     if (!(CARD_SCALES as readonly unknown[]).includes(cardScale)) throw new StoreError(400, `Kortets storlek ska vara ${CARD_SCALES.map((f) => scaleWords(f)).join(', ')}.`);
@@ -919,7 +924,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       cost,
       limits: { maxCredits: cost.worstTotal, stopBelowCredits: policy.minBalance },
       notes,
-      createdBy: input.createdBy ?? 'Jakob, studions vy Beställ',
+      createdBy: input.createdBy ?? 'Jakob, Bordets Kortplan',
       approval: null,
       status: 'UTKAST',
     };
@@ -1144,17 +1149,17 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       const twoHands = twoHandMotion(next.step.key, next.motion?.grip);
       const editsPose = changes.side !== undefined || (!twoHands && (changes.hand !== undefined || changes.pass !== undefined));
       const oldHands = twoHands && (next.motion?.hand !== twoHands.hand || next.motion?.pass !== twoHands.pass);
-      // In a return the card lies where it was laid and is not turned.
-      const turn = editsPose
-        ? stepOf(next.step.key)?.start !== 'LAND' && (changes.side ?? next.motion?.side) !== 'BACK'
-        : next.motion?.turn ?? false;
+      // A return follows its first picture: the hand that laid the card, and the card as it lies, not turned (prepare
+      // refuses another hand or side too).
+      if (editsPose && stepOf(next.step.key)?.start === 'LAND') throw new StoreError(400, 'En retur följer sin första bild: handen och kortets sida ändras inte i utkastet. Gör ett nytt utkast.');
+      const turn = editsPose ? (changes.side ?? next.motion?.side) !== 'BACK' : next.motion?.turn ?? false;
       const fixedAxis = fixedTwoHandTurn(next.step.key, next.prompt.style, turn, changes.flipAxis ?? next.motion?.flipAxis);
       if (changes.flipAxis !== undefined) { if (!next.motion?.turn) throw new StoreError(400, 'Kortet vänds inte i det här utkastet.'); next.motion.flipAxis = changes.flipAxis; }
       if (changes.duration !== undefined) { if (next.kind !== 'FILM') throw new StoreError(400, 'En bild har ingen längd.'); next.generation.params.duration = changes.duration; }
       if (editsPose || oldHands) {
         if (!next.motion) throw new StoreError(400, 'Steget har ingen hand eller sida att välja.');
         // The last picture of a deal bara dit is the seat's end picture, which shows a hand and a side: they follow it.
-        if (editsPose && next.step.shape === 'ONE_WAY' && !next.pictures.some((p) => p.goesAs === 'endFrame' && p.from?.built)) throw new StoreError(400, 'Slutbilden är platsens egen, som visar handen och kortets sida: de ändras inte i utkastet. Gör ett nytt utkast.');
+        if (editsPose && next.step.shape === 'ONE_WAY') throw new StoreError(400, 'Slutbilden är platsens egen, som visar handen och kortets sida: de ändras inte i utkastet. Gör ett nytt utkast.');
         const pass = twoHands?.pass ?? changes.pass ?? (changes.hand !== undefined ? false : !!next.motion.pass);
         const hand = twoHands?.hand ?? changes.hand ?? (pass ? 'LH' : next.motion.hand);
         if (pass && hand !== 'LH') throw new StoreError(400, 'Handbyte går från vänster hand till höger: vänster tar kortet ur skon.');
@@ -1184,7 +1189,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     if (!last || !order.motion?.target) return;
     const card = `kortet ${order.motion.side === 'BACK' ? 'stängt' : 'öppet'} på ${seatWords(order.motion.target)}`;
     // A return's last picture is its anchor with the card drawn; a round trip's is its first picture with it.
-    last.label = stepOf(order.step.key)?.start === 'LAND' ? `${last.label.replace(/ + kortet .*$/, '')} + ${card}` : `Slutbild · samma + ${card}`;
+    last.label = stepOf(order.step.key)?.start === 'LAND' ? `${last.label.replace(/ \+ kortet .*$/, '')} + ${card}` : `Slutbild · samma + ${card}`;
   }
   /** Draws the last picture again on the first, with the card as the draft has it (side), when the first is there. */
   async function drawLast(id: string, order: Order, firstBytes: Buffer | null) {
@@ -1203,7 +1208,8 @@ export function orderStore(root: string, options: StoreOptions = {}) {
   /**
    * Brings a draft up to date: fetches what it waits for once it holds in the register, follows the anchor that holds now
    * when another of the same role has been approved in Material since (keeping what the picture was in `replaced`), draws
-   * its last picture again when the first changed or the plan did, and writes the text with the template of today.
+   * its last picture again when the first changed, the plan did or (a return) its anchor did, and writes the text with the
+   * template of today.
    */
   async function refresh(id: string, expected: string | undefined) {
     return serial(async () => {
@@ -1223,13 +1229,28 @@ export function orderStore(root: string, options: StoreOptions = {}) {
         const made = await cardPictures((name, bytes) => put(id, name, bytes), drawnStep, register, dealer);
         if (made.every((p) => p.path)) next.pictures = next.pictures.map((p) => made.find((m) => m.name === p.name) ?? p);
       }
+      // A return's last picture is its anchor with the card drawn: another anchor approved since is drawn on below.
+      let swappedLast = false;
       for (const p of next.pictures) {
-        if (p.from?.built || drawnStep?.cards?.length) continue;
+        if (drawnStep?.cards?.length) continue;
+        if (p.from?.built) {
+          const f = followOf(register, order.dealer, p, dealer.name);
+          if (f?.swap) {
+            const { from } = await sourceBytes(register, { entry: f.now.id });
+            p.replaced = { at: now().toISOString(), was: `${p.label} (${f.was.name})`, entry: f.was.id, sha256: p.sha256 };
+            p.from = { ...from, built: p.from.built };
+            p.label = `Slutbild · ${anchorWords(dealer.name, f.at, f.now)}`;
+            swappedLast = true;
+          }
+          continue;
+        }
         if (p.waits && !p.path) {
           const entry = resolveWaits(register, p.waits);
           if (!entry) continue;
           const { bytes, from } = await sourceBytes(register, { entry: entry.id });
-          Object.assign(p, await put(id, p.name, bytes), { from, waits: null, width: 1764, height: 1174 });
+          // A return's last picture that waited for its anchor is that anchor with the card drawn (drawLast below), as prepare builds it.
+          const built = drawnStep?.start === 'LAND' && p.goesAs === 'endFrame' && next.motion?.target ? `ankare ${drawnStep.to ?? drawnStep.from} + kortet ${next.motion.target} där planen säger` : null;
+          Object.assign(p, await put(id, p.name, bytes), { from: built ? { ...from, built } : from, waits: null, width: 1764, height: 1174 });
           if (p.goesAs === 'startFrame') firstBytes = bytes;
           continue;
         }
@@ -1261,7 +1282,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
         } else next.motion.pass ??= false;
       }
       const last = next.pictures.find((p) => p.goesAs === 'endFrame' && p.from?.built);
-      if (last && (firstBytes || !last.path || last.drawn?.plan.sha256 !== planFile.sha256 || (last.drawn && last.drawn.side !== next.motion?.side))) await drawLast(id, next, firstBytes);
+      if (last && (firstBytes || swappedLast || !last.path || last.drawn?.plan.sha256 !== planFile.sha256 || (last.drawn && last.drawn.side !== next.motion?.side))) await drawLast(id, next, firstBytes);
       await labelLast(next);
       next.summary = summaryOf(next.step, dealer.name, next.motion, next.step.shape);
       if (next.reference.status === 'INGEN') next.reference.why = noReferenceWhy(next.generation.model);
@@ -1402,8 +1423,9 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     const waiting = waitingOf(order).map((w) => ({ ...w, ready: !!register && !!resolveWaits(register, w) }));
     const check = !order.approval && policy ? checkPolicy(order, policy, spentToday, balance) : null;
     const why = refreshReason(order, register, dealers.find((d) => d.id === order.dealer), planFile?.sha256 ?? null);
-    // Each picture's name in Material today (the hash above is the stored order's; the names are only shown).
-    const named = { ...order, pictures: order.pictures.map((p) => ({ ...p, named: (p.from?.entry && register ? entryOf(register, p.from.entry)?.entry.name : null) ?? null })) };
+    // Each picture's name in Material today (the hash above is the stored order's; the names are only shown). A picture
+    // built, drawn on or cut from an entry is not that entry: it keeps its own words.
+    const named = { ...order, pictures: order.pictures.map((p) => ({ ...p, named: (p.from?.entry && !p.from.built && !p.drawn && !p.cut && register ? entryOf(register, p.from.entry)?.entry.name : null) ?? null })) };
     return { order: named, revision, hash, shown: shownOf(order, problems, receipt), problems, warnings, waiting, receipt, check, owners, refresh: why };
   }
 

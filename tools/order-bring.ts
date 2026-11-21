@@ -46,7 +46,7 @@ export function reviewed(take: { history?: unknown; review?: unknown } | null | 
 
 /** A film's entry in Material, role film, as a candidate; the receipt beside the copy says where it came from. */
 export function filmEntry(input: { id: string; title: string; path: string; frames: number; fps: number; note: string; order: string; take: number; day: string }): Entry {
-  return { id: input.id, role: 'film', name: input.title, path: input.path, still: Math.min(Math.round(input.frames * 0.55), input.frames - 1), fps: input.fps, state: 'kandidat', note: input.note, source: { from: `beställningen ${input.order}, tagning ${input.take} (studions vy Beställ)`, when: input.day } } as Entry;
+  return { id: input.id, role: 'film', name: input.title, path: input.path, still: Math.min(Math.round(input.frames * 0.55), input.frames - 1), fps: input.fps, state: 'kandidat', note: input.note, source: { from: `beställning i Kön, tagning ${input.take}`, when: input.day } } as Entry;
 }
 
 /** Puts a film entry into the register after the dealer's last film, through a temporary file; refused when the register is not in its writer's form or would not hold. */
@@ -110,7 +110,7 @@ export async function bring(root: string, id: string, take: number, options: Bri
   const fullReceipt = JSON.parse(await readFile(path.join(folder, 'receipt.json'), 'utf8')) as { takes?: { take: number; history?: unknown; review?: unknown }[] };
   const verdict = reviewed(fullReceipt.takes?.find((t) => t.take === take));
   const title = (options.title ?? `${full.title ?? id}, tagning ${take}`).trim();
-  const note = (options.note ?? verdict ?? 'Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.').trim();
+  const note = (options.note ?? verdict ?? 'Efterarbetad tagning ur en beställning i Kön. Kandidat tills Jakob har dömt.').trim();
   if (note.length > NOTE_LIMIT) throw new OrderError(`Noten är ${note.length} tecken; registret tar högst ${NOTE_LIMIT}.`);
   const out: Brought = { order: id, take, kind: still ? 'STILL' : 'FILM', bank: null, material: null, proof: null, receipt: entry.status, notes: [] };
   const who = options.who ?? `huvudagenten: beställningen ${id}, tagning ${take}, efterarbetad (tools/order-bring.ts)`;
@@ -141,7 +141,7 @@ export async function bring(root: string, id: string, take: number, options: Bri
         schemaVersion: 1, id: materialId, dealer, role: 'film', name: title.slice(0, 80), createdAt: now().toISOString(), by: who,
         original: { path: posix(root, film), sha256: sha(await readFile(film)), order: id, take, delivered: `assets/orders/${id}/take-${take}/source.mp4` },
         output: { path: posix(root, copy), sha256: sha(await readFile(copy)), width: facts.width, height: facts.height, fps, frames: facts.frames },
-        note: 'Efterarbetad tagning ur en beställning i studions vy Beställ. Kandidat tills Jakob har dömt.',
+        note: 'Efterarbetad tagning ur en beställning i Kön. Kandidat tills Jakob har dömt.',
       };
       if (!existsSync(path.join(dir, 'receipt.json'))) await writeFile(path.join(dir, 'receipt.json'), JSON.stringify(receipt, null, 2) + '\n', { flag: 'wx' });
       out.material = { id: materialId, done: await addFilmEntry(root, dealer, entryOut) };

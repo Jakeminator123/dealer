@@ -198,8 +198,9 @@ Skicka dem inte som vanliga referensbilder och påstå att de styr en viss tidpu
 Om Codex-klientens skrivschema saknar Kling 4 eller `referenceVideos` kan huvudagenten använda den befintliga,
 inloggade Claude-klientens `runway`-MCP. Kontrollera `claude mcp get runway`, därefter `whoami` och det faktiska schemat.
 Avgränsa hjälparen till Runway, `whoami` och ett enda godkänt genereringsanrop; fryst request går via stdin, privata
-resultat till `.runtime/`. Samma `order-put begin/placed` gäller. Jämför verktygsanropets argument med ordern, spara
-task-id direkt och gör aldrig en automatisk omtagning. Kopiera inga OAuth-uppgifter mellan klienterna.
+resultat till `.runtime/`. Samma `order-put begin/placed` gäller, med `--via mcp` (eller `--via api` genom API-klienten).
+Jämför verktygsanropets argument med ordern, spara task-id direkt och gör aldrig en automatisk omtagning. Kopiera inga
+OAuth-uppgifter mellan klienterna.
 
 V6-källan och proven från 2026-11-10 (P7, P6, rosa) gjordes med `wan3` genom developer-API:t; vilken modell en film har
 läses i dess kvitto, inte i filnamnet. [Promptjämförelsen](../evidence/prompt-comparison.json) visar skillnaden: det gamla

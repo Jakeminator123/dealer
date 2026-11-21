@@ -204,7 +204,10 @@ test('the steps: defaults from the plan, edges in the graph notation, and an ord
   assert.deepEqual([model.ANCHOR_NODE['2.3'], model.ANCHOR_ROLE['2.3']], ['READY-C', 'ankare-2.3']);
   assert.deepEqual(STEPS.filter((s) => s.off).map((s) => s.key), ['RETUR-2.3'], 'only the return trial requires sources unavailable in the normal form');
   // Changed 2026-11-21 (round two): the trial is ordered with the command, which finds the deal and its frozen last picture.
-  assert.match(stepOf('RETUR-2.3')?.off ?? '', /kommandot .*"A3P4C1 - A2\.3".*hittar den godkända given/);
+  // The words hold for every seat's return, so they name no card, and Jakob reads them, so they name no path.
+  assert.equal(stepOf('RETUR-2.3')?.off, 'Provet beställs med kommandot, som själv hittar den godkända given och dess frysta slutbild.');
+  // A deal with no last picture says so in his words, without the tool that makes the A3 afterwards.
+  assert.equal(model.openEndWords('P4.C2'), 'utan sista bild: filmen slutar där modellen lämnar kortet, och A3P4C2 görs efteråt ur filmens sista ruta');
   assert.deepEqual(['RETUR-2.1', 'RETUR-2.2', 'RETUR-2.3', 'RETUR-1'].map((k) => edgeOf(stepOf(k)!, 'P4.C1')), ['P4.C1>READY', 'P4.C1>READY-B', 'P4.C1>READY-C', 'P4.C1>IDLE']);
   assert.deepEqual(cutIntoOf(stepOf('GIV-2.1')!, 'P4.C1', 'ROUND_TRIP'), ['READY>P4.C1', 'P4.C1>READY']);
   assert.deepEqual(cutIntoOf(stepOf('GIV-2.1')!, 'P4.C1', 'ONE_WAY'), ['READY>P4.C1'], 'bara dit: the deal alone');

@@ -6,7 +6,7 @@
 //
 //   node tools/order-put.ts check <id>                       may it be placed: approval, hash, files, takes (JSON)
 //   node tools/order-put.ts begin <id> <take>                write requestedAt, print the exact call for that take (JSON)
-//   node tools/order-put.ts placed <id> <take> <taskId> [creditsRemaining]   the call answered with a task id
+//   node tools/order-put.ts placed <id> <take> <taskId> [creditsRemaining] [--via api|mcp]   the call answered with a task id; --via: the channel it went through
 //   node tools/order-put.ts failed <id> <take> "<error>"     the call answered with an error and no task id
 //   node tools/order-put.ts status <id> <take> <STATUS> [--file <path>] [--note "<text>"]
 //                                                            KLAR, HÄMTAD (with --file), EFTERARBETAD, MÄTT, GRANSKAD,

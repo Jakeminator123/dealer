@@ -91,7 +91,7 @@ export const changeOrder = (id: string, change: OrderChange, revision: string) =
 export const approveOrder = (id: string, revision: string) => call<OrderAnswer>(`api/orders/${id}/approve`, "Godkännandet", send("POST", undefined, revision));
 export const refreshOrder = (id: string, revision: string) => call<OrderAnswer>(`api/orders/${id}/refresh`, "Bilderna", send("POST", undefined, revision));
 
-// ── The production list (tools/produce.ts, GET /api/production, POST /api/production/draft) ──
+// ── The production list (tools/produce.ts, GET /api/production) ──
 export type { Production, ProductionRow, RowState, Anchor as ProductionAnchor } from "../../tools/produce.ts";
 type ProductionAnswer = { list: import("../../tools/produce.ts").Production; problems: string[] };
 export const getProduction = (dealer: string) => call<ProductionAnswer>(`api/production?dealer=${encodeURIComponent(dealer)}`, "Produktionslistan");
