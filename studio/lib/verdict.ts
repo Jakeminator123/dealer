@@ -2,6 +2,7 @@
 // proof file. Pure: no DOM, no network; tests in studio/tests/verdict.test.ts.
 import type { Graph, MotionRecord, Take } from "../../src/clip-graph.ts";
 import type { Proof } from "./api.ts";
+import { formatDay } from "./names.ts";
 
 // ── Takes ───────────────────────────────────────────────────────────────────
 export type Verdict = "primar" | "godkand" | "variant" | "vantar" | "underkand";
@@ -36,10 +37,17 @@ export const jakobSaid = (review: Review | null | undefined): boolean => typeof 
 /** A provisional verdict (tools/review-store.ts applyProvisional): by whom, when, under which words of his, and why. */
 export type Provisional = { by: string; at: string; mandate: string; note: string };
 /**
- * A mandate in words, without the task's id the main agent stores in front of it ("dealer-37-20261120: pilot 02 till
- * plats 4" reads "pilot 02 till plats 4"); his own words ("Jakob 2026-11-13: …") are kept whole.
+ * A mandate in words: without the task's id the main agent stores in front of it (only an id in small letters with hyphens:
+ * "dealer-37-20261120: pilot 02 till plats 4" reads "pilot 02 till plats 4") and without the mandate's id stored after it
+ * ("…; mandatet dealer-b0-20261121"), with every date as day and month ("Jakob 2026-11-21: …" and "Jakob2026-11-18: …"
+ * read "Jakob 21 nov: …" and "Jakob 18 nov: …"). His own words are otherwise kept whole.
  */
-export const mandateText = (mandate: string): string => mandate.replace(/^[^:\s]+:\s*/, "");
+export const mandateText = (mandate: string): string =>
+  mandate
+    .replace(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)+:\s*/, "")
+    .replace(/\s*;\s*mandatet\s+\S+\s*$/, "")
+    // a date, and a time with it, as day and month; read at noon, so that the day is the same in every time zone
+    .replace(/(\p{L})?(?<!\d)(\d{4}-\d{2}-\d{2})(?:T[\d:.]+Z?)?(?!\d)/gu, (_, letter: string | undefined, day: string) => `${letter ? `${letter} ` : ""}${formatDay(`${day}T12:00`) ?? day}`);
 /** The provisional verdict a take carries, or null; his own word always wins over one left behind. */
 export function provisionalOf(review: Review | null | undefined): Provisional | null {
   const p = review?.provisional;
@@ -79,12 +87,12 @@ export function provisionalChip(v: Pick<VerdictInfo, "verdict">): { label: strin
 }
 /**
  * Who judged it for him, when, under which words of his, and that his decision replaces it; the chip's tooltip and the
- * line above his buttons. "Godkänd åt dig av huvudagenten och en granskare, 2026-11-13, på ditt uppdrag: Jakob …. Inte
+ * line above his buttons. "Godkänd åt dig av huvudagenten och en granskare, 13 nov, på ditt uppdrag: Jakob …. Inte
  * din egen dom; ditt beslut ersätter den." Without the block (only the verdict known) it names neither who nor his words.
  */
 export function provisionalWords(v: Pick<VerdictInfo, "verdict">, p: Provisional | null = null): string {
   const said = verdictPhrase({ verdict: v.verdict, provisional: true });
-  const head = [`${said[0].toUpperCase()}${said.slice(1)}${p?.by ? ` av ${p.by}` : ""}`, p?.at ? p.at.slice(0, 10) : "", p?.mandate ? `på ditt uppdrag: ${mandateText(p.mandate)}` : ""];
+  const head = [`${said[0].toUpperCase()}${said.slice(1)}${p?.by ? ` av ${p.by}` : ""}`, p?.at ? (formatDay(p.at) ?? "") : "", p?.mandate ? `på ditt uppdrag: ${mandateText(p.mandate)}` : ""];
   return `${head.filter(Boolean).join(", ")}. Inte din egen dom; ditt beslut ersätter den.`;
 }
 

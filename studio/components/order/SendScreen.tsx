@@ -38,6 +38,8 @@ function Section({ title, aside, children, className }: { title: ReactNode; asid
 }
 
 const capital = (s: string) => (s ? `${s[0].toUpperCase()}${s.slice(1)}` : s);
+/** A note stored with the order, without a command in brackets ("(node tools/…)") or a register's path ("ur data/….json"). */
+const noteWords = (note: string) => note.replace(/\s*\((?:node|python)\s[^)]*\)/g, "").replace(/\s+ur\s+data\/[\w./-]+\.json/g, "");
 
 /** A draft's own choices (its takes, Jakob's addition); mounted anew when the saved addition changes, so the field starts from what is saved. */
 function Edit({ answer, onSaved }: { answer: OrderAnswer; onSaved: (a: OrderAnswer) => void }) {
@@ -132,11 +134,17 @@ export function SendScreen({ menu, answer, all, onBack, onOpen, onSaved }: { men
     }
   };
   const copy = () => void navigator.clipboard?.writeText(order.prompt.text).then(() => toast({ tone: "ok", title: "Texten är kopierad" }), () => {});
+  // Sent only once a take has left the queue: an approved order waits in it until the main agent lays the queue. One set
+  // aside (a draft or an approved order) or with every take stopped before it left never went.
+  const states = takeStates(order, answer.receipt);
+  const sent = !!order.approval && states.some((s) => s !== "GODKÄND" && s !== "AVBRUTEN");
+  const never = !sent && (order.status === "AVBRUTEN" || (!!order.approval && states.every((s) => s === "AVBRUTEN")));
+  const barWords = sent ? "Det här skickades" : never ? "Det här skickades aldrig" : order.approval ? "Det här skickas när kön läggs" : "Det här skickas";
 
   return (
     <QueueFrame
       menu={menu}
-      bar={<span className="text-sm font-medium text-ink">{order.approval ? "Det här skickades" : "Det här skickas"}</span>}
+      bar={<span className="text-sm font-medium text-ink">{barWords}</span>}
       status={
         <>
           <StatusChip answer={answer} />
@@ -330,7 +338,7 @@ export function SendScreen({ menu, answer, all, onBack, onOpen, onSaved }: { men
                 </p>
                 {order.approval.mandate ? <p className="text-xs text-dim">Uppdraget: {mandateText(order.approval.mandate)}</p> : null}
                 <ul className="flex flex-col gap-1 text-sm">
-                  {takeStates(order, answer.receipt).map((s, i) => (
+                  {states.map((s, i) => (
                     <li key={i} className="flex items-center gap-2">
                       <span className="w-20 text-dim">Tagning {i + 1}</span>
                       <Badge tone={s === "OSÄKER" ? "remark" : s === "MISSLYCKAD" ? "bad" : "neutral"}>{SHOWN_LABEL[s] ?? s}</Badge>
@@ -341,13 +349,14 @@ export function SendScreen({ menu, answer, all, onBack, onOpen, onSaved }: { men
             ) : null}
 
             {/* What the store wrote into the order when it was made: frozen with it, in the words of that day (an older
-                order's notes name files and ids), so folded away rather than shown as the order's description. */}
+                order's notes name files and ids), so folded away rather than shown as the order's description, and
+                shown without the commands and register paths a frozen note may carry (noteWords). */}
             {order.notes.length ? (
               <details data-notes className="group text-xs leading-5 text-dim">
                 <summary className="cursor-pointer select-none text-xs font-medium uppercase tracking-[0.08em] text-faint hover:text-dim">Mer om beställningen</summary>
                 <ul className="mt-2 flex flex-col gap-1.5">
                   {order.notes.map((n) => (
-                    <li key={n}>{n}</li>
+                    <li key={n}>{noteWords(n)}</li>
                   ))}
                 </ul>
               </details>

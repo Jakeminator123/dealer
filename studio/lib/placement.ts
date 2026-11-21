@@ -193,12 +193,11 @@ export function motionSteps(id: string, intent: Intent, anchor: string = anchorO
 // sits, built by the same tool (DOLL_BACKDROPS). Siluett stays the default until he has chosen.
 export type Still = "neutral" | (typeof DOLL_BACKDROPS)[number]["id"];
 export const STILL: Still = "neutral";
-/** The stills by his words (Ordlista): Siluett, then "Docka: <doll>" per doll. */
+/** The stills by his words (Ordlista): Siluett, then "Docka: <doll>" per doll, named as the dealer is ("Docka: Paow"). */
 export const STILLS: readonly { id: Still; word: string; path: string }[] = [
   { id: STILL, word: "Siluett", path: NEUTRAL_BACKDROP.native },
-  ...DOLL_BACKDROPS.map((d) => ({ id: d.id, word: `Docka: ${d.doll}`, path: d.native })),
+  ...DOLL_BACKDROPS.map((d) => ({ id: d.id, word: `Docka: ${d.doll.charAt(0).toUpperCase()}${d.doll.slice(1)}`, path: d.native })),
 ];
-export const isStill = (value: unknown): value is Still => STILLS.some((s) => s.id === value);
 /** The list's stills for a dealer: Siluett first, then her own doll when she has one, then the others. */
 export const stillsFor = (dealer: string) => [STILLS[0], ...STILLS.slice(1).sort((a, b) => Number(b.id === `docka-${dealer}`) - Number(a.id === `docka-${dealer}`))];
 export type Shown = { kind: "still"; still: Still; path: string } | { kind: "film"; film: Film };
@@ -241,10 +240,11 @@ export type LibraryItem = { id?: unknown; title?: unknown; path?: unknown; kind?
 /**
  * The clip bank's current playable takes with a film, the main take of each step first (as kbFilms). A take cut from a longer
  * film (its segment: a deal and its return cut from one film) is its film from the take's first frame, so a real deal can lie
- * under the cards beside the drawn card path.
+ * under the cards beside the drawn card path. Takes that would read the same ("A1 → A1 · variant") are numbered in that
+ * order ("A1 → A1 · variant 1", "… variant 2"), so that the list tells them apart.
  */
 export function bankFilms(graph: Graph): Film[] {
-  return [...graph.edges, ...graph.experiments].flatMap((e) =>
+  const films = [...graph.edges, ...graph.experiments].flatMap((e) =>
     e.takes
       .filter((t) => playable(t) && isCurrent(e, t) && !!t.media.video)
       .sort((a, b) => Number(b === e.main) - Number(a === e.main))
@@ -261,6 +261,15 @@ export function bankFilms(graph: Graph): Film[] {
         target: e.target ?? null,
       })),
   );
+  const count = new Map<string, number>();
+  for (const f of films) count.set(f.title, (count.get(f.title) ?? 0) + 1);
+  const seen = new Map<string, number>();
+  return films.map((f) => {
+    if ((count.get(f.title) ?? 0) < 2) return f;
+    const n = (seen.get(f.title) ?? 0) + 1;
+    seen.set(f.title, n);
+    return { ...f, title: `${f.title}${f.title.includes(" · ") ? " " : " · "}${n}` };
+  });
 }
 /** A film is a deal to the place, or a take of its seat's film (P4.C2 plays P4.C1's): those come first under the cards. */
 export const filmGoesTo = (film: Pick<Film, "target">, place: Place): boolean => !!film.target && place !== SHOE && film.target.slice(0, 3) === place.slice(0, 3);

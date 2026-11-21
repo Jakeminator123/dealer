@@ -33,7 +33,7 @@ test("a doll's picture lies beside Siluett's, its still and the stills' receipt 
 
 test("the studio's list: Siluett first and the default, then the dolls by their word, Paow's doll next for her; the address names one", () => {
   assert.equal(STILL, 'neutral');
-  assert.deepEqual(STILLS.map(s => [s.id, s.word, s.path]), [['neutral', 'Siluett', OUT], ...DOLL_BACKDROPS.map(d => [d.id, `Docka: ${d.doll}`, d.native])]);
+  assert.deepEqual(STILLS.map(s => [s.id, s.word, s.path]), [['neutral', 'Siluett', OUT], ...DOLL_BACKDROPS.map(d => [d.id, `Docka: ${d.doll.charAt(0).toUpperCase()}${d.doll.slice(1)}`, d.native])]);
   assert.deepEqual(stillsFor('pamela').map(s => s.id), ['neutral', 'docka-standard', 'docka-paow']);
   assert.deepEqual(stillsFor('paow').map(s => s.id), ['neutral', 'docka-paow', 'docka-standard']);
   const address = readPlacementAddress(new URLSearchParams('bakgrund=docka-paow'));

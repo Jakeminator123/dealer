@@ -392,7 +392,7 @@ export type FilmRow = {
   recipe: string;
   /** The five marks in their order: Första bild, Slutbild, Referensfilm, Text, Pris. */
   marks: Mark[];
-  /** All five marks are ready: the row can be sent. */
+  /** All five marks are ready and the dealer is not paused: the row can be sent. */
   orderable: boolean;
   /** The text the order gets, word for word, or null (Line.text). */
   text: string | null;
@@ -400,7 +400,7 @@ export type FilmRow = {
   cost: number | null;
   /** The body of POST /api/orders for it: the dealer, the step and the card, and his exceptions; null when it cannot be sent. */
   body: NewOrderInput | null;
-  /** The first of the five marks that is missing (in the order the store asks for them), or null. */
+  /** That the dealer is paused, else the first of the five marks that is missing (in the order the store asks for them), or null. */
   why: string | null;
   /** The reference film that goes with it, or null; `wanted`: the recipe asks for one. */
   reference: RefCandidate | null;
@@ -445,19 +445,22 @@ export function lineCost(step: StepDef, line: Pick<Line, "model" | "seconds" | "
 
 /**
  * A film of the list with its recipe, what the store will resolve for it, its five marks, its text and price as the order
- * freezes them, his exceptions and the body to send. `more.dealers` and `more.marks` (GET /api/orders) give the text.
+ * freezes them, his exceptions and the body to send. `more.dealers` and `more.marks` (GET /api/orders) give the text, and
+ * `more.dealers` the pause: nothing of a paused dealer's can be ordered (data/dealers.json, his word).
  */
-export function filmRow(dealer: string, wish: FilmWish, methods: Pick<MethodRegister, "methods"> | null, policy: Pick<Policy, "prices"> | null, more: { bank?: BankFacts | null; choice?: RowChoice; entries?: readonly EntryLike[]; plan?: Pick<PlanAnswer, "seats"> | null; dealers?: readonly Pick<DealerLook, "id" | "name" | "look">[]; marks?: Readonly<Record<string, boolean>> } = {}): FilmRow {
+export function filmRow(dealer: string, wish: FilmWish, methods: Pick<MethodRegister, "methods"> | null, policy: Pick<Policy, "prices"> | null, more: { bank?: BankFacts | null; choice?: RowChoice; entries?: readonly EntryLike[]; plan?: Pick<PlanAnswer, "seats"> | null; dealers?: readonly Pick<DealerLook, "id" | "name" | "look" | "paused">[]; marks?: Readonly<Record<string, boolean>> } = {}): FilmRow {
   const def = stepOf(wish.step)!;
   const method = methodFor(methods, wish.step, wish.target);
   const choice = more.choice ?? {};
   const resolved = lineOf({ dealer, wish, methods, bank: more.bank ?? null, entries: more.entries ?? [], plan: more.plan ?? null, choice, policy, dealers: more.dealers, marks: more.marks });
-  const orderable = resolved.marks.every((m) => m.ready);
+  const pausedBy = more.dealers?.find((d) => d.id === dealer && d.paused) ?? null;
+  const orderable = !pausedBy && resolved.marks.every((m) => m.ready);
   return {
     key: wishKey(wish), wish, line: wishLine(def, wish.target, resolved.shape), label: def.label, method: method ? { id: method.id, status: method.status, reference: method.reference } : null,
     // A step that is off (the return to 2.3 until its trial) shows no recipe: nothing of it can be ordered from here.
     recipe: def.off ? NOT_YET : recipeWords(method, wish.target, { model: resolved.model?.id ?? null, seconds: resolved.seconds }), marks: resolved.marks, orderable, text: resolved.text,
-    cost: orderable ? resolved.cost : null, body: orderable ? orderBody(dealer, wish, choice, { shape: resolved.shape, reference: !!resolved.reference }) : null, why: resolved.why,
+    cost: orderable ? resolved.cost : null, body: orderable ? orderBody(dealer, wish, choice, { shape: resolved.shape, reference: !!resolved.reference }) : null,
+    why: pausedBy ? `${pausedBy.name} är pausad: inget nytt beställs.` : resolved.why,
     reference: resolved.reference, wanted: resolved.wanted, chosen: Object.keys(choice).length > 0, resolved,
   };
 }

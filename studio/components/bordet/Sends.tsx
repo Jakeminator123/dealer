@@ -22,6 +22,10 @@ import { queueHref } from "./FilmList";
 
 /** The last-picture choice "Utan slutbild" (RowChoice.end null, the command's --no-end). */
 const NO_END = "utan-slutbild";
+/** The last-picture choice "Platsens egen (receptet)" (RowChoice.end undefined): a value of its own, since "" shows "Välj…". */
+const RECIPE_END = "receptets-slutbild";
+/** The reference film choice "Ingen" (RowChoice.reference null): a value of its own, since "" shows "Välj…". */
+const NO_REFERENCE = "ingen-referensfilm";
 
 function Part({ title, aside, children }: { title: string; aside?: ReactNode; children: ReactNode }) {
   return (
@@ -99,7 +103,7 @@ export function RowSends({
   return (
     <div data-sends={row.key} className="flex flex-col gap-4">
       <div className="flex items-baseline gap-2">
-        <h2 className="font-mono text-md font-semibold text-ink">{row.line}</h2>
+        <h2 className="shrink-0 whitespace-nowrap font-mono text-md font-semibold text-ink">{row.line}</h2>
         <span className="min-w-0 truncate text-xs text-dim">{row.label}</span>
         {row.chosen ? (
           <button type="button" onClick={() => onChoice(null)} className="ml-auto shrink-0 text-xs text-dim hover:text-ink hover:underline">
@@ -149,12 +153,12 @@ export function RowSends({
           ) : null}
           {model?.videos ? (
             <Row label="Referensfilm">
-              <Select size="sm" aria-label="Referensfilm" value={line.reference?.take ?? ""} onChange={(v) => onChoice({ reference: v || null })} options={[{ value: "", label: "Ingen" }, ...candidates.map((c) => ({ value: c.take, label: referenceName(c, names), hint: c.kind === "RENDERED" ? (c.doll ? `dockan ${c.doll}` : "dockan") : c.verdict === "GODKÄND" ? "godkänd" : c.verdict.toLowerCase() }))]} className="w-56" />
+              <Select size="sm" aria-label="Referensfilm" value={line.reference?.take ?? NO_REFERENCE} onChange={(v) => onChoice({ reference: v === NO_REFERENCE ? null : v })} options={[{ value: NO_REFERENCE, label: "Ingen" }, ...candidates.map((c) => ({ value: c.take, label: referenceName(c, names), hint: c.kind === "RENDERED" ? (c.doll ? `dockan ${c.doll}` : "dockan") : c.verdict === "GODKÄND" ? "godkänd" : c.verdict.toLowerCase() }))]} className="w-56" />
             </Row>
           ) : null}
           {deal && line.shape === "ONE_WAY" ? (
             <Row label="Slutbild">
-              <Select size="sm" aria-label="Slutbild" value={choice.end === null ? NO_END : (choice.end ?? "")} onChange={(v) => onChoice({ end: v === NO_END ? null : v || undefined })} options={[{ value: "", label: "Platsens egen (receptet)" }, ...line.endChoices.map((e, i) => ({ value: e.id, label: e.name ?? `Kandidat ${i + 1}`, hint: "kandidat, undantag" })), { value: NO_END, label: "Utan slutbild", hint: "undantag" }]} className="w-56" />
+              <Select size="sm" aria-label="Slutbild" value={choice.end === null ? NO_END : (choice.end ?? RECIPE_END)} onChange={(v) => onChoice({ end: v === NO_END ? null : v === RECIPE_END ? undefined : v })} options={[{ value: RECIPE_END, label: "Platsens egen (receptet)" }, ...line.endChoices.map((e, i) => ({ value: e.id, label: e.name ?? `Kandidat ${i + 1}`, hint: "kandidat, undantag" })), { value: NO_END, label: "Utan slutbild", hint: "undantag" }]} className="w-56" />
             </Row>
           ) : null}
           {deal && line.shape === "ONE_WAY" && choice.end === null && row.wish.target ? <p className="text-xs text-dim">Undantag: {openEndWords(row.wish.target)}.</p> : null}

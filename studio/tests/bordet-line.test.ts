@@ -232,6 +232,12 @@ test("Bordet's rows for a card with handbyte and one without say what the store'
       assert.doesNotMatch(open.text!, /last frame/);
       assert.ok(shownOpen.notes.join(" ").includes(openEndWords("P4.C2")), "the command's note");
       assert.equal(shownOpen.cost.total, open.cost);
+      // A paused dealer gets nothing new (data/dealers.json, his word): the same deal cannot be ordered for her, and says why.
+      const pausedDealers = all.dealers?.map((d) => (d.id === "paow" ? { ...d, paused: "Jakob: inget nytt beställs" } : d));
+      const paused = filmRow("paow", deal.wish, all.methods!, all.policy, { bank, entries: shown, plan: all.plan ?? null, dealers: pausedDealers, marks: all.marks });
+      assert.ok(!paused.orderable && paused.body === null && paused.cost === null, `${paused.key}: not orderable while paused`);
+      assert.match(paused.why ?? "", /är pausad: inget nytt beställs.$/);
+      assert.equal(sumWords([paused]), "1 film · kan inte beställas än");
     } else {
       // Without handbyte: from the anchor the game deals the card from, laid by the left hand.
       assert.equal(dealAnchor("paow", card), "2.1");

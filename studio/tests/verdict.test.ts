@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { buildGraph, type BankData, type BankJob } from "../../src/clip-graph.ts";
 import { DECISIONS, NOTE_LIMIT as STORE_LIMIT, applyChange, applyProvisional } from "../../tools/review-store.ts";
 import { NOTE_LIMIT, type Decision } from "../lib/api.ts";
-import { FOR_YOU, PROOF_VERDICT_LABEL, SAID_WITHOUT_NOTE, VERDICTS, VERDICT_LABEL, VERDICT_SIGN, awaitingJakob, chosenDecision, judgedForJakob, primarCount, proofVerdict, provisionalChip, provisionalOf, provisionalWords, reviewStamp, splitLabel, storedNote, verdictOf, verdictPhrase } from "../lib/verdict.ts";
+import { FOR_YOU, PROOF_VERDICT_LABEL, SAID_WITHOUT_NOTE, VERDICTS, VERDICT_LABEL, VERDICT_SIGN, awaitingJakob, chosenDecision, judgedForJakob, mandateText, primarCount, proofVerdict, provisionalChip, provisionalOf, provisionalWords, reviewStamp, splitLabel, storedNote, verdictOf, verdictPhrase } from "../lib/verdict.ts";
 
 type R = Record<string, unknown>;
 const take = (review: R | null, extra: R = {}) => ({
@@ -138,6 +138,19 @@ test("proof labels split into a short name and the rest", () => {
   assert.deepEqual(splitLabel("Hemvy salong. Kameran står still"), { name: "Hemvy salong", rest: "Kameran står still" });
 });
 
+test("a mandate in his words: the task's id in front and the mandate's id after go, his name stays, and a date reads as day and month", () => {
+  // only an id in small letters with hyphens is the main agent's task in front of the words
+  assert.equal(mandateText("dealer-37-20261120: pilot 02 till plats 4 från ankare 2.3 C"), "pilot 02 till plats 4 från ankare 2.3 C");
+  // his name with the date straight after it is his, never an id: kept, the date as day and month
+  assert.equal(mandateText("Jakob2026-11-18: ”Ja du får generera tills kontot är typ tomta!” Ett oberoende granskat C2-omtag."), "Jakob 18 nov: ”Ja du får generera tills kontot är typ tomta!” Ett oberoende granskat C2-omtag.");
+  assert.equal(mandateText("Jakobs Dealer-mandat 2026-11-18: 800 krediter per rullande timme, 2500 totalt till 13:01:31Z."), "Jakobs Dealer-mandat 18 nov: 800 krediter per rullande timme, 2500 totalt till 13:01:31Z.");
+  // the mandate's id stored after the words goes, and every date in them reads as day and month
+  assert.equal(
+    mandateText("Jakob 2026-11-21: släpet med handbyte beställs från A2.3 (plats 4, kort 2); hans ja 15.56 i Beslut på receptet från A2.3; dockfilmen granskad 2026-11-21; mandatet dealer-b0-20261121"),
+    "Jakob 21 nov: släpet med handbyte beställs från A2.3 (plats 4, kort 2); hans ja 15.56 i Beslut på receptet från A2.3; dockfilmen granskad 21 nov",
+  );
+});
+
 test("a verdict judged for him: its own chip and words, never Jakob's, never a pressed button of his, and not waiting for him", () => {
   const by = "huvudagenten och en oberoende granskare";
   const mandate = 'Jakob 2026-11-13: "bedöm de sista filmerna, för jag måste sova."';
@@ -159,7 +172,9 @@ test("a verdict judged for him: its own chip and words, never Jakob's, never a p
   assert.notEqual(verdictPhrase(ok), verdictPhrase(bad));
   // The tooltip: who, when, under which words of his, and that his decision replaces it; nothing says it waits.
   const words = provisionalWords(ok, provisionalOf(prov("ACCEPTED") as never)), plain = provisionalWords(bad);
-  for (const part of [by, "2026-11-13", mandate, FOR_YOU]) assert.ok(words.includes(part), `the tooltip names ${part}: ${words}`);
+  // the day and his words with it as he reads them: day and month, never the stored date
+  for (const part of [by, "13 nov", 'Jakob 13 nov: "bedöm de sista filmerna, för jag måste sova."', FOR_YOU]) assert.ok(words.includes(part), `the tooltip names ${part}: ${words}`);
+  assert.doesNotMatch(words, /\d{4}-\d{2}-\d{2}/);
   assert.ok(plain.includes(FOR_YOU) && !plain.includes(by) && !plain.includes(mandate), "without the block it names neither who nor his words");
   const notHis = plain.slice(plain.indexOf(". ") + 2);
   assert.ok(notHis.trim() && words.endsWith(notHis), "both end with the same words that it is not his own verdict and his replaces it");

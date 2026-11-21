@@ -64,6 +64,8 @@ export const MODES: readonly { value: Mode; label: string }[] = [
 const SHOWN_MODES = isSnapshot ? MODES.filter((m) => m.value !== "ko") : MODES;
 const isMode = (v: string | null): v is Mode => SHOWN_MODES.some((m) => m.value === v);
 const isScene = (m: Mode): m is SceneKind => m === "scen" || m === "rafilm" || m === "efterarbete";
+/** A dealer with no drafts made: one object, so that the reference stays the same between renders. */
+const NO_DRAFTS: Made = {};
 /** The dealer's hole card: its film (HALKORT, turned up from rest) is listed among the card's films when it is chosen. */
 const HOLE_CARD: Place = "D.C2";
 /**
@@ -149,22 +151,26 @@ export function BordetView() {
   const [choices, setChoices] = useState<Record<string, RowChoice>>(() => (first?.wish && first.model ? { [wishKey(first.wish)]: { model: first.model } } : {}));
   const [place, setPlace] = useState<Place>(() => first?.place ?? placeFromCode(params.get("plats")) ?? START_PLACE);
   const [wishes, setWishes] = useState<FilmWish[]>(() => (first?.wish ? [first.wish] : []));
-  const [made, setMade] = useState<Made>({});
+  const [madeBy, setMadeBy] = useState<Record<string, Made>>({});
   const [chosenRow, setChosenRow] = useState<string | null>(() => (first?.wish ? wishKey(first.wish) : null));
   const [orders, setOrders] = useState<OrdersAnswer | null>(null);
   const [ordersRead, setOrdersRead] = useState(false);
   const [pending, setPending] = useState<{ keys: string[]; inputs: NewOrderInput[] } | null>(null);
   const draft = useDraft();
   const toast = useToast();
-  const { dealer, dealers, bank, graph } = useBank();
-  // The rail's switch to another dealer: the drafts made, the exceptions (their pictures and films are the other dealer's)
-  // and an open preview go; the list of films stays, since it names steps and cards only.
-  const [seenDealer, setSeenDealer] = useState(dealer);
-  if (dealer !== seenDealer) {
+  const { dealer, dealers, bank, graph, status } = useBank();
+  // The drafts made follow their dealer: a switch away and back still shows them as made, so no second draft of the same film.
+  const made = madeBy[dealer] ?? NO_DRAFTS;
+  // The rail's switch to another dealer: the exceptions (their pictures and films are the other dealer's) and an open preview
+  // go; the list of films stays, since it names steps and cards only. The first settling of the dealer (the address read
+  // after the default) is no switch and resets nothing, so an old link's model exception stays.
+  const [seenDealer, setSeenDealer] = useState<string | null>(null);
+  if (status !== "loading" && dealer !== seenDealer) {
+    if (seenDealer !== null) {
+      setChoices({});
+      setPending(null);
+    }
     setSeenDealer(dealer);
-    setMade({});
-    setChoices({});
-    setPending(null);
   }
   useEffect(() => writeAddress(mode, place), [mode, place]);
   const readOrders = useCallback(
@@ -202,8 +208,10 @@ export function BordetView() {
   // Whether anything can be approved now (the mandate, the caps, the balance), in one line where films are ordered.
   const ordering = orders ? orderingState(orders) : null;
   const orderable = !orders?.dealers || orders.dealers.some((x) => x.id === dealer);
+  // A paused dealer (data/dealers.json, his word) gets nothing new: no draft is made for her.
+  const paused = !!orders?.dealers?.find((x) => x.id === dealer)?.paused;
   const dealerName = dealers.find((x) => x.id === dealer)?.name ?? dealer;
-  const blocked = !ordersRead ? "Läser beställningarna …" : !orders ? "Beställningarna kunde inte läsas från labbservern." : !orderable ? `Filmer till ${dealerName} kan inte beställas härifrån.` : draft.dirty ? "Spara kortplanen först: utkastet ritar kortet där den sparade planen lägger det." : null;
+  const blocked = !ordersRead ? "Läser beställningarna …" : !orders ? "Beställningarna kunde inte läsas från labbservern." : paused ? `${dealerName} är pausad: inget nytt beställs.` : !orderable ? `Filmer till ${dealerName} kan inte beställas härifrån.` : draft.dirty ? "Spara kortplanen först: utkastet ritar kortet där den sparade planen lägger det." : null;
   const preview = (selectedRows: readonly FilmRow[]) => {
     const keys: string[] = [], inputs: NewOrderInput[] = [];
     for (const row of selectedRows) {
@@ -217,7 +225,7 @@ export function BordetView() {
   const created = (answer: CreatedOrders) => {
     if (!pending) return;
     const done = Object.fromEntries(pending.keys.map((key, i) => [key, answer.made[i]]));
-    setMade((was) => ({ ...was, ...done }));
+    setMadeBy((was) => ({ ...was, [dealer]: { ...(was[dealer] ?? {}), ...done } }));
     setPending(null);
     const n = answer.made.length;
     toast({ tone: "ok", title: n === 1 ? "Ett utkast gjort" : `${n} utkast gjorda`, detail: "Utkasten godkänns i Kön." });
@@ -330,7 +338,7 @@ export function BordetView() {
             onRemove={(r) => setWishes((was) => was.filter((w) => wishKey(w) !== r.key))}
             onClear={() => {
               setWishes([]);
-              setMade({});
+              setMadeBy({});
             }}
             onCreate={() => preview(rows)}
           />

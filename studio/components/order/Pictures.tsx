@@ -19,11 +19,18 @@ import { Badge, IconButton, cn } from "../ui";
 const W = 1764,
   H = 1174;
 
+/** What a frozen label may carry that is not his words: a file's name, a path or a script, a hash, a frame number, P5.C1. */
+const TECHNICAL = /\.(?:png|jpe?g|webp|mp4|py|ts|json)\b|\/|\bsha\b|\(f\d+\)|\bP\d\.C\d\b/i;
+
 /**
  * A picture's name: its name in Material today where the orders' answer gives it (named), else the label frozen with the
- * order, which an older order wrote in older words ("Paows ankare 2.3", "A3 · P4").
+ * order, which an older order wrote in older words ("Paows ankare 2.3", "A3 · P4"); where the label's words after the
+ * role name a file, a path, a script or a hash ("Första bild · anchor.png"), only the role ("Första bild").
  */
-export const pictureName = (picture: Picture): string => ("named" in picture && typeof picture.named === "string" && picture.named) || picture.label;
+export const pictureName = (picture: Picture): string => {
+  if ("named" in picture && typeof picture.named === "string" && picture.named) return picture.named;
+  return TECHNICAL.test(picture.label) ? picture.label.split(" · ")[0] : picture.label;
+};
 
 /** Whose a picture is, so that a mix-up cannot pass unseen: green for the dealer's own, amber for an arm only, red else. */
 export function OwnerChip({ owner, dealer, className }: { owner: Owner | null | undefined; dealer: string; className?: string }) {

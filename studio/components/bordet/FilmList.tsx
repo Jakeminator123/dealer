@@ -2,8 +2,8 @@
 
 // Bordet's films to order (lib/bordet.ts). WishRows is step 3's list for the chosen card (its three films from one anchor:
 // the deal, the return to that anchor, the return to rest) and for the films without a card: one row per film in his
-// notation with its five marks (Första bild, Slutbild, Referensfilm, Text, Pris; ready or missing, the words written on the mark),
-// the first thing missing where it cannot be ordered yet and its price where it can, and "Lägg till" to put it on the list.
+// notation with its five marks (Första bild, Slutbild, Referensfilm, Text, Pris; ready or missing, the words written on the mark,
+// so the price stands on Pris), the first thing missing where it cannot be ordered yet, and "Lägg till" to put it on the list.
 // FilmStrip is that list, under the picture: the films chosen across cards, their cards ringed on the stage, the sum, and
 // "Förhandsvisa": the one way to a draft (the lab server's exact drafts, read before they are saved). One line over the list
 // says what never goes to Runway: the card path drawn in the lab is a sketch.
@@ -43,7 +43,7 @@ export function Marks({ marks }: { marks: readonly Mark[] }) {
   );
 }
 
-/** Step 3's rows: a film each, with its marks, why or price, and the way onto the list. */
+/** Step 3's rows: a film each, with its marks (the price among them), why it cannot be ordered, and the way onto the list. */
 export function WishRows({ title, rows, listed, made, chosen, onChoose, onAdd }: { title: string | null; rows: readonly FilmRow[]; listed: ReadonlySet<string>; made: Made; chosen: string | null; onChoose: (r: FilmRow) => void; onAdd: (r: FilmRow) => void }) {
   if (!rows.length) return null;
   return (
@@ -63,10 +63,10 @@ export function WishRows({ title, rows, listed, made, chosen, onChoose, onAdd }:
             >
               <div className="flex items-center gap-2">
                 <span className="font-mono text-sm font-semibold text-ink">{r.line}</span>
-                <span className="min-w-0 flex-1 truncate text-xs text-dim" title={r.label}>
+                {/* the price stands on the mark Pris below; the name gets the room */}
+                <span className="line-clamp-2 min-w-0 flex-1 text-xs text-dim" title={r.label}>
                   {r.label}
                 </span>
-                {r.cost !== null ? <span className="shrink-0 text-sm tabular-nums text-ink">{credits(r.cost)} krediter</span> : null}
                 <span className="shrink-0" onClick={(e) => e.stopPropagation()}>
                   {draft ? (
                     <Link href={queueHref(draft)} className="text-xs text-brass-hi hover:underline">
@@ -105,7 +105,7 @@ export function FilmStrip({
   chosen: string | null;
   /** The drafts made from rows: the row's key → the order's id. */
   made: Made;
-  /** Why no draft can be made now (the plan is not saved, the dealer cannot be ordered for), or null. */
+  /** Why no draft can be made now (the dealer is paused or cannot be ordered for, the plan is not saved), or null. */
   blocked: string | null;
   /** Nothing can be approved now (the mandate): drafts can still be made, so the button is not the bright one. */
   held: boolean;
