@@ -3,7 +3,7 @@
 //                  bank's camera carried 59 degrees round the dealer toward seat 1's side ("runt59": toward seat 7's)
 //   ?to=P4.C1      the card place dealt to
 //   ?motion=giv-pamela-p4   a deal read off a film (dealer3d/data/<name>.json) instead of the one drawn by hand; ?to= is then the film's own place
-//   ?look=room     room (felt table) or plain (white figure on grey, for a reference film)
+//   ?look=room     room (felt table), plain (white figure on grey, for a reference film) or bare (the figure alone on a transparent page)
 //   ?docka=paow    which doll (dealer3d/src/doll.ts); without it the one a read motion names, else the standard
 //   ?model=1       a rigged model (/model.glb, served by the recorder's --model) in the white figure's place, posed from the same joints
 //   ?tags=0        no names on the views and no clock
@@ -20,7 +20,9 @@ canvas.width = innerWidth; canvas.height = innerHeight;
 const motion = /^[\w-]+$/.test(q.get('motion') ?? '') ? q.get('motion') : null, read = motion ? await (await fetch(`/dealer3d/data/${motion}.json`)).json() : null;
 // ?model=1: the rigged model in the white figure's place. Its module and three's loader are fetched only then.
 const began = performance.now(), figure = q.get('model') === '1' ? await (await import('../src/figure-model.ts')).loadFigure('/model.glb') : null, loadMs = Math.round(performance.now() - began);
-const stage = createStage(canvas, plan, {look: (q.get('look') === 'plain' ? 'plain' : 'room') as Look, target: q.get('to') ?? 'P4.C1', read, figure, doll: q.get('docka') ? dollNamed(q.get('docka')) : undefined});
+const look: Look = q.get('look') === 'plain' ? 'plain' : q.get('look') === 'bare' ? 'bare' : 'room';
+if (look === 'bare') for (const e of [document.documentElement, document.body]) e.style.background = 'transparent';
+const stage = createStage(canvas, plan, {look, target: q.get('to') ?? 'P4.C1', read, figure, doll: q.get('docka') ? dollNamed(q.get('docka')) : undefined});
 const names = {FRONT: 'ser framsidan', BACK: 'ser baksidan', EDGE: 'ser kortet på kant'}, host = document.getElementById('tags')!, clock = document.getElementById('clock')!;
 function draw() {
   const boxes = stage.render(views), shown = stage.state();

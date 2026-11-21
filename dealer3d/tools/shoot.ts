@@ -1,6 +1,7 @@
 // Records the 3D page without a lab server: a file server of its own on 127.0.0.1 for the length of the run, one headless
 // Chrome over the DevTools protocol (own profile and port), a PNG per asked moment, and everything closed at the end.
-//   node dealer3d/tools/shoot.ts --out <folder> [--eyes 1,4] [--to P4.C1] [--look room|plain] [--size 1920x640] [--tags 0]
+//   node dealer3d/tools/shoot.ts --out <folder> [--eyes 1,4] [--to P4.C1] [--look room|plain|bare] [--size 1920x640] [--tags 0]
+//        --look bare             the figure alone: PNGs with a transparent background (the page's and the browser's own made clear)
 //        --times 0,0.92,1.9      stills at those seconds, named <prefix>-<seconds>.png
 //        --film 24 0 4           every frame at 24 a second from 0 to 4 s, named <prefix>-0001.png ... (ffmpeg makes the film)
 //        [--motion giv-pamela-p4]   a deal read off a film (dealer3d/data/<name>.json) instead of the one drawn by hand
@@ -162,6 +163,7 @@ try {
   const run = async (expression: string) => { const r = await send('Runtime.evaluate', {expression, awaitPromise: true, returnByValue: true}); if (r.exceptionDetails) throw Error(JSON.stringify(r.exceptionDetails).slice(0, 700)); return r.result.value; };
   await send('Runtime.enable'); await send('Page.enable'); await send('Network.enable');
   await send('Emulation.setDeviceMetricsOverride', {width: W, height: H, deviceScaleFactor: 1, mobile: false});
+  if (arg('--look') === 'bare') await send('Emulation.setDefaultBackgroundColorOverride', {color: {r: 0, g: 0, b: 0, a: 0}});
   const query = new URLSearchParams({eyes: arg('--eyes', '1,4')!, to: arg('--to', 'P4.C1')!, look: arg('--look', 'room')!, tags: arg('--tags', '1')!, ...(motion ? {motion} : {}), ...(MODEL ? {model: '1'} : {}), ...(arg('--doll') ? {docka: arg('--doll')!} : {})});
   await send('Page.navigate', {url: `http://127.0.0.1:${servePort}/dealer3d/page/index.html?${query}`});
   // A model is tens of megabytes to fetch, read and send to the graphics card: the page gets two minutes instead of twenty seconds.

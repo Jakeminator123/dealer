@@ -1,7 +1,9 @@
 // The deal drawn with three.js: a table, a shoe, a real card with two sides, and the test figure, seen through any number
 // of eyes at once. Everything shown comes from the pure modules beside this file (world, deal, body); this file only gives
 // it shape and light. Two looks: 'room' (a felt table, for looking at the geometry from the seats) and 'plain' (a white
-// figure and a grey table on a flat ground, for a reference film a video model can follow). The figure is a doll
+// figure and a grey table on a flat ground, for a reference film a video model can follow), and 'bare': the plain figure
+// alone on nothing (a transparent picture), the table, the shoe and the cards hiding what is behind them without being
+// drawn and the felt catching the figure's shadow, for a still laid over a picture of the table. The figure is a doll
 // (dealer3d/src/doll.ts): options.doll, else the one a read motion names, else the standard.
 import * as T from 'three';
 import {CARD, FILM, filmEye, fovYDeg, orbit, type Eye, type Vec3} from './camera.ts';
@@ -12,7 +14,7 @@ import {dollNamed, type Doll} from './doll.ts';
 import {FINGERS} from './capture.ts';
 import type {Figure} from './figure-model.ts';
 
-export type Look = 'room' | 'plain';
+export type Look = 'room' | 'plain' | 'bare';
 type Limb = {s: number[]; e: number[]; w: number[]; k: number; p: number[][]};
 /** A deal read off a film and laid into the room by dealer3d/tools/lift.ts (dealer3d/data/*.json). */
 export type Read = {film: string; fps: number; frameCount: number; leavesShoe: number; edge: number[]; folds: number; rests: number; hip: number[]; laid?: {from: number; c: number[]; l: number[]; n: number[]}[]; frames: {card: {c: number[]; l: number[]; n: number[]; id?: number}; L: Limb; R: Limb; h: number[]; g?: number[]}[]; doll?: string}; // g: where she looks in that frame, if the film says (dealer3d/tools/pose-film.ts); without it her eyes follow the card. card.id and laid: a film of several cards (dealer3d/tools/deal-film.ts) says which card is in play and which lie, each from its frame
@@ -76,12 +78,12 @@ function pointHand(material: T.Material) {
 }
 
 export function createStage(canvas: HTMLCanvasElement, plan: Plan, options: {look?: Look; target?: string; read?: Read | null; figure?: Figure | null; doll?: Doll} = {}) {
-  const look = options.look ?? 'room', target = options.target ?? 'P4.C1', C = COLOUR[look], lens = filmLens(), edge = dealerEdge(lens), all = spots(plan, lens);
+  const look = options.look ?? 'room', target = options.target ?? 'P4.C1', C = COLOUR[look === 'bare' ? 'plain' : look], lens = filmLens(), edge = dealerEdge(lens), all = spots(plan, lens);
   const four = all.find(s => s.id === 'P4.C1')!, to = all.find(s => s.id === target); if (!to) throw Error(`The plan has no place ${target}.`);
   const pose = shoePose(lens), inShoe = shoeCard(pose), deal = planDeal({lens, target, place: to.at, placeOfSeat4: four.at, shoe: inShoe}), doll = options.doll ?? dollNamed(options.read?.doll), frame = standing(lens, doll), rest = restingHand(lens), S = doll.shape;
 
-  const renderer = new T.WebGLRenderer({canvas, antialias: true, preserveDrawingBuffer: true}); renderer.outputColorSpace = T.SRGBColorSpace; renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap; renderer.setScissorTest(true);
-  const scene = new T.Scene(); scene.background = new T.Color(C.ground);
+  const renderer = new T.WebGLRenderer({canvas, antialias: true, preserveDrawingBuffer: true, alpha: look === 'bare'}); renderer.outputColorSpace = T.SRGBColorSpace; renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap; renderer.setScissorTest(true);
+  const scene = new T.Scene(); scene.background = look === 'bare' ? null : new T.Color(C.ground);
   scene.add(new T.HemisphereLight(0xffffff, look === 'room' ? 0x3a3f44 : 0x8a9096, look === 'room' ? 1.25 : 1.6));
   const sun = new T.DirectionalLight(0xfff4e6, look === 'room' ? 2.4 : 1.9); sun.position.set(edge[0] - 0.9, 2.6, edge[2] + 1.9); sun.target.position.set(edge[0], 0, edge[2] + 0.2); sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.002; sun.shadow.radius = 5; Object.assign(sun.shadow.camera, {left: -1.5, right: 1.5, top: 1.5, bottom: -1.5, near: 0.5, far: 6}); scene.add(sun, sun.target);
@@ -111,6 +113,15 @@ export function createStage(canvas: HTMLCanvasElement, plan: Plan, options: {loo
   const card = cardMesh(); scene.add(card);
   // The cards a film of several has laid: each lies where the film says from its frame on.
   const lying = (options.read?.laid ?? []).map(l => { const m = cardMesh(), long = l.l as Vec3, normal = l.n as Vec3; placeCard(m, {centre: l.c as Vec3, long, normal, across: [normal[1] * long[2] - normal[2] * long[1], normal[2] * long[0] - normal[0] * long[2], normal[0] * long[1] - normal[1] * long[0]]}); m.visible = false; scene.add(m); return {from: l.from, mesh: m}; });
+
+  // 'bare': the table, the shoe and the cards write depth only (drawn first, so that what lies behind them is not drawn
+  // either), the floor is gone, and a sheet just over the felt shows only the shadows the figure casts on it.
+  if (look === 'bare') {
+    const hidden = new T.MeshBasicMaterial({colorWrite: false});
+    for (const o of [felt, slab, shoe, next, card, ...lying.map(l => l.mesh)]) o.traverse(m => { if (m instanceof T.Mesh) { m.material = hidden; m.renderOrder = -1; m.castShadow = false; } });
+    floor.visible = false;
+    const shade = new T.Mesh(lay(new T.ShapeGeometry(half(radius), 64)), new T.ShadowMaterial({opacity: 0.3})); shade.position.y = 0.0004; shade.receiveShadow = true; scene.add(shade);
+  }
 
   // The figure.
   // The trunk: the standard's egg (a unit ball), or a doll's profile turned about its upright axis (a smooth curve through
@@ -189,7 +200,7 @@ export function createStage(canvas: HTMLCanvasElement, plan: Plan, options: {loo
   /** Draws the present moment once per view, side by side from the left; each view keeps the bank's shape (1764 : 1174) inside its share of the canvas. */
   function render(views: View[]): {left: number; top: number; width: number; height: number}[] {
     const W = canvas.width, H = canvas.height, share = W / views.length, boxes: {left: number; top: number; width: number; height: number}[] = [];
-    renderer.setViewport(0, 0, W, H); renderer.setScissor(0, 0, W, H); renderer.setClearColor(0x0b0d0f); renderer.clear();
+    renderer.setViewport(0, 0, W, H); renderer.setScissor(0, 0, W, H); renderer.setClearColor(0x0b0d0f, look === 'bare' ? 0 : 1); renderer.clear();
     views.forEach((view, i) => { const width = Math.min(share, H * FILM.width / FILM.height), height = width * FILM.height / FILM.width, left = i * share + (share - width) / 2, top = (H - height) / 2;
       renderer.setViewport(left, H - top - height, width, height); renderer.setScissor(left, H - top - height, width, height); renderer.render(scene, cameraOf(eyeOf(view))); boxes.push({left, top, width, height}); });
     return boxes;
