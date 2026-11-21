@@ -139,6 +139,14 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 
 ## Filmerna och banken
 
+- **En giv utan sista bild kan lägga kortet fel** (2026-11-21, ordern `paow-giv-2-3-p5-02`). Dockan landade på
+  kortplanens P5C1, men filmmodellen lade kortet 32 bildpunkter närmare henne; givarna till P1C1 och P4C2, beställda
+  på samma sätt, landade 4 och 8 bildpunkter från platsen. Efterarbetets kontroll fäller en sådan tagning (gränsen är
+  15). Stänger: A3P5C1 gjord som stillbild först, och given beställd med den som sista bild.
+- **Dockans vändning görs med fingrarna** (2026-11-21). I dockfilmerna `svep24d` från A2.3 svänger kortet under
+  stilla fingrar med handryggen mot kameran, mitt i flykten (3–5 kortbredder från platsen). Filmmodellen kopierar det:
+  kortet blir halvgenomskinligt i fyra till sex rutor kring kantrutan. Jakobs regel är att handleden vänder kortet.
+  Stänger: en omgjord dockfilm där handleden vrids och vändningen sker nära platsen, prövad på en plats först.
 - **H24-P4 är en Variant, ingen färdig helkedja.** Given fick 4/5 av huvudagent och oberoende granskare; en rosa fläck
   intill skon finns även i det frysta A3-slutankaret. Lokal lagning blev inte säker. Ingång, retur och nycklad spelbild
   är inte godkända som kedja. Bevis: `assets/orders/paow-giv-2-3-p4-h24-03/take-1/review/review.md`.
@@ -277,6 +285,10 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 
 ## Labbet och verktygen
 
+- **Materials anteckningar har kvar id:n och sökvägar** (2026-11-21). Omkring 180 av Paows 233 anteckningar har ett
+  id, 135 nämner ElevenLabs och 160 rader under Gjord ur visar en sökväg till ett verktyg. Visaren skriver datum som
+  dag och månad och lägger sökvägar under pekaren, och `tools/order-bring.ts` skriver nya rader utan id. Talfilmernas
+  registrering (`tools/speech.ts`) och de gamla raderna är inte omskrivna.
 - **Ett nytt orderutkast skriver texten innan bilderna ligger på disk** (2026-11-20, sett på piloten
   `paow-giv-2-3b-p4-pilot-01`). Med en A3 som sista bild säger texten då att kortets blå sida är omärkt, fast bilden
   bär kryss och prick. `refresh` på utkastet rättar texten; gör det före ett godkännande. Verktyget är inte rättat.

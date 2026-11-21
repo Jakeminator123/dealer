@@ -18,6 +18,7 @@ import { formatBytes } from "../../lib/proofs.ts";
 import { TakeChip, frameTime } from "../takes";
 import { Button, IconButton, Kbd, cn } from "../ui";
 import { StateDecision } from "./StateDecision";
+import { dayWords } from "./day-words.ts";
 import type { Lineage } from "../../lib/lineage.ts";
 import { StateChip } from "./Tile";
 
@@ -46,10 +47,10 @@ function Picture({ entry, close }: { entry: EntryAnswer; close: boolean }) {
   if (!src)
     return (
       <div className="grid h-full place-items-center p-10 text-center">
-        <div className="flex max-w-md flex-col items-center gap-3 text-dim [&_svg]:size-7">
+        {/* The file's path is not his words: it waits under the pointer, as in Var den ligger. */}
+        <div className="flex max-w-md flex-col items-center gap-3 text-dim [&_svg]:size-7" title={entry.path}>
           {entry.inside ? <ImageOff /> : <HardDrive />}
           <p className="text-md text-ink">{entry.inside ? "Filen saknas på den här datorn." : "Filen ligger utanför labbet, så den visas inte här."}</p>
-          <p className="break-all font-mono text-xs text-faint">{entry.path}</p>
         </div>
       </div>
     );
@@ -81,9 +82,9 @@ function Picture({ entry, close }: { entry: EntryAnswer; close: boolean }) {
   );
 }
 
-function Fact({ label, children }: { label: string; children: ReactNode }) {
+function Fact({ label, title, children }: { label: string; title?: string; children: ReactNode }) {
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1" title={title}>
       <dt className="text-2xs font-medium uppercase tracking-[0.06em] text-faint">{label}</dt>
       <dd className="text-sm leading-5 text-ink">{children}</dd>
     </div>
@@ -148,6 +149,7 @@ function FitFact({ entry }: { entry: EntryAnswer }) {
 function Facts({ entry }: { entry: EntryAnswer }) {
   const where = [entry.card ? `kort ${entry.card}` : null, entry.node ? nodeName(entry.node) : null].filter(Boolean).join(" · ");
   const size = sizeWords(entry.width, entry.height);
+  const stateBy = (entry as { stateBy?: string }).stateBy;
   return (
     <aside className="flex w-[380px] shrink-0 flex-col gap-5 overflow-y-auto border-l border-white/6 bg-surface/60 px-5 py-5">
       <dl className="flex flex-col gap-4">
@@ -155,16 +157,18 @@ function Facts({ entry }: { entry: EntryAnswer }) {
           {ROLE_LABEL[entry.role]}
           {where ? <span className="text-dim"> · {where}</span> : null}
         </Fact>
-        {entry.note ? <Fact label="Om bilden">{entry.note}</Fact> : null}
+        {entry.note ? <Fact label="Om bilden">{dayWords(entry.note)}</Fact> : null}
         <FitFact entry={entry} />
-        {(entry as { stateBy?: string }).stateBy ? <Fact label="Dom">{(entry as { stateBy?: string }).stateBy}</Fact> : null}
-        <Fact label="Var den ligger">
-          <span className="break-all font-mono text-xs leading-5 text-dim">{entry.pattern ?? entry.path}</span>
+        {stateBy ? <Fact label="Dom">{dayWords(stateBy)}</Fact> : null}
+        {/* The file's path is not his words: it waits under the pointer. */}
+        <Fact label="Var den ligger" title={entry.pattern ?? entry.path}>
           {entry.frame !== undefined ? (
-            <span className="mt-1 block text-sm">
+            <span className="block text-sm">
               Ruta {entry.frame}
               {entry.frames ? ` av ${entry.frames}` : ""} i filmen{entry.inside ? "" : " (utanför labbet)"}
             </span>
+          ) : entry.inside ? (
+            <span className="block text-sm">I labbet</span>
           ) : null}
           {!entry.inside ? <span className="mt-1 block text-xs text-[#f0b07a]">Utanför repot: labbet lämnar inte ut den.</span> : null}
         </Fact>
@@ -175,8 +179,8 @@ function Facts({ entry }: { entry: EntryAnswer }) {
         ) : null}
         {entry.source ? (
           <Fact label="Gjord ur">
-            {entry.source.from}
-            {entry.source.when ? <span className="text-dim"> · {entry.source.when}</span> : null}
+            {dayWords(entry.source.from)}
+            {entry.source.when ? <span className="text-dim"> · {dayWords(entry.source.when)}</span> : null}
           </Fact>
         ) : null}
         <Fact label={usedWords(entry.usedBy.length).replace(/^./, (c) => c.toUpperCase())}>
@@ -288,7 +292,7 @@ export function MaterialViewer({
                 {facts ? <Facts entry={entry} /> : null}
               </div>
               <footer className="flex min-h-11 shrink-0 items-center gap-4 border-t border-white/6 px-5 py-2 text-sm">
-                <span className="min-w-0 flex-1 truncate text-dim">{entry.note ?? ""}</span>
+                <span className="min-w-0 flex-1 truncate text-dim">{entry.note ? dayWords(entry.note) : ""}</span>
                 <button type="button" onClick={() => setFacts(true)} className={cn("shrink-0 text-xs tabular-nums", entry.usedBy.length ? "text-brass-hi hover:underline" : "text-faint")}>
                   {usedWords(entry.usedBy.length)}
                 </button>

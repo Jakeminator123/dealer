@@ -1218,12 +1218,12 @@
       "name": "Paow",
       "missing": {
         "ankare-2.2": "A2.2 görs om på Jakobs ord (blicken mot skon, en styvare hand). Tre försök i bildmodellen föll; det tas nu ur en film som dockan styr. Bilden som gäller används tills dess.",
-        "referens": "Inga egna. En giv beställs med dockans film till platsen som referensfilm, annars med en rakt godkänd giv dit (Pamelas)."
+        "referens": "Ingen godkänd egen än. En giv beställs med dockans film till platsen som referensfilm, annars med en rakt godkänd giv dit (Pamelas)."
       },
       "films": {
         "from": "data/clip-jobs.json",
         "prefix": "paow-",
-        "note": "Banken: tagningar förda in ur beställningar; de väntar i inkorgen tills Jakob har dömt. Första tagningen infördes 2026-11-13."
+        "note": "Banken: tagningar förda in ur beställningar; de väntar i inkorgen tills Jakob har dömt. Första tagningen infördes 13 nov."
       },
       "outside": {
         "path": "D:/dealer-scratch/tmp/paow/",
@@ -1686,7 +1686,7 @@
         {
           "id": "paow-film-ny-giv-p4-t2",
           "role": "film",
-          "name": "Giv till plats 4, tagning 2 (Kling 4)",
+          "name": "Giv till P4, tagning 2",
           "path": "assets/films/paow/ny-giv-p4-t2/source.mp4",
           "still": 84,
           "fps": 24,
@@ -2861,7 +2861,7 @@
         {
           "id": "paow-film-intro-noir-3",
           "role": "film",
-          "name": "Filmen före spelet (noir-trailer 3, 47 s)",
+          "name": "Filmen före spelet (47 s)",
           "path": "assets/films/intro/noir-3/film-2.mp4",
           "still": 12,
           "fps": 24,
@@ -2907,9 +2907,9 @@
           "still": 24,
           "fps": 24,
           "state": "kandidat",
-          "note": "Den neutrala munnen: vilan paow-vila-01-01 med rendererns mun inlagd som den är (utan läppreceptet), bara kring det som hörs, samma ljud som paow-tal-chat1-sv-09, 48 rutor i 24 per sekund. Jakob 2026-11-21 i Prov (anteckning 43 på paow-munbyte-neutral-20261121): den neutrala munnen för alla hennes repliker.",
+          "note": "Den neutrala munnen: vilan i A1 med rendererns mun inlagd som den är (utan läppreceptet), bara kring det som hörs, samma ljud som talfilmen \"Tack! Lycka till.\", 48 rutor i 24 per sekund. Jakob 21 nov i Prov: den neutrala munnen för alla hennes repliker.",
           "source": {
-            "from": "tools/speech.ts say --from paow-tal-chat1-sv-09 (Paows mun, lips null)",
+            "from": "repliken lagd på vilan med Paows mun",
             "when": "2026-11-21"
           }
         },
@@ -4036,7 +4036,7 @@
         {
           "id": "paow-film-giv-2-3-p5-01-t1",
           "role": "film",
-          "name": "Två händer, ett kort till platsen · plats 5 · beställd utanför Beställ (giv-p5-t",
+          "name": "A2.3 → A3P5C1, tagning 1 (beställd utanför Kortplan)",
           "path": "assets/films/paow/giv-2-3-p5-01-t1/source.mp4",
           "still": 40,
           "fps": 24,
@@ -4092,7 +4092,7 @@
         {
           "id": "paow-film-giv-2-3-p4-h24-03-t1",
           "role": "film",
-          "name": "H24 P4 · grepp och 24 fps",
+          "name": "Med dockan H24 · P4 · grepp och 24 fps",
           "path": "assets/films/paow/giv-2-3-p4-h24-03-t1/source.mp4",
           "still": 40,
           "fps": 24,
@@ -4106,7 +4106,7 @@
         {
           "id": "paow-film-giv-2-3-p4-h24-cykel-01-t1",
           "role": "film",
-          "name": "H24 cykel 01 – underkänd giv, separat returvariant",
+          "name": "Med dockan H24 · cykel 1 – underkänd giv, separat returvariant",
           "path": "assets/films/paow/giv-2-3-p4-h24-cykel-01-t1/source.mp4",
           "still": 53,
           "fps": 24,
@@ -4120,7 +4120,7 @@
         {
           "id": "paow-film-giv-2-3-p4-h24-cykel-02-t1",
           "role": "film",
-          "name": "H24 cykel02 – gult skokort, blåton under prov",
+          "name": "Med dockan H24 · cykel 2 – gult skokort, blåton under prov",
           "path": "assets/films/paow/giv-2-3-p4-h24-cykel-02-t1/source.mp4",
           "still": 53,
           "fps": 24,
@@ -4169,7 +4169,7 @@
           "state": "kandidat",
           "note": "OBEROENDE GRANSKARE (inte Jakobs dom): pilot, given 4/5, användbar med anmärkningar. Vänster underarm syns i varje ruta 26-46. Vänster hand väntar i luften vid skon ruta 30-41 (0,5 s) innan den går hem; kortet blir ett streck under högerhandens fingrar 38-40 och kommer upp blått; kortet 2,1 px från planen, stilla från ruta 56. Hela noten i kvittot.",
           "source": {
-            "from": "beställningen paow-giv-2-3c-p4-pilot-02, tagning 1 (studions vy Beställ)",
+            "from": "beställd i Kortplan, tagning 1",
             "when": "2026-11-21"
           }
         },
@@ -4184,6 +4184,20 @@
           "note": "OBEROENDE GRANSKARE (inte Jakobs dom): skeptiker, given 3/5, Godkänn med anmärkningar; rutorna 70-72 (klipp till närbild) kapade. Gult till blått, kantruta 38; kortet stilla 54-69, 13 px från P4C2. Fönstret svart från ruta 6; vändningen delvis i fingrarna; kortet genomskinligt 37-40. \"Kortet krymper 14-18\" vederlagt: det vrids på filten.",
           "source": {
             "from": "beställningen paow-giv-2-3-p4-c2-01, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-21"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-3-p1-02-t1",
+          "role": "film",
+          "name": "Paow · A2.3 → A3P1C1, tagning 1",
+          "path": "assets/films/paow/giv-2-3-p1-02-t1/source.mp4",
+          "still": 40,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "OBEROENDE GRANSKARE (inte Jakobs dom): given 4/5, ACCEPTED. Ingen kortning, A3P1C1 = ruta 72. Kortet 3,8 px från P1C1 och stilla från 58 [M]. Fönstret gult hela filmen, inget slutklipp. Fel: vändningen mitt i flykten (480 px från platsen, 35-40 px per ruta) och kortet genomskinligt i 37-42. Handbytet utan gemensam resning. Fingrarnas del i vändningen är osäker.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
             "when": "2026-11-21"
           }
         },
@@ -4215,7 +4229,7 @@
         {
           "id": "paow-ankare-2-2-blick-a",
           "role": "ankare-2.2",
-          "name": "A2.2, blicken mot kortet, tatuerad hand",
+          "name": "Blicken mot kortet, tatuerad hand",
           "path": "assets/anchors/paow-ankare-2-2-blick-a/anchor.png",
           "node": "READY-B",
           "state": "gäller",
@@ -4382,7 +4396,7 @@
         {
           "id": "paow-c1-c2-scene-20261118",
           "role": "arbetsmaterial",
-          "name": "P4 · C1 och C2 · scenprov",
+          "name": "P4C1 och P4C2 · scenprov",
           "path": "assets/proofs/paow-c1-c2-scene-20261118/kort-och-skarvar.png",
           "pattern": "assets/proofs/paow-c1-c2-scene-20261118/*.png",
           "state": "kandidat",
@@ -4512,7 +4526,7 @@
         {
           "id": "paow-ready-c-chain-20261118",
           "role": "arbetsmaterial",
-          "name": "READY-C · lokalt tvåkortsprov",
+          "name": "A2.3 · lokalt tvåkortsprov",
           "path": "assets/proofs/paow-ready-c-chain-20261118/fixed-exit-end.png",
           "pattern": "assets/proofs/paow-ready-c-chain-20261118/*",
           "state": "kandidat",
@@ -4525,7 +4539,7 @@
         {
           "id": "paow-carry-jitter-20261118",
           "role": "arbetsmaterial",
-          "name": "P7 · kortets darr, native A/B",
+          "name": "P7 · kortets darr, två prov",
           "path": "assets/proofs/paow-carry-jitter-20261118/carry-1to1.png",
           "pattern": "assets/proofs/paow-carry-jitter-20261118/*",
           "state": "kandidat",
@@ -4565,7 +4579,7 @@
         {
           "id": "paow-ankare-2-3-c",
           "role": "ankare-2.3",
-          "name": "A2.3: vänster hand uppifrån på kortet, rak bål",
+          "name": "Vänster hand uppifrån på kortet, rak bål",
           "path": "assets/anchors/paow-ankare-2-3-c/anchor.png",
           "node": "READY-C",
           "state": "gäller",
@@ -4597,7 +4611,7 @@
         {
           "id": "paow-a3-p4-23c",
           "role": "landning",
-          "name": "A3P4C1 (ur montaget, äldre försök 2) c",
+          "name": "A3P4C1 (ur montaget, äldre försök 2, andra bilden)",
           "path": "assets/anchors/paow-a3-p4-23c/anchor.png",
           "node": "LAND(P4.C1)",
           "card": "P4.C1",

@@ -243,13 +243,16 @@ const StepBox = memo(function StepBox({
         {active ? <Progress clock={clock} part={part} /> : null}
       </TakeThumb>
       <span className="flex min-w-0 flex-1 flex-col justify-center gap-px pr-1">
+        {/* The step's name has the whole width and the take's name two lines; Obs or Skarv sits by the verdict chip. */}
+        <span className="min-w-0 truncate text-sm font-semibold text-ink">{edge}</span>
+        <span className="line-clamp-2 break-words text-xs text-dim">{takeName(take, siblings)}</span>
         <span className="flex min-w-0 items-center gap-1.5">
-          <span className="min-w-0 truncate text-sm font-semibold text-ink">{edge}</span>
+          <TakeChip take={take} size="sm" />
           {notes.length ? (
             <Tooltip content={<span className="whitespace-pre-line">{notes.join("\n")}</span>} side="top">
               <span
                 className={cn(
-                  "ml-auto shrink-0 rounded-full border px-1.5 text-2xs font-medium leading-4",
+                  "shrink-0 rounded-full border px-1.5 text-2xs font-medium leading-4",
                   seam ? "border-anmarkning/45 bg-anmarkning/15 text-[#f0b07a]" : "border-line-strong bg-overlay text-dim",
                 )}
               >
@@ -257,10 +260,6 @@ const StepBox = memo(function StepBox({
               </span>
             </Tooltip>
           ) : null}
-        </span>
-        <span className="truncate text-xs text-dim">{takeName(take, siblings)}</span>
-        <span className="flex min-w-0 items-center gap-1.5">
-          <TakeChip take={take} size="sm" />
         </span>
         {/* why this take plays, only when the reason is out of the ordinary: "primär" is said by the verdict chip above, and
             "huvudtagning" (the step's usual pick) under a Variant chip read as a contradiction */}

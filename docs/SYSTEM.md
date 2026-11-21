@@ -743,7 +743,7 @@ IDLE>READY | READY>P1.C1 | P1.C1>READY | READY>D.C1 | D.C1>READY | READY>P1.C2 |
   efter en Primär, den som skarvar mot givens huvudtagning, också när en rakt godkänd retur finns som inte gör det.
   `resolveRound` räknar ut intervallen; rundan spelar kedjan, stegar ruta för ruta över klippen och visar saknade
   kanter som luckor. Scout äger fortsatt ordning, regler och kortvärden.
-- **Bygg en runda** (Scen, fliken Runda, `studio/components/round/RoundPicker.tsx`; Jakob 2026-11-17: "varför
+- **Bygg en runda** (rutan i Scen, Råfilm och Efterarbete, `studio/components/round/RoundPicker.tsx`; Jakob 2026-11-17: "varför
   ska man inte få lägga in egna vägar utifrån vilka noder som finns"): vägen som brickor i hans notation och samma väg i
   ett textfält, i takt åt båda hållen, och under "Nästa steg" en knapp per nod som kan följa den sista, med Ångra, Rensa
   och Spela. Vilka noder som kan följa ger modellen (`parseEdge`); om steget spelas avgör `resolveRound` för steget

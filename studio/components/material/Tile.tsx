@@ -128,7 +128,7 @@ export function Tile({ entry, onOpen, selected = false, line, marks = [], quiet,
         ) : null}
       </button>
       <div className="flex min-w-0 flex-col gap-0.5 px-0.5">
-        <span className="truncate text-sm font-medium leading-5 text-ink" title={entry.name}>
+        <span className="line-clamp-2 break-words text-sm font-medium leading-5 text-ink" title={entry.name}>
           {entry.name}
         </span>
         <span className="flex min-w-0 items-center gap-2 text-xs">

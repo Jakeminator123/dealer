@@ -162,10 +162,11 @@ export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: Scene
       <div className="flex min-w-0 flex-col lg:min-h-0">
         <div className="flex min-h-11 shrink-0 flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-line px-3 py-2">
           {toolbar}
-          <span data-round className="min-w-40 flex-1 basis-auto truncate text-sm text-dim" title={notation}>
-            <span className="font-medium text-ink">{notation || "Ingen runda"}</span>
-            {parts.length ? ` · ${roundFacts(parts)}` : ""}
-            {few ? <span className="text-faint"> · {few}</span> : null}
+          {/* A long round is clipped, never its facts: the whole round stands in the text box in the column. */}
+          <span data-round className="flex min-w-40 flex-1 basis-auto items-baseline gap-1 text-sm text-dim" title={notation}>
+            <span className="min-w-0 truncate font-medium text-ink">{notation || "Ingen runda"}</span>
+            {parts.length ? <span className="shrink-0 whitespace-nowrap">· {roundFacts(parts)}</span> : null}
+            {few ? <span className="shrink-0 whitespace-nowrap text-faint">· {few}</span> : null}
           </span>
           {blocked3d ? (
             <span className="shrink-0 text-xs text-faint" title={blocked3d}>

@@ -17,6 +17,7 @@ import type { BankFacts } from "../../../src/order-model.ts";
 import { seatGroups, takeCount } from "./films.ts";
 import { endWord, seatEnds, seatEndsCount, seatEndsStatus, type SeatEndRow, type SeatEndsState } from "./landings.ts";
 import { StateChip, Tile, coverOfEntry, filmLine, type TileMark } from "./Tile";
+import { dayWords } from "./day-words.ts";
 import { fromOlderChip, olderOf, type Lineage } from "../../lib/lineage.ts";
 
 const rowId = (role: Role) => `roll-${role.replace(".", "-")}`;
@@ -298,7 +299,7 @@ export function FilmsRow({ dealer, graph, step, open, onOpen, lineage = {} }: { 
               ))}
             </ul>
             <div className="flex flex-wrap items-center gap-3 text-xs text-faint">
-              <span>{dealer.films?.note}</span>
+              <span>{dealer.films?.note ? dayWords(dealer.films.note) : null}</span>
               <Link href="/karta/" className={cn(buttonClasses({ variant: "secondary", size: "sm" }), "ml-auto")}>
                 Alla steg på kartan <ArrowRight />
               </Link>
@@ -310,7 +311,7 @@ export function FilmsRow({ dealer, graph, step, open, onOpen, lineage = {} }: { 
               <span className="grid size-10 shrink-0 place-items-center rounded-full border border-underkand/40 text-lg text-[#ef8b8b]">✕</span>
               <div className="flex flex-col gap-1">
                 <span className="text-md font-semibold text-ink">Inga filmer i banken</span>
-                <span className="text-sm leading-5 text-dim">{dealer.films?.note}</span>
+                <span className="text-sm leading-5 text-dim">{dealer.films?.note ? dayWords(dealer.films.note) : null}</span>
               </div>
             </div>
             {outside ? (
@@ -327,7 +328,7 @@ export function FilmsRow({ dealer, graph, step, open, onOpen, lineage = {} }: { 
                 </div>
                 {shown ? (
                   <ul className="mt-1 flex flex-col divide-y divide-line text-sm">
-                    <li className="pb-2 text-xs text-dim">{outside.note}</li>
+                    <li className="pb-2 text-xs text-dim">{outside.note ? dayWords(outside.note) : null}</li>
                     {/* Newest first: the last rounds are the ones that count now. */}
                     {[...outside.ledgers]
                       .reverse()
@@ -409,18 +410,16 @@ export function Measures({ measures }: { measures: readonly Measure[] }) {
       <p className="mt-0.5 text-xs text-dim">En källa för varje sak. Allt annat räknas ur dessa.</p>
       <ul className="mt-3 flex flex-col divide-y divide-line">
         {measures.map((m) => (
-          <li key={m.id} className="grid grid-cols-[180px_minmax(0,1fr)_auto] items-baseline gap-4 py-2.5">
+          // The source file is not his words: it waits under the pointer.
+          <li key={m.id} className="grid grid-cols-[180px_minmax(0,1fr)_auto] items-baseline gap-4 py-2.5" title={m.file}>
             <span className="text-sm font-semibold text-ink">{m.name}</span>
-            <span className="flex flex-col gap-0.5 text-sm leading-5 text-dim">
-              {m.decides}
-              <span className="font-mono text-xs text-faint">{m.file}</span>
-            </span>
+            <span className="text-sm leading-5 text-dim">{dayWords(m.decides)}</span>
             {m.link ? (
               <Link href={m.link} className="inline-flex items-center gap-1 text-xs text-brass-hi hover:underline">
                 Öppna <ArrowRight className="size-3" />
               </Link>
             ) : (
-              <span className="text-xs text-faint">inte i repot</span>
+              <span className="text-xs text-faint">ingen sida</span>
             )}
           </li>
         ))}

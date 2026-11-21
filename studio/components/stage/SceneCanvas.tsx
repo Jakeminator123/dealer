@@ -26,7 +26,7 @@ export type SceneState = SceneView.SceneState;
 
 const URLS = { plate: "assets/scene/room.png", panorama: "assets/scene/panorama-vegas.jpg", la: "assets/scene/panorama-la.jpg", skog: "assets/scene/panorama-skog.jpg" };
 
-type Media = Record<string, { video?: string | null; overrides?: string | null }>;
+type Media = Record<string, { video?: string | null; track?: string | null; overrides?: string | null }>;
 
 export function SceneCanvas({
   initial,
@@ -95,9 +95,13 @@ export function SceneCanvas({
       scene.setTrack(id ? (tracks.get(id) ?? null) : null);
       if (!id || tracks.has(id)) return;
       tracks.set(id, null);
-      const track = (await json(`assets/tracking/${id}/card-track.json`)) as (CardTrack & { cardInFront?: unknown }) | null;
+      // The bank's media answer says whether the clip has a card track (track: its path, or null when there is none):
+      // a clip without one is not asked for, so the console shows no 404. Without the answer the usual place is tried.
+      const media = Object.values(latest.current.media ?? {}).find((m) => m.video && labUrl(m.video) === labUrl(path));
+      if (media?.track === null) return;
+      const track = (await json(media?.track ?? `assets/tracking/${id}/card-track.json`)) as (CardTrack & { cardInFront?: unknown }) | null;
       // the clip bank's frames where the card is drawn in front of the hand (card-overlay.ts reads them off the track)
-      const overrides = Object.values(latest.current.media ?? {}).find((m) => m.video && labUrl(m.video) === labUrl(path) && m.overrides)?.overrides;
+      const overrides = media?.overrides;
       if (track && overrides) track.cardInFront = ((await json(overrides)) as { cardInFront?: unknown } | null)?.cardInFront ?? [];
       if (gone || !scene) return;
       tracks.set(id, track);
