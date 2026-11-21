@@ -8,8 +8,10 @@
 // With the lab server running on 127.0.0.1:4319 it freezes what the studio reads there: the clip bank, the proofs, the
 // placement plan and the scene's presets (every cost and private field taken out, tools/studio-freeze.ts), the 3D scene's
 // and the game's modules exactly as the server serves them, and the files they name. What goes up is decided by
-// data/studio-release.json: the takes of each dealer it carries (Pamela, and Paow while her switch is on), and for a dealer of
-// casino.dealers every take the game can play, her talk films among them. It builds the studio in snapshot mode
+// data/studio-release.json and the game (tools/studio-freeze.ts pickTakes): for each dealer of casino.dealers the films the game
+// plays, her talk films among them, and with variants on also the variants it never chooses itself; the scene's own films
+// (rooms, the film before the game) as its modules name them, and the proofs the register names. Every other take is listed
+// without a film, so that the map, Granska and Material show it as on the lab. It builds the studio in snapshot mode
 // (studio/scripts/build.mjs --snapshot), writes stills as small WebP, and adds the lock: the Routing Middleware of
 // cloud/studio/, with the map from each film's address to its object in Vercel Blob. Films and proof files go to Blob,
 // everything else is a static file of the deployment. With casino.on the game page goes up too, with the engine of game/
@@ -33,11 +35,11 @@ import {existsSync} from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import sharp from 'sharp';
-import {buildGraph, resolveRound, roundSequence, type BankData, type Graph} from '../src/clip-graph.ts';
+import {buildGraph, type BankData, type Graph} from '../src/clip-graph.ts';
 import {judgedBank} from '../src/game-director.ts';
 import {SCRIPTS, VENDOR, SCENE_FILES, PAGES, forBrowser} from './lab-routes.ts';
 import {STUDIO_TYPES} from './studio-files.ts';
-import {readRelease, releaseDealers, gameTakes, pickTakes, freezeBank, pickProofs, pickNotes, graphShape, roundShape, scrub, findLeaks, findTextLeaks, blockedPath, safeRelative, prefetchAlias, objectName, namedAssets, engineSource, forEngine, copyGamePage, ENGINE_ENTRY, MEDIA_TYPES, type Proof, type Left, type Picked} from './studio-freeze.ts';
+import {readRelease, releaseDealers, gameChoices, pickTakes, freezeBank, pickProofs, pickNotes, graphShape, scrub, findLeaks, findTextLeaks, blockedPath, safeRelative, prefetchAlias, objectName, namedAssets, engineSource, forEngine, copyGamePage, ENGINE_ENTRY, MEDIA_TYPES, type Proof, type Left, type Picked} from './studio-freeze.ts';
 import {PRESET_NAME} from '../studio/lib/scene-presets.ts';
 import type {MediaMap} from '../cloud/studio/gate.ts';
 import {buildKnowledge, BOT_FUNCTION_FILES} from './build-knowledge.ts';
@@ -124,7 +126,7 @@ const json = (value: unknown) => JSON.stringify(value);
 
 type BlobFile = {path: string; source: string; sha256: string; bytes: number; type: string; object: string; group: string};
 const blob = new Map<string, BlobFile>();
-const GROUP_RANK = ['runda', 'godkänd', 'variant', 'spel', 'väntar', 'scen', 'prov'];
+const GROUP_RANK = ['spel', 'variant', 'scen', 'prov'];
 async function toBlob(relative: string, group: string) {
   const rule = blockedPath(relative, release);
   if (rule) throw Error(`Spärrad sökväg (${rule}): ${relative}`);
@@ -150,17 +152,14 @@ const canonical = (value: unknown): unknown => Array.isArray(value) ? value.map(
 const bankRead = async () => JSON.stringify(canonical(JSON.parse((await lab('/api/clip-bank')).toString('utf8'))));
 const bankText = await bankRead();
 const bank = JSON.parse(bankText) as BankData & Record<string, unknown>;
-const roundSteps = roundSequence({seats: release.round.seats, reveal: release.round.reveal});
 // Each dealer of the copy on her own graph (buildGraph keeps one dealer's takes), as the studio's dealer switch shows her.
 const dealers = releaseDealers(release);
-type DealerPart = {graph: Graph; round: ReturnType<typeof resolveRound>; game: Set<string>; picked: Picked[]; left: Left[]};
+type DealerPart = {graph: Graph; plays: boolean; picked: Picked[]; left: Left[]};
 const parts = new Map<string, DealerPart>();
 for (const dealer of dealers) {
-  const graph = buildGraph(bank, {dealer}), round = resolveRound(graph, roundSteps, {holeCardDown: release.round.holeCardDown});
-  const game = release.casino.on && release.casino.dealers.includes(dealer) ? gameTakes(bank, dealer) : new Set<string>();
-  const out = pickTakes(graph, round, release, game);
-  if (out.refused.length) throw Error(`Registret väljer spärrade tagningar: ${out.refused.map(r => `${r.id} (${r.why})`).join(', ')}`);
-  parts.set(dealer, {graph, round, game, picked: out.picked, left: out.left});
+  const out = pickTakes(bank, dealer, release);
+  if (out.refused.length) throw Error(`Spelet väljer spärrade tagningar: ${out.refused.map(r => `${r.id} (${r.why})`).join(', ')}`);
+  parts.set(dealer, {graph: buildGraph(bank, {dealer}), plays: release.casino.on && release.casino.dealers.includes(dealer), picked: out.picked, left: out.left});
 }
 // The takes of every dealer the copy carries; a take of a dealer it does not carry is named, with the reason.
 const takes = {picked: [...parts.values()].flatMap(p => p.picked), left: [...parts.values()].flatMap(p => p.left)};
@@ -202,19 +201,19 @@ for (const [from, to] of shown) if (/\.json$/.test(to) && from === to) {
 
 const pickedIds = new Set(takes.picked.map(p => p.id));
 const frozenBank = freezeBank(bank, shown, pickedIds, release, digest);
-// The copy must decide as the lab does, for each dealer: every edge's main take, variants and status, the round frame by
-// frame, and the same for the game's own bank (only takes with a verdict). Every film of the round and every take the game
-// can play goes up.
+// The copy must decide as the lab does, for each dealer: every edge's main take, variants and status, and the same for the
+// game's own bank (only takes with a verdict), where the game must also choose the same take at every step and rest as on the
+// lab (gameChoices). Every film the game plays goes up. The map's round is no longer held to the lab's: a step whose film
+// does not go up shows no film there.
 const judgedLive = judgedBank(bank), judgedFrozen = judgedBank(frozenBank);
 for (const [dealer, part] of parts) {
   const frozenGraph = buildGraph(frozenBank, {dealer});
-  const frozenRound = resolveRound(frozenGraph, roundSteps, {holeCardDown: release.round.holeCardDown});
   if (json(graphShape(frozenGraph)) !== json(graphShape(part.graph))) throw Error(`Den frysta klippbanken ger en annan graf än labbet (${dealer}).`);
-  if (json(roundShape(frozenRound)) !== json(roundShape(part.round))) throw Error(`Den frysta klippbanken spelar rundan annorlunda än labbet (${dealer}).`);
-  for (const s of frozenRound) if (s.video && !blob.has(s.video)) throw Error(`Rundans film går inte upp (${dealer}): ${s.video}`);
-  if (!part.game.size) continue;
-  if (json(graphShape(buildGraph(judgedFrozen, {dealer}))) !== json(graphShape(buildGraph(judgedLive, {dealer})))) throw Error(`Spelets klippbank ger en annan graf i kopian än i labbet (${dealer}).`);
-  for (const id of part.game) { const video = frozenGraph.takes[id]?.media.video; if (!video || !blob.has(video)) throw Error(`En film spelet kan spela går inte upp (${dealer}): ${id}`); }
+  if (!part.plays) continue;
+  const gameLive = buildGraph(judgedLive, {dealer}), gameFrozen = buildGraph(judgedFrozen, {dealer});
+  if (json(graphShape(gameFrozen)) !== json(graphShape(gameLive))) throw Error(`Spelets klippbank ger en annan graf i kopian än i labbet (${dealer}).`);
+  if (json([...gameChoices(gameFrozen)].sort()) !== json([...gameChoices(gameLive)].sort())) throw Error(`Spelet väljer andra tagningar i kopian än i labbet (${dealer}).`);
+  for (const {id} of part.picked) { const video = frozenGraph.takes[id]?.media.video; if (!video || !blob.has(video)) throw Error(`En film spelet spelar går inte upp (${dealer}): ${id}`); }
 }
 const frozenGraph = buildGraph(frozenBank);
 
@@ -525,8 +524,7 @@ const missing = Object.values(media).filter(m => !m.url).length;
 const plan = [...blob.values()].map(({path: p, sha256, bytes, type, object, group}) => ({path: p, sha256, bytes, type, object, group}));
 // A trial's plan says so: tools/sync-studio-media.ts uploads nothing from it.
 await writeFile(path.join(deploy, 'media-plan.json'), JSON.stringify({schemaVersion: 1, builtAt: meta.builtAt, sourceCommit, ...(trial ? {trial: true} : {}), files: plan}, null, 2));
-const perDealer = Object.fromEntries([...parts].map(([dealer, p]) => [dealer, {takes: p.picked.length, groups: p.picked.reduce((m: Record<string, number>, t) => (m[t.group] = (m[t.group] ?? 0) + 1, m), {}), game: p.game.size,
-  roundGaps: p.round.filter(s => !s.video).map(s => s.id)}]));
+const perDealer = Object.fromEntries([...parts].map(([dealer, p]) => [dealer, {takes: p.picked.length, groups: p.picked.reduce((m: Record<string, number>, t) => (m[t.group] = (m[t.group] ?? 0) + 1, m), {}), casino: p.plays}]));
 await writeFile(path.join(deploy, 'build.json'), JSON.stringify({builtAt: meta.builtAt, sourceCommit, sourceDirty, from: {checkout: root, home, lab: LAB}, trial, codeLeaks, bankSha256: digest(bankText), proofsSha256: digest(proofsText), release: digest(await readFile(path.join(root, 'data/studio-release.json'))),
   deployable: !trial && missing === 0, filmsWithoutUpload: missing, staticBytes, blobBytes, dealers: perDealer, casino: release.casino, presets: Object.keys(presetAnswers).length - (release.presets ? 1 : 0), static: written, blob: plan,
   bot: {knowledgeBytes: knowledgeReport.bytes, core: knowledgeReport.karna, searched: knowledgeReport.rest, views: knowledgeReport.vyer, missingSources: knowledgeReport.saknas, removed: knowledgeReport.borttaget,
@@ -544,7 +542,8 @@ console.log(`  ${'summa'.padEnd(20)} ${'statisk'.padEnd(9)} ${String(written.len
 console.log(`  ${'summa'.padEnd(20)} ${'Blob'.padEnd(9)} ${String(blob.size).padStart(6)} ${MB(blobBytes).padStart(9)}`);
 const tally = (list: Left[]) => [...list.reduce((m, l) => m.set(l.why, (m.get(l.why) ?? 0) + 1), new Map<string, number>())].map(([why, n]) => `${n} ${why}`).join(', ');
 console.log('\nPer dealer');
-for (const [dealer, d] of Object.entries(perDealer)) console.log(`  ${dealer.padEnd(8)} ${String(d.takes).padStart(4)} tagningar (${Object.entries(d.groups).map(([g, n]) => `${n} ${g}`).join(', ')})${d.game ? `; spelet kan spela ${d.game}` : ''}; rundans luckor: ${d.roundGaps.join(', ') || 'inga'}`);
+for (const [dealer, d] of Object.entries(perDealer)) console.log(`  ${dealer.padEnd(8)} ${String(d.takes).padStart(4)} tagningar (${Object.entries(d.groups).map(([g, n]) => `${n} ${g}`).join(', ') || 'inga'})${d.casino ? '' : '; spelas inte i Casino'}`);
+console.log(`  varianter som spelet inte väljer själv: ${release.variants ? 'följer med' : 'stannar på datorn'}`);
 console.log(`  förval: ${release.presets ? Object.keys(presetAnswers).filter(k => k !== 'api/scene-presets.json').map(k => k.replace(/^api\/scene-presets\/|\.json$/g, '')).join(', ') : 'av (studions tre inbyggda)'}; Casino: ${release.casino.on ? `på, ${release.casino.dealers.join(' och ')}` : 'av'}`);
 console.log('\nLämnas utanför');
 console.log(`  tagningar: ${tally(takes.left) || 'inga'}`);

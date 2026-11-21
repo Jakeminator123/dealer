@@ -1,44 +1,8 @@
 {
   "schemaVersion": 1,
-  "about": "What the studio's locked, read-only online copy carries (tools/build-studio-snapshot.ts reads this; tools/studio-freeze.ts checks it). Decided by Jakob 2026-11-12: Pamela's material (the round, the map, primaries, proofs); Paow allowed as a switch that is on; the trailers and anything with Göran, Astrid or Kevin kept out until he says otherwise (said otherwise for one film on 2026-11-13 at 21.23, to the trailer session: the short noir trailer plays before the game on the copy and goes over into the game, 'så att man övergår till henne i URL:en på vercel. kanske genom en ny knapp'; it goes up as the game's own film in assets/films/intro/noir-3, reached by the door /trailer, while the trailer proofs stay blocked); costs and credits never shown; nothing on the site can change his decisions. takes: whose films go up (the round's takes, takes he accepted outright, variants; waiting takes off). Every take stays listed in the frozen clip bank with its verdict; a take whose film does not go up shows no film. proofs: the proof folders that go up, in this order, each with why; files narrows a proof to the files named. blocked: folder patterns and names the build refuses to cross: a selected take or proof that matches stops the build, and every written answer, page and module is scanned for the names. Sentences that name a cost or a blocked name are left out of every text. presets: the scene's presets go up read-only (Jakob's numbered places, Profilval 1-10, among them). casino: the game page goes up with the engine of game/ running in the page (the copy has no server to hold a game), and for each dealer named every take the game can play, her talk films among them. Jakob 2026-11-13: \"En annan underagent ska få ut allt av scenytan till vercel, men det är inlogget '[ordet]' om det finns kvar, annars strunta i det. Men också att 'Spela i Casino' ska man också kunna göra\". limits: bytes for Blob (films and proof files) and for the static files of the deployment.",
-  "takes": {
-    "round": true,
-    "accepted": true,
-    "variants": true,
-    "waiting": false
-  },
-  "round": {
-    "seats": ["P1", "P2", "P3", "P4", "P5", "P6", "P7"],
-    "reveal": true,
-    "holeCardDown": true
-  },
-  "proofs": [
-    {
-      "id": "pamela-film",
-      "why": "Pamela-film 2: the 90-second directed film with sound, made only from takes Jakob accepted outright, after his own notes on version 1. The clearest single view of where the work stands."
-    },
-    {
-      "id": "spel-overlay",
-      "why": "Blackjack played in the 3D scene: stills from real rounds (bets, the deal, your turn, outcome, a split) with the chips and Jakob's tray. Shows what the material is for."
-    },
-    {
-      "id": "fler-rum",
-      "why": "The six photographed 360-degree rooms behind the dealer, as they are in the room register today."
-    },
-    {
-      "id": "bakgrund-3d-kort-2",
-      "why": "The card as a real object in the 3D scene against the old drawn-in card: the method the scene uses now, with its known faults named in the proof."
-    },
-    {
-      "id": "solfjader",
-      "why": "Cards 3, 4 and 5 fanned out in the game, on every seat and for the dealer: the round beyond two cards."
-    },
-    {
-      "id": "paow-kavaj",
-      "why": "Paow, the second dealer, in the black jacket: her three anchors reviewed usable and the one with remarks. The 4K entry and profile pictures are left out: four are not reviewed, and each weighs 16-21 MB.",
-      "files": ["3-keystone-vila.png", "4-keystone-lage-2-1-nyp.png", "5-keystone-lage-2-2-slap.png", "6-vila-med-lage-2-skon.png"]
-    }
-  ],
+  "about": "What the studio's locked, read-only online copy carries (tools/build-studio-snapshot.ts reads this; tools/studio-freeze.ts checks it and chooses the films, pickTakes). Jakob 2026-11-21: on the net \"ska endast filer som används i casinot finnas + filer som kan behövas och testas med typ i och under fliken 'Scen & Bord'. Allt detta material ska finnas i en blob på Vercel\", and \"kan vi inte skapa en ny blob helt och hållet. Sedan kopplar vi bara på filmer till denna blob som är godkända som primära\"; of the variants he is \"rädd för att förlora\" them, so nothing is deleted on the computer and he chooses at a publication whether they go up. The films that go up are therefore, for each dealer of casino.dealers, those the game plays (every step's take, her rests and gestures, her talk films), and the scene's own as its modules name them (the rooms' life, and the film before the game at the door /trailer, assets/films/intro/noir-3, which plays before the game and goes over into it, as Jakob wanted 2026-11-13 at 21.23: 'så att man övergår till henne i URL:en på vercel. kanske genom en ny knapp'). The map's round, takes he accepted that the game does not play, takes that wait for him and the proof folders stay on the computer; the copy lists every take with its verdict, without a film when its film does not go up. variants: the variants of the steps the game plays that it never chooses itself go up too; off by default. proofs: the proof folders that go up, in this order, each with why; files narrows a proof to the files named (none since 2026-11-21). Decided by Jakob 2026-11-12: Paow allowed as a switch that is on; the trailers and anything with Göran, Astrid or Kevin kept out until he says otherwise (the trailer proofs stay blocked); costs and credits never shown; nothing on the site can change his decisions. blocked: folder patterns and names the build refuses to cross: a selected take or proof that matches stops the build, and every written answer, page and module is scanned for the names. Sentences that name a cost or a blocked name are left out of every text. presets: the scene's presets go up read-only (Jakob's numbered places, Profilval 1-10, among them). casino: the game page goes up with the engine of game/ running in the page (the copy has no server to hold a game), and for each dealer named the films the game plays. Jakob 2026-11-13: \"En annan underagent ska få ut allt av scenytan till vercel, men det är inlogget '[ordet]' om det finns kvar, annars strunta i det. Men också att 'Spela i Casino' ska man också kunna göra\". limits: bytes for Blob (films and proof files) and for the static files of the deployment.",
+  "variants": false,
+  "proofs": [],
   "paow": true,
   "library": false,
   "presets": true,

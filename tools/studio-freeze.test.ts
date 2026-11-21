@@ -2,13 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync, readdirSync} from 'node:fs';
 import {createHash} from 'node:crypto';
-import {buildGraph, resolveRound, type BankData} from '../src/clip-graph.ts';
+import {buildGraph, resolveRound, type BankData, type Segment} from '../src/clip-graph.ts';
 import {GAME_VOICE} from '../src/speech-lines.ts';
-import {readRelease, releaseDealers, gameTakes, namedAssets, engineSource, forEngine, copyGamePage, ENGINE_ENTRY, ENGINE_CRYPTO, blockedName, blockedPath, redactText, scrub, findLeaks, findTextLeaks, pickTakes, pickProofs, freezeBank, graphShape, roundShape, safeRelative, prefetchAlias, objectName, type Proof, type Release} from './studio-freeze.ts';
+import {readRelease, releaseDealers, gameTakes, namedAssets, engineSource, forEngine, copyGamePage, ENGINE_ENTRY, ENGINE_CRYPTO, blockedName, blockedPath, redactText, scrub, findLeaks, findTextLeaks, pickTakes, pickProofs, freezeBank, graphShape, safeRelative, prefetchAlias, objectName, type Proof, type Release} from './studio-freeze.ts';
 import {snapshotMaterial} from './studio-material.ts';
 
 const release: Release = readRelease(JSON.parse(readFileSync(new URL('../data/studio-release.json', import.meta.url), 'utf8')));
 const digest = (text: string) => createHash('sha256').update(text).digest('hex');
+/** Steps as played: per step the take, the frames and the film. */
+const played = (round: Segment[]) => round.map(s => ({id: s.id, take: s.take?.id ?? null, start: s.start, end: s.end, video: s.video, gap: s.gap}));
 
 test('the frozen Material view only names published stills and explicitly selected proof files', () => {
   const first = 'assets/motions/paow-a/first.webp', last = 'assets/motions/paow-a/last.webp';
@@ -44,11 +46,15 @@ test('the frozen Material view only names published stills and explicitly select
 
 test('the register is read strictly', () => {
   assert.equal(release.paow, true);
-  assert.equal(release.takes.waiting, false);
+  assert.equal(release.variants, false, 'the variants the game never chooses stay on the computer until he says otherwise (Jakob 2026-11-21)');
+  assert.deepEqual(release.proofs, [], 'no proof folder goes up (Jakob 2026-11-21)');
   assert.ok(release.blocked.folders.length && release.blocked.names.length);
   assert.throws(() => readRelease({...release, schemaVersion: 2}));
   assert.throws(() => readRelease({...release, paow: 'ja'}));
-  assert.throws(() => readRelease({...release, round: {...release.round, seats: ['P8']}}));
+  assert.throws(() => readRelease({...release, variants: undefined}));
+  // the register's old choice of takes is refused, not quietly read with another meaning
+  assert.throws(() => readRelease({...release, takes: {round: true, accepted: true, variants: true, waiting: false}}), /finns inte längre/);
+  assert.throws(() => readRelease({...release, round: {seats: ['P4'], reveal: true, holeCardDown: true}}), /finns inte längre/);
   assert.throws(() => readRelease({...release, proofs: [{id: 'Ett prov', why: 'x'}]}));
   assert.throws(() => readRelease({...release, proofs: [{id: 'a', why: ''}]}));
   assert.throws(() => readRelease({...release, proofs: [{id: 'a', why: 'x'}, {id: 'a', why: 'y'}]}));
@@ -71,8 +77,8 @@ test('a take or proof the rule picks but the block list stops is refused, not qu
   const bank = fixture();
   bank.jobs!.push({...bank.jobs![0], id: 'kevin-p4-c1-deal-01'});
   bank.motions!['kevin-p4-c1-deal-01'] = bank.motions!['pamela-p4-c1-deal-01'];
-  const graph = buildGraph(bank);
-  const picked = pickTakes(graph, [], {...release, ...rules});
+  bank.media!['kevin-p4-c1-deal-01'] = {video: 'assets/motions/kevin-p4-c1-deal-01/source.mp4'};
+  const picked = pickTakes(bank, 'pamela', {...release, ...rules});
   assert.deepEqual(picked.refused.map(r => r.id), ['kevin-p4-c1-deal-01']);
   assert.ok(!picked.picked.some(p => p.id.startsWith('kevin')));
   const proof = (id: string, description = ''): Proof => ({id, title: id, description, labels: null, verdicts: null, updatedAt: null, chapters: null, fps: 30, files: [{name: 'a.mp4', path: `assets/proofs/${id}/a.mp4`, kind: 'video', bytes: 1}]});
@@ -170,7 +176,7 @@ test('the frozen bank has no cost or private field and decides exactly as the la
   const live = buildGraph(bank), copy = buildGraph(frozen);
   assert.deepEqual(graphShape(copy), graphShape(live));
   const steps = [{from: 'READY', to: 'P4.C1'}, {from: 'P4.C1', to: 'READY'}];
-  assert.deepEqual(roundShape(resolveRound(copy, steps)), roundShape(resolveRound(live, steps)));
+  assert.deepEqual(played(resolveRound(copy, steps)), played(resolveRound(live, steps)));
   assert.equal(resolveRound(copy, steps)[1].take?.id, 'pamela-p4-c1-return-ready-01');
 });
 
@@ -182,25 +188,53 @@ test('a take that is not picked keeps its verdict but shows no film', () => {
   assert.equal(frozen.motions!['pamela-p4-c1-return-ready-01'].review!.decision, 'PENDING');
 });
 
-test('the rule picks the round, the accepted takes and the variants, and names why the rest stay', () => {
+test('the game decides what goes up: what it plays goes up, a take that waits for Jakob stays with the reason, and a dealer outside the Casino has none', () => {
   const bank = fixture();
-  const graph = buildGraph(bank);
-  const round = resolveRound(graph, [{from: 'READY', to: 'P4.C1'}]);
-  const out = pickTakes(graph, round, {...release, ...rules});
-  assert.deepEqual(out.picked, [{id: 'pamela-p4-c1-deal-01', group: 'runda'}]);
-  assert.deepEqual(out.left, [{id: 'pamela-p4-c1-return-ready-01', why: 'väntar på Jakob'}]);
-  assert.deepEqual(pickTakes(graph, round, {...release, ...rules, takes: {...release.takes, waiting: true}}).picked.map(p => p.group), ['runda', 'väntar']);
+  const out = pickTakes(bank, 'pamela', {...release, ...rules});
+  assert.deepEqual(out.picked, [{id: 'pamela-p4-c1-deal-01', group: 'spel'}]);
+  assert.deepEqual(out.left, [{id: 'pamela-p4-c1-return-ready-01', why: 'spelet spelar den inte'}]);
+  const off = pickTakes(bank, 'pamela', {...release, ...rules, casino: {on: false, dealers: []}});
+  assert.deepEqual([off.picked, off.left.map(l => l.why)], [[], ['dealern spelas inte i Casino', 'dealern spelas inte i Casino']]);
+});
+
+test('a variant the game never chooses itself goes up only with variants on; one it plays (the only film of a step, a rest) always goes up', () => {
+  const bank = fixture(), variant = {decision: 'ACCEPTED', acceptedAs: 'VARIANT', userAccepted: true};
+  bank.motions!['pamela-p4-c1-return-ready-01'].review = {decision: 'ACCEPTED', by: 'huvudagent'} as never;
+  const add = (id: string, job: object, motion: object) => { bank.jobs!.push({...bank.jobs![0], id, ...job} as never); bank.motions![id] = {source: {fps: 30, frames: 90}, ...motion, review: variant} as never; bank.media![id] = {video: `assets/motions/${id}/source.mp4`}; };
+  add('pamela-p4-c1-deal-02', {}, {}); // beside the accepted deal: the game never plays it
+  add('pamela-p5-c1-deal-01', {target: 'P5.C1', to: 'P5.C1'}, {}); // the only film of its step: the game plays it
+  add('pamela-idle-smile-01', {kind: 'IDLE', target: undefined, from: 'IDLE', to: 'IDLE'}, {motion: {idle: {onRequest: false, calm: false, weight: 2}}}); // a gesture of her rest
+  const off = pickTakes(bank, 'pamela', {...release, ...rules});
+  assert.deepEqual(Object.fromEntries(off.picked.map(p => [p.id, p.group])), {'pamela-p4-c1-deal-01': 'spel', 'pamela-p4-c1-return-ready-01': 'spel', 'pamela-p5-c1-deal-01': 'spel', 'pamela-idle-smile-01': 'spel'});
+  assert.deepEqual(off.left, [{id: 'pamela-p4-c1-deal-02', why: 'variant som spelet inte väljer själv (variants är av)'}]);
+  const on = pickTakes(bank, 'pamela', {...release, ...rules, variants: true});
+  assert.deepEqual(on.picked.find(p => p.id === 'pamela-p4-c1-deal-02'), {id: 'pamela-p4-c1-deal-02', group: 'variant'});
+  assert.deepEqual(on.left, []);
+});
+
+test('a deal from another pose at the shoe goes up when the game can deal from there, also when its films are variants', () => {
+  const bank = fixture(), variant = {decision: 'ACCEPTED', acceptedAs: 'VARIANT', userAccepted: true};
+  bank.motions!['pamela-p4-c1-return-ready-01'].review = {decision: 'ACCEPTED', by: 'huvudagent'} as never;
+  const add = (id: string, kind: string, from: string, to: string, target: string | undefined) => { bank.jobs!.push({...bank.jobs![0], id, kind, from, to, target} as never); bank.motions![id] = {source: {fps: 30, frames: 90}, review: variant} as never; bank.media![id] = {video: `assets/motions/${id}/source.mp4`}; };
+  // The four films of READY-B (src/game-director.ts hubSteps), all variants beside the plain deal and return.
+  add('pamela-in-b-01', 'ENTRY', 'IDLE', 'READY-B', undefined);
+  add('pamela-p4-c1-b-deal-01', 'DEAL', 'READY-B', 'P4.C1', 'P4.C1');
+  add('pamela-p4-c1-b-return-01', 'RETURN', 'P4.C1', 'READY-B', 'P4.C1');
+  add('pamela-out-b-01', 'RETURN', 'READY-B', 'IDLE', undefined);
+  const off = pickTakes(bank, 'pamela', {...release, ...rules});
+  assert.deepEqual(off.picked.map(p => p.id).filter(id => id.includes('-b-')).sort(), ['pamela-in-b-01', 'pamela-out-b-01', 'pamela-p4-c1-b-deal-01', 'pamela-p4-c1-b-return-01']);
 });
 
 test('a take Jakob has archived is never picked: its film does not go up, whatever its verdict, and the copy still decides as the lab', () => {
-  const bank = fixture(), archived = {by: 'Jakob', at: '2026-11-18T01:00:00.000Z', where: 'Karta'}, rule = {...release, ...rules, takes: {round: true, accepted: true, variants: true, waiting: true}};
-  // A second deal he accepted outright and a variant, both of which the rule would send up, and both archived; the round plays the first deal.
+  const bank = fixture(), archived = {by: 'Jakob', at: '2026-11-18T01:00:00.000Z', where: 'Karta'}, rule = {...release, ...rules, variants: true};
+  bank.motions!['pamela-p4-c1-return-ready-01'].review = {decision: 'ACCEPTED', by: 'huvudagent'} as never;
+  // A second deal he accepted outright and a variant, both of which the game could play, and both archived; the step plays the first deal.
   for (const [id, review] of [['pamela-p4-c1-deal-02', {decision: 'ACCEPTED', userAccepted: true, archived}], ['pamela-p4-c1-deal-03', {decision: 'ACCEPTED', acceptedAs: 'VARIANT', userAccepted: true, archived}]] as [string, object][]) {
     bank.jobs!.push({...bank.jobs![0], id}); bank.motions![id] = {source: {fps: 30, frames: 90}, review}; bank.media![id] = {video: `assets/motions/${id}/source.mp4`};
   }
   const graph = buildGraph(bank), steps = [{from: 'READY', to: 'P4.C1'}], round = resolveRound(graph, steps);
   assert.equal(round[0].take?.id, 'pamela-p4-c1-deal-01');
-  const out = pickTakes(graph, round, rule, new Set(['pamela-p4-c1-deal-01']));
+  const out = pickTakes(bank, 'pamela', rule);
   assert.deepEqual(out.picked.map(p => p.id), ['pamela-p4-c1-deal-01', 'pamela-p4-c1-return-ready-01']);
   assert.deepEqual(out.left, [{id: 'pamela-p4-c1-deal-02', why: 'arkiverad'}, {id: 'pamela-p4-c1-deal-03', why: 'arkiverad'}]);
   assert.deepEqual(out.refused, []);
@@ -209,7 +243,7 @@ test('a take Jakob has archived is never picked: its film does not go up, whatev
   const frozen = freezeBank(bank, shown, new Set(out.picked.map(p => p.id)), rule, digest), copy = buildGraph(frozen);
   assert.deepEqual([frozen.media!['pamela-p4-c1-deal-02'].video, frozen.media!['pamela-p4-c1-deal-03'].video, copy.takes['pamela-p4-c1-deal-02'].archived], [null, null, true]);
   assert.deepEqual(graphShape(copy), graphShape(graph));
-  assert.deepEqual(roundShape(resolveRound(copy, steps)), roundShape(round));
+  assert.deepEqual(played(resolveRound(copy, steps)), played(round));
   assert.deepEqual(findLeaks(frozen, rule), [], 'who archived it and when is no cost, path or blocked name');
 });
 
@@ -255,12 +289,9 @@ test("the game's takes are those it can play: a verdict, Jakob's or a provisiona
   const game = gameTakes(bank, 'pamela');
   assert.deepEqual([...game].sort(), ['pamela-p4-c1-deal-01', 'pamela-p4-c1-return-ready-01', 'pamela-tal-hej-01']);
   assert.deepEqual([...gameTakes(bank, 'paow')], [], 'another dealer has none of these');
-  const graph = buildGraph(bank), rule = {...release, ...rules, takes: {...release.takes, round: false}};
-  const groups = Object.fromEntries(pickTakes(graph, [], rule, game).picked.map(p => [p.id, p.group]));
-  assert.deepEqual(groups, {'pamela-p4-c1-deal-01': 'godkänd', 'pamela-p4-c1-return-ready-01': 'spel', 'pamela-tal-hej-01': 'spel'});
-  const without = pickTakes(graph, [], rule);
-  assert.deepEqual(without.picked.map(p => p.id), ['pamela-p4-c1-deal-01']);
-  assert.ok(without.left.some(l => l.id === 'pamela-vila-vantar-01' && l.why === 'väntar på Jakob'));
+  const {picked, left} = pickTakes(bank, 'pamela', {...release, ...rules});
+  assert.deepEqual(Object.fromEntries(picked.map(p => [p.id, p.group])), {'pamela-p4-c1-deal-01': 'spel', 'pamela-p4-c1-return-ready-01': 'spel', 'pamela-tal-hej-01': 'spel'});
+  assert.ok(left.some(l => l.id === 'pamela-vila-vantar-01' && l.why === 'spelet spelar den inte'));
 });
 
 test('of a spoken line the copy carries the film the game says: a newer take replaces an older, his own accepted take goes first', () => {
@@ -276,9 +307,9 @@ test('of a spoken line the copy carries the film the game says: a newer take rep
   says('pamela-tal-lose-sv-02', 'lose', 'Jessica', forHim); // another voice: the game does not say it
   const game = gameTakes(bank, 'pamela');
   assert.deepEqual([...game].filter(id => id.includes('-tal-')).sort(), ['pamela-tal-hej-sv-10', 'pamela-tal-win-sv-04']);
-  const graph = buildGraph(bank), rule = {...release, ...rules, takes: {...release.takes, round: false}}, {picked, left} = pickTakes(graph, [], rule, game);
+  const {picked, left} = pickTakes(bank, 'pamela', {...release, ...rules});
   const groups = Object.fromEntries(picked.map(p => [p.id, p.group]));
-  assert.equal(groups['pamela-tal-hej-sv-10'], 'spel'); assert.equal(groups['pamela-tal-win-sv-04'], 'godkänd', 'a take he accepted himself goes up by that rule');
+  assert.equal(groups['pamela-tal-hej-sv-10'], 'spel'); assert.equal(groups['pamela-tal-win-sv-04'], 'spel', 'his own accepted take goes up because the game says it');
   for (const id of ['pamela-tal-hej-sv-09', 'pamela-tal-win-sv-13', 'pamela-tal-lose-sv-02']) { assert.equal(groups[id], undefined, id); assert.ok(left.some(l => l.id === id), `${id} is named among those left`); }
   // the page asks with the same voice
   assert.match(readFileSync(new URL('../src/game-page.ts', import.meta.url), 'utf8'), new RegExp(`VOICE = \\{voice: '${GAME_VOICE}'\\}`));

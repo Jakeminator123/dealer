@@ -298,7 +298,7 @@ Allt går att läsa och spela, inget går att ändra, och inga kostnader visas.
 - **Adresser:** `https://dealer-lake.vercel.app` (den Jakob känner) och `https://dealer-studio-one.vercel.app` (projektets
   egen), båda produktionsadresser för `dealer-studio`. Lösenordet skrivs inte ut här (nytt sedan 2026-11-18; det gamla
   nekas). Efter lösenordet kommer studion med vänsterspalten: Bordet (Kortplan, Scen, Råfilm och Efterarbete; inget sparas
-  och inget beställs), Karta, Granska (med Prov), Material, Casino och Önskemål. Vilken commit kopian bär säger
+  och inget beställs), Karta, Granska (med Prov, tom i kopian sedan 2026-11-21), Material, Casino och Önskemål. Vilken commit kopian bär säger
   `/meta.json` på kopian, och läget står i [lägesfilen](lage/spelet.md).
 - **Vercel:** team `jakeminator123s-projects` (Pro), projekt `dealer-studio`, utan Git-
   koppling: varje version läggs upp färdigbyggd. Projektets och teamets id står bara i länken
@@ -344,8 +344,18 @@ Allt går att läsa och spela, inget går att ändra, och inga kostnader visas.
   `DEALER_OPPEN_PROV=allt` (eller `spel`) framför kommandot.
 - **Boten** följer med men har ingen `BOT_BLOB_TOKEN`: den svarar att den saknar lagring och anropar ingen modell, så den
   kostar inget. Att slå på den (egen privat store, nyckel, tak) är Jakobs beslut.
-- **Vad som går upp** avgör `data/studio-release.json` (tagningar per dealer, vad spelet kan spela, prov, förval, spärrade
-  namn, gränser); `tools/build-studio-snapshot.ts` bygger kopian och skriver tabellen. I kopian spelar spelmotorn i
+- **Vad som går upp** (Jakob 2026-11-21: på nätet "ska endast filer som används i casinot finnas + filer som kan behövas
+  och testas med typ i och under fliken 'Scen & Bord'") avgör spelet: för varje dealer i `casino.dealers` i
+  `data/studio-release.json` de filmer spelet spelar (varje stegs tagning, vilorna och gesterna, talfilmerna det säger),
+  och därtill scenens egna filmer som dess moduler nämner (rummens liv och filmen före spelet vid `/trailer`). Urvalet görs
+  på ett ställe, `pickTakes` i `tools/studio-freeze.ts`; bygget stannar om spelet i kopian skulle välja en annan tagning
+  än i labbet. `variants` i registret (av som förval) tar också med de varianter av spelets steg som spelet aldrig väljer
+  själv; han väljer det vid en publicering (Jakob 2026-11-21: han är "rädd för att förlora" dem, och ingenting raderas på
+  datorn). Kartans runda, tagningar som spelet inte spelar och provmapparna (`proofs`, tom sedan 2026-11-21) stannar på
+  datorn: kopian listar varje tagning med sin dom, utan film när filmen inte går upp, och ett steg utan film visar ingen
+  film i Karta. Räknat ur filerna 2026-11-21: 156 filer och 1,40 GB utan varianter, 170 filer och 1,52 GB med (före: 223
+  filer, 1,64 GB). Registret håller också förval, spärrade namn och gränser; `tools/build-studio-snapshot.ts` bygger
+  kopian och skriver tabellen. I kopian spelar spelmotorn i
   `game/` i själva spelsidan (`cloud/studio/game-local.ts`), eftersom det inte finns någon server som håller ett spel.
   Munlapparna i `data/speech-patches.json` följer med som statiska filer (post, remsa, ljud), var och en kontrollerad mot
   registrets och postens sha256; en lapp vars film inte går upp eller vars filer inte stämmer lämnas ute, och spelet säger
@@ -374,7 +384,7 @@ låset får adresserna, `vercel deploy --prebuilt --prod` från `.runtime/studio
 varje sida, svar och film ge inloggningssidan; med `DEALER_LOSEN_PROV` loggar den in och prövar första sidan, en film med
 Range och att kopian säger rätt commit. Bygget stannar om arbetskopian inte är ren, om en modul har en maskinsökväg eller
 ett spärrat namn, om klippbanken ändras under bygget eller om Blob-delen går över gränsen i registret. En första
-publicering tar cirka 40 minuter, mest uppladdningen (1,7 GB); en senare med få nya filmer cirka 6, varav 3 för
+publicering tar cirka 40 minuter, mest uppladdningen (1,4 till 1,5 GB); en senare med få nya filmer cirka 6, varav 3 för
 studions npm-paket.
 
 `--worktree <absolut sökväg>` återanvänder ett befintligt rent arbetsträd av Dealer. Huvudträdet och andra repos
@@ -395,7 +405,7 @@ kopia. Därefter prövas sidor och filmsökning som förut; fel version efter ti
   link --yes --project dealer-studio --scope jakeminator123s-projects --cwd .runtime/studio-deploy`). Utan den:
   `VERCEL_ORG_ID` och `VERCEL_PROJECT_ID`. Verktyget frågar Vercel vilket team länken gäller och skickar inget annars.
 - `.runtime/studio-blob/.env.local` med storens nyckel och `.runtime/studio-blob/studio-media.json`, kvittot som säger
-  vilken store (båda finns sedan 2026-11-13).
+  vilken store (båda finns sedan 2026-11-13). Till en ny store, se "En ny store" nedan.
 - Vercel CLI inloggad med ett konto i teamet (`vercel whoami` ger `jakeminator0`), labbservern på 4319 igång (den svarar
   på om en mediefil lämnas ut; utan den lämnas sådana filer, till exempel Paows bild i spelets dealermeny, utanför),
   porten 4341 ledig och Scoutgaming utcheckat bredvid (`C:/Users/jakem/dev/scoutgaming`, botens kunskap; annars
@@ -424,16 +434,31 @@ kopia. Därefter prövas sidor och filmsökning som förut; fel version efter ti
   ut, och kopian på nätet står kvar som den var. Höj taket i registret först när tabellen visar vad som har vuxit.
   2026-11-17 stannade bygget på 2 250 MB: det som hade vuxit var talfilmer som spelet inte längre säger (varje
   omläggning av replikerna lade till lika många filmer som hon har repliker). Taket står kvar; av en repliks filmer går
-  nu bara den upp som spelet säger (`gameTakes` i `tools/studio-freeze.ts`, samma fråga som spelsidan ställer:
-  `spokenFilms` med spelets röst) och de han själv har godkänt. En ersatt tagning står kvar i kopians klippbank utan film.
+  bara den upp som spelet säger (`gameTakes` i `tools/studio-freeze.ts`, samma fråga som spelsidan ställer:
+  `spokenFilms` med spelets röst). En ersatt tagning står kvar i kopians klippbank utan film.
 - **Vad storen rymmer** står i kvittot (`.runtime/studio-blob/studio-media.json`). Objekt som en senare kopia inte
-  längre visar ligger kvar i storen: de skrivs aldrig över och tas inte bort av verktyget.
+  längre visar ligger kvar i storen: de skrivs aldrig över och tas inte bort av verktyget. En store som bara ska bära det
+  som går upp i dag görs därför ny.
+- **En ny store** (Jakob 2026-11-21: "kan vi inte skapa en ny blob helt och hållet"; görs och används bara på hans ord).
+  `tools/publish-studio.ts` tar storen ur `--store store_<id>` och annars ur kvittots `storeId`, och
+  `tools/sync-studio-media.ts` vägrar ett kvitto som gäller en annan store och en nyckel som inte hör till den. Stegen:
+  1. Skapa storen i teamet `jakeminator123s-projects`, public, i `arn1` (Vercels panel, Storage). Den behöver inte
+     kopplas till `dealer-studio`: låset hämtar filmerna med adresserna i sin karta, utan nyckel.
+  2. Flytta `.runtime/studio-blob/studio-media.json`, `progress.json` och `.env.local` till en egen mapp under
+     `.runtime/` och behåll dem: den version som ligger ute pekar på den gamla storen, och `vercel rollback` dit
+     fungerar bara så länge den finns.
+  3. Lägg den nya storens nyckel (`BLOB_READ_WRITE_TOKEN`, ur panelen) ensam i en ny `.runtime/studio-blob/.env.local`.
+  4. Planen och sedan körningen med `--store store_<det nya id:t>` (ett provbygge först med `--kor --bara-bygge`). Allt
+     laddas upp på nytt; kvittot skrivs när allt är verifierat och bär sedan storen, så senare körningar behöver inte
+     `--store`.
+  5. Den gamla storen står orörd tills han säger att den ska bort (kommandot under "Ta bort kopian", med det gamla
+     kvittots id). Den kostar lagring så länge den finns.
 
 - Provbygge utan publicering: `node tools/build-studio-snapshot.ts --prov` och `node tools/serve-studio-snapshot.ts
   --prov` (port 4330, med påhittat lösenord och nyckel), se verktygens huvuden.
 - Ta bort kopian (på Jakobs ord): `vercel project rm dealer-studio` och `vercel blob delete-store <storens id ur kvittot>`, båda
   med `--scope jakeminator123s-projects`.
-- **Kostnad** (Pro, ur teamets månadskredit på 20 USD): lagringen cirka 1,7 GB × 0,023 USD per GB och månad ≈ 0,04 USD;
+- **Kostnad** (Pro, ur teamets månadskredit på 20 USD): lagringen cirka 1,5 GB × 0,023 USD per GB och månad ≈ 0,04 USD;
   trafiken ingår i Pro-planens Flat Rate CDN (1 TB) och kostar annars cirka 0,05 USD per GB; en visning av Casino med en
   runda läser cirka 150 MB film. Uppladdningen är cirka 250 Blob-operationer ≈ 0,001 USD.
 

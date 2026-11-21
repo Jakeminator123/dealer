@@ -2,8 +2,8 @@
 // checked, which takes and proofs go up, the block list that nothing may cross, and the frozen answers of the lab
 // server's read routes with every cost and private field taken out. No network and no files here: tools/build-studio-
 // snapshot.ts reads and writes, these decide. Tested in tools/studio-freeze.test.ts.
-import {buildGraph, type BankData, type Graph, type Segment, type Take} from '../src/clip-graph.ts';
-import {judgedBank} from '../src/game-director.ts';
+import {buildGraph, resolveRound, type BankData, type Graph, type Step} from '../src/clip-graph.ts';
+import {judgedBank, hubChain, SEAT_HUB} from '../src/game-director.ts';
 import {GAME_VOICE, spokenFilms, spokenLine, type SpeechTake} from '../src/speech-lines.ts';
 import {posix} from 'node:path';
 
@@ -11,8 +11,8 @@ import {posix} from 'node:path';
 export type ReleaseProof = {id: string; why: string; files?: string[]};
 export type Release = {
   schemaVersion: 1;
-  takes: {round: boolean; accepted: boolean; variants: boolean; waiting: boolean};
-  round: {seats: string[]; reveal: boolean; holeCardDown: boolean};
+  /** The variants of the steps the game plays that it never chooses itself go up too (pickTakes). Off: they stay on the computer. */
+  variants: boolean;
   proofs: ReleaseProof[];
   paow: boolean;
   library: boolean;
@@ -25,7 +25,7 @@ export type Release = {
   limits: {blobBytes: number; staticBytes: number};
 };
 
-const SEAT = /^P[1-7]$/, ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 /** The dealers the copy carries: Pamela, the bank's first, and Paow while her switch is on. */
 export const releaseDealers = (release: Pick<Release, 'paow'>): string[] => ['pamela', ...(release.paow ? ['paow'] : [])];
 const flag = (v: unknown, what: string) => { if (typeof v !== 'boolean') throw Error(`studio-release: ${what} ska vara true eller false.`); return v; };
@@ -35,8 +35,9 @@ const count = (v: unknown, what: string, lo: number, hi: number) => { if (!Numbe
 export function readRelease(json: unknown): Release {
   const r = json as Record<string, any>;
   if (!r || r.schemaVersion !== 1) throw Error('studio-release: schemaVersion 1 saknas.');
-  const takes = r.takes ?? {}, round = r.round ?? {}, blocked = r.blocked ?? {}, stills = r.stills ?? {}, limits = r.limits ?? {};
-  if (!Array.isArray(round.seats) || !round.seats.length || round.seats.some((s: unknown) => typeof s !== 'string' || !SEAT.test(s))) throw Error('studio-release: round.seats ska vara platser P1–P7.');
+  // Until 2026-11-21 the register chose the round's takes, his accepted ones and every variant (takes, round); now the game decides.
+  if (r.takes !== undefined || r.round !== undefined) throw Error('studio-release: takes och round finns inte längre (2026-11-21); spelet avgör vilka tagningar som går upp, och variants om dess varianter följer med.');
+  const blocked = r.blocked ?? {}, stills = r.stills ?? {}, limits = r.limits ?? {};
   if (!Array.isArray(r.proofs)) throw Error('studio-release: proofs ska vara en lista.');
   const proofs: ReleaseProof[] = r.proofs.map((p: any) => {
     if (typeof p?.id !== 'string' || !ID.test(p.id)) throw Error(`studio-release: ogiltigt prov-id ${JSON.stringify(p?.id)}.`);
@@ -53,8 +54,7 @@ export function readRelease(json: unknown): Release {
   if (on && !casino.dealers.length) throw Error('studio-release: casino.on kräver minst en dealer i casino.dealers.');
   return {
     schemaVersion: 1,
-    takes: {round: flag(takes.round, 'takes.round'), accepted: flag(takes.accepted, 'takes.accepted'), variants: flag(takes.variants, 'takes.variants'), waiting: flag(takes.waiting, 'takes.waiting')},
-    round: {seats: [...round.seats], reveal: flag(round.reveal, 'round.reveal'), holeCardDown: flag(round.holeCardDown, 'round.holeCardDown')},
+    variants: flag(r.variants, 'variants'),
     proofs, paow, library: flag(r.library, 'library'),
     presets: flag(r.presets, 'presets'), casino: {on, dealers: [...casino.dealers]},
     blocked: {folders: list(blocked.folders, 'blocked.folders'), names: list(blocked.names, 'blocked.names')},
@@ -146,11 +146,12 @@ export function findTextLeaks(text: string, release: Pick<Release, 'blocked'>): 
 }
 
 // ── Which takes go up ───────────────────────────────────────────────────────
-export type Picked = {id: string; group: 'runda' | 'godkänd' | 'variant' | 'spel' | 'väntar'};
+// Jakob 2026-11-21: on the net "ska endast filer som används i casinot finnas + filer som kan behövas och testas med typ i och
+// under fliken 'Scen & Bord'"; the variants he is "rädd för att förlora" stay on the computer, and he chooses at a publication
+// whether they go up (variants in the register). Until then the round's takes, every take he had accepted and every variant
+// went up, the proofs too: 223 files, 1 636 MB in Blob on 2026-11-20.
+export type Picked = {id: string; group: 'spel' | 'variant'};
 export type Left = {id: string; why: string};
-
-/** A take Jakob has accepted outright: accepted, not as a variant, by his own word, and playable (as Primära reads it). */
-export const acceptedOutright = (t: Take) => t.stage === 'DONE' && t.decision === 'ACCEPTED' && !t.variant && t.motion?.review?.userAccepted === true;
 
 /**
  * Every take the game can play for a dealer, as the game reads the bank (judgedBank in src/game-director.ts): a take with a
@@ -168,29 +169,54 @@ export function gameTakes(bank: BankData, dealer: string): Set<string> {
 }
 
 /**
- * The takes whose films go up, by the register's rule: the takes the round plays, the takes accepted outright, the variants,
- * the takes the game can play (game: gameTakes, for a dealer of casino.dealers), and (off by default) the takes that wait for
- * Jakob. Every other take is named in left with the reason. A take whose id or film names a blocked rule is never picked;
- * when the rule would pick it, the build is stopped instead (refused). A take Jakob has archived (review.archived) is never
- * picked, whatever its verdict: its film does not go up, and the copy lists it without one.
+ * The takes the game chooses by itself in its own bank (judged: judgedBank, one dealer): every take of her rest (IDLE>IDLE: the
+ * rest loop draws among them by weight, the chat plays those on request, and while a film plays before the game the calm ones),
+ * and the take each step plays, as the game asks it (resolveRound): every edge on its own, and every deal followed by each
+ * return from its card, with the hole card down and up; and the four films of a deal from another pose at the shoe (hubChain), for
+ * every card the dealer's SEAT_HUB names and every pose a deal can be made from (src/game-film.ts seatHubs tries those for a
+ * second card), since the game deals from there when those films play. A variant reached that way (on an edge whose only films
+ * are variants, as the only return that continues a deal, or as the deal from another pose) is played, so it is the game's
+ * like any other film it plays.
  */
-export function pickTakes(graph: Graph, round: Segment[], release: Release, game: ReadonlySet<string> = new Set()): {picked: Picked[]; left: Left[]; refused: Left[]} {
-  const inRound = new Set(round.flatMap(s => s.take ? [s.take.id] : []));
+export function gameChoices(judged: Graph): Set<string> {
+  const out = new Set((judged.edge['IDLE>IDLE']?.takes ?? []).map(t => t.id));
+  const note = (steps: Step[]) => { for (const holeCardDown of [true, false]) for (const s of resolveRound(judged, steps, {holeCardDown})) if (s.take) out.add(s.take.id); };
+  const edges = [...judged.edges, ...judged.experiments];
+  for (const e of edges) {
+    note([{from: e.from, to: e.to}]);
+    if (e.kind === 'DEAL') for (const back of edges.filter(b => b.kind === 'RETURN' && b.from === e.to)) note([{from: e.from, to: e.to}, {from: back.from, to: back.to}]);
+  }
+  const hubs = [...Object.entries(SEAT_HUB[judged.dealer] ?? {}), ...edges.flatMap(e => e.kind === 'DEAL' && e.target ? e.hubVariants.map(hub => [e.target!, hub] as const) : [])];
+  for (const [card, hub] of hubs) for (const s of hubChain(judged, hub, card) ?? []) if (s.take) out.add(s.take.id);
+  return out;
+}
+
+/**
+ * The copy's one choice of films for one dealer: what goes up, and why every other take of hers stays behind. The source is
+ * what the game plays, for a dealer of casino.dealers: gameTakes, and of its variants only those the game chooses itself
+ * (gameChoices) unless release.variants is on; then every variant it can play goes up as well. The round of the map, his
+ * accepted takes the game does not play and the takes that wait for him no longer go up (Jakob 2026-11-21); the copy lists
+ * them without a film. When the dealer trees decide what plays (data/dealer-trees.json, tools/dealer-tree.ts: the trees in
+ * state "spelas"), `source` below is where they come in, in place of the game's bank; nothing else here changes.
+ * A take whose id or film names a blocked rule is never picked: when the source would pick it, the build stops (refused). A
+ * take Jakob has archived (review.archived) is never picked, whatever its verdict.
+ */
+export function pickTakes(bank: BankData, dealer: string, release: Release): {picked: Picked[]; left: Left[]; refused: Left[]} {
+  const graph = buildGraph(bank, {dealer}), plays = release.casino.on && release.casino.dealers.includes(dealer);
+  const source = plays ? gameTakes(bank, dealer) : new Set<string>(), chosen = plays ? gameChoices(buildGraph(judgedBank(bank), {dealer})) : new Set<string>();
+  const wanted = new Map<string, Picked['group']>();
+  for (const id of source) { const take = graph.takes[id]; if (!take) continue; if (!take.variant || chosen.has(id)) wanted.set(id, 'spel'); else if (release.variants) wanted.set(id, 'variant'); }
   const picked: Picked[] = [], left: Left[] = [], refused: Left[] = [];
   for (const take of Object.values(graph.takes).sort((a, b) => a.order - b.order)) {
     if (take.archived) { left.push({id: take.id, why: 'arkiverad'}); continue; }
-    const playable = take.stage === 'DONE' && take.decision !== 'REJECTED';
-    const group: Picked['group'] | null = release.takes.round && inRound.has(take.id) ? 'runda'
-      : release.takes.variants && playable && take.variant ? 'variant'
-      : release.takes.accepted && acceptedOutright(take) ? 'godkänd'
-      : playable && game.has(take.id) ? 'spel'
-      : release.takes.waiting && playable && take.decision === 'PENDING' ? 'väntar' : null;
+    const group = wanted.get(take.id) ?? null;
     const rule = blockedPath(take.id, release) ?? (take.media.video ? blockedPath(take.media.video, release) : null);
     const paow = !release.paow && namesPaow(take.id);
     if (group && rule) { refused.push({id: take.id, why: `spärrad (${rule})`}); continue; }
     if (group && paow) { left.push({id: take.id, why: 'Paow är avslagen'}); continue; }
     if (group) { picked.push({id: take.id, group}); continue; }
-    left.push({id: take.id, why: take.stage !== 'DONE' ? 'inte klar' : take.decision === 'REJECTED' ? 'underkänd' : take.decision === 'SECONDARY' ? 'sekundär' : take.decision === 'PENDING' ? 'väntar på Jakob' : 'inte godkänd av Jakob'});
+    left.push({id: take.id, why: !plays ? 'dealern spelas inte i Casino' : take.stage !== 'DONE' ? 'inte klar' : take.decision === 'REJECTED' ? 'underkänd'
+      : source.has(take.id) ? 'variant som spelet inte väljer själv (variants är av)' : 'spelet spelar den inte'});
   }
   return {picked, left, refused};
 }
@@ -227,8 +253,6 @@ export function freezeBank(bank: BankData & Record<string, unknown>, shown: Map<
 
 /** What a graph decides that the copy must decide the same way: each edge's main take, variants and status. */
 export const graphShape = (graph: Graph) => Object.fromEntries([...graph.edges, ...graph.experiments].map(e => [e.id, {main: e.main?.id ?? null, variants: e.variants.map(t => t.id), status: e.status}]));
-/** The round as played: per step the take, the frames and the film. */
-export const roundShape = (round: Segment[]) => round.map(s => ({id: s.id, take: s.take?.id ?? null, start: s.start, end: s.end, video: s.video, gap: s.gap}));
 
 // ── Proofs ──────────────────────────────────────────────────────────────────
 export type ProofFile = {name: string; path: string; kind: 'video' | 'image'; bytes: number};
