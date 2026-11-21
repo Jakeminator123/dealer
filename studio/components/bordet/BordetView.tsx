@@ -1,37 +1,38 @@
 "use client";
 
-// Bordet (/bordet/?lage=bestall&plats=p4c1): the lab's one view of the table (Jakob 2026-11-17: "Scen och placering bör ha
-// samma typ av vy, och på högersidan ska man kunna ändra och laborera med detta. Detta ska också vara underlaget för
-// beställning av nya filmer."). One frame for everything: the toolbar on top with the view's menu at its left, the stage as
-// large as the window allows, one column on the right where things are changed. The menu's five parts:
-//   Kortplan     the plan on the picture (Siluett or a film of the chosen dealer's under the cards), with 1 Var kortet landar and
-//                2 Hur det kommer dit (Placering's Plats, Bordet and Rörelse panels) and 3 Beställ for the chosen card
-//   Beställ      the same picture, with step 3 in the column: the films to order for the chosen card and without a card,
-//                the choices for the selected film and what was sent before (Sends.tsx). Förhandsvisa fetches the exact
-//                order from the server for review and saving. Behind "Kön" is the whole of
-//                Beställ as it was (OrderView: the queue, "Det här saknas för en runda", Ny beställning, an order open with
-//                "Det här skickas" and its approval, the way to Protokoll); /bestall/ with its words leads there
+// Scen & bord (/bordet/?plats=p4c2): the lab's one view of the table (Jakob 2026-11-17: "Scen och placering bör ha samma typ av
+// vy, och på högersidan ska man kunna ändra och laborera med detta. Detta ska också vara underlaget för beställning av nya
+// filmer."). One frame for everything, titled Scen & bord: the toolbar on top with the view's menu at its left (the row wraps
+// rather than hides what does not fit), the picture as large as the window allows, one column on the right where things are
+// changed (under the picture on a narrow or upright window). The menu's five parts:
+//   Kortplan     the plan on the picture (Siluett or a film of the chosen dealer's under the cards), with the steps for the
+//                chosen card: 1 Var kortet landar, 2 Hur det kommer dit, 3 Beställ (the card's three films and the films
+//                without a card, each with its five marks; the chosen film's recipe and exceptions, Sends.tsx). The list of
+//                films lies under the picture (FilmList.tsx), its cards ringed on the stage; its Förhandsvisa is the one way to
+//                a draft (the server's exact drafts, read before they are saved)
+//   Kön          the orders (OrderView): what a round lacks, the drafts to approve, an order open with "Det här skickas"
 //   Scen, Råfilm, Efterarbete   the live picture (SceneBody: the 3D scene, the films on their green, what is laid over)
-// The list of films lies under the picture in Kortplan and Beställ (FilmList.tsx), its cards ringed on the stage; a row
-// chosen plays its card's path. The plan is the draft Placering keeps (useDraft): what is changed here is changed there,
-// and nothing is written until "Spara i kortplanen". The card and the list stay when the menu changes. In the online copy
-// (lib/mode.ts isSnapshot) the same view reads only: Kortplan shows the plan without saving, Beställ and everything that
-// writes are not there, and Scen, Råfilm and Efterarbete are the scene as the copy has it (its looks read-only).
-// Must be inside <Suspense> (useSearchParams).
+// The plan is the draft Placering kept (useDraft): nothing is written until Jakob's click on "Spara i kortplanen", which
+// writes the whole plan. The card and the list stay when the menu changes. Old addresses still open the right thing:
+// ?lage=bestall opens Kortplan with step 3 open; ?lage=bestall&ko=1, ?order=<id> and ?ny=1&som=<id> open Kön (that order);
+// ?ny=1&steg=…&plats=… (Ny beställning's, which is gone) opens Kortplan at that card with that film on the list. In the
+// online copy (lib/mode.ts isSnapshot) the same view reads only: Kortplan shows the plan without saving, Kön and everything
+// that writes are not there, and Scen, Råfilm and Efterarbete are the scene as the copy has it. Inside <Suspense>.
 import { Play, RotateCcw, Save, Square, Undo2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { FLIP_LABEL, LANDS_LABEL, type BankFacts, type OrdersAnswer } from "../../../src/order-model.ts";
+import { ANCHOR_NODE, stepOf, type BankFacts, type OrdersAnswer } from "../../../src/order-model.ts";
 import { SHOE, VIEWS, type Place } from "../../../src/placement-model.ts";
 import type { Ledger } from "../../lib/ledger.ts";
 import type { MediaAnswer } from "../../lib/media.ts";
 import { useBank } from "../../lib/bank.ts";
-import { cardWishes, filmRow, lastOrder, otherWishes, roundFor, sceneWords, sumWords, wishKey, type FilmRow, type FilmWish, type RowChoice } from "../../lib/bordet.ts";
+import { cardWishes, filmRow, gameLine, hasRound, lastOrder, motionLine, otherWishes, roundFor, sceneWords, stepTwoSummary, sumWords, wishAnchor, wishKey, type FilmRow, type FilmWish, type RowChoice } from "../../lib/bordet.ts";
 import { useViewContext } from "../../lib/context.ts";
 import { isSnapshot, swedishMoment } from "../../lib/mode.ts";
-import { getOrders, type CreatedOrders, type NewOrderInput } from "../../lib/orders.ts";
-import { GRIP_LABEL, PLAN_VIEW, changedPlaces, flipOf, gameDealNotes, placeCode, placeFromCode, placeName } from "../../lib/placement.ts";
+import { nodeCode } from "../../lib/names.ts";
+import { getOrders, orderingState, presetOf, type CreatedOrders, type NewOrderInput } from "../../lib/orders.ts";
+import { PLAN_VIEW, START_PLACE, changedPlaces, placeCode, placeFromCode, placeName } from "../../lib/placement.ts";
 import { getMedia } from "../material/client.ts";
 import { getLedger } from "../ledger/LedgerView";
 import { OrderPreview } from "../order/OrderPreview";
@@ -44,44 +45,55 @@ import { pathCard, usePathPlay, usePlanKeys, useUnder } from "../placement/useBo
 import { draftActions, useDraft } from "../placement/useDraft.ts";
 import { Page } from "../shell";
 import { Badge, Button, ErrorState, IconButton, SegmentedControl, Select, Skeleton, Switch, cn, useToast } from "../ui";
-import { AddFilms, FilmStrip, type Made } from "./FilmList";
+import { FilmStrip, WishRows, type Made } from "./FilmList";
 import type { SceneKind } from "./SceneBody";
 import { RowSends } from "./Sends";
 
 // The live picture is loaded only when it is chosen, so that Kortplan stays light.
 const SceneBody = dynamic(() => import("./SceneBody").then((m) => m.SceneBody), { ssr: false, loading: () => <Skeleton className="m-4 h-[60vh] rounded-md" /> });
 
-export type Mode = "kortplan" | "bestall" | SceneKind;
+export type Mode = "kortplan" | "ko" | SceneKind;
 export const MODES: readonly { value: Mode; label: string }[] = [
   { value: "kortplan", label: "Kortplan" },
-  { value: "bestall", label: "Beställ" },
+  { value: "ko", label: "Kön" },
   { value: "scen", label: "Scen" },
   { value: "rafilm", label: "Råfilm" },
   { value: "efterarbete", label: "Efterarbete" },
 ];
-/** The parts the menu shows: the copy orders nothing, so it has no Beställ. */
-const SHOWN_MODES = isSnapshot ? MODES.filter((m) => m.value !== "bestall") : MODES;
+/** The parts the menu shows: the copy orders nothing, so it has no Kön. */
+const SHOWN_MODES = isSnapshot ? MODES.filter((m) => m.value !== "ko") : MODES;
 const isMode = (v: string | null): v is Mode => SHOWN_MODES.some((m) => m.value === v);
 const isScene = (m: Mode): m is SceneKind => m === "scen" || m === "rafilm" || m === "efterarbete";
-const START_PLACE: Place = "P4.C1";
 
-/** Beställ's own words in the address (OrderView: an order open, a new order asked for), which open Beställ's queue here. */
-const QUEUE_WORDS = ["ko", "order", "ny", "som", "dealer", "steg", "plats", "modell"] as const;
-const asksQueue = (p: { get(name: string): string | null }) => p.get("ko") === "1" || !!p.get("order") || p.get("ny") === "1";
+type Params = { get(name: string): string | null };
+/** The address asks for Kön: ?lage=ko, and Beställ's old words (?lage=bestall&ko=1, ?order=<id>, ?ny=1&som=<id>). */
+const asksQueue = (p: Params) => !isSnapshot && (p.get("lage") === "ko" || p.get("ko") === "1" || !!p.get("order") || (p.get("ny") === "1" && !!p.get("som")));
+/** The menu's part the address asks for; ?lage=bestall (Beställ, which is now step 3) opens Kortplan. */
+const modeOf = (p: Params): Mode => (asksQueue(p) ? "ko" : isMode(p.get("lage")) ? (p.get("lage") as Mode) : "kortplan");
+/** Beställ's old words, read once and then taken out of the address. */
+const OLD_WORDS = ["ko", "ny", "som", "steg", "modell"] as const;
 
 /**
- * The view's address: the menu's part, the card and, in Beställ, whether the queue is shown ("?lage=bestall&plats=p4c1&ko=1");
- * the rail's dealer and robot, and Beställ's own words while the queue is shown, are kept.
+ * Where an old address of Ny beställning (?ny=1&steg=GIV-2.2&plats=P4.C1&modell=…) leads now: the card, the film put on the
+ * list (with the model as his exception where one was named) and step 3 open. Null for any other address.
  */
-function writeAddress(mode: Mode, place: Place, queue: boolean) {
+function oldOrder(p: Params): { place: Place | null; wish: FilmWish | null; model: string | null } | null {
+  const preset = isSnapshot ? null : presetOf(p);
+  if (!preset || preset.like) return null;
+  const def = preset.step ? stepOf(preset.step) : null;
+  const wish = def && (!def.card || preset.target) ? { step: def.key, target: def.card ? preset.target : null } : null;
+  return { place: placeFromCode(preset.target), wish, model: wish ? preset.model : null };
+}
+
+/** The view's address: the menu's part and the card ("?lage=ko&plats=p4c1"); the rail's dealer and robot are kept. */
+function writeAddress(mode: Mode, place: Place) {
   const p = new URLSearchParams(window.location.search);
-  const inQueue = mode === "bestall" && queue;
-  if (inQueue) p.set("ko", "1");
-  else for (const w of QUEUE_WORDS) if (w !== "dealer" && w !== "plats") p.delete(w);
-  if (inQueue) {
-    window.history.replaceState(null, "", `${window.location.pathname}?${p.toString()}`);
-    return;
-  }
+  const like = p.get("ny") === "1" ? p.get("som") : null;
+  for (const w of OLD_WORDS) p.delete(w);
+  // Kön keeps the open order ("Ny beställning som den här" opens the order it was like); elsewhere there is none.
+  if (mode === "ko") {
+    if (like && !p.get("order")) p.set("order", like);
+  } else p.delete("order");
   // Scen's words (the round, the look) belong to the live picture.
   if (!isScene(mode)) for (const key of [...p.keys()]) if (sceneWords.has(key) && key !== "robot") p.delete(key);
   if (mode === "kortplan") p.delete("lage");
@@ -92,40 +104,49 @@ function writeAddress(mode: Mode, place: Place, queue: boolean) {
   window.history.replaceState(null, "", `${window.location.pathname}${q ? `?${q}` : ""}`);
 }
 
+type StepId = "place" | "motion" | "order";
+
 export function BordetView() {
   const params = useSearchParams();
-  const [mode, setMode] = useState<Mode>(() => (asksQueue(params) && !isSnapshot ? "bestall" : isMode(params.get("lage")) ? (params.get("lage") as Mode) : "kortplan"));
-  // Beställ's queue (OrderView) instead of the picture: asked for by the address (?ko=1, ?order=, ?ny=1), or by "Kön".
-  const [queue, setQueue] = useState(() => asksQueue(params) && !isSnapshot);
-  const askedQueue = asksQueue(params) && !isSnapshot;
+  const [first] = useState(() => oldOrder(params));
+  const [mode, setMode] = useState<Mode>(() => modeOf(params));
+  // A link to Kön while the view is open (an order's "Utkast gjort", "Öppna i Kön") opens Kön.
+  const askedQueue = asksQueue(params);
   const [seenAsk, setSeenAsk] = useState(askedQueue);
   if (askedQueue !== seenAsk) {
     setSeenAsk(askedQueue);
-    if (askedQueue) {
-      setQueue(true);
-      setMode("bestall");
-    }
+    if (askedQueue) setMode("ko");
   }
+  const [step, setStep] = useState<StepId | null>(() => (first || params.get("lage") === "bestall" ? "order" : "place"));
   const [media, setMedia] = useState<MediaAnswer | null>(null);
   const [ledger, setLedger] = useState<Ledger | null>(null);
-  const [choices, setChoices] = useState<Record<string, RowChoice>>({});
-  const [place, setPlace] = useState<Place>(() => placeFromCode(params.get("plats")) ?? START_PLACE);
-  const [wishes, setWishes] = useState<FilmWish[]>([]);
+  const [choices, setChoices] = useState<Record<string, RowChoice>>(() => (first?.wish && first.model ? { [wishKey(first.wish)]: { model: first.model } } : {}));
+  const [place, setPlace] = useState<Place>(() => first?.place ?? placeFromCode(params.get("plats")) ?? START_PLACE);
+  const [wishes, setWishes] = useState<FilmWish[]>(() => (first?.wish ? [first.wish] : []));
   const [made, setMade] = useState<Made>({});
-  const [chosenRow, setChosenRow] = useState<string | null>(null);
+  const [chosenRow, setChosenRow] = useState<string | null>(() => (first?.wish ? wishKey(first.wish) : null));
   const [orders, setOrders] = useState<OrdersAnswer | null>(null);
+  const [ordersRead, setOrdersRead] = useState(false);
   const [pending, setPending] = useState<{ keys: string[]; inputs: NewOrderInput[] } | null>(null);
   const draft = useDraft();
   const toast = useToast();
-  const { dealer, dealers, bank } = useBank();
-  useEffect(() => writeAddress(mode, place, queue), [mode, place, queue]);
+  const { dealer, dealers, bank, graph } = useBank();
+  useEffect(() => writeAddress(mode, place), [mode, place]);
+  const readOrders = useCallback(
+    () =>
+      getOrders().then(
+        (o) => (setOrders(o), setOrdersRead(true)),
+        () => (setOrders(null), setOrdersRead(true)),
+      ),
+    [],
+  );
   useEffect(() => {
     // the copy orders nothing: no orders, no pictures to send, no protocol
     if (isSnapshot) return;
-    void getOrders().then(setOrders, () => setOrders(null));
+    void readOrders();
     void getMedia().then(setMedia, () => setMedia(null));
     void getLedger().then(setLedger, () => setLedger(null));
-  }, []);
+  }, [readOrders]);
   useViewContext({ vy: "bordet", val: { läge: MODES.find((m) => m.value === mode)?.label, plats: placeCode(place), filmer: String(wishes.length) } });
 
   const d = draft.draft;
@@ -134,18 +155,20 @@ export function BordetView() {
   // (its reference film by rule, the seat's own end picture), the same as the store resolves it when the draft is made.
   const entries = useMemo(() => media?.dealers.find((x) => x.id === dealer)?.entries ?? [], [media, dealer]);
   const bankFacts = useMemo<BankFacts | null>(() => (bank ? { ...(bank as BankFacts), rendered: orders?.rendered ?? [], cutChecks: orders?.cutChecks } : null), [bank, orders]);
-  const rowOf = useCallback((w: FilmWish) => filmRow(dealer, w, orders?.methods ?? null, orders?.policy ?? null, { bank: bankFacts, choice: choices[wishKey(w)], entries, plan: orders?.plan ?? null }), [dealer, orders, bankFacts, choices, entries]);
+  const rowOf = useCallback(
+    (w: FilmWish) => filmRow(dealer, w, orders?.methods ?? null, orders?.policy ?? null, { bank: bankFacts, choice: choices[wishKey(w)], entries, plan: orders?.plan ?? null, dealers: orders?.dealers, marks: orders?.marks }),
+    [dealer, orders, bankFacts, choices, entries],
+  );
   const rows = useMemo(() => wishes.map(rowOf), [wishes, rowOf]);
   const listed = useMemo(() => new Set(wishes.map(wishKey)), [wishes]);
   const marked = useMemo(() => new Set(wishes.flatMap((w) => (w.target ? [w.target] : []))), [wishes]);
-  const intent = plan && place !== SHOE ? plan.targets[place]?.intent : null;
-  // The chosen card's deal in his notation, over the view.
-  const deal = intent ? cardWishes(place, intent, dealer)[0] : null;
-  const dealLine = deal ? rowOf(deal).line : placeName(place);
   const add = (w: FilmWish) => setWishes((was) => (was.some((x) => wishKey(x) === wishKey(w)) ? was : [...was, w]));
 
+  // Whether anything can be approved now (the mandate, the caps, the balance), in one line where films are ordered.
+  const ordering = orders ? orderingState(orders) : null;
   const orderable = !orders?.dealers || orders.dealers.some((x) => x.id === dealer);
-  const blocked = !orders ? "Beställningarna kunde inte läsas (labbservern)." : !orderable ? `${dealers.find((x) => x.id === dealer)?.name ?? dealer} kan inte beställas för (data/dealers.json).` : draft.dirty ? "Spara kortplanen först: utkastet ritar kortet där den sparade planen lägger det." : null;
+  const dealerName = dealers.find((x) => x.id === dealer)?.name ?? dealer;
+  const blocked = !ordersRead ? "Läser beställningarna …" : !orders ? "Beställningarna kunde inte läsas från labbservern." : !orderable ? `Filmer till ${dealerName} kan inte beställas härifrån.` : draft.dirty ? "Spara kortplanen först: utkastet ritar kortet där den sparade planen lägger det." : null;
   const preview = (selectedRows: readonly FilmRow[]) => {
     const keys: string[] = [], inputs: NewOrderInput[] = [];
     for (const row of selectedRows) {
@@ -162,8 +185,8 @@ export function BordetView() {
     setMade((was) => ({ ...was, ...done }));
     setPending(null);
     const n = answer.made.length;
-    toast({ tone: "ok", title: n === 1 ? "Ett utkast gjort" : `${n} utkast gjorda`, detail: "Utkasten godkänns i kön under Det här skickas." });
-    void getOrders().then(setOrders, () => {});
+    toast({ tone: "ok", title: n === 1 ? "Ett utkast gjort" : `${n} utkast gjorda`, detail: "Utkasten godkänns i Kön." });
+    void readOrders();
   };
 
   const save = async () => {
@@ -173,23 +196,20 @@ export function BordetView() {
   };
 
   const menu = <SegmentedControl size="sm" label="Bordets delar" value={mode} onChange={setMode} options={SHOWN_MODES.map((m) => ({ value: m.value, label: m.label }))} />;
-  const sub =
-    mode === "bestall" ? (
-      <SegmentedControl size="sm" label="Filmerna eller kön" value={queue ? "ko" : "filmer"} onChange={(v) => setQueue(v === "ko")} options={[{ value: "filmer", label: "Filmer" }, { value: "ko", label: "Kön" }]} />
-    ) : null;
-  // What goes to Runway for the chosen film of the list, before and after its draft is made.
+  // What goes to Runway for the chosen film, before and after its draft is made.
   const names = Object.fromEntries((orders?.dealers ?? []).map((x) => [x.id, x.name]));
-  const chosen = rows.find((r) => r.key === chosenRow) ?? null;
+  const intent = plan && place !== SHOE ? (plan.targets[place]?.intent ?? null) : null;
+  const cardRows = useMemo(() => cardWishes(place, intent, dealer).map(rowOf), [place, intent, dealer, rowOf]);
+  const otherRows = useMemo(() => otherWishes().map(rowOf), [rowOf]);
+  const chosen = rows.find((r) => r.key === chosenRow) ?? cardRows.find((r) => r.key === chosenRow) ?? otherRows.find((r) => r.key === chosenRow) ?? null;
   const madeAnswer = chosen && made[chosen.key] ? (orders?.orders.find((a) => a.order.id === made[chosen.key]) ?? null) : null;
-  // Granska filmen: the film's last order (the same dealer, step and card, not set aside), with the takes that came of it.
+  // Förra filmen: the film's last order (the same dealer, step and card, not set aside), with the takes that came of it.
   const lastAnswer = chosen ? lastOrder(orders?.orders ?? [], dealer, chosen.wish, (id) => !!ledger?.rows.some((r) => r.order === id && r.see.film)) : null;
   const last = lastAnswer ? { answer: lastAnswer, takes: (ledger?.rows ?? []).filter((r) => r.order === lastAnswer.order.id) } : null;
   const sendsPanel = chosen ? (
     <RowSends
       row={chosen}
-      onPreview={blocked || !chosen.body ? undefined : () => preview([chosen])}
       names={names}
-      plan={orders?.plan ?? null}
       bank={bankFacts}
       dealer={dealer}
       choice={choices[chosen.key] ?? {}}
@@ -199,42 +219,29 @@ export function BordetView() {
       last={last}
     />
   ) : null;
-  const table = mode === "kortplan" || mode === "bestall";
+  const table = mode === "kortplan";
   const changes = d ? changedPlaces(d.saved, d.plan) : { places: [], table: false };
   const count = changes.places.length + (changes.table ? 1 : 0);
   const when = d?.saved.updatedAt ? swedishMoment(d.saved.updatedAt) : null;
+  // Scen plays the card's round from the anchor its films go from where the bank has that round; the game's own until then.
+  const card = pathCard(place);
+  const from = plan?.targets[card] ? wishAnchor(dealer, card, plan.targets[card].intent) : null;
+  const roundText = roundFor(card, dealer, from && hasRound(graph, card, from) ? from : null);
 
-  // Kön: the menu over Beställ's own page (the queue, or an order open with "Det här skickas"), whose header is the one header.
-  if (mode === "bestall" && queue)
-    return (
-      <div className="flex h-full min-h-0 flex-col">
-        <div className="flex h-11 shrink-0 items-center gap-3 border-b border-line px-3">
-          {menu}
-          <span aria-hidden className="h-5 w-px shrink-0 bg-line" />
-          {sub}
-        </div>
-        <div data-queue className="min-h-0 flex-1">
-          <OrderView />
-        </div>
-      </div>
-    );
+  // Kön: the same frame and menu over the orders (the queue, or an order open with "Det här skickas").
+  if (mode === "ko") return <OrderView menu={menu} />;
   return (
     <Page
       title="Scen & bord"
       full
       status={
-        <>
-          <span data-notation className="truncate font-mono text-md font-semibold text-ink">
-            {dealLine}
-          </span>
-          {!table ? null : draft.dirty ? (
-            <Badge tone="brass" size="md">
-              ● Osparat · {count} {count === 1 ? "ändrad" : "ändrade"}
-            </Badge>
-          ) : when ? (
-            <span className="text-faint">Sparad {when}</span>
-          ) : null}
-        </>
+        !table ? null : draft.dirty ? (
+          <Badge tone="brass" size="md">
+            ● Osparat · {count} {count === 1 ? "ändrad" : "ändrade"}
+          </Badge>
+        ) : when ? (
+          <span className="text-faint">Sparad {when}</span>
+        ) : null
       }
       actions={
         d && table && !isSnapshot ? (
@@ -256,26 +263,29 @@ export function BordetView() {
         ) : !d || !plan ? (
           <div className="flex h-full flex-col gap-4 p-5 lg:flex-row">
             <Skeleton className="aspect-[3/2] shrink-0 rounded-md lg:aspect-auto lg:h-full lg:flex-1" />
-            <Skeleton className="h-36 shrink-0 rounded-md lg:h-full lg:w-[380px]" />
+            <Skeleton className="h-36 shrink-0 rounded-md lg:h-full lg:w-[400px]" />
           </div>
         ) : (
           <TableBody
-            mode={mode as "kortplan" | "bestall"}
             menu={menu}
-            sub={sub}
-            sends={sendsPanel}
+            step={step}
+            setStep={setStep}
             place={place}
             setPlace={setPlace}
             rows={rows}
-            rowOf={rowOf}
+            cardRows={cardRows}
+            otherRows={otherRows}
             listed={listed}
             marked={marked}
             chosenRow={chosenRow}
             setChosenRow={setChosenRow}
             made={made}
             blocked={blocked}
+            ordering={ordering}
             dealer={dealer}
-            onAdd={add}
+            methods={orders?.methods ?? null}
+            sends={sendsPanel}
+            onAdd={(r) => add(r.wish)}
             onRemove={(r) => setWishes((was) => was.filter((w) => wishKey(w) !== r.key))}
             onClear={() => {
               setWishes([]);
@@ -285,33 +295,39 @@ export function BordetView() {
           />
         )
       ) : (
-        <SceneBody kind={mode as SceneKind} toolbar={menu} roundText={roundFor(pathCard(place), dealer)} />
+        <SceneBody kind={mode as SceneKind} toolbar={menu} roundText={roundText} />
       )}
-      {pending ? <OrderPreview input={pending.inputs} onClose={() => setPending(null)} onCreated={created} /> : null}
+      {pending ? <OrderPreview input={pending.inputs} names={names} note={ordering && !ordering.open ? ordering.words : null} onClose={() => setPending(null)} onCreated={created} /> : null}
     </Page>
   );
 }
 
 function TableBody({
-  mode, menu, sub, sends, place, setPlace, rows, rowOf, listed, marked, chosenRow, setChosenRow, made, blocked, dealer, onAdd, onRemove, onClear, onCreate,
+  menu, step, setStep, place, setPlace, rows, cardRows, otherRows, listed, marked, chosenRow, setChosenRow, made, blocked, ordering, dealer, methods, sends, onAdd, onRemove, onClear, onCreate,
 }: {
-  mode: "kortplan" | "bestall";
   menu: ReactNode;
-  sub: ReactNode;
-  /** What goes to Runway for the chosen film of the list (Sends.tsx), or null. */
-  sends: ReactNode;
+  step: StepId | null;
+  setStep: (s: StepId | null) => void;
   place: Place;
   setPlace: (p: Place) => void;
+  /** The list under the picture. */
   rows: FilmRow[];
-  rowOf: (w: FilmWish) => FilmRow;
+  /** Step 3: the chosen card's three films, and the films without a card. */
+  cardRows: FilmRow[];
+  otherRows: FilmRow[];
   listed: ReadonlySet<string>;
   marked: ReadonlySet<Place>;
   chosenRow: string | null;
   setChosenRow: (k: string | null) => void;
   made: Made;
   blocked: string | null;
+  /** Whether anything can be approved now (orderingState), or null before the orders are read. */
+  ordering: { open: boolean; words: string } | null;
   dealer: string;
-  onAdd: (w: FilmWish) => void;
+  methods: OrdersAnswer["methods"] | null;
+  /** What goes to Runway for the chosen film (Sends.tsx), or null. */
+  sends: ReactNode;
+  onAdd: (r: FilmRow) => void;
   onRemove: (r: FilmRow) => void;
   onClear: () => void;
   onCreate: () => void;
@@ -325,10 +341,11 @@ function TableBody({
   const view = PLAN_VIEW;
   const [allCards, setAllCards] = useState(true);
   const [grid, setGrid] = useState(false);
-  const [open, setOpen] = useState<1 | 2 | 3 | 0>(mode === "bestall" ? 3 : 1);
-  const [allTable, setAllTable] = useState(false);
+  const [tableOpen, setTableOpen] = useState(false);
   const under = useUnder(place, { backdrop: null, frame: 0 });
-  const paths = usePathPlay(plan);
+  // The anchor a card's films go from, named on the path's steps as step 2 names it.
+  const anchorOf = useCallback((id: string) => nodeCode(ANCHOR_NODE[wishAnchor(dealer, id, plan.targets[id]?.intent ?? null)]), [dealer, plan]);
+  const paths = usePathPlay(plan, anchorOf);
   const changes = useMemo(() => changedPlaces(d.saved, d.plan), [d]);
   const changed = useMemo(() => new Set<Place>(changes.places), [changes]);
   const { follow } = paths;
@@ -342,31 +359,35 @@ function TableBody({
   const stageArea = useRef<HTMLDivElement>(null);
   usePlanKeys({ place, editable, dirty: draft.dirty, showing: draft.showing, area: stageArea, onEscape: paths.stop });
 
-  // On a wide screen the stage and film list share the left column's height.
-  // On a narrow screen the board follows the image's aspect ratio and the panel follows in the same scroll area.
+  // Side by side (a wide, lying window): the picture gets the height its width allows, less what the toolbar and the list
+  // under it need, so that neither the toolbar nor a row of the list is cut off; the list takes what is left. Upright or
+  // narrow: one column, the picture at its own shape, the list at its own height and the steps under it.
   const column = useRef<HTMLDivElement>(null);
-  const [size, setSize] = useState({ w: 0, h: 0 });
+  const bar = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState({ w: 0, h: 0, bar: 0 });
+  const [need, setNeed] = useState(0);
   useEffect(() => {
     const el = column.current!;
-    const read = () => setSize({ w: el.clientWidth, h: el.clientHeight });
+    const read = () => setSize({ w: el.clientWidth, h: el.clientHeight, bar: bar.current?.offsetHeight ?? 0 });
     read();
     const ro = new ResizeObserver(read);
     ro.observe(el);
+    if (bar.current) ro.observe(bar.current);
     return () => ro.disconnect();
   }, []);
   const film = under.film;
-  const bars = 44 + (film ? 44 : 0);
+  const extra = size.bar + (film ? 44 : 0) + (showSaved ? 30 : 0) + (draft.conflict ? 30 : 0);
+  const free = size.h - extra;
   const stageAspect = VIEWS[view].width / VIEWS[view].height;
-  // the copy has no list of films under the picture
-  const stageHeight = size.w ? Math.max(240, Math.min(size.h - bars - (isSnapshot ? 0 : 120), size.w / stageAspect)) : 0;
+  // the copy has no list of films under the picture; the list gets what its rows need, at most two fifths of the column
+  const list = isSnapshot ? 0 : Math.min(need || 80, free * 0.4);
+  const stageHeight = size.w ? Math.max(240, Math.min(free - list, size.w / stageAspect)) : 0;
   const stageSize = { "--stage-aspect": stageAspect, "--stage-height": `${stageHeight}px` } as CSSProperties;
 
-  const intent = place !== SHOE ? plan.targets[place]?.intent : null;
-  const target = place !== SHOE ? plan.targets[place] : null;
-  const g = target?.geometry[view];
-  const wishesHere = cardWishes(place, intent, dealer);
-  const motion = intent ? `${GRIP_LABEL[intent.grip]} · ${intent.pass ? "Handbyte" : intent.takeHand === "LH" ? "Vänster" : "Höger"} · ${LANDS_LABEL[intent.endSide]}${intent.endSide === "FRONT" ? ` · ${FLIP_LABEL[flipOf(intent)]}` : ""}` : "Välj ett kort";
-  const where = g ? `${placeCode(place)} · ${Math.round(g.angle)}° · perspektiv ${Math.round(g.taper * 100)} %` : placeName(place);
+  const shoe = place === SHOE;
+  const target = !shoe ? plan.targets[place] : null;
+  const intent = target?.intent ?? null;
+  const game = gameLine(dealer, place, intent);
   const chooseRow = (r: FilmRow) => {
     setChosenRow(r.key);
     if (r.wish.target) {
@@ -374,22 +395,84 @@ function TableBody({
       paths.play(r.wish.target);
     }
   };
-  const addFilms = (
-    <div className="flex flex-col gap-3">
-      <AddFilms title={placeName(place)} wishes={wishesHere} rows={rowOf} listed={listed} onAdd={onAdd} />
-      {mode === "bestall" ? <AddFilms title="Utan kort" wishes={otherWishes()} rows={rowOf} listed={listed} onAdd={onAdd} /> : null}
-      <p className="text-sm tabular-nums text-dim">{sumWords(rows.filter((r) => !made[r.key]))}</p>
-      {sends ? <div className="border-t border-line pt-4">{sends}</div> : rows.length ? <p className="text-xs text-faint">Välj en film i listan: där står allt som skickas.</p> : null}
-    </div>
-  );
+  const othersOpen = otherRows.some((r) => r.key === chosenRow);
+  const toggle = (s: StepId) => setStep(step === s ? null : s);
+  const steps: { id: StepId; title: string; summary: string | null; body: ReactNode }[] = [
+    {
+      id: "place",
+      title: shoe ? "Skons läge" : "Var kortet landar",
+      summary: shoe ? null : `${placeCode(place)}${target?.geometry[view].reviewed ? " · kontrollerad" : " · inte kontrollerad"}`,
+      body: <PlacePanel plan={plan} id={place} editable={editable} />,
+    },
+    ...(shoe
+      ? []
+      : [
+          {
+            id: "motion" as const,
+            title: "Hur det kommer dit",
+            summary: stepTwoSummary(dealer, place, intent),
+            body: (
+              <MotionPanel
+                plan={plan}
+                id={place}
+                editable={editable}
+                lit={paths.run?.id === place ? paths.lit : null}
+                line={motionLine(dealer, place, intent, methods ?? null)}
+                anchor={nodeCode(ANCHOR_NODE[wishAnchor(dealer, place, intent)])}
+              />
+            ),
+          },
+        ]),
+    ...(isSnapshot
+      ? []
+      : [
+          {
+            id: "order" as const,
+            title: "Beställ",
+            summary: cardRows.length ? sumWords(cardRows) : null,
+            body: (
+              <div className="flex flex-col gap-3 px-4 pb-4">
+                {ordering && !ordering.open ? (
+                  <p data-ordering className="rounded-sm bg-[#3a2a1a] px-2.5 py-1.5 text-sm text-[#f0b07a]">
+                    {ordering.words}
+                  </p>
+                ) : null}
+                {blocked ? <p className="text-sm text-[#f0b07a]">{blocked}</p> : null}
+                {cardRows.length ? (
+                  <>
+                    <WishRows title={placeName(place)} rows={cardRows} listed={listed} made={made} chosen={chosenRow} onChoose={chooseRow} onAdd={onAdd} />
+                    <p data-sum className="text-sm tabular-nums text-dim">
+                      {sumWords(cardRows)}
+                    </p>
+                  </>
+                ) : !shoe ? (
+                  <p className="text-sm text-dim">{placeName(place)} har inget kort i kortplanen.</p>
+                ) : null}
+                {game ? (
+                  <p data-game-note className="text-xs text-[#f0b07a]">
+                    {game}
+                  </p>
+                ) : null}
+                <details key={String(othersOpen)} open={othersOpen || shoe} className="rounded-md border border-line px-3 py-2">
+                  <summary className="cursor-pointer text-sm text-ink">
+                    Utan kort <span className="text-xs text-dim">· {otherRows.length} filmer: ingångar, utgångar, vila, hålkortet</span>
+                  </summary>
+                  <div className="mt-2">
+                    <WishRows title={null} rows={otherRows} listed={listed} made={made} chosen={chosenRow} onChoose={chooseRow} onAdd={onAdd} />
+                  </div>
+                </details>
+                {sends ? <div className="border-t border-line pt-4">{sends}</div> : <p className="text-xs text-faint">Välj en film: där står allt som skickas.</p>}
+              </div>
+            ),
+          },
+        ]),
+  ];
 
   return (
-    <div className={cn("grid h-full min-h-0 grid-cols-1 content-start overflow-y-auto lg:content-stretch lg:overflow-hidden",
-      mode === "bestall" ? "lg:grid-cols-[minmax(0,1fr)_460px]" : "lg:grid-cols-[minmax(0,1fr)_380px]")}>
+    <div className="grid h-full min-h-0 grid-cols-1 content-start overflow-y-auto lg:landscape:grid-cols-[minmax(0,1fr)_400px] lg:landscape:content-stretch lg:landscape:overflow-hidden">
       <section ref={column} className="flex min-h-0 min-w-0 flex-col">
-        <div className="flex h-11 shrink-0 items-center gap-3 overflow-x-auto border-b border-line px-3">
+        <div ref={bar} className="flex min-h-11 shrink-0 flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-line px-3 py-1.5">
           {menu}
-          {sub}
           <span aria-hidden className="h-5 w-px shrink-0 bg-line" />
           <Button size="sm" variant={paths.run ? "secondary" : "primary"} aria-pressed={!!paths.run} icon={paths.run ? <Square /> : <Play />} onClick={() => paths.toggle(place)} className="shrink-0">
             {paths.run ? "Stoppa" : "Spela kortbanan"}
@@ -400,7 +483,12 @@ function TableBody({
           <Switch size="sm" checked={grid} onChange={setGrid} label="Rutnät" />
         </div>
         {draft.conflict ? <p className="shrink-0 border-b border-underkand/30 bg-underkand/8 px-4 py-1.5 text-xs text-[#ef8b8b]">Planen har ändrats på annat håll sedan den lästes.</p> : null}
-        <div ref={stageArea} className="relative aspect-[var(--stage-aspect)] shrink-0 lg:aspect-auto lg:h-[var(--stage-height)]" style={stageSize}>
+        {showSaved ? (
+          <p data-showing-saved className="shrink-0 border-b border-brass/30 bg-brass/10 px-4 py-1.5 text-xs text-brass-hi">
+            Visar den sparade planen · X tillbaka till utkastet. Inget kan ändras så länge.
+          </p>
+        ) : null}
+        <div ref={stageArea} className="relative aspect-[var(--stage-aspect)] shrink-0 lg:landscape:aspect-auto lg:landscape:h-[var(--stage-height)]" style={stageSize}>
           {stageHeight ? (
             <Board
               plan={plan}
@@ -423,46 +511,34 @@ function TableBody({
           ) : null}
         </div>
         {film ? <FilmBar key={film.id} videoRef={under.videoRef} fps={film.fps} frames={film.frames} onFrame={under.setFrame} /> : null}
-        {isSnapshot ? null : <FilmStrip rows={rows} dealer={dealer} chosen={chosenRow} made={made} blocked={blocked} onChoose={chooseRow} onRemove={onRemove} onCreate={onCreate} onClear={onClear} />}
+        {isSnapshot ? null : (
+          <FilmStrip rows={rows} chosen={chosenRow} made={made} blocked={blocked} held={!!ordering && !ordering.open} onChoose={chooseRow} onRemove={onRemove} onCreate={onCreate} onClear={onClear} onNeed={setNeed} />
+        )}
       </section>
-      <aside className="flex min-h-0 min-w-0 flex-col border-t border-line bg-surface lg:border-l lg:border-t-0" data-nudge>
+      <aside className="flex min-h-0 min-w-0 flex-col border-t border-line bg-surface lg:landscape:border-l lg:landscape:border-t-0" data-nudge>
         <div className="flex flex-col gap-2.5 border-b border-line px-4 pb-3 pt-3.5">
-          <div className="flex items-center gap-2">
-            <h2 className="truncate text-base font-semibold text-ink">{placeName(place)}</h2>
+          <div className="flex items-baseline gap-2">
+            <h2 className="font-mono text-base font-semibold text-ink">{placeCode(place)}</h2>
+            <span className="truncate text-sm text-dim">{placeName(place)}</span>
             {changed.has(place) ? <Badge tone="brass">ändrad</Badge> : null}
           </div>
           <SlotPicker plan={plan} selected={place} changed={showSaved ? new Set() : changed} onSelect={choose} />
-          {/* where the game deals the card from anchor 2.2 while the plan says nyp (SEAT_HUB in src/game-director.ts) */}
-          {gameDealNotes(plan, place).map((n) => (
-            <p key={n} data-game-note className="text-xs text-[#f0b07a]">
-              {n}
-            </p>
-          ))}
         </div>
-        <div className="lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:[scrollbar-gutter:stable]">
-          {mode === "bestall" ? (
-            <Step n={3} title="Beställ" summary={null} open onToggle={() => {}}>
-              <div className="px-4 pb-4">{addFilms}</div>
+        <div className="lg:landscape:min-h-0 lg:landscape:flex-1 lg:landscape:overflow-y-auto lg:landscape:[scrollbar-gutter:stable]">
+          {steps.map((s, i) => (
+            <Step key={s.id} n={i + 1} title={s.title} summary={s.summary} open={step === s.id} onToggle={() => toggle(s.id)}>
+              {s.body}
             </Step>
-          ) : (
-            <>
-              <Step n={1} title="Var kortet landar" summary={where} open={open === 1} onToggle={() => setOpen(open === 1 ? 0 : 1)}>
-                <PlacePanel plan={plan} id={place} editable={editable} onTable={() => setAllTable(true)} />
-                <button type="button" onClick={() => setAllTable(!allTable)} aria-expanded={allTable} className="w-full border-t border-line px-4 py-2.5 text-left text-2xs font-semibold uppercase tracking-[0.08em] text-faint hover:text-ink">
-                  {allTable ? "▾" : "▸"} Alla kort
-                </button>
-                {allTable ? <TablePanel plan={plan} id={place} editable={editable} /> : null}
-              </Step>
-              <Step n={2} title="Hur det kommer dit" summary={motion} open={open === 2} onToggle={() => setOpen(open === 2 ? 0 : 2)}>
-                <MotionPanel plan={plan} id={place} editable={editable} lit={paths.run?.id === place ? paths.lit : null} />
-              </Step>
-              {isSnapshot ? null : (
-                <Step n={3} title="Beställ" summary={sumWords(rows.filter((r) => !made[r.key]))} open={open === 3} onToggle={() => setOpen(open === 3 ? 0 : 3)}>
-                  <div className="px-4 pb-4">{addFilms}</div>
-                </Step>
-              )}
-            </>
-          )}
+          ))}
+          {/* what holds for every card is not one card's step: the table, after the chosen card's steps */}
+          <section className={cn("border-b border-line", tableOpen && "bg-raised/25")}>
+            <button type="button" onClick={() => setTableOpen(!tableOpen)} aria-expanded={tableOpen} className="flex w-full items-center gap-2 px-4 py-3 text-left hover:bg-raised/40">
+              <span aria-hidden className="w-6 text-center text-dim">{tableOpen ? "▾" : "▸"}</span>
+              <span className="text-md font-semibold text-ink">Hela bordet</span>
+              <span className="text-xs text-dim">alla kort</span>
+            </button>
+            {tableOpen ? <TablePanel plan={plan} editable={editable} /> : null}
+          </section>
         </div>
       </aside>
     </div>

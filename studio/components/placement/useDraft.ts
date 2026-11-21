@@ -58,8 +58,6 @@ export const draftActions = {
   end: () => draftDo(end),
   undo: () => draftDo(undo),
   toSaved: () => draftDo(toSaved),
-  /** A placement file read in: it replaces the draft as one step, and nothing on disk until Spara. */
-  replace: (plan: PlacementPlan) => draftDo((d) => commit(d, plan)),
   show: (showing: DraftState["showing"]) => set({ showing }),
   /** Writes the draft to placements/default.json. Only from Jakob's click on Spara. */
   async save(): Promise<{ ok: true } | { ok: false; message: string; conflict: boolean }> {

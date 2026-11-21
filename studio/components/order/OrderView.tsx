@@ -1,56 +1,34 @@
 "use client";
 
-// Beställ (/bestall/?order=<id>): the queue of orders for Runway, and for one order the screen "Det här skickas". The
-// address holds the open order, so a link brings it back. /bestall/?ny=1&dealer=paow&steg=GIV-2.2&plats=P4.C1 (plats=alla
-// for the first card to every player) opens "Ny beställning" with those values chosen, ?ny=1&som=<id> with every choice of
-// that order ("Ny beställning som den här"); the sheet is mounted anew for each
-// such address, and closing it takes the values out of the address. Reads GET /api/orders on load and when the tab is
-// seen again; writes only on Jakob's clicks (a new draft, a change, an approval). Not in the online copy. Inside <Suspense>.
+// Kön (/bordet/?lage=ko&order=<id>), Scen & bord's part for the orders to Runway: what a round lacks, the queue, and for one
+// order the screen "Det här skickas" with its approval. The address holds the open order, so a link brings it back. New drafts
+// are made in Kortplan's step 3 (its Förhandsvisa), never here. Reads GET /api/orders on load and when the tab is seen again;
+// writes only on Jakob's clicks (a change, an approval). Not in the online copy. Inside <Suspense>.
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { asApiError, type ApiError } from "../../lib/api.ts";
 import { useViewContext } from "../../lib/context.ts";
-import { PRESET_PARAMS, getOrders, presetOf, shownWords, type OrderAnswer, type OrdersAnswer } from "../../lib/orders.ts";
-import { Page } from "../shell";
+import { getOrders, shownWords, type OrderAnswer, type OrdersAnswer } from "../../lib/orders.ts";
 import { ErrorState, Skeleton } from "../ui";
-import { NewOrder } from "./NewOrder";
 import { OrderList } from "./OrderList";
+import { QueueFrame } from "./QueueFrame";
 import { SendScreen } from "./SendScreen";
 
 type State = { status: "loading" } | { status: "ready"; all: OrdersAnswer } | { status: "error"; error: ApiError };
 
-/** Opens "Ny beställning" with every choice of an order (?ny=1&som=<id>); the open order stays in the address. */
-function askLike(id: string) {
-  const p = new URLSearchParams(window.location.search);
-  for (const name of PRESET_PARAMS) p.delete(name);
-  p.set("ny", "1");
-  p.set("som", id);
-  window.history.replaceState(null, "", `${window.location.pathname}?${p.toString()}`);
-}
-
-/** Writes the address: the open order, and without the values a new order was asked with. Next's own state is not handed back. */
-function setOrderParam(id: string | null, dropPreset = false) {
+/** Writes the open order into the address. Next's own state is not handed back. */
+function setOrderParam(id: string | null) {
   const p = new URLSearchParams(window.location.search);
   if (id) p.set("order", id);
   else p.delete("order");
-  if (dropPreset) for (const name of PRESET_PARAMS) p.delete(name);
   const q = p.toString();
   window.history.replaceState(null, "", `${window.location.pathname}${q ? `?${q}` : ""}`);
 }
 
-export function OrderView() {
+export function OrderView({ menu }: { menu: ReactNode }) {
   const params = useSearchParams();
   const asked = params.get("order");
   const [state, setState] = useState<State>({ status: "loading" });
-  const [opened, setOpened] = useState(false);
-  // A new order asked for by address is open while the address asks for it; "Ny beställning" opens one without.
-  const askedNew = params.get("ny") === "1";
-  const presetKey = PRESET_PARAMS.map((n) => params.get(n) ?? "").join("|");
-  const creating = opened || askedNew;
-  const setCreating = (open: boolean) => {
-    setOpened(open);
-    if (!open && askedNew) setOrderParam(asked, true);
-  };
 
   const read = useCallback(async () => {
     try {
@@ -68,9 +46,9 @@ export function OrderView() {
 
   const all = state.status === "ready" ? state.all : null;
   const open = all && asked ? (all.orders.find((a) => a.order.id === asked) ?? null) : null;
-  useViewContext({ vy: "Beställ", val: { beställning: open?.order.title, status: open ? shownWords(open) : undefined, antal: all ? String(all.orders.length) : undefined } });
+  useViewContext({ vy: "Kön", val: { beställning: open?.order.title, status: open ? shownWords(open) : undefined, antal: all ? String(all.orders.length) : undefined } });
 
-  // A saved answer replaces its order in the list at once; the list is then read again for the day's sums.
+  // A saved answer replaces its order in the list at once; the list is then read again for the sums.
   const saved = (answer: OrderAnswer) => {
     setState((s) => (s.status === "ready" ? { status: "ready", all: { ...s.all, orders: s.all.orders.some((a) => a.order.id === answer.order.id) ? s.all.orders.map((a) => (a.order.id === answer.order.id ? answer : a)) : [answer, ...s.all.orders] } } : s));
     void read();
@@ -78,36 +56,23 @@ export function OrderView() {
 
   if (state.status === "loading")
     return (
-      <Page title="Beställ">
-        <div className="grid grid-cols-3 gap-4 pt-2">
+      <QueueFrame menu={menu} status={<span className="text-dim">Läser beställningarna …</span>}>
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(330px,1fr))] gap-4">
           {Array.from({ length: 6 }, (_, i) => (
             <Skeleton key={i} className="h-56 rounded-lg" />
           ))}
         </div>
-      </Page>
+      </QueueFrame>
     );
   if (state.status === "error" || !all)
     return (
-      <Page title="Beställ">
+      <QueueFrame menu={menu}>
         <ErrorState title="Beställningarna kunde inte läsas" error={state.status === "error" ? state.error : null} onRetry={() => void read()} />
-      </Page>
+      </QueueFrame>
     );
-
-  return (
-    <>
-      {open ? <SendScreen answer={open} all={all} onBack={() => setOrderParam(null)} onOpen={(id) => setOrderParam(id)} onSaved={saved} onLike={askLike} /> : <OrderList all={all} onOpen={(id) => setOrderParam(id)} onNew={() => setCreating(true)} onChanged={() => void read()} />}
-      <NewOrder
-        key={presetKey}
-        open={creating}
-        onOpenChange={setCreating}
-        all={all}
-        preset={presetOf(params)}
-        onCreated={(answer) => {
-          saved(answer);
-          setOpened(false);
-          setOrderParam(answer.order.id, true);
-        }}
-      />
-    </>
+  return open ? (
+    <SendScreen menu={menu} answer={open} all={all} onBack={() => setOrderParam(null)} onOpen={(id) => setOrderParam(id)} onSaved={saved} />
+  ) : (
+    <OrderList menu={menu} all={all} onOpen={(id) => setOrderParam(id)} />
   );
 }

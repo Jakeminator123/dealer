@@ -1,27 +1,28 @@
 "use client";
 
-// "Det här skickas": one order exactly as it would go out. One line on what it makes and its choices in words (hand,
+// "Det här skickas" in Kön: one order exactly as it would go out. One line on what it makes and its choices in words (hand,
 // closed or open, the turn), the group it belongs to with its other seats, the pictures large at the top (first,
 // in-between, last; or the dealer's picture and the pose), each with whose it is and, when a draft followed a newer anchor
 // in Material, what it was before; then the exact text in full (selectable; the parts a choice made, Jakob's addition and
-// the bans marked, from the same function the text was written with), every argument of the call by its name with what the
-// model is known and not known to do (a 4K film: that it is scaled to the bank's frame), the takes and the cost against
-// the day's cap and the balance. A draft can change its hand, how the card lands, takes and free addition here (the
-// turn is the recipe's, no choice), and fetch its pictures again when something has changed; "Godkänn och lägg i kön" freezes it (its
-// hash in approval), after which nothing in it changes. Writes only on Jakob's click.
-import { ArrowLeft, Check, ClipboardCopy, CopyPlus, RefreshCw, TriangleAlert } from "lucide-react";
+// the bans marked, from the same function the text was written with), the model with its length and what it is known and
+// not known to do, the takes and the cost, and whether anything can be approved now (orderingState). A draft can change its
+// takes and free addition here (the hand, the side and the turn are the plan's and the recipe's), and fetch its pictures
+// again when something has changed; "Godkänn och lägg i kön" freezes it, after which nothing in it changes. Writes only on
+// Jakob's click.
+import { ArrowLeft, Check, ClipboardCopy, RefreshCw, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { asApiError } from "../../lib/api.ts";
 import { labUrl } from "../../lib/lab.ts";
 import { swedishMoment } from "../../lib/mode.ts";
-import { approveOrder, changeOrder, costWords, motionWords, orderLine, paramRows, picturesInOrder, plannedWords, referenceWords, refreshOrder, storedParts, styleWords, type OrderAnswer, type OrdersAnswer } from "../../lib/orders.ts";
-import { MODELS, REF_VERDICT_LABEL, approvalWords, SHAPE_LABEL, TAKES_MAX, credits, genitive, groupBudget, handChoiceOf, handsOf, requestOf, scaleWords, seatWords, stepOf, takeStates, waitWords } from "../../../src/order-model.ts";
-import { Page } from "../shell";
+import { referenceName } from "../../lib/bordet.ts";
+import { cardCode } from "../../lib/names.ts";
+import { approveOrder, changeOrder, costWords, motionWords, orderLine, orderingState, picturesInOrder, refreshOrder, storedParts, styleWords, type OrderAnswer, type OrdersAnswer } from "../../lib/orders.ts";
+import { MODELS, REF_VERDICT_LABEL, approvalWords, SHAPE_LABEL, TAKES_MAX, credits, genitive, groupBudget, scaleWords, seatWords, stepOf, takeStates, waitWords } from "../../../src/order-model.ts";
 import { Badge, Button, Dialog, SegmentedControl, TextArea, cn, useToast } from "../ui";
-import { HandChoiceRow, LandsChoice } from "./Choices";
 import { PictureCard, StatusChip } from "./Pictures";
 import { PromptText } from "./PromptText";
+import { QueueFrame } from "./QueueFrame";
 
 function Section({ title, aside, children, className }: { title: ReactNode; aside?: ReactNode; children: ReactNode; className?: string }) {
   return (
@@ -35,8 +36,8 @@ function Section({ title, aside, children, className }: { title: ReactNode; asid
   );
 }
 
-/** A draft's choices; mounted anew when the saved addition changes, so the field starts from what is saved. */
-function Edit({ answer, all, onSaved }: { answer: OrderAnswer; all: OrdersAnswer; onSaved: (a: OrderAnswer) => void }) {
+/** A draft's own choices (its takes, Jakob's addition); mounted anew when the saved addition changes, so the field starts from what is saved. */
+function Edit({ answer, onSaved }: { answer: OrderAnswer; onSaved: (a: OrderAnswer) => void }) {
   const { order } = answer;
   const [extra, setExtra] = useState(order.prompt.extra ?? "");
   const [busy, setBusy] = useState(false);
@@ -51,23 +52,8 @@ function Edit({ answer, all, onSaved }: { answer: OrderAnswer; all: OrdersAnswer
       setBusy(false);
     }
   };
-  const m = order.motion;
-  const seat = m?.target ? all.plan?.seats[m.target] : null;
   return (
     <Section title="Ändra utkastet">
-      {m ? (
-        <>
-          <div className="flex flex-col gap-2">
-            <span className="text-sm text-dim">Hur kortet landar</span>
-            <LandsChoice value={m.side} plan={seat?.side ?? null} disabled={busy} onChange={(side) => side !== m.side && void save({ side })} />
-          </div>
-          <div className="flex flex-col gap-2">
-            <span className="text-sm text-dim">Hand</span>
-            <HandChoiceRow value={handChoiceOf(m)} plan={seat ? handChoiceOf({ hand: seat.hand, pass: seat.pass }) : null} disabled={busy} onChange={(c) => c !== handChoiceOf(m) && void save(handsOf(c))} />
-            {seat?.crosses && handChoiceOf(m) !== "PASS" ? <p className="text-sm text-brass-hi">Förslag: handbyte. På {seatWords(m.target)} måste vänsterhanden från skon korsa kroppen.</p> : null}
-          </div>
-        </>
-      ) : null}
       <div className="flex items-center gap-3">
         <span className="text-sm text-dim">Tagningar</span>
         <SegmentedControl label="Tagningar" size="sm" value={order.takes} disabled={busy} onChange={(n) => void save({ takes: n })} options={Array.from({ length: TAKES_MAX }, (_, i) => ({ value: i + 1, label: String(i + 1) }))} />
@@ -82,13 +68,12 @@ function Edit({ answer, all, onSaved }: { answer: OrderAnswer; all: OrdersAnswer
   );
 }
 
-export function SendScreen({ answer, all, onBack, onOpen, onSaved, onLike }: { answer: OrderAnswer; all: OrdersAnswer; onBack: () => void; onOpen: (id: string) => void; onSaved: (a: OrderAnswer) => void; onLike?: (id: string) => void }) {
+export function SendScreen({ menu, answer, all, onBack, onOpen, onSaved }: { menu: ReactNode; answer: OrderAnswer; all: OrdersAnswer; onBack: () => void; onOpen: (id: string) => void; onSaved: (a: OrderAnswer) => void }) {
   const { order } = answer;
   const [asking, setAsking] = useState(false);
   const [busy, setBusy] = useState(false);
   const toast = useToast();
   const pictures = picturesInOrder(order.pictures);
-  const rows = paramRows(order);
   const model = MODELS[order.generation.model];
   const draft = !order.approval && order.status === "UTKAST";
   const refusals = answer.check?.refusals ?? [];
@@ -101,8 +86,10 @@ export function SendScreen({ answer, all, onBack, onOpen, onSaved, onLike }: { a
   const names = Object.fromEntries((all.dealers ?? []).map((d) => [d.id, d.name]));
   const scale = order.motion?.cardScale ?? 1;
   const oneWay = order.step.shape === "ONE_WAY" && order.motion && stepOf(order.step.key)?.start !== "LAND";
-  // The literal call for take 1, as order-put begin prints it; take 2 and later differ only by confirmRepeat.
-  const request = requestOf(order, 1);
+  const ordering = orderingState(all);
+  const p = order.generation.params;
+  // The model's length and size in words ("4 s · 1080p"); the call itself is the store's.
+  const values = [typeof p.duration === "number" ? `${String(p.duration).replace(".", ",")} s` : null, p.resolution ?? p.imageSize ?? null].filter((v) => v !== null && v !== undefined).map(String);
   // Why there is no reference film, in words of today (not the words stored when the draft was made).
   const noReference = order.reference.status === "FINNS" ? null : order.reference.status === "SAKNAS" ? order.reference.why : !model?.videos ? `${model?.label ?? order.generation.model} tar ingen referensfilm tillsammans med första och sista bild.` : order.kind === "STILL" ? "En bild har ingen referensfilm." : "Ingen referensfilm vald.";
   const seatPlan = order.motion?.target ? all.plan?.seats[order.motion.target] : null;
@@ -137,8 +124,9 @@ export function SendScreen({ answer, all, onBack, onOpen, onSaved, onLike }: { a
   const copy = () => void navigator.clipboard?.writeText(order.prompt.text).then(() => toast({ tone: "ok", title: "Texten är kopierad" }), () => {});
 
   return (
-    <Page
-      title="Det här skickas"
+    <QueueFrame
+      menu={menu}
+      bar={<span className="text-sm font-medium text-ink">Det här skickas</span>}
       status={
         <>
           <StatusChip answer={answer} />
@@ -150,11 +138,6 @@ export function SendScreen({ answer, all, onBack, onOpen, onSaved, onLike }: { a
           <Button variant="quiet" icon={<ArrowLeft />} onClick={onBack}>
             Alla beställningar
           </Button>
-          {onLike ? (
-            <Button variant="quiet" icon={<CopyPlus />} onClick={() => onLike(order.id)} title="Öppnar Ny beställning med alla val härifrån; bilderna hämtas som de gäller nu.">
-              Ny beställning som den här
-            </Button>
-          ) : null}
           <span className="whitespace-nowrap text-sm tabular-nums text-dim">
             {model?.label} · {credits(order.cost.total)} krediter
           </span>
@@ -178,15 +161,10 @@ export function SendScreen({ answer, all, onBack, onOpen, onSaved, onLike }: { a
                 {choices.turn ? <Badge tone="neutral" size="md">{choices.turn}</Badge> : null}
                 {oneWay ? <Badge tone="neutral" size="md">{SHAPE_LABEL.ONE_WAY}</Badge> : null}
                 {scale !== 1 ? <Badge tone="remark" size="md">Prov: kortet {scaleWords(scale)} av planens</Badge> : null}
-                {order.motion?.fromPlan ? <span>som Placering säger för {seatWords(order.motion.target)}</span> : <span>ändrat från Placering</span>}
+                {order.motion?.fromPlan ? <span>som kortplanen säger för {seatWords(order.motion.target)}</span> : <span>ändrat från kortplanen</span>}
               </>
             ) : null}
           </p>
-          {plannedWords(order).map((w) => (
-            <p key={w} data-plan-differs className="text-sm text-[#f0b07a]">
-              {w}
-            </p>
-          ))}
         </div>
         {order.status === "AVBRUTEN" && order.setAside ? (
           <p className="rounded-lg border border-line bg-surface px-4 py-2.5 text-sm text-ink">
@@ -206,7 +184,7 @@ export function SendScreen({ answer, all, onBack, onOpen, onSaved, onLike }: { a
                   title={`${a.order.title}${a.order.motion?.pass ? " · handbyte" : ""}`}
                   className={cn("h-7 rounded-md border px-2 text-xs tabular-nums", a.order.id === order.id ? "border-brass/60 bg-brass/12 text-brass-hi" : "border-line text-ink hover:bg-raised", a.order.approval && "opacity-60")}
                 >
-                  {a.order.motion?.target?.replace(".C1", "") ?? a.order.id}
+                  {(a.order.motion?.target ? cardCode(a.order.motion.target) : null) ?? "utan kort"}
                   {a.order.motion?.pass ? " · byte" : ""}
                   {a.order.approval ? " ✓" : ""}
                 </button>
@@ -263,7 +241,7 @@ export function SendScreen({ answer, all, onBack, onOpen, onSaved, onLike }: { a
               <video src={labUrl(order.reference.path)} controls muted playsInline className="w-[480px] rounded-lg border border-line bg-well" />
               <div className="flex flex-col gap-1.5 text-sm text-dim">
                 <p>
-                  {referenceWords(order.reference, order.dealer, names)} · till {order.reference.goesTo}
+                  {referenceName({ dealer: order.reference.dealer ?? order.dealer, edge: order.reference.from?.edge ?? `READY>${order.reference.goesTo}`, goesTo: order.reference.goesTo }, names)} · {String(order.reference.seconds).replace(".", ",")} s
                   {order.reference.approvedStraight ? " · rakt godkänd" : " · inte rakt godkänd"}
                 </p>
                 {order.reference.dealer && order.reference.dealer !== order.dealer ? (
@@ -271,7 +249,7 @@ export function SendScreen({ answer, all, onBack, onOpen, onSaved, onLike }: { a
                 ) : null}
                 {order.reference.from ? (
                   <p className="text-xs text-faint">
-                    Ur {order.reference.from.path}{order.reference.from.frames ? ` (tagningen är ruta ${order.reference.from.frames[0]}–${order.reference.from.frames[1]}; hela filmen skickas)` : ""} · Jakob: {REF_VERDICT_LABEL[order.reference.from.verdict]}{order.reference.from.words ? ` ”${order.reference.from.words}”` : ""} · sha256 {order.reference.sha256.slice(0, 12)}
+                    Jakob: {REF_VERDICT_LABEL[order.reference.from.verdict]}{order.reference.from.words ? ` ”${order.reference.from.words}”` : ""}
                   </p>
                 ) : null}
               </div>
@@ -287,7 +265,7 @@ export function SendScreen({ answer, all, onBack, onOpen, onSaved, onLike }: { a
             aside={
               <>
                 <span className="tabular-nums">
-                  {styleWords(order)} · {order.prompt.text.length.toLocaleString("sv-SE")} tecken · mall {order.prompt.template}
+                  {styleWords(order)} · {order.prompt.text.length.toLocaleString("sv-SE")} tecken
                 </span>
                 <Button size="sm" variant="quiet" icon={<ClipboardCopy />} onClick={copy}>
                   Kopiera
@@ -299,36 +277,11 @@ export function SendScreen({ answer, all, onBack, onOpen, onSaved, onLike }: { a
           </Section>
 
           <div className="flex flex-col gap-7">
-            <Section title="Modell och värden" aside={<span>{model?.label ?? order.generation.model}</span>}>
-              <table className="w-full text-sm">
-                <tbody>
-                  {rows.map((r) => (
-                    <tr key={r.name} className="border-b border-line/60 last:border-0">
-                      <td className="py-1.5 pr-3 align-top font-mono text-xs text-dim">{r.name}</td>
-                      <td className="py-1.5 pr-3 align-top font-mono text-xs text-ink">{r.value}</td>
-                      <td className="py-1.5 align-top text-xs text-faint">{r.note ?? ""}</td>
-                    </tr>
-                  ))}
-                  <tr>
-                    <td className="py-1.5 pr-3 align-top font-mono text-xs text-dim">promptText</td>
-                    <td colSpan={2} className="py-1.5 align-top text-xs text-faint">
-                      texten till vänster, hela
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <Section title="Modell">
+              <p className="text-sm text-ink">{[model?.label ?? order.generation.model, ...values].join(" · ")}</p>
               {model?.delivered ? <p className="text-sm text-brass-hi">{model.delivered}</p> : null}
               {model ? <p className="text-xs text-faint">{model.note}</p> : null}
               {model?.off ? <p className="text-xs text-[#f0b07a]">Beställs inte längre: {model.off}</p> : null}
-              <details className="rounded-md border border-line bg-surface px-3 py-2">
-                <summary className="cursor-pointer text-sm text-ink">Anropet ordagrant</summary>
-                <p className="mt-2 text-xs text-dim">Det här är allt som skickas. Resten av beställningsfilen är protokoll.</p>
-                <pre className="mt-2 max-h-[420px] select-text overflow-auto whitespace-pre-wrap break-words rounded bg-well p-2 font-mono text-[11px] leading-[17px] text-ink">{JSON.stringify(request, null, 2)}</pre>
-                <p className="mt-1 text-xs text-dim">
-                  {order.takes > 1 ? `Tagning 2${order.takes > 2 ? `–${order.takes}` : ""}: samma anrop med "confirmRepeat": true. ` : ""}Varje &quot;$file:…&quot; byts mot filens uppladdade adress, inget annat ändras.
-                </p>
-                <p className="mt-1 font-mono text-xs text-faint">data/orders/{order.id}.json</p>
-              </details>
             </Section>
 
             <Section title="Tagningar och kostnad">
@@ -338,26 +291,20 @@ export function SendScreen({ answer, all, onBack, onOpen, onSaved, onLike }: { a
                 <dd className="tabular-nums text-ink">
                   {credits(order.cost.worstTotal)} krediter {order.cost.worstTotal > order.cost.total ? <span className="text-faint">(listpris; det är det som räknas mot taken)</span> : null}
                 </dd>
-                <dt className="text-dim">I dag</dt>
-                <dd className="tabular-nums text-ink">
-                  {credits(all.day.spent)} av {credits(all.day.cap)} intecknade{draft ? <span className="text-dim"> · med den här {credits(all.day.spent + order.cost.worstTotal)}</span> : null}
-                </dd>
                 <dt className="text-dim">Saldo</dt>
-                <dd className="tabular-nums text-ink">
-                  {all.balance ? `${credits(all.balance.credits)} (senast ${all.balance.at.slice(0, 10)})` : "okänt"}
-                  {all.policy ? <span className="text-dim"> · golv {credits(all.policy.minBalance)}</span> : null}
-                </dd>
-                <dt className="text-dim">Grund</dt>
-                <dd className="text-xs leading-5 text-faint">{order.cost.basis}</dd>
+                <dd className="tabular-nums text-ink">{all.balance ? `${credits(all.balance.credits)} krediter (${swedishMoment(all.balance.at) ?? all.balance.at.slice(0, 10)})` : "okänt"}</dd>
               </dl>
+              {draft ? (
+                <p data-ordering className={ordering.open ? "text-sm text-dim" : "rounded-sm bg-[#3a2a1a] px-2.5 py-1.5 text-sm text-[#f0b07a]"}>
+                  {ordering.words}
+                </p>
+              ) : null}
               {refusals.length ? (
                 <ul className="flex flex-col gap-1 text-sm text-[#ef8b8b]">
                   {refusals.map((r) => (
                     <li key={r}>{r}</li>
                   ))}
                 </ul>
-              ) : draft ? (
-                <p className="text-sm text-[#6cc595]">Inom taken: {credits(all.policy?.maxPerOrder ?? 0)} per beställning, {credits(all.day.cap)} per dag.</p>
               ) : null}
             </Section>
 
@@ -374,24 +321,20 @@ export function SendScreen({ answer, all, onBack, onOpen, onSaved, onLike }: { a
             {order.approval ? (
               <Section title="Godkänd">
                 <p className="text-sm text-ink" title={order.approval.mandate ?? undefined}>
-                  {approvalWords(order.approval)} {swedishMoment(order.approval.at) ?? order.approval.at} · <span className="font-mono text-xs text-dim">sha256 {order.approval.orderSha256.slice(0, 16)}</span>
+                  {approvalWords(order.approval)} {swedishMoment(order.approval.at) ?? order.approval.at}
                 </p>
                 {order.approval.mandate ? <p className="text-xs text-dim">Uppdraget: {order.approval.mandate}</p> : null}
                 <ul className="flex flex-col gap-1 text-sm">
-                  {takeStates(order, answer.receipt).map((s, i) => {
-                    const t = answer.receipt?.takes.find((x) => x.take === i + 1);
-                    return (
-                      <li key={i} className="flex items-center gap-2">
-                        <span className="w-20 text-dim">Tagning {i + 1}</span>
-                        <Badge tone={s === "OSÄKER" ? "remark" : s === "MISSLYCKAD" ? "bad" : "neutral"}>{s}</Badge>
-                        {t?.taskId ? <span className="font-mono text-xs text-faint">{t.taskId}</span> : null}
-                      </li>
-                    );
-                  })}
+                  {takeStates(order, answer.receipt).map((s, i) => (
+                    <li key={i} className="flex items-center gap-2">
+                      <span className="w-20 text-dim">Tagning {i + 1}</span>
+                      <Badge tone={s === "OSÄKER" ? "remark" : s === "MISSLYCKAD" ? "bad" : "neutral"}>{s}</Badge>
+                    </li>
+                  ))}
                 </ul>
               </Section>
             ) : draft ? (
-              <Edit key={`${order.id}:${order.prompt.extra ?? ""}`} answer={answer} all={all} onSaved={onSaved} />
+              <Edit key={`${order.id}:${order.prompt.extra ?? ""}`} answer={answer} onSaved={onSaved} />
             ) : null}
           </div>
         </div>
@@ -414,10 +357,10 @@ export function SendScreen({ answer, all, onBack, onOpen, onSaved, onLike }: { a
         }
       >
         <p>
-          {costWords(order)}, högst {credits(order.cost.worstTotal)}. Efter godkännandet kan inget i beställningen ändras: bilderna, texten och värdena låses med sin hash.
+          {costWords(order)}, högst {credits(order.cost.worstTotal)}. Efter godkännandet kan inget i beställningen ändras: bilderna, texten och värdena låses.
         </p>
         <p className="mt-2 text-dim">Inget skickas förrän du säger &quot;lägg kön&quot; till filmagenten eller huvudagenten.</p>
       </Dialog>
-    </Page>
+    </QueueFrame>
   );
 }

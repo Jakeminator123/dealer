@@ -1,6 +1,6 @@
 "use client";
 
-// Bordet's picture (Kortplan, Beställ), as large as the area allows, with the cards on it and the handles on the chosen one.
+// Bordet's picture (Kortplan), as large as the area allows, with the cards on it and the handles on the chosen one.
 // Under the cards lies Siluett (the neutral backdrop) or a film of the chosen dealer's at a frame, in the bank's picture's
 // pixels (the plan's one view, PLAN_VIEW). A card
 // is drawn as the films show it, a plain yellow back (closed) or a plain blue face (open), over the quads (placement-model
@@ -8,7 +8,8 @@
 // prints it is afterwork. Over that lies one SVG in the view's own pixels with the handles:
 //   drag a card or the shoe: move it · the round handle beyond the far edge: riktning (Shift: 15°) · a near corner: size
 //   (Shift: same shape) · a far corner: perspektiv. Arrow keys: a pixel (Shift ten); on the round handle a degree (Shift 15).
-// On a flat table (Plant bord) only moving is possible: size, riktning and perspektiv follow P4C1.
+// On the plan's table (Verkligt perspektiv: a real card, 1,00, through the lens) only moving is possible: the card's size,
+// riktning and perspektiv are the lens's, and its size is adjusted only in Efterarbete.
 // The stage (lib/bordet.ts camera): it opens with the whole picture laid in it ("Anpassa"); the wheel zooms towards the
 // pointer, a drag where there is no card pans, and the control in the corner has Anpassa, 100 % and Närbild (the chosen card
 // in the middle). The cards are one shape (CardShape: rounded corners a share of the card's own side) in the picture's
@@ -350,7 +351,8 @@ export function Board({
                   <title>{`${placeCode(id)} · ${sideWord(t.intent.endSide)}`}</title>
                 </CardShape>
                 {on ? <path d={cardPath(quad)} fill="none" stroke={SELECTED} strokeWidth={2.5} strokeLinejoin="round" vectorEffect="non-scaling-stroke" pointerEvents="none" /> : null}
-                {on || id.endsWith("1") ? (
+                {/* one label per seat: the chosen card's full code where it is in the seat, else the seat at its first card */}
+                {on || (id.endsWith("1") && id.split(".")[0] !== selected.split(".")[0]) ? (
                   <text
                     x={c.x}
                     y={Math.max(...quad.map((p) => p.y)) + 18 * unit}

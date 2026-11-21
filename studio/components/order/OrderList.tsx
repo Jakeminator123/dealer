@@ -1,20 +1,22 @@
 "use client";
 
-// Above the queue, "Det här saknas för en runda" for the dealer chosen in the rail (Production: the production list).
+// Kön. On top, whether anything can be approved now (orderingState: the mandate, the caps, the balance), then "Det här
+// saknas för en runda" for the dealer chosen in the rail (Production: the production list).
 // The queue: one card per order in sections (klara att godkänna, väntar på bilder, i kön, lagda), each with its pictures
 // (named for which of the dealer's pictures they are), one line on what the order makes, a status chip, the model and
 // length, and the cost. A click opens "Det här skickas". Under the queue the one line on how
-// approved orders get placed.
-import { Clock, Film, ImageIcon, Plus } from "lucide-react";
+// approved orders get placed. Placed and delivered orders are folded, newest first.
+import { Clock, Film, ImageIcon } from "lucide-react";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { useBank } from "../../lib/bank.ts";
 import { labUrl } from "../../lib/lab.ts";
-import { HANDOVER, costWords, orderLine, picturesInOrder, sections, styleWords, type OrderAnswer, type OrdersAnswer, type Picture } from "../../lib/orders.ts";
+import { HANDOVER, costWords, orderLine, orderingState, picturesInOrder, sections, styleWords, type OrderAnswer, type OrdersAnswer, type Picture } from "../../lib/orders.ts";
 import { MODELS, approvalWords, credits, scaleWords } from "../../../src/order-model.ts";
-import { Page } from "../shell";
-import { Button, Card, EmptyState } from "../ui";
+import { Card, EmptyState } from "../ui";
 import { StatusChip } from "./Pictures";
 import { Production } from "./Production";
+import { QueueFrame } from "./QueueFrame";
 
 function Thumb({ picture }: { picture: Picture }) {
   const src = picture.path ? labUrl(picture.path) : null;
@@ -71,53 +73,64 @@ function OrderCard({ answer, onOpen }: { answer: OrderAnswer; onOpen: () => void
   );
 }
 
-export function OrderList({ all, onOpen, onNew, onChanged }: { all: OrdersAnswer; onOpen: (id: string) => void; onNew: () => void; onChanged?: () => void }) {
+export function OrderList({ menu, all, onOpen }: { menu: ReactNode; all: OrdersAnswer; onOpen: (id: string) => void }) {
   const list = sections(all.orders);
   // The production list is the dealer's chosen in the rail (Pamela's while the bank is read).
   const { dealer } = useBank();
   const dealerName = all.dealers?.find((d) => d.id === dealer)?.name ?? dealer;
+  const ordering = orderingState(all);
+  const cards = (s: (typeof list)[number]) => (
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(330px,1fr))] gap-4">
+      {s.orders.map((a) => (
+        <OrderCard key={a.order.id} answer={a} onOpen={() => onOpen(a.order.id)} />
+      ))}
+    </div>
+  );
   return (
-    <Page
-      title="Beställ"
+    <QueueFrame
+      menu={menu}
       status={
         <span className="truncate tabular-nums">
-          {all.orders.length} beställningar · i dag {credits(all.day.spent)} av {credits(all.day.cap)} krediter{all.balance ? ` · saldo ${credits(all.balance.credits)}` : ""}
-          {all.policy && !all.policy.enabled ? " · avstängt" : ""}
+          {all.orders.length} beställningar{all.balance ? ` · saldo ${credits(all.balance.credits)} krediter` : ""}
         </span>
       }
       actions={
-        <>
-          {/* The protocol of every take (another view, /protokoll/). */}
-          <Link href="/protokoll/" className="text-sm text-dim hover:text-ink hover:underline">
-            Protokoll
-          </Link>
-          <Button variant="primary" icon={<Plus />} onClick={onNew}>
-            Ny beställning
-          </Button>
-        </>
+        // The protocol of every take (another view, /protokoll/).
+        <Link href="/protokoll/" className="text-sm text-dim hover:text-ink hover:underline">
+          Protokoll
+        </Link>
       }
     >
       <div className="flex flex-col gap-8">
+        <p data-ordering className={ordering.open ? "text-sm text-dim" : "rounded-sm bg-[#3a2a1a] px-3 py-2 text-sm text-[#f0b07a]"}>
+          {ordering.words}
+        </p>
         {all.problems.length ? <p className="text-sm text-[#ef8b8b]">{all.problems.join(" ")}</p> : null}
-        <Production key={dealer} dealer={dealer} dealerName={dealerName} plan={all.plan ?? null} onOpen={onOpen} onMade={() => onChanged?.()} />
+        <Production key={dealer} dealer={dealer} dealerName={dealerName} plan={all.plan ?? null} onOpen={onOpen} />
         {list.length ? (
-          list.map((s) => (
-            <section key={s.key} className="flex flex-col gap-3">
-              <h2 className="flex items-baseline gap-2 border-b border-line pb-2 text-xs font-medium uppercase tracking-[0.08em] text-faint">
-                {s.title} <span className="tabular-nums text-dim">{s.orders.length}</span>
-              </h2>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(330px,1fr))] gap-4">
-                {s.orders.map((a) => (
-                  <OrderCard key={a.order.id} answer={a} onOpen={() => onOpen(a.order.id)} />
-                ))}
-              </div>
-            </section>
-          ))
+          list.map((s) =>
+            // What is placed and delivered is history: folded, so that what waits for a click stays on top.
+            s.key === "lagda" || s.key === "avbrutna" ? (
+              <details key={s.key} className="flex flex-col gap-3">
+                <summary className="cursor-pointer border-b border-line pb-2 text-xs font-medium uppercase tracking-[0.08em] text-faint">
+                  {s.title} <span className="tabular-nums text-dim">{s.orders.length}</span>
+                </summary>
+                <div className="pt-3">{cards({ ...s, orders: [...s.orders].sort((a, b) => b.order.created.localeCompare(a.order.created)) })}</div>
+              </details>
+            ) : (
+              <section key={s.key} className="flex flex-col gap-3">
+                <h2 className="flex items-baseline gap-2 border-b border-line pb-2 text-xs font-medium uppercase tracking-[0.08em] text-faint">
+                  {s.title} <span className="tabular-nums text-dim">{s.orders.length}</span>
+                </h2>
+                {cards(s)}
+              </section>
+            ),
+          )
         ) : (
-          <EmptyState title="Inga beställningar än">Gör en ny: dealer, steg, bilder och modell, med förval.</EmptyState>
+          <EmptyState title="Inga beställningar än">En film beställs i Kortplan: välj ett kort, lägg filmen i listan under steg 3 Beställ och tryck Förhandsvisa.</EmptyState>
         )}
         <p className="rounded-lg border border-line bg-surface px-4 py-3 text-sm text-ink">{HANDOVER}</p>
       </div>
-    </Page>
+    </QueueFrame>
   );
 }

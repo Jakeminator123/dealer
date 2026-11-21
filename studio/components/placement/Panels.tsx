@@ -1,19 +1,20 @@
 "use client";
 
-// The inspector's panels for the chosen place: Plats (where it lies and the card's three measures: riktning, lutning,
-// perspektiv; on the real perspective the table's one "Perspektiv" for every card instead), Rörelse (how the dealer takes, turns and lays it) and Bordet (what holds for every card: the flat table, one
-// size for all, the files). Every change goes to the draft as one step (a slider's drag is one step); nothing is saved here.
-import { Crosshair, Download, Grid2x2, RotateCcw, Square, Upload, Users } from "lucide-react";
-import { useRef, useState, type ReactNode } from "react";
-import { FLIP_AXES, FLIP_LABEL } from "../../../src/order-model.ts";
-import { planCardQuad, planTaper, throughLens } from "../../../src/card-plan.ts";
+// The column's panels for the chosen place in Bordet's Kortplan. Step 1, Var kortet landar: PlacePanel (where the card lies,
+// and whether it is checked; the card's own direction and shape only where the table is card by card, since on the real
+// perspective the lens draws every card) and TablePanel (what holds for every card: the real perspective, the table's
+// direction, its one Perspektiv). Step 2, Hur det kommer dit: MotionPanel (handbyte, how the card lands, the one line of what
+// the recipe does with it, the card's way). A real card has no size of its own here (Jakob 2026-11-17: "kör vi 1.0 så kanske
+// det är bra"; its size is adjusted only in Efterarbete). Every change goes to the draft as one step (a slider's drag is one
+// step); nothing is saved here, and the plan keeps every field it has, also those no panel shows.
+import { Crosshair, Grid2x2, RotateCcw, Square, Users } from "lucide-react";
+import { useState, type ReactNode } from "react";
+import { planTaper, throughLens } from "../../../src/card-plan.ts";
 import {
-  CARD_COLOUR, CARD_SCALE, PLANE_HEADINGS, PLAYER_TARGETS, SHOE, TARGETS, TECHNIQUES, applyTechnique, copyChoices, dealerAngle, editIntent, editPlace, otherHand,
-  TABLE_PERSPECTIVE, resetPlace, scaleCards, setTablePerspective, setTableProjection, snapPlace, straightenPlayers, techniqueOf, toPixels,
-  type Intent, type Place, type PlacementPlan, type Technique,
+  CARD_COLOUR, PLANE_HEADINGS, PLAYER_TARGETS, SHOE, TABLE_PERSPECTIVE, TARGETS, copyChoices, dealerAngle, editIntent, editPlace, resetPlace, setTablePerspective, setTableProjection, snapPlace, straightenPlayers,
+  type Intent, type Place, type PlacementPlan,
 } from "../../../src/placement-model.ts";
-import { GRIP_LABEL, PLAN_VIEW, decimal, editFlip, flipOf, handWord, motionSteps, placeCode, quadSize } from "../../lib/placement.ts";
-import { DRAFT_FILE, draftText, planeComparison, planeFile, readDraftText } from "../../lib/placement-files.ts";
+import { PLAN_VIEW, decimal, motionSteps, placeCode } from "../../lib/placement.ts";
 import { Button, SegmentedControl, Select, Slider, Switch, useToast } from "../ui";
 import { cn } from "../ui/cn";
 import { NumberField } from "./NumberField";
@@ -45,14 +46,10 @@ function OneStep({ children, disabled }: { children: ReactNode; disabled?: boole
   );
 }
 const swatch = (colour: string) => <span aria-hidden className="inline-block size-2.5 rounded-[2px] border border-black/30" style={{ background: colour }} />;
-const download = (name: string, text: string) => {
-  const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = name;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-};
+const SIDES = [
+  { value: "BACK" as const, label: "Stängt", icon: swatch(CARD_COLOUR.BACK) },
+  { value: "FRONT" as const, label: "Öppet", icon: swatch(CARD_COLOUR.FRONT) },
+];
 
 // ── Bordets perspektiv ──
 // One number for the whole plan on the real perspective, and only the cards' shape (src/card-plan.ts planShape; Jakob
@@ -72,7 +69,7 @@ function TableDepth({ plan, off }: { plan: PlacementPlan; off: boolean }) {
   return (
     <div className="flex flex-col gap-1.5">
       <OneStep disabled={off}>
-        <Slider label="Perspektiv" value={value} min={TABLE_PERSPECTIVE.min} max={TABLE_PERSPECTIVE.max} step={TABLE_PERSPECTIVE.step} format={percent} disabled={off} onChange={(v) => draftActions.move((p) => setTablePerspective(p, v))} />
+        <Slider label="Perspektiv, alla kort" value={value} min={TABLE_PERSPECTIVE.min} max={TABLE_PERSPECTIVE.max} step={TABLE_PERSPECTIVE.step} format={percent} disabled={off} onChange={(v) => draftActions.move((p) => setTablePerspective(p, v))} />
       </OneStep>
       <div aria-hidden className="relative mx-[7px] -mt-1 h-1.5">
         {marks.map((m) => (
@@ -99,16 +96,15 @@ function TableDepth({ plan, off }: { plan: PlacementPlan; off: boolean }) {
   );
 }
 
-// ── Plats ──
-export function PlacePanel({ plan, id, editable, onTable }: { plan: PlacementPlan; id: Place; editable: boolean; onTable: () => void }) {
+// ── Step 1: the place ──
+export function PlacePanel({ plan, id, editable }: { plan: PlacementPlan; id: Place; editable: boolean }) {
   const view = PLAN_VIEW;
   const [snap, setSnap] = useState("10");
   const off = !editable;
   const edit = (fn: (p: PlacementPlan) => PlacementPlan) => draftActions.edit(fn);
   const point = id === SHOE ? plan.shoe[view] : plan.targets[id].geometry[view];
-  const px = toPixels(point, view);
   const place = (
-    <Section title="Läge" aside={<span className="text-xs tabular-nums text-faint">{`${Math.round(px.x)}, ${Math.round(px.y)} px`}</span>}>
+    <Section title="Läge">
       <div className="grid grid-cols-2 gap-3">
         <NumberField label="Från vänster" unit="%" value={point.u * 100} digits={2} min={0} max={100} step={0.1} disabled={off} onCommit={(n) => edit((p) => editPlace(p, id, view, { u: n / 100 }))} />
         <NumberField label="Från botten" unit="%" value={point.v * 100} digits={2} min={0} max={100} step={0.1} disabled={off} onCommit={(n) => edit((p) => editPlace(p, id, view, { v: n / 100 }))} />
@@ -118,7 +114,7 @@ export function PlacePanel({ plan, id, editable, onTable }: { plan: PlacementPla
         <Button size="sm" icon={<Grid2x2 />} disabled={off} onClick={() => edit((p) => snapPlace(p, id, view, Number(snap)))}>
           {id === SHOE ? "Snäpp" : "Snäpp · 5°"}
         </Button>
-        <Button size="sm" variant="quiet" icon={<RotateCcw />} disabled={off} onClick={() => edit((p) => resetPlace(p, id, view))} title="Platsen tillbaka till startförslaget i den här vyn" className="ml-auto">
+        <Button size="sm" variant="quiet" icon={<RotateCcw />} disabled={off} onClick={() => edit((p) => resetPlace(p, id, view))} title="Platsen tillbaka till startförslaget" className="ml-auto">
           Startförslag
         </Button>
       </div>
@@ -126,79 +122,40 @@ export function PlacePanel({ plan, id, editable, onTable }: { plan: PlacementPla
   );
   if (id === SHOE) return place;
 
-  const t = plan.targets[id];
-  const g = t.geometry[view];
-  const flat = plan.tableProjection?.mode === "flat";
-  const shape = off || flat;
+  const g = plan.targets[id].geometry[view];
+  // On the real perspective the lens gives every card its direction, shape and size: nothing of the card's own is shown.
   const lens = throughLens(plan, view);
-  const size = quadSize(planCardQuad(plan, id, view));
   return (
     <>
-      <Section title="Sida vid landning">
-        <SegmentedControl
-          label="Sida vid landning"
-          value={t.intent.endSide}
-          disabled={off}
-          onChange={(side) => edit((p) => editIntent(p, id, "endSide", side))}
-          options={[
-            { value: "BACK", label: "Stängt", icon: swatch(CARD_COLOUR.BACK) },
-            { value: "FRONT", label: "Öppet", icon: swatch(CARD_COLOUR.FRONT) },
-          ]}
-          className="self-start"
-        />
-      </Section>
       {place}
-      <Section title="Kortets mått">
-        {flat ? (
-          <p className="text-xs text-[#f0b07a]">
-            {lens ? "Verkligt perspektiv: följer P4C1." : "Plant bord: följer P4C1."}{" "}
-            <button type="button" onClick={onTable} className="underline decoration-dotted underline-offset-2 hover:text-ink">
-              Alla kort
-            </button>
-          </p>
-        ) : null}
-        {lens ? <TableDepth plan={plan} off={off} /> : null}
-        <div className="flex flex-col gap-2">
-          <OneStep disabled={shape}>
-            <Slider label="Riktning" value={g.angle} min={-180} max={180} step={1} format={(v) => `${Math.round(v)}°`} disabled={shape} onChange={(angle) => draftActions.move((p) => editPlace(p, id, view, { angle }))} />
+      {lens ? null : (
+        <Section title="Kortets riktning och form">
+          <OneStep disabled={off}>
+            <Slider label="Riktning" value={g.angle} min={-180} max={180} step={1} format={(v) => `${Math.round(v)}°`} disabled={off} onChange={(angle) => draftActions.move((p) => editPlace(p, id, view, { angle }))} />
           </OneStep>
-          <div className="flex items-end gap-1.5">
-            <NumberField label="Grader" unit="°" value={g.angle} digits={1} min={-180} max={180} step={1} disabled={shape} onCommit={(angle) => edit((p) => editPlace(p, id, view, { angle }))} className="w-24" />
-            <Button size="sm" disabled={shape} onClick={() => edit((p) => editPlace(p, id, view, { angle: 0 }))}>
+          <div className="flex flex-wrap items-end gap-1.5">
+            <NumberField label="Grader" unit="°" value={g.angle} digits={1} min={-180} max={180} step={1} disabled={off} onCommit={(angle) => edit((p) => editPlace(p, id, view, { angle }))} className="w-24" />
+            <Button size="sm" disabled={off} onClick={() => edit((p) => editPlace(p, id, view, { angle: 0 }))}>
               0°
             </Button>
-            <Button size="sm" disabled={shape} onClick={() => edit((p) => editPlace(p, id, view, { angle: g.angle + 90 }))}>
+            <Button size="sm" disabled={off} onClick={() => edit((p) => editPlace(p, id, view, { angle: g.angle + 90 }))}>
               +90°
             </Button>
-            <Button size="sm" icon={<Crosshair />} disabled={shape} title="Rikta kortet mot mitten av dealerns två kort" onClick={() => edit((p) => editPlace(p, id, view, { angle: dealerAngle(p, id, view) }))}>
+            <Button size="sm" icon={<Crosshair />} disabled={off} title="Rikta kortet mot mitten av dealerns två kort" onClick={() => edit((p) => editPlace(p, id, view, { angle: dealerAngle(p, id, view) }))}>
               Mot dealern
             </Button>
           </div>
-        </div>
-        <div className="flex items-baseline justify-between text-sm">
-          <span className="text-dim">Lutning</span>
-          <span className="text-ink" title="På bordet ligger kortet plant">
-            plant
-          </span>
-        </div>
-        <div className={cn("flex flex-col gap-2", lens && "hidden")}>
-          <OneStep disabled={shape}>
-            <Slider label="Perspektiv" value={g.taper} min={0.4} max={1.6} step={0.01} format={(v) => `${Math.round(v * 100)} %`} disabled={shape} onChange={(taper) => draftActions.move((p) => editPlace(p, id, view, { taper }))} />
+          <OneStep disabled={off}>
+            <Slider label="Perspektiv" value={g.taper} min={0.4} max={1.6} step={0.01} format={(v) => `${Math.round(v * 100)} %`} disabled={off} onChange={(taper) => draftActions.move((p) => editPlace(p, id, view, { taper }))} />
           </OneStep>
           <div className="flex items-end gap-1.5">
-            <NumberField label="Bortre kant" unit="%" value={g.taper * 100} digits={0} min={40} max={160} step={1} disabled={shape} onCommit={(n) => edit((p) => editPlace(p, id, view, { taper: n / 100 }))} className="w-24" />
-            <Button size="sm" icon={<Square />} disabled={shape} onClick={() => edit((p) => editPlace(p, id, view, { taper: 1 }))}>
+            <NumberField label="Bortre kant" unit="%" value={g.taper * 100} digits={0} min={40} max={160} step={1} disabled={off} onCommit={(n) => edit((p) => editPlace(p, id, view, { taper: n / 100 }))} className="w-24" />
+            <Button size="sm" icon={<Square />} disabled={off} onClick={() => edit((p) => editPlace(p, id, view, { taper: 1 }))}>
               Rak · 100 %
             </Button>
           </div>
-        </div>
-      </Section>
-      <Section title="Storlek" aside={<span className="text-xs tabular-nums text-faint">{size.text}</span>}>
-        <div className="grid grid-cols-2 gap-3">
-          <NumberField label="Bredd" unit="%" value={g.width * 100} digits={2} min={0.5} max={25} step={0.1} disabled={shape} onCommit={(n) => edit((p) => editPlace(p, id, view, { width: n / 100 }))} />
-          <NumberField label="Höjd" unit="%" value={g.height * 100} digits={2} min={0.5} max={25} step={0.1} disabled={shape} onCommit={(n) => edit((p) => editPlace(p, id, view, { height: n / 100 }))} />
-        </div>
-      </Section>
+        </Section>
+      )}
       <Section title="Kontroll">
         <Switch checked={g.reviewed} disabled={off} onChange={(reviewed) => edit((p) => editPlace(p, id, view, { reviewed }))} label="Kontrollerad" />
       </Section>
@@ -206,68 +163,37 @@ export function PlacePanel({ plan, id, editable, onTable }: { plan: PlacementPla
   );
 }
 
-// ── Rörelse ──
-const TECHNIQUE_WORDS: Record<Technique, string> = {
-  "pinch-air": "Nyp och vänd i luften",
-  "drag-place": "Släp och vänd vid platsen",
-  "drag-closed": "Släp och lägg stängt",
-};
-/** `lit`: the step the card path shows now, while it plays this card ("Spela kortbanan" over the picture); null otherwise. */
-export function MotionPanel({ plan, id, editable, lit }: { plan: PlacementPlan; id: Place; editable: boolean; lit: string | null }) {
+// ── Step 2: the way there ──
+/**
+ * What steers the card's way: handbyte and how it lands. The plan's other motion fields (the grip, the hand that takes, the
+ * sides at the shoe, the turn) stay in the plan as they are, but choose nothing: the anchor and its recipe decide them
+ * (lib/bordet.ts motionLine, which `line` is). `anchor`: the anchor the card's films go from ("A2.3"), named on the way.
+ * `lit`: the step the card path shows now, while it plays this card ("Spela kortbanan" over the picture); null otherwise.
+ */
+export function MotionPanel({ plan, id, editable, lit, line, anchor }: { plan: PlacementPlan; id: Place; editable: boolean; lit: string | null; line: string | null; anchor: string }) {
   const toast = useToast();
-  if (id === SHOE) return <p className="px-4 py-6 text-sm text-faint">Välj ett kort.</p>;
+  if (id === SHOE) return null;
   const off = !editable;
   const i = plan.targets[id].intent;
-  const technique = techniqueOf(i);
   const set = <K extends keyof Intent>(key: K, value: Intent[K]) => draftActions.edit((p) => editIntent(p, id, key, value));
-  const way = motionSteps(id, i);
-  const flip = flipOf(i);
-  const sides = [
-    { value: "BACK" as const, label: "Stängt", icon: swatch(CARD_COLOUR.BACK) },
-    { value: "FRONT" as const, label: "Öppet", icon: swatch(CARD_COLOUR.FRONT) },
-  ];
+  const way = motionSteps(id, i, anchor);
   return (
     <>
-      <Section title="Teknik">
-        <div className="flex flex-col gap-1.5">
-          {(Object.keys(TECHNIQUES) as Technique[]).map((name) => (
-            <Button key={name} size="sm" aria-pressed={technique === name} disabled={off} onClick={() => draftActions.edit((p) => ({ ...p, targets: { ...p.targets, [id]: { ...p.targets[id], intent: applyTechnique(p.targets[id].intent, name) } } }))} className="justify-start">
-              {TECHNIQUE_WORDS[name]}
-            </Button>
-          ))}
-        </div>
-      </Section>
-      <Section title="Val">
-        <Row label="Hand som tar">
-          <SegmentedControl size="sm" label="Hand som tar kortet" value={i.takeHand} disabled={off} onChange={(h) => set("takeHand", h)} options={[{ value: "LH", label: "Vänster" }, { value: "RH", label: "Höger" }]} />
-        </Row>
-        <Row label="Grepp vid skon">
-          <SegmentedControl size="sm" label="Grepp vid skon" value={i.grip} disabled={off} onChange={(grip) => set("grip", grip)} options={[{ value: "PINCH", label: GRIP_LABEL.PINCH }, { value: "DRAG", label: GRIP_LABEL.DRAG }]} />
-        </Row>
-        <Row label="Vid upptag">
-          <SegmentedControl size="sm" label="Sida vid upptag" value={i.startSide} disabled={off} onChange={(s) => set("startSide", s)} options={sides} />
-        </Row>
-        <Row label="Vid landning">
-          <SegmentedControl size="sm" label="Sida vid landning" value={i.endSide} disabled={off} onChange={(s) => set("endSide", s)} options={sides} />
-        </Row>
+      <Section title="Det som styr">
         <Switch checked={i.pass} disabled={off} onChange={(v) => set("pass", v)} label="Handbyte" />
-        <Switch checked={i.turn} disabled={off} onChange={(v) => set("turn", v)} label="Vänd kortet" />
-        {/* the same three as Beställ's "Hur kortet vänds" (FLIP_LABEL); the plan's choice is the order's default there */}
-        <div aria-label="Hur kortet vänds" className="flex flex-col gap-1.5">
-          <span className="text-sm text-dim">Hur kortet vänds</span>
-          {FLIP_AXES.map((axis) => (
-            <Button key={axis} size="sm" aria-pressed={i.turn && flip === axis} disabled={off || !i.turn} onClick={() => draftActions.edit((p) => editFlip(p, id, axis))} className="justify-start">
-              {FLIP_LABEL[axis]}
-            </Button>
-          ))}
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-sm text-dim">Vid landning</span>
+          <SegmentedControl size="sm" label="Sida vid landning" value={i.endSide} disabled={off} onChange={(s) => set("endSide", s)} options={SIDES} />
         </div>
-        <Row label="Hand vid släpp">
-          <span className="text-sm text-ink">{handWord(i.pass ? otherHand(i.takeHand) : i.takeHand).replace(/^./, (c) => c.toUpperCase())}</span>
-        </Row>
+        {line ? (
+          <p data-motion-line className="rounded-md border border-line bg-raised/40 px-3 py-2 text-sm leading-5 text-ink">
+            {line}
+          </p>
+        ) : null}
       </Section>
       {/* The steps of the card's way; "Spela kortbanan" over the picture plays them and lights the one it shows. */}
       <Section title="Kortbanan" aside={lit ? <span className="text-2xs text-[#d3b4ff]">spelar</span> : null}>
-        <ol className="flex flex-wrap items-center gap-1" title={way.code} aria-label="Kortets väg">
+        <ol className="flex flex-wrap items-center gap-1" aria-label="Kortets väg">
           {way.steps.map((s, n) => (
             <li key={s.id} className="flex items-center gap-1">
               {n ? <span aria-hidden className="text-faint">→</span> : null}
@@ -286,7 +212,7 @@ export function MotionPanel({ plan, id, editable, lit }: { plan: PlacementPlan; 
           disabled={off}
           onClick={() => {
             draftActions.edit((p) => copyChoices(p, id, "intent", PLAYER_TARGETS));
-            toast({ tone: "ok", title: `Rörelsen från ${placeCode(id)} gäller nu alla 14 spelarkort`, detail: "Dealerns två kort är orörda. Ångra tar tillbaka." });
+            toast({ tone: "ok", title: `Rörelsen från ${placeCode(id)} gäller nu alla 14 spelarkort`, detail: "Dealerns tre kort är orörda. Ångra tar tillbaka." });
           }}
           className="self-start"
         >
@@ -296,28 +222,13 @@ export function MotionPanel({ plan, id, editable, lit }: { plan: PlacementPlan; 
     </>
   );
 }
-function Row({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <span className="text-sm text-dim">{label}</span>
-      {children}
-    </div>
-  );
-}
 
-// ── Bordet ──
-export function TablePanel({ plan, id, editable }: { plan: PlacementPlan; id: Place; editable: boolean }) {
+// ── Step 1: the table, for every card ──
+export function TablePanel({ plan, editable }: { plan: PlacementPlan; editable: boolean }) {
   const view = PLAN_VIEW;
-  const toast = useToast();
   const off = !editable;
-  const [factor, setFactor] = useState(1);
-  const file = useRef<HTMLInputElement>(null);
   const projection = plan.tableProjection ?? { mode: "flat" as const, heading: 0 };
   const flat = projection.mode === "flat";
-  const card = id === SHOE ? "P4.C2" : id;
-  const now = quadSize(planCardQuad(plan, card, view)).text;
-  const after = factor !== 1 ? quadSize(planCardQuad(scaleCards(plan, view, factor).plan, card, view)).text : null;
-  // On the real perspective a card's size and shape follow from the lens: the plan's sizes draw nothing there.
   const lens = throughLens(plan, view);
   const checked = TARGETS.filter((t) => plan.targets[t].geometry[view].reviewed).length;
   return (
@@ -328,90 +239,29 @@ export function TablePanel({ plan, id, editable }: { plan: PlacementPlan; id: Pl
           disabled={off}
           onChange={(on) => draftActions.edit((p) => setTableProjection(p, { mode: on ? "flat" : "individual", heading: projection.heading }))}
           label="Verkligt perspektiv"
-          hint={
-            !flat
-              ? "Varje kort med egen riktning och perspektiv."
-              : `Alla kort i verklig storlek genom samma kamera som dealern, formen ${percent(planTaper(plan))}.`
-          }
+          hint={flat ? "Alla kort i verklig storlek genom samma kamera som dealern." : "Varje kort med egen riktning och form."}
         />
         {flat ? (
-          <div className="flex items-end gap-2">
-            <Select
-              label="Bordets riktning"
-              size="sm"
-              value={String(projection.heading)}
-              disabled={off}
-              onChange={(v) => draftActions.edit((p) => setTableProjection(p, { mode: "flat", heading: Number(v) }))}
-              options={PLANE_HEADINGS.map((h) => ({ value: String(h), label: h === 0 ? "0° · rak" : `${decimal(h, 0)}°` }))}
-              className="w-32"
-            />
-            <Button size="sm" variant="quiet" icon={<Download />} onClick={() => download(planeFile(view), JSON.stringify(planeComparison(plan, view), null, 2) + "\n")}>
-              Jämförelse
-            </Button>
-          </div>
+          <Select
+            label="Bordets riktning"
+            size="sm"
+            value={String(projection.heading)}
+            disabled={off}
+            onChange={(v) => draftActions.edit((p) => setTableProjection(p, { mode: "flat", heading: Number(v) }))}
+            options={PLANE_HEADINGS.map((h) => ({ value: String(h), label: h === 0 ? "0° · rak" : `${decimal(h, 0)}°` }))}
+            className="w-32"
+          />
         ) : null}
+        {lens ? <TableDepth plan={plan} off={off} /> : null}
         <p className="text-2xs text-faint">Byte av bord avmarkerar alla platser.</p>
       </Section>
-      <Section title="Kortstorlek, alla kort" className={lens ? "hidden" : undefined}>
-        <div className="flex items-end gap-2">
-          <NumberField label="Faktor" value={factor} digits={2} min={CARD_SCALE.min} max={CARD_SCALE.max} step={CARD_SCALE.step} disabled={off} onCommit={setFactor} className="w-24" />
-          <Button
-            size="sm"
-            disabled={off || factor === 1}
-            onClick={() => {
-              const result = scaleCards(plan, view, factor);
-              const before = now;
-              draftActions.edit(() => result.plan);
-              setFactor(1);
-              toast({
-                tone: "ok",
-                title: `Alla ${TARGETS.length} kort ×${decimal(factor, 2)}`,
-                detail: `${placeCode(card)}: ${before} → ${quadSize(planCardQuad(result.plan, card, view)).text}.${result.limited.length ? ` ${result.limited.map(placeCode).join(", ")} ${factor > 1 ? "nådde kanten eller största storlek" : "nådde minsta storlek"}.` : ""} Ångra tar tillbaka.`,
-              });
-            }}
-          >
-            Skala alla
+      {flat ? null : (
+        <Section title="Spelarkorten">
+          <Button size="sm" disabled={off} onClick={() => draftActions.edit((p) => straightenPlayers(p, view))} className="self-start">
+            Riktning 0° på alla 14
           </Button>
-        </div>
-        <p className="text-xs tabular-nums text-dim">
-          {placeCode(card)} nu {now}
-          {after ? ` · efter ${after}` : ""}
-          {flat ? " · plant bord: P4C1:s storlek" : ""}
-        </p>
-      </Section>
-      <Section title="Spelarkorten">
-        <Button size="sm" disabled={off || flat} onClick={() => draftActions.edit((p) => straightenPlayers(p, view))} className="self-start">
-          Riktning 0° på alla 14
-        </Button>
-      </Section>
-      <Section title="Utkastet som fil">
-        <div className="flex flex-wrap gap-2">
-          <Button size="sm" icon={<Download />} onClick={() => download(DRAFT_FILE, draftText(plan))}>
-            Spara som fil
-          </Button>
-          <Button size="sm" icon={<Upload />} disabled={off} onClick={() => file.current?.click()}>
-            Läs in fil
-          </Button>
-          <input
-            ref={file}
-            type="file"
-            accept="application/json,.json"
-            hidden
-            onChange={async (e) => {
-              const f = e.target.files?.[0];
-              e.target.value = "";
-              if (!f) return;
-              try {
-                const next = readDraftText(await f.text(), f.size);
-                draftActions.replace(next);
-                toast({ tone: "ok", title: "Filen är inläst som utkast", detail: "Inget på disk ändras förrän du sparar." });
-              } catch (error) {
-                toast({ tone: "bad", title: "Filen lästes inte in", detail: (error as Error).message });
-              }
-            }}
-          />
-        </div>
-      </Section>
+        </Section>
+      )}
     </>
   );
 }

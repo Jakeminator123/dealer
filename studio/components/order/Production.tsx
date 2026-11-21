@@ -3,21 +3,22 @@
 // "Det här saknas för en runda", at the top of Beställ: the production list of the dealer chosen in the rail
 // (tools/produce.ts through GET /api/production). Pictures first: the dealer's three anchors, then one small card per step a
 // round needs that is not klar, each with the picture it starts from and its card drawn where the plan lays it, its state
-// as a chip (colour and sign) and one line in Jakob's words. The count says how far the round is, and one button makes
-// the drafts the list can make now (POST /api/production/draft; never an approval). "Visa alla" shows every step of the
-// graph. Folded away it is one line, so the orders below still read well. Reads on load and when the tab is seen again.
-import { ChevronDown, ChevronRight, Clock, Wand2 } from "lucide-react";
+// as a chip (colour and sign) and one line in Jakob's words. The count says how far the round is (tools/produce.ts counts it).
+// Drafts are made in Kortplan's step 3, not here. "Visa alla" shows every step of the graph. Folded away it is one line, so
+// the orders below still read well. Reads on load and when the tab is seen again.
+import { ChevronDown, ChevronRight, Clock } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { asApiError } from "../../lib/api.ts";
 import { dealerHref } from "../../lib/dealer.ts";
 import { labUrl } from "../../lib/lab.ts";
 import { FOR_YOU } from "../../lib/verdict.ts";
-import { PRODUCTION_CHIP, draftProduction, getProduction, productionCount, type Production as List, type ProductionAnchor, type ProductionRow } from "../../lib/orders.ts";
-import type { PlanAnswer } from "../../../src/order-model.ts";
+import { nodeCode } from "../../lib/names.ts";
+import { PRODUCTION_CHIP, getProduction, productionCount, type Production as List, type ProductionAnchor, type ProductionRow } from "../../lib/orders.ts";
+import { ANCHOR_NODE, type PlanAnswer } from "../../../src/order-model.ts";
 import { CARD_COLOUR } from "../../../src/placement-model.ts";
 import { CardMark } from "../placement/CardMark";
-import { Badge, Button, cn, useToast } from "../ui";
+import { Badge, Skeleton, cn } from "../ui";
 
 const W = 1764,
   H = 1174;
@@ -68,7 +69,7 @@ function StepCard({ row, plan, dealer, onOpen }: { row: ProductionRow; plan: Pla
     <div className="flex gap-2.5 rounded-lg border border-line bg-surface p-2">
       <StepPicture row={row} plan={plan} />
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <p className="truncate text-sm font-medium text-ink" title={row.edge}>
+        <p className="truncate text-sm font-medium text-ink">
           {row.label}
         </p>
         <Badge tone={chip.tone} className="self-start" title={row.words}>
@@ -98,14 +99,14 @@ function AnchorTile({ anchor }: { anchor: ProductionAnchor }) {
       <div className="relative aspect-[1764/1174] overflow-hidden rounded-md border border-line bg-well">
         {anchor.path ? (
           // eslint-disable-next-line @next/next/no-img-element -- a lab file
-          <img src={labUrl(anchor.path)} alt={`Ankare ${anchor.at}`} className={cn("size-full object-cover", anchor.state !== "gäller" && "opacity-60")} loading="lazy" />
+          <img src={labUrl(anchor.path)} alt={nodeCode(ANCHOR_NODE[anchor.at])} className={cn("size-full object-cover", anchor.state !== "gäller" && "opacity-60")} loading="lazy" />
         ) : (
           <div className="absolute inset-0 grid place-items-center bg-[repeating-linear-gradient(135deg,#0c110f_0_8px,#0a0e0c_8px_16px)] text-2xs text-faint">saknas</div>
         )}
       </div>
       <figcaption className="flex items-center gap-1 text-xs text-ink">
-        Ankare {anchor.at}
-        <Badge tone={ANCHOR_TONE[anchor.state]} title={anchor.orders.length ? `På väg: ${anchor.orders.map((o) => o.id).join(", ")}` : undefined}>
+        <span className="font-mono">{nodeCode(ANCHOR_NODE[anchor.at])}</span>
+        <Badge tone={ANCHOR_TONE[anchor.state]} title={anchor.orders.length ? `På väg: ${anchor.orders.length} ${anchor.orders.length === 1 ? "beställning" : "beställningar"}` : undefined}>
           {anchor.state}
         </Badge>
       </figcaption>
@@ -113,13 +114,10 @@ function AnchorTile({ anchor }: { anchor: ProductionAnchor }) {
   );
 }
 
-export function Production({ dealer, dealerName, plan, onOpen, onMade }: { dealer: string; dealerName: string; plan: PlanAnswer | null; onOpen: (id: string) => void; onMade: () => void }) {
+export function Production({ dealer, dealerName, plan, onOpen }: { dealer: string; dealerName: string; plan: PlanAnswer | null; onOpen: (id: string) => void }) {
   const [{ list, error }, setState] = useState<{ list: List | null; error: string | null }>({ list: null, error: null });
-  const setList = (next: List) => setState({ list: next, error: null });
   const [open, setOpen] = useState(true);
   const [all, setAll] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const toast = useToast();
 
   const read = useCallback(async () => {
     try {
@@ -136,32 +134,24 @@ export function Production({ dealer, dealerName, plan, onOpen, onMade }: { deale
     return () => document.removeEventListener("visibilitychange", seen);
   }, [read]);
 
-  const draft = async () => {
-    setBusy(true);
-    try {
-      const done = await draftProduction(dealer);
-      setList(done.list);
-      toast(done.made.length ? { tone: "ok", title: `${done.made.length} utkast gjorda`, detail: "De står under Klara att godkänna; inget är godkänt." } : { tone: "info", title: "Inget utkast gjordes", detail: done.skipped[0]?.why ?? "Inget steg kan beställas med en metod som gäller just nu." });
-      if (done.made.length) onMade();
-    } catch (e) {
-      toast({ tone: "bad", title: asApiError(e, "Utkasten").message });
-    } finally {
-      setBusy(false);
-    }
-  };
-
   if (error && !list) return <p className="rounded-lg border border-line bg-surface px-4 py-2.5 text-sm text-dim">Det här saknas för en runda: {error}</p>;
-  if (!list) return <div className="h-12 animate-pulse rounded-lg border border-line bg-surface" />;
+  if (!list)
+    return (
+      <p role="status" className="flex items-center gap-3 rounded-lg border border-line bg-surface px-4 py-2.5 text-sm text-dim">
+        Läser vad som saknas för en runda · {dealerName} …
+        <Skeleton className="h-4 w-40 rounded-sm" />
+      </p>
+    );
 
   const missing = list.rows.filter((r) => r.needed && r.state !== "KLAR");
   const rows = all ? list.rows : missing;
-  const ready = list.rows.filter((r) => r.orderable === "KAN" && r.state !== "KLAR" && r.state !== "DOM" && !r.orders.length).length;
   return (
     <section className="flex flex-col gap-3 rounded-lg border border-line bg-raised/40 p-3">
       <header className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <button type="button" onClick={() => setOpen((o) => !o)} className="flex items-center gap-1.5 text-left" aria-expanded={open}>
           {open ? <ChevronDown className="size-4 text-dim" /> : <ChevronRight className="size-4 text-dim" />}
-          <h2 className="font-display text-md font-semibold text-ink">Det här saknas för en runda</h2>
+          {/* one heading that says what holds: nothing lacking, or what lacks */}
+          <h2 className="font-display text-md font-semibold text-ink">{missing.length ? "Det här saknas för en runda" : "Allt en runda kräver är klart"}</h2>
           <span className="text-sm text-dim">· {dealerName}</span>
         </button>
         <span className="text-sm tabular-nums text-ink">{productionCount(list.counts)}</span>
@@ -176,9 +166,6 @@ export function Production({ dealer, dealerName, plan, onOpen, onMade }: { deale
               {all ? "Visa bara det som saknas" : `Visa alla ${list.counts.total}`}
             </button>
           ) : null}
-          <Button variant={ready ? "primary" : "secondary"} size="sm" icon={<Wand2 />} loading={busy} disabled={!ready} title={ready ? `${ready} steg kan beställas med en metod som gäller` : "Inget steg kan beställas med en metod som gäller just nu"} onClick={() => void draft()}>
-            Skapa utkast för det som kan beställas{ready ? ` (${ready})` : ""}
-          </Button>
         </div>
       </header>
       {open ? (
@@ -188,7 +175,7 @@ export function Production({ dealer, dealerName, plan, onOpen, onMade }: { deale
               <AnchorTile key={a.at} anchor={a} />
             ))}
             <p className="mb-1 max-w-[420px] text-xs leading-4 text-dim">
-              {list.counts.missing} saknas på Kartan · landningsbilder: {list.landings.length ? list.landings.map((t) => t.replace(".C1", "")).join(", ") : "inga"}. Varje plats andra kort spelar första kortets film.
+              {list.counts.missing} saknas på Kartan · landningsbilder: {list.landings.length ? list.landings.map((t) => nodeCode(t)).join(", ") : "ingen landningsbild finns än"}. Varje plats andra kort spelar första kortets film.
             </p>
           </div>
           {rows.length ? (
@@ -197,8 +184,8 @@ export function Production({ dealer, dealerName, plan, onOpen, onMade }: { deale
                 <StepCard key={r.edge} row={r} plan={plan} dealer={dealer} onOpen={onOpen} />
               ))}
             </div>
-          ) : (
-            <p className="text-sm text-[#6cc595]">Allt en runda kräver är klart.</p>
+          ) : all ? null : (
+            <p className="text-sm text-[#6cc595]">Varje steg en runda kräver har en film som gäller.</p>
           )}
         </>
       ) : null}

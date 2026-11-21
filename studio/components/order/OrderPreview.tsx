@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { MODELS, credits } from "../../../src/order-model.ts";
 import { asApiError } from "../../lib/api.ts";
+import { referenceName } from "../../lib/bordet.ts";
 import { labUrl } from "../../lib/lab.ts";
 import { createOrder, orderSaveFailure, previewOrder, type CreatedOrders, type Order, type OrderPreview as Preview, type OrderPreviewInput } from "../../lib/orders.ts";
 import { Button, Sheet } from "../ui";
@@ -29,7 +30,11 @@ function differences(previous: Order, current: Order) {
   ].filter(Boolean).join(", ");
 }
 
-export function OrderPreview({ input, onClose, onCreated }: { input: OrderPreviewInput; onClose: () => void; onCreated: (answer: CreatedOrders) => void }) {
+/**
+ * Förhandsvisa: the drafts exactly as the server would save them (text, pictures, reference film, values), before they are
+ * saved; "Skapa utkast" saves them and approves nothing. `note`: one line where nothing can be approved now (orderingState).
+ */
+export function OrderPreview({ input, names = {}, note = null, onClose, onCreated }: { input: OrderPreviewInput; names?: Record<string, string>; note?: string | null; onClose: () => void; onCreated: (answer: CreatedOrders) => void }) {
   const [preview, setPreview] = useState<Preview | null>(null);
   const [previous, setPrevious] = useState<Preview | null>(null);
   const [reload, setReload] = useState(0);
@@ -87,6 +92,7 @@ export function OrderPreview({ input, onClose, onCreated }: { input: OrderPrevie
         </>
       }
     >
+      {note ? <p data-ordering className="mb-4 rounded-sm bg-[#3a2a1a] px-2.5 py-1.5 text-sm text-[#f0b07a]">{note} Utkasten kan sparas, men inget kan godkännas så länge.</p> : null}
       {loading ? <p role="status" className="text-sm text-dim">Hämtar text, bilder och värden från labbservern …</p> : null}
       {error ? <p role="alert" className="mb-4 text-sm text-[#f0b07a]">{error.message}{error.retrySave ? " Svaret saknas; utkastet kan redan vara sparat. Försök igen med samma underlag för att få tillbaka resultatet." : ""}</p> : null}
       <div className="flex flex-col gap-8">
@@ -105,7 +111,7 @@ export function OrderPreview({ input, onClose, onCreated }: { input: OrderPrevie
               </div>
               {reference ? (
                 <div className="flex flex-col gap-1.5">
-                  <p className="text-sm text-ink">Referensfilm · {reference.clips.join(", ")} · {reference.seconds} s</p>
+                  <p className="text-sm text-ink">Referensfilm · {referenceName({ dealer: reference.dealer ?? order.dealer, edge: reference.from?.edge ?? `READY>${reference.goesTo}`, goesTo: reference.goesTo }, names)} · {String(reference.seconds).replace(".", ",")} s</p>
                   <video src={labUrl(reference.path)} controls muted playsInline preload="metadata" className="w-full rounded-md border border-line bg-well" />
                 </div>
               ) : <p className="text-sm text-dim">Ingen referensfilm</p>}

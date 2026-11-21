@@ -158,8 +158,7 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   docka som kan resa sig för plats 1 och 2. KORT-mallens historiska kortändevändning spärrar nu motstridiga val;
   H24 använder MINIMAL. En plats första tagning utan sista bild kräver en ny mall; och
   `film-fix` kortar ett stilla slut med högst tre rutor, så den nya ingången står stilla 1,3 s i slutet.
-  Skälet "ingen slutbild" säger handen i lagret men inte i Ny beställning (`NewOrder.tsx` anropar `seatEndMissing`
-  utan hand), och vänsterhandens text blir lika fel om bara ett A3 för höger hand gäller på platsen.
+  Vänsterhandens text blir fel om bara ett A3 för höger hand gäller på platsen.
 - **Det bandet inte kan än** ([tools/dealer-line.md](../tools/dealer-line.md)). Syns: i Beställ. Ankare 2.1 och 2.2 är
   steg (`STEPS` i `src/order-model.ts`), men landningsbild, keystone och ankare 1 är det inte. Tredje dealerkortet
   D.C3 finns nu i planen och Beställ; D.C4 saknas fortfarande som eget beställningsmål.
@@ -303,8 +302,6 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 - **Äldre slaskinventering behöver omprövas.** Listan `D:/dealer-scratch/tmp/stad-1118/` föregår den nya spärren
   med exakt sökväg och verifierad ägare. Verktyget kontrollerar filernas ändringstid vid körning och städar inte
   när labbet startar. Inga gamla förslag verkställs automatiskt; välj och verifiera ett eget avslutat arbete i taget.
-- **Ny beställning ritar ännu sin egen bild** (`studio/components/order/Stage.tsx`) i stället för Bordets. Syns: två
-  ritningar av samma bord. Prövat: inget. Stänger: Ny beställning använder Bordets bild.
 - **Borta ur labbet tills det nya har dem:** "Rå | renderad" på en tagning (hör till Efterarbete) och panelen Vila.
   Syns: det gamla labbet hade dem. Prövat: inget. Stänger: de byggs i Bordets läge Efterarbete.
 - **Sidornas ord:** 72 ställen säger annat än ordlistan. Syns: på studions sidor. Prövat: listan med fil, rad och

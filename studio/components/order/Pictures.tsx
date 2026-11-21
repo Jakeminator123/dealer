@@ -1,7 +1,7 @@
 "use client";
 
-// The pictures of an order, large: what each is in the call (startFrame, endFrame, referenceImages · @pose), where it comes
-// from, and on a picture with a drawn card a magnified inset of the card with the plan's outline over it and "1,1 px från
+// The pictures of an order, large: which picture it is (Första bild, Sista bild, the dealer's picture, the pose), whose it is,
+// where it comes from, and on a picture with a drawn card a magnified inset of the card with the plan's outline over it and "1,1 px från
 // planen". A picture that waits shows what it waits for (never another dealer's picture in its place). A click opens the
 // picture over the whole window (Z: full size, Esc closes).
 import * as RD from "@radix-ui/react-dialog";
@@ -9,7 +9,8 @@ import { Clock, Maximize2, Minimize2, X } from "lucide-react";
 import { useState } from "react";
 import { labUrl } from "../../lib/lab.ts";
 import { swedishMoment } from "../../lib/mode.ts";
-import { SHOWN_CHIP, goesWords, offsetWords, ownerWords, shownWords, type OrderAnswer, type Owner, type Picture } from "../../lib/orders.ts";
+import { cardCode } from "../../lib/names.ts";
+import { SHOWN_CHIP, offsetWords, ownerWords, shownWords, type OrderAnswer, type Owner, type Picture } from "../../lib/orders.ts";
 import type { Drawn } from "../../../src/order-model.ts";
 import { CARD_COLOUR } from "../../../src/placement-model.ts";
 import { CardMark } from "../placement/CardMark";
@@ -102,10 +103,9 @@ export function PictureCard({ picture, owner, dealer, planned, className }: { pi
       <figcaption className="flex flex-wrap items-center gap-2">
         <span className="font-display text-md font-semibold text-ink">{picture.label}</span>
         {owner !== undefined && dealer ? <OwnerChip owner={owner} dealer={dealer} /> : null}
-        <code className="truncate font-mono text-xs text-faint">{goesWords(picture)}</code>
         {drawn ? (
           <Badge tone="brass" className="ml-auto">
-            kortet {drawn.target} · {drawn.side === "BACK" ? "stängt" : "öppet"} · {offsetWords(drawn.measuredOffsetPx)}
+            kortet {cardCode(drawn.target) ?? drawn.target} · {drawn.side === "BACK" ? "stängt" : "öppet"} · {offsetWords(drawn.measuredOffsetPx)}
           </Badge>
         ) : null}
       </figcaption>
@@ -136,14 +136,13 @@ export function PictureCard({ picture, owner, dealer, planned, className }: { pi
           </div>
         ) : null}
       </div>
-      <p className="truncate text-xs text-dim" title={picture.from?.path ?? undefined}>
+      <p className="truncate text-xs text-dim">
         {picture.from?.built ? `Ritad: ${picture.from.built}${drawn ? " (i rutan: kortet förstorat, planens kontur streckad)" : ""}` :picture.from?.note ? `Ur: ${picture.from.note}${picture.from.frame !== undefined ? `, ruta ${picture.from.frame}` : ""}` : picture.waits ? `Väntar på ${picture.waits.label}` : ""}
-        {picture.sha256 ? <span className="ml-2 font-mono text-faint">sha256 {picture.sha256.slice(0, 12)}</span> : null}
       </p>
       {drawn ? (
         // The drawn card's pixels come from a frame of another film: only the card itself is taken, nothing of the person in it.
-        <p className="text-xs text-dim" title={drawn.texture.video}>
-          Kortets yta: ur filmruta {drawn.texture.frame} av {drawn.texture.video.split("/").slice(-2, -1)[0]}, bara kortet; resten är första bilden.
+        <p className="text-xs text-dim">
+          Bara kortet är ritat in; resten är första bilden.
           {drawn.scale ? <span className="ml-1 text-[#f0b07a]">Prov: kortet {Math.round(drawn.scale * 100)} % av planens.</span> : null}
         </p>
       ) : null}
@@ -154,7 +153,7 @@ export function PictureCard({ picture, owner, dealer, planned, className }: { pi
       ) : null}
       {picture.cut?.matched ? (
         <p className="text-xs text-dim">
-          Grönt som ankaret: {picture.cut.matched.before.join(" ")} → {picture.cut.matched.after.join(" ")} (ankaret {picture.cut.matched.anchor.join(" ")}).
+          Det gröna är justerat till ankarets.
         </p>
       ) : null}
       {src ? <PictureViewer src={src} title={picture.label} open={open} onOpenChange={setOpen} /> : null}
