@@ -15,6 +15,14 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 
 ## Arbetet och dokumenten
 
+- **Mappen dealer, testerna och media på nätet** (2026-11-21, kl. 16.55): "Varför jobbar ni inte alltid i mappen
+  'dealer'? – visst, ska en branch/worktree eller nått användas uttryckligen kanske det ska arbetas på andra ställen,
+  men liksom mer som best practice-sätt." Om testerna: CI på GitHub "kostar pengar och ska göras väldigt sällan";
+  "är testerna lokalt BRA på riktigt ska de såklart göras, men 1500 tester (?)". Om media: "ska endast filer som används
+  i casinot finnas + filer som kan behövas och testas med typ i och under fliken 'Scen & Bord'. Allt detta material ska
+  finnas i en blob på Vercel." Läst så: arbetet görs i `dealer`, och ett extra träd bara när det uttryckligen behövs;
+  ingen CI på GitHub (det finns ingen); den lokala sviten körs en gång per push och inte flera; det som går upp till
+  Blob avgränsas till Casinot och Scen & bord, vilket görs vid nästa publicering på hans ord.
 - **Projektmapp och städning** (2026-11-19): "Du ska jobba i projektet och i den mapp eller det arbetsträd som
   `codebase` eller en annan IDE använder"; "Jag vill att det mesta som inte används ska raderas". Fria händer att
   förbättra lokal struktur och rutiner. D: är inte arbetsförval. Kontrollera användning före radering; betalning
@@ -316,6 +324,10 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   platsens egen slutbild, en per plats, och den ensamma bilden för plats 4 ställs undan.
 - **3D-dockan** (Beslut 2026-11-18, kl. 01.04): ja till blicken och den friare vilande handen, nej till att bygga
   vidare på Meshy-modellen av Paow, och ja till ett betalt prov av dealern sedd från stol 1.
+- **SAM-dockan ska in, men inte nu** (2026-11-21, till sessionen dealer-37): Paulinas docka i projektet Ultimate
+  Reality är gjord med SAM 3D Body ur foton, och 3D-banans docka här är byggd för hand. Han svarade: "Jag vill ha in
+  SAM-metoden/dockan. men inte nu.." och att han ersätter den "när jag har en bättre modell av paulina från SAM vid
+  tillfälle". Dagens docka styr givarna tills vidare.
 - **Ett tredje och fjärde dealerkort** (2026-11-13): "Skapa då ett tredje och fjärde till dealer". Inte byggt: planen
   har sexton platser, så en film dit går inte att beställa; hur det ska byggas är en fråga för ett kort i Beslut.
 - **Önskemål för senare** (hans lista 2026-11-11 och 2026-11-13; inget är beställt): mer av höger arm, kaffe ur en mugg
