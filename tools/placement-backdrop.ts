@@ -1,11 +1,14 @@
-// The neutral backdrop of the studio's view Placering: the studio's own table, a neutral seated figure where the dealer sits,
+// The neutral backdrops of the studio's view Placering: the studio's own table, a neutral seated figure where the dealer sits,
 // and the bank's shoe where the shoe stands, in the plan's native pixels (1762 × 1174), so that Jakob plans card places, and
-// the films he orders, on the table the films are played on and on no dealer's picture.
+// the films he orders, on the table the films are played on and on no dealer's picture. Beside Siluett, one picture per doll
+// (src/placement-model.ts DOLL_BACKDROPS): the same table and shoe with the doll at rest where the figure sits.
 //   node tools/placement-backdrop.ts [--proof <png>] [--keep <folder>] [--from <folder>] [--port <devtools port>]
-// The lab server (127.0.0.1:4319) must be running; it is only read. One headless Chrome is started and closed again.
-// Writes assets/lab/placement-backdrop/native.jpg and receipt.json beside it (sources with SHA-256, the scene's state, the
-// figure's measures and the fit measured against two bank films). --proof writes a picture of the fit, --keep the raw stills,
-// --from builds from stills kept earlier instead of starting Chrome (the receipt says so).
+// The lab server (127.0.0.1:4319) must be running; it is only read. First the dolls' stills are made (dealer3d/tools/
+// doll-still.ts, its own Chrome under the shared lock); then one headless Chrome for the table, under the same lock, closed
+// again. Writes assets/lab/placement-backdrop/native.jpg, docka-<doll>.jpg per doll and receipt.json beside them (sources with
+// SHA-256, the scene's state, the figure's measures, the dolls' stills and the fit measured against two bank films). --proof
+// writes a picture of the fit, --keep the raw stills, --from builds from stills kept earlier instead of starting Chrome, with
+// the dolls' stills as they lie (the receipt says so).
 //
 // How it is made. Seen from the film camera, the 3D scene shows a film pixel for pixel (docs/SYSTEM.md "3D-scenen"): in the
 // scene's home view at 1764 × 1174 the film frame is the whole canvas, one rectangle, with no warp, so a still of that view is
@@ -20,19 +23,28 @@
 // figure sits where a dealer sits without carrying anyone's outline. Film pixels become plan pixels by one resize (1764 →
 // 1762 wide, x_plan = x_film × 1761 / 1763 as everywhere else). The pure parts are exported and tested in
 // tools/placement-backdrop.test.ts.
+//
+// A doll's picture is the table and shoe without the figure, the doll's transparent still over it (already in plan pixels)
+// and the shoe over the doll as over the figure: the table under a doll is the table under Siluett, and the doll is drawn
+// from its own measures, never from a picture of the dealer.
 import {spawn, execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {mkdir, readFile, rename, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
-import {NEUTRAL_BACKDROP, VIEWS, planQuad, validatePlan, type PlacementPlan} from '../src/placement-model.ts';
+import {DOLL_BACKDROPS, NEUTRAL_BACKDROP, VIEWS, planQuad, validatePlan, type PlacementPlan} from '../src/placement-model.ts';
 import {SHIPPED} from '../studio/lib/scene-presets.ts';
+import {LOCK, lockLine, releaseLock, takeLock} from './lab-look.ts';
 
 export const FILM = {width: 1764, height: 1174};
 export const PLAN = {width: VIEWS.native.width, height: VIEWS.native.height};
 /** The picture and its receipt. */
 export const OUT = NEUTRAL_BACKDROP.native;
 export const RECEIPT = path.posix.join(path.posix.dirname(OUT), 'receipt.json');
+/** A doll's transparent still and the receipt of the stills, as dealer3d/tools/doll-still.ts writes them beside the picture. */
+export const dollStill = (doll: string) => path.posix.join(path.posix.dirname(OUT), `docka-${doll}.png`);
+export const DOLL_RECEIPT = path.posix.join(path.posix.dirname(OUT), 'docka-receipt.json');
+export const DOLL_STILLS = 'node dealer3d/tools/doll-still.ts';
 /** Anchor 1 of the dealer standard: the rest film's first frame, whose shoe every dealer shares (data/dealer-standard.json shoe.perDealer). */
 export const REST = {film: 'pamela-idle-ready-entry-01', frame: 0};
 /** Bank films with their card lying on a place, for the fit: late in the P4 deal (the hand still on the card), and the return where it lies free. */
@@ -195,6 +207,20 @@ ${hands2.map(h => `<path d="${smoothPath(h)}" stroke-width="3"/>`).join('')}
 </svg>`;
 }
 
+// ── A doll in the figure's place ────────────────────────────────────────────
+type Raw = {data: Buffer | Uint8Array; width: number; height: number};
+/**
+ * A doll's picture in plan pixels (PNG): the table without the figure (film pixels, RGB), the doll's still over it (a PNG in
+ * plan pixels with alpha) and the shoe over the doll (film pixels, RGBA, transparent off the shoe). Each layer in film pixels
+ * is resized once (fill, lanczos3), as the whole of Siluett is, so where the doll is transparent the table is Siluett's.
+ */
+export async function dollOver(table: Raw, shoe: Raw, doll: Buffer, plan: {width: number; height: number} = PLAN): Promise<Buffer> {
+  const m = await sharp(doll).metadata();
+  if (m.width !== plan.width || m.height !== plan.height || !m.hasAlpha) throw Error(`Dockans bild ska vara ${plan.width} × ${plan.height} med genomskinlig bakgrund, inte ${m.width} × ${m.height}${m.hasAlpha ? '' : ' utan'}.`);
+  const toPlan = (r: Raw, channels: 3 | 4) => sharp(r.data, {raw: {width: r.width, height: r.height, channels}}).resize(plan.width, plan.height, {fit: 'fill', kernel: 'lanczos3'}).png().toBuffer();
+  return sharp(await toPlan(table, 3)).composite([{input: doll}, {input: await toPlan(shoe, 4)}]).png().toBuffer();
+}
+
 // ── The card in a picture, for the fit ──────────────────────────────────────
 /** Pixels of a card's tracking face: blue for an open card, yellow for a closed one. */
 export const cardColour = (side: 'FRONT' | 'BACK') => side === 'FRONT'
@@ -301,7 +327,9 @@ async function proofPicture(file: string, backdrop: Buffer, scene: Buffer, plan:
 
 export async function build(options: {proof?: string | null; keep?: string | null; from?: string | null; port?: number} = {}) {
   const health = await fetch(`${LAB}/health`).then(r => r.json()).catch(() => null) as {root?: string} | null;
-  if (!health?.root || path.resolve(health.root) !== path.resolve(process.cwd())) throw Error('Labbservern för den här mappen svarar inte på 127.0.0.1:4319. Starta den (START.cmd) och kör igen.');
+  // one folder however its drive letter is written (c:\ from a shell, C:\ from START.cmd)
+  const folder = (p: string) => process.platform === 'win32' ? path.resolve(p).toLowerCase() : path.resolve(p);
+  if (!health?.root || folder(health.root) !== folder(process.cwd())) throw Error('Labbservern för den här mappen svarar inte på 127.0.0.1:4319. Starta den (START.cmd) och kör igen.');
   const [standardText, contractText, planText] = await Promise.all(['data/dealer-standard.json', 'data/scene-contract.json', 'placements/default.json'].map(f => readFile(f, 'utf8')));
   const standard = JSON.parse(standardText), contract = JSON.parse(contractText), plan = JSON.parse(planText) as PlacementPlan; validatePlan(plan);
   if (!String(standard.shoe?.perDealer ?? '').includes(REST.film)) throw Error(`Grundstandarden pekar inte längre på ${REST.film} för skon; se över REST.`);
@@ -313,13 +341,26 @@ export async function build(options: {proof?: string | null; keep?: string | nul
   const basgrund = SHIPPED.find(p => p.name === 'basgrund'); if (!basgrund) throw Error('Förvalet Basgrund saknas.');
   const look = lookOf(basgrund.state);
 
+  // The dolls' stills first: their tool takes the shared lock itself, so it runs before this one takes it for the table.
+  if (!options.from) execFileSync(process.execPath, ['dealer3d/tools/doll-still.ts', '--out', path.posix.dirname(OUT)], {stdio: 'inherit', windowsHide: true});
+  const dollStills = await Promise.all(DOLL_BACKDROPS.map(async d => {
+    const png = await readFile(dollStill(d.doll)).catch(() => null);
+    if (!png) throw Error(`${dollStill(d.doll)} saknas: kör ${DOLL_STILLS} (eller det här verktyget utan --from).`);
+    return {...d, still: dollStill(d.doll), png};
+  }));
+  const dollReceiptText = await readFile(DOLL_RECEIPT, 'utf8');
+
   const scratch = path.resolve('.runtime'), port = options.port ?? 9481;
   const profile = path.join(scratch, 'placement-backdrop', `chrome-profile-${port}`);
   const shots: Shot[] = [{name: 'table', film: null, frame: REST.frame, hide: true}, {name: 'rest', film: null, frame: REST.frame, hide: false}, ...PROOFS.map(p => ({name: `${p.film}-${p.frame}`, film: p.film, frame: p.frame, hide: false}))];
   // --from: the stills a run kept with --keep, so that the figure can be redrawn without starting Chrome again
   const {stills, browser} = options.from
     ? {stills: await Promise.all(shots.map(async s => ({name: s.name, png: await readFile(path.join(options.from!, `${s.name}.png`)), frame: s.hide ? null : s.frame}))), browser: `stills from ${options.from}`}
-    : await capture(port, look, shots, profile);
+    : await (async () => {
+      const line = lockLine('placement-backdrop', 'Siluettens bord, sko och passning', 5, new Date());
+      if (!await takeLock(LOCK, line)) throw Error('GPU-låset är upptaget.');
+      try { return await capture(port, look, shots, profile); } finally { if (!releaseLock(LOCK, line)) console.error('GPU-låsets ägare ändrades under körningen.'); }
+    })();
   if (!options.from) await rm(profile, {recursive: true, force: true, maxRetries: 5, retryDelay: 400}).catch(() => {});
   if (options.keep) { await mkdir(options.keep, {recursive: true}); for (const s of stills) await writeFile(path.join(options.keep, `${s.name}.png`), s.png); }
 
@@ -339,6 +380,8 @@ export async function build(options: {proof?: string | null; keep?: string | nul
   // table and shoe, the figure over them, the shoe over the figure (it stands on the felt in front of her elbow)
   const film = await sharp(composed, {raw: {width: W, height: H, channels: 3}}).composite([{input: figure}, {input: shoeOver, raw: {width: W, height: H, channels: 4}}]).png().toBuffer();
   const picture = await sharp(film).resize(PLAN.width, PLAN.height, {fit: 'fill', kernel: 'lanczos3'}).jpeg({quality: 90, chromaSubsampling: '4:4:4'}).toBuffer();
+  // each doll where the figure was: the table and shoe without the figure, the doll, the shoe over the doll
+  const dolls = await Promise.all(dollStills.map(async d => ({...d, picture: await sharp(await dollOver({data: composed, width: W, height: H}, {data: shoeOver, width: W, height: H}, d.png)).jpeg({quality: 90, chromaSubsampling: '4:4:4'}).toBuffer()})));
 
   // The fit: each proof frame's card in the scene against the same frame of the film itself, and against the plan's quad.
   const fit = [];
@@ -369,6 +412,8 @@ export async function build(options: {proof?: string | null; keep?: string | nul
     table: {page: 'scene3d.html?ui=0', preset: 'basgrund', state: look, filmHidden: true, marks: `${MARKS} (no card boxes: the view draws the plan's cards)`},
     shoe: {from: `${REST.film} frame ${REST.frame}, as the scene keys it`, patch: list[shoe].box, pixels: shoePixels, rule: 'the scene with the film against the scene without it: the connected patch that fills the standard\'s shoe box, grown 3 px, without the dealer\'s patch grown 2 px'},
     figure: {fill: FIGURE.fill, softEdgePx: FIGURE.soft, handShadow: FIGURE.shadow, body, bodyEndsOnRow: bodyEnd, edgeRow, hands: 'data/dealer-standard.json hands (wrist, knuckles, middle fingertip), mittens', knuckleBreadthPx: knuckles, note: 'drawn from these numbers only; no outline of a dealer is used'},
+    dolls: {made: options.from ? 'the stills as they lay (--from)' : DOLL_STILLS, layers: 'the table and shoe without the figure, the doll\'s still over it, the shoe over the doll; the table and shoe resized once from film pixels, the still already in plan pixels', stillsReceipt: {path: DOLL_RECEIPT, sha256: sha(dollReceiptText)},
+      pictures: dolls.map(d => ({id: d.id, doll: d.doll, path: d.native, width: PLAN.width, height: PLAN.height, bytes: d.picture.length, sha256: sha(d.picture), still: {path: d.still, sha256: sha(d.png)}}))},
     sources: {
       'data/dealer-standard.json': sha(standardText), 'data/scene-contract.json': sha(contractText), 'placements/default.json': sha(planText),
       [`assets/motions/${REST.film}/source.mp4`]: restHash, ...Object.fromEntries(PROOFS.map((p, i) => [`assets/motions/${p.film}/source.mp4`, proofHashes[i]])),
@@ -377,7 +422,7 @@ export async function build(options: {proof?: string | null; keep?: string | nul
     fit,
   };
   await mkdir(path.dirname(OUT), {recursive: true});
-  for (const [file, bytes] of [[OUT, picture], [RECEIPT, Buffer.from(JSON.stringify(receipt, null, 2) + '\n')]] as const) { const temp = `${file}.${process.pid}.tmp`; await writeFile(temp, bytes); await rename(temp, file); }
+  for (const [file, bytes] of [[OUT, picture], ...dolls.map(d => [d.native, d.picture] as const), [RECEIPT, Buffer.from(JSON.stringify(receipt, null, 2) + '\n')]] as const) { const temp = `${file}.${process.pid}.tmp`; await writeFile(temp, bytes); await rename(temp, file); }
   if (options.proof) { const best = fit[fit.length - 1]; await proofPicture(options.proof, await sharp(picture).png().toBuffer(), await sharp(stills[stills.length - 1].png).resize(PLAN.width, PLAN.height, {fit: 'fill', kernel: 'lanczos3'}).png().toBuffer(), plan, {place: best.place, card: best.centres.scene, plan: best.centres.plan}); }
   return receipt;
 }
@@ -385,5 +430,5 @@ export async function build(options: {proof?: string | null; keep?: string | nul
 if (import.meta.main) {
   const args = process.argv.slice(2), value = (flag: string) => { const i = args.indexOf(flag); return i >= 0 ? args[i + 1] ?? null : null; };
   const receipt = await build({proof: value('--proof'), keep: value('--keep'), from: value('--from'), port: value('--port') ? Number(value('--port')) : undefined});
-  console.log(JSON.stringify({picture: receipt.picture, body: receipt.figure.body, fit: receipt.fit.map(f => ({film: f.film, frame: f.frame, sceneAgainstFilm: f.sceneAgainstFilm.px, planAgainstCard: f.planAgainstCard, size: f.sizeAgainstPlan, table: f.tableUnderFilm.maxDifference}))}, null, 2));
+  console.log(JSON.stringify({picture: receipt.picture, dolls: receipt.dolls.pictures, body: receipt.figure.body, fit: receipt.fit.map(f => ({film: f.film, frame: f.frame, sceneAgainstFilm: f.sceneAgainstFilm.px, planAgainstCard: f.planAgainstCard, size: f.sizeAgainstPlan, table: f.tableUnderFilm.maxDifference}))}, null, 2));
 }

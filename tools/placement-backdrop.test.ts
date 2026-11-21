@@ -1,14 +1,15 @@
 // The pure parts of tools/placement-backdrop.ts: film and plan pixels, the patches that tell dealer from shoe, the body's
-// measures, the figure (its cut at the table edge, the hands over it), the card in a picture, and the scene's look. The
-// stills themselves need the lab server and Chrome and are not made here. Run: node --test tools/placement-backdrop.test.ts
+// measures, the figure (its cut at the table edge, the hands over it), a doll in the figure's place and its name in the studio's
+// list, the card in a picture, and the scene's look. The stills themselves need the lab server and Chrome and are not made here. Run: node --test tools/placement-backdrop.test.ts
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import sharp from 'sharp';
 import {FELT_MARKS} from '../src/scene3d-table.ts';
-import {NEUTRAL_BACKDROP, VIEWS} from '../src/placement-model.ts';
+import {DOLL_BACKDROPS, NEUTRAL_BACKDROP, VIEWS} from '../src/placement-model.ts';
+import {STILL, STILLS, readPlacementAddress, shownBackdrop, stillsFor} from '../studio/lib/placement.ts';
 import {SHIPPED} from '../studio/lib/scene-presets.ts';
 import {
-  FILM, MARKS, OUT, PLAN, RECEIPT, cardIn, differs, figureSvg, filmToPlan, grown, lookOf, measureBody, mitten, patchIn, patches, planToFilm, quadCentre, smoothPath, type Body, type Hand,
+  DOLL_RECEIPT, FILM, MARKS, OUT, PLAN, RECEIPT, cardIn, dollOver, dollStill, differs, figureSvg, filmToPlan, grown, lookOf, measureBody, mitten, patchIn, patches, planToFilm, quadCentre, smoothPath, type Body, type Hand,
 } from './placement-backdrop.ts';
 
 test('the picture lies beside the hash-locked V6 pictures, never on them', () => {
@@ -17,6 +18,52 @@ test('the picture lies beside the hash-locked V6 pictures, never on them', () =>
   assert.notEqual(OUT, VIEWS.native.background);
   assert.equal(RECEIPT, 'assets/lab/placement-backdrop/receipt.json');
   assert.equal('portrait' in NEUTRAL_BACKDROP, false, 'Mobil has no home view of the scene to match');
+});
+
+test("a doll's picture lies beside Siluett's, its still and the stills' receipt beside it", () => {
+  assert.deepEqual(DOLL_BACKDROPS.map(d => d.doll), ['standard', 'paow']);
+  for (const d of DOLL_BACKDROPS) {
+    assert.equal(d.id, `docka-${d.doll}`);
+    assert.equal(d.native, `assets/lab/placement-backdrop/docka-${d.doll}.jpg`);
+    assert.equal(dollStill(d.doll), `assets/lab/placement-backdrop/docka-${d.doll}.png`);
+    assert.ok(![OUT, VIEWS.native.background, VIEWS.portrait.background].includes(d.native));
+  }
+  assert.equal(DOLL_RECEIPT, 'assets/lab/placement-backdrop/docka-receipt.json');
+});
+
+test("the studio's list: Siluett first and the default, then the dolls by their word, Paow's doll next for her; the address names one", () => {
+  assert.equal(STILL, 'neutral');
+  assert.deepEqual(STILLS.map(s => [s.id, s.word, s.path]), [['neutral', 'Siluett', OUT], ...DOLL_BACKDROPS.map(d => [d.id, `Docka: ${d.doll}`, d.native])]);
+  assert.deepEqual(stillsFor('pamela').map(s => s.id), ['neutral', 'docka-standard', 'docka-paow']);
+  assert.deepEqual(stillsFor('paow').map(s => s.id), ['neutral', 'docka-paow', 'docka-standard']);
+  const address = readPlacementAddress(new URLSearchParams('bakgrund=docka-paow'));
+  assert.equal(address.backdrop, 'docka-paow');
+  assert.deepEqual(shownBackdrop(address.backdrop, []), {kind: 'still', still: 'docka-paow', path: 'assets/lab/placement-backdrop/docka-paow.jpg'});
+  assert.deepEqual(shownBackdrop(null, []), {kind: 'still', still: 'neutral', path: OUT});
+  assert.deepEqual(shownBackdrop('docka-okand', []), {kind: 'still', still: 'neutral', path: OUT}, 'an unknown name shows Siluett');
+});
+
+test("a doll in the figure's place: the table where the doll is clear, the doll over the table, the shoe over the doll", async () => {
+  const film = {width: 64, height: 24}, plan = {width: 62, height: 24};
+  const table = new Uint8Array(film.width * film.height * 3), shoe = new Uint8Array(film.width * film.height * 4);
+  for (let i = 0; i < film.width * film.height; i++) table.set([10, 120, 60], i * 3);
+  for (let y = 2; y <= 21; y++) for (let x = 2; x <= 24; x++) shoe.set([200, 30, 30, 255], (y * film.width + x) * 4);
+  const rgba = new Uint8Array(plan.width * plan.height * 4);
+  for (let y = 4; y <= 19; y++) for (let x = 14; x <= 40; x++) rgba.set([240, 240, 240, 255], (y * plan.width + x) * 4);
+  const doll = await sharp(rgba, {raw: {...plan, channels: 4}}).png().toBuffer();
+  const out = await dollOver({data: table, ...film}, {data: shoe, ...film}, doll, plan);
+  const {data, info} = await sharp(out).removeAlpha().raw().toBuffer({resolveWithObject: true});
+  assert.deepEqual([info.width, info.height], [plan.width, plan.height]);
+  const at = (x: number, y: number) => [...data.subarray((y * info.width + x) * 3, (y * info.width + x) * 3 + 3)];
+  const near = (got: number[], want: number[], what: string) => assert.ok(got.every((v, i) => Math.abs(v - want[i]) <= 2), `${what}: ${got}`);
+  near(at(52, 12), [10, 120, 60], 'the table where the doll is clear');
+  near(at(30, 12), [240, 240, 240], 'the doll over the table');
+  near(at(19, 12), [200, 30, 30], 'the shoe over the doll');
+  near(at(7, 12), [200, 30, 30], 'the shoe over the table');
+  near(at(30, 1), [10, 120, 60], 'the table above the doll');
+  const flat = await sharp(rgba, {raw: {...plan, channels: 4}}).removeAlpha().png().toBuffer();
+  await assert.rejects(dollOver({data: table, ...film}, {data: shoe, ...film}, flat, plan), /genomskinlig/, 'a doll without alpha would hide the table');
+  await assert.rejects(dollOver({data: table, ...film}, {data: shoe, ...film}, doll, film), /64 × 24/, 'a doll in film pixels is not resized here');
 });
 
 test('film pixels and plan pixels: the two ends meet, and one is the other undone', () => {

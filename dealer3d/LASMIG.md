@@ -222,10 +222,12 @@ docka med Paows mått i stället för Siluetten i studion, där dockan ska gå a
 - **Kedja paow-filmer**: filmen börjar i hennes ställning, inte i standarddockans, och ingångsfilmen till A2.3
   (`data/till-ankare-2-3-c.json`) är standarddockans. Ska paow-filmer kedjas behövs en paow-ingångsfilm:
   `doll-pose.ts` på `till-ankare-2-3-c.json` fogar mot paow-given på 0 px (prövat 2026-11-21), men ingen film är gjord av den.
-- **Dockan i studion** (förberett, inte inkopplat): `node dealer3d/tools/doll-still.ts` bygger `docka-standard.png`,
-  `docka-paow.png` (vila, ankare 1, genomskinlig bakgrund, 1762 × 1174 i planens bildpunkter som Siluetten) och
-  `docka-receipt.json` i `assets/lab/placement-backdrop/`, under låset; labbservern behövs inte. Över Siluettens bild
-  syns dess ritade figur bredvid dockans armar: studion behöver bordet utan figur under dockan.
+- **Dockan i studion** (2026-11-21): Kortplans lista har "Docka: standard" och "Docka: paow" efter Siluett, som är
+  förval tills Jakob har valt; valet står i adressen (`?bakgrund=docka-paow`). `node tools/placement-backdrop.ts` bygger
+  Siluett och en bild per docka (`docka-<docka>.jpg`): bordet och skon utan figur, dockan över, skon överst. Dockan kommer
+  ur `doll-still.ts` (vila, ankare 1, genomskinlig, 1762 × 1174), som verktyget kör först, under låset.
+- **Känd avvikelse:** dockornas vila är första rutan i `till-ankare-2-3-c.json`. Hennes högra hand ligger inom 3 px från
+  vilobilden i `data/dealer-standard.json`, den vänstra (till höger i bilden) 15 px längre in (marginalen där är 8 px). Den får stå tills vidare.
 - **Räckvidd** (`tests/doll.test.ts`): med handen närmast platsen når paow alla 17 platser i Jakobs plan inom 9°; med
   höger hand, som lägger alla sitsfilmer hittills, säte 1–5 och dealerns platser. Säte 6 och 7 kräver med höger hand
   11,7–24,4° för henne och 8,7–19,9° för standarddockan.

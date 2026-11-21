@@ -2,11 +2,8 @@
 // the handles' arithmetic, numbers with a decimal comma, the view's address, what the cards can be laid over (the neutral
 // backdrop, the V6 picture, the films). The plan's own rules (where a card is drawn, how an edit
 // is made) are src/placement-model.ts. Pure: no DOM, no network; the motion's words are tested in studio/tests/bordet-line.test.ts.
-import { DEALER, dealHub, isCurrent, playable, takeRole, ROLE_LABEL, type Graph } from "../../src/clip-graph.ts";
-import { SEAT_HUB } from "../../src/game-director.ts";
-import { ANCHOR_NODE, defaultFlip, seatWords, type FlipAxis } from "../../src/order-model.ts";
-import { NEUTRAL_BACKDROP, SHOE, TARGETS, VIEWS, editIntent, editPlace, motionNodes, sequence, toPixels, type Geometry, type Hand, type Intent, type Place, type PlacementPlan, type Side, type View } from "../../src/placement-model.ts";
-import { nameOf } from "./dealer.ts";
+import { DEALER, isCurrent, playable, takeRole, ROLE_LABEL, type Graph } from "../../src/clip-graph.ts";
+import { DOLL_BACKDROPS, NEUTRAL_BACKDROP, SHOE, TARGETS, VIEWS, editPlace, motionNodes, sequence, toPixels, type Geometry, type Hand, type Intent, type Place, type PlacementPlan, type Side, type View } from "../../src/placement-model.ts";
 import { cardCode, nodeCode } from "./names.ts";
 
 // ── Places ──────────────────────────────────────────────────────────────────
@@ -98,15 +95,6 @@ export function changedPlaces(a: PlacementPlan, b: PlacementPlan): { places: Pla
 
 // ── The picture ─────────────────────────────────────────────────────────────
 export type Pt = { x: number; y: number };
-/** A card's drawn size in the view's pixels: the near edge's length × the distance between its two edges' middles ("41 × 57 px"). */
-export function quadSize(q: readonly Pt[]): { width: number; depth: number; text: string } {
-  const mid = (a: Pt, b: Pt) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
-  const top = mid(q[0], q[1]);
-  const bottom = mid(q[2], q[3]);
-  const width = Math.hypot(q[2].x - q[3].x, q[2].y - q[3].y);
-  const depth = Math.hypot(bottom.x - top.x, bottom.y - top.y);
-  return { width, depth, text: `${Math.round(width)} × ${Math.round(depth)} px` };
-}
 export const centreOf = (q: readonly Pt[]): Pt => ({ x: q.reduce((s, p) => s + p.x, 0) / q.length, y: q.reduce((s, p) => s + p.y, 0) / q.length });
 
 /** A point of the picture in the card's own frame: x along its near edge, y toward the near edge, both in pixels from its centre. */
@@ -173,18 +161,6 @@ export function nudged(plan: PlacementPlan, id: Place, view: View, key: string, 
  * from (lib/bordet.ts wishAnchor) to motionSteps instead.
  */
 export const anchorOf = (intent: Pick<Intent, "grip" | "pass">) => (intent.pass ? "A2.3" : intent.grip === "DRAG" ? "A2.2" : "A2.1");
-/** The grip by its label, where Beställ's queue says how a stored order and the plan differed (no longer a choice in Kortplan). */
-export const GRIP_LABEL: Record<Intent["grip"], string> = { PINCH: "A2.1 nyp", DRAG: "A2.2 släp" };
-/**
- * How a card of the plan is turned, in the order's one word (src/order-model.ts FlipAxis, the same labels FLIP_LABEL in
- * Placering and Beställ): AT_PLACE where it turns at its place, else its turn on the way (FREE, the wrist; LONG_EDGE, a key).
- */
-export const flipOf = (intent: Pick<Intent, "turnAt" | "flipAxis">): FlipAxis => defaultFlip("", intent.turnAt, intent.flipAxis);
-/** A card's turn set from the order's word: AT_PLACE turns it at its place (its axis on the way is kept), the others on the way. */
-export function editFlip(plan: PlacementPlan, id: string, axis: FlipAxis): PlacementPlan {
-  if (axis === "AT_PLACE") return editIntent(plan, id, "turnAt", "PLACE");
-  return editIntent(editIntent(plan, id, "turnAt", "AIR"), id, "flipAxis", axis);
-}
 export type MotionStep = { id: string; label: string; detail: string };
 /** How the hand at the shoe takes the card from each anchor. */
 const TAKE_WORD: Record<string, string> = { "A2.1": "Nyp", "A2.2": "Släp", "A2.3": "Drar ut" };
@@ -205,17 +181,6 @@ export function motionSteps(id: string, intent: Intent, anchor: string = anchorO
   };
   return { steps: motionNodes(id, intent).map((n) => words[n.id](n.detail)), code: sequence(id, intent) };
 }
-/**
- * Where the game deals a card from A2.2 instead of A2.1: the game's own map per dealer (SEAT_HUB in src/game-director.ts;
- * Paow's seat 6 today, a seat's second card with its first). One line per such dealer, for Kortplan to show at the place;
- * the plan is not changed by it. A card without handbyte has its films from that anchor (lib/bordet.ts wishAnchor); with
- * handbyte from A2.3, which step 3 says (gameLine). The plan's grip is no longer a choice and is not compared.
- */
-export function gameDealNotes(plan: PlacementPlan, id: Place): string[] {
-  const t = id === SHOE ? null : plan.targets[id];
-  if (!t) return [];
-  return Object.entries(SEAT_HUB).flatMap(([dealer, hubs]) => (dealHub(id, hubs) === ANCHOR_NODE["2.2"] ? [`I spelet ger ${nameOf(dealer)} ${seatWords(id)} från A2.2.`] : []));
-}
 
 // ── What lies under the cards ───────────────────────────────────────────────
 // Siluett, the neutral backdrop (Jakob 2026-11-13: "a neutral picture and not a picture of this woman"): the 3D scene's
@@ -223,21 +188,32 @@ export function gameDealNotes(plan: PlacementPlan, id: Place): string[] {
 // or a film of the chosen dealer's. Nothing else since 2026-11-18 (Jakob: "Om hon används som referens borde hon rimligtvis
 // göras till silhuett", and "V6-läget är jag skeptisk mot i sin helhet"): the V6 picture left the list, and so did every
 // film of a dealer he has not chosen. Where the silhouette's file is missing the picture stays dark rather than show her.
-export type Still = "neutral";
+// Beside Siluett the dolls (Jakob 2026-11-21: a doll with the dealer's measures "in instead of the silhouette we now have in
+// the studio, where one should be able to change doll"): the same table and shoe with a white doll at rest where the figure
+// sits, built by the same tool (DOLL_BACKDROPS). Siluett stays the default until he has chosen.
+export type Still = "neutral" | (typeof DOLL_BACKDROPS)[number]["id"];
 export const STILL: Still = "neutral";
-export const isStill = (value: unknown): value is Still => value === STILL;
-/** The still by his word (Ordlista). */
-export const STILL_WORD = "Siluett";
+/** The stills by his words (Ordlista): Siluett, then "Docka: <doll>" per doll. */
+export const STILLS: readonly { id: Still; word: string; path: string }[] = [
+  { id: STILL, word: "Siluett", path: NEUTRAL_BACKDROP.native },
+  ...DOLL_BACKDROPS.map((d) => ({ id: d.id, word: `Docka: ${d.doll}`, path: d.native })),
+];
+export const isStill = (value: unknown): value is Still => STILLS.some((s) => s.id === value);
+/** The list's stills for a dealer: Siluett first, then her own doll when she has one, then the others. */
+export const stillsFor = (dealer: string) => [STILLS[0], ...STILLS.slice(1).sort((a, b) => Number(b.id === `docka-${dealer}`) - Number(a.id === `docka-${dealer}`))];
 export type Shown = { kind: "still"; still: Still; path: string } | { kind: "film"; film: Film };
-/** What lies under the cards: the film the address names when it is one of `films` (the chosen dealer's), else Siluett. */
+/** What lies under the cards: the still or the film the address names (a film when it is one of `films`, the chosen dealer's), else Siluett. */
 export function shownBackdrop(backdrop: string | null, films: readonly Film[]): Shown {
-  const film = backdrop && !isStill(backdrop) ? films.find((f) => f.id === backdrop) : undefined;
-  return film ? { kind: "film", film } : { kind: "still", still: STILL, path: NEUTRAL_BACKDROP.native };
+  const still = STILLS.find((s) => s.id === backdrop);
+  const film = backdrop && !still ? films.find((f) => f.id === backdrop) : undefined;
+  if (film) return { kind: "film", film };
+  const s = still ?? STILLS[0];
+  return { kind: "still", still: s.id, path: s.path };
 }
 
 // ── The address ─────────────────────────────────────────────────────────────
-// /placering/?plats=p4c2&bakgrund=<film id | neutral>&ruta=40: the chosen place, and what to lay the cards over (a film with
-// its frame, or Siluett). Nothing chosen is the default: P4C2 (the first place), Siluett. An old link's vy=mobil is not read:
+// /placering/?plats=p4c2&bakgrund=<film id | neutral | docka-paow>&ruta=40: the chosen place, and what to lay the cards over (a
+// film with its frame, Siluett or a doll). Nothing chosen is the default: P4C2 (the first place), Siluett. An old link's vy=mobil is not read:
 // the plan has one view. "robot" belongs to every lab page (src/preview-ui.ts) and is kept as it stands.
 export type PlacementAddress = { place: Place; backdrop: string | null; frame: number };
 type Params = { get(name: string): string | null };

@@ -1,6 +1,6 @@
 // The dolls of dealer3d/src/doll.ts at anchor 1, each alone on a transparent picture in the plan's native pixels
 // (1762 × 1174), cut as the studio's Siluett is (tools/placement-backdrop.ts: the bank's frame, x_plan = x_film × 1761 / 1763),
-// so that Placering can lay a doll over the picture of its table where the Siluett's drawn figure is now.
+// for tools/placement-backdrop.ts, which runs this first and lays each doll over the table without Siluett's drawn figure.
 //   node dealer3d/tools/doll-still.ts [--dolls standard,paow] [--out assets/lab/placement-backdrop]
 // Writes <out>/docka-<doll>.png (RGBA) per doll and <out>/docka-receipt.json (sources with SHA-256, the pose, where the
 // hands and the figure lie in plan pixels). Needs Chrome; not the lab server. Takes the shared lock for the graphics card

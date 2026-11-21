@@ -3,6 +3,7 @@
 // What Bordet's Kortplan needs beside <Board>: what lies under the cards (a still or a film, and the list to choose from),
 // the card path's playing state ("Spela kortbanan"), and the keys (Ctrl+Z ångra, X the saved plan or the draft, the arrows
 // nudge the chosen place, Esc stops the path).
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { SHOE, type Place, type PlacementPlan } from "../../../src/placement-model.ts";
 import { useBank } from "../../lib/bank.ts";
@@ -10,7 +11,7 @@ import { labUrl } from "../../lib/lab.ts";
 import { readLibrary } from "../../lib/placement-api.ts";
 import type { PathPhase } from "../../lib/placement-path.ts";
 import {
-  GREEN_FILM, PLAN_VIEW, START_PLACE, STILL, STILL_WORD, bankFilms, filmGoesTo, libraryFilms, motionSteps, nudged, shownBackdrop, underFilms, type Film,
+  GREEN_FILM, PLAN_VIEW, START_PLACE, STILL, STILLS, bankFilms, filmGoesTo, libraryFilms, motionSteps, nudged, readPlacementAddress, shownBackdrop, stillsFor, underFilms, type Film,
 } from "../../lib/placement.ts";
 import type { Backdrop, PathRun } from "./Board";
 import { useKeyRun } from "./Board";
@@ -20,13 +21,24 @@ export const filmLabel = (film: Film) => (film.id === GREEN_FILM ? "Grön film �
 /** The card whose path plays: the chosen card, or the start place's (P4C2, START_PLACE) with the shoe chosen. */
 export const pathCard = (place: Place) => (place === SHOE ? START_PLACE : place);
 
+/** The choice in the address (?bakgrund=docka-paow), beside the view's other words; Siluett, the default, has none. */
+function writeBackdrop(backdrop: string | null) {
+  const p = new URLSearchParams(window.location.search);
+  if (backdrop) p.set("bakgrund", backdrop);
+  else p.delete("bakgrund");
+  const q = p.toString();
+  window.history.replaceState(null, "", `${window.location.pathname}${q ? `?${q}` : ""}`);
+}
+
 /**
- * What lies under the cards: the address's choice to start with, the chosen dealer's films (her takes in the bank, and for
- * Pamela the library's older ones: underFilms), what is shown, and the list to choose from (Siluett, then her films, the
- * films to `place` first). No other dealer's picture or film is ever in it (Jakob 2026-11-18).
+ * What lies under the cards: the caller's choice to start with, else the address's (?bakgrund=), the chosen dealer's films
+ * (her takes in the bank, and for Pamela the library's older ones: underFilms), what is shown, and the list to choose from
+ * (Siluett and the dolls, then her films, the films to `place` first). No other dealer's picture or film is ever in it
+ * (Jakob 2026-11-18). A choice is written to the address, so that it stays over a reload and in a link.
  */
 export function useUnder(place: Place, first: { backdrop: string | null; frame: number }) {
-  const [backdrop, setBackdrop] = useState<string | null>(first.backdrop);
+  const params = useSearchParams();
+  const [backdrop, setBackdrop] = useState<string | null>(() => first.backdrop ?? readPlacementAddress(params).backdrop);
   const [frame, setFrame] = useState(first.frame);
   const [library, setLibrary] = useState<Film[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -39,8 +51,9 @@ export function useUnder(place: Place, first: { backdrop: string | null; frame: 
   const film = shown.kind === "film" ? shown.film : null;
   const under: Backdrop = shown.kind === "film" ? { kind: "film", src: labUrl(shown.film.path), fps: shown.film.fps, frame } : { kind: "still", src: labUrl(shown.path) };
   const runCard = pathCard(place);
-  // The pictures without a dealer first: Siluett today, one per dummy later (a dummy's picture is one entry more here).
-  const stills: { value: string; label: string; hint?: string }[] = [{ value: STILL, label: STILL_WORD, hint: "förval" }];
+  // The pictures without a dealer first: Siluett (the default), then the dolls, the chosen dealer's own doll first.
+  const stills: { value: string; label: string; hint?: string }[] = stillsFor(dealer).map((s) => ({ value: s.id, label: s.word, hint: s.id === STILL ? "förval" : undefined }));
+  const still = shown.kind === "still" ? STILLS.find((s) => s.id === shown.still) : undefined;
   const options = [
     ...stills,
     ...films
@@ -56,14 +69,16 @@ export function useUnder(place: Place, first: { backdrop: string | null; frame: 
     film,
     under,
     options,
-    value: film ? film.id : STILL,
-    /** A choice in the list: Siluett, or a film from the take's own first frame. */
+    value: film ? film.id : (still?.id ?? STILL),
+    /** A choice in the list: Siluett, a doll, or a film from the take's own first frame. */
     choose: (v: string) => {
-      setBackdrop(v === STILL ? null : v);
+      const next = v === STILL ? null : v;
+      setBackdrop(next);
       setFrame(films.find((f) => f.id === v)?.start ?? 0);
+      writeBackdrop(next);
     },
-    label: film ? filmLabel(film) : STILL_WORD,
-    /** Paint the card in the shoe's window: on Siluett, not under a film (it shows its own card). */
+    label: film ? filmLabel(film) : (still?.word ?? STILLS[0].word),
+    /** Paint the card in the shoe's window: on Siluett and a doll (the same shoe), not under a film (it shows its own card). */
     shoeCard: !film,
     videoRef: videoRef as RefObject<HTMLVideoElement | null>,
   };

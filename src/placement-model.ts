@@ -37,6 +37,14 @@ export const VIEWS = { native: { width: 1762, height: 1174, label: 'Dator', prof
 // tools/placement-backdrop.ts with a receipt beside it; outside Git like all media. Only Dator has one: the scene has no home
 // view that matches the Mobil view's pixels (a separate V6 composition), so Mobil keeps its V6 picture.
 export const NEUTRAL_BACKDROP = { native: 'assets/lab/placement-backdrop/native.jpg' } as const;
+// The dolls in the figure's place (Jakob 2026-11-21: a doll with the dealer's measures "in instead of the silhouette we now have
+// in the studio, where one should be able to change doll"): the same table and shoe, and the white doll of dealer3d/src/doll.ts
+// at rest (anchor 1) where the figure sat. Built by the same tool, beside Siluett; the names are the dolls' own there, written
+// out here so that the studio does not import the 3D lane. Siluett stays the default until Jakob has chosen.
+export const DOLL_BACKDROPS = [
+ { id:'docka-standard', doll:'standard', native:'assets/lab/placement-backdrop/docka-standard.jpg' },
+ { id:'docka-paow', doll:'paow', native:'assets/lab/placement-backdrop/docka-paow.jpg' },
+] as const;
 export const INITIAL_TARGETS = [...Array.from({length:7},(_,i)=>`P${i+1}`),'D'].flatMap(p=>[`${p}.C1`,`${p}.C2`]);
 export const TARGETS = [...INITIAL_TARGETS, 'D.C3'];
 // Older files did not store this slot. Preserve its former film-pixel position when upgrading them.
