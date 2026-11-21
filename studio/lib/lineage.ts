@@ -1,6 +1,6 @@
 // What builds on what: every take of the bank and the anchor pictures it was made from (its first and last picture), and
 // whether the picture it was built on is still the one that holds in its role. Pure: no DOM, no network, no fs; the lab
-// server (tools/media-roles.ts answer) traces, the page (Karta, Material) reads. Tests in studio/tests/lineage.test.ts.
+// server (tools/media-roles.ts answer) traces, the page (Karta, Material) reads.
 //
 // One level only (Jakob 2026-11-18: "om jag väljer ett visst, kanske nytt ankare, så ska då såklart vissa andra klipp som
 // bygger på det ankaret i så fall gråas"): a take is marked by its own first and last pictures. An anchor made from a
@@ -108,11 +108,4 @@ export function fromOlderChip<T extends StateLike & { builtOn?: readonly string[
   const byId = new Map(entries.map((e) => [e.id, e]));
   const older = (entry.builtOn ?? []).map((id) => byId.get(id)).find((e) => e && holderInstead(entries, e));
   return older ? `från äldre ${ROLE_LABEL[older.role].toLowerCase()}` : null;
-}
-
-/** How many takes per dealer were traced: both pictures, one, or none. */
-export function traceShare(lineage: Lineage, ids: readonly string[]): { both: number; one: number; none: number; total: number } {
-  let both = 0, one = 0, none = 0;
-  for (const id of ids) { const t = lineage[id]; const n = (t?.first ? 1 : 0) + (t?.last ? 1 : 0); if (n === 2) both++; else if (n === 1) one++; else none++; }
-  return { both, one, none, total: ids.length };
 }

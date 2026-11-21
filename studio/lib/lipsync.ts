@@ -3,7 +3,7 @@
 // speech lane's words the view draws with: who does a step, a scale as factors in width and height, whether a value is
 // estimated. The words themselves are shown as the file has them; these only decide colour, size and order.
 // Only in the lab: the online copy reads nothing here (app/lipsync/page.tsx shows a word instead, the rail leaves the
-// view out). Read-only: nothing here writes. Tests: studio/tests/lipsync.test.ts.
+// view out). Read-only: nothing here writes.
 import { proofHref as proofAt } from "./proofs.ts";
 import type { BaseImage, Check, DealerFacts, Licence, LipRow, Lipsync, LipsMeasured, NotUsed, OpenPoint, ProofFact, Runs, Setting, Step, Way, WayState, WhenNew } from "../../tools/lipsync-register.ts";
 import type { LipsyncAnswer, SpeechSet, SpeechSets, Still } from "../../tools/lipsync-store.ts";

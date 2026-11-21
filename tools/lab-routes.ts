@@ -26,8 +26,7 @@ export function studioAddress(pathname: string, params: URLSearchParams): string
 }
 
 // The pages keep their root addresses although their files lie in folders, so that every relative reference inside them
-// (src="preview-ui.js", href="game.css", fetch('data/…')) resolves as before. tools/pages.test.ts checks this map against
-// the folders.
+// (src="preview-ui.js", href="game.css", fetch('data/…')) resolves as before.
 export const PAGES: Record<string, string> = {...Object.fromEntries(['scene3d.html', 'props.html', 'props.css', 'sound.html', 'sound.css', 'vinklar.html'].map(name => [`/${name}`, `pages/${name}`])),
   '/game.html': 'game/page/game.html', '/game.css': 'game/page/game.css'};
 

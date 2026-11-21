@@ -5,7 +5,7 @@
 // beside it, never over an existing one, and the register rewritten like the placement file: queued, against what is on
 // disk at that moment, through a temporary file renamed into place; Jakob's Godkänn and Underkänn on a candidate are
 // written the same way (setState, rules in studio/components/material/state.ts). The shapes and the pure rules are
-// studio/lib/media.ts; the readers of picture and film headers here are pure too. Tests: tools/media-roles.test.ts.
+// studio/lib/media.ts; the readers of picture and film headers here are pure too.
 import {createReadStream, type Stats} from 'node:fs';
 import {readFile, open, stat, realpath, mkdir, writeFile, rename, rm, readdir} from 'node:fs/promises';
 import {createHash, randomUUID} from 'node:crypto';

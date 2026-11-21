@@ -1,6 +1,6 @@
 // The angle trial's pure part (pages/vinklar.html, src/angle-lab.ts): which film shows at which camera angle, the weights of
 // the cross-fade between two films, the camera's orbit about the dealer, how a film's planes stand, and the one clock the
-// films are kept to. No three.js, no page: Node tests it (tools/angle-plan.test.ts).
+// films are kept to. No three.js, no page.
 //
 // The trial (Jakob 2026-11-18): one of the bank's deals was made again by a video editor as the same deal seen from about
 // 40 degrees to her left. The page carries the scene's camera around her and shows the film from the front near 0 degrees

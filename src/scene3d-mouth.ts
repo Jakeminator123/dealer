@@ -16,8 +16,8 @@ import type {PageAudio} from './page-audio.ts';
 // it). uv: the film's own texture coordinate (y up) of the pixel being drawn, after any frame of its own or life in her body has
 // moved it, so the patch moves with her. mouthFilm: the film's own size in pixels; mouthBox: x, y, w, h in them (y down);
 // mouthCell: the cell's corner in the strip and mouthStrip the strip's size, in pixels (y down, the strip is not flipped);
-// mouthWeight: the gate's weight of this frame; mouthFeather: the edge (featherMask in src/speech-plan.ts, maskAt in
-// src/speech-patch.ts). The mix is in the film's coded values, as the speech tool lays a mouth back.
+// mouthWeight: the gate's weight of this frame; mouthFeather: the edge (featherMask in src/speech-plan.ts at a pixel's centre,
+// 0 at the box's edge and 1 `feather` pixels in, eased). The mix is in the film's coded values, as the speech tool lays a mouth back.
 export const MOUTH_GLSL = `uniform sampler2D mouthMap; uniform float mouthOn, mouthWeight, mouthFeather; uniform vec4 mouthBox; uniform vec2 mouthCell, mouthStrip, mouthFilm;
 vec3 mouthOver(vec2 uv, vec3 c){
   if (mouthOn < .5) return c;
@@ -175,4 +175,3 @@ export function createMouthLayer(set: (shown: MouthShown | null) => void, option
     },
   };
 }
-export type MouthLayer = ReturnType<typeof createMouthLayer>;

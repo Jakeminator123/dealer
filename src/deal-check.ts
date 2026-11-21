@@ -17,7 +17,7 @@
 // side alone is stretched by motion blur in a fast swing (trial 2B's blob 2.0-2.6 : 1 where a card is 1.4 : 1). The laid
 // card is compared with the last picture's card, which the plan's rule draws as a real card at its place
 // (src/card-plan.ts planCardQuad).
-// Thresholds come from the fifteen takes of the trials of 2026-11-17 (tools/deal-check.test.ts holds them as numbers):
+// Thresholds come from the fifteen takes of the trials of 2026-11-17:
 // see THRESHOLDS. Pure: no files, no frames. The same measures run on a reference film (checkReference) say whether it
 // is a clean deal to copy: one turn through the edge, on edge only in the turn, a card of a real size, plain colours.
 import { CARD, TABLE_LENS, filmEye, length, onPlane, sub, type Lens } from './table-lens.ts';

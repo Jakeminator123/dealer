@@ -18,7 +18,7 @@
 //   … --root <folder>                                             another checkout (a temporary copy of the data)
 // It never approves. Every draft says in createdBy that the production list made it. The lab server answers
 // GET /api/production?dealer=<id> and POST /api/production/draft with the same functions (tools/order-routes.ts).
-// productionList is pure; the reading is readProduction. Tests: tools/produce.test.ts.
+// productionList is pure; the reading is readProduction.
 import { readFile } from 'node:fs/promises';
 import { existsSync, realpathSync } from 'node:fs';
 import path from 'node:path';

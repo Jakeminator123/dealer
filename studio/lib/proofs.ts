@@ -1,7 +1,7 @@
 // The proofs, Granska's part Prov: proof folders newest first and searchable, each file by its short name with its
 // verdict, films in the order the proof names them, the picture a card shows, the chapters on a film, the takes a proof
-// names, and the addresses (a proof is /granska/?prov=<folder>; the old /prov/ leads there). Pure: no DOM, no network;
-// tests in studio/tests/proofs.test.ts. A file's verdict and the split of its label are lib/verdict.ts's.
+// names, and the addresses (a proof is /granska/?prov=<folder>; the old /prov/ leads there). Pure: no DOM, no network.
+// A file's verdict and the split of its label are lib/verdict.ts's.
 import type { Proof, ProofFile } from "./api.ts";
 import { formatDay } from "./names.ts";
 import { proofLabel, proofVerdict, splitLabel, type ProofVerdict } from "./verdict.ts";

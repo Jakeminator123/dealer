@@ -2,8 +2,7 @@
 // of a film or to a pattern of files; the lab server (tools/media-roles.ts, GET /api/media) adds what it finds on disk and
 // which films of the bank start or end on each picture. This module is the shared, pure part: the shapes, the roles in
 // the order of the chain, the check of the register, the key a job's first or last picture is matched by, and the rules
-// for a picture added from the studio. No DOM, no network, no fs; tests in studio/tests/media.test.ts and
-// tools/media-roles.test.ts.
+// for a picture added from the studio. No DOM, no network, no fs.
 
 // ── Roles ───────────────────────────────────────────────────────────────────
 /** Jakob's chain, in its order: from the first picture of a new dealer to the films, then what stands beside it. */

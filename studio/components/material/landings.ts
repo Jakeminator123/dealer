@@ -3,7 +3,7 @@
 // holds, else the cut frame of the bank's own film to the seat (src/order-model.ts seatEndOf, the function the store orders
 // with), else nothing, said plainly. One seat's picture is never shown as if it were every seat's. A landing picture is for one
 // hand (A3, src/order-model.ts landingOf): from 2.1 and 2.2 the left hand lays the card, from 2.3 the right, so the seat shows
-// each; an A3 that is a candidate is counted only as one, never as the seat's end. Pure; tests in studio/tests/landings.test.ts.
+// each; an A3 that is a candidate is counted only as one, never as the seat's end. Pure.
 import { SEAT_TARGETS, a3Candidates, seatEndOf, stepOf, type BankFacts, type SeatEnd } from "../../../src/order-model.ts";
 import type { RoleStatus } from "../../lib/media.ts";
 

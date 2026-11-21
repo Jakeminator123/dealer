@@ -3,8 +3,7 @@
 // text), one line of help, and whom it is for (D: a look a demo player could get, as a choice or a fixed default of the
 // game; U: the developer's calibration), as docs/SYSTEM.md "3D-scenen" marks them. Ranges and steps are the lab panel's
 // own (src/scene3d-ui.ts). The Scen view draws its controls from this, the preset store (tools/scene-preset-store.ts)
-// checks a preset against it, and the address of a look is read and written with it. Pure: no DOM, no network, no three;
-// tests in studio/tests/scene-keys.test.ts, which also fail when the scene gets a key that has no control here.
+// checks a preset against it, and the address of a look is read and written with it. Pure: no DOM, no network, no three.
 import type { SceneState } from "../../src/scene3d-view.ts";
 
 export type SceneKey = keyof SceneState;
@@ -180,12 +179,6 @@ const BY_KEY = new Map<string, KeySpec>(SCENE_KEYS.map((s) => [s.key, s]));
 /** The control of a key, or null for a word that is not a key of the scene. */
 export const keySpec = (key: string): KeySpec | null => BY_KEY.get(key) ?? null;
 export const isSceneKey = (key: string): key is SceneKey => BY_KEY.has(key);
-export const keysOf = (group: GroupId): KeySpec[] => SCENE_KEYS.filter((s) => s.group === group);
-
-/** Keys whose change builds the table again (src/scene3d-view.ts set: relens); a slider among them is debounced. */
-export const REBUILDS: ReadonlySet<SceneKey> = new Set<SceneKey>(["lens", "scale", "tray", "base", "surface", "tableSize", "tableModel", "modelCloth", "modelWood", "modelRail"]);
-/** Keys whose change paints the felt again; text among them is debounced. */
-export const REPRINTS: ReadonlySet<SceneKey> = new Set<SceneKey>(["logo", "felt", "marks", "cloth"]);
 
 // ── The felt's marks in one word (feltMarks / marksText of src/scene3d-table.ts, same rules) ──
 export function marksOf(text: string | null | undefined): Set<string> {

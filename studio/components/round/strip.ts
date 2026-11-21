@@ -1,4 +1,4 @@
-// The round strip's arithmetic, pure for the tests (studio/tests/rounds.test.ts): which frame a box shows, and which
+// The round strip's arithmetic, pure: which frame a box shows, and which
 // boxes are near the strip's window, so that only those read their stills.
 import type { Segment } from "../../../src/clip-graph.ts";
 import { lastFrame, type PlayPart } from "../../lib/parts.ts";

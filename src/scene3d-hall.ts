@@ -17,7 +17,7 @@ export const HALL = {halfWidth: 9.6, back: -14, front: 5.4};
 const MAP = {x: -10, z: -14.4, size: 20}; // the square of carpet that the light map covers
 const WINS = 4; // how many machines can flash a win; each has a slot in the uniforms
 
-// ---- what stands where (pure, also read by tools/scene3d-hall.test.ts) --------------------------------------------------
+// ---- what stands where (pure) -------------------------------------------------------------------------------------------
 const lcg = (seed: number) => () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v)), smooth = (v: number) => { const t = clamp01(v); return t * t * (3 - 2 * t); };
 // The colours a machine can have: pink, blue, amber, green, violet, red, cyan.

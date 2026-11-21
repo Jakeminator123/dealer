@@ -5,8 +5,7 @@
 // yet judged by him). The Scen view's baseline is basgrund: what differs from it is marked. Jakob's ten numbered places,
 // Profilval 1–10 (2026-11-13), are presets of his own like any other, each under the name profilval-<n> (slotOf), so that
 // ?forval=profilval-3 plays place 3 wherever a preset is read. A look also travels as an address,
-// /scen/?forval=levande&dust=0.8, and as the 3D page's own, scene3d.html?…. Pure: no DOM, no network; tests in
-// studio/tests/scene-presets.test.ts.
+// /scen/?forval=levande&dust=0.8, and as the 3D page's own, scene3d.html?…. Pure: no DOM, no network.
 import { GEOMETRY_WORDS } from "../../src/card-plan.ts";
 import type { SceneState } from "../../src/scene3d-view.ts";
 import { SCENE_KEYS, checkValue, decodeValue, encodeValue, hasControl, isSceneKey, keySpec, sameValue, type SceneKey } from "./scene-keys.ts";
@@ -214,18 +213,9 @@ export function readAddress(params: Params, rooms?: readonly string[]): { forval
   return { forval, patch: patch as Partial<SceneState>, ignored };
 }
 
-/** "?forval=levande&dust=0.8": the preset and the keys that differ from it (none for basgrund itself: an empty address). */
-export function writeAddress(forval: string, state: SceneState, presetState: SceneState): string {
-  const params = new URLSearchParams();
-  if (forval !== BASE) params.set("forval", forval);
-  for (const key of differences(state, presetState)) params.set(key, encodeValue(keySpec(key)!, state[key]));
-  const text = params.toString();
-  return text ? `?${text}` : "";
-}
-
 /**
- * The same look on the 3D page (pages/scene3d.html), which starts from the scene's DEFAULTS and reads every key from
- * its address (src/scene3d-ui.ts line 40): "/scene3d.html?room=panorama&blur=5&…". shoe: the 3D shoe trial is on (?sko=3d).
+ * The look on the 3D page (pages/scene3d.html), which starts from the scene's DEFAULTS and reads every key from
+ * its address (src/scene3d-ui.ts, the loop over the address's keys): "/scene3d.html?room=panorama&blur=5&…". shoe: the 3D shoe trial is on (?sko=3d).
  */
 export function scenePageAddress(state: SceneState, defaults: SceneState, extra: { shoe?: boolean } = {}): string {
   const params = new URLSearchParams();

@@ -18,7 +18,7 @@
 // could, so the film is shown whole on black and, during a longer fade, grows toward where the game has her before it dissolves
 // into the game.
 //
-// The first part has no page in it (tools/game-intro.test.ts runs it under Node); createIntro is the page.
+// The first part has no page in it; createIntro is the page.
 
 /** Where the intro is: the start picture, the film, the fade into the game, gone. */
 export type IntroPhase = 'waiting' | 'playing' | 'fading' | 'done';
@@ -38,7 +38,7 @@ export function introNext(state: IntroState, signal: IntroSignal): IntroState {
 }
 
 // The film frame in the scene (FILM in src/scene3d-geometry.ts) and the plan camera's focal length in its pixels
-// (data/scene-contract.json, keyFigures.focalPx); tools/game-intro.test.ts holds them to those files.
+// (data/scene-contract.json, keyFigures.focalPx), kept to those files by hand.
 export const INTRO_FRAME = {width: 1764, height: 1174, focalPx: 886};
 // The film: 1920 x 1080, made at the game's lying framing. The game's framings (FRAMING in src/game-page.ts).
 export const INTRO_FILM = {width: 1920, height: 1080, zoom: 0.84, pitch: -8};

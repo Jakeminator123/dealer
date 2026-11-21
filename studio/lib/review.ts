@@ -1,6 +1,6 @@
 // What Granska and Jämför need from the bank: the takes waiting for Jakob in dealing order and grouped by seat, the take after a decision, the edges where there is a choice to make, the
 // pair a comparison starts from and the facts that differ, and the filters of the list of every take.
-// Pure: no DOM, no network; tests in studio/tests/review.test.ts.
+// Pure: no DOM, no network.
 import { hubOf, playable, type Edge, type Graph, type Take } from "../../src/clip-graph.ts";
 import { formatSeconds, takeFacts } from "./names.ts";
 import { awaitingJakob, verdictOf, VERDICTS, type Verdict } from "./verdict.ts";

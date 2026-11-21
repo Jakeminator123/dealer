@@ -16,7 +16,7 @@ import { SegmentedControl } from "../ui";
 /**
  * The address with these words set (a value) or taken out (null). null, never history.state: Next marks its own state
  * (__NA) and takes a call that carries it for its own, so useSearchParams would not follow and the view would not change
- * with its address (studio/tests/address-write.test.ts).
+ * with its address.
  */
 export function replaceParams(next: Record<string, string | null>) {
   const p = new URLSearchParams(window.location.search);

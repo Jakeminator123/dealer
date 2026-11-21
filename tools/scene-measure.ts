@@ -2,14 +2,14 @@
 // Reads media only. Writes data/scene-contract.json, review images under .runtime/scene-measure/review
 // and shadow mattes under assets/scene-work (git-ignored). Every figure in the contract carries its basis.
 //   node tools/scene-measure.ts
-import {readFile, writeFile, mkdir, rm, stat} from 'node:fs/promises';
+import {readFile, writeFile, mkdir, rm} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {execFileSync, spawn} from 'node:child_process';
 import {once} from 'node:events';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import sharp from 'sharp';
-import {type Camera, type CardObservation, type CardPose, type FrameTransform, type Mat3, type Pt, type Segment, CARD_MM, V6_PORTRAIT, applyH, cameraProject, decomposeHomography, fitCardPose, fitPlane,
+import {type CardObservation, type CardPose, type FrameTransform, type Mat3, type Pt, type Segment, CARD_MM, V6_PORTRAIT, applyH, cameraProject, decomposeHomography, fitCardPose, fitPlane,
   horizon, horizonRotation, inv3, mapPoint, principalXFromHomography, projectCard, quadOnPlane, quadShape, quadVisibility, reframe, reframePose, seededRandom} from '../src/scene-geometry.ts';
 import {validatePlan, flatQuad, quad, TARGETS, type PlacementPlan} from '../src/placement-model.ts';
 import {keyPamelaFrame} from '../src/pamela-key.ts';
@@ -573,7 +573,7 @@ const figure = (pick: (c: CameraSummary) => number, digits: number, how: string)
 const contract = {
   schemaVersion: 1,
   measuredAt: new Date().toISOString(),
-  generatedBy: 'node tools/scene-measure.ts (maths in src/scene-geometry.ts, checked by tools/scene-geometry.test.ts)',
+  generatedBy: 'node tools/scene-measure.ts (maths in src/scene-geometry.ts)',
   basisLegend: {MEASURED: 'read from film pixels by the tool', DERIVED: 'computed from measured values under the stated model', ESTIMATED: 'rests on an assumption this footage cannot check; a working value', GIVEN: 'input from the brief, the plan file or existing code, not a result', REPORTED: 'told to this tool\'s author by another reviewer, not checked here',
     rule: 'An object\'s `basis` covers every number inside it unless a nested object states its own.'},
   image: {basis: 'GIVEN', width: W, height: H, framesPerSecond: 30, pixelConvention: 'pixel centres, origin top left, x right, y down', v6NativeWidth: NATIVE_W, note: 'The plan and V6 use 1762-wide native pixels; film x = native x * 1763 / 1761, as tools/build-anchor.ts scales them.'},

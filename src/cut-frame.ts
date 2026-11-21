@@ -3,7 +3,7 @@
 // frame 126 of paow-giv-2-2-p4-01-01 had an emblem on the window's card; the shoe and its card were taken from
 // paow-vila-ung-2 inside the shoe's box, every pixel that is not green in either picture, grown and feathered).
 // Pure: pictures in, measures and a new picture out (RGB, 3 bytes a pixel, the bank's 1764 x 1174). The tools take the
-// frame out of the film with FFmpeg and write last.png; tests in tools/cut-frame.test.ts.
+// frame out of the film with FFmpeg and write last.png.
 import { cardBlobs, dilate, gaussianBlur } from './film-after.ts';
 
 /** The shoe's box in the bank's frame (trial 2A): wide enough for the shoe and its window, right of the dealer's arms. */

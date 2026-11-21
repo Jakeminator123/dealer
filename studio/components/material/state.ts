@@ -4,7 +4,7 @@
 // register with who and when, never a deletion); an archived one comes back as a candidate. Making one hold sets the others of
 // the same role, node and card (a keystone also of the same posture) aside. Pure, shared by the page (which names what follows
 // before anything is written) and the lab server (tools/media-roles.ts setState, PUT /api/media/<id>/state in
-// tools/order-routes.ts). Tests: tools/order-routes.test.ts, studio/tests/lineage.test.ts.
+// tools/order-routes.ts). Tests: tools/order-routes.test.ts.
 import { isStanding, kindOfPath, type Entry, type State } from "../../lib/media.ts";
 
 export const CHANGES: Readonly<Record<State, readonly State[]>> = {

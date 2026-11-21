@@ -1,5 +1,5 @@
-// Words, signs and colours for a request's status and kind, and the counts the rail and the list need. Pure; tests in
-// studio/tests/requests-status.test.ts. A status chip has colour AND sign, never colour alone (as the verdict chips).
+// Words, signs and colours for a request's status and kind, and the counts the rail and the list need. Pure.
+// A status chip has colour AND sign, never colour alone (as the verdict chips).
 import type { Post, RequestKind, RequestStatus } from "../../lib/bot-client.ts";
 
 export type Tone = "wait" | "variant" | "ok" | "bad" | "remark" | "neutral";

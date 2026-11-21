@@ -109,4 +109,3 @@ export function createVoice(audio: PageAudio, options: {read?: (path: string, co
     dispose() { if (gone) return; if (line) end(line, 'sidan stängdes'); gone = true; sounds.clear(); },
   };
 }
-export type Voice = ReturnType<typeof createVoice>;

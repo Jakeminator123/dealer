@@ -12,12 +12,6 @@ import {TABLE, sized, type TableSize} from './scene3d-table.ts';
 // (1 = the felt's edge); thin: its share in the middle of the table; drift: metres a second the pattern slides; strength: its
 // opacity at amount 1 where it is thickest.
 export const SMOKE = {heights: [0.012, 0.045, 0.085], shares: [1, 0.8, 0.6], reach: 1.55, thin: 0.3, drift: 0.022, strength: 0.55, edge: 0.12};
-const smooth = (a: number, b: number, x: number) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
-/** Where the smoke may lie, 0 to 1, at a point of the table (x across, z from the dealer's edge, metres at size 1) for a table of half width a and depth b: thin in the middle, full round the rim, gone past SMOKE.reach and behind the dealer's edge. The shader's own, for the tests. */
-export function smokeMask(x: number, z: number, a: number = TABLE.a, b: number = TABLE.b): number {
-  const e = Math.hypot(x / a, (z - b * 0.5) / (b * 0.5 + TABLE.rail));
-  return (SMOKE.thin + (1 - SMOKE.thin) * smooth(0.35, 0.95, e)) * (1 - smooth(1.15, SMOKE.reach, e)) * smooth(0, SMOKE.edge, z);
-}
 const VERTEX = 'varying vec2 vAt; void main(){ vAt = position.xz; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }';
 const FRAGMENT = `varying vec2 vAt; uniform float time, amount, share, seed; uniform vec2 half_; uniform vec3 tint;
 float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }

@@ -115,7 +115,6 @@ export function readFlags(args: string[]): Options {
   return o;
 }
 
-type Picture = Awaited<ReturnType<typeof readPicture>>;
 export type FilmComparison = {other: string; otherSha256: string; identicalFile: boolean; frames: [number, number]; identicalFrames: number; meanAbs: number; maxAbs: number; differingShare: number;
   worstFrame: {frame: number; meanAbs: number; maxAbs: number} | null; histogram: Record<string, number>; perFrame: {frame: number; meanAbs: number; maxAbs: number}[]};
 

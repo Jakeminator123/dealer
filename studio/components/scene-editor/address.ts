@@ -4,7 +4,7 @@
 // lib/scene-presets.ts) share the address, and each part is read and written by its own rules; "robot" belongs to every lab
 // page (src/preview-ui.ts) and is kept as it stands. A look that names no preset is Levande here, the look Jakob remembers
 // of the 3D lab (2026-11-12), so the view always writes forval. The old Scen view's address (/scen/…) meant basgrund when it
-// named none (app/scen/page.tsx). Pure: tests in studio/tests/scene-address.test.ts.
+// named none (app/scen/page.tsx). Pure.
 import type { SceneState } from "../../../src/scene3d-view.ts";
 import { SCENE_KEYS, encodeValue } from "../../lib/scene-keys.ts";
 import { differences, readAddress } from "../../lib/scene-presets.ts";

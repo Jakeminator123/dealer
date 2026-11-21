@@ -39,7 +39,7 @@ export type Panorama = {id: string; file: string; blur: number; exposure: number
 // whether it is a photograph or a generated picture. Its provenance (size, bytes, sha256, source, author, licence) is for people and the test.
 export type RegisterRoom = Panorama & {label: string; note: string; sound: string; game: boolean; kind: 'photo' | 'generated'; author: string; licence: string; page: string | null};
 // The first three panoramas as the scene had them before the register, for a page that gives none (the register's entries
-// for them hold the same values; tools/scene3d-rooms.test.ts checks it).
+// for them hold the same values).
 export const FIRST_PANORAMAS: Omit<Panorama, 'file'>[] = [
   {id: 'panorama', blur: 5, exposure: 0.8, turn: 0, mirror: true, air: 'dust', tint: {back: [1.35, 1.15, 1.0], front: [0.88, 0.78, 0.71]}, light: 'neon'},
   {id: 'la', blur: 6, exposure: 0.7, turn: 0, mirror: true, air: 'dust', tint: {back: [1.8, 1.17, 0.62], front: [1.0, 0.78, 0.48]}, light: 'cloud'},

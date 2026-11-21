@@ -1,6 +1,6 @@
 // What a view shows, in Jakob's words, for the bot's panel: the view's name and what is chosen there, read from the
 // view's own address (?kant=…&tagning=…) and the clip bank. Raw ids stay in the address; the words go in val. Pure: no
-// DOM, no React; tests in studio/tests/bot-describe.test.ts.
+// DOM, no React.
 import type { Graph, Segment } from "../../../src/clip-graph.ts";
 import type { Proof } from "../../lib/api.ts";
 import { edgeName, nodeName, takeName } from "../../lib/names.ts";

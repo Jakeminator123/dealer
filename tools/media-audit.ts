@@ -9,14 +9,14 @@
 //                     data/speech-patches.json, or a file the game's own code loads (src/game-*.ts, src/scene3d-*.ts)
 //   visas             the lab shows it as living work: an anchor, keystone or landing that holds or is a candidate in Material
 //                     (data/media-roles.json), an order's folder (data/orders/<id>.json), anything named by its exact id in Beslut,
-//                     data/studio-release.json or a document or instruction (DOCUMENTS), a proof changed today, the card track a
+//                     data/studio-release.json or a document or instruction, a proof changed today, the card track a
 //                     played film needs, the scene's rooms, table and
 //                     props (data/scene-*.json, data/props.json), the lab's backdrops (src/placement-model.ts)
 //   referens          kept by the rules: V6 and what recreates it (data/library.json, output/), data/manifest.json, evidence/, a
 //                     reference in Material, and the first or last picture of a film that plays
 //   bara registrerad  a register names it, but nothing plays it, shows it as living work or builds on it
 //   okänd             no register names it
-// The logic (units, claims, ranking) is pure and tested in tools/media-audit.test.ts; the reading is at the bottom.
+// The logic (units, claims, ranking) is pure; the reading is at the bottom.
 import {readFileSync, readdirSync, statSync, existsSync} from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -155,8 +155,6 @@ export function pathsIn(text: string): string[] {
 export function idsNamed(text: string, ids: string[]): string[] {
   return ids.filter(id => (id.length >= 6 || id.includes('-')) && new RegExp(`(?<![A-Za-z0-9_-])${id.replace(/[.*+?^${}()|[\]\\-]/g, '\\$&')}(?![A-Za-z0-9_-])`).test(text));
 }
-// The documents and instructions whose naming of a thing makes it living work (shown), whatever kind of unit it is.
-export const DOCUMENTS = ['HANDOFF.md', 'README.md', 'AGENTS.md', 'docs/*.md', 'docs/lage/*.md', 'tools/*.md', '.claude/skills/*/SKILL.md', 'dealer3d/LASMIG.md'];
 
 // ── Reading (not pure) ──────────────────────────────────────────────────────
 function filesUnder(root: string, rel: string, out: FileInfo[] = []): FileInfo[] {
@@ -456,7 +454,7 @@ function referenceUsers(repo: string, read: (f: string) => string): (p: string) 
   const orders = readdirSync(path.join(repo, 'data/orders')).filter(f => f.endsWith('.json')).map(f => { let r = ''; try { r = JSON.stringify(JSON.parse(read(`data/orders/${f}`)).reference ?? null); } catch {} return [f.slice(0, -5), r] as const; });
   const rounds = read('studio/lib/rounds.ts'), verify = read('tools/verify.ts') + read('tools/render.ts'), jobs = read('data/clip-jobs.json'), game = readdirSync(path.join(repo, 'src')).filter(f => /^game/.test(f)).map(f => read(`src/${f}`)).join('\n');
   return (p: string) => {
-    const out: string[] = [], folder = p.split('/').slice(0, -1).join('/'), id = folder.split('/').at(-1)!;
+    const out: string[] = [];
     const sent = orders.filter(([, t]) => t.includes(`"${p}"`)).map(([o]) => o); if (sent.length) out.push(`${sent.length} beställningar skickade den (${sent.slice(0, 3).join(', ')}${sent.length > 3 ? ' …' : ''})`);
     if (rounds.includes(p)) out.push('Referensfilmer i rundväljaren (studio/lib/rounds.ts)');
     if (/assets\/(reference|frames|originals)|output\/v6|assets\/tracking/.test(p) || verify.includes(p)) out.push('tools/verify.ts och tools/render.ts (V6)');

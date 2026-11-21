@@ -6,7 +6,7 @@
 //
 // Placement: seen from the film camera the card covers exactly the quad poseAt gives, laid on the film's own surfaces (the felt
 // below the table edge row, the dealer plane above it) like the hands that hold it. Turning the view keeps it exact; moving the
-// view keeps it with the hand. scene3d-geometry.ts (cardPoint) says why it is not a solved 3D pose.
+// view keeps it with the hand. scene3d-geometry.ts ("a card as an object in the scene") says why it is not a solved 3D pose.
 // Light: the film's card shows how the film's light falls on the card in each frame. Its brightness against the same card lying
 // flat scales the paper, so the rendered card brightens and dims with the film's card (tilting away, turning over), and a plane
 // fitted to its brightness shades the paper across the card as the film's light falls over it (scene3d-matte.ts PLANE). Gloss and

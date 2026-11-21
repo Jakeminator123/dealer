@@ -1,7 +1,7 @@
 // The bot's client: the shapes of the server's routes (cloud/, another builder's), a reader for the answer's event
 // stream, the calls the panel makes, and a small fake of the same routes behind ?fejk=1 (kept for looking at the panel
 // without a server, and for the kit). Nothing here shows a cost: the answer's token counts are read and never shown.
-// Pure where it can be: the stream reader and the error words are tested in studio/tests/bot-client.test.ts.
+// Pure where it can be: the stream reader and the error words.
 //
 // The routes (fixed):
 //   GET  /api/session   → {access}, the signed cookie's scope on the online copy

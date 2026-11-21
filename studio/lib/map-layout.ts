@@ -1,5 +1,4 @@
-// The node map's geometry (Karta): where each anchor sits and where each film's line and label go. Pure: no DOM; tests
-// in studio/tests/map-layout.test.ts.
+// The node map's geometry (Karta): where each anchor sits and where each film's line and label go. Pure: no DOM.
 //
 // The table as a player sees it (tableLayout in src/clip-graph.ts): the seats in an arc, P1 left to P7 right, the
 // dealer's cards above them, A1 (vila) at the upper left, A2.1 (nyp) and A2.2 (hand över) by the shoe at the upper right,
@@ -209,30 +208,6 @@ export function mapLayout({ mode, points }: { mode: FilmMode; points?: PlanPoint
 
   const width = Math.max(a21.x + a21.w, lastIdleStub + 90, ...nodes.map((n) => n.box.x + n.box.w)) + 16;
   return { width, height: idleBus + 18, nodes, edges, rails };
-}
-
-/** Do two boxes overlap (touching is not overlapping)? gap widens the test. */
-export const overlaps = (a: Box, b: Box, gap = 0) => a.x < b.x + b.w + gap && b.x < a.x + a.w + gap && a.y < b.y + b.h + gap && b.y < a.y + a.h + gap;
-
-/** The straight pieces of a path made of M, V and H commands, as boxes of no width or no height. */
-export function segments(path: string): Box[] {
-  const out: Box[] = [];
-  let x = 0;
-  let y = 0;
-  for (const [, cmd, a, b] of path.matchAll(/([MVH])(-?[\d.]+)(?:,(-?[\d.]+))?/g)) {
-    const n = Number(a);
-    if (cmd === "M") {
-      x = n;
-      y = Number(b);
-    } else if (cmd === "V") {
-      out.push({ x, y: Math.min(y, n), w: 0, h: Math.abs(n - y) });
-      y = n;
-    } else {
-      out.push({ x: Math.min(x, n), y, w: Math.abs(n - x), h: 0 });
-      x = n;
-    }
-  }
-  return out;
 }
 
 /** How far the second card of a seat lies from its first in the plan (film pixels). */

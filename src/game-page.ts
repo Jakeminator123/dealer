@@ -35,8 +35,8 @@ const query = new URLSearchParams(location.search);
 // zoomed in on seats 2–6, each ring whole inside the picture's width, her head and those rings inside a picture as short as
 // 1.33 times its width, and it turns toward the seat in play. Where the console stands follows the stage's shape (placeConsole
 // marks the stage, game.css lays it out): standing, under the picture; lying on a stage lower than sideBelow (a phone on its
-// side), at the picture's right; else over the picture's lower edge. The film before the game (src/game-intro.ts) ends in these framings; tools/game-intro.test.ts holds
-// the two to each other.
+// side), at the picture's right; else over the picture's lower edge. The film before the game (src/game-intro.ts) ends in these framings, so the
+// two change together.
 const FRAMING = {wide: {pitch: -8, zoom: 0.84}, tall: {pitch: -4.4, zoom: 1.55}, tallBelow: 0.8, sideBelow: 540, turnShare: 0.6, turnLimit: 40};
 function placeConsole() {
   const box = stage.getBoundingClientRect(), standing = box.width / Math.max(1, box.height) < FRAMING.tallBelow;

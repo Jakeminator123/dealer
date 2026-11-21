@@ -1,6 +1,5 @@
 // Granska in the online copy (lib/mode.ts isSnapshot): the copy carries no films of the takes that wait for Jakob, so it
-// opens on "Alla" and its "Kö" says what waits instead of opening a player without a film. Pure, for the tests
-// (studio/tests/review-copy.test.ts).
+// opens on "Alla" and its "Kö" says what waits instead of opening a player without a film. Pure.
 import type { QueueItem } from "../../lib/review.ts";
 
 export type ReviewTab = "ko" | "alla";

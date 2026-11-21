@@ -1,6 +1,6 @@
 // What the node map and its side panel say about one edge (a film between two anchors): what plays there now and why,
 // the takes sorted into Jakob's groups and counted, the step's secondary films, and the bank in numbers. Pure: no DOM, no
-// network; tests in studio/tests/edge-stats.test.ts.
+// network.
 import { GAP_LABEL, playable, resolveRound, type Edge, type Gap, type Graph, type Step, type Take, type Why } from "../../src/clip-graph.ts";
 import type { HubDeal } from "../../src/game-director.ts";
 import { edgeName, nodeCode, takeName } from "./names.ts";

@@ -5,7 +5,7 @@
 // then a take the address names (an old link to one of Pamela's takes opens her studio), then the remembered choice, then
 // the first dealer (Paow since 2026-11-13: Pamela is paused, and a visitor who has chosen nothing should not meet the paused
 // dealer). The first dealer's addresses carry no word; every other dealer's do. Names and the pause are
-// data/dealers.json's. Pure: no DOM, no network; tests in studio/tests/dealer.test.ts. The provider is lib/bank.ts.
+// data/dealers.json's. Pure: no DOM, no network. The provider is lib/bank.ts.
 import { DEALER, FIRST_DEALER, buildGraph, resolveRound, type BankData, type Graph, type Step } from "../../src/clip-graph.ts";
 import { awaitingJakob } from "./verdict.ts";
 

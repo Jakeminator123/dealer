@@ -6,7 +6,7 @@
 //
 // The first half is the look logic and has no page in it: which texels of a model's own base colour are its accents, what
 // each look makes of a texel, which triangles face the wrong way, and where a movement is at a time.
-// tools/props-lab.test.ts runs it under Node. The second half is the page, started only where there is a document.
+// The second half is the page, started only where there is a document.
 import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';

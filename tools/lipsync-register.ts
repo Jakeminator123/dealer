@@ -10,7 +10,7 @@
 // guess. An entry with `dealer` is that dealer's; one without holds for every dealer.
 // The repo is public: no secret, no personal detail and no path of this machine in any text.
 // This is the strict reader: every problem of the file is named at once, and a file with any problem is not used.
-// Pure: no files, no network. Tests: tools/lipsync-register.test.ts.
+// Pure: no files, no network.
 import {StoreError} from './placement-store.ts';
 import {ID, privateIn} from './decision-register.ts';
 

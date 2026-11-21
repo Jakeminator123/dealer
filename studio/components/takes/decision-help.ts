@@ -1,7 +1,6 @@
 // The quiet line of help under the decision buttons (Jakob 2026-11-12: "unsure what the difference is between Variant and
 // Godkänd"): what each choice does to what is played, in the order of the buttons, and for the rest step (A1 → A1) how the
-// calm loop and the gestures share it. Words as the graph decides (src/clip-graph.ts rank, pickIdle). Pure; tests in
-// studio/tests/decision-help.test.ts.
+// calm loop and the gestures share it. Words as the graph decides (src/clip-graph.ts rank, pickIdle). Pure.
 
 export type HelpPart = { word: string; text: string };
 

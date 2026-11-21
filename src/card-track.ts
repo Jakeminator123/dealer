@@ -207,15 +207,6 @@ export function axisOf(pixels: ArrayLike<number>, w: number) {
   for (let k = 0; k < n; k++) { const t = (pixels[k] % w - cx) * dx + ((pixels[k] - pixels[k] % w) / w - cy) * dy; if (t < lo) lo = t; if (t > hi) hi = t; }
   return {a: {x: cx + dx * lo, y: cy + dy * lo}, b: {x: cx + dx * hi, y: cy + dy * hi}, length: hi - lo + 1, mean: n / (hi - lo + 1)};
 }
-export function homography(from: Pt[], to: Pt[]): number[] { // maps a point of `from` onto `to`
-  const A: number[][] = [];
-  for (let i = 0; i < 4; i++) { const {x, y} = from[i], {x: u, y: v} = to[i]; A.push([x, y, 1, 0, 0, 0, -u * x, -u * y, u], [0, 0, 0, x, y, 1, -v * x, -v * y, v]); }
-  for (let c = 0; c < 8; c++) { let p = c; for (let r = c + 1; r < 8; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r; [A[c], A[p]] = [A[p], A[c]];
-    if (Math.abs(A[c][c]) < 1e-9) throw Error('Degenerate card quad.');
-    for (let r = 0; r < 8; r++) if (r !== c) { const f = A[r][c] / A[c][c]; for (let k = c; k < 9; k++) A[r][k] -= f * A[c][k]; } }
-  return [...A.map((row, i) => row[8] / row[i]), 1];
-}
-export const project = (h: number[], x: number, y: number): Pt => { const w = h[6] * x + h[7] * y + 1; return {x: (h[0] * x + h[1] * y + h[2]) / w, y: (h[3] * x + h[4] * y + h[5]) / w}; };
 
 // ---- one frame ----
 export type Raw = {side: Side; corners: Pt[] | null; segment: [Pt, Pt] | null; area: number; fill: number; thickness: number; shoeShare: number; note: string};
@@ -422,10 +413,6 @@ const SG: Record<number, number[]> = {0: [1], 1: [0, 1, 0], 2: [-3, 12, 17, 12, 
 export function smooth(values: (number | null)[], radius = 3): (number | null)[] {
   return values.map((v, i) => { if (v === null) return null; let r = 0; while (r < radius && i - r - 1 >= 0 && i + r + 1 < values.length && values[i - r - 1] !== null && values[i + r + 1] !== null) r++;
     return SG[r].reduce((s, k, j) => s + k * (values[i - r + j] as number), 0); });
-}
-/** Eased share of the displacement at a frame: 0 up to `start`, 1 from `end`, smooth in between. */
-export function offsetRamp(frame: number, start: number, end: number): number {
-  if (frame <= start) return 0; if (frame >= end) return 1; const t = (frame - start) / (end - start); return t * t * (3 - 2 * t);
 }
 const median = (v: number[]) => { const s = [...v].sort((a, b) => a - b), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
 const round = (p: Pt): Pt => ({x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10});

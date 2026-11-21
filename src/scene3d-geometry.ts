@@ -87,12 +87,6 @@ export function filmToScene(c: FilmCamera, px: number, py: number): [number, num
   const u = px - CX, v = py - CY, forward = c.focalPx * Math.cos(pitch) - v * Math.sin(pitch), t = edgeDistance / forward;
   return [u * t, c.heightM - (v * Math.cos(pitch) + c.focalPx * Math.sin(pitch)) * t, -edgeDistance];
 }
-// How blurred something at `distance` is when the picture is focused at `focus`: 0 inside the tolerance band, toward 1 far
-// away. Behind the focus this is the thin-lens shape (1 - focus / distance); in front of it the mirror image is used, which
-// is gentler than a real lens, so the near felt does not dissolve when the dealer is sharp. The shader in scene3d-view.ts follows this.
-export function lensBlur(distance: number, focus: number, tolerance: number): number {
-  return Math.max(0, Math.min(1, (Math.abs(distance - focus) / Math.max(distance, focus) - tolerance) / (1 - tolerance)));
-}
 export type CardTrack = {leavesShoe?: number | null; restFrom?: number | null; frames?: {frame: number; quad?: number[][] | null; edge?: number[][] | null}[]};
 // The film pixel to keep sharp while a card is dealt: the card's centre from shortly before it leaves the shoe until
 // shortly after it has come to rest. Null otherwise: a card lying still is not the subject, the dealer is.
@@ -128,15 +122,6 @@ export function squareToQuad(q: number[][]): number[] {
   if (Math.abs(den) < 1e-12) throw Error('Degenerate card quad.');
   const g = (sx * dy2 - dx2 * sy) / den, h = (dx1 * sy - sx * dy1) / den;
   return [x1 - x0 + g * x1, x3 - x0 + h * x3, x0, y1 - y0 + g * y1, y3 - y0 + h * y3, y0, g, h, 1];
-}
-export const onSquare = (H: number[], u: number, v: number): [number, number] => { const w = H[6] * u + H[7] * v + H[8]; return [(H[0] * u + H[1] * v + H[2]) / w, (H[3] * u + H[4] * v + H[5]) / w]; };
-/**
- * A point of the card in the scene: card coordinates through the homography to a film pixel, laid on the film's surfaces,
- * `lift` metres over the felt. The vertex shader of src/scene3d-deal.ts does the same per vertex; this copy is for tests.
- */
-export function cardPoint(c: FilmCamera, H: number[], u: number, v: number, lift = 0): Vec3 {
-  const [px, py] = onSquare(H, u, v), p = filmToScene(c, px, py); if (p[1] !== 0 || !lift) return p;
-  const s = (c.heightM - lift) / c.heightM; return [p[0] * s, lift, p[2] * s]; // along the film camera's ray, so the pixel stays
 }
 /** A scene point seen from the film camera, in film pixels; null behind the camera. */
 export function filmPixel(c: FilmCamera, p: Vec3): {x: number; y: number} | null {

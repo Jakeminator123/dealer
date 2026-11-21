@@ -1,6 +1,5 @@
 // What a choice of a picture by hand leads to, in the words the confirm dialog says (StateDecision): the pictures set aside,
-// how many clips are built on what holds now and become marked as older, and that Arkivera never deletes. Pure; tests in
-// studio/tests/choice.test.ts.
+// how many clips are built on what holds now and become marked as older, and that Arkivera never deletes. Pure.
 import { consequenceOfHolding, type Lineage } from "../../lib/lineage.ts";
 import type { Entry, State } from "../../lib/media.ts";
 import { replacedBy } from "./state.ts";

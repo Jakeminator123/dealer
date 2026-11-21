@@ -2,7 +2,7 @@
 // makes this get produced"): its first and last picture and where each came from, the model, the length, the prompt and
 // the purpose the order was written with; for a cut-out take the clip and frames it is cut from, for a corrected copy the
 // clip it corrects. The words of the job's notes and prompt stay as the bank has them (they were written in English).
-// Pure: no DOM; tests in studio/tests/made-from.test.ts. The fold that shows it is Origin.tsx.
+// Pure: no DOM. The fold that shows it is Origin.tsx.
 import { clipOfVideo, type Graph, type ImageRef, type Take } from "../../../src/clip-graph.ts";
 import { takeEdgeName, formatSeconds, modelName, takeName } from "../../lib/names.ts";
 

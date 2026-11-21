@@ -12,7 +12,7 @@
 //   node tools/scene-material.ts <id>        one entry of "generated" in data/scene-materials.json
 //   node tools/scene-material.ts --all
 //
-// The picture functions are pure and tested (tools/scene-material.test.ts); only the command at the bottom touches files.
+// The picture functions are pure; only the command at the bottom touches files.
 import {readFile, writeFile, mkdir} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import path from 'node:path';

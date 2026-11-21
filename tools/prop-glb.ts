@@ -9,7 +9,7 @@
 //   node tools/prop-glb.ts <id>        one prop of data/props.json
 //   node tools/prop-glb.ts --all
 //
-// The mesh functions are pure and tested (tools/prop-glb.test.ts); only the command at the bottom touches files and images.
+// The mesh functions are pure; only the command at the bottom touches files and images.
 import {readFile, writeFile, mkdir} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import path from 'node:path';

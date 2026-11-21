@@ -1,7 +1,7 @@
 "use client";
 
 // <Origin take={take} graph={graph} />: a fold "Ursprung" under a take (the map's take panel, Granska): what the film was
-// made from, read from the bank (origin.ts): the first and last picture side by side with where each came from, the model
+// made from, read from the bank (made-from.ts): the first and last picture side by side with where each came from, the model
 // and length, for a cut-out take the clip and frames, for a corrected copy its clip, and the prompt and purpose on demand.
 // Closed by default; nothing is read before it is opened (a picture that is a frame of a film is drawn then). The data:
 // made-from.ts.

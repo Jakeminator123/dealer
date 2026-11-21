@@ -1,6 +1,6 @@
 // The round as the stage plays it: one part per step of resolveRound (src/clip-graph.ts), and the arithmetic of a place in
 // it (a step and a source frame), so that the 3D scene and the plain films play the same parts, cut on the same frames and
-// keep the same place when Jakob switches between them. Pure: no DOM, no network; tests in studio/tests/parts.test.ts.
+// keep the same place when Jakob switches between them. Pure: no DOM, no network.
 import type { Gap, Segment } from "../../src/clip-graph.ts";
 import type { GameCardOptions } from "../../src/game-film.ts";
 import { labUrl } from "./lab.ts";

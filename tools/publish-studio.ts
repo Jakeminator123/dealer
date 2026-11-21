@@ -26,7 +26,7 @@
 // film and does not open the studio.
 import {spawn, spawnSync, type ChildProcess} from 'node:child_process';
 import {existsSync, lstatSync, readFileSync, realpathSync} from 'node:fs';
-import {readFile, mkdir} from 'node:fs/promises';
+import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';

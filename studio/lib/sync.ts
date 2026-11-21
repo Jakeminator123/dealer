@@ -1,5 +1,5 @@
 // Frame arithmetic for a film watched frame by frame (components/player), and for a second film that follows the first
-// (Jämför: A leads, B follows). Pure: no DOM, no network; tests in studio/tests/sync.test.ts.
+// (Jämför: A leads, B follows). Pure: no DOM, no network.
 //
 // A frame's number is the file's own (a derived take is frames A–B of a longer film, numbered as in that film). Frame f
 // covers the times [f/fps, (f+1)/fps); a seek goes to its middle, so a seek always lands on the frame asked for. A film's
@@ -28,9 +28,6 @@ export const frameOfMediaTime = (mediaTime: number, fps: number): number => Math
 /** A frame kept inside a range. */
 export const clampFrame = (frame: number, range: Range): number => Math.min(range.end, Math.max(range.start, Math.round(frame)));
 
-/** How many frames a range holds. */
-export const rangeLength = (range: Range): number => range.end - range.start + 1;
-
 /** The range of a film: the given one inside the file, else the whole file; null while the length is unknown. */
 export function filmRange(frames: number | null | undefined, given?: Range | null): Range | null {
   const last = frames && frames > 0 ? frames - 1 : null;
@@ -41,9 +38,6 @@ export function filmRange(frames: number | null | undefined, given?: Range | nul
   }
   return last === null ? null : { start: 0, end: last };
 }
-
-/** The frame after a step of n frames from frame, inside the range (no wrap: stepping stops at the ends). */
-export const stepFrame = (frame: number, n: number, range: Range): number => clampFrame(frame + n, range);
 
 /** "ruta 88 / 120" for a whole film, "ruta 130 · 117–177" for a range of a longer one. */
 export function frameLabel(frame: number, range: Range | null, frames: number | null | undefined): string {

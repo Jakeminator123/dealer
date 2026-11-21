@@ -375,8 +375,3 @@ export function applyFixes(store: FrameStore, ops: readonly FixOp[], pictures: R
   return {ok: true, reports, keep: [start, film.count - 1 - end], frameShift: start, changed: [...touched].sort((a, b) => a - b)};
 }
 const round4 = (v: number) => Math.round(v * 10000) / 10000;
-
-/** A store over frames held in memory (tests, small films). */
-export function memoryStore(width: number, height: number, frames: Uint8Array[]): FrameStore & {frames: Uint8Array[]} {
-  return {width, height, frames, get count() { return frames.length; }, get: i => frames[i], set: (i, data) => { frames[i] = data; }};
-}

@@ -53,8 +53,6 @@ export function slotFilm(slot: Slot): string {
   if (slot.owner === 'D') return `D.C${Math.min(slot.index, 2) + 1}`;
   return `P${slot.seat}.C${slot.hands === 1 && slot.index === 1 ? 2 : 1}`;
 }
-/** True when the plan has no place of its own for the slot, so the layout below made one up. */
-export const slotImprovised = (slot: Slot) => slot.hands > 1 || slot.index > 1;
 
 /**
  * fan: one step for every seat instead of FAN and FAN_AT (for trying values from the page's address). geometry: the rule a

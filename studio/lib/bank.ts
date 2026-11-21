@@ -198,7 +198,7 @@ export function BankProvider({ children, every = 4000 }: { children: ReactNode; 
       if (!dealerId(id)) return;
       const here = readDealerAddress(new URLSearchParams(window.location.search));
       const word = addressWord(id, here, owners);
-      // null, never history.state: Next then updates useSearchParams (studio/tests/address-write.test.ts).
+      // null, never history.state: Next then updates useSearchParams.
       window.history.replaceState(null, "", `${window.location.pathname}${withDealer(window.location.search, word)}`);
       remember(id);
       setSeen({ address: { ...here, dealer: word }, memory: id });

@@ -88,13 +88,15 @@ const ROOM_TURN = 0;
 const FS_VERTEX = 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0., 1.); }';
 // mode 0: even blur. mode 1: blur grows with distance behind the dealer (an artistic ramp, the v1 look).
 // mode 2: lens, blur grows with the distance from the focus; a sample only spreads as far as its own blur reaches,
-// so something in focus does not smear into what is blurred next to it.
+// so something in focus does not smear into what is blurred next to it. Its amount is 0 inside the tolerance band and
+// grows toward 1 far away: behind the focus the thin-lens shape (1 - focus / distance), in front of it the mirror image,
+// which is gentler than a real lens, so the near felt does not dissolve when the dealer is sharp.
 const BLUR_FRAGMENT = `varying vec2 vUv; uniform sampler2D map, depthMap; uniform vec2 dir; uniform float near, far, mode, start, range, focus, tol;
 float amount(vec2 uv){
   if (mode < .5) return 1.;
   float z = texture2D(depthMap, uv).x, dist = near * far / (far - (far - near) * z);
   if (mode < 1.5) return mix(.08, 1., smoothstep(start, start + range, dist));
-  return clamp((abs(dist - focus) / max(dist, focus) - tol) / (1. - tol), 0., 1.); // lensBlur in scene3d-geometry.ts
+  return clamp((abs(dist - focus) / max(dist, focus) - tol) / (1. - tol), 0., 1.);
 }
 void main(){
   float c = amount(vUv), w = 0.; vec4 s = vec4(0.);

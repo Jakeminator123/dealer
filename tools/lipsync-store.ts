@@ -3,7 +3,6 @@
 // film of each dealer's mouth proof, taken from proof folders that really lie under assets/proofs/; and what the speech
 // register (data/speech.json) sets per dealer: the bank id, the rest film, the language and the voice by name and model
 // (never the name of the line that holds an account's key). Read-only: nothing here writes.
-// Tests: tools/lipsync-store.test.ts.
 import {readFile, readdir, realpath} from 'node:fs/promises';
 import path from 'node:path';
 import {StoreError} from './placement-store.ts';

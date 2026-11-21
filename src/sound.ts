@@ -5,7 +5,7 @@
 // The first half has no page and no audio context in it: seeded randomness, what each sound is made of (its plan, drawn
 // from a seed so that no two clicks are alike and a test can repeat them), the sounds themselves as samples, the rooms'
 // recipes and the planner that says what happens in a room when, and the measuring used by the tests and the proof.
-// tools/sound.test.ts runs it under Node. The second half puts it on a Web Audio graph (createSound) and is the page,
+// The second half puts it on a Web Audio graph (createSound) and is the page,
 // started only where there is a document. Importing the module never touches AudioContext.
 
 // ── names, defaults and levels ──────────────────────────────────────────────

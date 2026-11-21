@@ -58,15 +58,6 @@ export function patchRange(weights: readonly number[]): {first: number; count: n
   let last = weights.length - 1; while (weights[last] <= 0) last--;
   return {first, count: last - first + 1};
 }
-/**
- * The edge's weight at a point of the box (x, y in pixels from its top left corner, continuous): what featherMask in
- * src/speech-plan.ts gives at a pixel's centre, 0 at the box's edge and 1 `feather` pixels in, eased. The scene's shader
- * computes the same (MOUTH_GLSL in src/scene3d-mouth.ts).
- */
-export function maskAt(x: number, y: number, w: number, h: number, feather: number): number {
-  const d = Math.min(x, w - x, y, h - y); if (d <= 0) return 0;
-  const t = Math.min(1, d / Math.max(1, feather)); return t * t * (3 - 2 * t);
-}
 
 // ── the colour of a cell ─────────────────────────────────────────────────────
 // The bank's films and the renderer's answers are planar Y, Cb, Cr 4:2:0 without colour tags, and Chrome shows an untagged film

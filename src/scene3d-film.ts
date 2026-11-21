@@ -115,15 +115,10 @@ vec4 keyCards(vec4 o, vec2 uv, vec3 c, vec3 key){
   return keyCard(o, px, c, key, cardZone, cardCore, cardColour, cardRim, cardSides, cardTint, cardTrust, cardShoe, cardDrawn, cardHeld, cardStrength);
 }`;
 // The keyed shadow above the table edge, kept as a share `above` (1 = all of it, as before): rows of the standard frame, y down.
-// It fades in over SHADOW_BAND rows up to the edge row, so the shadow on the felt below does not start with a line. Mirrored in
-// shadowAboveAt below for the tests.
+// It fades in over SHADOW_BAND rows up to the edge row, so the shadow on the felt below does not start with a line.
 export const SHADOW_BAND = 8;
 const ABOVE_GLSL = `const float SHADOW_BAND = ${SHADOW_BAND}.;
 float aboveShare(float row, float above){ return mix(above, 1., smoothstep(FRAME_FIX.y - SHADOW_BAND, FRAME_FIX.y, row)); }`;
-/** The share of the keyed shadow kept at a row of the standard frame (y down) when `above` of it is kept above the table edge. */
-export function shadowAboveAt(row: number, above: number): number {
-  const t = Math.min(1, Math.max(0, (row - (FRAME_FIX.y - SHADOW_BAND)) / SHADOW_BAND)), s = t * t * (3 - 2 * t); return above + (1 - above) * s;
-}
 // ---- the room's light on the dealer (key dealerRoom) ----------------------------------------------------------------------
 // The film is lit in a studio, whatever room is shown. With dealerRoom the film takes the colour and level of the panorama
 // that is showing: roomGlow reads the panorama (small, sRGB bytes) as the scene's sphere shows it, turned and mirrored, and
@@ -254,12 +249,6 @@ const smooth = (a: number, b: number, x: number) => { const t = Math.min(1, Math
 export function lifeNow(seconds: number, amount: number): [number, number, number] {
   const L = LIFE, turn = 2 * Math.PI, rad = Math.PI / 180, a = amount > 0 ? amount : 0, sway = L.sway.reduce((sum, [period, share, phase]) => sum + share * Math.sin(turn * seconds / period + phase), 0);
   return [a * L.lean * rad * sway, a * rad * (L.tilt * sway + L.own * Math.sin(turn * seconds / L.ownPeriod + 0.5)), a * L.breath * Math.sin(turn * seconds / L.breathPeriod)];
-}
-/** How far from a pixel of the standard frame (x, y down) the film is read for the movements of lifeNow: [dx, dy] in pixels. The shader's lifeShift, for the tests. */
-export function lifeShiftAt(x: number, y: number, [lean, tilt, breath]: readonly number[]): [number, number] {
-  const L = LIFE, body = (1 - smooth(L.fade, L.still, y)) * (1 - smooth(L.sideFade, L.side, Math.abs(x - FRAME_FIX.x))); if (body <= 0) return [0, 0];
-  const head = tilt * (1 - smooth(L.headFade[0], L.headFade[1], y)), up = breath * (1 - smooth(L.breathFade[0], L.breathFade[1], y));
-  return [(lean * (y - L.pivot) + head * (y - L.neck)) * body, (up - (lean + head) * (x - FRAME_FIX.x)) * body];
 }
 // lifeMove: the lean, the tilt and the breath of lifeNow; all zero is the film as it is.
 const LIFE_GLSL = `uniform vec3 lifeMove;

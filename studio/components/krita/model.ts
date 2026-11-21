@@ -1,6 +1,5 @@
 // The pen's shapes: pen strokes, arrows, frames and text, kept as a list in the picture's own pixels and drawn again on
-// every change, so the picture itself is never touched and undo is one step back in a list of lists. Pure: no DOM;
-// tests in studio/tests/krita-model.test.ts.
+// every change, so the picture itself is never touched and undo is one step back in a list of lists. Pure: no DOM.
 
 export type Point = { x: number; y: number };
 export type Tool = "pen" | "arrow" | "rect" | "text";

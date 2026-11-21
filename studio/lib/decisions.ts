@@ -1,7 +1,6 @@
 // Beslut (/beslut/): what waits for Jakob (data/decisions.json, read and written through tools/decision-store.ts) and his
 // answers. The view's calls to the lab server and the pure words and order it shows. Only in the lab: the online copy reads
-// and writes nothing here (app/beslut/page.tsx shows a word instead, the rail leaves the view out). Tests:
-// studio/tests/decisions.test.ts.
+// and writes nothing here (app/beslut/page.tsx shows a word instead, the rail leaves the view out).
 import { proofHref as proofAt } from "./proofs.ts";
 import type { Answer, Chip, Kind } from "../../tools/decision-register.ts";
 import type { DecisionsAnswer, Saved, Shown, ShownDecision } from "../../tools/decision-store.ts";
@@ -76,9 +75,6 @@ export const KIND_WORD: Record<Kind, string> = { beslut: "Beslut", gora: "Att g�
 
 /** The view's header: "Inget väntar på dig", "1 väntar på dig". */
 export const waitingLine = (n: number): string => (n === 0 ? "Inget väntar på dig" : `${n} väntar på dig`);
-
-/** The start page's entry: "1 beslut väntar", "5 beslut väntar". */
-export const entryLine = (n: number): string => `${n} beslut väntar`;
 
 /** The button for an entry's page of the lab: the game, a view of the studio, or any other page. */
 export function openWord(page: string): string {

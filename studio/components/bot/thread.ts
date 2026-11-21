@@ -1,5 +1,4 @@
-// The conversation in the panel as lines, and what of it goes with a question or a draft. Pure; tests in
-// studio/tests/bot-thread.test.ts.
+// The conversation in the panel as lines, and what of it goes with a question or a draft. Pure.
 import { THREAD_LIMIT, type BotFel, type Kalla, type Niva, type TradLine, type Vy } from "../../lib/bot-client.ts";
 
 export type DuLine = { id: string; roll: "du"; text: string; bild: string | null; harBild: boolean; vy: Vy | null; niva: Niva };

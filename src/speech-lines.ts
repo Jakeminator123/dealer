@@ -13,8 +13,6 @@
 // text it would have shown anyway. The film is played whole, from its first frame to its last, with its sound (a part with
 // sound: true in src/scene3d-film.ts): it begins and ends on the rest film's first played frame, mouth closed.
 
-/** The ten lines of a round, in the order they come. */
-export const SPOKEN_LINES = ['placebets', 'goodluck', 'insurance', 'double', 'blackjack', 'dealerblackjack', 'dealerbust', 'win', 'push', 'lose'] as const;
 /** The chat's phases (DEALER_LINES in src/game-chat.ts) and the line she says there. */
 export const PHASE_LINE: Record<string, string> = {BETTING: 'placebets', DEALING: 'goodluck', INSURANCE: 'insurance', DEALER: 'dealerplays'};
 /** The chat dummy's own four answers (REPLIES in src/game-chat.ts), in its order: what she says when nothing else fits. */
@@ -33,8 +31,6 @@ const CHAT_RULES: [RegExp, string][] = [
   rule('vann|vinner|vinst|yes+|jaa+|woho+|snyggt|nice|blackjack', 'grattis'),
   rule('hej|hejsan|hall[åa]|tjena|tja|god ?(?:kv[äa]ll|dag|morgon)|hello|hi', 'hej'),
 ];
-/** Every key chatKey can answer with; each has a text in data/speech.json (the test holds the two together). */
-export const CHAT_KEYS: string[] = [...new Set([...CHAT_RULES.map(rule => rule[1]), 'vetej', ...CHAT_FALLBACK])];
 
 /**
  * The fixed reply that answers what the player wrote. A greeting, her name, how she is, the rules, thanks, luck, a loss, a win

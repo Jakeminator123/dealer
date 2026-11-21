@@ -1,5 +1,5 @@
 // The bank's films in a few numbers per seat, for the row Filmer: not a second map, only how many takes each seat has and
-// how they stand, with the map one click away. Pure: no DOM, no network; tests in studio/tests/media.test.ts.
+// how they stand, with the map one click away. Pure: no DOM, no network.
 import type { Edge, Graph } from "../../../src/clip-graph.ts";
 import { BUCKETS, bucketOf, type Bucket } from "../../lib/edge-stats.ts";
 

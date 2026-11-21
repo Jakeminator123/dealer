@@ -22,8 +22,6 @@
 /** Three values per pixel; in a frame and in the tone they are B, G, R (OpenCV's order). */
 export type Triple = [number, number, number];
 export type RGB = Triple;
-/** A picture: 8-bit BGR, rows top down. */
-export type Picture = {width: number; height: number; data: Uint8Array};
 
 // ── The bank's frame and the treatments ─────────────────────────────────────
 export const BANK = {width: 1764, height: 1174};

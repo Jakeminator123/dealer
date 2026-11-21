@@ -13,7 +13,7 @@ export const SHIFT = {
 };
 const MIN_SECONDS = 0.2; // a change is never shorter than this, whatever it is asked to be (a length that is no number counts as this too)
 const lengthOf = (seconds: number) => seconds > MIN_SECONDS ? seconds : MIN_SECONDS;
-const clamp01 = (v: number) => Math.max(0, Math.min(1, v)), smooth = (v: number) => { const t = clamp01(v); return t * t * (3 - 2 * t); };
+const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 
 // How strong the shimmer is, 0 to 1, at a progress 0 to 1: it builds, stays at its height while the rooms change, dies away.
 // It is seen from the first moment and settles into its height; it lingers on the way down and is gone at the end.
@@ -47,12 +47,6 @@ export function retake(progress: number): number {
   return SHIFT.rise * (1 - Math.sqrt(1 - shimmerLevel(p))); // the inverse of the rise
 }
 
-// The two rules the shader uses, here so that their ends can be tested. `cloud` is the soft pattern's value at a point, 0 to 1.
-// How much of the new room shows at a point: nothing anywhere before the change, everything everywhere after it.
-export function changedAt(change: number, cloud: number): number { return smooth(change * (1 + SHIFT.spread) - SHIFT.spread * cloud); }
-// How strong the shimmer is at a point: nowhere at level 0, everywhere in full at level 1.
-export function levelAt(level: number, cloud: number): number { return smooth(level * (1 + SHIFT.bloom) - SHIFT.bloom * cloud); }
-
 const f = (v: number) => v.toFixed(3);
 const NOISE = `float sHash(vec2 p){ vec3 q = fract(vec3(p.xyx) * .1031); q += dot(q, q.yzx + 33.33); return fract((q.x + q.y) * q.z); }
 float sNoise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f); return mix(mix(sHash(i), sHash(i + vec2(1., 0.)), f.x), mix(sHash(i + vec2(0., 1.)), sHash(i + 1.), f.x), f.y); }`;
@@ -67,7 +61,6 @@ void main(){
   float m = smoothstep(0., 1., change * ${f(1 + SHIFT.spread)} - ${f(SHIFT.spread)} * cloud);
   gl_FragColor = vec4(mix(texture2D(from, vUv).rgb * gainFrom, texture2D(to, vUv).rgb * gainTo, m), 1.);
 }`;
-export const CHANGE_UNIFORMS = ['from', 'to', 'gainFrom', 'gainTo', 'change', 'aspect'];
 
 // The shimmer itself, for the pass that writes the room to the screen: a curtain of fine sequins between the dealer and the
 // room. shimmerOver gives the light to add to the room (rgb, linear, before the picture's shoulder, so the brightest glints
@@ -129,4 +122,3 @@ vec4 shimmerOver(vec2 uv, out vec2 bent){
   light += vec3(1., .5, .12) * (local * local * crest * .14); // the light on the folds also lies in the air between the sequins
   return vec4(light, 1. - (1. - curtain.a) * (1. - .4 * local * local)); // the room also dims a little behind the curtain, as a stage does, so the glitter carries over a bright room too
 }`;
-export const SHIMMER_UNIFORMS = ['shimmer', 'glitter', 'pixels'];

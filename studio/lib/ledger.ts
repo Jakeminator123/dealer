@@ -8,8 +8,7 @@
 // data/media-roles.json whose receipt came from the take. Then a summary per method: how many takes, the reviewer's mean,
 // and how many Jakob accepted, kept as a variant, rejected or has not judged; always with the count, two takes are little.
 // Pure: no fs, no network; it reads whatever it is given and never fails on a missing or half-written part. The reading is
-// tools/order-ledger.ts (the command and GET /api/orders/ledger), the view studio/components/ledger/. Tests:
-// tools/order-ledger.test.ts.
+// tools/order-ledger.ts (the command and GET /api/orders/ledger), the view studio/components/ledger/.
 import { FLIP_LABEL, MODELS, SHOWN_LABEL } from "../../src/order-model.ts";
 import { SAID_WITHOUT_NOTE, type Verdict } from "./verdict.ts";
 
@@ -396,7 +395,7 @@ export function ledgerOf(input: LedgerInput): Ledger {
           stand: standPicture ? str(standPicture.path) : null,
           file: str(entry?.file),
           orderFile: `data/orders/${id}.json`,
-          send: href(`/bestall/?order=${encodeURIComponent(id)}`, dealer),
+          send: href(`/bordet/?lage=bestall&ko=1&order=${encodeURIComponent(id)}`, dealer),
           review: reviewTake ? href(`/granska/?tagning=${encodeURIComponent(reviewTake)}`, dealer) : null,
           material,
         },

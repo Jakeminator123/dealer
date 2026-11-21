@@ -141,7 +141,7 @@ export const RUNWAY_CLOTH = {x: 0.35, s0: 0.19, s1: 0.4, flat: 0.12};
 // The cloths made that way, by the word the state key `cloth` holds: the tile, and the name the lab's menu shows. A new cloth is
 // a new picture, an entry for it under "generated" in data/scene-materials.json (which tools/scene-material.ts makes the tile
 // from) and a line here; the menus of the studio (studio/lib/scene-keys.ts) and the game's key catalogue (src/game-look.ts)
-// name the same words, and tools/scene3d-looks.test.ts holds them to this list.
+// name the same words.
 const MATERIALS = 'assets/scene/materials/';
 export const RUNWAY_CLOTHS = {
   'runway': {url: `${MATERIALS}runway_felt-diffuse.webp`, name: 'Runway-filten'},
@@ -229,12 +229,8 @@ const lampIrradiance = (p: number[], at: number[], axis: number[], cone: number)
   const t = Math.min(1, Math.max(0, (c - cone) / (1 - cone))); return Math.max(l[1], 0) / d / d2 * t * t * (3 - 2 * t);
 };
 const LAMP_AXIS = (() => { const v = [0, -LAMP.y, LAMP.aim - LAMP.s], l = Math.hypot(v[0], v[1], v[2]); return v.map(c => c / l); })();
-/** The lamp's share of the light on the felt at (x, s) (dealer metres), as the factor the table's colour is multiplied by at that strength. */
-export function lampShade(x: number, s: number, strength: number): number {
-  const at = [LAMP.x, LAMP.y, LAMP.s], cone = Math.cos(LAMP.angle), rel = lampIrradiance([x, 0, s], at, LAMP_AXIS, cone) / lampIrradiance([0, 0, 0], at, LAMP_AXIS, cone);
-  return 1 - strength + strength * Math.min(1, rel);
-}
-// The same in the table's shaders, in world coordinates (the ratio does not change with the table's scale).
+// The lamp's share of the light on the felt, as the factor the table's colour is multiplied by, in the table's shaders, in
+// world coordinates (the ratio does not change with the table's scale).
 const LAMP_GLSL = `uniform vec3 lampAt, lampAxis; uniform float lampCone, lampRef, lampOn; varying vec3 vLampAt;
 float lampLight(vec3 p){
   if (lampOn <= 0.) return 1.;

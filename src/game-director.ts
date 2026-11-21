@@ -166,9 +166,6 @@ export function judgedBank(bank: BankData): BankData {
   const gives = (t: {id: string; from?: string; to?: string}) => !(stopgap(motions[t.id]) && real.has(edgeOf(t)));
   return {...bank, jobs: kept.jobs.filter(gives), derived: kept.derived.filter(gives), edits: kept.edits};
 }
-/** The ids judgedBank leaves out (unjudged, archived, a stopgap that gave way), for the page to say. */
-export const unjudgedTakes = (bank: BankData): string[] => { const kept = new Set([...(judgedBank(bank).jobs ?? []), ...(judgedBank(bank).derived ?? []), ...(judgedBank(bank).edits ?? [])].map(x => x.id));
-  return [...(bank.jobs ?? []), ...(bank.derived ?? []), ...(bank.edits ?? [])].map(x => x.id).filter(id => !kept.has(id)); };
 
 // ── What she says ───────────────────────────────────────────────────────────
 // The engine's speak signals (game/presentation.ts) in a step come before its first card (goodluck, double) or after its last

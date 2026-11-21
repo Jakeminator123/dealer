@@ -5,9 +5,9 @@
 // shading; the face (blue) is the face print laid by the track's quad for that frame, shaded the same way, and whatever of the
 // blue lies outside the quad takes the face's border colour. Shown on film frames by dealer-bf's trial (kortprov.py, Prov
 // kort-matt-ur-filmen) before it was a shader. Here are the parts that need no GPU: the colour rules, the passes as shader text,
-// where they run, which quad lays the print, and CPU mirrors of the arithmetic for the tests (tools/scene3d-matte.test.ts). The
+// where they run and which quad lays the print. The
 // passes run in src/scene3d-deal.ts, which owns the targets; the replacement itself is in the film's shader (src/scene3d-film.ts).
-import {clockwise, grown, morph, signedArea, type Pt} from './card-track.ts';
+import {clockwise, grown, signedArea, type Pt} from './card-track.ts';
 import {turnOf, type CardTrack} from './card-overlay.ts';
 import {FILM, squareToQuad} from './scene3d-geometry.ts';
 import {inv3} from './scene-geometry.ts';
@@ -148,20 +148,6 @@ float planeLight(vec4 plane, float mean, vec2 px){
   if (mean <= 0.) return 1.;
   return pow(clamp(1. + (plane.z * (px.x - plane.x) + plane.w * (px.y - plane.y)) / mean, ${PLANE.range[0].toFixed(2)}, ${PLANE.range[1].toFixed(2)}), ${PLANE.gamma.toFixed(1)});
 }`;
-/** lightPlane and planeLight in the shader, on the CPU for the tests: film(x, y) the video's colour (0-1) at a film pixel, q the film's card (texture order), ref its lit colour; the factor at film pixel px. */
-export function planeLight(film: (x: number, y: number) => number[], q: number[][], ref: number[], px: number[]): number {
-  const lum = (c: number[]) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2], len = (c: number[]) => Math.hypot(c[0], c[1], c[2]), dir = ref.map(v => v / len(ref));
-  const step = (1 - 2 * PLANE.inset) / (PLANE.grid - 1), samples: {p: number[]; s: number[]}[] = [];
-  for (let j = 0; j < PLANE.grid; j++) for (let i = 0; i < PLANE.grid; i++) { const u = PLANE.inset + i * step, v = PLANE.inset + j * step, at = (k: number) => (q[0][k] + (q[1][k] - q[0][k]) * u) * (1 - v) + (q[3][k] + (q[2][k] - q[3][k]) * u) * v;
-    const p = [at(0), at(1)], s = film(p[0], p[1]); if (len(s) > 0.12 && (s[0] * dir[0] + s[1] * dir[1] + s[2] * dir[2]) / len(s) > 0.96) samples.push({p, s}); }
-  const m = samples.reduce((a, x) => a + lum(x.s), 0) / Math.max(samples.length, 1), kept = samples.filter(x => lum(x.s) >= PLANE.dark * m), n = kept.length;
-  if (n < PLANE.least) return 1;
-  const mean = (f: (x: {p: number[]; s: number[]}) => number) => kept.reduce((a, x) => a + f(x), 0) / n;
-  const mx = mean(x => x.p[0]), my = mean(x => x.p[1]), ml = mean(x => lum(x.s)), cxx = mean(x => x.p[0] ** 2) - mx * mx, cxy = mean(x => x.p[0] * x.p[1]) - mx * my, cyy = mean(x => x.p[1] ** 2) - my * my;
-  const cxl = mean(x => x.p[0] * lum(x.s)) - mx * ml, cyl = mean(x => x.p[1] * lum(x.s)) - my * ml, det = cxx * cyy - cxy * cxy;
-  const [b, c] = det < 1e-3 * Math.max(cxx * cyy, 1e-6) || det <= 0 ? [0, 0] : [(cyy * cxl - cxy * cyl) / det, (cxx * cyl - cxy * cxl) / det];
-  return Math.min(PLANE.range[1], Math.max(PLANE.range[0], 1 + (b * (px[0] - mx) + c * (px[1] - my)) / ml)) ** PLANE.gamma;
-}
 
 // ---- the replacement, in the film's shader (src/scene3d-film.ts) ---------------------------------------------------------
 // o: the keyed film pixel (premultiplied, graded), c: its video colour, key: the screen colour, tone: the grade and the fan's shade
@@ -284,20 +270,6 @@ export function meanLinear(rgba: ArrayLike<number>): [number, number, number] {
   const lin = (v: number) => { const c = v / 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; }, sum = [0, 0, 0]; let n = 0;
   for (let i = 0; i + 3 < rgba.length; i += 4) { if (rgba[i + 3] < 128) continue; sum[0] += lin(rgba[i]); sum[1] += lin(rgba[i + 1]); sum[2] += lin(rgba[i + 2]); n++; }
   return n ? [sum[0] / n, sum[1] / n, sum[2] / n] : [0, 0, 0];
-}
-
-// ---- CPU mirrors of the arithmetic, for the tests -------------------------------------------------------------------------
-/** The card's body as the passes make it: candidates (1/0) where the opened mask reaches and the strict colour is near. */
-export function bodyOf(candidate: Uint8Array, strict: Uint8Array, w: number, h: number): Uint8Array {
-  const reach = morph(morph(candidate, w, h, MATTE.thin, false), w, h, MATTE.thin + MATTE.keep, true), near = morph(strict, w, h, MATTE.near, true), out = new Uint8Array(w * h);
-  for (let i = 0; i < out.length; i++) out[i] = candidate[i] & reach[i] & near[i];
-  return out;
-}
-/** matteUnmix in the shader: c as card·k + screen·t (least squares, 0-1 colours), and how far c lies off their plane against its brightness. */
-export function unmix(c: number[], k: number[], t: number[]): {card: number; screen: number; off: number} {
-  const dot = (a: number[], b: number[]) => a.reduce((s, v, i) => s + v * b[i], 0), kk = dot(k, k), kt = dot(k, t), tt = dot(t, t), kc = dot(k, c), tc = dot(t, c), det = Math.max(kk * tt - kt * kt, 1e-6);
-  const card = (tt * kc - kt * tc) / det, screen = (kk * tc - kt * kc) / det;
-  return {card, screen, off: Math.hypot(...c.map((v, i) => v - card * k[i] - screen * t[i])) / (Math.hypot(...c) + 0.04)};
 }
 
 // ---- "pålägg": the film's own back, yellow, becomes the dark back in the film's own pixels (a lab trial, off: card-overlay.ts BACK) ---
@@ -489,52 +461,6 @@ vec3 filmCard(vec3 c, vec2 px, vec3 key){
   vec3 painted = wf > wb ? f : b;
   return faceOn > .5 && backUnder < .5 && shoe < .5 ? paperContact(c, painted, px, key, zone) : painted;
 }`;
-const solve3 = (cols: number[][], c: number[]): number[] => {
-  const [a, b, d] = cols, det = (p: number[], q: number[], r: number[]) => p[0] * (q[1] * r[2] - q[2] * r[1]) - q[0] * (p[1] * r[2] - p[2] * r[1]) + r[0] * (p[1] * q[2] - p[2] * q[1]), D = det(a, b, d);
-  return Math.abs(D) < 1e-12 ? [0, 0, 0] : [det(c, b, d) / D, det(a, c, d) / D, det(a, b, c) / D];
-};
-const step = (e0: number, e1: number, x: number) => { const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
-const lumaOf = (c: number[]) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
-/** Contact despill arithmetic; support is the shader's nearby blue/skin evidence, not a tracked polygon. */
-export function paperContactOf(source: number[], painted: number[], blue: number, skin: number, zone = 1): {weight: number; colour: number[]} {
-  const weight = painted[2] <= painted[1] ? 0 : step(PAPER_CONTACT.red[0], PAPER_CONTACT.red[1], source[0] - source[1]) * step(PAPER_CONTACT.blue[0], PAPER_CONTACT.blue[1], source[2] - source[0]) * step(PAPER_CONTACT.support[0], PAPER_CONTACT.support[1], blue) * step(PAPER_CONTACT.support[0], PAPER_CONTACT.support[1], skin) * Math.min(1, Math.max(0, zone));
-  return {weight, colour: [painted[0], painted[1], painted[2] + weight * (Math.min(painted[2], painted[1]) - painted[2])]};
-}
-/**
- * darkBack in the shader for one pixel, for the tests: c the film's colour and key the screen's (0-1), shoe whether it lies in the shoe
- * window or within DARK_BACK.shoeRoom of it, skin how much skin lies within DARK_BACK.skinNear of it (0 to 1), rim whether surely card lies within DARK_BACK.near of it. For a face in the air, neighbours are the four samples at PAPER_FACE.smooth.
- * The neighbourhood's mean over a blurred finger is left out. card
- * and finger: how far the pixel is taken as the card and as the card blurred with a finger; colour: what the film then shows.
- */
-export function darkBackOf(c: number[], key: number[], o: {shoe?: boolean; skin?: number; rim?: boolean; field?: number[]; lying?: number; side?: 'back' | 'face'; air?: boolean; neighbours?: readonly (readonly number[])[]} = {}): {card: number; finger: number; colour: number[]} {
-  const D = {...DARK_BACK, ...(o.side === 'face' ? {card: PAPER_FACE.card, pale: PAPER_FACE.pale, rimPale: SIDES.face.rimPale, screen: PAPER_FACE.screen, bright: PAPER_FACE.bright} : {})}, response = o.side === 'face' ? PAPER_FACE.response : 1, field = o.field ?? (o.side === 'face' ? PAPER_FACE.field : DARK_BACK.field), lying = o.lying ?? (o.side === 'face' ? PAPER_FACE.lying : 0.835), shade = o.side !== 'face', skin = step(D.skinRed[0], D.skinRed[1], c[0] - c[1]) * step(D.skinBlue[0], D.skinBlue[1], c[2] / Math.max(c[1], 0.01));
-  const dim = o.side === 'face' ? step(PAPER_FACE.dim[0], PAPER_FACE.dim[1], lumaOf(c)) : 1, red = o.side === 'face' ? 1 - step(PAPER_FACE.red[0], PAPER_FACE.red[1], c[0] - c[1]) : 1;
-  const cardOf = (u: number[], light = dim) => { const low = shade ? 1 - step(D.blue[0], D.blue[1], c[2] / Math.max(c[1], 0.01)) : 0;
-    return step(0, D.share, u[0]) * Math.max(step(D.screen[0], D.screen[1], u[1]), low * step(D.shade[0], D.shade[1], u[1])) * step(D.white[0], D.white[1], u[2]) * (1 - step(D.pale[0], D.pale[1], u[2] / Math.max(u[0], 1e-3))) * (1 - skin) * (light * red); };
-  const u = solve3([D.card, key, [1, 1, 1]], c), v = solve3([D.card, D.finger, [1, 1, 1]], c);
-  let w1 = cardOf(u);
-  if (o.rim) {
-    const rim = step(0, D.share, u[0]) * step(D.rim[0], D.rim[1], u[1]) * (1 - step(D.rimPale[0], D.rimPale[1], u[2] / Math.max(u[0], 1e-3))) * (1 - skin);
-    if (w1 < 0.7) w1 = Math.max(w1, rim);
-    else if (o.side === 'face') {
-      const screen = step(D.screen[0], D.screen[1], u[1]), cool = 1 - step(0, PAPER_FACE.red[0], c[0] - c[1]);
-      w1 += Math.max(0, Math.min(rim, w1 / screen) - w1) * cool;
-    }
-  }
-  if (o.side === 'face' && key[1] > key[2]) {
-    const chromaAt = (share: number) => (key[2] * (1 - share) + D.card[2] * share) / (key[1] * (1 - share) + D.card[1] * share);
-    const weak = chromaAt(D.share), half = chromaAt(0.5), chroma = (rgb: readonly number[]) => step(weak, half, rgb[2] / Math.max(rgb[1], 0.01));
-    if (o.air && !o.shoe && o.neighbours?.length === 4) {
-      const support = (rgb: readonly number[]) => chroma(rgb) * Math.max(0, 1 - rgb[0] / Math.max(rgb[1], 0.01));
-      w1 = Math.max(w1, cardOf(u, 1) * Math.min(support(c), ...o.neighbours.map(support)));
-    }
-    w1 *= chroma(c);
-  }
-  const w2 = o.shoe || o.side === 'face' ? 0 : step(0.3, 0.7, o.skin ?? 0) * step(0, D.share, v[0]) * step(-D.tolerance, 0, v[1]) * step(D.fingerWhite[0], D.fingerWhite[1], v[2]) * (1 - step(D.pale[0], D.pale[1], v[2] / Math.max(v[0], 1e-3))) * (1 - w1);
-  const green = (c[1] - Math.max(c[0], c[2])) / Math.max(key[1] - Math.max(key[0], key[2]), 0.05), screen = Math.max(u[1], 0) * step(D.noise[0], D.noise[1], u[1]) * step(0, D.green, green), light = Math.min(D.bright, Math.max(0, lumaOf(c.map((x, i) => x - screen * key[i])) / lying) ** response), card = field.map((x, i) => x * light + screen * key[i]);
-  const part = D.card.map(x => Math.max(v[0], 0) * x + Math.max(v[2], 0)), fingerLight = Math.min(D.bright, Math.max(0, lumaOf(part) / lying) ** response), finger = c.map((x, i) => Math.min(1, Math.max(0, x - part[i] + field[i] * fingerLight)));
-  return {card: w1, finger: w2, colour: c.map((x, i) => x * (1 - w1 - w2) + w1 * card[i] + w2 * finger[i])};
-}
 /**
  * Where the film's card can be in a frame, for the dark back (clockwise on screen, film pixels, y down), or null: the box round the
  * track's card (its film quad, quad or edge line) over this frame, the four before it and the two after it, grown by 16 px. Not the

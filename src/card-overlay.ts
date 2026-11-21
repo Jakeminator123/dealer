@@ -379,12 +379,6 @@ export function shiftShare(track: CardTrack, frame: number): number {
   const rest = restOf(track), to = rest ? rest.from : track.frames.length - 1, from = Math.min(to, Math.max(0, track.leavesShoe ?? 0, firstDrawn(track)));
   return frame >= to ? 1 : frame <= from ? 0 : smooth((frame - from) / (to - from));
 }
-/** Where a film leaves its card lying, for the films that follow it in a round: the resting card, at the plan's place or moved with its step's shift. */
-export function placedCard(track: CardTrack, scene: Scene | null, scale: number, shift: {x: number; y: number} | null = null, land: Pt[] | null = null): {quad: Pt[]; side: Side} | null {
-  if (!restOf(track)) return null;
-  const pose = poseAt(track, scene, track.frames.length - 1, scale, 12, shift, land);
-  return pose?.quad ? {quad: pose.quad, side: pose.side} : null;
-}
 /** How far beside the plan a film lays its card, and the Kortskala at which the rendered card is a margin larger than the film's resting card. */
 export function landing(track: CardTrack, scene: Scene | null, land: Pt[] | null): {off: number | null; filmSize: number; planSize: number | null; scaleNeeded: number | null} | null {
   const rest = restOf(track);
@@ -553,17 +547,6 @@ export function overridesOf(value: unknown): Override[] {
     return Number.isInteger(from) && Number.isInteger(to) && from >= 0 && to >= from ? [{from, to, note: typeof item.note === 'string' ? item.note : ''}] : []; });
 }
 export const cardInFront = (overrides: Override[], frame: number) => overrides.some(o => frame >= o.from && frame <= o.to);
-
-/** One line about a track for the take detail: sides, the edge-on moment, the quarter turns there and where the card comes to rest. */
-export function describeTrack(track: CardTrack): string {
-  const runs: string[] = []; let open: {side: Side; from: number; to: number} | null = null;
-  for (const f of track.frames) { if (open && open.side === f.side) open.to = f.frame; else { if (open) runs.push(`${open.side} ${open.from}–${open.to}`); open = {side: f.side, from: f.frame, to: f.frame}; } }
-  if (open) runs.push(`${open.side} ${open.from}–${open.to}`);
-  const turns = (track.flips ?? []).filter(flip => flip.quarterTurns).map(flip => `sätts om ${flip.quarterTurns} kvartsvarv vid ruta ${flip.from}–${flip.to}`);
-  const unsure = track.frames.filter(f => f.side !== 'NONE' && (f.confidence ?? 1) < 0.6).length;
-  const rest = restOf(track);
-  return [runs.join(' · '), ...turns, !rest ? 'kortet kommer aldrig till vila i spåret' : rest.assumed ? `vilar inte i klippet, sista rutan ${rest.from} får gälla` : `vilar från ruta ${rest.from}`, ...(unsure ? [`${unsure} osäkra rutor`] : [])].join(' · ');
-}
 
 // ---- the lab trial "kortprov" (Prov kort-fram-bak-20261120; drawn in src/scene3d-deal.ts) --------------------------------------
 // Off unless Scen (scene3d.html) is opened with ?kortprov=1: the game and every other page are as they were, whatever their address
