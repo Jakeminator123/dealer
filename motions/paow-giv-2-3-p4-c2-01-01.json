@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-giv-2-3-p4-c2-01-01",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-giv-2-3-p4-c2-01-01/source.mp4",
+    "sha256": "7dc637cad9a73418db53243569d135897260a55696e2da7ea57631475c0dc729",
+    "bytes": 2918473,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 70,
+    "provider": "Runway (kanal okänd)",
+    "model": "kling-4"
+  },
+  "motion": {
+    "kind": "DEAL",
+    "from": "READY-C",
+    "to": "P4.C2",
+    "takeHand": "LH",
+    "releaseHand": "RH",
+    "pass": true,
+    "basis": "SOURCE_FRAME_REVIEW"
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob: förd in från beställningen paow-giv-2-3-p4-c2-01, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
+    "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten dealer-b0 med en oberoende granskare",
+      "at": "2026-11-21T20:47:55.374Z",
+      "mandate": "Jakob 2026-11-13: inga filmer väntar i hans kö; domen ges åt honom och ersätts av hans egen",
+      "note": "OBEROENDE GRANSKARE (inte Jakobs dom): skeptiker, given 3/5, Godkänn med anmärkningar; rutorna 70-72 (klipp till närbild) kapade. Gult till blått, kantruta 38; kortet stilla 54-69, 13 px från P4C2. Fönstret svart från ruta 6; vändningen delvis i fingrarna; kortet genomskinligt 37-40. \"Kortet krymper 14-18\" vederlagt: det vrids på filten."
+    }
+  },
+  "order": {
+    "id": "paow-giv-2-3-p4-c2-01",
+    "take": 1,
+    "path": "data/orders/paow-giv-2-3-p4-c2-01.json",
+    "orderSha256": "f8ce2af3448bbeab88fedb0ed9d7b1b7ac6f1ab88921918a2df34711d9c935f8",
+    "receipt": "assets/orders/paow-giv-2-3-p4-c2-01/receipt.json",
+    "taskId": "ad238ead-5a57-4a0c-848a-ac115da7de2a",
+    "delivered": {
+      "path": "assets/orders/paow-giv-2-3-p4-c2-01/take-1/kapad-3/after.mp4",
+      "sha256": "7dc637cad9a73418db53243569d135897260a55696e2da7ea57631475c0dc729"
+    }
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/paow-giv-2-3-p4-c2-01-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

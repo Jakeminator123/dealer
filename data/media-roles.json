@@ -4174,6 +4174,20 @@
           }
         },
         {
+          "id": "paow-film-giv-2-3-p4-c2-01-t1",
+          "role": "film",
+          "name": "Paow · A2.3 → A3P4C2, tagning 1",
+          "path": "assets/films/paow/giv-2-3-p4-c2-01-t1/source.mp4",
+          "still": 39,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "OBEROENDE GRANSKARE (inte Jakobs dom): skeptiker, given 3/5, Godkänn med anmärkningar; rutorna 70-72 (klipp till närbild) kapade. Gult till blått, kantruta 38; kortet stilla 54-69, 13 px från P4C2. Fönstret svart från ruta 6; vändningen delvis i fingrarna; kortet genomskinligt 37-40. \"Kortet krymper 14-18\" vederlagt: det vrids på filten.",
+          "source": {
+            "from": "beställningen paow-giv-2-3-p4-c2-01, tagning 1 (studions vy Beställ)",
+            "when": "2026-11-21"
+          }
+        },
+        {
           "id": "paow-film-intro-noir-3-startruta",
           "role": "arbetsmaterial",
           "name": "Startrutan till filmen före spelet",
