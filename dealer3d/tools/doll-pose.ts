@@ -2,7 +2,10 @@
 // trunk turns about the new doll's own hip as the old one's turned, and the elbows are solved again with the new bones.
 // Where a wrist is beyond the new arm's reach she bends a little more from the hip toward it, never past --most-lean
 // degrees of trunk from upright; a wrist still beyond reach is named in the receipt (the hand then lies off the arm).
-//   node dealer3d/tools/doll-pose.ts --motion <dealer3d/data/x.json> --doll paow --out <file.json> [--most-lean 9]
+// --elbow forearm (the default) puts each elbow where the forearm keeps the old one's direction as near as the new bones
+// allow, so the forearm the camera sees (and the room it leaves the shoe's window) stays as laid; --elbow upper bends the
+// elbow toward the old upper arm's side instead.
+//   node dealer3d/tools/doll-pose.ts --motion <dealer3d/data/x.json> --doll paow --out <file.json> [--most-lean 9] [--elbow forearm|upper]
 // The output is a motion of the same format, its `doll` naming the new doll, for the page and the recorder
 // (dealer3d/tools/shoot.ts --motion-file). It does not lay a new deal: a deal laid for the doll is dealer3d/tools/deal-film.ts.
 import {readFileSync, writeFileSync} from 'node:fs';
@@ -12,8 +15,9 @@ import {arm, standing, turned} from '../src/body.ts';
 import {STANDARD, dollNamed, type Frame} from '../src/doll.ts';
 
 const arg = (name: string, fallback?: string) => { const i = process.argv.indexOf(name); return i > 0 ? process.argv[i + 1] : fallback; };
-const motionPath = arg('--motion'), out = arg('--out'), doll = dollNamed(arg('--doll', 'paow')), mostLean = Number(arg('--most-lean', '9')) * Math.PI / 180;
-if (!motionPath || !out) throw Error('usage: doll-pose.ts --motion <file.json> --doll <name> --out <file.json> [--most-lean 9]');
+const motionPath = arg('--motion'), out = arg('--out'), doll = dollNamed(arg('--doll', 'paow')), mostLean = Number(arg('--most-lean', '9')) * Math.PI / 180, elbow = arg('--elbow', 'forearm');
+if (elbow !== 'forearm' && elbow !== 'upper') throw Error('--elbow is forearm or upper');
+if (!motionPath || !out) throw Error('usage: doll-pose.ts --motion <file.json> --doll <name> --out <file.json> [--most-lean 9] [--elbow forearm|upper]');
 type Limb = {s: Vec3; e: Vec3; w: Vec3; k: number; p: Vec3[]};
 const motion = JSON.parse(readFileSync(motionPath, 'utf8')) as {hip: Vec3; doll?: string; frames: {L: Limb; R: Limb; h: Vec3}[]; [k: string]: unknown};
 const lens = filmLens(), from = dollNamed(motion.doll ?? STANDARD.name), was = standing(lens, from), now = standing(lens, doll);
@@ -29,7 +33,7 @@ const tilt = (hip: Vec3, s: [Vec3, Vec3]) => Math.acos(Math.min(1, unit(sub(mul(
 const deg = (r: number) => Math.round(r * 1800 / Math.PI) / 10, mm = (m: number) => Math.round(m * 10000) / 10;
 
 const restWas = axes(was.hip, was.shoulders), hip = now.hip, long = doll.upperArm + doll.forearm - 1e-4;
-const receipt = {from: from.name, to: doll.name, motion: motionPath, mostLeanDeg: deg(mostLean), frames: [] as {i: number; leanDeg: number; extraDeg: number; shortMm: [number, number]}[]};
+const receipt = {from: from.name, to: doll.name, motion: motionPath, mostLeanDeg: deg(mostLean), elbow, frames: [] as {i: number; leanDeg: number; extraDeg: number; shortMm: [number, number]}[]};
 const frames = motion.frames.map((f, i) => {
   const trunk = axes(motion.hip, [f.R.s, f.L.s]);
   // Her trunk as the old doll's, then bent on toward the wrist farthest out of reach until both reach (or the limit).
@@ -46,7 +50,11 @@ const frames = motion.frames.map((f, i) => {
   }
   // The head turns from the neck as the old doll's head turned from its neck.
   const oldNeck = carry(was.neck, restWas, restWas.m, trunk, trunk.m), head = add(p.neck, swing(sub(now.head, now.neck), unit(sub(was.head, was.neck)), unit(sub(f.h, oldNeck))));
-  const limb = (l: Limb, s: Vec3): Limb => { const a = arm(s, l.w, sub(l.e, l.s), doll); return {...l, s: round(s), e: round(a.elbow), w: l.w, p: l.p}; };
+  // The elbow toward the point a forearm of the new length in the old one's direction would start from (the nearest elbow
+  // the new bones allow to it), or toward the old upper arm's side; the old pole where the new one lies along the arm.
+  const limb = (l: Limb, s: Vec3): Limb => { const old = sub(l.e, l.s), keep = sub(sub(l.w, mul(unit(sub(l.w, l.e)), doll.forearm)), s), along = unit(sub(l.w, s));
+    const pole = elbow === 'forearm' && length(sub(keep, mul(along, dot(keep, along)))) > 1e-6 ? keep : old, a = arm(s, l.w, pole, doll);
+    return {...l, s: round(s), e: round(a.elbow), w: l.w, p: l.p}; };
   receipt.frames.push({i, leanDeg: deg(tilt(hip, p.s)), extraDeg: deg(extra), shortMm: [mm(Math.max(0, gap[0])), mm(Math.max(0, gap[1]))]});
   return {...f, R: limb(f.R, p.s[0]), L: limb(f.L, p.s[1]), h: round(head)};
 });
