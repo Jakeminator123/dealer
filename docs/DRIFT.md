@@ -45,9 +45,9 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   `package.json`, och bara där.
 - GitHub kör ingen kontroll för det här repot (Jakob 2026-11-18: det som gäller dealer görs lokalt, inte på GitHub;
   arbetsflödet `.github/workflows/check.yml` är borttaget). Kontrollen är pre-push-hooken och `push-clean`, på den här
-  datorn. I en ren checkout utan media och utan FFmpeg hoppas de tester över som gör en liten film med FFmpeg eller
-  läser bankens filmer och kortspår (`tools/order-images.test.ts`, `tools/card-overlay.test.ts`). Studions tester
-  behöver inte `studio/node_modules`. Före PR kör agenten `npm run check`.
+  datorn. Sviten är sedan 2026-11-21 en kärna (BESKED, "Arbetet och dokumenten"): publiceringen, spelets regler,
+  Jakobs domar och val, beställningarna och dokumentens tak. Den behöver varken media, FFmpeg eller
+  `studio/node_modules`. Före PR kör agenten `npm run check`.
 - **Push medan andra skriver** (2026-11-13). I huvudträdet stoppar kontrollen så länge någon sessions testindata
   skiljer sig från HEAD eller en ospårad fil ligger där, och det gör den nästan alltid en dag med flera
   sessioner. Huvudagenten pushar då från ett uttryckligen valt rent IDE-arbetsträd med `node tools/push-clean.ts

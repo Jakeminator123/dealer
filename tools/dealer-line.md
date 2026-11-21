@@ -213,9 +213,8 @@ långt en dealer har kommit, och vad som är kvar för en runda, räknar `node t
 - **Ett tryckt spelkort** kan spåraren inte följa; det renderade kortet kräver enfärgat gult eller blått (`is.yellow`,
   `is.blue`, `isPale` i `src/card-track.ts`) (V).
 - **Kön** läggs bara när en huvudagentchatt är öppen (`docs/BRISTER.md`) (V).
-- **Kontrollen körs bara på den här datorn** (Jakob 2026-11-18; ingen kontroll hos GitHub längre): testerna som kräver
-  FFmpeg (elva) och de tre i `tools/order-images.test.ts` som kräver bankens filmer körs här eller inte alls (DRIFT;
-  `docs/BRISTER.md`) (V).
+- **Kontrollen körs bara på den här datorn** (Jakob 2026-11-18; ingen kontroll hos GitHub längre), och testerna
+  täcker inte filmerna (`docs/BRISTER.md`) (V).
 
 ## Regler som kostar pengar när de bryts
 

@@ -88,11 +88,9 @@ Casino (`/studio/game/`) behåller också spelets uttryckliga adressval genom f�
 De går vidare till spelet i ramen, inte till scenens förval eller länken Kalibrera i Scen. Ogiltiga värden lämnas
 utanför och redovisas som okända (`studio/lib/casino.ts`). Utan adressval gäller spelets ordinarie förval.
 
-Filmkameran läses ur `data/scene-contract.json` i `src/scene3d-geometry.ts` (ren geometri, test
-`tools/scene3d-geometry.test.ts` utan media); där geometrin är `lens` är den i stället bordets lins (`lensCamera`, se
+Filmkameran läses ur `data/scene-contract.json` i `src/scene3d-geometry.ts` (ren geometri); där geometrin är `lens` är den i stället bordets lins (`lensCamera`, se
 "Ritade kort", En geometri för bordet). Kontraktet skrivs av `node tools/scene-measure.ts`, som mäter bordets
-plan, ljuset och porträttramen ur verkliga rutor i Pamelas film (matematiken i `src/scene-geometry.ts`, test
-`tools/scene-geometry.test.ts`); varje tal i kontraktet bär sin grund (`basisLegend`). Verktyget läser bara media och
+plan, ljuset och porträttramen ur verkliga rutor i Pamelas film (matematiken i `src/scene-geometry.ts`); varje tal i kontraktet bär sin grund (`basisLegend`). Verktyget läser bara media och
 skriver kontraktet, granskningsbilder under `D:/dealer-scratch/review/scen` och skuggmattor under `assets/scene-work`.
 Tre lägen hålls isär: från filmkamerans plats är bilden filmen pixel för pixel; vridning och zoom är geometriskt exakta; förflyttning är ett närmevärde som bryter vid ungefär en stols avstånd.
 Rundor spelas med klippbankens klippunkter (`resolveRound`). Verifiering: med allt avslaget ska hemvyn (klipp 1 vid 2,9

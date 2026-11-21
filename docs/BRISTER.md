@@ -309,10 +309,10 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   Chrome, och "Skapa utkast" är tryckt en gång. Stänger: var och en prövas i en webbläsare.
 - **Filmer kan se utfrätta ut i Jakobs flik.** Syns: hos honom, troligen på hans skärm och inte i filerna. Prövat:
   inget. Stänger: lägg alltid en stillbild bredvid en film han ska döma.
-- **Tester som kräver lokal media eller FFmpeg:** en ren checkout kan inte verifiera bankens filmer och kortspår.
-  Mediedelarna i `tools/card-overlay.test.ts` redovisas nu separat som överhoppade när underlaget saknas; trasiga
-  befintliga spår ger fel. Körkvittot visar utfallet per körning. Stänger: visuell och mediebaserad verifiering
-  på den verkliga banken; gröna kodtester ensamma täcker inte filmerna.
+- **Testerna täcker inte filmerna.** Sedan 2026-11-21 (Jakobs ord, se BESKED, "Arbetet och dokumenten") finns bara
+  de tester kvar som skyddar publiceringen, spelets regler, hans domar och val, beställningarna och dokumentens tak;
+  testerna för kortspår, scenens utseende och bankens filmer är borttagna (de finns i Git före den dagen). Stänger:
+  visuell verifiering på den verkliga banken, i labbet och med hans öga.
 - **Jakobs GitHub-konto är låst av en betalningsfråga** ("your account is locked due to a billing issue"), sedan
   mellan 2026-11-14 och 2026-11-15; ännu 2026-11-18 kl. 02.46 efter hans två svar att det är ordnat. Syns: inte i det
   här repot längre, som inte kör något hos GitHub (DRIFT, "Git och kontroller"). Felet är varken en licens eller
