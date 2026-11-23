@@ -3,6 +3,37 @@
   "about": "What waits for Jakob: one entry per question (kind beslut) or per thing only he can do (kind gora), shown as one card each in the studio's view Beslut (/studio/beslut/, lab only). The list's order is the order of urgency, the most urgent first. An entry: id, kind, question (at most 14 words), leads (one sentence: what his answer leads to), optionally proof (a folder under assets/proofs/) with file, page (an address in the lab, e.g. game.html?table=casino), link (an address outside, shown as text to open on his phone) and cost (free text), chips (two to four {value, label} for beslut, one to four for gora), asked (date), from (the lane that asks) and answer. An agent adds an entry with answer null, changes only its own entries, reads the file right before editing it and keeps the form JSON.stringify gives with two spaces; it closes an entry by taking it out once his answer is carried out, and the commit says what he answered. Only the page writes answer ({value, note, at}, tools/decision-store.ts); no agent sets, changes or clears an answer he has given. The strict reader is tools/decision-register.ts. The repo is public: no secret, personal detail or path of this machine.",
   "decisions": [
     {
+      "id": "a3p6c1-som-bild-2",
+      "kind": "beslut",
+      "question": "Ser armen rätt ut nu, när hon lutar sig mot plats 6?",
+      "leads": "Ja gör bilden till A3P6C1 och given dit beställs med den som sista bild; huvudet är lite större och lägre än i A2.3, och bilden är hopsatt i efterhand.",
+      "proof": "a3p6c1-2-20261123",
+      "file": "2-armen-forut-och-nu.png",
+      "page": "studio/granska/?prov=a3p6c1-2-20261123&fil=3-a3p6c1-ny-i-spelets-storlek.png",
+      "cost": "Bilden kostade 20 krediter; given dit kostar cirka 68",
+      "chips": [
+        {
+          "value": "ja",
+          "label": "Ja, använd bilden"
+        },
+        {
+          "value": "arm",
+          "label": "Nej, armen ser fel ut"
+        },
+        {
+          "value": "huvud",
+          "label": "Nej, huvudet ser fel ut"
+        },
+        {
+          "value": "utan",
+          "label": "Nej, ge utan sista bild"
+        }
+      ],
+      "asked": "2026-11-23",
+      "from": "film",
+      "answer": null
+    },
+    {
       "id": "docka-paow-vandning",
       "kind": "beslut",
       "question": "Ser dockans vändning av kortet naturligare ut nu, längre ut från kroppen?",
@@ -62,37 +93,6 @@
         "value": "nastan",
         "note": "saken nu är bara att hon nu greppar i \"luft\"/grönt. kanske okej, men beroende på vad som faktist är tanken.. Så att om vi säger såhär; om vi ska använda detta som A3'n' kanske vi i så fall ska fylla kantlinjen med det blåa. Ska detta göras för varje frame av en befintlig video så kan man ju kanske ta bort /ersätta det i alla fall med det överlägg av kort som ska komma på och in.. eller jag menar kortet är ju ändå bara referens för hur ett kort ska ersättas av det sätt som vi faktistska använda",
         "at": "2026-11-23T08:51:55.279Z"
-      }
-    },
-    {
-      "id": "a3p6c1-som-bild",
-      "kind": "beslut",
-      "question": "Duger A3P6C1 som sista bild för filmen från A2.3 till plats 6?",
-      "leads": "Ja beställer filmen från A2.3 till plats 6 med bilden som sista bild; underarmen kan se lång ut och hon lutar sig knappt.",
-      "proof": "a3p6c1-20261123",
-      "file": "1-a3p6c1.png",
-      "page": "studio/granska/?prov=a3p6c1-20261123",
-      "cost": "Bilden kostade 40 krediter; filmen kostar cirka 68",
-      "chips": [
-        {
-          "value": "ja",
-          "label": "Ja, beställ filmen"
-        },
-        {
-          "value": "arm",
-          "label": "Nej, armen ser fel ut"
-        },
-        {
-          "value": "nej",
-          "label": "Nej, något annat"
-        }
-      ],
-      "asked": "2026-11-23",
-      "from": "film",
-      "answer": {
-        "value": "arm",
-        "note": "",
-        "at": "2026-11-23T08:05:31.777Z"
       }
     },
     {
@@ -256,33 +256,6 @@
         "value": "ja",
         "note": "",
         "at": "2026-11-20T11:07:16.474Z"
-      }
-    },
-    {
-      "id": "v6-arkiv",
-      "kind": "beslut",
-      "question": "V6: arkivera råmaterialet och renderaren, men behåll filmen att titta på?",
-      "leads": "863 MB råmaterial och 986 rader kod går till ett prövat arkiv med hashlista och tas sedan ur projektet; filmen, 18 rutor, duken och plåten står kvar.",
-      "chips": [
-        {
-          "value": "ja",
-          "label": "Ja, arkivera"
-        },
-        {
-          "value": "regel",
-          "label": "Bara lätta regeln"
-        },
-        {
-          "value": "vanta",
-          "label": "Vänta"
-        }
-      ],
-      "asked": "2026-11-20",
-      "from": "städningen",
-      "answer": {
-        "value": "ja",
-        "note": "",
-        "at": "2026-11-20T11:07:24.860Z"
       }
     }
   ]
