@@ -21,8 +21,9 @@ som gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompt
   handflatorna) och 5 (sveper över filten) som varianter; plats 6 fick hans "Inte bra". Receptet bär meningen om den korta vägen.
   `--extra` ersätter receptets tillägg, `--extra-efter` lägger till.
 - A3-bilder: A3P4C1 och A3P4C2 är kandidater; för plats 1 och 2 stoppar landningsverktyget ([BRISTER](../BRISTER.md)).
-- Varianter utan dockans film (Kling 4, givens första och sista bild): kastet till plats 3 (Prov `tumflipp-p3-20261123`)
-  och en fri giv till plats 4 (`fri-giv-p4-20261123`): kortet vänds i fingrarna, men takt och väg styrs inte. En vinkel per plats: en stillbild från sidan styr Aleph 2.0, 118 krediter; Omni Flash 1.2 ändrade inte vinkeln.
+- Fria givar (Kling 4, bankens första och sista bild, ingen dockfilm): kortet vänds i fingrarna, men takt och väg styrs
+  inte. Plats 4 har hans ja som variant; två namngivna nummer och plats 7 i Prov `fria-givar-20261123`.
+- En annan stol: 3D-scenen ritar dockan från stolens öga; receptet i [FILMMODELLER](../FILMMODELLER.md), "Vinklar, 3D och Runways lista". Aleph tappar kortet vid stol 1:s vinkel.
 - Pengar: gränser, mandat och saldo i `data/order-policy.json`. Giv med återgång 91 krediter, giv på 3 s 68, retur till
   vila 57, genom API-nyckeln.
 
@@ -30,12 +31,12 @@ som gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompt
 1. Plats 7: dockan ska hålla kortet genom vändningen ([LASMIG](../../dealer3d/LASMIG.md)); sedan dockans film,
    given igen och dess retur. Därefter kort 2.
 2. Mall 15: mer frihet åt filmen i vändningen; landningens mening skrivs redan i texten.
-3. Sju vinklar av kastet: nyckelbilden per plats ur 3D-scenens kamera flyttad i sidled, sedan Aleph (fem till: cirka 590).
+3. Den fria given till plats 4 in i banken som variant. Kastet per stol: en egen tagning ur stolens bilder, inte Aleph.
 4. Karta och trädets mått räknar inte returerna till vila. Spelet väljer inte träd än (`buildGraph` blandar alla
    filmer), så Tatuerad spelas inte; ingången A1 → A2.3 klipps ur ankarets film; hålkortet och dealerns kort.
 
-**Väntar på Jakob.** Prov: kastet med vinkeln från plats 1. Kort i Beslut: den fria given till plats 4, given till
-A3P4C2 och dockan med Paows mått. Frågor i chatten: fler vinklar, vad som felar i plats 6, returerna i trädets mått, egen film för kort 2,
+**Väntar på Jakob.** Kort i Beslut: given sedd från stol 1 och de fria givarna. Frågor i chatten: nytt mandat,
+vad som felar i plats 6, returerna i trädets mått, egen film för kort 2,
 om tatuerade A2.2 är blickbilden eller en ny nypbild, och hur spelet väljer träd.
 
 **Var saker ligger.** Vägen för en ny dealer i [tools/dealer-line.md](../../tools/dealer-line.md), handboken i

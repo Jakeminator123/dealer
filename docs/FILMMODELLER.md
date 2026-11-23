@@ -37,7 +37,7 @@ Pris ur `data/order-policy.json` om inget annat sägs. Tid = från LAGD till KLA
 | Modell (id) | Används i dag till | Pris | Tid, median (spann, antal) | Filmer i banken |
 |---|---|---|---|---|
 | WAN 3 (`wan3`) | Ingång 1 → 2.1 (`gäller`); vila, utgång och hålkortets vändning (`prov`) | 20 per s i 1080p, 5 i 480p | 3,9 min (2,1–11,9; 43) via Beställ; 2,6 min (1,4–8,8; 78) via API | Pamela 111, Paow 22 |
-| Kling 4 (`kling-4`) | Varje giv från ankare 2.1 (`prov`); helfigur | 21,3 per s i 1080p; 15,7 i 720p; ordern räknar 150 för 7 s, med referensfilm 149–189 | 5,9 min (4,0–13,9; 41) | Paow 26, Pamela 2 |
+| Kling 4 (`kling-4`) | Paows givar från A2.3 med dockans film som referens, returerna till vila, fria givar; helfigur | se Vinklar, 3D och Runways lista; 2026-11-13 kostade 7 s 149, med referensfilm 149–189 | 5,9 min (4,0–13,9; 41) | Paow 26, Pamela 2 |
 | MuseTalk på en WAN 3-vila | Talfilmerna ([TAL](TAL.md)) | ElevenLabs per tecken; renderingen lokal | – | Paow 50 |
 | Nano Banana Pro | Stillbilder: keystone, ankare 1 och 2.1 | 40 per 4K-bild, 20 per 2K | 1,8 min (0,8–3,7; 8) | – |
 
@@ -48,14 +48,43 @@ Prövade och inte att göra om:
   baklänges kopia är Paows nödlösning för utgången.
 - **Kling 3.0 Pro**: kontrollprovet 2026-11-10, underkänt för vändningen.
 - **Kling 3.0 Motion Control** (handboken §3.8): tar ingen sista bild; kortet genomskinligt grönt, skons fönster tomt.
-- **Aleph 2 och andra video-till-video** (handboken §5): Pamelas ansikte kom tillbaka och skons fönster tömdes; den
-  rättade kopian är underkänd.
+- **Aleph 2 som rättare** (handboken §5): Pamelas ansikte kom tillbaka och skons fönster tömdes; den rättade kopian är
+  underkänd. Som vinkelbytare, se Vinklar, 3D och Runways lista.
 - **Seedance 2.5**: inget i banken; uppgiftens svar ger en förhandsfil, den fulla filen kommer ur listan över senaste
   genereringar (handboken §4). `wan3_prime` och `seedance2` är övervägda men aldrig beställda.
 
 API-vägen drar developer-projektets krediter, Beställ (Runways MCP-server) appkontots (DRIFT, "Anslutningar och miljö").
 Utan post i banken ligger tre WAN 3-filmer och en Kling 4-film för Pamela från omgång 15 (`pamela-p2-c1-plan-deal-02`,
 `pamela-p3-c1-plan-deal-04`, `pamela-p6-c1-plan-deal-02`, `pamela-p6-c1-plan-deal-03`); ingen vy visar dem (M).
+
+## Vinklar, 3D och Runways lista
+
+Läst 2026-11-23 i Runways utvecklardokumentation (`docs.dev.runwayml.com/guides/models` och `/guides/pricing`) (M). En
+kredit kostar 0,01 dollar och köps i utvecklarportalen, per projekt.
+
+| Modell (id i API:t) | Tar | Krediter | Prövad här |
+|---|---|---|---|
+| Kling 4 (`kling_4`) | text, första och sista bild, referensbilder eller referensfilm, redigering av en film; 3–30 s | 1080p 18,8 per s till 2026-11-30, sedan 23,5; med referensfilm 11,28 per s film plus 11,28 per s referens, sedan 14,1 | ja |
+| Aleph 2.0 (`aleph2`) | en film och nyckelbilder: gör om filmen | 28 per s, minst 56 | ja |
+| Seedance 2.5 (`seedance2_5`) | bild-, film- och ljudreferenser; förlänga och redigera; upp till 30 s och 4K | 1080p 68 per s plus 34 per s referensfilm; 720p 30 plus 15; 480p 20 plus 10; minst 80 | nej |
+| Seedance 2.0 (`seedance2`) | – | 1080p 40 per s, minst 56 | nej |
+| Kling O3 Pro (`klingO3_pro`) | text, bild, film-till-film med referensbilder | 17 per s | nej |
+| Veo 3.1 (`veo3.1`) | – | 40 per s med ljud, 20 utan | nej |
+| Nano Banana 2.1 (`nano_banana_2.1`) | stillbild efter namngivna referensbilder | 6 per bild i 2K | ja |
+
+- **Ingen modell tar en 3D-fil eller en kamerabana, och API:t har ingen väg som gör 3D** (M). Tripo H3.1 (bild till GLB)
+  finns hos andra leverantörer; att Runway har den är inte bekräftat. Kling 3.0 Motion Control står inte i API:ts lista.
+- **3D-scenen är ritaren.** Dockan, skon och bordet ritas från vilket öga som helst utan kostnad
+  (`node dealer3d/tools/render-reference.ts --motion <rorelse.json> --plan <kortplan.json> --eye 1`); stolarnas ögon står
+  63°, 48° och 26° åt ena sidan om bankens kamera (stol 1–3) och 27°, 51° och 67° åt den andra (stol 5–7), på samma
+  höjd och med samma lutning (`node dealer3d/tools/measure.ts`).
+- **En film från en annan stol** (prov `fran-stol-1-20261123`, 103 krediter): dockans giv ritad från stolens öga; första
+  och sista bilden med Nano Banana 2.1, dockans ruta som `@layout` (kamera, pose, sko, bordskant) och bankens bild som
+  `@frame` (utseendet); Kling 4 mellan de två bilderna med dockans film från samma öga som referensfilm. Hon, tatueringarna
+  och posen höll från stol 1, och händerna följde dockan (Ö, huvudagenten; Jakobs dom väntar).
+- **En vinkel ur en film som finns:** Aleph 2.0 med en stillbild från den nya vinkeln som nyckelbild vid 0 s byter vinkel
+  och behåller hennes rörelse, 112 krediter för 4 s. Vid cirka 30° följde kortet med; vid stol 1:s 63° tappades kortets
+  väg (kastet kom tillbaka till handen, ett extra kort på bordet) (Ö). Gemini Omni Flash 1.2 ändrade inte vinkeln.
 
 ## Fingeravtryck: filmen som den kommer och som banken har den
 

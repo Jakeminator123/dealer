@@ -3,6 +3,60 @@
   "about": "What waits for Jakob: one entry per question (kind beslut) or per thing only he can do (kind gora), shown as one card each in the studio's view Beslut (/studio/beslut/, lab only). The list's order is the order of urgency, the most urgent first. An entry: id, kind, question (at most 14 words), leads (one sentence: what his answer leads to), optionally proof (a folder under assets/proofs/) with file, page (an address in the lab, e.g. game.html?table=casino), link (an address outside, shown as text to open on his phone) and cost (free text), chips (two to four {value, label} for beslut, one to four for gora), asked (date), from (the lane that asks) and answer. An agent adds an entry with answer null, changes only its own entries, reads the file right before editing it and keeps the form JSON.stringify gives with two spaces; it closes an entry by taking it out once his answer is carried out, and the commit says what he answered. Only the page writes answer ({value, note, at}, tools/decision-store.ts); no agent sets, changes or clears an answer he has given. The strict reader is tools/decision-register.ts. The repo is public: no secret, personal detail or path of this machine.",
   "decisions": [
     {
+      "id": "paow-fran-stol-1",
+      "kind": "beslut",
+      "question": "Håller given till plats 4 sedd från stol 1?",
+      "leads": "Ja: kastet och en stol till görs på samma sätt, ur 3D-scenens bild från stolen.",
+      "proof": "fran-stol-1-20261123",
+      "file": "5-dockans-ruta-och-bilden-av-paow.png",
+      "page": "studio/granska/?prov=fran-stol-1-20261123&fil=3-framifran-och-fran-stol-1.mp4",
+      "cost": "En giv från en ny stol: 103 krediter",
+      "chips": [
+        {
+          "value": "ja",
+          "label": "Ja"
+        },
+        {
+          "value": "nastan",
+          "label": "Nästan, skriv vad"
+        },
+        {
+          "value": "nej",
+          "label": "Nej"
+        }
+      ],
+      "asked": "2026-11-23",
+      "from": "film",
+      "answer": null
+    },
+    {
+      "id": "paow-fria-givar",
+      "kind": "beslut",
+      "question": "Vilka av de fria givarna duger som varianter?",
+      "leads": "De som duger läggs i banken som varianter bredvid dockans givar; plats 7 kan få sin giv den vägen.",
+      "proof": "fria-givar-20261123",
+      "file": "8-de-tre-givarna-i-rutor.png",
+      "page": "studio/granska/?prov=fria-givar-20261123&fil=1-kortet-i-luften-spelets-storlek.mp4",
+      "cost": "En fri giv: 76 krediter för 4 s, 95 för 5 s",
+      "chips": [
+        {
+          "value": "alla",
+          "label": "Alla tre"
+        },
+        {
+          "value": "nagra",
+          "label": "Några, skriv vilka"
+        },
+        {
+          "value": "ingen",
+          "label": "Ingen"
+        }
+      ],
+      "asked": "2026-11-23",
+      "from": "film",
+      "answer": null
+    },
+    {
       "id": "paow-fri-giv-p4",
       "kind": "beslut",
       "question": "Duger den fria given till plats 4 som variant?",
@@ -27,7 +81,11 @@
       ],
       "asked": "2026-11-23",
       "from": "film",
-      "answer": null
+      "answer": {
+        "value": "ja",
+        "note": "",
+        "at": "2026-11-23T16:03:43.016Z"
+      }
     },
     {
       "id": "paow-givar-plats-6-7",
