@@ -8,7 +8,7 @@
 // marks (first picture, last picture, reference film, text, price), its text and price as the order freezes them, and the
 // choices sent for a server preview: the dealer, the step and the card, and over them only his deliberate exceptions.
 // Nothing here composes an order: the store does, as for every draft. No DOM, no network; tests in
-// studio/tests/bordet-line.test.ts and studio/tests/line-same.test.ts.
+// studio/tests/bordet-line.test.ts, studio/tests/line-same.test.ts and studio/tests/bordet-stage.test.ts (the stage).
 import type { Graph } from "../../src/clip-graph.ts";
 import {
   ANCHOR_NODE, ANCHOR_ROLE, LANDS_LABEL, a3Candidates, a3Name, costOf, credits, defaultFlip, genitive, handsOf, landingOf, modelFor, paramsOf, referenceCandidates, seatEndOf, seatWords, stepOf,
@@ -74,6 +74,18 @@ export function closeUp(quad: readonly { x: number; y: number }[], area: Size, p
 }
 /** "58 %": the scale as the zoom control writes it. */
 export const scaleWords = (c: Pick<Camera, "scale">) => `${Math.round(c.scale * 100)} %`;
+/** The stage is never lower than this, in screen pixels (unless the picture's own shape is lower, in one column). */
+export const STAGE_MIN = 240;
+/** In one column the stage takes at most this share of what is seen of the column. */
+export const STAGE_SHARE = 0.55;
+/**
+ * The stage's height where the view is one column (an upright or narrow window): the picture's own shape from the column's
+ * width, but at most STAGE_SHARE of what is seen of the column, so that what lies under the picture (the list, the place
+ * buttons) is within reach. Over the picture the wheel zooms, it does not scroll, so a picture as high as the window would
+ * leave nothing to scroll with. The share is a choice made with the fix of 2026-11-23 (Jakob: "Platsknapparna döljer vyn,
+ * samt bordet."): once the picture no longer ran on under the buttons, a lying, narrow window had them below its edge.
+ */
+export const columnStage = (width: number, seen: number, aspect: number): number => Math.round(Math.min(width / aspect, Math.max(STAGE_MIN, seen * STAGE_SHARE)));
 
 // ── One card shape ──────────────────────────────────────────────────────────
 /**

@@ -27,7 +27,7 @@ import { SHOE, VIEWS, type Place } from "../../../src/placement-model.ts";
 import type { Ledger } from "../../lib/ledger.ts";
 import type { MediaAnswer } from "../../lib/media.ts";
 import { useBank } from "../../lib/bank.ts";
-import { cardWishes, filmRow, gameLine, hasRound, lastOrder, motionLine, otherWishes, roundFor, sceneWords, stepTwoSummary, sumWords, wishAnchor, wishKey, type FilmRow, type FilmWish, type RowChoice } from "../../lib/bordet.ts";
+import { STAGE_MIN, cardWishes, columnStage, filmRow, gameLine, hasRound, lastOrder, motionLine, otherWishes, roundFor, sceneWords, stepTwoSummary, sumWords, wishAnchor, wishKey, type FilmRow, type FilmWish, type RowChoice } from "../../lib/bordet.ts";
 import { useViewContext } from "../../lib/context.ts";
 import { isSnapshot, swedishMoment } from "../../lib/mode.ts";
 import { nodeCode } from "../../lib/names.ts";
@@ -410,17 +410,22 @@ function TableBody({
 
   // Side by side (a wide, lying window): the picture gets the height its width allows, less what the toolbar and the list
   // under it need, so that neither the toolbar nor a row of the list is cut off; the list takes what is left. Upright or
-  // narrow: one column, the picture at its own shape, the list at its own height and the steps under it.
+  // narrow: one column that scrolls as one, every part at its own height: the picture at its own shape, though at most a
+  // share of what is seen (lib/bordet.ts columnStage), the list, then the place buttons and the steps. The picture's column
+  // and the steps' may be squeezed (min-h-0) only side by side, where each scrolls within itself: squeezed in one column
+  // they shared the window's height, and the picture ran on under the place buttons (Jakob 2026-11-23).
   const column = useRef<HTMLDivElement>(null);
   const bar = useRef<HTMLDivElement>(null);
-  const [size, setSize] = useState({ w: 0, h: 0, bar: 0 });
+  const [size, setSize] = useState({ w: 0, h: 0, bar: 0, seen: 0 });
   const [need, setNeed] = useState(0);
   useEffect(() => {
     const el = column.current!;
-    const read = () => setSize({ w: el.clientWidth, h: el.clientHeight, bar: bar.current?.offsetHeight ?? 0 });
+    const frame = el.parentElement!; // the view's own box: its height is what is seen of a column that scrolls
+    const read = () => setSize({ w: el.clientWidth, h: el.clientHeight, bar: bar.current?.offsetHeight ?? 0, seen: frame.clientHeight });
     read();
     const ro = new ResizeObserver(read);
     ro.observe(el);
+    ro.observe(frame);
     if (bar.current) ro.observe(bar.current);
     return () => ro.disconnect();
   }, []);
@@ -430,8 +435,9 @@ function TableBody({
   const stageAspect = VIEWS[view].width / VIEWS[view].height;
   // the copy has no list of films under the picture; the list gets what its rows need, at most two fifths of the column
   const list = isSnapshot ? 0 : Math.min(need || 80, free * 0.4);
-  const stageHeight = size.w ? Math.max(240, Math.min(free - list, size.w / stageAspect)) : 0;
-  const stageSize = { "--stage-aspect": stageAspect, "--stage-height": `${stageHeight}px` } as CSSProperties;
+  const stageHeight = size.w ? Math.max(STAGE_MIN, Math.min(free - list, size.w / stageAspect)) : 0;
+  // --stage-column is the one column's height; until the column is measured the picture's shape holds its place
+  const stageSize = { "--stage-aspect": stageAspect, "--stage-height": `${stageHeight}px`, "--stage-column": size.w ? `${columnStage(size.w, size.seen, stageAspect)}px` : "auto" } as CSSProperties;
 
   const shoe = place === SHOE;
   const target = !shoe ? plan.targets[place] : null;
@@ -517,9 +523,10 @@ function TableBody({
         ]),
   ];
 
+  // The scrollbar's room is kept in one column, so that the column's width, and with it the picture's height, never follows the scrollbar.
   return (
-    <div className="grid h-full min-h-0 grid-cols-1 content-start overflow-y-auto lg:landscape:grid-cols-[minmax(0,1fr)_400px] lg:landscape:content-stretch lg:landscape:overflow-hidden">
-      <section ref={column} className="flex min-h-0 min-w-0 flex-col">
+    <div className="grid h-full min-h-0 grid-cols-1 content-start overflow-y-auto [scrollbar-gutter:stable] lg:landscape:grid-cols-[minmax(0,1fr)_400px] lg:landscape:content-stretch lg:landscape:overflow-hidden lg:landscape:[scrollbar-gutter:auto]">
+      <section ref={column} className="flex min-w-0 flex-col lg:landscape:min-h-0">
         <div ref={bar} className="flex min-h-11 shrink-0 flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-line px-3 py-1.5">
           {menu}
           <span aria-hidden className="h-5 w-px shrink-0 bg-line" />
@@ -537,7 +544,7 @@ function TableBody({
             Visar den sparade planen · X tillbaka till utkastet. Inget kan ändras så länge.
           </p>
         ) : null}
-        <div ref={stageArea} className="relative aspect-[var(--stage-aspect)] shrink-0 lg:landscape:aspect-auto lg:landscape:h-[var(--stage-height)]" style={stageSize}>
+        <div ref={stageArea} className="relative aspect-[var(--stage-aspect)] h-[var(--stage-column)] shrink-0 lg:landscape:aspect-auto lg:landscape:h-[var(--stage-height)]" style={stageSize}>
           {stageHeight ? (
             <Board
               plan={plan}
@@ -564,7 +571,7 @@ function TableBody({
           <FilmStrip rows={rows} chosen={chosenRow} made={made} blocked={blocked} held={!!ordering && !ordering.open} onChoose={chooseRow} onRemove={onRemove} onCreate={onCreate} onClear={onClear} onNeed={setNeed} />
         )}
       </section>
-      <aside className="flex min-h-0 min-w-0 flex-col border-t border-line bg-surface lg:landscape:border-l lg:landscape:border-t-0" data-nudge>
+      <aside className="flex min-w-0 flex-col border-t border-line bg-surface lg:landscape:min-h-0 lg:landscape:border-l lg:landscape:border-t-0" data-nudge>
         <div className="flex flex-col gap-2.5 border-b border-line px-4 pb-3 pt-3.5">
           <div className="flex items-baseline gap-2">
             <h2 className="font-mono text-base font-semibold text-ink">{placeCode(place)}</h2>

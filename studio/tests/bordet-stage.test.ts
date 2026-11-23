@@ -1,0 +1,69 @@
+// Bordet's stage in Kortplan: the picture never lies under the place buttons (Jakob 2026-11-23: "Platsknapparna döljer vyn,
+// samt bordet."). Three things hold that, and each is held here: the camera keeps the picture's edges at the stage's at every
+// zoom and pan (lib/bordet.ts), the stage clips what is drawn in it (Board.tsx), and in one column every part of the view
+// has its own height, the picture at most a share of what is seen (columnStage), so that nothing runs on under what follows.
+// Run: node --test "studio/tests/bordet-stage.test.ts"
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { VIEWS } from "../../src/placement-model.ts";
+import { STAGE_MIN, STAGE_SHARE, ZOOM_MAX, actualCamera, clampCamera, closeUp, columnStage, fitCamera, panBy, pictureOrigin, zoomAt, type Camera, type Size } from "../lib/bordet.ts";
+import { PLAN_VIEW } from "../lib/placement.ts";
+
+const picture: Size = { w: VIEWS[PLAN_VIEW].width, h: VIEWS[PLAN_VIEW].height };
+const aspect = picture.w / picture.h;
+// stages as the view makes them: one column in a lying, narrow window; one column upright; side by side; a phone
+const stages: Size[] = [{ w: 924, h: 411 }, { w: 824, h: 549 }, { w: 964, h: 642 }, { w: 390, h: 260 }];
+
+test("at every zoom and pan the picture's edges stay at the stage's", () => {
+  for (const area of stages) {
+    const fit = fitCamera(area, picture);
+    const cameras: Camera[] = [fit, actualCamera(fit, area, picture), closeUp([{ x: 0, y: 0 }, { x: 70, y: 0 }, { x: 70, y: 100 }, { x: 0, y: 100 }], area, picture)];
+    for (const factor of [0.2, 1.7, 3, 40]) for (const at of [{ x: 0, y: 0 }, { x: area.w, y: area.h }, { x: area.w / 2, y: area.h }]) cameras.push(zoomAt(fit, factor, at, area, picture));
+    for (const c of [...cameras]) for (const [dx, dy] of [[9000, 9000], [-9000, -9000], [9000, -9000], [-300, 120]]) cameras.push(panBy(c, dx, dy, area, picture));
+    cameras.push(clampCamera({ scale: 0.01, x: -5000, y: 9000 }, area, picture), clampCamera({ scale: 99, x: 5000, y: -9000 }, area, picture));
+    for (const c of cameras) {
+      const said = `${JSON.stringify(c)} on ${area.w} × ${area.h}`;
+      assert.ok(c.scale >= fit.scale - 1e-9 && c.scale <= ZOOM_MAX, `the scale lies between the fitted one and the largest: ${said}`);
+      const o = pictureOrigin(c, area);
+      for (const [from, size, room] of [[o.left, picture.w * c.scale, area.w], [o.top, picture.h * c.scale, area.h]]) {
+        // smaller than the stage in a direction: in the middle there; larger: it covers the stage, no edge of it inside
+        if (size <= room + 1e-6) assert.ok(Math.abs(from - (room - size) / 2) < 1e-6, `in the middle: ${said}`);
+        else assert.ok(from <= 1e-6 && from + size >= room - 1e-6, `covers the stage: ${said}`);
+      }
+    }
+  }
+});
+
+test("one column: the picture's own shape, at most the share of what is seen of the column", () => {
+  assert.equal(columnStage(924, 748, aspect), 411, "a lying, narrow window (1000 × 800): the share, so that the place buttons under it are in sight");
+  assert.equal(columnStage(824, 1048, aspect), 549, "an upright window (900 × 1100): the picture's own shape");
+  assert.equal(columnStage(390, 700, aspect), 260, "a phone held upright: the picture's own shape");
+  assert.equal(columnStage(924, 300, aspect), STAGE_MIN, "a very low window: never lower than the least height");
+  assert.equal(columnStage(300, 300, aspect), 200, "unless the picture's own shape is lower than that");
+  for (const seen of [300, 500, 748, 1048, 1600]) {
+    for (const width of [320, 600, 924, 1400]) {
+      const h = columnStage(width, seen, aspect);
+      assert.ok(h <= Math.round(width / aspect) && h <= Math.max(STAGE_MIN, Math.round(seen * STAGE_SHARE)), `${width} wide, ${seen} seen: ${h}`);
+    }
+  }
+});
+
+test("the view: its parts are squeezed only side by side, and the stage clips its picture", () => {
+  const view = readFileSync(new URL("../components/bordet/BordetView.tsx", import.meta.url), "utf8");
+  const board = readFileSync(new URL("../components/placement/Board.tsx", import.meta.url), "utf8");
+  const classes = (source: string, tag: RegExp) => {
+    const found = tag.exec(source);
+    assert.ok(found, `${tag} is in the source`);
+    return found[1].split(/\s+/);
+  };
+  // In one column a part that may be squeezed (min-h-0) shares the window's height with the other, and the picture, which
+  // keeps its height, runs on under the place buttons: that was the fault. Side by side each part scrolls within itself.
+  for (const part of [classes(view, /<section ref=\{column\} className="([^"]+)"/), classes(view, /<aside className="([^"]+)" data-nudge>/)]) {
+    assert.ok(!part.includes("min-h-0"), "never squeezed in one column");
+    assert.ok(part.includes("lg:landscape:min-h-0"), "squeezed side by side, where it scrolls within itself");
+  }
+  const stage = classes(view, /<div ref=\{stageArea\} className="([^"]+)"/);
+  for (const word of ["shrink-0", "h-[var(--stage-column)]", "lg:landscape:h-[var(--stage-height)]"]) assert.ok(stage.includes(word), `the stage's box has ${word}`);
+  assert.ok(classes(board, /data-stage\s+className=\{cn\("([^"]+)"/).includes("overflow-hidden"), "the stage clips the zoomed picture");
+});
