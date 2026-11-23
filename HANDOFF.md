@@ -6,7 +6,7 @@ Läs AGENTS.md, den här sidan och EN lägesfil för din bana. Ersätt inaktuell
 ## Läget
 
 - Målet är en trovärdig utdelning i spelet i studion: två kort till plats 1–7 och två eller tre till dealern, med
-  returer till redo och vila. Paow är dealern; Pamela är pausad (namnet bär också dockans rörelser `giv-pamela-*` och en scenfilm: skriv
+  returer till redo och vila. Paow är dealern; Pamela är arkiverad ur main (BESKED; namnet bär kvar dockans rörelser `giv-pamela-*` och en scenfilm: skriv
   vilken du menar). Projektet är tills vidare frikopplat från Scoutgaming (Jakob 2026-11-23).
 - Labbet är en vy, Bordet, där en film beställs längs en rak linje: kortets plats och steget, receptet ger resten.
   Kommandot `node tools/order-new.ts` gör samma utkast; Karta visar varje dealers träd.
@@ -44,9 +44,8 @@ Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-
 - **Kartabanan** (vyn Karta och dealerns träd) är en egen session sedan 2026-11-23 och börjar från
   [docs/lage/karta.md](docs/lage/karta.md).
 - **Andra sessioner 2026-11-23:** `dealer-e7` har grafiken på kortet (kortmodellen, `/kortlandning.html`) och lämnar
-  fillistor till huvudagenten. `dealer-a4` städar repot (tester som låser form, V6-rester, Pamela ur main) och
-  committar och pushar just den städningen själv, med uttrycklig staging; `data/clip-jobs.json` och
-  `data/media-roles.json` skrivs av en i taget, efter fråga.
+  fillistor till huvudagenten. `dealer-a4` har städat repot (Pamela ur main, pushat `cd66c09`) och gör inget
+  mer där. `data/clip-jobs.json` och `data/media-roles.json` skrivs av en i taget, efter fråga.
 - **Jakobs egna:** planen `placements/default.json` och hans domar i `motions/` (`review`), som skrivs från Granska och
   aldrig skrivs över av ett verktyg. En dom som getts åt honom (`node tools/review-put.ts`) är aldrig hans.
 - **En ny session** arbetar i mappen `dealer` och avgränsar sina filer först. Extra arbetsträd bara vid

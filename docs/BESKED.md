@@ -109,8 +109,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
 
 ## Dealern och ankarna
 
-- **Paow är dealern, Pamela är pausad** (2026-11-12): Pamelas frågor tas upp när han häver pausen; hennes filmer på
-  sajten står kvar ("Jag vill ha kvar dem").
+- **Paow är dealern; Pamela är arkiverad ur main** (2026-11-23): hennes filmer och bilder ligger i
+  `D:/dealer-archive/pamela-2026-11-23/`, register och kvitton i Git-historiken. Om hennes filmer på sajten gäller "Jag vill ha kvar dem" (2026-11-12): fråga före nästa publicering.
 - **Namnet är Paow** (2026-11-18), inte Paulina; hennes utseende är "de yngre och nättare bilderna" (2026-11-12).
 - **Ingångsbild och keystone** (2026-11-12): ingångsbilden är det en ny dealer börjar från, "vilken bild som helst"; av
   den görs keystone, förlagan i hög upplösning, som aldrig spelas upp.

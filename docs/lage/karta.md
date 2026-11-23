@@ -9,7 +9,7 @@ en fillista.
   `tools/dealer-tree.ts` hittar varje film vars första och sista bild är trädets ankare och svarar Karta genom
   `GET /api/trees`. Måttet är 36 steg, en giv per kort (`src/dealer-trees.ts`).
 - Paow har tre träd i Karta: Casino 22/36 (det spelet spelar, händer utan tatueringar), Ingången 22/36 och Tatuerad
-  14/36 (byggs, från A2.3). Ingången ÄR Casino: den har bara A1, `shares: casino` och filmen före spelet som väg in,
+  15/36 (byggs, från A2.3). Ingången ÄR Casino: den har bara A1, `shares: casino` och filmen före spelet som väg in,
   men visas som ett eget träd.
 - A1 finns i två bilder med samma bildpunkter utanför händerna: `paow-vila-ung-2` (Casino) och `paow-vila-tatuerad`
   (Tatuerad; gäller i Material). Där kan träden bindas.
