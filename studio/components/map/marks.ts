@@ -1,5 +1,5 @@
 // The marks of a take on Karta: each of its pictures whose place another picture holds now (studio/lib/lineage.ts olderOf),
-// with the address that opens the picture it was built on in Material. Pure; tests in studio/tests/choice.test.ts.
+// with the address that opens the picture it was built on in Material. Pure.
 import { DEALER_PARAM } from "../../lib/dealer.ts";
 import { olderOf, type Older } from "../../lib/lineage.ts";
 import type { Entry, MediaAnswer } from "../../lib/media.ts";

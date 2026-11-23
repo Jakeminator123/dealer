@@ -2,8 +2,7 @@
 // anchors the map already shows, so that A2.2 is no island. Today that is rest ↔ hand over: A1 → A2.2 and A2.2 → A1 (the
 // bank writes the rest there as IDLE-B, A1 with the open shoe of A2.2). They are drawn as two dashed lanes in the strip
 // between A1 and A2.2's row (above A1's rail and under the exit A2.1 → A1), each with a small label; every other
-// experiment stays in the tray only. Pure: the places come from the map's layout (lib/map-layout.ts); tests in
-// studio/tests/map-experiments.test.ts.
+// experiment stays in the tray only. Pure: the places come from the map's layout (lib/map-layout.ts).
 import type { Box, Dir, MapLayout } from "../../lib/map-layout.ts";
 
 export type ExperimentLine = {

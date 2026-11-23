@@ -15,7 +15,7 @@
 // not sent to the gateway: OpenAI's own prompt_cache_options and the input's prompt_cache_breakpoint. The streamed events
 // are read as OpenAI's (response.output_text.delta, response.completed / response.incomplete with usage, response.failed,
 // error); the docs show the delta and name completed and incomplete as the terminal events. A spent budget or credit is an
-// HTTP 402 (type quota_for_entity_exceeded). Pure; tested in tools/bot.test.ts.
+// HTTP 402 (type quota_for_entity_exceeded). Pure.
 
 export type Provider = 'gateway' | 'openai';
 export const PROVIDERS: readonly Provider[] = ['gateway', 'openai'];
