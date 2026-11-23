@@ -29,7 +29,7 @@ export type Target = { geometry: Record<View, Geometry>; intent: Intent; materia
 export type TableProjection = { mode:'flat'|'individual'; heading:number; perspective?:number };
 /** The table's perspective on "Plant bord": its limits and step. 0.96 is a real card's own shape (the real camera's 0.956). */
 export const TABLE_PERSPECTIVE = { min: .80, max: .96, step: .01 } as const;
-export type PlacementPlan = { schemaVersion: 1; id: 'pamela-table'; space: 'image-normalized-bottom-up'; updatedAt: string | null; shoe: Record<View, Point>; targets: Record<string, Target>; tableProjection?:TableProjection };
+export type PlacementPlan = { schemaVersion: 1; id: 'kortplan'; space: 'image-normalized-bottom-up'; updatedAt: string | null; shoe: Record<View, Point>; targets: Record<string, Target>; tableProjection?:TableProjection };
 export const PLANE_HEADINGS=[-90,-45,-15,0,15,45,90] as const;
 export const VIEWS = { native: { width: 1762, height: 1174, label: 'Dator', profileId: 'v6-native', background: 'assets/lab/native.jpg' }, portrait: { width: 1080, height: 1920, label: 'Mobil', profileId: 'v6-portrait', background: 'assets/lab/portrait.jpg' } } as const;
 // The backdrops of the studio's Kortplan (Jakob 2026-11-13: no dealer's picture, and the table the studio uses): the 3D scene's
@@ -294,7 +294,7 @@ export function defaultPlan(): PlacementPlan {
   targets[id]={geometry:{native:{u:dealer?.5+(second?.027:0):.13+seat*.12+(second?.025:0),v:dealer?.21:v+(second?.008:0),width:.041,height:.051,angle:0,taper:.9,reviewed:false},portrait:{u:dealer?.47+(second?.048:0):.10+seat*.125+(second?.035:0),v:dealer?.49:.16+Math.abs(seat-3)*.055+(second?.005:0),width:.06,height:.04,angle:0,taper:.9,reviewed:false}},intent:{takeHand:'LH',startSide:'BACK',endSide:closed?'BACK':'FRONT',pass:false,turn:!closed,...INTENT_DEFAULTS},material:{bend:.07,gloss:.35}};
  }
  targets['D.C3']=dealerThirdTarget(targets);
- return {schemaVersion:1,id:'pamela-table',space:'image-normalized-bottom-up',updatedAt:null,shoe:{native:{u:.733,v:.322},portrait:{u:.84,v:.58}},targets,tableProjection:{mode:'flat',heading:0}};
+ return {schemaVersion:1,id:'kortplan',space:'image-normalized-bottom-up',updatedAt:null,shoe:{native:{u:.733,v:.322},portrait:{u:.84,v:.58}},targets,tableProjection:{mode:'flat',heading:0}};
 }
 /** Additive upgrade: the original sixteen cards are never moved or resized. */
 export function dealerThirdTarget(targets: Record<string,Target>): Target {
@@ -308,7 +308,9 @@ function object(v:unknown): v is Record<string,unknown>{return !!v&&typeof v==='
 function keys(v:unknown,list:string[]): asserts v is Record<string,unknown>{if(!object(v)||Object.keys(v).sort().join('|')!==list.sort().join('|'))throw Error('Felaktiga fält i placeringsfilen.');}
 function number(v:unknown,lo:number,hi:number){if(typeof v!=='number'||!Number.isFinite(v)||v<lo||v>hi)throw Error('Koordinat eller reglage ligger utanför tillåtet intervall.');}
 // Checks a plan strictly and, once all of it has passed, fills in the intent keys an older file lacks (grip, turnAt, flipAxis)
-// with their defaults, in place: every reader gets a complete plan, and a save or export writes the keys.
+// with their defaults, in place: every reader gets a complete plan, and a save or export writes the keys. The plan was called
+// 'pamela-table' until 2026-11-23; a copy with that id, such as a proof's frozen kortplan.json, reads as the plan and is
+// written as 'kortplan'.
 export function validatePlan(value: unknown): asserts value is PlacementPlan {
  keys(value,['schemaVersion','id','space','updatedAt','shoe','targets',...(object(value)&&Object.hasOwn(value,'tableProjection')?['tableProjection']:[])]);
  if(Object.hasOwn(value,'tableProjection')){
@@ -316,7 +318,7 @@ export function validatePlan(value: unknown): asserts value is PlacementPlan {
   if(!['flat','individual'].includes(value.tableProjection.mode as string)||!PLANE_HEADINGS.includes(value.tableProjection.heading as typeof PLANE_HEADINGS[number]))throw Error('Ogiltigt bordperspektiv eller riktning.');
   if(Object.hasOwn(value.tableProjection,'perspective'))number(value.tableProjection.perspective,TABLE_PERSPECTIVE.min,TABLE_PERSPECTIVE.max);
  }
- if(value.schemaVersion!==1||value.id!=='pamela-table'||value.space!=='image-normalized-bottom-up'||!(value.updatedAt===null||(typeof value.updatedAt==='string'&&value.updatedAt.length<40&&Number.isFinite(Date.parse(value.updatedAt)))))throw Error('Okänd placering eller bildrymd.');
+ if(value.schemaVersion!==1||(value.id!=='kortplan'&&value.id!=='pamela-table')||value.space!=='image-normalized-bottom-up'||!(value.updatedAt===null||(typeof value.updatedAt==='string'&&value.updatedAt.length<40&&Number.isFinite(Date.parse(value.updatedAt)))))throw Error('Okänd placering eller bildrymd.');
  keys(value.shoe,['native','portrait']);keys(value.targets,[...(object(value.targets)&&Object.hasOwn(value.targets,'D.C3')?TARGETS:INITIAL_TARGETS)]);
  for(const view of ['native','portrait'] as View[]){const s=value.shoe[view];keys(s,['u','v']);number(s.u,0,1);number(s.v,0,1);}
  for(const target of Object.values(value.targets)){
@@ -332,4 +334,5 @@ export function validatePlan(value: unknown): asserts value is PlacementPlan {
  }
  for(const target of Object.values(value.targets) as {intent:Record<string,unknown>}[])for(const [key,fallback] of Object.entries(INTENT_DEFAULTS))if(!Object.hasOwn(target.intent,key))target.intent[key]=fallback;
  if(!Object.hasOwn(value.targets,'D.C3'))value.targets['D.C3']=dealerThirdTarget(value.targets as Record<string,Target>);
+ value.id='kortplan';
 }

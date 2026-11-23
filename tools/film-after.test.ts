@@ -10,7 +10,7 @@ import {dealCheckOf, planCardOf, type PlanCard} from './film-after.ts';
 
 // A plan drawn card by card (no "Plant bord"): seat 9's card is the plan's own rectangle, 0.05 × 0.06 of the 1762 × 1174 view
 // about (0.5, 0.1), carried to the film's 1764 columns as an order's last picture is (x × 1763/1761).
-const plan = {schemaVersion: 1, id: 'pamela-table', space: 'image-normalized-bottom-up', updatedAt: null, shoe: {native: {u: 0.75, v: 0.35}, portrait: {u: 0.75, v: 0.35}},
+const plan = {schemaVersion: 1, id: 'kortplan', space: 'image-normalized-bottom-up', updatedAt: null, shoe: {native: {u: 0.75, v: 0.35}, portrait: {u: 0.75, v: 0.35}},
   targets: {'P9.C1': {geometry: {native: {u: 0.5, v: 0.1, width: 0.05, height: 0.06, angle: 0, taper: 1, reviewed: true}}}}} as unknown as PlacementPlan;
 
 test('the plan\'s card: its box as cardBlobs gives one, the middle of its outline and its area', () => {
