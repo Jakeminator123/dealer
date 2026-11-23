@@ -23,8 +23,8 @@ slaskdisken.
 - Äldre versioner -b till -e: i sina `KLAR-*.txt`. Den avlästa given (A2.1, `src/capture.ts`) är orörd; inget betalt lagt.
 - **Dockorna** (se **Dockorna**): `src/doll.ts` har `standard` (som förut, låst) och `paow`, rättad 2026-11-23 efter
   hennes filmer (38 cm bakom bordskanten, egna armbågar och händer); `?docka=paow`, `shoot.ts --doll paow`. Jakob
-  2026-11-23 om vändningen vid platsen: "Bättre, men inte än", vänsterarmen ser fel ut mot skon. Mätt: armen ligger
-  rätt, scenens sko står fel mot bildens (**Vänsterarmen vid skon**); skon rättas sist, i `src/table-lens.ts`. Hans
+  2026-11-23 om vändningen vid platsen: "Bättre, men inte än", vänsterarmen ser fel ut mot skon. Scenens sko är rättad
+  efter filmens samma dag, och vänsterhandens fingrar böjer mot handflatan (**Vänsterarmen vid skon**). Hans
   naturligare standard: i docklabbet som valet Naturlig (Som förut kvar), ej sedd av honom; **Naturlig ställning**.
 - **Provet en giv, två stolar** (2026-11-20, Jakobs "Ja kör" i Beslut; prov `3d-prov-en-giv-tva-stolar-20261120`; hans
   "ja" på kortet samma dag, och 2026-11-21 "SAM-dockan ska in, men inte nu" i BESKED): given till plats 4 med ett 3D-kort från stol 4 och stol 1. SAM 3D Body över filmen
@@ -267,22 +267,19 @@ fingrar ska sitta som hennes innan dockan används.
 - **Vänsterarmen vid skon** (prov 2026-11-23, `assets/proofs/docka-paow-vansterarm-20261123/`; inte dömt av Jakob).
   Hans ord om vändningen vid platsen: "Bättre, men inte än"; vänsterarmen är "inte naturlig i förhållande till sko och
   kort(en)", "ngt fel i djupet och kanske i distansen till skon", "det syns på hennes handled och armboge".
-  **Armen är inte orsaken.** I ankare 2.3 (`paow-ankare-2-3-c`; `-d` är samma bild kring arm och sko, största skillnad 3
-  av 255) ligger paow-dockans vänstra handled 0 px från hennes (SAM), armbågen (3, −6) px, och fingertopparna 7–13 px
-  för långt ut mot hennes fingrar lästa för ögat (SAM:s kända överskott, som följde med in i `PAOW.hand.at.left`).
-  Armbågens vinkel (dockan 75°, hon 83°) och djupet är skattningar: SAM:s storlek skiljer 2 % mellan bilderna, 5 cm.
-  **Orsaken är scenens sko** (`SHOE`, `SHOE_FOOT`, `shoePose` och `shoeCard` i `src/table-lens.ts`, ritad av
-  `src/stage.ts`). Kortet i fönstret ritas 28 px (2,4 cm) närmare henne än filmens kort (`SHOE_WINDOW_CARD`, som stämmer
-  med bilden), vridet 7,5° och lutat 58° där bildens lutar 48°. Kilens bakkant ritas 47–67 px för högt (0,19 m mot
-  cirka 0,163), bakre foten 36 px fel (långsidan i 20,3° mot bildens 14,6°); främre foten stämmer. Hennes pekfingertopp
-  ligger 24 px vänster om kortets mitt, dockans 10 px höger om scenens kort: handen täcker kortet, och handleden ligger
-  mot skons platta när kortet dras. Studions kortplan har inte felet (`shoeCardQuad` flyttar kortet till filmens
-  pixel); 3D-scenen och varje lagd rörelse börjar i `shoeCard(shoePose())` och har det.
-  **Inte rättat**: skon delas av båda dockorna och av alla lagrade rörelser i `data/`, som koden inte längre skulle
-  lägga med en ny sko. Förslag, bara ritat (provets första bild): kortets mitt på filmens pixel på samma avstånd från
-  kameran (2,4 cm åt bildens höger, 0,6 cm mot spelarna), vridet −7,5° om lodlinjen och lutat 48°, vilket ger 3,6 px
-  från filmens hörn; kilens bakre fot i (1689, 827,5) och bakkant 0,163 m. Bildens sko är inte ritad med linsen
-  (bakkanten lutar −4 px där linsen ger +30) och har en nos framför fönstret, så ingen låda passar alla kanter.
+  Armen låg rätt (handleden 0 px från hennes i ankare 2.3); orsaken var scenens sko. **Skon är rättad 2026-11-23**
+  (`SHOE` i `src/table-lens.ts`, prov `assets/proofs/docka-sko-ratt-20261123/`): kortets hörn i fönstret 5/1/7/0 px
+  från filmens (förut 22–33), främre foten 9, plattans överkant 6/5, bakkanten 3; bakre foten 38 och bortre bakhörnet
+  29 står kvar (bildens sko är inte ritad med linsen). Spelet, Scen, kortplanen och filmerna påverkas inte. Lagrade
+  rörelser i `data/` och `standard/` är lagda med den gamla skon (`SHOE_LAID_BEFORE_20261123`); testerna lägger dem
+  igen med den (`Pace.shoe`, `layDeal({shoe})`, `deal-film.ts --shoe laid-before-20261123`), allt nytt läggs med `SHOE`.
+  Labbet lägger alltid levande med `SHOE`; posefilmernas kort flyttas in i fönstret när de visas (`cardInFilmsShoe`).
+  **Vänsterhandens fingrar** (`PAOW.hand.left`): de ritade topparna ligger 0,1 px från hennes (förut 8–15); pek-, lång-
+  och ringfingret vilar på kortet. Jakob såg en klo: pek- och långfingret var böjda 21–36° bakåt i mellan- och
+  ytterleden (passningen böjde kring de sista benens egen axel, och SAM läste dem 4–5° bakåt). Nu böjer de mot
+  handflatan i alla leder (pek 45/30/20°, lång 16/36/24°). Mätt på båda händerna i A1, A2.1, A2.3 och givens första och
+  sista ruta: handflatan pekar ned (y −0,86 till −0,97) och från kameran, ingen hand är vänd. Lillfingret lyfts bakåt
+  vid knogen i båda händerna (hennes egen läsning) och lämnas.
   **Handbytet, ändrat för paow och bara i receptet**: vänsterhanden vreds 60° om lodlinjen medan underarmen ligger
   still (`TWO_HAND.shared.swing`), så handleden var böjd 43–57°, varav 38–42° i sidled (standarddockan 58–72°). Med
   `swing=40` i `--shared`: 28–34°, handleden fri från skons platta och högerhanden synlig (`swing=25` gav 11–24° men
@@ -292,30 +289,39 @@ fingrar ska sitta som hennes innan dockan används.
   gamla dockan och har samma vikta handled: dockans handled ligger nu 20–45 px längre in än hennes vid handbytet (förut
   0–11). SAM-läsningar av givens första sekund: `…/ut/docka-vansterarm-sam-p3`. SAM läser hennes vänsterhand fel i
   flera rutor (handflatan uppåt); att lita på är ankaret, p3-02 ruta 04–12 och p3-03 ruta 08. Inte gjort:
-  fingertopparna (rättas med skon), övriga platser, och fingrarnas grepp i vändningen (mätt i rörelsen: bara
+  övriga platser, och fingrarnas grepp i vändningen (mätt i rörelsen: bara
   pekfingertoppen ligger på kortet, tummens topp är 21–25 mm ifrån och fingrarna håller samma form hela vägen; hon
   nyper kortets hörn mellan tumme och pekfinger).
 - **Naturlig ställning (inkopplad i docklabbet 2026-11-23; sedd i headless, inte av Jakob).** Hans ord samma dag:
   "vissa aningen konstiga ställningar görs lite naturligare som standard", fingrarna ska visa hur de påverkar kortet,
   händerna är "ihoptrasslade" vid handbytet; för Paow. **I labbet**: valet Rörelse, **Naturlig** (förval för Paow) och
-  **Som förut** (kvar tills han säger ja; Standarddockan har bara den). Som förut orörd visar den lagrade given själv där
-  receptets fil är en giv till just den platsen (9 av 15), annars läggs den som förut. Hans sparade standard spelas som
-  han sparade den i båda valen; sparad i Naturlig får den fältet `lab.naturlig` {knobs, bodyShare}. Under Kroppen, bara
+  **Som förut** (kvar tills han säger ja; Standarddockan har bara den). Allt läggs levande med filmens sko: Som förut
+  är den gamla takten lagd, aldrig en lagrad fil (den började 3 cm från skons kort); hans sparade standard läggs ur
+  sitt `lab.recipe` och `lab.steer` i det val han sparade den i (filen orörd, hans värden gäller); sparad i Naturlig
+  får den fältet `lab.naturlig` {knobs, bodyShare}. Under Kroppen, bara
   i Naturlig: Höger/Vänster axel upp och fram (cm), Höger/Vänster armbåge ut (°); kroppens reglage går där aldrig till
   "Går inte", texten säger i stället "kroppen tar X % av styrningen". Med Leder på eller i Nära kortet: en ring på
   kortet där varje fingertopp rör det (varm höger, kall vänster) och en rad i bilden om vilka fingrar och var (i hörnet,
   vid kanten, mitt på). **Koden**: `page/docka.ts` och `docka.html`; `page/natural-lab.ts` (`layNatural`,
-  `moveNatural`, `storedFits`); `page/lay.ts` `natural: true` kör `naturalPace`; `page/lab-stage.ts` `setGrips`,
+  `moveNatural`); `page/lay.ts` `natural: true` kör `naturalPace`; `page/lab-stage.ts` `setGrips`,
   `touching`; `src/natural.ts` (handbytet i `NATURAL.change`, greppet, kroppen, armbågen; kvitto per ruta).
   **Mätt på paow** (före → efter): händernas minsta avstånd −16 till 2 mm → 11–14 mm (rull 24–42); tummen mot kortet
   medan pekfingret ligger på, svep P1–P4 39–40 → 2,7–3,4 mm (över 3 mm på 0–1 av 47 rutor, förut 40–41), P5.C1, P5.C2,
   P6.C2 37 → 8 mm (taket är händernas 12 mm); ben genom kortet 13–19 → 12; handleden P1–P3 64–67° → 44–48°, P5 78 →
   75°. Första och sista rutan och kortets plats lika på alla 15; alla 15 går orörda och med reglagen i ändlägena.
   Kroppens reglage verkar åt samma håll och i samma takt som förut (in från beat b till g).
-  **Hans P5.C1** (`standard/paow-p5c1.json`, Som förut, greppets vinkel −30°, kroppen [4,6, 4,5, 5,5]): händerna −16
-  mm (i varandra), tummen 44 mm, ben genom kortet 26, handleden 57°. Naturlig orörd: 11 mm, 8 mm, 12, 75°, och
-  handleden 10 cm ifrån hans mitt i given. Naturlig med hans reglage: −13 mm, 23 mm, 14, 48°. Hans standard vinner där
-  den finns; hans −30° ger lägre handled men låter händerna mötas också i Naturlig.
+  **Mätt om med rätt sko och fingrar** (2026-11-23; `NATURAL.change` håller och är oförändrad): händerna svep 10–15
+  mm, rull 20–28; tummen P2–P4 2,7 mm, P1 5,1–5,4, P5.C1, P5.C2, P6.C2 7,7, rull 19–24 (orättat); ben genom kortet
+  svep 5, rull 4–6 (vänsterfingrarna på kortet medan det dras ut, rutorna 6–13); handleden oförändrad. Kortet i första
+  rutan 0,0 mm från skons kort på alla 15.
+  **Hans P5.C1** (`standard/paow-p5c1.json`, Som förut, greppets vinkel −30°, kroppen [4,6, 4,5, 5,5]), lagd igen med
+  rätt sko: händerna −16 mm (i varandra), tummen 45 mm, ben genom kortet 16 (filen 26), handleden 57°, höger handled
+  inom 1 mm från filen. Naturlig orörd: 10 mm, 7,7 mm, 5, 75°. Hans standard vinner där den finns.
+  **Dockfilmer för beställning** (oregistrerade, 2026-11-23), Naturlig till P5.C1 orörd: given
+  `data/giv-fran-2-3-p5c1-naturlig-paow.json` (3,0 s, 30/s; `ut/docka-naturlig-p5c1-a`) och given med retur i samma
+  film `…-naturlig-cykel-paow.json` (4 s, 24/s; `ut/docka-naturlig-p5c1-cykel-a`): underlaget `…-naturlig.json`
+  (standarddockan) genom `return-cycle.ts` till `…-naturlig-cykel.json`, ställd på paow och rörd som Naturlig av
+  `.runtime/docka-naturlig/v2/cykel.ts`. Kortet ligger från ruta 70, handen lyfter från 77, sista rutan = första.
   **Mätskripten** i `.runtime/docka-naturlig/` (`lib.ts`, `nat.ts`, `grip.ts` m.fl.) och `v2/`: `tumme.ts` (tummen
   per plats), `sidan.ts` (sidans väg och hans P5.C1), `titt.ts` (headless-titten under låset, egen port 4393).
   **Gör inte om**: tummen under kortet mitt emot pekfingret; tummen runt kanten (`chainTo` böjer bara i tummens plan);
@@ -327,8 +333,7 @@ fingrar ska sitta som hennes innan dockan används.
   sådan görs. (2) Ramen i studion: sidan efter ramens storlek, duken i filmens format (inte påbörjad). (3) Tummen i
   rullgivarna (D.C1, D.C3, P6.C1, P7.C1: ringgrepp, pekfingret rör kortet av och på). (4) Vändningen: om plats 7, kort
   1 vid 0,96 s "kortet vänds ju itne på ett naturligt sätt" (lugnt nu: mall 14 säger att dockan är en grund för
-  rörelsen, inte för kortets vändning). (5) Inbäddat läge, kontraktstester, prov i `assets/proofs/`; `NATURAL.change`
-  mäts om när fingertopparna och skon är rättade, sist skon i `src/table-lens.ts`. Labbets kamera är 1764 × 1174
+  rörelsen, inte för kortets vändning). (5) Inbäddat läge, kontraktstester, prov i `assets/proofs/`. Labbets kamera är 1764 × 1174
   (FILM), kortplanen och dockans stillbild 1762 × 1174. För framtiden: A2.2, "kan man inte typ för just "A2.2" skapa
   dockans possition utifrån fotot/ankaret 2.2). Sedan utifrån denna så kanske man själv kan sttälla in röreslsen geom
   olika val."; och dockan tar över Siluetten i Scen & Bord: "där fins ju alla val typ ändå för handvrisningar och så
@@ -407,6 +412,10 @@ reproducerbar returbana, inte en återställning av den äldre H24-svansen. Gran
 
 ## Kvar
 
+- **Standarddockans startställning**: posefilmen `data/till-ankare-2-3-c.json` håller den gamla skons kort (29,7 mm från
+  det nya); labbet flyttar kortet när den visas, filen är orörd. En ny posefilm med rätt sko görs under nytt namn.
+- **"Ihoptryckt"** (skoagentens fynd, skattat, inte rättat): linsen passades med henne 0,18 m bakom bordskanten, dockan
+  står 0,38 m bakom; från andra kameror än filmens sitter hon därför cirka 8 cm för lågt.
 - Dockan är en provdocka av klot och rör. Den vita dockan står kvar som egen väg för förlagefilmer (en modell som
   liknar Paow kan läcka sitt utseende in i filmen).
 - **Jakobs Meshy-modell vid bordet** (2026-11-18, `src/figure-model.ts`, sidan `?model=1`, `shoot.ts --model <fil.glb>`;

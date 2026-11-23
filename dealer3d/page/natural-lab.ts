@@ -4,8 +4,7 @@
 //   body, posed on the doll (pose-on-doll.ts) and moved as a person moves (dealer3d/src/natural.ts), with the body's
 //   sliders, the shoulders and the elbows laid on the doll herself as far as her arms reach: a slider there never makes
 //   the deal fail.
-// - "Som förut": what the lab did before; untouched, the stored deal itself (the file the films were made from) posed on
-//   the doll, so that it stays what it was when the shoe or the laying changes.
+// - "Som förut": the deal as the lab laid it before (lay.ts without `natural`), posed on the doll.
 import {layDeal, type PoseFilm, type Recipe, type Steer} from './lay.ts';
 import {poseOnDoll} from './pose-on-doll.ts';
 import {natural} from '../src/natural.ts';
@@ -45,6 +44,3 @@ export function moveNatural(laid: LaidNatural, body: [number, number, number] | 
   const {motion, receipt} = natural(lens, laid.motion as never, doll, {body: more, ...knobs});
   return {motion: motion as typeof laid.motion, receipt, bodyShare: Math.min(...receipt.frames.map(f => f.bodyShare))};
 }
-
-/** Whether "Som förut" can show the stored deal itself for `target`: the recipe's file is a deal to that very place (not lent from another). */
-export const storedFits = (stored: {to: string[]}, target: string) => stored.to.length === 1 && stored.to[0] === target;

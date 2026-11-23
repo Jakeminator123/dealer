@@ -7,12 +7,14 @@
 // dealer3d/tools/doll-pose.ts poses it (page/pose-on-doll.ts): nothing is drawn or posed here that those do not make.
 // Two ways of dealing (page/natural-lab.ts): "Naturlig", the standard for Paow (the hands hand the card over without
 // meeting, thumb and forefinger hold its corner, the body, shoulders and elbows steered on her as far as her arms reach;
-// dealer3d/src/natural.ts), and "Som förut", what the lab did before, kept until Jakob has said yes to the new: untouched
-// it shows the stored deal itself. A standard he has saved plays as he saved it, whichever way is chosen.
+// dealer3d/src/natural.ts), and "Som förut", the deal as the lab laid it before, kept until Jakob has said yes to the new.
+// Everything is laid here, with the shoe the films have (src/table-lens.ts SHOE): a stored file began in the shoe of before
+// 2026-11-23, 3 cm off, and is not played. A standard he has saved is laid again from its recipe and his sliders, the way
+// he saved it in, whichever way is chosen; the file stays as it is.
 // window.docklabb is for a test that looks at the page: ready, and facts() of what is shown.
 import {createLabStage, type LabStage, type Touch, type ViewName} from './lab-stage.ts';
-import {NO_STEER, TURN_AT_PLACE, layDeal, recipeFor, recipeOf, shares, type LaidDeal, type PoseFilm, type Recipe, type Steer, type Stored} from './lay.ts';
-import {NO_KNOBS, layNatural, moveNatural, onDoll as dealOnDoll, storedFits, type Knobs, type LaidNatural, type Way} from './natural-lab.ts';
+import {NO_STEER, TURN_AT_PLACE, cardInFilmsShoe, layDeal, recipeFor, recipeOf, shares, type LaidDeal, type PoseFilm, type Recipe, type Steer, type Stored} from './lay.ts';
+import {NO_KNOBS, layNatural, moveNatural, onDoll as dealOnDoll, type Knobs, type LaidNatural, type Way} from './natural-lab.ts';
 import {poseOnDoll, type PoseOptions} from './pose-on-doll.ts';
 import {dollNamed} from '../src/doll.ts';
 import {filmLens, type Plan} from '../src/world.ts';
@@ -24,8 +26,8 @@ type Pose = 'A1' | 'A2.1' | 'A2.3';
 type Shown = {kind: 'pose'; pose: Pose} | {kind: 'deal'};
 type Motion = Read & {doll?: string; lab?: Record<string, unknown>};
 type Standard = {name: string; doll: string; place: string; savedAt: string};
-/** What a saved standard carries of how it was made: the sliders, and for "Naturlig" the shoulders and elbows (`naturlig`, which a standard saved before has not). */
-type SavedLab = {steer?: Steer; bodyAsked?: [number, number, number]; shortMm?: number; naturlig?: {knobs?: Partial<Knobs>; bodyShare?: number}};
+/** What a saved standard carries of how it was made: the recipe, the sliders, and for "Naturlig" the shoulders and elbows (`naturlig`, which a standard saved before has not). */
+type SavedLab = {recipe?: string; steer?: Steer; bodyAsked?: [number, number, number]; shortMm?: number; naturlig?: {knobs?: Partial<Knobs>; bodyShare?: number}};
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const get = async (address: string) => { const r = await fetch(address, {cache: 'no-store'}); if (!r.ok) throw Error(`${address}: ${r.status}`); return r.json(); };
 const files = new Map<string, Promise<unknown>>(), stored = <T>(name: string) => { let p = files.get(name); if (!p) { p = get(`/dealer3d/data/${name}.json`); files.set(name, p); } return p as Promise<T>; };
@@ -45,9 +47,9 @@ const plan = await get('/dealer3d/plan').catch(e => { $('note').textContent = 'D
 const state = {doll: 'paow', way: 'naturlig' as Way, shown: {kind: 'deal'} as Shown, place: 'P4.C1', steer: {...NO_STEER} as Steer, knobs: knobsOf(), touched: false, playing: false, speed: 1, loop: false, joints: false, view: 'film' as ViewName, t: 0};
 /** The way a deal is shown now: "Naturlig" is Paow's (the standard doll is locked, and keeps "Som förut"). */
 const wayOf = (): Way => state.doll === 'standard' ? 'forut' : state.way;
-// What is on the stage now: the motion, and for a deal what it was laid from. `from`: a saved standard, the stored deal itself, or laid here. `fault`: why the last laying did not go (the motion is then the last that did).
+// What is on the stage now: the motion, and for a deal what it was laid from. `from`: a saved standard (laid again from what it was saved with), laid here as steered, or a pose. `fault`: why the last laying did not go (the motion is then the last that did).
 type Now = {doll: string; place: string | null; motion: Motion; deal: LaidDeal | null; recipe: Recipe | null; lent: string | null; shortMm: number; saved: boolean; said: string | null;
-  way: Way; from: 'saved' | 'file' | 'laid' | 'pose'; savedWay: Way | null; bodyShare: number | null; receipt: ReturnType<typeof moveNatural>['receipt'] | null};
+  way: Way; from: 'saved' | 'laid' | 'pose'; savedWay: Way | null; bodyShare: number | null; receipt: ReturnType<typeof moveNatural>['receipt'] | null};
 let now: Now | null = null, fault: string | null = null, laid: {key: string; value: LaidNatural} | null = null;
 let standards: Standard[] = (await get('/dealer3d/standard').catch(() => ({standards: []}))).standards, stage: LabStage | null = null, held = 0;
 
@@ -59,35 +61,37 @@ function onDoll<M extends Motion>(motion: M, options?: PoseOptions): {motion: Mo
 }
 const plain = (e: unknown) => { const s = String((e as Error)?.message ?? e); return /reach/.test(s) ? 'armen når inte' : /frames to turn|too few|settle/.test(s) ? 'för snabbt för vändningen' : /grip/.test(s) ? 'greppet passar inte platsen' : 'går inte att räkna'; };
 
+/** A recipe by the name of its stored deal, and the pose film it begins on. */
+const recipeNamed = async (name: string) => { const recipe = recipeOf(name, await stored<Stored & Motion>(name)); return {recipe, pose: await stored<PoseFilm>(recipe.poseFilm ?? 'till-ankare-2-3')}; };
 async function recipeOfPlace(place: string) {
   const r = recipeFor(place); if (!r || 'none' in r) return null;
-  const file = await stored<Stored & Motion>(r.recipe), recipe = recipeOf(r.recipe, file), pose = await stored<PoseFilm>(recipe.poseFilm ?? 'till-ankare-2-3');
-  return {recipe, pose, file, lent: r.lent ? LENT[r.lent] : null};
+  return {...await recipeNamed(r.recipe), lent: r.lent ? LENT[r.lent] : null};
 }
 const untouched = () => JSON.stringify(state.steer) === JSON.stringify(NO_STEER) && JSON.stringify(state.knobs) === JSON.stringify(NO_KNOBS);
 /**
- * Lays the deal to the chosen place the chosen way, as steered, on the doll; or, untouched, takes the standard saved for
- * the doll and place, as it was saved. Keeps what is shown where the laying does not go.
+ * Lays the deal to the chosen place the chosen way, as steered, on the doll; or, untouched, the standard saved for the doll
+ * and place, laid again from its recipe and his sliders the way it was saved in. Keeps what is shown where the laying does not go.
  */
 async function showDeal(keepTime = false) {
-  const place = state.place, doll = state.doll, way = wayOf(), found = await recipeOfPlace(place); if (!found || place !== state.place || doll !== state.doll || way !== wayOf()) return;
-  const saved = state.touched ? null : standards.find(s => s.name === standardName(doll, place)), D = dollNamed(doll), base = {doll, place, recipe: found.recipe, lent: found.lent, said: null, way};
+  const place = state.place, doll = state.doll, chosen = wayOf(), found = await recipeOfPlace(place); if (!found || place !== state.place || doll !== state.doll || chosen !== wayOf()) return;
+  const saved = state.touched ? null : standards.find(s => s.name === standardName(doll, place)), D = dollNamed(doll);
   try {
-    if (saved) { const motion = await get(`/dealer3d/standard/${saved.name}.json`) as Motion, lab = (motion.lab ?? {}) as SavedLab;
-      state.steer = {...NO_STEER, ...lab.steer}; state.knobs = knobsOf(lab.naturlig?.knobs);
-      now = {...base, motion, deal: null, shortMm: lab.shortMm ?? 0, saved: true, from: 'saved', savedWay: lab.naturlig ? 'naturlig' : 'forut', bodyShare: lab.naturlig?.bodyShare ?? null, receipt: null}; }
-    else if (way === 'naturlig') {
+    let {recipe, pose} = found, way = chosen, savedWay: Way | null = null;
+    if (saved) { const lab = ((await get(`/dealer3d/standard/${saved.name}.json`) as Motion).lab ?? {}) as SavedLab;
+      state.steer = {...NO_STEER, ...lab.steer}; state.knobs = knobsOf(lab.naturlig?.knobs); savedWay = lab.naturlig ? 'naturlig' : 'forut'; way = doll === 'standard' ? 'forut' : savedWay;
+      if (lab.recipe && lab.recipe !== recipe.from) ({recipe, pose} = await recipeNamed(lab.recipe));
+      if (place !== state.place || doll !== state.doll) return; }
+    const base = {doll, place, recipe, lent: found.lent, said: null, way, saved: !!saved, from: saved ? 'saved' as const : 'laid' as const, savedWay};
+    if (way === 'naturlig') {
       // (laid again only when what the laying takes has changed: the body, shoulders and elbows move the doll on the deal laid last)
-      const key = JSON.stringify([doll, place, found.recipe.from, {...state.steer, body: null}]);
-      if (laid?.key !== key) laid = {key, value: layNatural({plan, target: place, recipe: found.recipe, pose: found.pose, steer: state.steer, lens, doll: D})};
+      const key = JSON.stringify([doll, place, recipe.from, {...state.steer, body: null}]);
+      if (laid?.key !== key) laid = {key, value: layNatural({plan, target: place, recipe, pose, steer: state.steer, lens, doll: D})};
       const moved = moveNatural(laid.value, state.steer.body, state.knobs, lens, D);
-      now = {...base, motion: moved.motion as unknown as Motion, deal: laid.value.deal, shortMm: laid.value.shortMm, saved: false, from: 'laid', savedWay: null, bodyShare: moved.bodyShare, receipt: moved.receipt}; }
+      now = {...base, motion: moved.motion as unknown as Motion, deal: laid.value.deal, shortMm: laid.value.shortMm, bodyShare: moved.bodyShare, receipt: moved.receipt}; }
     else {
-      // "Som förut": untouched, the stored deal itself where it is a deal to this place; laid again as steered otherwise. (Laid in both cases for what the sliders start from.)
-      const file = JSON.stringify(state.steer) === JSON.stringify(NO_STEER) && storedFits(found.file, place);
-      let deal: LaidDeal | null = null; try { deal = layDeal({plan, target: place, recipe: found.recipe, pose: found.pose, steer: state.steer}); } catch (e) { if (!file) throw e; }
-      const posed = dealOnDoll(lens, (file ? found.file : deal) as Motion, D);
-      now = {...base, motion: posed.motion, deal, shortMm: posed.shortMm, saved: false, from: file ? 'file' : 'laid', savedWay: null, bodyShare: null, receipt: null}; }
+      // "Som förut": the deal as the lab laid it before, as steered.
+      const deal = layDeal({plan, target: place, recipe, pose, steer: state.steer}), posed = dealOnDoll(lens, deal as unknown as Motion, D);
+      now = {...base, motion: posed.motion, deal, shortMm: posed.shortMm, bodyShare: null, receipt: null}; }
     fault = null;
   } catch (e) { fault = plain(e); console.warn(e); if (!now || now.place !== place || now.doll !== doll || state.shown.kind !== 'deal') { paint(); return; } }
   if (place !== state.place || doll !== state.doll) return;
@@ -95,6 +99,7 @@ async function showDeal(keepTime = false) {
 }
 async function showPose(pose: Pose) {
   const p = POSES[pose], doll = state.doll, posed = onDoll(await stored<Motion>(p.film), p.options); if (doll !== state.doll) return;
+  posed.motion = cardInFilmsShoe(posed.motion as Motion & {frames: {card: {c: number[]; l: number[]; n: number[]}}[]}); // the pose films' card stood in the shoe of before 2026-11-23
   state.shown = {kind: 'pose', pose}; state.playing = false; fault = null;
   now = {doll, place: null, motion: posed.motion, deal: null, recipe: null, lent: null, shortMm: 0, saved: false, said: p.said && doll !== 'standard' ? `${p.said} på ${DOLLS[doll]}s kropp` : p.said ?? null, way: wayOf(), from: 'pose', savedWay: null, bodyShare: null, receipt: null};
   stage!.setMotion(posed.motion); state.t = p.end ? stage!.duration() : 0; stage!.setTime(state.t); paint();
@@ -148,7 +153,7 @@ function paint() {
   const deal = state.shown.kind === 'deal', saved = standards.find(s => s.name === standardName(state.doll, state.place)), way = wayOf();
   for (const b of document.querySelectorAll<HTMLButtonElement>('#dolls button')) b.setAttribute('aria-pressed', String(b.dataset.doll === state.doll));
   for (const b of document.querySelectorAll<HTMLButtonElement>('#ways button')) { b.setAttribute('aria-pressed', String(b.dataset.way === way)); b.disabled = state.doll === 'standard' && b.dataset.way === 'naturlig'; b.title = b.disabled ? 'Bara för Paow' : ''; }
-  $('wayNote').textContent = state.doll === 'standard' ? 'Naturlig finns bara för Paow.' : way === 'naturlig' ? 'Händerna möts inte vid handbytet, tummen och pekfingret håller kortets hörn, och kroppen följer reglagen så långt armarna når.' : 'Som labbet var före 23 november. Orörd visas den lagrade given, som filmerna gjordes av.';
+  $('wayNote').textContent = state.doll === 'standard' ? 'Naturlig finns bara för Paow.' : way === 'naturlig' ? 'Händerna möts inte vid handbytet, tummen och pekfingret håller kortets hörn, och kroppen följer reglagen så långt armarna når.' : 'Given som labbet lade den före 23 november, med filmens sko.';
   for (const b of document.querySelectorAll<HTMLButtonElement>('#poses button')) b.setAttribute('aria-pressed', String(!deal && b.dataset.pose === (state.shown as {pose?: string}).pose));
   for (const b of document.querySelectorAll<HTMLButtonElement>('#places button')) { b.setAttribute('aria-pressed', String(deal && b.dataset.place === state.place)); b.classList.toggle('saved', standards.some(s => s.name === standardName(state.doll, b.dataset.place!))); }
   for (const b of document.querySelectorAll<HTMLButtonElement>('#views button')) b.setAttribute('aria-pressed', String(b.dataset.view === state.view));
@@ -160,9 +165,9 @@ function paint() {
   const status = $('status'), when = saved ? new Date(saved.savedAt).toLocaleString('sv-SE', {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'}) : '';
   status.className = fault ? 'small warn' : 'small';
   status.textContent = !deal ? 'Välj en plats för att styra given.' : fault ? `Går inte: ${fault}. Senaste som gick visas.`
-    : now?.saved ? `Din sparade standard visas (${when}, gjord i ${WAYS[now.savedWay ?? 'forut']}).${now.savedWay !== way ? ` Dra i ett reglage för ${WAYS[way]} med dina värden.` : ''}`
+    : now?.saved ? `Din sparade standard (${when}, gjord i ${WAYS[now.savedWay ?? 'forut']}), lagd med dina värden och filmens sko.${now.savedWay !== way ? ` Dra i ett reglage för ${WAYS[way]} med dina värden.` : ''}`
     : saved ? `Inte den sparade (${when}). Klicka på platsen för den.` : steered ? 'Ändrad, inte sparad.'
-    : way === 'naturlig' ? 'Naturlig grundrörelse. Ingen standard sparad.' : now?.from === 'file' ? 'Den lagrade given, som filmerna. Ingen standard sparad.' : 'Grundrörelsen. Ingen standard sparad.';
+    : way === 'naturlig' ? 'Naturlig grundrörelse. Ingen standard sparad.' : 'Grundrörelsen som förut. Ingen standard sparad.';
   // The line in the picture: what is shown, and what is not as it should be.
   const what = deal ? `A2.3 → ${placeWords(state.place)}` : (state.shown as {pose: string}).pose, notes: string[] = [], warns: string[] = [];
   if (deal && now) notes.push(now.saved ? 'sparad standard' : WAYS[now.way]);
@@ -216,7 +221,7 @@ $('atplace').addEventListener('click', () => { const r = R(); if (!r) return; st
 $('save').addEventListener('click', async () => {
   if (!now?.deal || state.shown.kind !== 'deal' || fault) return; const name = standardName(state.doll, state.place), button = $<HTMLButtonElement>('save'); button.disabled = true;
   // Exactly the frames on the stage, for this doll, with what they were laid from (for "Naturlig" also the shoulders and elbows, and how much of the body's steering she took).
-  const lab = {...now.deal.lab, steer: state.steer, doll: state.doll, place: state.place, shortMm: now.shortMm, savedAt: new Date().toISOString(), ...(now.way === 'naturlig' ? {naturlig: {knobs: state.knobs, bodyShare: now.bodyShare}} : {}), ...(now.from === 'file' ? {storedDeal: true} : {})};
+  const lab = {...now.deal.lab, steer: state.steer, doll: state.doll, place: state.place, shortMm: now.shortMm, savedAt: new Date().toISOString(), ...(now.way === 'naturlig' ? {naturlig: {knobs: state.knobs, bodyShare: now.bodyShare}} : {})};
   const motion = {...now.motion, doll: state.doll, lab};
   try { const r = await fetch(`/dealer3d/standard/${name}.json`, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(motion)}), answer = await r.json(); if (!r.ok) throw Error(answer.error ?? String(r.status));
     standards = answer.standards; now = {...now, motion, saved: true, from: 'saved', savedWay: now.way}; paint(); }
