@@ -104,6 +104,8 @@ export type NewOrder = {
   resolution?: string;
   takes?: number;
   extra?: string | null;
+  /** One more sentence after the addition, the recipe's own included (extra replaces the recipe's; this never does). */
+  extraAfter?: string | null;
   /** The register entry a still is made from, or a film starts on (default: the dealer's anchor that holds). */
   base?: string | null;
   /** RETUR-2.3: approved GIV-2.3 order whose frozen last picture is used as the first picture. */
@@ -720,7 +722,8 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     if (!Number.isInteger(takes) || takes < 1 || takes > TAKES_MAX) throw new StoreError(400, `Tagningar ska vara 1–${TAKES_MAX}.`);
     // The free addition is refused beyond the limit, as change() refuses it: cut, it would end the text mid-sentence unseen.
     if (input.extra !== undefined && input.extra !== null && typeof input.extra !== 'string') throw new StoreError(400, 'Tillägget ska vara en text.');
-    const extra = (input.extra === undefined ? recipe?.extra : input.extra)?.trim() || null;
+    if (input.extraAfter !== undefined && input.extraAfter !== null && typeof input.extraAfter !== 'string') throw new StoreError(400, 'Meningen efter tillägget ska vara en text.');
+    const extra = [(input.extra === undefined ? recipe?.extra : input.extra)?.trim(), input.extraAfter?.trim()].filter(Boolean).join(' ') || null;
     if (extra && extra.length > EXTRA_LIMIT) throw new StoreError(400, `Tillägget får vara högst ${EXTRA_LIMIT} tecken (det här har ${extra.length}).`);
     const intent = target ? plan.targets[target].intent : null;
     if (input.hand !== undefined && input.hand !== 'LH' && input.hand !== 'RH') throw new StoreError(400, 'Handen ska vara LH eller RH.');

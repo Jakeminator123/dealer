@@ -4,7 +4,8 @@
 //                                       his saved standard for the doll and card where there is one, else "Naturlig"
 //   2. dealer3d/tools/render-reference.ts   the doll's film of it (headless Chrome under the shared lock, about a minute)
 //   3. tools/doll-reference-put.ts      the film into assets/references/docka/ and data/rendered-references.json
-//   4. tools/order-new.ts               the draft: giv och återgång in one film, the doll's film as reference, template 15
+//   4. tools/order-new.ts               the draft: giv och återgång in one film, the doll's film as reference, template 15;
+//                                       a landing other than the default (dealer3d/src/landing.ts) adds its sentence to the text
 //
 //   node tools/doll-order.ts <dealer> <P6.C1> [--mall 15] [--flat-hand] [--dry]
 //
@@ -19,6 +20,7 @@ import { promisify } from 'node:util';
 import { StoreError } from './placement-store.ts';
 import { newCommand, stepOfNotation } from './order-new.ts';
 import { STEPS, edgeOf } from '../src/order-model.ts';
+import { LANDINGS, LANDING_DEFAULT } from '../dealer3d/src/landing.ts';
 
 const run = promisify(execFile);
 
@@ -70,8 +72,11 @@ export async function dollOrder(root: string, ask: DollOrderAsk, options: { dry?
     const note = `Gjord med knappen i Scen & bord, Docka: ${standard ? `hans sparade standard ${standard}` : 'ingen sparad standard, Naturlig som förval'}, giv och återgång i en film.`;
     await node('Registret över dockans filmer', ['tools/doll-reference-put.ts', out, '--id', plan.film, '--from', from, '--to', to, '--shape', 'ROUND_TRIP', '--doll', plan.doll, '--lays', 'RH', '--motion', plan.motion, '--note', note]);
     rmSync(out, { recursive: true, force: true });
-    const draft = await newCommand(root, [plan.dealer, plan.notation, '--tur-retur', '--docka', plan.doll, '--mall', String(ask.template ?? 15), '--sekunder', String(Math.round(Number(seconds))), '--title', plan.title]);
-    return { ok: true, dry: false, id: draft.id, title: draft.title, place: plan.place, film: plan.film, motion: plan.motion, standard, seconds: draft.seconds, cost: draft.cost, notes: draft.notes };
+    // The hand's landing at the laid card as the doll laid it (the cycle tool's line "landning <id>"): the text says the same as the film shows.
+    const landing = LANDINGS.find((l) => l.id === /^landning (S+)/m.exec(laid)?.[1]);
+    const said = landing && landing.id !== LANDING_DEFAULT ? ['--extra-efter', landing.sentence] : [];
+    const draft = await newCommand(root, [plan.dealer, plan.notation, '--tur-retur', '--docka', plan.doll, '--mall', String(ask.template ?? 15), '--sekunder', String(Math.round(Number(seconds))), '--title', plan.title, ...said]);
+    return { ok: true, dry: false, id: draft.id, title: draft.title, place: plan.place, film: plan.film, motion: plan.motion, standard, landing: landing?.id ?? null, seconds: draft.seconds, cost: draft.cost, notes: draft.notes };
   } catch (error) {
     // a movement that got no film in the register is taken away again, so that the name is free
     const kept = existsSync(path.join(root, 'assets', 'references', 'docka', plan.film));

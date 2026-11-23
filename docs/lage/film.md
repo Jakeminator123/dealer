@@ -13,34 +13,35 @@ som gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompt
   delar den där handen börjar gå tillbaka och sparar given och returen i banken.
 - Ett ankare heter alltid A och numret (A1, A2.3, A3P4C1), aldrig med en bokstav efter (Jakob 2026-11-21); bokstäverna
   i id:n är arbetsnamn: A2.3 är `paow-ankare-2-3-d` (blicken på kortet; givarna hittills börjar på `-c`), A2.2 `paow-ankare-2-2-blick-a`.
-- Trädet Tatuerad (vyn Karta, `/studio/karta/?dealer=paow&trad=tatuerad`) fylls från A2.3. I banken: giv och återgång
-  till plats 1–5, kort 1 (mall 15, Jakobs "Ja, alla håller"; granskaren: plats 4 och 5 4/5, plats 1 och 2 3/5),
-  och sedan förut given till A3P4C1 (piloten, Jakobs ja), A3P4C2 (kort i Beslut), A3P1C1, A3P2C1 och A3P3C1 bara dit.
-- A3-bilder: A3P4C1 och A3P4C2 är kandidater (A3P4C2 ur ruta 68, oberoende 4/5). För plats 1 och 2 stoppar
-  landningsverktyget, och rosen på högra handryggen är en mandala i A3P4C1 ([BRISTER](../BRISTER.md)).
-- En retur beställs inte för sig: den klipps ur filmen med giv och återgång. `paow-giv-2-3-p5-04-01` ligger i banken
-  som 1764 × 1172 (originalet, inte den efterarbetade).
-- P4.C2 Cykel01 är vald framför Cykel02. En sidovinkel görs av en färdig film i Runways videoredigerare (Prov `sidovinkel-ur-film`).
-- Pengar: gränser, mandat och senast lästa saldo står i `data/order-policy.json`. En giv med återgång på 4 s med
-  referensfilm kostar 91 krediter, en giv på 3 s 68; beställningen går genom API-nyckeln (Runway-MCP är inte inloggat).
+- Trädet Tatuerad (`/studio/karta/?dealer=paow&trad=tatuerad`) fylls från A2.3. I banken: giv och återgång till plats
+  1–6, kort 1 (mall 15; plats 1–5 Jakobs "Ja, alla håller", plats 6 "Bra"), och givarna bara dit. Plats 7 är
+  underkänd: kortet vänds inte av händerna (BESKED, "Kortet vänds av hennes händer").
+- Sista given går direkt till vila: `node tools/order-new.ts paow RETUR-1 P4.C1` gör en film på 3 s som
+  fortsätter givens sista ruta. I banken: plats 2, 3, 4 och 6 godkända åt honom, plats 1 (visar
+  handflatorna) och 5 (sveper över filten) som varianter; receptet bär nu meningen om den korta vägen.
+  `--extra` ersätter receptets tillägg, `--extra-efter` lägger till. Returen till skon klipps ur filmen med giv och återgång.
+- A3-bilder: A3P4C1 och A3P4C2 är kandidater; för plats 1 och 2 stoppar landningsverktyget ([BRISTER](../BRISTER.md)).
+- Variant på lek (Prov `tumflipp-p3-20261123`): kortet kastas till plats 3, Kling 4 utan referensfilm, givens första och
+  sista bild. En vinkel per plats: en stillbild från sidan styr Aleph 2.0, 118 krediter; Omni Flash 1.2 ändrade inte vinkeln.
+- Pengar: gränser, mandat och saldo i `data/order-policy.json`. Giv med återgång 91 krediter, giv på 3 s 68, retur till
+  vila 57; beställningen går genom API-nyckeln.
 
 **Nästa steg.**
-1. Plats 6 och 7 (kort 1) ur Jakobs sparade standarder i Docklabbet, sedan kort 2. Dockans förval och ingångar: [LASMIG](../../dealer3d/LASMIG.md).
-2. En knapp i Scen & bord, Docka, som gör dockans film ur den sparade rörelsen och ett orderutkast; i dag kommandon
-   (`dealer3d/tools/docka-cykel.ts`, `tools/doll-reference-put.ts`).
-3. Spelet väljer träd: det läser inga i dag (`buildGraph` blandar alla filmer), så Tatuerad spelas inte än. Ingången
-   A1 → A2.3 klipps ur ankarets film; sedan A2.3 → A1 (en film för alla kort; ingången baklänges är provet), hålkortet och dealerns kort.
+1. Plats 7: dockan ska hålla kortet genom vändningen ([LASMIG](../../dealer3d/LASMIG.md)); sedan dockans film,
+   given igen och dess retur. Därefter kort 2.
+2. Mall 15: mer frihet åt filmen i vändningen; landningens mening skrivs redan i texten.
+3. Sju vinklar av kastet: nyckelbilden per plats ur 3D-scenens kamera flyttad i sidled, sedan Aleph (fem till: cirka 590).
+4. Karta och trädets mått räknar inte returerna till vila. Spelet väljer inte träd än (`buildGraph` blandar alla
+   filmer), så Tatuerad spelas inte; ingången A1 → A2.3 klipps ur ankarets film; hålkortet och dealerns kort.
 
-**Väntar på Jakob.** Kort i Beslut: utgången baklänges, given till A3P4C2 och dockan med Paows
-mått. Frågor i chatten 2026-11-21: egen film för kort 2 (36 steg) eller kort 1:s (22), om tatuerade A2.2 är blickbilden
-eller en ny nypbild, och hur spelet väljer träd.
+**Väntar på Jakob.** Prov: returerna till vila och kastet med vinkeln från plats 1. Kort i Beslut: given till A3P4C2
+och dockan med Paows mått. Frågor i chatten: fler vinklar, raka returer för plats 1 och 5, returerna i trädets mått, egen film för kort 2,
+om tatuerade A2.2 är blickbilden eller en ny nypbild, och hur spelet väljer träd.
 
 **Var saker ligger.** Vägen för en ny dealer i [tools/dealer-line.md](../../tools/dealer-line.md), handboken i
 [tools/film-prompting.md](../../tools/film-prompting.md), granskningen i `tools/film-review.md`, läget per dealer med
-`node tools/produce.ts paow`. Banans kod: `src/order-*.ts`, `tools/order-*.ts`, `tools/film-after.ts`,
-`tools/still-after.ts`, `tools/python/`, `tools/register-order.ts`, `motions/` och registren `data/order-methods.json`,
-`data/media-roles.json`, `data/cut-frames.json` och `data/order-policy.json`. Arbetsfiler under `.runtime/`:
-`natt-1121/api/` (API-klienten och nattens liggare) och `pilot-c/` (piloternas skript). På slaskdisken, under `D:/dealer-scratch/tmp/`:
+`node tools/produce.ts paow`. Arbetsfiler under `.runtime/`: `natt-1121/api/` (API-klienten och dess liggare) och
+`pilot-c/` (piloternas skript). På slaskdisken, under `D:/dealer-scratch/tmp/`:
 `yt-referens/` (den filmen går aldrig in i Git, `assets/` eller ett Prov) och `dealer-3d/ut/` (dockans filmer).
 
 **Fällor.**
@@ -50,8 +51,7 @@ eller en ny nypbild, och hur spelet väljer träd.
   rak bål: filmmodellen förstorar en lutning (3° i dockan blev 10° i första försöket till A2.3).
 - Referensfilmen ska sluta som sista bilden, och blicken måste stå i texten eller bilderna: Kling tar handens och
   kortets rörelse ur referensfilmen, inte huvudet.
-- Se på de tre sista rutorna: en tagning utan sista bild kan sluta med ett klipp till en närbild (A3P4C2 kortades tre
-  rutor), och kortet kan hamna fel fast dockan landar rätt (A3P5C1).
+- En tagning utan sista bild kan sluta med ett klipp till en närbild: se på de tre sista rutorna.
 - En dockfilm i den riktiga dealerns takt (given klar på 1 s, sedan stilla) ger ett stopp med kortet rest och en
   vändning på två rutor; dra ut given och låt kortet aldrig stå stilla.
 - Den automatiska kontrollen skrivs bara när orderns steg börjar med `GIV-`, räknar kortets yta på mättat blått och

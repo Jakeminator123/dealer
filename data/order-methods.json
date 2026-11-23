@@ -494,12 +494,12 @@
       "shape": "ONE_WAY",
       "reference": "ingen",
       "lastPicture": "ritat-kort",
-      "extra": "She moves naturally, like a practised dealer, with soft, relaxed arms and hands, and lifts her eyes to the camera as she comes to rest. The yellow card stays in the window of the shoe all the time.",
+      "extra": "Her hands take the shortest way home: they glide straight in toward her, close over the felt. She moves naturally, like a practised dealer, with soft, relaxed arms and hands, and lifts her eyes to the camera as she comes to rest. The yellow card stays in the window of the shoe all the time.",
       "evidence": {
-        "orders": [],
-        "reviewer": ["Provet paow-retur-vila-p5-prov (utanför Beställ) 2026-11-23: 4/5, godkänd som prov."],
+        "orders": ["paow-retur-1-p1-01", "paow-retur-1-p2-01", "paow-retur-1-p3-01", "paow-retur-1-p4-01", "paow-retur-1-p5-01", "paow-retur-1-p3-02", "paow-retur-1-p6-01"],
+        "reviewer": ["Provet paow-retur-vila-p5-prov (utanför Beställ) 2026-11-23: 4/5, godkänd som prov.", "Utan meningen om den korta vägen 2026-11-23: plats 4 4/5, plats 2 3,5/5, plats 5 3/5 (omväg över filten), plats 1 2/5 (visar handflatorna), plats 3 1,5/5 (underkänd). Med meningen: plats 3 och 6 4/5, båda rakt in; plats 4 gick rakt även utan den."],
         "owner": [],
-        "note": "Från det lagda kortet direkt till vila (Jakob 2026-11-23: \"återgå till A1-vila direkt\", utan att passera A2). Börjar på sista rutan i en giv i banken (där dess egen retur börjar), slutar på gällande ankare 1 med kortet ritat i planens ruta, utan referensfilm, mall 13 med tillägget om mjuka armar, blicken och skons gula kort. Provet för plats 5 (utanför Beställ, 57 krediter, samma bilder och text): Jakob i chatten \"Jättebra\"; oberoende granskare 4/5, skarvarna 0 px och kortet stilla, men händerna går i luften framför kavajen i stället för lågt över filten. Fortfarande prov: en tagning per plats."
+        "note": "Från det lagda kortet direkt till vila (Jakob 2026-11-23: \"återgå till A1-vila direkt\", utan att passera A2). Börjar på sista rutan i en giv i banken (där dess egen retur börjar), slutar på gällande ankare 1 med kortet ritat i planens ruta, utan referensfilm, mall 13 med tillägget om mjuka armar, blicken och skons gula kort. Provet för plats 5 (utanför Beställ, 57 krediter, samma bilder och text): Jakob i chatten \"Jättebra\"; oberoende granskare 4/5, skarvarna 0 px och kortet stilla, men händerna går i luften framför kavajen i stället för lågt över filten. Tillägget börjar därför med en mening om den korta vägen hem (2 av 2 rakt in mot 1 av 5 utan). Fortfarande prov: en tagning per plats; blicken lyfts sent (ruta 40–44 av 72)."
       },
       "setBy": "huvudagenten dealer-c2, på Jakobs ord 2026-11-23 om provet",
       "setAt": "2026-11-23"

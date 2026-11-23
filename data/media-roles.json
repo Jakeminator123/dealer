@@ -4443,6 +4443,34 @@
           }
         },
         {
+          "id": "paow-film-retur-1-p3-02-t1",
+          "role": "film",
+          "name": "Paow · Tillbaka till vila · A3P3C1, tagning 1",
+          "path": "assets/films/paow/retur-1-p3-02-t1/source.mp4",
+          "still": 40,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Oberoende granskare 4/5, förslag ACCEPTED: kortets hand går rakt in utan rörelse utåt (förra filmen 378 px utåt), skohanden går aldrig över sin starthöjd, kortet ligger kvar 73 av 73 rutor och gula kortet står kvar i skon. Skarvar: in 5,6 nivåer och högst 0,7 px, ut 9,7 nivåer och högst 0,5 px. Anmärkningar: handlederna uppe ruta 32–40 och händerna lägger sig långsamt till ruta 66, huvudet lutar…",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-23"
+          }
+        },
+        {
+          "id": "paow-film-retur-1-p6-01-t1",
+          "role": "film",
+          "name": "Paow · Tillbaka till vila · A3P6C1, tagning 1",
+          "path": "assets/films/paow/retur-1-p6-01-t1/source.mp4",
+          "still": 40,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Oberoende granskare 4/5, förslag ACCEPTED med anmärkning: kortet rörs inte (märkena inom 0,4 px ruta 0–72), kortets hand glider platt och rakt till vila, skohanden går aldrig över sin starthöjd, händerna i vila från ruta 50. Skarvar: in 5,5 nivåer och högst 0,8 px, ut 9,3 nivåer och högst 0,6 px. Anmärkning: lillfingret får skokortets gula färg ruta 20–24 och handens tatueringar suddas ruta 22–28…",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-23"
+          }
+        },
+        {
           "id": "paow-film-intro-noir-3-startruta",
           "role": "arbetsmaterial",
           "name": "Startrutan till filmen före spelet",
