@@ -38,4 +38,5 @@ för servern och för svaret i [`AGENTS.md`](../../../AGENTS.md), "Labbservern" 
 
 Svenska, slutsatsen först, så kort som frågan tillåter men varje fråga besvarad; punktform, procent och poäng; det
 verifierade skilt från det skattade; vad som återstår; sist antalet aktiva underagenter (AGENTS, "Svar till Jakob").
-Han talar bara med huvudagenten (HANDOFF, "Vem äger vad"): en annan session lämnar sitt svar till huvudagenten.
+Han talar helst med huvudagenten (HANDOFF, "Vem äger vad"): en annan session som han inte själv skriver i lämnar
+sitt svar till huvudagenten.

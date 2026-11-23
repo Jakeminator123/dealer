@@ -28,7 +28,8 @@ samarbete", "Labbservern" och "Kod"; rutinerna i [`docs/DRIFT.md`](../../../docs
    "Labbservern"; DRIFT, "Labbservern och fliken", En titt på labbsidor; låsets regel i `docs/TAL.md`, "Så skickas ett
    jobb").
 6. **Högst fyra render- eller testarbetare samtidigt** på hela datorn (AGENTS, "Kod").
-7. **Jakob talar bara med huvudagenten;** det som bara han kan svara på blir ett kort i Beslut genom huvudagenten
+7. **Det du gör på Jakobs ord säger du till huvudagenten,** med en fillista: han talar helst med huvudagenten men
+   öppnar andra chattar när han vill. Ett prov som väntar på hans dom blir ett kort i Beslut genom huvudagenten
    (HANDOFF, "Vem äger vad").
 8. **Betalt utanför Beställ** rapporteras till huvudagenten med belopp (AGENTS; `docs/BESKED.md`, "Domar, beställningar och pengar").
 9. **Arbetsfiler i projektet** under `.runtime/<uppgift>/`; bilder och filmer som kan användas hör hemma i
