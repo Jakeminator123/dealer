@@ -1,0 +1,192 @@
+{
+  "schemaVersion": 1,
+  "title": "Paow · A3P5C1 · giv och återgång, plan hand vid nedsläppet",
+  "summary": "Gör en film av Paow: ett kort från ankare 2.3 till plats 5, tur och retur.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "GIV-2.3",
+    "label": "Två händer, ett kort till platsen",
+    "edge": "READY-C>P5.C1",
+    "shape": "ROUND_TRIP",
+    "cutInto": [
+      "READY-C>P5.C1",
+      "P5.C1>READY-C"
+    ],
+    "makes": null
+  },
+  "motion": {
+    "grip": "TWO_HANDS",
+    "hand": "LH",
+    "pass": true,
+    "turn": true,
+    "flipAxis": "FREE",
+    "target": "P5.C1",
+    "side": "FRONT",
+    "fromPlan": false,
+    "planned": {
+      "grip": "PINCH",
+      "flipAxis": "FREE"
+    }
+  },
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows A2.3",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-giv-2-3-p5-05/first.png",
+      "sha256": "8e60b0eae86e271f5fd191dc16a37bc8256f2b5fb2a58a2fe65206623927e386",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-ankare-2-3-d",
+        "path": "assets/anchors/paow-ankare-2-3-d/anchor.png",
+        "note": "Blicken ned mot kortet, vänster hand uppifrån på kortet (gäller)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Slutbild · samma + kortet öppet på plats 5",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-giv-2-3-p5-05/last.png",
+      "sha256": "e6d4df875ec9b41c5c91c4a789b187791440950ec9adbc4d71ef830ad67e05d9",
+      "from": {
+        "built": "första bilden + kortet P5.C1 där planen säger"
+      },
+      "waits": null,
+      "width": 1764,
+      "height": 1174,
+      "drawn": {
+        "target": "P5.C1",
+        "side": "FRONT",
+        "as": "verkligt perspektiv: ett verkligt kort genom bordets lins, formen 87 % (src/card-plan.ts)",
+        "plan": {
+          "path": "placements/default.json",
+          "sha256": "461541d5db823936e5e29a32970c2b60e8a88b9352d213cfc8e094f6e7747a62",
+          "updatedAt": "2026-11-21T18:16:55.501Z"
+        },
+        "texture": {
+          "video": "assets/motions/pamela-p4-c1-plan-return-idle-01/source.mp4",
+          "frame": 89,
+          "sha256": "0b3cba9be4a969334bf1ba23623b80be6d0bd119a3c4dd8236db27145d479aa7",
+          "quadFrom": "assets/anchors/pamela-idle-p4-c1-plan-01/receipt.json"
+        },
+        "quad": [
+          [
+            1034.3,
+            1023.6
+          ],
+          [
+            1106.2,
+            1023.6
+          ],
+          [
+            1119.3,
+            1091.6
+          ],
+          [
+            1037.2,
+            1091.6
+          ]
+        ],
+        "centre": [
+          1074.3,
+          1057.6
+        ],
+        "measured": {
+          "centre": [
+            1074.5,
+            1058.5
+          ],
+          "area": 5690,
+          "box": [
+            88,
+            71
+          ],
+          "changedElsewhere": 0
+        },
+        "measuredOffsetPx": 0.9,
+        "mark": {
+          "cross": [
+            255,
+            120,
+            200
+          ],
+          "dot": [
+            225,
+            30,
+            35
+          ]
+        }
+      }
+    }
+  ],
+  "reference": {
+    "status": "FINNS",
+    "clips": [
+      "docka-paow-2-3-p5c1-naturlig-cykel-b"
+    ],
+    "path": "assets/orders/paow-giv-2-3-p5-05/reference.mp4",
+    "sha256": "92d2526cc584e9c57164f807dcc233077fc535f98f10d5316b82c19927175a4c",
+    "seconds": 4,
+    "goesTo": "P5.C1",
+    "approvedStraight": false,
+    "dealer": "docka",
+    "from": {
+      "film": "docka-paow-2-3-p5c1-naturlig-cykel-b",
+      "path": "assets/references/docka/docka-paow-2-3-p5c1-naturlig-cykel-b/source.mp4",
+      "sha256": "92d2526cc584e9c57164f807dcc233077fc535f98f10d5316b82c19927175a4c",
+      "edge": "READY-C>P5.C1",
+      "verdict": "EJ_DÖMD",
+      "words": null,
+      "frames": null,
+      "also": []
+    }
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "kling-4",
+    "params": {
+      "resolution": "1080p",
+      "duration": 4
+    }
+  },
+  "prompt": {
+    "template": "film-giv-kort@15",
+    "style": "KORT",
+    "text": "Locked camera, one continuous shot. Video 1 shows only the movement, as a rough guide: her hands go the way the hands go in video 1, at about the same moments. Above all she moves naturally, like a practised dealer, with soft, relaxed arms and hands. Her hand at the shoe strokes the yellow card out of the window and slides it flat on the felt a short way out from the shoe, where her other hand meets it. There both hands tip the card up onto its short end, and her other hand, palm down, carries it on towards its place a little to the right of the middle of the picture, where the last frame shows it; on that way the card goes on over the same short end, end over end, in one unbroken turn that begins with the yellow side up and ends with the blue side up. She lays the card flat at its place. As the card comes down her hand lies flat above it, with a straight, relaxed wrist. Then the hand that laid it glides back low over the felt, palm down, and comes to rest flat on the felt in front of her, as in the first frame. The hand from the shoe lets go once the card stands on its end and settles back at the shoe. A yellow card shows in the window of the shoe all the time: as she strokes one out, the next one is already there. Her head stays bowed and turns towards the place where the card will lie. Only one card moves: a small card, about half as long as her hand, which keeps the size it has in the last frame all the way from the shoe to its place. Its back is blank solid yellow, right out to its corners, and its face is solid blue with a small pink cross in the middle and a small red dot in one corner, as the last frame shows it; the next card in the window is the same blank yellow.",
+    "sha256": "55868d23aa09823fe62056a9d013ea30c1f1c15f4789f32d4c20d0c3b0ccae57",
+    "extra": null,
+    "middle": false,
+    "faceMark": true
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 86,
+    "total": 86,
+    "worstPerTake": 94,
+    "worstTotal": 94,
+    "basis": "21,3 krediter per s × 4 s. Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12."
+  },
+  "limits": {
+    "maxCredits": 94,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Recept giv-2.3: prövat i 6 beställningar.",
+    "Undantag från receptet: tur och retur i stället för bara dit; mall 15 i stället för 14; referensfilmen är dockan paows egen film (docka-paow-2-3-p5c1-naturlig-cykel-b), vald med namn: en dockas film är aldrig förvald."
+  ],
+  "createdBy": "huvudagenten, tools/order-new.ts",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-23T12:48:36.799Z",
+    "orderSha256": "74ce6bcecf8359cb3d3d0cc3ca7f387e244ef02ce8a9bddca7873ccd054edaa9",
+    "mandate": "Jakob 2026-11-23 i Beslut om paow-giv-2-3-p5-04: Rätt, men prova göra om filmen så hennes högerhand inte är så vriden vid nedsläpp; inom mandatet dealer-b0-20261123"
+  },
+  "status": "GODKÄND",
+  "id": "paow-giv-2-3-p5-05",
+  "created": "2026-11-23T12:48:00.575Z"
+}

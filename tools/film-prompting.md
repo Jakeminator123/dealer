@@ -380,6 +380,15 @@ skrivs med den utan att säga något, och mall 12 är där ett val (`--mall 12`)
 ingången `paow-ingang-2-3-02` (mall 14) underkänd för blicken, "Annars bra!", och blicken kommer ur ankarbilden, inte ur
 texten. Mall 14 ändrar bara den korta texten: en film i den minimala texten skrivs med mall 12.
 
+**Mall 15: plan hand vid nedsläppet, giv och återgång (2026-11-23).** Jakob om `paow-giv-2-3-p5-04` (mall 14, giv
+och återgång i en film): "prova göra om filmen så hennes högerhand inte är så vriden vid nedsläpp. men i övrigt -
+perfekt". Mall 15 är mall 14 plus tre meningar för en tur och retur: handen ligger plan över kortet med rak, avspänd
+handled när det kommer ned; handen går tillbaka lågt över filten med handflatan ned; ett gult kort syns i skons fönster
+hela tiden. Dockans film gjordes samtidigt om med plan hand (`docka-cykel.ts --flat-hand`, 24 rutor/s). Utfall
+`paow-giv-2-3-p5-05` (oberoende granskare, full upplösning): handleden cirka 50° rakare, gult kort i fönstret i alla
+97 rutor (i -04 tomt rutorna 14–46), kortet 0 px från sista bilden; given 4/5, returen 4/5. Kvar: vändningen görs med
+en hand kring långsidan, och fingret glider över kortet när handen går tillbaka. Mall 15 är ett val (`--mall 15`).
+
 **Kort rörelse, stilla slut.** I ett nytt tidsprov kan prompten ange att hela rörelsen inklusive returen når
 slutankaret tidigt och därefter håller samma pose. Ändra inte receptet för befintliga order. `film-after.ts` föreslår
 en kortning i `after.json.stillAnchorTail` bara om minst 0,4 s i slutet ligger inom två färgsteg per kanal från både

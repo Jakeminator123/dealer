@@ -4289,6 +4289,20 @@
           }
         },
         {
+          "id": "paow-film-giv-2-3-p5-05-t1",
+          "role": "film",
+          "name": "Paow · A3P5C1 · giv och återgång, plan hand vid nedsläppet, tagning 1",
+          "path": "assets/films/paow/giv-2-3-p5-05-t1/source.mp4",
+          "still": 53,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Oberoende granskare 2026-11-23, full upplösning mot -04: given 4/5, returen 4/5, förslag Godkänn. Handleden cirka 50 grader rakare vid nedsläppet (rutorna 48–61), handen i linje med underarmen. Gult kort i skons fönster i alla 97 rutor (-04: tomt 14–46). Kortet 0 px från sista bilden, ytan 5,7 % mindre. Anmärkningar: större steg i ruta 48, fingret glider över kortet i returen 62–72, gult kort upp…",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-23"
+          }
+        },
+        {
           "id": "paow-film-intro-noir-3-startruta",
           "role": "arbetsmaterial",
           "name": "Startrutan till filmen före spelet",
