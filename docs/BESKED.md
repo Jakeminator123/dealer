@@ -210,9 +210,11 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
 - **Giv och återgång i samma film** (2026-11-23): provet till plats 5 fick "Rätt … i övrigt - perfekt". Återgången
   klipps ut och sparas i banken automatiskt: "dessa är faktist nästa alltid bra".
 - **Sista given går direkt till vila** (2026-11-23): från det lagda kortet ska hon "återgå till A1-vila direkt" och "inte
-  passera A2.'n' över huvud taget"; ingången baklänges fick nej. Provet från kortet till vila (plats 5): "Jättebra", i Beslut "Ja, gör alla platser".
+  passera A2.'n' över huvud taget"; ingången baklänges fick nej. Returerna för plats 2–5: "Bra", "återgången till A1 kanon"; plats 6: "Inte bra".
 - **Varianter på lek** (2026-11-23): till t.ex. plats 3 får hon göra "något helt annat": kasta upp kortet, låta det
   landa och rätta till det leende. Det som godkänns byggs in så att det hänger ihop med Scen & bord.
+- **Given får avvika från dockan** (2026-11-23): hon gör "exakt så som dockan gör med handen. Det är ju sktbra, men kan man
+  inte frångå bara lite?" Han vill ha varianter på själva given också (t.ex. A2.3 – P4C1), inte bara på returen.
 - **Högerhanden vid nedsläppet** (2026-11-23): den ska inte vara "så vriden vid nedsläpp". Given till plats 5 gjordes
   om så, och givarna till plats 1–5, kort 1, med återgång fick hans "Ja, alla håller" i Beslut.
 - **V6 är arkiverad** (2026-11-20): råmaterialet och renderaren ligger i arkivet på D:, filmen och 18 rutor står kvar

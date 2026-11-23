@@ -27,17 +27,17 @@
     }
   },
   "review": {
-    "decision": "ACCEPTED",
+    "decision": "REJECTED",
     "basis": "Inte granskad av Jakob: förd in från beställningen paow-retur-1-p6-01, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
     "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
     "productionReady": false,
     "provisional": {
-      "by": "huvudagenten dealer-c2 och en oberoende granskare",
-      "at": "2026-11-23T15:27:30.836Z",
-      "mandate": "Jakob 2026-11-13: \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"; 2026-11-23: från kortet direkt till vila, i Beslut \"Ja, gör alla platser\"",
-      "note": "4/5: kortet rörs inte, handen glider platt och rakt till vila, i vila från ruta 50, skarvarna håller. Lillfingret får en gul ton i fem rutor när skohanden lämnar skon."
+      "by": "huvudagenten dealer-c2",
+      "at": "2026-11-23T15:44:34.205Z",
+      "mandate": "Jakob 2026-11-23, anteckning 58 i Prov om filmen med given till plats 6 och direkt till vila: \"Inte bra\" (utan text)",
+      "note": "Jakobs ord om provfilmen går före granskarens 4/5. Given till plats 6 kallade han Bra 15.00 (anteckning 52), så det nya i filmen är returen: min tolkning är att det är den han underkänner. Sett i rutorna: hon står stilla vid kortet i cirka 20 rutor över skarven, och skohanden lyfter med spretade fingrar, gul ton och suddiga tatueringar."
     }
   },
   "order": {

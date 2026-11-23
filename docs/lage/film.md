@@ -1,7 +1,7 @@
 # Läget: film
 
 Huvudagentens bana: vägen från bild till dealer, Kortplan och Kön, efterarbetet, banken och handboken. Här står bara det
-som gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.md` §5) och det som hänt i Git.
+som gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompting.md` §5) och historien i Git.
 
 **Läget.**
 - En film beställs i Bordets Kortplan (plats och kort, hur kortet kommer dit; receptet i `data/order-methods.json` ger
@@ -14,17 +14,17 @@ som gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompt
 - Ett ankare heter alltid A och numret (A1, A2.3, A3P4C1), aldrig med en bokstav efter (Jakob 2026-11-21); bokstäverna
   i id:n är arbetsnamn: A2.3 är `paow-ankare-2-3-d` (blicken på kortet; givarna hittills börjar på `-c`), A2.2 `paow-ankare-2-2-blick-a`.
 - Trädet Tatuerad (`/studio/karta/?dealer=paow&trad=tatuerad`) fylls från A2.3. I banken: giv och återgång till plats
-  1–6, kort 1 (mall 15; plats 1–5 Jakobs "Ja, alla håller", plats 6 "Bra"), och givarna bara dit. Plats 7 är
+  1–6, kort 1 (mall 15; plats 1–5 Jakobs "Ja, alla håller", plats 6 "Bra"). Plats 7 är
   underkänd: kortet vänds inte av händerna (BESKED, "Kortet vänds av hennes händer").
 - Sista given går direkt till vila: `node tools/order-new.ts paow RETUR-1 P4.C1` gör en film på 3 s som
-  fortsätter givens sista ruta. I banken: plats 2, 3, 4 och 6 godkända åt honom, plats 1 (visar
-  handflatorna) och 5 (sveper över filten) som varianter; receptet bär nu meningen om den korta vägen.
-  `--extra` ersätter receptets tillägg, `--extra-efter` lägger till. Returen till skon klipps ur filmen med giv och återgång.
+  fortsätter givens sista ruta. I banken: plats 2, 3 och 4 godkända åt honom, plats 1 (visar
+  handflatorna) och 5 (sveper över filten) som varianter; plats 6 fick hans "Inte bra". Receptet bär meningen om den korta vägen.
+  `--extra` ersätter receptets tillägg, `--extra-efter` lägger till.
 - A3-bilder: A3P4C1 och A3P4C2 är kandidater; för plats 1 och 2 stoppar landningsverktyget ([BRISTER](../BRISTER.md)).
-- Variant på lek (Prov `tumflipp-p3-20261123`): kortet kastas till plats 3, Kling 4 utan referensfilm, givens första och
-  sista bild. En vinkel per plats: en stillbild från sidan styr Aleph 2.0, 118 krediter; Omni Flash 1.2 ändrade inte vinkeln.
+- Varianter utan dockans film (Kling 4, givens första och sista bild): kastet till plats 3 (Prov `tumflipp-p3-20261123`)
+  och en fri giv till plats 4 (`fri-giv-p4-20261123`): kortet vänds i fingrarna, men takt och väg styrs inte. En vinkel per plats: en stillbild från sidan styr Aleph 2.0, 118 krediter; Omni Flash 1.2 ändrade inte vinkeln.
 - Pengar: gränser, mandat och saldo i `data/order-policy.json`. Giv med återgång 91 krediter, giv på 3 s 68, retur till
-  vila 57; beställningen går genom API-nyckeln.
+  vila 57, genom API-nyckeln.
 
 **Nästa steg.**
 1. Plats 7: dockan ska hålla kortet genom vändningen ([LASMIG](../../dealer3d/LASMIG.md)); sedan dockans film,
@@ -34,8 +34,8 @@ som gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompt
 4. Karta och trädets mått räknar inte returerna till vila. Spelet väljer inte träd än (`buildGraph` blandar alla
    filmer), så Tatuerad spelas inte; ingången A1 → A2.3 klipps ur ankarets film; hålkortet och dealerns kort.
 
-**Väntar på Jakob.** Prov: returerna till vila och kastet med vinkeln från plats 1. Kort i Beslut: given till A3P4C2
-och dockan med Paows mått. Frågor i chatten: fler vinklar, raka returer för plats 1 och 5, returerna i trädets mått, egen film för kort 2,
+**Väntar på Jakob.** Prov: kastet med vinkeln från plats 1. Kort i Beslut: den fria given till plats 4, given till
+A3P4C2 och dockan med Paows mått. Frågor i chatten: fler vinklar, vad som felar i plats 6, returerna i trädets mått, egen film för kort 2,
 om tatuerade A2.2 är blickbilden eller en ny nypbild, och hur spelet väljer träd.
 
 **Var saker ligger.** Vägen för en ny dealer i [tools/dealer-line.md](../../tools/dealer-line.md), handboken i
