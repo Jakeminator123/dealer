@@ -12,10 +12,15 @@
 // composition's first is shown grey with the reason, and a saved composition of that kind says "spelas inte: olika händer",
 // with Spara and Prova i Casino off. Fart (1× to 2×) is the composition's tempo, saved with it: the round's films go that
 // many times faster in the Casino, rest and speech as filmed; a tree may have one of its own.
-// The address: /karta/?komposition=<id> (ny: a new one).
+// Levels (Jakob 2026-11-23: "se nivåer i en till dimension"): the grid of the 36 steps is one level at a time. "Sammanlagt" is
+// what is played; under it one level per tree, the same grid with only that tree's own films and empty where it lacks the
+// step; a tree that is off in the composition is a dimmed level. The rail at the grid's edge, the wheel over the rail or the
+// level's heading, and the arrow keys up and down move between them (LevelRail.tsx); the page scrolls as always elsewhere.
+// A meeting in "<träd> möter <träd>" is clicked forward: its two pictures open the meeting played (BridgeViewer.tsx).
+// The address: /karta/?komposition=<id> (ny: a new one), and &niva=<träd> for a tree's level.
 import { ArrowLeftRight, CornerDownRight, Gauge, Hand, Play, Repeat, Save, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { useCallback, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { buildGraph, type Graph } from "../../../src/clip-graph.ts";
 import {
   HANDS_WORD,
@@ -45,6 +50,8 @@ import type { EntryAnswer } from "@/lib/media";
 import { guideHref } from "@/lib/new-film";
 import { ProofStill } from "../proofs";
 import { coverOfEntry } from "../material/Tile";
+import { BridgeViewer, type Meeting } from "./BridgeViewer";
+import { LevelRail, LevelStack, useLevels, type Level } from "./LevelRail";
 import { RowStill } from "./RowStill";
 import { NEW_COMPOSITION, TreeRow, compositionHref } from "./TreeRow";
 import { removeComposition, saveComposition, useCompositions } from "./useCompositions";
@@ -58,6 +65,8 @@ const slug = (name: string): string =>
   name.toLowerCase().replace(/[åä]/g, "a").replace(/ö/g, "o").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
 const pairKey = (a: string, b: string) => [a, b].sort().join("|");
 const percentWord = (n: number) => `${String(Math.round(n * 10) / 10).replace(".", ",")} %`;
+/** The level that is every tree together: what the composition plays. A tree's level has the tree's id. */
+const ALL = "sammanlagt";
 
 type Set = (patch: Record<string, string | null>) => void;
 
@@ -71,10 +80,10 @@ export function CompositionKarta({ answer, id, set }: { answer: TreeAnswer; id: 
     <TreeRow
       trees={answer.trees}
       chosen=""
-      onChoose={(tree) => set({ komposition: null, trad: tree, steg: null, kant: null, tagning: null, vag: null })}
+      onChoose={(tree) => set({ komposition: null, niva: null, trad: tree, steg: null, kant: null, tagning: null, vag: null })}
       compositions={got?.compositions ?? []}
       composition={id}
-      onCompose={(next) => set({ komposition: next, steg: null })}
+      onCompose={(next) => set(next === id ? { komposition: next } : { komposition: next, niva: null, steg: null })}
     />
   );
   return (
@@ -113,7 +122,10 @@ function Editor({ trees, got, saved, graph, dealer, set, reload }: { trees: Tree
   const [draft, setDraft] = useState<CompositionDef>(() => saved?.def ?? firstDraft(got));
   const [stepKey, setStepKey] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const taken = useMemo(() => new Set([...trees.trees.map((v) => v.tree.id), ...got.compositions.map((c) => c.def.id), NEW_COMPOSITION]), [trees, got]);
+  const [meeting, setMeeting] = useState<Meeting | null>(null);
+  const [levelId, setLevelId] = useState<string>(() => (typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("niva")) ?? ALL);
+  const heading = useRef<HTMLDivElement>(null);
+  const taken =useMemo(() => new Set([...trees.trees.map((v) => v.tree.id), ...got.compositions.map((c) => c.def.id), NEW_COMPOSITION]), [trees, got]);
   const id = saved ? saved.def.id : slug(draft.name);
   const def: CompositionDef = { ...draft, id };
   const view = useMemo(() => compositionView({ ...draft, id: id || NEW_COMPOSITION }, trees.trees, got.takes), [draft, id, trees, got]);
@@ -125,6 +137,39 @@ function Editor({ trees, got, saved, graph, dealer, set, reload }: { trees: Tree
   const colorOf = (tree: string) => TREE_COLORS[Math.max(0, got.trees.findIndex((t) => t.tree === tree)) % TREE_COLORS.length];
   const nameOf = (tree: string) => got.trees.find((t) => t.tree === tree)?.name ?? tree;
   const step = view.steps.find((s) => s.key === stepKey) ?? null;
+  // The levels: what is played, then the composition's trees, then the dealer's other trees, dimmed (off in the composition).
+  const levels = useMemo<Level[]>(() => {
+    const inside = new Set(view.trees.map((t) => t.tree));
+    const tree = (t: { tree: string; name: string; have: number }, dim: boolean): Level => ({
+      id: t.tree,
+      name: t.name,
+      color: TREE_COLORS[Math.max(0, got.trees.findIndex((x) => x.tree === t.tree)) % TREE_COLORS.length],
+      dim,
+      title: `${dim ? "avstängt i kompositionen · " : ""}trädets egna filmer · ${t.have}/36`,
+    });
+    return [{ id: ALL, name: "Sammanlagt", color: null, title: "det som spelas" }, ...view.trees.map((t) => tree(t, false)), ...got.trees.filter((t) => !inside.has(t.tree)).map((t) => tree(t, true))];
+  }, [view, got]);
+  const level = levels.find((l) => l.id === levelId) ?? levels[0];
+  const chooseLevel = useCallback(
+    (next: string) => {
+      setLevelId(next);
+      set({ niva: next === ALL ? null : next });
+    },
+    [set],
+  );
+  const stepLevel = useLevels(levels, level.id, chooseLevel, heading);
+  // A tree's level: the same 36 steps with only the tree's own film on each, and nothing where it has none.
+  const levelTree = level.id === ALL ? null : (trees.trees.find((v) => v.tree.id === level.id) ?? null);
+  const shown = useMemo<readonly Cover[]>(() => {
+    if (!levelTree) return view.steps;
+    const own = new Map(levelTree.steps.map((s) => [coverKey(s), s] as const));
+    return view.steps.map((s): Cover => {
+      const mine = own.get(s.key);
+      const take = mine?.state === "finns" ? mine.take : null;
+      const parts: CoverPart[] = take ? [{ tree: levelTree.tree.id, how: "eget", percent: 100, films: [{ id: take, verdict: mine?.verdict ?? "godkand", percent: 100 }], of: null, via: mine?.via ? nodeCode(mine.via) : null }] : [];
+      return { ...s, state: take ? "eget" : "saknas", parts, lacking: [], reach: null, variants: false };
+    });
+  }, [levelTree, view]);
   // The composition's trees (not resting) whose own step has no film: "Beställ till <träd>" opens Bordet's guide on it.
   const orderLinks = step
     ? view.trees
@@ -189,7 +234,7 @@ function Editor({ trees, got, saved, graph, dealer, set, reload }: { trees: Tree
       await removeComposition(dealer, saved.def.id);
       toast({ tone: "ok", title: "Borttagen", detail: saved.def.name });
       reload();
-      set({ komposition: null });
+      set({ komposition: null, niva: null });
     } catch (e) {
       toast({ tone: "bad", title: "Kompositionen togs inte bort", detail: e instanceof Error ? e.message : String(e) });
       setBusy(false);
@@ -269,8 +314,28 @@ function Editor({ trees, got, saved, graph, dealer, set, reload }: { trees: Tree
             <div className="flex items-center gap-1.5 text-xs text-dim">
               <ArrowLeftRight className="size-3.5" /> {a.name} möter {b.name}
             </div>
-            <Meet word="I vilan" a={a.rest} b={b.rest} codes={["A1", "A1"]} media={media} bridges={draft.bridges} film={!!(a.rest && b.rest && films.get(pairKey(a.rest, b.rest)))} onChange={(how) => a.rest && b.rest && setJoin(a.rest, b.rest, how)} />
-            <Meet word="Vid skon" a={a.shoe} b={b.shoe} codes={[nodeCode(a.hub), nodeCode(b.hub)]} media={media} bridges={draft.bridges} film={!!(a.shoe && b.shoe && films.get(pairKey(a.shoe, b.shoe)))} onChange={(how) => a.shoe && b.shoe && setJoin(a.shoe, b.shoe, how)} />
+            <Meet
+              word="I vilan"
+              a={a.rest}
+              b={b.rest}
+              codes={["A1", "A1"]}
+              media={media}
+              bridges={draft.bridges}
+              film={!!(a.rest && b.rest && films.get(pairKey(a.rest, b.rest)))}
+              onChange={(how) => a.rest && b.rest && setJoin(a.rest, b.rest, how)}
+              onOpen={() => setMeeting({ place: "i vilan", a: { name: a.name, entry: a.rest, code: "A1" }, b: { name: b.name, entry: b.rest, code: "A1" } })}
+            />
+            <Meet
+              word="Vid skon"
+              a={a.shoe}
+              b={b.shoe}
+              codes={[nodeCode(a.hub), nodeCode(b.hub)]}
+              media={media}
+              bridges={draft.bridges}
+              film={!!(a.shoe && b.shoe && films.get(pairKey(a.shoe, b.shoe)))}
+              onChange={(how) => a.shoe && b.shoe && setJoin(a.shoe, b.shoe, how)}
+              onOpen={() => setMeeting({ place: "vid skon", a: { name: a.name, entry: a.shoe, code: nodeCode(a.hub) }, b: { name: b.name, entry: b.shoe, code: nodeCode(b.hub) } })}
+            />
           </div>
         ))}
 
@@ -328,35 +393,43 @@ function Editor({ trees, got, saved, graph, dealer, set, reload }: { trees: Tree
       </div>
 
       {/* ── right: the 36 steps and what covers each ── */}
-      <div className="flex min-w-[720px] flex-1 flex-col gap-4">
-        <Marks />
-        <div className="grid grid-cols-8 gap-2">
-          {(["vila", "ingang", "utgang", "halkort"] as StepKind[]).map((kind) => {
-            const s = view.steps.find((x) => x.kind === kind)!;
-            return <Tile key={s.key} step={s} label={s.name} graph={graph} colorOf={colorOf} active={s.key === stepKey} onPick={() => setStepKey(s.key === stepKey ? null : s.key)} className="col-span-2" />;
-          })}
-        </div>
-        <div className="grid grid-cols-[52px_repeat(8,minmax(0,1fr))] items-center gap-x-2 gap-y-1.5">
-          <span />
-          {["P1", "P2", "P3", "P4", "P5", "P6", "P7", "Dealern"].map((seat) => (
-            <span key={seat} className="text-center text-xs font-medium text-dim">
-              {seat}
-            </span>
-          ))}
-          {(["giv", "retur"] as StepKind[]).flatMap((kind) =>
-            [1, 2].map((n) => (
-              <Row key={`${kind}${n}`} label={`${kind === "giv" ? "Giv" : "Retur"} ${n}`}>
-                {["P1", "P2", "P3", "P4", "P5", "P6", "P7", "D"].map((seat) => {
-                  const s = view.steps.find((x) => x.key === `${kind}:${seat}.C${n}`)!;
-                  return <Tile key={s.key} step={s} graph={graph} colorOf={colorOf} active={s.key === stepKey} onPick={() => setStepKey(s.key === stepKey ? null : s.key)} />;
+      <div className="flex min-w-[820px] flex-1 items-start gap-3 self-start">
+        <LevelRail className="sticky top-0" levels={levels} value={level.id} onChange={chooseLevel} step={stepLevel} />
+        <div className="flex min-w-0 flex-1 flex-col gap-4">
+          <Marks />
+          <LevelStack levels={levels} value={level.id} onChange={chooseLevel} heading={heading}>
+            <div className={cn("flex flex-col gap-4", level.dim && "opacity-60")}>
+              <div className="grid grid-cols-8 gap-2">
+                {(["vila", "ingang", "utgang", "halkort"] as StepKind[]).map((kind) => {
+                  const s = shown.find((x) => x.kind === kind)!;
+                  return <Tile key={s.key} step={s} label={s.name} graph={graph} colorOf={colorOf} nameOf={nameOf} alone={!!levelTree} active={s.key === stepKey} onPick={() => setStepKey(s.key === stepKey ? null : s.key)} className="col-span-2" />;
                 })}
-              </Row>
-            )),
-          )}
+              </div>
+              <div className="grid grid-cols-[52px_repeat(8,minmax(0,1fr))] items-center gap-x-2 gap-y-1.5">
+                <span />
+                {["P1", "P2", "P3", "P4", "P5", "P6", "P7", "Dealern"].map((seat) => (
+                  <span key={seat} className="text-center text-xs font-medium text-dim">
+                    {seat}
+                  </span>
+                ))}
+                {(["giv", "retur"] as StepKind[]).flatMap((kind) =>
+                  [1, 2].map((n) => (
+                    <Row key={`${kind}${n}`} label={`${kind === "giv" ? "Giv" : "Retur"} ${n}`}>
+                      {["P1", "P2", "P3", "P4", "P5", "P6", "P7", "D"].map((seat) => {
+                        const s = shown.find((x) => x.key === `${kind}:${seat}.C${n}`)!;
+                        return <Tile key={s.key} step={s} graph={graph} colorOf={colorOf} nameOf={nameOf} alone={!!levelTree} active={s.key === stepKey} onPick={() => setStepKey(s.key === stepKey ? null : s.key)} />;
+                      })}
+                    </Row>
+                  )),
+                )}
+              </div>
+            </div>
+          </LevelStack>
+          {step ? <StepFilms step={step} graph={graph} colorOf={colorOf} nameOf={nameOf} reuse={got.reuse} orders={orderLinks} held={dirty} onShare={setFilm} onOpen={(tree, edge, take) => set({ komposition: null, niva: null, trad: tree, steg: null, kant: edge, tagning: take })} /> : null}
+          <Reuse rows={got.reuse} />
         </div>
-        {step ? <StepFilms step={step} graph={graph} colorOf={colorOf} nameOf={nameOf} reuse={got.reuse} orders={orderLinks} held={dirty} onShare={setFilm} onOpen={(tree, edge, take) => set({ komposition: null, trad: tree, steg: null, kant: edge, tagning: take })} /> : null}
-        <Reuse rows={got.reuse} />
       </div>
+      <BridgeViewer meeting={meeting} bridges={draft.bridges} media={media} onClose={() => setMeeting(null)} />
     </div>
   );
 }
@@ -372,15 +445,23 @@ function Still({ entry, code }: { entry: EntryAnswer | undefined; code: string }
   );
 }
 
-/** How two trees meet at one place: their two pictures, and the choice between them. The same picture needs none. */
-function Meet({ word, a, b, codes, media, bridges, film, onChange }: { word: string; a: string | null; b: string | null; codes: [string, string]; media: ReadonlyMap<string, EntryAnswer>; bridges: readonly BridgeDef[] | undefined; film: boolean; onChange: (how: string) => void }) {
+/**
+ * How two trees meet at one place: their two pictures, and the choice between them. The same picture needs none. A click on
+ * the pictures plays the meeting (onOpen: BridgeViewer).
+ */
+function Meet({ word, a, b, codes, media, bridges, film, onChange, onOpen }: { word: string; a: string | null; b: string | null; codes: [string, string]; media: ReadonlyMap<string, EntryAnswer>; bridges: readonly BridgeDef[] | undefined; film: boolean; onChange: (how: string) => void; onOpen: () => void }) {
   const link = linkOf(bridges, a, b);
   const how = link === "same" ? "samma" : link ? (link.film ? "film" : "klipp") : "ingen";
   return (
     <div className="flex items-center gap-2">
       <span className="w-14 shrink-0 text-xs text-dim">{word}</span>
-      <Still entry={a ? media.get(a) : undefined} code={codes[0]} />
-      <Still entry={b ? media.get(b) : undefined} code={codes[1]} />
+      <button type="button" onClick={onOpen} aria-label={`Visa mötet ${word.toLowerCase()}`} title="Visa mötet: bilden före, bryggan och bilden efter" className="group/meet relative flex shrink-0 gap-1 rounded-sm focus-visible:outline-offset-2">
+        <Still entry={a ? media.get(a) : undefined} code={codes[0]} />
+        <Still entry={b ? media.get(b) : undefined} code={codes[1]} />
+        <span aria-hidden className="absolute left-1/2 top-1/2 grid size-5 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-line-strong bg-canvas text-ink transition-colors duration-150 group-hover/meet:border-brass/70 group-hover/meet:bg-brass group-hover/meet:text-canvas [&_svg]:size-2.5">
+          <Play />
+        </span>
+      </button>
       {how === "samma" ? (
         <span className="text-xs text-godkand">samma bild</span>
       ) : (
@@ -433,16 +514,21 @@ function Marks() {
   );
 }
 
-/** A step: the film that plays it most, the trees' shares as a bar, and its mark. */
-function Tile({ step, label, graph, colorOf, active, onPick, className }: { step: Cover; label?: string; graph: Graph | null; colorOf: (tree: string) => string; active: boolean; onPick: () => void; className?: string }) {
+/**
+ * A step: the film that plays it most, the trees' shares as a bar, and its mark. alone: the step on one tree's level, where an
+ * empty step is only empty (the tree has no film of its own there), not something the game lacks.
+ */
+function Tile({ step, label, graph, colorOf, nameOf, alone = false, active, onPick, className }: { step: Cover; label?: string; graph: Graph | null; colorOf: (tree: string) => string; nameOf: (tree: string) => string; alone?: boolean; active: boolean; onPick: () => void; className?: string }) {
   const part = [...step.parts].sort((a, b) => b.percent - a.percent)[0];
   const film = part ? [...part.films].sort((a, b) => b.percent - a.percent)[0] : undefined;
   const take = film && graph ? graph.takes[film.id] : undefined;
   const mark = MARK[step.state];
-  const title = `${step.name}: ${step.parts.length ? step.parts.map((p) => `${p.tree} ${percentWord(p.percent)}${p.how === "aterbruk" ? " (återbruk)" : ""}`).join(", ") : "saknas"}${step.lacking.length ? ` · ${step.lacking.join(", ")} lånar` : ""}`;
+  const title = alone
+    ? `${step.name}: ${part ? `${nameOf(part.tree)}s egen film` : "ingen egen film"}`
+    : `${step.name}: ${step.parts.length ? step.parts.map((p) => `${nameOf(p.tree)} ${percentWord(p.percent)}${p.how === "aterbruk" ? " (återbruk)" : ""}`).join(", ") : "saknas"}${step.lacking.length ? ` · ${step.lacking.map(nameOf).join(", ")} lånar` : ""}`;
   return (
     <button type="button" onClick={onPick} title={title} aria-pressed={active} className={cn("group/tile flex min-w-0 flex-col gap-1 rounded-md text-left focus-visible:outline-offset-2", className)}>
-      <span className={cn("relative block aspect-[3/2] w-full overflow-hidden rounded-md border", step.parts.length ? "border-line-strong bg-well" : "border-dashed border-underkand/70", active && "ring-2 ring-brass/70")}>
+      <span className={cn("relative block aspect-[3/2] w-full overflow-hidden rounded-md border", step.parts.length ? "border-line-strong bg-well" : alone ? "border-dashed border-line-strong" : "border-dashed border-underkand/70", active && "ring-2 ring-brass/70")}>
         {take ? <TakeThumb take={take} still="film" className="absolute inset-0" /> : null}
         {mark ? <span className="absolute left-1 top-1 grid size-5 place-items-center rounded-full bg-black/65 text-ink [&_svg]:size-3">{mark.icon}</span> : null}
         {step.variants ? <span aria-hidden className="absolute right-1.5 top-1.5 size-2 rounded-full bg-variant" /> : null}
