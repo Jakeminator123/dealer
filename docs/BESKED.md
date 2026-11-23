@@ -46,7 +46,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
 
 - **Labbet först** (2026-11-11): prov och effekter hör hemma i labbet; spelet (`game.html`) får bara det han har
   godkänt där.
-- **Ett labb** (2026-11-17): det gamla labbet är borta, och inget nytt byggs utanför studion.
+- **Ett labb** (2026-11-17, 2026-11-23): studion på `http://127.0.0.1:4319/studio/` är den lokala sajten, och inget
+  byggs utanför den. Han visas sidor där, inte lösa provsidor ("Nu komemr massa gammal provsidor upp hela tiden").
 - **Bordet (Scen & bord) är den enda labbvyn** (2026-11-17, 2026-11-19): plan, scen och beställning i en vy, och allt
   ändras i högerspalten. "Fortsätt standarlisera och förenkla allt i denna riktning."
 - **Enkelt och logiskt, och en beställning ska gå att kontrollera** (2026-11-21): varje steg visar sin slutbild, och
@@ -63,6 +64,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   (`data/order-methods.json`), och texten som skickas säger varje sak en gång.
 - **Efterarbetet för sig, efter filmerna** (2026-11-17): "filmerna är det vi först måste få rätt". Kortens och
   markernas utseende ändras bara i Bordets läge Efterarbete; valören ritas när rundan spelas.
+- **Överlägget görs om senare** (2026-11-23): det som läggs över filmens gul-blå kort görs "senare utifrån hur videos
+  ser ut och efter jag bestämmt hur allt ska vara". Inget nytt byggs på överlägget före det.
 - **Kortets efterarbete görs i förväg per film** (2026-11-17): spelet målar inte kortet medan filmen spelas; det ritade
   kortet är "något procent större än kortet".
 - **Kortbanan följer filmerna** (2026-11-17, "VIKTIGT"): labbets ritade bana och vändning stämmer med hur dealern
@@ -145,6 +148,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   som i de filmer som är bra; SAM-dockan byggs på de mätningarna ("Ja bygg den riktiga SAM-dockan").
 - **Dockans vändning längre ut: bättre, men inte än** (2026-11-23): vänster arm mot sko och kort, djupet och avståndet
   till skon stämmer inte ("det syns på hennes handled och armboge"). Dockan styr inte nya givar före hans ja.
+- **3D-labbet har samma standard som allt övrigt** (2026-11-23): "det ska vara och ha samam standard som allt övrigt".
+  En egen standard där kan vara skälet till att dockan ser ihoptryckt ut.
 - **Nej till Meshy-modellen av Paow** (2026-11-18); ja till att avlästa leder styr en klädd figur (2026-11-20).
 - **A3P6C1 ges utan sista bild** (2026-11-23): ingen genererad A3-bild för plats 6; given dit beställs med dockans film
   som ledning när dockan har hans ja.
