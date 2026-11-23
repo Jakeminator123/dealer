@@ -4230,6 +4230,34 @@
           }
         },
         {
+          "id": "paow-film-ingang-2-3-02-t1",
+          "role": "film",
+          "name": "Paow · Från vila till båda händerna vid skon, tagning 1",
+          "path": "assets/films/paow/ingang-2-3-02-t1/source.mp4",
+          "still": 40,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i Kön. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-23"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-3-p3-02-t1",
+          "role": "film",
+          "name": "Paow · Två händer, ett kort till platsen · A3P3C1, tagning 1",
+          "path": "assets/films/paow/giv-2-3-p3-02-t1/source.mp4",
+          "still": 40,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i Kön. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-23"
+          }
+        },
+        {
           "id": "paow-film-intro-noir-3-startruta",
           "role": "arbetsmaterial",
           "name": "Startrutan till filmen före spelet",
@@ -4685,6 +4713,22 @@
           "source": {
             "from": "ruta 68 ur given A2.3 → A3P4C2, tagning 1",
             "when": "2026-11-21"
+          }
+        },
+        {
+          "id": "paow-ankare-2-3-utan-vit-linje",
+          "role": "ankare-2.3",
+          "name": "A2.3 utan vit linje runt kortet i skon, prov",
+          "path": "assets/anchors/paow-ankare-2-3-utan-vit-linje/anchor.png",
+          "node": "READY-C",
+          "state": "kandidat",
+          "builtOn": [
+            "paow-ankare-2-3-c"
+          ],
+          "note": "Prov för den vita kanten på givens kort (Jakobs fråga 2026-11-23). Samma bild som A2.3, men den vita linjen runt det gula kortet i skons fönster är gjord gul: 503 pixlar ändrade, alla inne i fönstret, inget annat rört. Bara för en provbeställning; A2.3 gäller oförändrat. Inte sedd av en oberoende granskare. Kvittot ligger bredvid bilden.",
+          "source": {
+            "from": "A2.3:s bild, ändrad i skons fönster (receipt.json bredvid bilden)",
+            "when": "2026-11-23"
           }
         }
       ]
