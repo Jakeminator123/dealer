@@ -402,10 +402,12 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   platsens egen slutbild, en per plats, och den ensamma bilden för plats 4 ställs undan.
 - **3D-dockan** (Beslut 2026-11-18, kl. 01.04): ja till blicken och den friare vilande handen, nej till att bygga
   vidare på Meshy-modellen av Paow, och ja till ett betalt prov av dealern sedd från stol 1.
-- **SAM-dockan ska in, men inte nu** (2026-11-21, till sessionen dealer-37): Paulinas docka i projektet Ultimate
-  Reality är gjord med SAM 3D Body ur foton, och 3D-banans docka här är byggd för hand. Han svarade: "Jag vill ha in
-  SAM-metoden/dockan. men inte nu.." och att han ersätter den "när jag har en bättre modell av paulina från SAM vid
-  tillfälle". Dagens docka styr givarna tills vidare.
+- **Bygg den riktiga SAM-dockan** (2026-11-23): "Ja bygg den riktiga SAM-dockan." Sagt sedan han fått veta att
+  båda dockorna är byggda för hand och att SAM 3D Body bara gett Paows docka några mått. Samma morgon om den
+  handbyggda: "hennes docka har ju axlar som sitter för höjt upp och så vidare, är detta inte viktigt att sånt sitter
+  innan vi använder dockan? Samma sak - fingrar och armboge etc ser itne helt ut som hon gör i de filmer som är bra".
+  Dockan rättas alltså mot hennes filmer innan den styr en beställning, och SAM-dockan byggs på de mätningarna.
+  Ersätter "SAM-dockan ska in, men inte nu" (Ersatta besked).
 - **Ett tredje och fjärde dealerkort** (2026-11-13): "Skapa då ett tredje och fjärde till dealer". Inte byggt: planen
   har sexton platser, så en film dit går inte att beställa; hur det ska byggas är en fråga för ett kort i Beslut.
 - **Önskemål för senare** (hans lista 2026-11-11 och 2026-11-13; inget är beställt): mer av höger arm, kaffe ur en mugg
@@ -413,6 +415,17 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   dealern tar och betalar, insamling av korten, och en andra spelarfigur, "Astrid", som kommer in från sidan och satsar.
 
 ## Filmerna och given
+
+- **Hela trädet från A2.3: ingången och alla givar som fattas** (2026-11-23): "Försök att skapa sedean filmer så att
+  vi har att hon kommer från A1 till A2.3, samt vill jag att du försöker få till alla de givar som fattas för alla
+  possitioner som fattas för nogkartan som inkluderar 2.3 så att säga, så denn kan spela upp givar åt alla
+  possitioner". Läst så (huvudagentens tolkning): varje plats och kort får sin egen giv i trädet Tatuerad (16 givar,
+  11 fattades den dagen), beställda efter att dockan rättats ("sedan"), och det är hans ord för ett nytt mandat.
+  Om nattens fyra givar till plats 1–3 och plats 4 kort 2: "De som du dömt som bra, är verkligen bra."
+- **Den vita ramen runt kortet** (2026-11-23): "Varför är det som en vit karm runt kortet? Någonting måste ju göra så
+  att det blir så?" och hans egen gissning: "Kanske är det för att det på referensantakeret är som lite vitt runt
+  själva det gula/kortets rygg?" (skons ljusa fönsterram i A2.3). Texten ber inte om en kant och dockans kort har
+  ingen; hans gissning är inte prövad. Se också "Ingen vit rand" (2026-11-17) längre ned.
 
 - **Dockan ska se naturlig ut och ha dealerns mått, och en vald docka ersätter Siluett i studion** (2026-11-21,
   kl. 19.55): "om docka ska användas. Kolla då om dockan kan göras bättre så dockan inte ser onaturlig ut.. typ lite
@@ -424,7 +437,7 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   tolkning): dockan blir en namngiven uppsättning mått per dealer, dagens står kvar som den är, och projektet
   `ultimate-reality` är en läsreferens (inga länkar eller beroenden dit). Hans nej 2026-11-18 gällde Meshy-modellen
   av Paow, inte en klädd figur: 2026-11-20 svarade han "Ja, gå vidare" i Beslut (kortet `3d-avlast-giv-kladd-figur`)
-  om att de avlästa lederna styr en klädd figur. Se också "SAM-dockan ska in, men inte nu" under Dealern och ankarna.
+  om att de avlästa lederna styr en klädd figur. Se också "Bygg den riktiga SAM-dockan" (2026-11-23) under Dealern och ankarna.
 
 - **Handleden vrider kortet** (2026-11-17): "Oavsett om hon nyper eller släpar ut kortet, alltså om hon kommer från
   ankaret 2.1 eller 2.2, måste hon vrida över handleden. Jag har pratat med dig i flera timmar om det här, men det
@@ -723,6 +736,11 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   (`docs/DRIFT.md`).
 
 ## Ersatta besked
+
+- **SAM-dockan ska in, men inte nu** (2026-11-21, till sessionen dealer-37, ersatt 2026-11-23 av "Bygg den riktiga
+  SAM-dockan" under Dealern och ankarna): Paulinas docka i projektet Ultimate Reality är gjord med SAM 3D Body ur
+  foton, och 3D-banans docka här är byggd för hand. Han svarade: "Jag vill ha in SAM-metoden/dockan. men inte nu.."
+  och att han ersätter den "när jag har en bättre modell av paulina från SAM vid tillfälle".
 
 - **Tidigare budget i räddningsomgången** (2026-11-18, ersatt av senare totalmandat ovan): "du har totalt 800 krediter per timme och 2500 krediter för att generera filmer."
   Det ersatte tidigare svaret "Högst 1 000 krediter totalt". Timtaket 800 gäller fortfarande.
