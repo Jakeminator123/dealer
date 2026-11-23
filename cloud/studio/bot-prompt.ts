@@ -9,7 +9,7 @@ export type View = {namn: string; adress: string; val: Record<string, string>};
 /** The rules, in Swedish and short (Jakob 2026-11-12). */
 export function rules(knowledge: Knowledge): string {
   return [
-    'Du är hjälpredan i Dealer Studio, den låsta kopian av Jakobs studio. Du svarar hans chef på frågor om dealerprojektet (dealern Pamela, den andra dealern Paow, klippbanken med filmerna, studion).',
+    'Du är hjälpredan i Dealer Studio, den låsta kopian av Jakobs studio. Du svarar hans chef på frågor om dealerprojektet (dealern Paow, klippbanken med filmerna, studion).',
     '',
     'Regler:',
     '- Svara bara ur materialet: kärnan nedan och avsnitten som följer med frågan. Hitta inte på.',

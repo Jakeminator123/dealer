@@ -412,12 +412,12 @@ test('a reference film from the bank: the same step and seat first, the dealer\'
   const source = (frames: number, fps: number) => ({ source: { frames, fps, sha256: 'f'.repeat(64) } });
   const bank: BankFacts = {
     jobs: [
-      { id: 'pamela-p4-c1-plan-deal-02', from: 'READY', to: 'RELEASE(P4.C1)', duration: 4 },
-      { id: 'pamela-p4-c1-plan-deal-01', from: 'READY', to: 'RELEASE(P4.C1)', duration: 4 },
-      { id: 'pamela-p4-c1-readyb-deal-01', from: 'READY-B', to: 'LAND(P4.C1)', duration: 5 },
-      { id: 'pamela-p1-c1-plan-deal-02', from: 'READY', to: 'LAND(P1.C1)', duration: 4 },
-      { id: 'pamela-idle-ready-entry-01', from: 'IDLE', to: 'READY', duration: 2 },
-      { id: 'pamela-p4-c1-drawn-deal-01', from: 'DRAWN', to: 'LAND(P4.C1)', duration: 4 },
+      { id: 'ada-p4-c1-plan-deal-02', from: 'READY', to: 'RELEASE(P4.C1)', duration: 4, dealer: 'ada' },
+      { id: 'ada-p4-c1-plan-deal-01', from: 'READY', to: 'RELEASE(P4.C1)', duration: 4, dealer: 'ada' },
+      { id: 'ada-p4-c1-readyb-deal-01', from: 'READY-B', to: 'LAND(P4.C1)', duration: 5, dealer: 'ada' },
+      { id: 'ada-p1-c1-plan-deal-02', from: 'READY', to: 'LAND(P1.C1)', duration: 4, dealer: 'ada' },
+      { id: 'ada-idle-ready-entry-01', from: 'IDLE', to: 'READY', duration: 2, dealer: 'ada' },
+      { id: 'ada-p4-c1-drawn-deal-01', from: 'DRAWN', to: 'LAND(P4.C1)', duration: 4, dealer: 'ada' },
     ],
     derived: [
       { id: 'paow-giv-p4-02-deal', from: 'READY', to: 'P4.C1', clip: 'paow-giv-p4-02', frames: [0, 104], dealer: 'paow' },
@@ -425,9 +425,9 @@ test('a reference film from the bank: the same step and seat first, the dealer\'
       { id: 'paow-giv-p4-01-deal', from: 'READY', to: 'P4.C1', clip: 'paow-giv-p4-01', frames: [0, 102], dealer: 'paow' },
     ],
     motions: {
-      'pamela-p4-c1-plan-deal-02': { ...source(120, 30), ...review('ACCEPTED', { userAccepted: true, userReview: 'Jakob 2026-11-11: Det ser bra ut.' }) },
-      'pamela-p4-c1-plan-deal-01': { ...source(120, 30), ...review('REJECTED') },
-      'pamela-idle-ready-entry-01': source(60, 30),
+      'ada-p4-c1-plan-deal-02': { ...source(120, 30), ...review('ACCEPTED', { userAccepted: true, userReview: 'Jakob 2026-11-11: Det ser bra ut.' }) },
+      'ada-p4-c1-plan-deal-01': { ...source(120, 30), ...review('REJECTED') },
+      'ada-idle-ready-entry-01': source(60, 30),
       'paow-giv-p4-02-deal': { ...source(169, 24), ...review('ACCEPTED', { userAccepted: true, userReview: 'Jakob 2026-11-13: Denna är bra' }) },
       'paow-giv-p4-01-deal': { ...source(169, 24), ...review('REJECTED') },
     },
@@ -435,33 +435,33 @@ test('a reference film from the bank: the same step and seat first, the dealer\'
   const list = referenceCandidates(bank, { dealer: 'paow', step: stepOf('GIV-2.1')!, target: 'P4.C1', model: MODELS['kling-4'] });
   assert.deepEqual(list.map((c) => [c.take, c.match, c.dealer, c.verdict]), [
     ['paow-giv-p4-02-deal', 0, 'paow', 'GODKÄND'],
-    ['pamela-p4-c1-plan-deal-02', 0, 'pamela', 'GODKÄND'],
+    ['ada-p4-c1-plan-deal-02', 0, 'ada', 'GODKÄND'],
     ['paow-giv-p4-01-deal', 0, 'paow', 'UNDERKÄND'],
-    ['pamela-p4-c1-plan-deal-01', 0, 'pamela', 'UNDERKÄND'],
-    ['pamela-p4-c1-drawn-deal-01', 1, 'pamela', 'EJ_DÖMD'],
-    ['pamela-p4-c1-readyb-deal-01', 1, 'pamela', 'EJ_DÖMD'],
-    ['pamela-p1-c1-plan-deal-02', 2, 'pamela', 'EJ_DÖMD'],
+    ['ada-p4-c1-plan-deal-01', 0, 'ada', 'UNDERKÄND'],
+    ['ada-p4-c1-drawn-deal-01', 1, 'ada', 'EJ_DÖMD'],
+    ['ada-p4-c1-readyb-deal-01', 1, 'ada', 'EJ_DÖMD'],
+    ['ada-p1-c1-plan-deal-02', 2, 'ada', 'EJ_DÖMD'],
   ], 'one per film; the film from the drawn-out pose is a drag to the seat (the other grip here); the entry is another step');
   // For the drag itself that film is the same step and seat (trial 2A held with it as the reference).
-  assert.deepEqual(referenceCandidates(bank, { dealer: 'paow', step: stepOf('GIV-2.2')!, target: 'P4.C1', model: MODELS['kling-4'] }).filter((c) => c.match === 0).map((c) => c.take), ['pamela-p4-c1-drawn-deal-01', 'pamela-p4-c1-readyb-deal-01']);
+  assert.deepEqual(referenceCandidates(bank, { dealer: 'paow', step: stepOf('GIV-2.2')!, target: 'P4.C1', model: MODELS['kling-4'] }).filter((c) => c.match === 0).map((c) => c.take), ['ada-p4-c1-drawn-deal-01', 'ada-p4-c1-readyb-deal-01']);
   const own = list[0];
   assert.deepEqual([own.film, own.path, own.seconds, own.frames, own.also, own.fits, own.words], ['paow-giv-p4-02', 'assets/motions/paow-giv-p4-02/source.mp4', 7.042, [0, 104], ['paow-giv-p4-02-return-ready'], true, 'Denna är bra']);
   assert.deepEqual([list[1].seconds, list[1].frames, list[1].approvedStraight, list[1].goesTo], [4, null, true, 'P4.C1']);
   // The entry: Kling 4 takes 3–30 s, so the bank's 2-s entry is offered but does not fit.
   const entry = referenceCandidates(bank, { dealer: 'paow', step: stepOf('INGANG-2.1')!, target: null, model: MODELS['kling-4'] });
-  assert.deepEqual(entry.map((c) => [c.take, c.seconds, c.fits]), [['pamela-idle-ready-entry-01', 2, false]]);
+  assert.deepEqual(entry.map((c) => [c.take, c.seconds, c.fits]), [['ada-idle-ready-entry-01', 2, false]]);
   // A return: the return to the same anchor and seat.
   assert.deepEqual(referenceCandidates(bank, { dealer: 'paow', step: stepOf('RETUR-2.1')!, target: 'P4.C1' }).map((c) => c.take), ['paow-giv-p4-02-return-ready']);
   const archivedReturn = { ...bank, motions: { ...bank.motions, 'paow-giv-p4-02-return-ready': { review: { archived: { by: 'Jakob' } } } } };
   const withoutArchivedContent = referenceCandidates(archivedReturn, { dealer: 'paow', step: stepOf('GIV-2.1')!, target: 'P4.C1' });
   assert.equal(withoutArchivedContent.some((c) => c.film === 'paow-giv-p4-02'), false, 'the active deal would send the archived return with the whole source film');
-  assert.ok(withoutArchivedContent.some((c) => c.film === 'pamela-p4-c1-plan-deal-02'), 'an independent source can still be used');
+  assert.ok(withoutArchivedContent.some((c) => c.film === 'ada-p4-c1-plan-deal-02'), 'an independent source can still be used');
   // A film the lab does not have is not offered.
-  assert.equal(referenceCandidates({ ...bank, media: { 'paow-giv-p4-02-deal': { video: null } } }, { dealer: 'paow', step: stepOf('GIV-2.1')!, target: 'P4.C1' })[0].take, 'pamela-p4-c1-plan-deal-02');
+  assert.equal(referenceCandidates({ ...bank, media: { 'paow-giv-p4-02-deal': { video: null } } }, { dealer: 'paow', step: stepOf('GIV-2.1')!, target: 'P4.C1' })[0].take, 'ada-p4-c1-plan-deal-02');
   assert.deepEqual(verdictOf({ decision: 'ACCEPTED', acceptedAs: 'VARIANT', userAccepted: true }), { verdict: 'VARIANT', straight: false, words: null });
   // The order check: the film lies in the order's folder, with its hash, within the model's lengths.
   const film = { schemaVersion: 1, id: 'x', title: 'x', dealer: 'paow', kind: 'FILM', step: { key: 'GIV-2.1' }, pictures: [{ name: 'first.png', label: 'f', goesAs: 'startFrame', path: 'assets/orders/x/first.png', sha256: 'a'.repeat(64), from: null }], generation: { provider: 'runway-app', tool: 'generate_video', model: 'kling-4', params: { resolution: '1080p', duration: 7 } }, prompt: { template: 't', text: 'T', sha256: 's', extra: null, middle: false }, takes: 1, cost: { total: 1, worstTotal: 1 }, status: 'UTKAST', approval: null, notes: [] };
-  const ref = { status: 'FINNS', clips: ['pamela-p4-c1-plan-deal-02'], path: 'assets/orders/x/reference.mp4', sha256: 'b'.repeat(64), seconds: 4, goesTo: 'P4.C1', approvedStraight: true, dealer: 'pamela' };
+  const ref = { status: 'FINNS', clips: ['ada-p4-c1-plan-deal-02'], path: 'assets/orders/x/reference.mp4', sha256: 'b'.repeat(64), seconds: 4, goesTo: 'P4.C1', approvedStraight: true, dealer: 'ada' };
   assert.deepEqual(validateOrder({ ...film, reference: ref }).errors, []);
   assert.match(validateOrder({ ...film, reference: { ...ref, path: 'assets/motions/p/source.mp4' } }).errors.join(' '), /filmen ska ligga i assets\/orders\/<id>\//);
   assert.match(validateOrder({ ...film, reference: { ...ref, seconds: 2 } }).errors.join(' '), /3–30 s för Kling 4/);
@@ -650,7 +650,7 @@ test('a rendered reference film (the dummy, read off a real deal) is offered fir
     ],
   };
   const list = referenceCandidates(bank, { dealer: 'paow', step, target: 'P4.C1', model: MODELS['kling-4'] });
-  assert.deepEqual(list.map((c) => [c.take, c.kind ?? 'BANK', c.dealer, c.match]), [['docka-giv-p4-01', 'RENDERED', 'docka', 0], ['pamela-p4-c1-plan-deal-02', 'BANK', 'pamela', 0]]);
+  assert.deepEqual(list.map((c) => [c.take, c.kind ?? 'BANK', c.dealer, c.match]), [['docka-giv-p4-01', 'RENDERED', 'docka', 0], ['pamela-p4-c1-plan-deal-02', 'BANK', 'paow', 0]]);
   assert.deepEqual([list[0].path, list[0].fromDeal, list[0].fits, list[0].approvedStraight], ['assets/references/docka/docka-giv-p4-01/source.mp4', 'pamela-p4-c1-plan-deal-02', true, false]);
   // Another seat's rendered film is not offered for this one.
   assert.ok(!list.some((c) => c.take === 'docka-giv-p3-01'));

@@ -1,11 +1,10 @@
-// Kortplan's talk with the lab server: Jakob's plan (GET /api/placements), its one write (PUT /api/placements,
-// against the revision read, tools/placement-store.ts) and the film library's list (GET /api/library). The write is made only
-// from his click on Spara; in the online copy it is refused before anything leaves the page (lib/mode.ts).
+// Kortplan's talk with the lab server: Jakob's plan (GET /api/placements) and its one write (PUT /api/placements, against
+// the revision read, tools/placement-store.ts). The write is made only from his click on Spara; in the online copy it is
+// refused before anything leaves the page (lib/mode.ts).
 import { validatePlan, type PlacementPlan } from "../../src/placement-model.ts";
 import { ApiError, SNAPSHOT_REFUSAL, getPlacements } from "./api.ts";
 import { labUrl } from "./lab.ts";
 import { isSnapshot } from "./mode.ts";
-import type { LibraryItem } from "./placement.ts";
 
 export type SavedPlan = { plan: PlacementPlan; revision: string };
 
@@ -44,16 +43,4 @@ export async function writePlan(plan: PlacementPlan, revision: string): Promise<
   if (!saved?.plan || typeof saved.revision !== "string") throw new ApiError("Planen sparades men svaret gick inte att läsa. Läs in planen igen.", 200, "server");
   validatePlan(saved.plan);
   return { plan: saved.plan, revision: saved.revision };
-}
-
-/** The film library's list (data/library.json through the lab); empty when it cannot be read. */
-export async function readLibrary(): Promise<LibraryItem[]> {
-  try {
-    const response = await fetch(labUrl("api/library"), { cache: "no-store" });
-    if (!response.ok) return [];
-    const data = (await response.json()) as { items?: unknown };
-    return Array.isArray(data?.items) ? (data.items as LibraryItem[]) : [];
-  } catch {
-    return [];
-  }
 }

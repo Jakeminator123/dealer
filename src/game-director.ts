@@ -38,7 +38,7 @@ export {REVEAL_NODE};
 // NOT D.C3 (and so not D.C4 and later, which play the D.C3 film): with the first card's film the drawn card would lie 219 px (D.C3)
 // and 243 px (D.C4) right of her hand, measured for Paow 2026-11-13; that is a hand laying a card somewhere else, which Jakob calls
 // cheating with the card. Those cards are laid without a hand until a film of their own exists; D.C3 now has an editable place.
-// Per dealer: Paow's only. Pamela is paused (Jakob 2026-11-12), and her game stays as he saw it: her hole card is laid without a hand.
+// Per dealer: Paow's only.
 export const STAND_IN_FILM: Readonly<Record<string, Readonly<Record<string, string>>>> = {paow: {'D.C2': 'D.C1'}};
 
 // The cards a dealer deals from another pose at the shoe than READY (anchor 2.1, the pinch), by the seat's first card: its second
@@ -46,7 +46,7 @@ export const STAND_IN_FILM: Readonly<Record<string, Readonly<Record<string, stri
 // over the card in the shoe's window, drawing it out flat): fifteen takes of it from READY fell, and Jakob said 2026-11-13 that a
 // round should be able to go via anchor 2.2. It applies only where the dealer's bank can play the four films it needs, the entry
 // IDLE>READY-B, the deal from READY-B, the return to READY-B and the exit READY-B>IDLE, each with a verdict (the game's bank, judgedBank
-// below); without them the card is dealt as before, from READY, with its stand-in, or laid without a hand. Pamela has none.
+// below); without them the card is dealt as before, from READY, with its stand-in, or laid without a hand.
 export const SEAT_HUB: Readonly<Record<string, Readonly<Record<string, string>>>> = {paow: {'P6.C1': 'READY-B'}};
 
 /**

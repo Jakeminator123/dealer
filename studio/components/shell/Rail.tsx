@@ -1,6 +1,6 @@
 "use client";
 
-// The left rail: whose studio it is at the top (DealerSwitch: Pamela | Paow), the views with the active one marked, counts
+// The left rail: whose studio it is at the top (DealerSwitch, one button per dealer), the views with the active one marked, counts
 // where they help (the chosen dealer's takes waiting for Jakob beside Granska, beside Karta the number of the tree the game
 // plays, "22/36 steg", from src/dealer-trees.ts countWord, as Karta's row shows it), whether
 // the lab answers, and at the bottom the two pages beside the studio, Ljud and Modeller (same tab). A view's link keeps the

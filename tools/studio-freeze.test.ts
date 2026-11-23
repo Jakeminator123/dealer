@@ -19,8 +19,8 @@ test('the frozen Material view only names published stills and explicitly select
   const privateProof = 'assets/proofs/private-other/available.png', shared = 'assets/proofs/common/table.png';
   const cut = (id: string, dealer = 'paow') => ({id, from: 'IDLE', to: 'READY', clip: id, frames: [0, 12] as [number, number], dealer});
   const bank: BankData = {
-    derived: [cut('paow-a'), cut('paow-duplicate'), cut('pamela-local', 'pamela')],
-    media: {'paow-a': {first, last, video, track: local}, 'paow-duplicate': {first}, 'pamela-local': {first: local}},
+    derived: [cut('paow-a'), cut('paow-duplicate'), cut('ada-local', 'ada')],
+    media: {'paow-a': {first, last, video, track: local}, 'paow-duplicate': {first}, 'ada-local': {first: local}},
   };
   const proof = (id: string, files: Proof['files']): Proof => ({id, files, title: local, description: local,
     labels: {}, verdicts: {}, updatedAt: null, chapters: null, fps: 24});
@@ -30,7 +30,7 @@ test('the frozen Material view only names published stills and explicitly select
     {name: 'available.png', path: privateProof, kind: 'image', bytes: 2},
   ]), proof('common', [{name: 'table.png', path: shared, kind: 'image', bytes: 2}])];
   const published = new Map([first, video, local, proofVideo, privateProof, shared].map(path => [path, 64]));
-  const answer = snapshotMaterial(bank, proofs, ['paow', 'pamela'], published);
+  const answer = snapshotMaterial(bank, proofs, ['paow', 'ada'], published);
   assert.deepEqual(answer.dealers.map(d => d.entries.map(e => [e.served, e.role, e.bytes])), [
     [[first, 'arbetsmaterial', 64], [proofVideo, 'referens', 64], [shared, 'arbetsmaterial', 64]],
     [[shared, 'arbetsmaterial', 64]],
@@ -78,7 +78,7 @@ test('a take or proof the rule picks but the block list stops is refused, not qu
   bank.jobs!.push({...bank.jobs![0], id: 'kevin-p4-c1-deal-01'});
   bank.motions!['kevin-p4-c1-deal-01'] = bank.motions!['pamela-p4-c1-deal-01'];
   bank.media!['kevin-p4-c1-deal-01'] = {video: 'assets/motions/kevin-p4-c1-deal-01/source.mp4'};
-  const picked = pickTakes(bank, 'pamela', {...release, ...rules});
+  const picked = pickTakes(bank, 'paow', {...release, ...rules});
   assert.deepEqual(picked.refused.map(r => r.id), ['kevin-p4-c1-deal-01']);
   assert.ok(!picked.picked.some(p => p.id.startsWith('kevin')));
   const proof = (id: string, description = ''): Proof => ({id, title: id, description, labels: null, verdicts: null, updatedAt: null, chapters: null, fps: 30, files: [{name: 'a.mp4', path: `assets/proofs/${id}/a.mp4`, kind: 'video', bytes: 1}]});
@@ -190,10 +190,10 @@ test('a take that is not picked keeps its verdict but shows no film', () => {
 
 test('the game decides what goes up: what it plays goes up, a take that waits for Jakob stays with the reason, and a dealer outside the Casino has none', () => {
   const bank = fixture();
-  const out = pickTakes(bank, 'pamela', {...release, ...rules});
+  const out = pickTakes(bank, 'paow', {...release, ...rules});
   assert.deepEqual(out.picked, [{id: 'pamela-p4-c1-deal-01', group: 'spel'}]);
   assert.deepEqual(out.left, [{id: 'pamela-p4-c1-return-ready-01', why: 'spelet spelar den inte'}]);
-  const off = pickTakes(bank, 'pamela', {...release, ...rules, casino: {on: false, dealers: []}});
+  const off = pickTakes(bank, 'paow', {...release, ...rules, casino: {on: false, dealers: []}});
   assert.deepEqual([off.picked, off.left.map(l => l.why)], [[], ['dealern spelas inte i Casino', 'dealern spelas inte i Casino']]);
 });
 
@@ -204,10 +204,10 @@ test('a variant the game never chooses itself goes up only with variants on; one
   add('pamela-p4-c1-deal-02', {}, {}); // beside the accepted deal: the game never plays it
   add('pamela-p5-c1-deal-01', {target: 'P5.C1', to: 'P5.C1'}, {}); // the only film of its step: the game plays it
   add('pamela-idle-smile-01', {kind: 'IDLE', target: undefined, from: 'IDLE', to: 'IDLE'}, {motion: {idle: {onRequest: false, calm: false, weight: 2}}}); // a gesture of her rest
-  const off = pickTakes(bank, 'pamela', {...release, ...rules});
+  const off = pickTakes(bank, 'paow', {...release, ...rules});
   assert.deepEqual(Object.fromEntries(off.picked.map(p => [p.id, p.group])), {'pamela-p4-c1-deal-01': 'spel', 'pamela-p4-c1-return-ready-01': 'spel', 'pamela-p5-c1-deal-01': 'spel', 'pamela-idle-smile-01': 'spel'});
   assert.deepEqual(off.left, [{id: 'pamela-p4-c1-deal-02', why: 'variant som spelet inte väljer själv (variants är av)'}]);
-  const on = pickTakes(bank, 'pamela', {...release, ...rules, variants: true});
+  const on = pickTakes(bank, 'paow', {...release, ...rules, variants: true});
   assert.deepEqual(on.picked.find(p => p.id === 'pamela-p4-c1-deal-02'), {id: 'pamela-p4-c1-deal-02', group: 'variant'});
   assert.deepEqual(on.left, []);
 });
@@ -221,7 +221,7 @@ test('a deal from another pose at the shoe goes up when the game can deal from t
   add('pamela-p4-c1-b-deal-01', 'DEAL', 'READY-B', 'P4.C1', 'P4.C1');
   add('pamela-p4-c1-b-return-01', 'RETURN', 'P4.C1', 'READY-B', 'P4.C1');
   add('pamela-out-b-01', 'RETURN', 'READY-B', 'IDLE', undefined);
-  const off = pickTakes(bank, 'pamela', {...release, ...rules});
+  const off = pickTakes(bank, 'paow', {...release, ...rules});
   assert.deepEqual(off.picked.map(p => p.id).filter(id => id.includes('-b-')).sort(), ['pamela-in-b-01', 'pamela-out-b-01', 'pamela-p4-c1-b-deal-01', 'pamela-p4-c1-b-return-01']);
 });
 
@@ -234,7 +234,7 @@ test('a take Jakob has archived is never picked: its film does not go up, whatev
   }
   const graph = buildGraph(bank), steps = [{from: 'READY', to: 'P4.C1'}], round = resolveRound(graph, steps);
   assert.equal(round[0].take?.id, 'pamela-p4-c1-deal-01');
-  const out = pickTakes(bank, 'pamela', rule);
+  const out = pickTakes(bank, 'paow', rule);
   assert.deepEqual(out.picked.map(p => p.id), ['pamela-p4-c1-deal-01', 'pamela-p4-c1-return-ready-01']);
   assert.deepEqual(out.left, [{id: 'pamela-p4-c1-deal-02', why: 'arkiverad'}, {id: 'pamela-p4-c1-deal-03', why: 'arkiverad'}]);
   assert.deepEqual(out.refused, []);
@@ -286,10 +286,10 @@ test("the game's takes are those it can play: a verdict, Jakob's or a provisiona
   };
   idle('pamela-tal-hej-01', true);
   idle('pamela-vila-vantar-01', false);
-  const game = gameTakes(bank, 'pamela');
+  const game = gameTakes(bank, 'paow');
   assert.deepEqual([...game].sort(), ['pamela-p4-c1-deal-01', 'pamela-p4-c1-return-ready-01', 'pamela-tal-hej-01']);
-  assert.deepEqual([...gameTakes(bank, 'paow')], [], 'another dealer has none of these');
-  const {picked, left} = pickTakes(bank, 'pamela', {...release, ...rules});
+  assert.deepEqual([...gameTakes(bank, 'ada')], [], 'another dealer has none of these');
+  const {picked, left} = pickTakes(bank, 'paow', {...release, ...rules});
   assert.deepEqual(Object.fromEntries(picked.map(p => [p.id, p.group])), {'pamela-p4-c1-deal-01': 'spel', 'pamela-p4-c1-return-ready-01': 'spel', 'pamela-tal-hej-01': 'spel'});
   assert.ok(left.some(l => l.id === 'pamela-vila-vantar-01' && l.why === 'spelet spelar den inte'));
 });
@@ -305,9 +305,9 @@ test('of a spoken line the copy carries the film the game says: a newer take rep
   says('pamela-tal-hej-sv-09', 'hej', GAME_VOICE, forHim); says('pamela-tal-hej-sv-10', 'hej', GAME_VOICE, forHim); // re-laid: 10 replaces 09
   says('pamela-tal-win-sv-04', 'win', GAME_VOICE, his); says('pamela-tal-win-sv-13', 'win', GAME_VOICE, forHim); // his own goes first, whatever the numbers
   says('pamela-tal-lose-sv-02', 'lose', 'Jessica', forHim); // another voice: the game does not say it
-  const game = gameTakes(bank, 'pamela');
+  const game = gameTakes(bank, 'paow');
   assert.deepEqual([...game].filter(id => id.includes('-tal-')).sort(), ['pamela-tal-hej-sv-10', 'pamela-tal-win-sv-04']);
-  const {picked, left} = pickTakes(bank, 'pamela', {...release, ...rules});
+  const {picked, left} = pickTakes(bank, 'paow', {...release, ...rules});
   const groups = Object.fromEntries(picked.map(p => [p.id, p.group]));
   assert.equal(groups['pamela-tal-hej-sv-10'], 'spel'); assert.equal(groups['pamela-tal-win-sv-04'], 'spel', 'his own accepted take goes up because the game says it');
   for (const id of ['pamela-tal-hej-sv-09', 'pamela-tal-win-sv-13', 'pamela-tal-lose-sv-02']) { assert.equal(groups[id], undefined, id); assert.ok(left.some(l => l.id === id), `${id} is named among those left`); }

@@ -9,9 +9,10 @@
 import {solveCamera, type FilmCamera} from './scene3d-geometry.ts';
 
 // One film in two parts (the lab follows the second with its camera): the bank's exit take, 2088 pixels wide so that she has room
-// to walk. The frame is the one in the film's record (motions/pamela-table-leave-wide-01.json); the first three frames are left out.
-const WIDE = {path: 'assets/motions/pamela-table-leave-wide-01/source.mp4', frame: {scale: 0.5, anchor: [1044, 656] as [number, number], size: [2088, 1174] as [number, number], layer: 'BEHIND_TABLE' as const, shadow: false, behindFrom: 54}};
-export const EXIT_TRIAL = {lead: {...WIDE, start: 3, end: 38}, probe: {...WIDE, start: 38, end: 212}};
+// to walk. The frame, the speed and the frames in which she rises are the film's record's (motions/paow-table-leave-wide-01.json);
+// the first three frames are left out, and the second part begins where she starts to rise.
+const WIDE = {path: 'assets/motions/paow-table-leave-wide-01/source.mp4', fps: 24, frame: {scale: 0.5, anchor: [1044, 656] as [number, number], size: [2088, 1174] as [number, number], layer: 'BEHIND_TABLE' as const, shadow: false, behindFrom: 31}};
+export const EXIT_TRIAL = {lead: {...WIDE, start: 3, end: 12}, probe: {...WIDE, start: 12, end: null}, rise: [12, 36]};
 // rise: the film's frames in which she stands up, for a film whose record does not say (motion.frame.rise). When she stands the camera has moved back along its line of sight by
 // `back` of its distance to the table's dealer-side edge and `lift` upward (scene units), and the view has this tilt and zoom.
 export const EXIT_VIEW = {rise: [38, 64], back: 0.75, lift: 0.05, pitch: -5.5, zoom: 0.9};

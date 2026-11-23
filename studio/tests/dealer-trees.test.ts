@@ -140,7 +140,7 @@ test("the tree's nodes: a picture from Material or an empty box, with his short 
 
 test("the command for a draft of a missing step is in his names", () => {
   assert.equal(orderCommand("paow", "READY-C", "P4.C2"), 'node tools/order-new.ts paow "A2.3 - A3P4C2"');
-  assert.equal(orderCommand("pamela", "D.C1", "READY"), 'node tools/order-new.ts pamela "A3DC1 - A2.1"');
+  assert.equal(orderCommand("ada", "D.C1", "READY"), 'node tools/order-new.ts ada "A3DC1 - A2.1"');
 });
 
 test("the tree map draws one line per step, between boxes it draws", () => {

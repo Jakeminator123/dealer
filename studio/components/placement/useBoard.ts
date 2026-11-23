@@ -8,16 +8,14 @@ import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } fro
 import { SHOE, type Place, type PlacementPlan } from "../../../src/placement-model.ts";
 import { useBank } from "../../lib/bank.ts";
 import { labUrl } from "../../lib/lab.ts";
-import { readLibrary } from "../../lib/placement-api.ts";
 import type { PathPhase } from "../../lib/placement-path.ts";
 import {
-  GREEN_FILM, PLAN_VIEW, START_PLACE, STILLS, bankFilms, dollFor, filmGoesTo, libraryFilms, motionSteps, nudged, readPlacementAddress, shownBackdrop, stillsFor, underFilms, type Film,
+  PLAN_VIEW, START_PLACE, STILLS, bankFilms, dollFor, filmGoesTo, motionSteps, nudged, readPlacementAddress, shownBackdrop, stillsFor, underFilms,
 } from "../../lib/placement.ts";
 import type { Backdrop, PathRun } from "./Board";
 import { useKeyRun } from "./Board";
 import { draftActions } from "./useDraft.ts";
 
-export const filmLabel = (film: Film) => (film.id === GREEN_FILM ? "Grön film · P4C2" : film.title);
 /** The card whose path plays: the chosen card, or the start place's (P4C2, START_PLACE) with the shoe chosen. */
 export const pathCard = (place: Place) => (place === SHOE ? START_PLACE : place);
 
@@ -37,8 +35,8 @@ function writeBackdrop(backdrop: string | null, start = 0) {
 
 /**
  * What lies under the cards: the caller's choice to start with, else the address's (?bakgrund=), the chosen dealer's films
- * (her takes in the bank, and for Pamela the library's older ones: underFilms), what is shown, and the list to choose from
- * (her doll, the other dolls, then her films, the films to `place` first). With nothing chosen her doll lies there, and it
+ * (that dealer's takes in the bank: underFilms), what is shown, and the list to choose from (the dealer's doll, the other
+ * dolls, then the dealer's films, the films to `place` first). With nothing chosen the dealer's doll lies there, and it
  * follows the dealer when another is chosen (Jakob 2026-11-23). No other dealer's picture or film is ever in it
  * (Jakob 2026-11-18). A choice is written to the address with its frame, so that it stays over a reload and in a link; a
  * film named without a frame starts on the take's own first frame (a return cut from its deal's film begins inside it).
@@ -47,13 +45,9 @@ export function useUnder(place: Place, first: { backdrop: string | null; frame: 
   const params = useSearchParams();
   const [backdrop, setBackdrop] = useState<string | null>(() => first.backdrop ?? readPlacementAddress(params).backdrop);
   const [frame, setFrame] = useState<number | null>(() => first.frame || readPlacementAddress(params).frame || null);
-  const [library, setLibrary] = useState<Film[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
   const { graph, dealer } = useBank();
-  useEffect(() => {
-    void readLibrary().then((items) => setLibrary(libraryFilms(items)));
-  }, []);
-  const films = useMemo(() => underFilms(dealer, graph ? bankFilms(graph) : [], library), [dealer, graph, library]);
+  const films = useMemo(() => underFilms(graph ? bankFilms(graph) : []), [graph]);
   const shown = shownBackdrop(backdrop, films, dealer);
   const film = shown.kind === "film" ? shown.film : null;
   const at = frame ?? film?.start ?? 0;
@@ -66,8 +60,8 @@ export function useUnder(place: Place, first: { backdrop: string | null; frame: 
   const options = [
     ...stills,
     ...films
-      .sort((a, b) => Number(b.id === GREEN_FILM) - Number(a.id === GREEN_FILM) || Number(filmGoesTo(b, runCard)) - Number(filmGoesTo(a, runCard)))
-      .map((f) => ({ value: f.id, label: filmLabel(f), hint: f.id === GREEN_FILM ? undefined : f.group === "bank" ? (filmGoesTo(f, runCard) ? "hit" : "klippbanken") : "äldre" })),
+      .sort((a, b) => Number(filmGoesTo(b, runCard)) - Number(filmGoesTo(a, runCard)))
+      .map((f) => ({ value: f.id, label: f.title, hint: filmGoesTo(f, runCard) ? "hit" : "klippbanken" })),
   ];
   return {
     backdrop,
@@ -87,7 +81,7 @@ export function useUnder(place: Place, first: { backdrop: string | null; frame: 
       setFrame(start || null);
       writeBackdrop(next, start);
     },
-    label: film ? filmLabel(film) : (still ?? own).word,
+    label: film ? film.title : (still ?? own).word,
     /** Paint the card in the shoe's window: on a doll's picture (every doll's has the same shoe), not under a film (it shows its own card). */
     shoeCard: !film,
     videoRef: videoRef as RefObject<HTMLVideoElement | null>,

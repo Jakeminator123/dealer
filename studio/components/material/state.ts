@@ -13,7 +13,7 @@ export const CHANGES: Readonly<Record<State, readonly State[]>> = {
   ersatt: ["gäller", "arkiverad"],
   arkiverad: ["kandidat"],
 };
-/** A picture without a state (most of Pamela's) counts as a candidate: he may make any of them the one that holds. */
+/** A picture without a state counts as a candidate: he may make any of them the one that holds. */
 export const allowed = (from: State | undefined, to: State): boolean => CHANGES[from ?? "kandidat"].includes(to);
 
 /** The words of each change, the same on every page that offers it (Material's tile and viewer). */

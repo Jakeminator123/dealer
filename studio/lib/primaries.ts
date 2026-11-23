@@ -28,10 +28,6 @@ import { isOutright, isSecondary, playing, primaryOf, type Hubs, type Playing } 
 import { edgeName, nodeCode, takeName } from "./names.ts";
 import { VERDICT_LABEL, verdictOf, verdictPhrase } from "./verdict.ts";
 
-// The films of seat 4 Jakob called very good on 12 Nov (scene3d's own round): proposed first where they stand.
-export const PRAISED = ["pamela-idle-ready-entry-01", "pamela-p4-c1-plan-deal-02", "pamela-p4-c1-plan-return-idle-01"] as const;
-export const PRAISED_NOTE = "du sade väldigt bra 12 nov";
-
 const REST = "IDLE>IDLE";
 
 export type Role = "deal" | "ready" | "idle" | "entry" | "exit" | "rest" | "reveal" | "arrive" | "leave";
@@ -241,7 +237,7 @@ function seamNow(edge: Edge, now: Playing, take: Take): Seam | null {
 
 // ── One step ────────────────────────────────────────────────────────────────
 /** A film on the page: the take, how the game uses it, and, for the proposal, what making it Primär does to the seam. */
-export type Film = { take: Take; use: Use; seam: Seam | null; proposal: boolean; praised: boolean };
+export type Film = { take: Take; use: Use; seam: Seam | null; proposal: boolean };
 /**
  * primary: his Primär. secondaries: the approved takes that are not Primär, the proposal first (the best take he accepted
  * outright, when no Primär is chosen), then those the game plays, his own before a reviewer's, the newest last; the page
@@ -267,15 +263,13 @@ export function stepFilms(bank: BankData, graph: Graph, game: Graph, edgeId: str
   const main = primaryOf(edge);
   const candidates = edge.takes.filter((t) => isSecondary(t, game));
   const ranked = main ? [] : rankOutright(graph, edge, now.before).filter((t) => candidates.includes(t));
-  const star = ranked.find((t) => (PRAISED as readonly string[]).includes(t.id)) ?? null;
-  const proposal = star ?? ranked[0] ?? null;
+  const proposal = ranked[0] ?? null;
   const seamBank = game.edge[edgeId] ? judgedBank(bank) : bank, seamGraph = game.edge[edgeId] ? game : graph;
   const film = (t: Take, isProposal: boolean): Film => ({
     take: t,
     use: usage(t),
     seam: isProposal && seamGraph.takes[t.id] ? seamWith(seamBank, seamGraph, seamGraph.takes[t.id]) : null,
     proposal: isProposal,
-    praised: (PRAISED as readonly string[]).includes(t.id),
   });
   const loop = (f: Film) => (f.use.kind === "loop" ? (f.take.idle?.calm ? 2 : 1) * 1000 + (f.take.idle?.weight ?? 0) : 0);
   const secondaries = candidates

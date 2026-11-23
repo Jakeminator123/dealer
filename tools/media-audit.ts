@@ -1,6 +1,6 @@
 // What every folder of the ignored media is, and whether anything uses it. Read only: it writes nothing.
 //   node tools/media-audit.ts [--json] [--repo <checkout>] [<folder>]
-// <folder> limits the answer to units under it (for example assets/films/pamela). --repo reads another checkout's registers and
+// <folder> limits the answer to units under it (for example assets/films/intro). --repo reads another checkout's registers and
 // media (the default is this one). A unit is the folder that is one thing: one film, one anchor, one order, one proof (UNIT_DEPTH).
 //
 // Each unit gets one use, the strongest that holds, with the file and field that say so:
@@ -12,7 +12,7 @@
 //                     data/studio-release.json or a document or instruction, a proof changed today, the card track a
 //                     played film needs, the scene's rooms, table and
 //                     props (data/scene-*.json, data/props.json), the lab's backdrops (src/placement-model.ts)
-//   referens          kept by the rules: what is left of V6, data/library.json, data/manifest.json, evidence/, a
+//   referens          kept by the rules: what is left of V6, data/manifest.json, evidence/, a
 //                     reference in Material, and the first or last picture of a film that plays
 //   bara registrerad  a register names it, but nothing plays it, shows it as living work or builds on it
 //   okänd             no register names it
@@ -81,7 +81,7 @@ export function rank(units: Unit[], claims: Claim[], describe: (u: Unit) => stri
   });
 }
 
-const DEALERS: Record<string, string> = {pamela: 'Pamelas', paow: 'Paows', petra: 'Petras'};
+const DEALERS: Record<string, string> = {paow: 'Paows', petra: 'Petras'};
 const dealerOf = (id: string) => DEALERS[id.split('-')[0]] ?? null;
 /** What a unit is, in one line of plain Swedish, from where it lies. */
 export function whatOf(u: Unit): string {
@@ -212,8 +212,8 @@ export function audit(repo: string): {items: Item[]; judged: Map<string, string>
     const id = u.path.split('/').at(-1)!, take = id.startsWith('bank-') ? id.slice(5) : id;
     claims.push({path: u.path, use: playedClips.has(take) ? 'visas' : 'bara registrerad', why: playedClips.has(take) ? `talfilmen ${take} spelas` : `talets arbetsmapp för ${take}, som inte spelas`});
   }
-  // The rules' references: V6, the manifest, evidence, the library.
-  for (const f of ['data/manifest.json', 'data/library.json']) for (const p of pathsIn(read(f))) claims.push({path: p, use: 'referens', why: f});
+  // The rules' references: V6, the manifest, evidence.
+  for (const f of ['data/manifest.json']) for (const p of pathsIn(read(f))) claims.push({path: p, use: 'referens', why: f});
   for (const f of readdirSync(path.join(repo, 'evidence')).filter(f => f.endsWith('.json'))) for (const p of pathsIn(read(`evidence/${f}`))) claims.push({path: p, use: 'referens', why: `evidence/${f}`});
   // Anything Beslut, the release, a document or an instruction names by its exact id is living work; a proof also when it changed today.
   const list2 = (dir: string, test: (f: string) => boolean) => { try { return readdirSync(path.join(repo, dir)).filter(test).map(f => `${dir}/${f}`); } catch { return []; } };
@@ -442,15 +442,14 @@ export async function fitAll(repo: string, loadPixels = pixels): Promise<{rule: 
   }
   return {rule, entries, takes};
 }
-/** What uses a reference or a working picture today: orders that sent it, the round picker's reference films, V6's hashes, the bank's jobs. */
+/** What uses a reference or a working picture today: orders that sent it, V6's hashes, the bank's jobs. */
 function referenceUsers(repo: string, read: (f: string) => string): (p: string) => string[] {
   // An order's reference film: its reference field (data/orders/<id>.json reference.from.path), not any mention.
   const orders = readdirSync(path.join(repo, 'data/orders')).filter(f => f.endsWith('.json')).map(f => { let r = ''; try { r = JSON.stringify(JSON.parse(read(`data/orders/${f}`)).reference ?? null); } catch {} return [f.slice(0, -5), r] as const; });
-  const rounds = read('studio/lib/rounds.ts'), manifest = read('data/manifest.json'), jobs = read('data/clip-jobs.json'), game = readdirSync(path.join(repo, 'src')).filter(f => /^game/.test(f)).map(f => read(`src/${f}`)).join('\n');
+  const manifest = read('data/manifest.json'), jobs = read('data/clip-jobs.json'), game = readdirSync(path.join(repo, 'src')).filter(f => /^game/.test(f)).map(f => read(`src/${f}`)).join('\n');
   return (p: string) => {
     const out: string[] = [];
     const sent = orders.filter(([, t]) => t.includes(`"${p}"`)).map(([o]) => o); if (sent.length) out.push(`${sent.length} beställningar skickade den (${sent.slice(0, 3).join(', ')}${sent.length > 3 ? ' …' : ''})`);
-    if (rounds.includes(p)) out.push('Referensfilmer i rundväljaren (studio/lib/rounds.ts)');
     if (manifest.includes(`"${p}"`)) out.push('V6, hashen i data/manifest.json (tools/verify.ts)');
     if (jobs.includes(p)) out.push('första eller sista bild i bankens jobb');
     if (game.includes(p)) out.push('spelet laddar den');

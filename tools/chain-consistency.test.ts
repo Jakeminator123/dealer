@@ -120,8 +120,8 @@ test('the game\'s maps name real places and real anchors: SEAT_HUB deals a seat\
 });
 
 test('the game opens on a dealer of data/dealers.json who is not paused', async () => {
-  const {FIRST_DEALER} = await import('../src/clip-graph.ts');
-  assert.ok(dealerList.some(d => d.id === FIRST_DEALER && !d.paused), `the first dealer ${FIRST_DEALER} is paused or unknown`);
+  const {DEALER} = await import('../src/clip-graph.ts');
+  assert.ok(dealerList.some(d => d.id === DEALER && !d.paused), `the first dealer ${DEALER} is paused or unknown`);
 });
 
 // ── Verdicts: what is his, what is given for him, what is out of play ────────

@@ -566,7 +566,7 @@ export function filmRow(dealer: string, wish: FilmWish, methods: Pick<MethodRegi
   };
 }
 
-/** "Dockans giv till plats 4", "Pamelas giv till plats 4", "Paows retur från plats 2": a reference film by whose it is and what it shows. */
+/** "Dockans giv till plats 4", "Paows retur från plats 2": a reference film by whose it is and what it shows. */
 export function referenceName(c: Pick<RefCandidate, "dealer" | "edge" | "goesTo">, names: Readonly<Record<string, string>>): string {
   const who = c.dealer === "docka" ? "Dockans" : genitive(names[c.dealer] ?? c.dealer);
   const back = !/^(READY(?:-[A-Z])?|DRAWN|IDLE)>/.test(c.edge);

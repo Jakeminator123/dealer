@@ -1,16 +1,7 @@
 {
-  "about": "The dealers the studio orders pictures and films for. look is the one-paragraph description of her that only the old long text (Utförlig, template 3) says, so only the orders stored in that style use it (src/order-prompts.ts); no new order is written Utförlig, and the short and minimal texts never describe her (the first picture shows her); anchors are found in data/media-roles.json by role (the entry that holds, gäller, without a card); the standard every anchor follows is data/dealer-standard.json. Pamela is paused (Jakob 2026-11-12: \"Vi pausar Pamela ... Sedan går vi vidare med Paow.\").",
+  "about": "The dealers the studio orders pictures and films for. look is the one-paragraph description of the dealer that only the old long text (Utförlig, template 3) says, so only the orders stored in that style use it (src/order-prompts.ts); no new order is written Utförlig, and the short and minimal texts never describe her (the first picture shows her); anchors are found in data/media-roles.json by role (the entry that holds, gäller, without a card); the standard every anchor follows is data/dealer-standard.json. Pamela left main 2026-11-23 (Jakob: \"Du ska ta bort Pamela ur main\"); her films and pictures are in D:/dealer-archive/pamela-2026-11-23.",
   "schemaVersion": 1,
   "dealers": [
-    {
-      "id": "pamela",
-      "name": "Pamela",
-      "look": "a woman in her forties with dark brown hair pinned back, in a black tailored suit jacket over a cream V-neck top",
-      "lookSource": "the bank's films (frame 0 of pamela-idle-ready-entry-01); the job texts call her \"the same woman, black suit\"",
-      "films": { "prefix": "pamela-" },
-      "shoe": "2.1",
-      "paused": "Jakob 2026-11-12: inget nytt beställs för Pamela; hennes ankare görs inte om nu."
-    },
     {
       "id": "paow",
       "name": "Paow",

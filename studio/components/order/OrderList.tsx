@@ -86,7 +86,7 @@ function OrderCard({ answer, dealerName, onOpen }: { answer: OrderAnswer; dealer
 
 export function OrderList({ menu, all, onOpen }: { menu: ReactNode; all: OrdersAnswer; onOpen: (id: string) => void }) {
   const list = sections(all.orders);
-  // The production list is the dealer's chosen in the rail (Pamela's while the bank is read).
+  // The production list is the dealer's chosen in the rail (the bank's dealer's while the bank is read).
   const { dealer } = useBank();
   const dealerName = all.dealers?.find((d) => d.id === dealer)?.name ?? dealer;
   const ordering = orderingState(all);

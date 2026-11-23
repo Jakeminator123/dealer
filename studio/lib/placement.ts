@@ -2,7 +2,7 @@
 // the handles' arithmetic, numbers with a decimal comma, the view's address, what the cards can be laid over (the dealer's
 // doll, the other dolls, her films). The plan's own rules (where a card is drawn, how an edit
 // is made) are src/placement-model.ts. Pure: no DOM, no network; the motion's words are tested in studio/tests/bordet-line.test.ts.
-import { DEALER, isCurrent, playable, takeRole, ROLE_LABEL, type Graph } from "../../src/clip-graph.ts";
+import { isCurrent, playable, takeRole, ROLE_LABEL, type Graph } from "../../src/clip-graph.ts";
 import { DOLL_BACKDROPS, SHOE, TARGETS, VIEWS, editPlace, motionNodes, sequence, toPixels, type Geometry, type Hand, type Intent, type Place, type PlacementPlan, type Side, type View } from "../../src/placement-model.ts";
 import { cardCode, nodeCode } from "./names.ts";
 
@@ -236,13 +236,11 @@ export function readPlacementAddress(params: Params): PlacementAddress {
 }
 
 // ── Films to lay the cards over ─────────────────────────────────────────────
-// The films that can lie under the cards: the clip bank's current takes first and the older proofs and references after
-// (the film library, data/library.json), the green P4C2 film among them. Only the chosen dealer's lie under the cards
-// (underFilms), and only lying ones: the plan's view is the bank's picture. start: the frame the take begins on in its film (a take cut from a longer
-// film, as all of Paow's deals and returns are, begins inside it); target: the card the take deals or comes back from.
-export type Film = { id: string; title: string; path: string; width: number; height: number; frames: number; fps: number; group: "bank" | "older"; start: number; target: string | null };
-export const GREEN_FILM = "pamela-p4-c2-source-turn";
-export type LibraryItem = { id?: unknown; title?: unknown; path?: unknown; kind?: unknown; width?: unknown; height?: unknown; frameCount?: unknown; fps?: unknown };
+// The films that can lie under the cards: the chosen dealer's current takes in the clip bank (the graph is that dealer's),
+// only lying ones (underFilms): the plan's view is the bank's picture. start: the frame the take begins on in its film (a
+// take cut from a longer film, as all of Paow's deals and returns are, begins inside it); target: the card the take deals
+// or comes back from.
+export type Film = { id: string; title: string; path: string; width: number; height: number; frames: number; fps: number; start: number; target: string | null };
 
 /**
  * The clip bank's current playable takes with a film, the main take of each step first (as kbFilms). A take cut from a longer
@@ -263,7 +261,6 @@ export function bankFilms(graph: Graph): Film[] {
         height: t.motion?.source?.height ?? t.receipt?.output?.height ?? 1174,
         frames: t.frames ?? Math.max(1, Math.round((t.job?.duration ?? 4) * (t.fps ?? 30))),
         fps: t.fps ?? 30,
-        group: "bank" as const,
         start: t.segment?.start ?? 0,
         target: e.target ?? null,
       })),
@@ -280,24 +277,7 @@ export function bankFilms(graph: Graph): Film[] {
 }
 /** A film is a deal to the place, or a take of its seat's film (P4.C2 plays P4.C1's): those come first under the cards. */
 export const filmGoesTo = (film: Pick<Film, "target">, place: Place): boolean => !!film.target && place !== SHOE && film.target.slice(0, 3) === place.slice(0, 3);
-/** The film library's own list (GET /api/library, data/library.json): older proofs and the V6 references. */
-export function libraryFilms(items: readonly LibraryItem[]): Film[] {
-  return items.flatMap((i) => {
-    const n = (v: unknown, d: number) => (typeof v === "number" && Number.isFinite(v) && v > 0 ? v : d);
-    if (typeof i.id !== "string" || typeof i.path !== "string" || !i.path.endsWith(".mp4")) return [];
-    const width = n(i.width, 1764);
-    const height = n(i.height, 1174);
-    const title = i.kind === "reference" ? (width > height ? "V6 · dator" : "V6 · mobil") : typeof i.title === "string" ? i.title : i.id;
-    return [{ id: i.id, title, path: i.path, width, height, frames: Math.round(n(i.frameCount, 1)), fps: n(i.fps, 30), group: "older" as const, start: 0, target: null }];
-  });
-}
 /** A film shaped as the bank's picture (not a standing phone film). */
 export const lying = (film: Pick<Film, "width" | "height">): boolean => film.width >= film.height;
-/**
- * The films that may lie under the cards for the chosen dealer: her own takes from the bank (the graph is hers), and the
- * library's older films only for Pamela, whose they all are (data/library.json: her proofs and V6, her look of 10 Nov).
- * Standing films are left out; the green P4C2 film (hers) comes first among her films.
- */
-export function underFilms(dealer: string, bank: readonly Film[], library: readonly Film[]): Film[] {
-  return [...bank, ...(dealer === DEALER ? library : [])].filter(lying);
-}
+/** The films that may lie under the cards for the chosen dealer: that dealer's takes from the bank (bankFilms), standing films left out. */
+export const underFilms = (bank: readonly Film[]): Film[] => bank.filter(lying);

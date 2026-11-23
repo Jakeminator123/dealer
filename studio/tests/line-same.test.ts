@@ -62,20 +62,21 @@ test("Bordet's row and the store agree for every standard step and card, and the
     await writeFile(path.join(root, "assets/motions", id, "source.mp4"), films[id]);
     await writeFile(path.join(root, "motions", `${id}.json`), JSON.stringify({ source: { frames: seconds * 30, fps: 30, sha256: sha(films[id]) }, review: more.review ?? straight, ...(more.motion ? { motion: more.motion } : {}) }));
   };
+  // Another dealer's films (a made-up second dealer, "ada"), which the rule may take as reference films, and Paow's own.
   const jobs = [
-    { id: "pamela-p4-c1-plan-deal-02", from: "READY", to: "LAND(P4.C1)" },          // the deal alone, approved straight: the pinch to seat 4
-    { id: "pamela-p4-c1-drawn-deal-01", from: "DRAWN", to: "LAND(P4.C1)" },         // the drag to seat 4, from the drawn-out pose
-    { id: "pamela-p5-c1-variant", from: "READY", to: "LAND(P5.C1)" },               // a variant: not approved straight
-    { id: "pamela-p3-c1-hoger", from: "READY", to: "LAND(P3.C1)" },                 // laid with the right hand
-    { id: "pamela-d-c1-deal", from: "READY", to: "LAND(D.C1)" },                    // the dealer's first card
-    { id: "paow-giv-2-1-p2-03-01", from: "READY", to: "READY", dealer: "paow" },    // Paow's own round trip to seat 2
-    { id: "paow-giv-2-1-d-01-01", from: "READY", to: "READY", dealer: "paow" },     // Paow's own round trip to the dealer's first card
+    { id: "ada-p4-c1-plan-deal-02", from: "READY", to: "LAND(P4.C1)", dealer: "ada" },   // the deal alone, approved straight: the pinch to seat 4
+    { id: "ada-p4-c1-drawn-deal-01", from: "DRAWN", to: "LAND(P4.C1)", dealer: "ada" },  // the drag to seat 4, from the drawn-out pose
+    { id: "ada-p5-c1-variant", from: "READY", to: "LAND(P5.C1)", dealer: "ada" },        // a variant: not approved straight
+    { id: "ada-p3-c1-hoger", from: "READY", to: "LAND(P3.C1)", dealer: "ada" },          // laid with the right hand
+    { id: "ada-d-c1-deal", from: "READY", to: "LAND(D.C1)", dealer: "ada" },             // the dealer's first card
+    { id: "paow-giv-2-1-p2-03-01", from: "READY", to: "READY", dealer: "paow" },         // Paow's own round trip to seat 2
+    { id: "paow-giv-2-1-d-01-01", from: "READY", to: "READY", dealer: "paow" },          // Paow's own round trip to the dealer's first card
   ];
-  await film("pamela-p4-c1-plan-deal-02", 4);
-  await film("pamela-p4-c1-drawn-deal-01", 5);
-  await film("pamela-p5-c1-variant", 4, { review: { decision: "ACCEPTED", acceptedAs: "VARIANT", userAccepted: true } });
-  await film("pamela-p3-c1-hoger", 4, { motion: { releaseHand: "RH" } });
-  await film("pamela-d-c1-deal", 4);
+  await film("ada-p4-c1-plan-deal-02", 4);
+  await film("ada-p4-c1-drawn-deal-01", 5);
+  await film("ada-p5-c1-variant", 4, { review: { decision: "ACCEPTED", acceptedAs: "VARIANT", userAccepted: true } });
+  await film("ada-p3-c1-hoger", 4, { motion: { releaseHand: "RH" } });
+  await film("ada-d-c1-deal", 4);
   await film("paow-giv-2-1-p2-03-01", 7, { review: {} });
   await film("paow-giv-2-1-d-01-01", 7, { review: {} });
   const derived = [
@@ -250,7 +251,7 @@ test("Bordet's row and the store agree for every standard step and card, and the
   // bank else; the far seats only the dummy's; the drag only a drag; the two-hand deal only a film laid with the right hand.
   assert.deepEqual(
     { "GIV-2.1 P1.C1": made["GIV-2.1 P1.C1"], "GIV-2.1 P4.C1": made["GIV-2.1 P4.C1"], "GIV-2.2 P4.C1": made["GIV-2.2 P4.C1"], "GIV-2.3 P4.C1": made["GIV-2.3 P4.C1"], "INGANG-2.3": made["INGANG-2.3"], "INGANG-2.1": made["INGANG-2.1"] },
-    { "GIV-2.1 P1.C1": "docka-giv-p1-4", "GIV-2.1 P4.C1": "docka-giv-p4-4", "GIV-2.2 P4.C1": "pamela-p4-c1-drawn-deal-01", "GIV-2.3 P4.C1": "docka-giv-2-3-p4", "INGANG-2.3": "docka-till-2-3", "INGANG-2.1": null },
+    { "GIV-2.1 P1.C1": "docka-giv-p1-4", "GIV-2.1 P4.C1": "docka-giv-p4-4", "GIV-2.2 P4.C1": "ada-p4-c1-drawn-deal-01", "GIV-2.3 P4.C1": "docka-giv-2-3-p4", "INGANG-2.3": "docka-till-2-3", "INGANG-2.1": null },
   );
   // And what it did not take: Paow's own round trip to seat 2 (the whole film would go, and it ends at the shoe), the variant
   // to seat 5, the film laid with the right hand to seat 3. Those orders are made without a reference film (changed

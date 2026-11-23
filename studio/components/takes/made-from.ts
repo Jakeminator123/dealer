@@ -30,10 +30,10 @@ export type Origin = {
   purpose: string | null;
 };
 
-/** A clip of the bank in Jakob's words: "A2.1 → P4C1 · Giv 02"; an unknown clip by its id without "pamela-". */
+/** A clip of the bank in Jakob's words: "A2.1 → P4C1 · Giv 02"; an unknown clip by its id. */
 export function clipWords(graph: Pick<Graph, "takes" | "edge"> | null, clip: string): string {
   const take = graph?.takes[clip];
-  if (!take) return clip.replace(/^pamela-/, "");
+  if (!take) return clip;
   return `${takeEdgeName(take)} · ${takeName(take, graph?.edge[take.edge]?.takes)}`;
 }
 

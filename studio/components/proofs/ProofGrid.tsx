@@ -2,9 +2,8 @@
 
 // <ProofGrid proofs={list} named={named} notes={notes} />: the proof folders newest first as cards (a still, the title, how
 // many films and pictures, the takes' verdicts counted (lib/verdict.ts: underlag is not counted), how many places Jakob has
-// said something about, how many takes it names wait for Jakob), a search field, and a last line to
-// the proof Filmbiblioteket (V6 and the older films) when it is there.
-import { ArrowRight, Film, MessageSquare, Search } from "lucide-react";
+// said something about, how many takes it names wait for Jakob), and a search field.
+import { Film, MessageSquare, Search } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { Proof } from "../../lib/api.ts";
@@ -15,9 +14,6 @@ import { isSnapshot } from "../../lib/mode.ts";
 import { EmptyState, TextField, cn } from "../ui";
 import { ProofStill } from "./ProofStill";
 import { waitingIn, type NamedTakes } from "./ProofTakes";
-
-// The proof folder that holds V6 and the older films (assets/proofs/filmbiblioteket/, made from data/library.json).
-const LIBRARY = "filmbiblioteket";
 
 const TALLY: { verdict: ProofVerdict; sign: string; tone: string }[] = [
   { verdict: "ok", sign: "✓", tone: "text-[#6cc595]" },
@@ -104,11 +100,6 @@ export function ProofGrid({ proofs, named, notes }: { proofs: readonly Proof[]; 
           Prova ett annat ord.
         </EmptyState>
       )}
-      {proofs.some((p) => p.id === LIBRARY) ? (
-        <Link href={proofHref(LIBRARY)} className="inline-flex w-fit items-center gap-1.5 text-sm text-dim transition-colors hover:text-ink">
-          V6 och de äldre filmerna finns i Filmbiblioteket <ArrowRight className="size-4" />
-        </Link>
-      ) : null}
     </div>
   );
 }

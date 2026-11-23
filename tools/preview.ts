@@ -90,7 +90,6 @@ if(has('--restart')){
  // Table props made by tools/prop-glb.ts: assets/props/<id>.glb, and only where the file really lies in that folder.
  const propFile=async(file:string)=>{const m=/^assets\/props\/([a-z0-9]+(?:-[a-z0-9]+)*\.glb)$/.exec(file);if(!m)return false;try{return await realpath(file)===path.join(await realpath('assets/props'),m[1]);}catch{return false;}};
  const placements=placementStore(process.cwd()),reviews=reviewStore(process.cwd()),presets=scenePresetStore(process.cwd()),media=mediaRoles(process.cwd()),decisions=decisionStore(process.cwd()),proofNotes=proofNotesStore(process.cwd());
- const library=async()=>{try{const data=JSON.parse(await readFile('data/library.json','utf8'));data.items=await Promise.all(data.items.filter((item:{path:string})=>typeof item.path==='string'&&/^(assets\/|output\/v6\/)/.test(item.path)&&path.posix.normalize(item.path)===item.path&&!item.path.includes('\\')&&item.path.endsWith('.mp4')).map(async(item:{motionRef?:string})=>{if(item.motionRef&&/^motions\/[a-z0-9-]+\.json$/.test(item.motionRef)){try{const motion=JSON.parse(await readFile(item.motionRef,'utf8'));return {...item,reviewDecision:motion.review?.decision??'PENDING'};}catch{return {...item,reviewDecision:'UNKNOWN'};}}return item;}));return data;}catch{return {schemaVersion:1,items:[]};}};
  // Read-only clip bank for the lab: the tracked jobs and review decisions plus a fixed, non-secret
  // projection of each local receipt. Task ids, balances and credentials never leave this process.
  const clipId=/^[a-z0-9]+(?:-[a-z0-9]+)*$/,clipMedia=/^assets\/motions\/([a-z0-9]+(?:-[a-z0-9]+)*)\/(source\.mp4|source-reversed\.mp4|first\.png|last\.png)$/;
@@ -149,7 +148,7 @@ if(has('--restart')){
    const present=async(name:string)=>await confined(job.id,name)?`${dir}/${name}`:null;
    media[job.id]={video:await present('source.mp4'),reversed:await present('source-reversed.mp4'),first:await present('first.png'),last:await present('last.png'),...await tracking(job.id)};
   }));
-  // dealers: whose each take is (absent in the job file = Pamela's), by the same rule buildGraph keeps one dealer's takes with.
+  // dealers: whose each take is (absent in the job file = the first dealer's, DEALER in src/clip-graph.ts), by the same rule buildGraph keeps one dealer's takes with.
   return {schemaVersion:1,readable:!!file,budget:file?.budget??null,jobs,derived,edits,motions,receipts,media,revisions,dealers:dealersOf({jobs,derived,edits} as never)};
  };
  // One session per table name (?table=…, "main" when none): a second tab or a test plays its own table and leaves the first alone.
@@ -224,7 +223,6 @@ if(has('--restart')){
      res.end(JSON.stringify(await presets.save(name,body,expected)));
     }catch(error){res.writeHead(error instanceof StoreError?error.status:400).end(JSON.stringify({error:(error as Error).message}));}return;
    }
-   if(url.pathname==='/api/library'&&req.method==='GET'){res.setHeader('Content-Type','application/json; charset=utf-8');res.end(JSON.stringify(await library()));return;}
    if(url.pathname==='/api/clip-bank'&&req.method==='GET'){res.setHeader('Content-Type','application/json; charset=utf-8');res.end(JSON.stringify(await clipBank()));return;}
    // The one write besides placements: a review decision for a clip of the job file. It rewrites only the review block
    // of motions/<id>.json, from this page only, and only against the revision the page last read.
@@ -354,7 +352,7 @@ if(has('--restart')){
     const name=decodeURIComponent(url.pathname.slice(1)),page=pages[`/${name}`];
     file=page??name;
     // media.servable: a picture or film data/media-roles.json names (keystones, anchors and frames of the view Material), inside the repo and no link out of it.
-    if(!page&&!allowed.has(file)&&!await clipFile(file)&&!await trackFile(file)&&!await proofPath(file)&&!await patchFile(file)&&!await sceneFile(file)&&!await propFile(file)&&!await media.servable(file)&&!(await library()).items.some((item:{path:string})=>item.path===file)){res.writeHead(404).end();return;}
+    if(!page&&!allowed.has(file)&&!await clipFile(file)&&!await trackFile(file)&&!await proofPath(file)&&!await patchFile(file)&&!await sceneFile(file)&&!await propFile(file)&&!await media.servable(file)){res.writeHead(404).end();return;}
     type=types[file.slice(file.lastIndexOf('.'))]??'application/octet-stream';
    }
    const size=await stat(file).then(s=>s.isFile()?s.size:-1,()=>-1);

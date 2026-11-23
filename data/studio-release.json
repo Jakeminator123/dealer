@@ -4,11 +4,10 @@
   "variants": false,
   "proofs": [],
   "paow": true,
-  "library": false,
   "presets": true,
   "casino": {
     "on": true,
-    "dealers": ["pamela", "paow"]
+    "dealers": ["paow"]
   },
   "blocked": {
     "folders": ["trailer*"],

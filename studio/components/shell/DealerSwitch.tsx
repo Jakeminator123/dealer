@@ -2,10 +2,10 @@
 
 // <DealerSwitch />: whose studio this is, at the top of the rail under the mark: one button per dealer the bank holds takes
 // of, the chosen one marked, and beside a name the number of takes waiting for Jakob's word when there are any. A paused
-// dealer (data/dealers.json; Pamela) shows only while she is the chosen one (Jakob 2026-11-18: "en pausad dealer visas
-// bara när en adress nämner den"): an address names her (?dealer=pamela, or one of her takes), or an earlier click on her
-// is remembered, and then the address carries her word (lib/bank.ts). She then says so quietly: a small pause sign, the
-// words in the tooltip. A click chooses the dealer for every view (lib/bank.ts setDealer: the address and the memory follow).
+// dealer (data/dealers.json) shows only while it is the chosen one (Jakob 2026-11-18: "en pausad dealer visas bara när en
+// adress nämner den"): an address names it (?dealer=<id>, or one of its takes), or an earlier click on it is remembered,
+// and then the address carries its word (lib/bank.ts). It then says so quietly: a small pause sign, the words in the
+// tooltip. A click chooses the dealer for every view (lib/bank.ts setDealer: the address and the memory follow).
 import { useBank } from "../../lib/bank.ts";
 import { isSnapshot } from "../../lib/mode.ts";
 import { cn } from "../ui/cn";

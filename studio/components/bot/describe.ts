@@ -37,7 +37,7 @@ export function cleanVal(val: Record<string, string | null | undefined> | null |
 function takeWords(graph: Graph | null, id: string | null): string | null {
   if (!id) return null;
   const take = graph?.takes[id];
-  if (!take) return id.replace(/^pamela-/, "");
+  if (!take) return id;
   return takeName(take, graph?.edge[take.edge]?.takes);
 }
 

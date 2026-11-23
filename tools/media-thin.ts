@@ -13,12 +13,12 @@
 //            byte-identical files under assets/ made one file with hard links (talets filer, V6, originals and references never share).
 //   förslag  never without his word: verdicts Inte bra that are not his own; loose films (half or not linked to a tree) not judged
 //            good; order deliveries that never became a record; proofs without an open card and without a note of his in 14 days;
-//            paused Pamela's films the game does not hold; older talk films and mouth patches where a newer one is played; the
+//            older talk films and mouth patches where a newer one is played; the
 //            raw deliveries of takes removed above; after-work copies that a recorded command can make again once proven.
 //   blob     prepared, nothing done: the files of the release's list (.runtime/ny-blob/filer.json) that could live only on Blob.
 // The guard (blocked) is a hard stop, checked when the plan is made and again for every file just before it is touched: Primär,
 // Godkänd and Variant (his or given for him); everything the game holds (gameTakes, usesOf); everything with a role in
-// data/media-roles.json that is not a rejected take; V6, originals and references (data/manifest.json, data/library.json,
+// data/media-roles.json that is not a rejected take; V6, originals and references (data/manifest.json,
 // evidence/); assets/noir/ and every file sharing a file with it; assets/films/intro/; the scene the game uses; anything an entry in
 // Beslut or an order still under way names; files younger than three days; anything outside assets/ (private/ among it). A file that
 // shares its bytes (a hard link) with a guarded file is guarded too.
@@ -124,7 +124,6 @@ const GROUPS: {name: string; level: Level; title: string; rule: string}[] = [
   {name: 'inte-bra-inte-hans', level: 'förslag', title: 'Inte bra, men inte hans dom', rule: 'Som hans eget Inte bra, men domen är given åt honom, en granskares, eller sekundär.'},
   {name: 'tal-aldre', level: 'förslag', title: 'Äldre talfilmer och munlappar', rule: 'En talfilm med ett lägre nummer än den som spelet har för samma replik, och munlappar som är ersatta eller som registret inte längre nämner. Talets mapp går helt (så att numret inte tas upp igen), bankens film får RADERAD.txt.'},
   {name: 'lost', level: 'förslag', title: 'Löst, inte dömt bra', rule: 'Halv- eller okopplade filmer (tools/dealer-tree.ts) som inte är dömda bra och som spelet inte har.'},
-  {name: 'pamela-pausad', level: 'förslag', title: 'Pausade Pamela', rule: 'Pamelas filmer som spelet inte har och som inte är dömda bra.'},
   {name: 'original-forkastade', level: 'förslag', title: 'Råleveranser till borttagna tagningar', rule: 'Runways egen leverans (source.mp4) i beställningsmappen till en tagning vars film går i en av grupperna ovan.'},
   {name: 'bestallningar-utan-post', level: 'förslag', title: 'Leveranser som aldrig blev en post', rule: 'En beställd tagning som stannade före INFÖRD och som ingen post i motions/ har; bilderna och filmerna går, kvittona står kvar.'},
   {name: 'prov-utan-kort', level: 'förslag', title: 'Prov utan kort', rule: 'Prov i assets/proofs/ utan kort i Beslut, utan anteckning från honom de senaste 14 dygnen och som inget dokument eller utgåvan nämner.'},
@@ -176,7 +175,7 @@ export async function makePlan(repo = ROOT, now = Date.now()): Promise<{plan: Pl
     if (main) guard(unitOf(main) ?? main, why);
     for (const p of pathsIn(JSON.stringify(e))) guard(p, why);
   }
-  for (const f of ['data/manifest.json', 'data/library.json', ...readdirSync(path.join(repo, 'evidence')).filter(f => f.endsWith('.json')).map(f => `evidence/${f}`)]) for (const p of pathsIn(read(f))) guard(p, `V6, original eller referens (${f})`);
+  for (const f of ['data/manifest.json', ...readdirSync(path.join(repo, 'evidence')).filter(f => f.endsWith('.json')).map(f => `evidence/${f}`)]) for (const p of pathsIn(read(f))) guard(p, `V6, original eller referens (${f})`);
   for (const i of items) {
     if (i.use === 'spelas' || i.use === 'referens') guard(i.path, `${i.use}: ${i.why[0] ?? ''}`.slice(0, 160));
     // An order's own record shows its folder in Beställ; that alone does not guard a take that stopped (orders still under way are guarded below).
@@ -287,7 +286,7 @@ export async function makePlan(repo = ROOT, now = Date.now()): Promise<{plan: Pl
     const mine = judged.length > 0 && judged.every(r => r.judge?.verdict === 'underkand' && r.judge.byJakob && !r.judge.provisional && r.judge.detail !== 'sekundär');
     const rejected = judged.length > 0 && judged.every(r => r.judge?.verdict === 'underkand');
     const g = mine ? 'inte-bra-hans' : rejected ? 'inte-bra-inte-hans' : own.every(r => olderTalk(r.id)) ? 'tal-aldre'
-      : own.every(r => r.group !== 'kopplad') ? 'lost' : own.every(r => r.dealer === 'pamela') ? 'pamela-pausad' : null;
+      : own.every(r => r.group !== 'kopplad') ? 'lost' : null;
     if (!g) { skip('ingen grupp', 'kopplad, inte dömd bra, spelas inte', f, films.reduce((n, x) => n + x.bytes, 0)); continue; }
     const out = foreign(dir, isOwn);
     const twins = films.flatMap(x => (names.get(x.key) ?? []).filter(n => n !== x.path && [...ids].some(id => { const t = orderTakeDir(id); return t && n.startsWith(`${t}/`); })).map(n => files.get(n)!));

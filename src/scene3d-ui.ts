@@ -23,11 +23,12 @@ const {rooms: panoramas, problems: roomProblems} = readRegister(register);
 type Clip = {id: string; video: string};
 const clips: Clip[] = Object.entries((bank.media ?? {}) as Record<string, {video?: string | null}>).filter(([, m]) => typeof m.video === 'string').map(([id, m]) => ({id, video: m.video!})).sort((a, b) => a.id.localeCompare(b.id));
 // Rounds through the clip bank. The bank's own rule cuts each film (resolveRound): a deal stops on the frame its return was
-// generated from, so the hand does not lift and jump back at the join. A round with a step that cannot be played is left out.
-const graph = buildGraph(bank), deal: Step = {from: 'READY', to: 'P4.C1', take: 'pamela-p4-c1-plan-deal-02'};
+// generated from, so the hand does not lift and jump back at the join. Each step plays the first dealer's main take (no take is
+// locked), and a round with a step that cannot be played is left out.
+const graph = buildGraph(bank), deal: Step = {from: 'READY', to: 'P4.C1'};
 const round = (label: string, steps: Step[]): {label: string; parts: Part[]} => { const segments = resolveRound(graph, steps); return {label, parts: segments.every(s => s.video) ? segments.map(s => ({path: s.video!, start: s.start, end: s.end})) : []}; };
-const rounds = [round('Runda P4: giv → retur till vila', [deal, {from: 'P4.C1', to: 'IDLE', take: 'pamela-p4-c1-plan-return-idle-01'}]), round('Runda P4: giv → retur till redo', [deal, {from: 'P4.C1', to: 'READY', take: 'pamela-p4-c1-plan-return-ready-01'}]),
-  round('Runda P4: vila → redo → giv → vila', [{from: 'IDLE', to: 'READY', take: 'pamela-idle-ready-entry-01'}, deal, {from: 'P4.C1', to: 'IDLE', take: 'pamela-p4-c1-plan-return-idle-01'}])].filter(r => r.parts.length);
+const rounds = [round('Runda P4: giv → retur till vila', [deal, {from: 'P4.C1', to: 'IDLE'}]), round('Runda P4: giv → retur till redo', [deal, {from: 'P4.C1', to: 'READY'}]),
+  round('Runda P4: vila → redo → giv → vila', [{from: 'IDLE', to: 'READY'}, deal, {from: 'P4.C1', to: 'IDLE'}])].filter(r => r.parts.length);
 // A film that is not 30 frames a second says so in its record (Paow's takes are 24/s); played at 30 its card track would run ahead.
 const fpsOf = (id: string): {fps?: number} => { const fps = (bank.motions?.[id] as {source?: {fps?: unknown}} | undefined)?.source?.fps; return typeof fps === 'number' && fps > 0 && fps !== 30 ? {fps} : {}; };
 // A lab trial of a film's lightning (Part.effect, src/scene3d-film.ts): ?blixt=<room id>,<seconds into the film>,<seconds it lasts> lays it on every film played here.
@@ -120,7 +121,7 @@ function build() {
   const shimmerBox = el('input', {type: 'checkbox'}), shimmer = el('label', {className: 'check'}, shimmerBox, el('span', {textContent: 'Skimmer vid miljöbyte'}));
   shimmerBox.addEventListener('change', () => scene.set({roomShift: shimmerBox.checked ? 'shimmer' : 'cut'})); setters.roomShift = ((v: SceneState['roomShift']) => { shimmerBox.checked = v === 'shimmer'; }) as never;
 
-  panel.append(el('h1', {textContent: '3D-scen · bakgrund och bord'}), el('p', {className: 'sub', textContent: 'Pamelas 2D-film i ett 3D-rum med 3D-bord. Dra i bilden, rulla för zoom, dubbelklicka för hemvy.'}));
+  panel.append(el('h1', {textContent: '3D-scen · bakgrund och bord'}), el('p', {className: 'sub', textContent: 'Dealerns 2D-film i ett 3D-rum med 3D-bord. Dra i bilden, rulla för zoom, dubbelklicka för hemvy.'}));
   // Each room with the blur that suits it: a 360-degree room's from its entry in the register.
   const blurOf = (room: RoomId) => panoramas.find(r => r.id === room)?.blur ?? ({salong: 11, hall: 11, kuliss: 9, plat: 8} as Record<string, number>)[room] ?? 11, fresh = panoramas.filter(r => !r.game);
   group('Miljö', choice('room', [['salong', '3D-salong'], ...panoramas.map(r => [r.id, r.label] as [RoomId, string]), ['hall', 'Spelhall'], ['kuliss', 'Kuliss'], ['plat', 'V6-plåt']], room => scene.set({room, blur: blurOf(room)}), true),
@@ -244,7 +245,7 @@ if (query.get('sko') === '3d') void shoe.set(true);
 // ---- the exit trial (src/scene3d-exit.ts): the film in two parts, and the camera that follows the second ----------------
 const exit = (() => {
   let part = -1, from = {pitch: 0, zoom: 1};
-  scene.onFrame(() => { if (part !== 1) return; const goal = exitView(scene.players.frame(), scene.status().camera, from);
+  scene.onFrame(() => { if (part !== 1) return; const goal = exitView(scene.players.frame(), scene.status().camera, from, EXIT_TRIAL.rise);
     for (const key of ['yaw', 'pitch', 'zoom', 'dy', 'dz'] as const) state[key] += (goal[key] - state[key]) * 0.12; hud(); });
   return {
     play() { from = {pitch: state.pitch, zoom: state.zoom}; part = 0; state.mode = 'lean'; state.dx = 0; scene.players.toggle(false);

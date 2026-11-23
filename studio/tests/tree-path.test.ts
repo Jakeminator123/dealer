@@ -27,16 +27,16 @@ function world(rows: Row[], tree = "t") {
 }
 
 const rows: Row[] = [
-  ["pamela-idle-ready-entry-01", "IDLE", "READY", "ENTRY", jakob(), "godkand"],
+  ["paow-idle-ready-entry-01", "IDLE", "READY", "ENTRY", jakob(), "godkand"],
   // P1: his Primär, an approved film and a rejected one: the Primär plays.
-  ["pamela-p1-c1-plan-deal-01", "READY", "P1.C1", "DEAL", jakob(), "godkand"],
-  ["pamela-p1-c1-plan-deal-02", "READY", "P1.C1", "DEAL", jakob({ acceptedAs: "MAIN" }), "primar"],
-  ["pamela-p1-c1-plan-deal-03", "READY", "P1.C1", "DEAL", { decision: "REJECTED", userReview: "Jakob 2026-11-23: nej." }, "underkand"],
+  ["paow-p1-c1-plan-deal-01", "READY", "P1.C1", "DEAL", jakob(), "godkand"],
+  ["paow-p1-c1-plan-deal-02", "READY", "P1.C1", "DEAL", jakob({ acceptedAs: "MAIN" }), "primar"],
+  ["paow-p1-c1-plan-deal-03", "READY", "P1.C1", "DEAL", { decision: "REJECTED", userReview: "Jakob 2026-11-23: nej." }, "underkand"],
   // The way back from P1 has only a rejected film; P2's deal waits for his verdict.
-  ["pamela-p1-c1-plan-return-ready-01", "P1.C1", "READY", "RETURN", { decision: "REJECTED", userReview: "Jakob 2026-11-23: nej." }, "underkand"],
-  ["pamela-p2-c1-plan-deal-01", "READY", "P2.C1", "DEAL", { decision: "PENDING" }, "vantar"],
+  ["paow-p1-c1-plan-return-ready-01", "P1.C1", "READY", "RETURN", { decision: "REJECTED", userReview: "Jakob 2026-11-23: nej." }, "underkand"],
+  ["paow-p2-c1-plan-deal-01", "READY", "P2.C1", "DEAL", { decision: "PENDING" }, "vantar"],
   // Her leaving is approved, but its film is not on this computer.
-  ["pamela-ready-idle-leave-01", "READY", "IDLE", "LEAVE", jakob(), "godkand", false],
+  ["paow-ready-idle-leave-01", "READY", "IDLE", "LEAVE", jakob(), "godkand", false],
 ];
 
 test("where the path may go next: along the tree's steps from its last node", () => {
@@ -56,8 +56,8 @@ test("each step of the path plays the tree's film: the Primär first, never a re
   assert.deepEqual(
     clips.map((c) => [c.name, c.take, c.gap]),
     [
-      ["A1 → A2.1", "pamela-idle-ready-entry-01", null],
-      ["A2.1 → A3P1C1", "pamela-p1-c1-plan-deal-02", null],
+      ["A1 → A2.1", "paow-idle-ready-entry-01", null],
+      ["A2.1 → A3P1C1", "paow-p1-c1-plan-deal-02", null],
       ["A3P1C1 → A2.1", null, "MISSING"],
       ["A2.1 → A3P2C1", null, "WAITING"],
       ["A3P2C1 → A1", null, "INVALID"],
@@ -66,35 +66,35 @@ test("each step of the path plays the tree's film: the Primär first, never a re
 
   const parts = pathParts(graph, clips);
   assert.deepEqual(parts.map((p) => p.step), [0, 1, 2, 3, 4], "one part per step, in order");
-  assert.deepEqual(parts.map((p) => p.take), ["pamela-idle-ready-entry-01", "pamela-p1-c1-plan-deal-02", null, null, null]);
-  assert.ok(parts[1].path?.endsWith("pamela-p1-c1-plan-deal-02/source.mp4"), "the Primär's own film plays");
+  assert.deepEqual(parts.map((p) => p.take), ["paow-idle-ready-entry-01", "paow-p1-c1-plan-deal-02", null, null, null]);
+  assert.ok(parts[1].path?.endsWith("paow-p1-c1-plan-deal-02/source.mp4"), "the Primär's own film plays");
   assert.deepEqual(parts.slice(2).map((p) => [p.path, PATH_GAP_WORD[p.gap!]]), [[null, "film saknas"], [null, "väntar på dom"], [null, "inget steg"]]);
 });
 
 test("the tree's own film plays, not the bank's Primär when that is another tree's", () => {
   const { graph, takes } = world(rows);
-  const mine = takes.filter((t) => t.id !== "pamela-p1-c1-plan-deal-02"); // the Primär is placed in another tree
+  const mine = takes.filter((t) => t.id !== "paow-p1-c1-plan-deal-02"); // the Primär is placed in another tree
   const [part] = pathParts(graph, pathClips(treeSteps("READY", [], mine), ["READY", "P1.C1"]));
-  assert.equal(part.take, "pamela-p1-c1-plan-deal-01");
+  assert.equal(part.take, "paow-p1-c1-plan-deal-01");
 });
 
 test("an approved film whose file is not here is a gap, not another film", () => {
   const { graph, takes } = world(rows);
   const parts = pathParts(graph, pathClips(treeSteps("READY", [], takes), ["IDLE", "READY", "IDLE"]));
-  assert.equal(parts[0].take, "pamela-idle-ready-entry-01");
+  assert.equal(parts[0].take, "paow-idle-ready-entry-01");
   assert.deepEqual([parts[1].path, parts[1].take, PATH_GAP_WORD[parts[1].gap!]], [null, null, "filen saknas"]);
 });
 
 test("a step given from another anchor at the shoe plays that anchor's film", () => {
   const { graph, takes } = world([
-    ["pamela-ready-c-p6-c1-deal-01", "READY-C", "P6.C1", "DEAL", jakob(), "godkand"],
-    ["pamela-ready-b-p6-c1-deal-01", "READY-B", "P6.C1", "DEAL", jakob({ acceptedAs: "MAIN" }), "primar"],
+    ["paow-ready-c-p6-c1-deal-01", "READY-C", "P6.C1", "DEAL", jakob(), "godkand"],
+    ["paow-ready-b-p6-c1-deal-01", "READY-B", "P6.C1", "DEAL", jakob({ acceptedAs: "MAIN" }), "primar"],
   ]);
   const clips = pathClips(treeSteps("READY-C", ["READY-B"], takes), ["READY-C", "P6.C1"]);
-  assert.deepEqual([clips[0].name, clips[0].take, clips[0].step?.via], ["A2.3 → A3P6C1", "pamela-ready-b-p6-c1-deal-01", "READY-B"]);
+  assert.deepEqual([clips[0].name, clips[0].take, clips[0].step?.via], ["A2.3 → A3P6C1", "paow-ready-b-p6-c1-deal-01", "READY-B"]);
   const [part] = pathParts(graph, clips);
-  assert.equal(part.take, "pamela-ready-b-p6-c1-deal-01");
-  assert.ok(part.path?.endsWith("pamela-ready-b-p6-c1-deal-01/source.mp4"));
+  assert.equal(part.take, "paow-ready-b-p6-c1-deal-01");
+  assert.ok(part.path?.endsWith("paow-ready-b-p6-c1-deal-01/source.mp4"));
 });
 
 test("the path in the address is his codes, and a code the tree lacks is left out", () => {

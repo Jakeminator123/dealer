@@ -1,6 +1,6 @@
 "use client";
 
-// Material (/material/?bild=<id>, ?dealer=pamela for another dealer than the first): the one place where Jakob sees what
+// Material (/material/?bild=<id>, ?dealer=<id> for another dealer than the studio's): the one place where Jakob sees what
 // is what, per dealer. At the top the chain at a glance (ingångsbild → keystone → ankare 1 → 2.1 → 2.2 → 2.3 → landningar →
 // filmer; the landings counted seat by seat), then one row per role with large stills, a state chip and how many of the bank's films start or end on each picture; an empty role says what is
 // missing. A click opens the picture over the whole window with its facts on demand (MaterialViewer). Under the chain:

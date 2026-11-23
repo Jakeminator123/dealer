@@ -47,7 +47,7 @@ export const forBrowser = (source: string) => stripTypeScriptTypes(source).repla
  * modules and are added by the snapshot build from them.
  */
 export const SCENE_FILES: readonly string[] = ['data/scene-contract.json', 'data/scene-rooms.json', 'assets/scene/room.png', 'assets/scene/panorama-vegas.jpg', 'assets/scene/panorama-la.jpg', 'assets/scene/panorama-skog.jpg',
-  ...['room-panorama', 'room-la', 'room-skog', 'room-hall', 'room-salong', 'dealer-pamela'].map(name => `assets/scene/thumbs/${name}.jpg`),
+  ...['room-panorama', 'room-la', 'room-skog', 'room-hall', 'room-salong'].map(name => `assets/scene/thumbs/${name}.jpg`),
   ...['wood_table-diffuse', 'wood_table-nor_gl', 'wood_table-rough', 'runway_felt-diffuse', 'runway_leather-diffuse', 'runway_felt_2-diffuse', 'runway_felt_3-diffuse', 'runway_leather_2-diffuse'].map(name => `assets/scene/materials/${name}.webp`),
   // the seven scans of table BORD-02 (src/scene3d-bord02.ts BORD02_SCANS), three maps each; the standard table and the props
   // read the leather's and the denim's relief from the same files

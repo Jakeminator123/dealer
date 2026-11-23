@@ -4,7 +4,7 @@
 // while the tab is visible, and builds each dealer's graph with the lab's own buildGraph only when the
 // answer changed. When nothing changed, the same objects are kept, so a view that reads useBank() does not render again every 4 s.
 // graph is the chosen dealer's (lib/dealer.ts: the address's ?dealer=, a take the address names, the remembered choice, else
-// the first dealer), so every view that reads it shows that dealer's takes; the rail's switch (setDealer) changes it for all of them.
+// the bank's dealer), so every view that reads it shows that dealer's takes; the rail's switch (setDealer) changes it for all of them.
 // The online copy (lib/mode.ts) never changes: there the bank is read once, and the graph carries no cost.
 import { Suspense, createContext, createElement, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
@@ -68,7 +68,7 @@ export type BankState = {
 type Data = { bank: ClipBankResponse | null; graphs: Record<string, Graph>; owners: Record<string, string>; status: BankStatus; error: ApiError | null; readAt: number | null };
 const BankContext = createContext<BankState | null>(null);
 
-// ── The memory of the choice (a convenience of this browser: it may be missing, and then the address or the first dealer decides) ──
+// ── The memory of the choice (a convenience of this browser: it may be missing, and then the address or the bank's dealer decides) ──
 function remembered(): string | null {
   try {
     return dealerId(window.localStorage.getItem(DEALER_MEMORY));
@@ -171,7 +171,7 @@ export function BankProvider({ children, every = 4000 }: { children: ReactNode; 
 
   // The address's choice is remembered once it is known for certain (the bank read, so that an unknown word is not kept), and
   // only for a dealer who is not paused (keepsChoice; a click on the switch keeps any, setDealer). A dealer the visitor was
-  // only given (no word, no take, nothing remembered) is no choice and is not kept: the first dealer can then change for
+  // only given (no word, no take, nothing remembered) is no choice and is not kept: the bank's dealer can then change for
   // everyone who has not chosen.
   const keep = keepsChoice(chosen, register);
   useEffect(() => {

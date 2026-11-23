@@ -8613,140 +8613,160 @@
       "sha256": "3050e9ccc0d624a1b45d49a67be1c38a8ef6a6038d2743585891dea44d5ffff0",
       "bytes": 953140,
       "source": "dealer:assets/motions/pamela-p4-c2-left-closed-closed/source.mp4#frame=0",
-      "role": "pilot-start-anchor"
+      "role": "pilot-start-anchor",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p7-c1-left-turn-pilot-01/source.mp4",
       "sha256": "f00262416a1b09dcf01ddb9e6c4b9d14ffeaf03745a2cb097682645ed9087751",
       "bytes": 20509640,
       "source": "runway-task:910b3d33-fb58-40ba-876b-d14bd82c12ee",
-      "role": "rejected-pilot-source"
+      "role": "rejected-pilot-source",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p7-c1-left-turn-pilot-02/start.png",
       "sha256": "3050e9ccc0d624a1b45d49a67be1c38a8ef6a6038d2743585891dea44d5ffff0",
       "bytes": 953140,
       "source": "dealer:assets/motions/pamela-p4-c2-left-closed-closed/source.mp4#frame=0",
-      "role": "pilot-start-anchor"
+      "role": "pilot-start-anchor",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p7-c1-left-turn-pilot-02/end.png",
       "sha256": "5c9de55375c9a12b3395af7e873f07c85b5b067c49b1d9b5a3aa4711e50fb0a6",
       "bytes": 1264899,
       "source": "dealer:assets/motions/pamela-p7-c1-left-turn-pilot-02/overlay-spec.json",
-      "role": "pilot-end-overlay-specification"
+      "role": "pilot-end-overlay-specification",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p7-c1-left-turn-pilot-02/source.mp4",
       "sha256": "00a93efa3e7b8ccdadbafa57e8232a1eed479600c5f4c06d12faed9f74b1e334",
       "bytes": 20926194,
       "source": "runway-task:4f57a462-6df7-4beb-8fa0-db5d3eaf8357",
-      "role": "candidate-pilot-source"
+      "role": "candidate-pilot-source",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p6-c1-left-turn-pilot-01/start.png",
       "sha256": "3050e9ccc0d624a1b45d49a67be1c38a8ef6a6038d2743585891dea44d5ffff0",
       "bytes": 953140,
       "source": "dealer:assets/motions/pamela-p4-c2-left-closed-closed/source.mp4#frame=0",
-      "role": "pilot-start-anchor"
+      "role": "pilot-start-anchor",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p6-c1-left-turn-pilot-01/end.png",
       "sha256": "a08ba7353c1de4a5978365444a06bda8e13ee9447081f42efb661874b60bcfcf",
       "bytes": 1264637,
       "source": "dealer:assets/motions/pamela-p6-c1-left-turn-pilot-01/overlay-spec.json",
-      "role": "pilot-end-overlay-specification"
+      "role": "pilot-end-overlay-specification",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p6-c1-left-turn-pilot-01/source.mp4",
       "sha256": "6386e401b1600263998e5a5e8facb180a46c000c13bb0ab76265d213a9703c34",
       "bytes": 16269958,
       "source": "runway-task:d4281d56-7b6f-4936-9c62-b203fd20ef58",
-      "role": "rejected-pilot-source"
+      "role": "rejected-pilot-source",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p7-c1-left-pink-pilot-01/start.png",
       "sha256": "373dc2b2a9b1415c22da6ef8f466690eaff676507c418d16956e922717193e73",
       "bytes": 1193058,
       "source": "dealer:assets/motions/pamela-p4-c2-left-closed-closed/source.mp4#frame=0",
-      "role": "pilot-start-proxy-overlay"
+      "role": "pilot-start-proxy-overlay",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p7-c1-left-pink-pilot-01/end.png",
       "sha256": "deedd1c062779f13b8430da223510195c742d437473cd43739ea9b99c07ad5e2",
       "bytes": 1254312,
       "source": "dealer:assets/motions/pamela-p7-c1-left-pink-pilot-01/start.png",
-      "role": "pilot-end-proxy-overlay"
+      "role": "pilot-end-proxy-overlay",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p7-c1-left-pink-pilot-01/input-mask.png",
       "sha256": "36258bfeb83d56cd1addc5af013f7f587195b4d2e98c7b76c18d9e69bd14dd85",
       "bytes": 7050,
       "source": "dealer:assets/motions/pamela-p7-c1-left-pink-pilot-01/start.png",
-      "role": "input-still-card-core-mask"
+      "role": "input-still-card-core-mask",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p7-c1-left-pink-pilot-01/source.mp4",
       "sha256": "41ac99c50cba24781f2d4461bed91c2c6b5e13beb6b761d8d6f09d13979bf20e",
       "bytes": 16491760,
       "source": "runway-task:d3ddd907-b892-48b1-b96e-f289656928dc",
-      "role": "pending-motion-only-pilot-source"
+      "role": "pending-motion-only-pilot-source",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p7-c1-left-direct-pilot-01/start.png",
       "sha256": "373dc2b2a9b1415c22da6ef8f466690eaff676507c418d16956e922717193e73",
       "bytes": 1193058,
       "source": "assets/motions/pamela-p7-c1-left-pink-pilot-01/start.png",
-      "role": "pilot-start-anchor"
+      "role": "pilot-start-anchor",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p7-c1-left-direct-pilot-01/end.png",
       "sha256": "6d0e7c4c73243d431658afe38b02f1a53ddb8d28123dacb00344b28a479d028f",
       "bytes": 1255151,
       "source": "tools/generate-p7-direct.ts",
-      "role": "pilot-geometric-end-anchor"
+      "role": "pilot-geometric-end-anchor",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p7-c1-left-direct-pilot-01/placement-plan.json",
       "sha256": "a8389f0c5b588705a631102e2539a8c4079aa0e7fac16f841415fb463d5d8479",
       "bytes": 11725,
       "source": ".runtime/public-qa/saved-flat-plan.json",
-      "role": "frozen-pilot-placement-plan"
+      "role": "frozen-pilot-placement-plan",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p7-c1-left-direct-pilot-01/source.mp4",
       "sha256": "fd956e2537d100c9596366816c595e24caf1ab542451f788c426e7d4d3bf5809",
       "bytes": 15932833,
       "source": "runway-task:37496e52-9a7a-4ed2-b2d5-46bead1e9214",
-      "role": "pending-motion-only-pilot-source"
+      "role": "pending-motion-only-pilot-source",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p7-c1-left-turn-pilot-03/start.png",
       "sha256": "3050e9ccc0d624a1b45d49a67be1c38a8ef6a6038d2743585891dea44d5ffff0",
       "bytes": 953140,
       "source": "assets/motions/pamela-p7-c1-left-turn-pilot-02/start.png",
-      "role": "pilot-start-anchor"
+      "role": "pilot-start-anchor",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p7-c1-left-turn-pilot-03/end.png",
       "sha256": "6dab51f1a0346051c2656a835e21ece48bfc7533395235e9010c4f64fa86e628",
       "bytes": 1265825,
       "source": "tools/generate-p7-direct.ts",
-      "role": "pilot-geometric-end-anchor"
+      "role": "pilot-geometric-end-anchor",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p7-c1-left-turn-pilot-03/placement-plan.json",
       "sha256": "a8389f0c5b588705a631102e2539a8c4079aa0e7fac16f841415fb463d5d8479",
       "bytes": 11725,
       "source": ".runtime/public-qa/saved-flat-plan.json",
-      "role": "frozen-pilot-placement-plan"
+      "role": "frozen-pilot-placement-plan",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p7-c1-left-turn-pilot-03/source.mp4",
       "sha256": "427a32f5ea55a64aa55b10c6e6e45f3b64fc887a22eb54f0bce06a675eb35f84",
       "bytes": 16149774,
       "source": "runway-task:18b11157-288a-40e7-b667-a327506ed928",
-      "role": "pending-motion-only-pilot-source"
+      "role": "pending-motion-only-pilot-source",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/sequences/pamela-r2/review-manifest.json",
@@ -8769,77 +8789,88 @@
       "sha256": "842dd4829654195d559acd27ae66b74eb0a9793e2392993685557b94bc76e9e4",
       "bytes": 48538733,
       "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-scene/take-09/full-candidate-3598-89d0a448-b6afbd/pamela-sammanhangande-kandidat.mp4",
-      "role": "historical-composited-sequence-original"
+      "role": "historical-composited-sequence-original",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-sequence-17-portrait-r2/source.mp4",
       "sha256": "2233434001c3e7d957fc6eb86291b298e64e5feffe8d3e0f9dd20acf71935460",
       "bytes": 20341037,
       "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-scene/take-14/842dd4829654/pamela-sammanhangande-mobil.mp4",
-      "role": "historical-composited-sequence-original"
+      "role": "historical-composited-sequence-original",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-sequence-16-native-r2/review.mp4",
       "sha256": "0860ad550ed94d7c84c37e434effe62531752140b755c359bd0e468332b37024",
       "bytes": 29134812,
       "source": "assets/motions/pamela-sequence-17-native-r2/source.mp4#frames=0:3296",
-      "role": "derived-16-card-sequence-review"
+      "role": "derived-16-card-sequence-review",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-sequence-16-portrait-r2/review.mp4",
       "sha256": "cdb2bc706f07d51b1bb840dba03751147825c27074fc59971d44851b6eb2ccf4",
       "bytes": 14568693,
       "source": "assets/motions/pamela-sequence-17-portrait-r2/source.mp4#frames=0:3296",
-      "role": "derived-16-card-sequence-review"
+      "role": "derived-16-card-sequence-review",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-source-turn/source.mp4",
       "sha256": "4153a54702edd316744ae39a64d7b6094e5bcdcd2020a1852850a4c3a9aaa1fe",
       "bytes": 11359929,
       "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/original.mp4",
-      "role": "historical-unmodified-motion-source"
+      "role": "historical-unmodified-motion-source",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c2-left-closed-closed/source.mp4",
       "sha256": "e3b38f89eb6cb14f8dc240c5fdecce814850bb87285ebe540084c33af82b2ad7",
       "bytes": 11206879,
       "source": "existing local registered source",
-      "role": "historical-unmodified-motion-source"
+      "role": "historical-unmodified-motion-source",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-color-control-01/source.mp4",
       "sha256": "d5834149569c00b1ec99b334df44724e289e49dbd5e6d5fc2a67e12d0fb5140c",
       "bytes": 11165209,
       "source": "runway-task:e3fd5595-09ba-4228-a42c-0b7fb848fe6d",
-      "role": "unmodified-control-output"
+      "role": "unmodified-control-output",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-color-control-01/start.png",
       "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45",
       "bytes": 1179028,
       "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/start.png",
-      "role": "exact-historical-control-input"
+      "role": "exact-historical-control-input",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-color-control-01/end.png",
       "sha256": "c30be996971282c737825a9439e3d303728086c391d8bbb14a67a8fc826e784b",
       "bytes": 1315858,
       "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/end.png",
-      "role": "exact-historical-control-input"
+      "role": "exact-historical-control-input",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-color-control-01/plan.json",
       "sha256": "dc3d88069afeb232f6ed5b388b29a39f051c9d7303167d8ead477ba880d4f6fe",
       "bytes": 5711,
       "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/plan.json",
-      "role": "exact-historical-control-input"
+      "role": "exact-historical-control-input",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-color-control-01/prompt.txt",
       "sha256": "1e5c0abca098d18083f2f558c7ab2c50064e7d051a2842cf721dac122973648d",
       "bytes": 733,
       "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/prompt.txt",
-      "role": "exact-historical-control-input"
+      "role": "exact-historical-control-input",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-older-14-material-full/source.mp4",
@@ -8850,7 +8881,8 @@
       "fps": 30,
       "frames": 5486,
       "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-two-sided-bank/take-02/render/vila-fourteen-materials-vila.mp4",
-      "role": "historical-material-sequence-original"
+      "role": "historical-material-sequence-original",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-older-14-material-compact/source.mp4",
@@ -8861,7 +8893,8 @@
       "fps": 30,
       "frames": 4404,
       "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-two-sided-bank/take-02/render/vila-fourteen-materials-trim.mp4",
-      "role": "historical-material-sequence-original"
+      "role": "historical-material-sequence-original",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-kling-control-01/source.mp4",
@@ -8874,35 +8907,40 @@
       "provider": "Runway developer API",
       "model": "kling3.0_pro",
       "role": "unmodified-control-output",
-      "source": "runway-task:b22a8190-96ad-4c55-9c9d-b930a0d0623b"
+      "source": "runway-task:b22a8190-96ad-4c55-9c9d-b930a0d0623b",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-kling-control-01/start.png",
       "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45",
       "bytes": 1179028,
       "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/start.png",
-      "role": "exact-historical-control-input"
+      "role": "exact-historical-control-input",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-kling-control-01/end.png",
       "sha256": "c30be996971282c737825a9439e3d303728086c391d8bbb14a67a8fc826e784b",
       "bytes": 1315858,
       "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/end.png",
-      "role": "exact-historical-control-input"
+      "role": "exact-historical-control-input",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-kling-control-01/plan.json",
       "sha256": "dc3d88069afeb232f6ed5b388b29a39f051c9d7303167d8ead477ba880d4f6fe",
       "bytes": 5711,
       "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/plan.json",
-      "role": "exact-historical-control-input"
+      "role": "exact-historical-control-input",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-kling-control-01/prompt.txt",
       "sha256": "1e5c0abca098d18083f2f558c7ab2c50064e7d051a2842cf721dac122973648d",
       "bytes": 733,
       "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-pilot/center-arc-01/p4-c1/prompt.txt",
-      "role": "exact-historical-control-input"
+      "role": "exact-historical-control-input",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-older-14-mask-refined/source.mp4",
@@ -8913,70 +8951,80 @@
       "fps": 30,
       "frames": 5486,
       "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-mask-bank/take-01/render/vila-fourteen-materials-vila.mp4",
-      "role": "historical-mask-refined-sequence"
+      "role": "historical-mask-refined-sequence",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-plan-retarget-02/preview.mp4",
       "sha256": "3e4422b84e7402a161ec8ef550cb6028d2ca9d9f68ce6d1e4f9fb54969bc8983",
       "bytes": 3235663,
       "source": "assets/motions/pamela-p4-c1-source-turn/source.mp4",
-      "role": "current-plan-motion-review"
+      "role": "current-plan-motion-review",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-plan-retarget-02/placement-plan.json",
       "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
       "bytes": 11752,
       "source": "placements/default.json",
-      "role": "frozen-current-plan-render-receipt"
+      "role": "frozen-current-plan-render-receipt",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-plan-retarget-02/render.json",
       "sha256": "7d43a17728c764a9f7a8d6ccc811ce4461b1917b9e9e250796885a372a03f389",
       "bytes": 3464,
       "source": "assets/motions/pamela-p4-c1-source-turn/source.mp4",
-      "role": "frozen-current-plan-render-receipt"
+      "role": "frozen-current-plan-render-receipt",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-palm-up-01/start.png",
       "sha256": "a2fc6d3565ca711015c9b547671bf33e97eea4c2281e75841690f8848b422f45",
       "bytes": 1179028,
       "source": "assets/motions/pamela-p4-c1-color-control-01/start.png",
-      "role": "palm-up-generation-input"
+      "role": "palm-up-generation-input",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-palm-up-01/end.png",
       "sha256": "1d306103fea146fe8a4f2a5deb10870929c47a8b58e971688872559edb94478e",
       "bytes": 2351175,
       "source": "imagegen palm-up edit plus explicit placement marker",
-      "role": "palm-up-generation-input"
+      "role": "palm-up-generation-input",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-palm-up-01/imagegen-end.png",
       "sha256": "1f6833b8ce9491214cfbb3de32c87994b0fed528819db3cdbc29ddff6afc1f06",
       "bytes": 1579572,
       "source": "imagegen palm-up edit plus explicit placement marker",
-      "role": "palm-up-generation-input"
+      "role": "palm-up-generation-input",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-palm-up-01/inputs.json",
       "sha256": "885b708612607bf4057f0ff028a21d5c4e6cd4750e6750373538b2411c6a9763",
       "bytes": 2505,
       "source": "imagegen palm-up edit plus explicit placement marker",
-      "role": "palm-up-generation-input"
+      "role": "palm-up-generation-input",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-palm-up-01/placement-plan.json",
       "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
       "bytes": 11752,
       "source": "placements/default.json",
-      "role": "palm-up-generation-input"
+      "role": "palm-up-generation-input",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-palm-up-01/prompt.txt",
       "sha256": "acc184c54a21df40a7cddd746194d79394ee9fa56a8530c60b183582cf930e44",
       "bytes": 902,
       "source": "imagegen palm-up edit plus explicit placement marker",
-      "role": "palm-up-generation-input"
+      "role": "palm-up-generation-input",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-palm-up-01/source.mp4",
@@ -8989,84 +9037,96 @@
       "provider": "Runway developer API",
       "model": "wan3",
       "source": "Runway task ee8c4cbb-bf95-4f2e-8b1d-d928550e7dcd",
-      "role": "palm-up-generation-original"
+      "role": "palm-up-generation-original",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-shoe-contact-01/anchor-candidate-01.png",
       "sha256": "5a5fa069a7e5ebb6c370780afb4d7f7339d4d4e95753eec306338113523b0329",
       "bytes": 1581808,
       "source": "imagegen edited shoe ready anchor; rejected by user for hand direction",
-      "role": "secondary-anchor-candidate"
+      "role": "secondary-anchor-candidate",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-shoe-contact-01/anchor-candidate-02.png",
       "sha256": "972cb2709d9fe3b79ef0482f46215e91f220b6ed467d3a2dba066d26055371ca",
       "bytes": 1537543,
       "source": "imagegen edited shoe ready anchor; rejected by user for hand direction",
-      "role": "secondary-anchor-candidate"
+      "role": "secondary-anchor-candidate",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-shoe-contact-01/imagegen-ready-02.png",
       "sha256": "9bd670bcedc0bb17671b15b3f0eec80183e3df9fd707381571e7efbc248c28d3",
       "bytes": 1541206,
       "source": "User-requested natural shoe-feed READY2 imagegen alternative",
-      "role": "ready-anchor-candidate"
+      "role": "ready-anchor-candidate",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-shoe-contact-01/ready-02.png",
       "sha256": "8309fdadbbced3b72d84053232f8cddda8080e9df7674d76873d436935de3eb7",
       "bytes": 2015336,
       "source": "User-requested natural shoe-feed READY2 imagegen alternative",
-      "role": "ready-anchor-candidate"
+      "role": "ready-anchor-candidate",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-shoe-contact-01/ready-02-prompt.txt",
       "sha256": "c8d8858e495c4e3135946b9ad6b1ee5c3f8f8163a0b33953e1d2438c4569ad39",
       "bytes": 2293,
       "source": "User-requested natural shoe-feed READY2 imagegen alternative",
-      "role": "ready-anchor-candidate"
+      "role": "ready-anchor-candidate",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-ready2-01/end.png",
       "sha256": "54ca6bda789f987b1cdbf95ca826b91953ddb4306e8b345f66da903f008dd06f",
       "bytes": 2170253,
       "source": "READY2 immutable source plate plus frozen placement card target",
-      "role": "ready2-generation-input"
+      "role": "ready2-generation-input",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-ready2-01/placement-plan.json",
       "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
       "bytes": 11752,
       "source": "READY2 immutable source plate plus frozen placement card target",
-      "role": "ready2-generation-input"
+      "role": "ready2-generation-input",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-ready2-01/prompt.txt",
       "sha256": "7197f5f698492949846bc8d4b73beeb865dade0212bc599a56e67f27e03695eb",
       "bytes": 1011,
       "source": "READY2 immutable source plate plus frozen placement card target",
-      "role": "ready2-generation-input"
+      "role": "ready2-generation-input",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p1-c1-ready2-01/end.png",
       "sha256": "a7231c1cfb84461a48f13ad4e8c0442fc747492dc09fabc2ead140af01edc668",
       "bytes": 2171560,
       "source": "READY2 immutable source plate plus frozen placement card target",
-      "role": "ready2-generation-input"
+      "role": "ready2-generation-input",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p1-c1-ready2-01/placement-plan.json",
       "sha256": "406acb69c086b51d166c0eba3e6bb2ce7e19b868b63546db04aa9562da7e7058",
       "bytes": 11752,
       "source": "READY2 immutable source plate plus frozen placement card target",
-      "role": "ready2-generation-input"
+      "role": "ready2-generation-input",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p1-c1-ready2-01/prompt.txt",
       "sha256": "dc463cc267a5eee68a717ed83be2abed20beeb5a202d28246bebbc3310514e57",
       "bytes": 1053,
       "source": "READY2 immutable source plate plus frozen placement card target",
-      "role": "ready2-generation-input"
+      "role": "ready2-generation-input",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-ready2-01/source.mp4",
@@ -9079,7 +9139,8 @@
       "provider": "Runway developer API",
       "model": "wan3",
       "source": "Runway task f3bed7bd-7557-439b-aa6d-166840f6ef3d",
-      "role": "ready2-generation-original"
+      "role": "ready2-generation-original",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p1-c1-ready2-01/source.mp4",
@@ -9092,7 +9153,8 @@
       "provider": "Runway developer API",
       "model": "wan3",
       "source": "Runway task 6b60f198-3f20-4889-8abd-26d23e2ccbe5",
-      "role": "ready2-generation-original"
+      "role": "ready2-generation-original",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-pinch-turn-study-01/start-pinch.png",
@@ -9101,7 +9163,8 @@
       "width": 1536,
       "height": 1024,
       "source": "Built-in image_gen; rejected local study",
-      "role": "rejected-anchor-study"
+      "role": "rejected-anchor-study",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-pinch-turn-study-01/turn-reveal.png",
@@ -9110,7 +9173,8 @@
       "width": 1537,
       "height": 1023,
       "source": "Built-in image_gen; rejected local study",
-      "role": "rejected-anchor-study"
+      "role": "rejected-anchor-study",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-p4-c1-pinch-turn-study-01/start-pinch-rejected-02.png",
@@ -9119,7 +9183,8 @@
       "width": 1536,
       "height": 1024,
       "source": "Built-in image_gen; rejected local study",
-      "role": "rejected-anchor-study"
+      "role": "rejected-anchor-study",
+      "archived": "D:/dealer-archive/pamela-2026-11-23"
     }
   ]
 }

@@ -54,21 +54,20 @@ export function takeEdgeName(take: Pick<Take, "edge" | "hub">): string {
 }
 
 // ── Takes ───────────────────────────────────────────────────────────────────
-// A take's short name is read from its id within its edge: "pamela-p4-c1-plan-deal-02" on READY>P4.C1 is "Giv 02".
-// Rule: drop "pamela", the card the edge is about (p4-c1) and the words that only repeat the edge (plan, deal, return,
-// the hub it returns to, entry, exit, reveal, table, arrive, leave, idle on the idle edge); say what the edge does in one
-// word first (Giv, Retur, Ingång, Utgång, Vänd, Kommer, Går; nothing on the idle edge); translate the remaining words
-// that have a Swedish name (calm → lugn, readyb → B, edit → rättad, arkiv stays) and keep the rest, numbers as written.
-// The words dropped are the same for every take of one edge, so names stay apart. Should two takes of one edge still read
-// the same, both are shown by their id without "pamela-" (takeNames). Another dealer's films are named after the order they
-// came from (tools/register-order.ts: "paow-giv-p4-01-deal" on READY>P4.C1); for them her name, the order's step ("giv",
-// "ingang 2 1", "utgang 2 2"), the seat on its own and the hub a return goes back to ("ready c") repeat the edge too, so that one
-// is "Giv 01" as Pamela's is. The graph keeps A2.2's and A2.3's takes on A2.1's edge (take.hub), so a take written at one of
-// them says its anchor in his notation after the first word ("Giv A2.3 01 01", never "2 3" or a trailing "c"), and the doll's
-// cycle ("h24 cykel") is "docka". Pamela's names stay as they were.
+// A take's short name is read from its id within its edge. A dealer's films are named after the order they came from
+// (tools/register-order.ts: "paow-giv-p4-01-deal" on READY>P4.C1 is "Giv 01").
+// Rule: drop the dealer's name when the id starts with it, the card the edge is about (p4-c1, or the seat on its own) and
+// the words that only repeat the edge (plan, deal, return, the hub it returns to, entry, exit, reveal, table, arrive,
+// leave, idle on the idle edge, the order's step: "giv", "ingang 2 1", "utgang 2 2"); say what the edge does in one word
+// first (Giv, Retur, Ingång, Utgång, Vänd, Kommer, Går; nothing on the idle edge); translate the remaining words that have
+// a Swedish name (calm → lugn, readyb → B, edit → rättad, arkiv stays) and keep the rest, numbers as written. The words
+// dropped are the same for every take of one edge, so names stay apart. Should two takes of one edge still read the same,
+// both are shown by their id (takeNames). The graph keeps A2.2's and A2.3's takes on A2.1's edge (take.hub), so a take
+// written at one of them says its anchor in his notation after the first word ("Giv A2.3 01 01", never "2 3" or a
+// trailing "c", the hub's "ready c" dropped), and the doll's cycle ("h24 cykel") is "docka".
 export type TakeLike = Pick<Take, "id" | "edge" | "kind"> & { dealer?: string; hub?: Take["hub"] };
 
-// The order step's word in another dealer's ids, by what the edge does, with the anchor it was ordered from when the id
+// The order step's word in a dealer's ids, by what the edge does, with the anchor it was ordered from when the id
 // names it ("giv 2 3", "giv 2 3c", "utgang 2 2"): the first one that stands whole is dropped.
 const ORDER_WORDS: Partial<Record<EdgeKind, string[]>> = { DEAL: ["giv"], RETURN: ["giv", "utgang"], ENTRY: ["ingang"] };
 function dropStep(words: string[], steps: readonly string[]): void {
@@ -141,15 +140,15 @@ export function takeName(take: TakeLike, siblings?: readonly TakeLike[]): string
   if (siblings) return takeNames(siblings.some((s) => s.id === take.id) ? siblings : [...siblings, take]).get(take.id)!;
   const { card, drop, lead } = edgeWords(take);
   let words = take.id.split("-").filter(Boolean);
-  const other = !!take.dealer && take.dealer !== "pamela" && words[0] === take.dealer;
-  if (words[0] === "pamela" || other) words = words.slice(1);
+  const prefixed = !!take.dealer && words[0] === take.dealer;
+  if (prefixed) words = words.slice(1);
   if (card.length) {
     const at = words.findIndex((w, i) => w === card[0] && words[i + 1] === card[1]);
     if (at >= 0) words.splice(at, 2);
-    else if (other) dropRun(words, [card[0]]);
+    else if (prefixed) dropRun(words, [card[0]]);
   }
-  if (other && take.kind) dropStep(words, ORDER_WORDS[take.kind] ?? []);
-  const hub = other && take.hub ? /^READY-([A-Z])$/.exec(take.hub) : null;
+  if (prefixed && take.kind) dropStep(words, ORDER_WORDS[take.kind] ?? []);
+  const hub = prefixed && take.hub ? /^READY-([A-Z])$/.exec(take.hub) : null;
   if (hub) dropRun(words, ["ready", hub[1].toLowerCase()]);
   for (const word of drop) {
     const at = words.indexOf(word);
@@ -157,7 +156,7 @@ export function takeName(take: TakeLike, siblings?: readonly TakeLike[]): string
   }
   let rest = words.join(" ");
   for (const [word, swedish] of WORDS) rest = rest.replace(word, swedish);
-  const text = [lead, hub ? nodeCode(hub[0]) : "", rest].filter(Boolean).join(" ").trim() || take.id.replace(/^pamela-/, "");
+  const text = [lead, hub ? nodeCode(hub[0]) : "", rest].filter(Boolean).join(" ").trim() || take.id;
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
@@ -166,7 +165,7 @@ export function takeNames(takes: readonly TakeLike[]): Map<string, string> {
   const named = takes.map((t) => [t.id, takeName(t)] as const);
   const count = new Map<string, number>();
   for (const [, name] of named) count.set(name, (count.get(name) ?? 0) + 1);
-  return new Map(named.map(([id, name]) => [id, (count.get(name) ?? 0) > 1 ? id.replace(/^pamela-/, "") : name]));
+  return new Map(named.map(([id, name]) => [id, (count.get(name) ?? 0) > 1 ? id : name]));
 }
 
 // ── Facts ───────────────────────────────────────────────────────────────────

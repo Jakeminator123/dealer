@@ -26,14 +26,14 @@ const sha = (b: Buffer) => createHash('sha256').update(b).digest('hex');
 // The bank's frame: a pose figure is cut in bank pixels.
 const picture = (r: number, g: number, b: number) => sharp({ create: { width: 1764, height: 1174, channels: 3, background: { r, g, b } } }).png().toBuffer();
 // The pose of a still from the test register (the real POSE points at a bank film that is not in the temporary lab).
-const poses = { 'ANKARE-2.1': { entry: 'pamela-nyp', label: 'Pamelas nyp', keep: ARM_AT_SHOE, what: POSE_WHAT }, 'ANKARE-2.2': { entry: 'pamela-nyp', label: 'Pamelas nyp som släp', keep: ARM_AT_SHOE, what: POSE_WHAT } };
+const poses = { 'ANKARE-2.1': { entry: 'ada-nyp', label: 'Adas nyp', keep: ARM_AT_SHOE, what: POSE_WHAT }, 'ANKARE-2.2': { entry: 'ada-nyp', label: 'Adas nyp som släp', keep: ARM_AT_SHOE, what: POSE_WHAT } };
 
 const register = () => ({
   schemaVersion: 1,
   dealers: {
-    pamela: { name: 'Pamela', entries: [
-      { id: 'pamela-vila', role: 'ankare-1', name: 'Vila', path: 'assets/anchors/pamela-vila/anchor.png', node: 'IDLE', state: 'gäller' },
-      { id: 'pamela-nyp', role: 'ankare-2.1', name: 'Nyp', path: 'assets/anchors/pamela-nyp/anchor.png', node: 'READY' },
+    ada: { name: 'Ada', entries: [
+      { id: 'ada-vila', role: 'ankare-1', name: 'Vila', path: 'assets/anchors/ada-vila/anchor.png', node: 'IDLE', state: 'gäller' },
+      { id: 'ada-nyp', role: 'ankare-2.1', name: 'Nyp', path: 'assets/anchors/ada-nyp/anchor.png', node: 'READY' },
     ] },
     paow: { name: 'Paow', entries: [
       { id: 'paow-vila-ung-2', role: 'ankare-1', name: 'Vila, kandidat 2', path: 'assets/anchors/paow-vila-ung-2/anchor.png', node: 'IDLE', state: 'kandidat' },
@@ -79,9 +79,11 @@ async function lab(t: { after(fn: () => Promise<void> | void): void }, transport
   const policy = JSON.parse(await readFile(policyFile, 'utf8'));
   policy.mandate = {id: 'test-route-mandate', startsAt: '2026-11-12T00:00:00Z', endsAt: '2026-11-13T00:00:00Z', rollingHourCredits: 800, totalCredits: 2500};
   await writeFile(policyFile, JSON.stringify(policy));
-  // Every dealer of the lab can be ordered for, paused Pamela too: the pause has a test of its own.
+  // Every dealer of the lab can be ordered for, and a second, made-up dealer (Ada, the register's first below) beside the
+  // real ones, so that two dealers' orders and poses can be told apart; the pause has a test of its own.
   const dealersFile = path.join(root, 'data/dealers.json');
   const dealerList = JSON.parse(await readFile(dealersFile, 'utf8'));
+  dealerList.dealers.unshift({ id: 'ada', name: 'Ada', look: 'a made-up test dealer', films: { prefix: 'ada-' }, shoe: '2.1', paused: null });
   for (const d of dealerList.dealers) d.paused = null;
   await writeFile(dealersFile, JSON.stringify(dealerList));
   // A declared fixture, independent of Jakob's saved or newly committed hand choices.
@@ -91,7 +93,7 @@ async function lab(t: { after(fn: () => Promise<void> | void): void }, transport
   await writeFile(path.join(root, 'data/media-roles.json'), JSON.stringify(register(), null, 2) + '\n');
   await writeFile(path.join(root, 'data/clip-jobs.json'), '{"jobs": []}');
   const files: Record<string, Buffer> = {};
-  for (const [name, colour] of [['pamela-vila', [0, 237, 44]], ['pamela-nyp', [10, 230, 40]], ['paow-vila-ung-2', [0, 236, 45]], ['paow-vila-ung-1', [1, 235, 46]], ['paow-nyp-ny', [2, 234, 47]]] as const) {
+  for (const [name, colour] of [['ada-vila', [0, 237, 44]], ['ada-nyp', [10, 230, 40]], ['paow-vila-ung-2', [0, 236, 45]], ['paow-vila-ung-1', [1, 235, 46]], ['paow-nyp-ny', [2, 234, 47]]] as const) {
     await mkdir(path.join(root, 'assets/anchors', name), { recursive: true });
     files[name] = await picture(...colour);
     await writeFile(path.join(root, 'assets/anchors', name, 'anchor.png'), files[name]);
@@ -208,7 +210,7 @@ test('a stale studio or preview cannot write anything, and the current preview i
 
 test('retrying a successful save returns the same order IDs without writing more drafts', async (t) => {
   const { root, request } = await lab(t);
-  const film = { dealer: 'pamela', step: 'VILA' };
+  const film = { dealer: 'ada', step: 'VILA' };
   for (const input of [film, [film, { ...film, takes: 2 }]]) {
     const shown = await request('POST', '/api/orders/preview', { body: input });
     assert.equal(shown.status, 200);
@@ -252,7 +254,7 @@ test('after a saved draft loses its HTTP response the studio retries the same sa
     return originalFetch(new URL(address, origin), { ...init, headers });
   });
 
-  const input = { dealer: 'pamela', step: 'VILA' } as const;
+  const input = { dealer: 'ada', step: 'VILA' } as const;
   const preview = await previewOrder(input);
   const save = () => createOrder(input, preview.revision);
   await assert.rejects(save, (error: unknown) => {
@@ -274,7 +276,7 @@ test('after a saved draft loses its HTTP response the studio retries the same sa
 
 test('an evicted preview cannot be saved or served, and a new preview can be saved', async (t) => {
   const { root, request } = await lab(t);
-  const input = { dealer: 'pamela', step: 'VILA' };
+  const input = { dealer: 'ada', step: 'VILA' };
   const shown = await request('POST', '/api/orders/preview', { body: input });
   assert.equal(shown.status, 200);
   const media = '/' + shown.json.orders[0].pictures[0].path;
@@ -322,10 +324,10 @@ test('drafts, changes and approval go through the routes with their guards', asy
   assert.equal(anchor.named, 'Vila, kandidat 2');
   assert.equal('named' in JSON.parse(await readFile(path.join(root, 'data/orders/paow-ankare-2-1-01.json'), 'utf8')).pictures[0], false);
   const pose = a.order.pictures.find((p: { name: string }) => p.name === 'pose-figure.png');
-  assert.equal(pose.from.entry, 'pamela-nyp');
+  assert.equal(pose.from.entry, 'ada-nyp');
   assert.equal(pose.label, 'Pose · bara armen, handen och skon');
   assert.deepEqual(pose.cut.keep, ARM_AT_SHOE);
-  assert.equal(pose.cut.source.sha256, sha(files['pamela-nyp']));
+  assert.equal(pose.cut.source.sha256, sha(files['ada-nyp']));
   assert.equal(a.order.summary, 'Gör Paows ankare 2.1 ur hennes ankare 1.', 'what it makes and from what, never how she moves');
   assert.equal(a.order.cost.total, 80);
   // Changed 2026-11-21 (review finding 16): the notes name the recipe, not the file it lies in.
@@ -422,16 +424,16 @@ test('drafts, changes and approval go through the routes with their guards', asy
 
 test('nothing new is drafted for a paused dealer: neither a preview nor a draft, one seat or several', async (t) => {
   const { root, call, request } = await lab(t);
-  const made = await call('POST', '/api/orders', { body: { dealer: 'pamela', step: 'VILA' } });
+  const made = await call('POST', '/api/orders', { body: { dealer: 'ada', step: 'VILA' } });
   assert.equal(made.status, 201, 'made before the pause');
   const file = path.join(root, 'data/dealers.json');
   const dealers = JSON.parse(await readFile(file, 'utf8'));
-  dealers.dealers.find((d: { id: string }) => d.id === 'pamela').paused = 'Jakob 2026-11-12: inget nytt beställs för Pamela.';
+  dealers.dealers.find((d: { id: string }) => d.id === 'ada').paused = 'Jakob 2026-11-12: inget nytt beställs för Ada.';
   await writeFile(file, JSON.stringify(dealers));
-  for (const body of [{ dealer: 'pamela', step: 'VILA' }, [{ dealer: 'pamela', step: 'VILA' }], { dealer: 'pamela', step: 'GIV-2.1', seats: [{ target: 'P1.C1' }, { target: 'P2.C1' }] }]) {
+  for (const body of [{ dealer: 'ada', step: 'VILA' }, [{ dealer: 'ada', step: 'VILA' }], { dealer: 'ada', step: 'GIV-2.1', seats: [{ target: 'P1.C1' }, { target: 'P2.C1' }] }]) {
     const refused = await request('POST', '/api/orders/preview', { body });
     assert.equal(refused.status, 409, JSON.stringify(body));
-    assert.equal(refused.json.error, 'Pamela är pausad: inget nytt beställs.');
+    assert.equal(refused.json.error, 'Ada är pausad: inget nytt beställs.');
   }
   assert.deepEqual(await readdir(path.join(root, 'data/orders')), [`${made.json.order.id}.json`], 'her draft stays as it was, and nothing new is written');
   assert.equal((await request('GET', `/api/orders/${made.json.order.id}`)).status, 200);
@@ -526,13 +528,13 @@ test('a draft follows the anchor Jakob approves in Material, and shows what its 
 test('a deal: the hand, handbyte and how the card lands, defaulted from the plan; "Alla sju" makes one draft per seat', async (t) => {
   const { call } = await lab(t);
   const list = (await call('GET', '/api/orders')).json;
-  assert.deepEqual(list.dealers.map((d: { id: string }) => d.id), ['pamela', 'paow']);
+  assert.deepEqual(list.dealers.map((d: { id: string }) => d.id), ['ada', 'paow']);
   assert.match(list.dealers[1].look, /black tailored blazer/);
   const seats = list.plan.seats;
   const crossing = Object.values(seats as Record<string, { target: string; crosses: boolean }>).filter((s) => s.crosses).map((s) => s.target).sort();
   assert.deepEqual(crossing, ['P1.C1', 'P1.C2', 'P2.C1', 'P2.C2', 'P3.C1', 'P3.C2']);
   assert.deepEqual([seats['P4.C1'].side, seats['P4.C1'].hand, seats['P4.C1'].pass], ['FRONT', 'LH', false]);
-  assert.deepEqual(list.poses.map((p: { step: string; owner: { dealer: string; part: string } }) => [p.step, p.owner.dealer, p.owner.part]), [['ANKARE-2.1', 'pamela', 'arm'], ['ANKARE-2.2', 'pamela', 'arm']]);
+  assert.deepEqual(list.poses.map((p: { step: string; owner: { dealer: string; part: string } }) => [p.step, p.owner.dealer, p.owner.part]), [['ANKARE-2.1', 'ada', 'arm'], ['ANKARE-2.2', 'ada', 'arm']]);
   const pose = await call('GET', '/api/orders/pose/ANKARE-2.1');
   assert.equal(pose.status, 200);
   assert.equal((await sharp(pose.bytes!).metadata()).width, 1764);
@@ -989,7 +991,7 @@ test('a film made with another model: the 4K model for the entry, its parameters
 
 test('the line: a deal says its anchor, its seat and its card, and the recipe gives the rest; the seat ends on its own picture; every exception is said', async (t) => {
   const { root, call, request, files, frames } = await lab(t);
-  // Paow's anchor 2.1 and a landing picture for seat 4 hold; the bank has Pamela's approved deal to seat 4, which is the deal alone.
+  // Paow's anchor 2.1 and a landing picture for seat 4 hold; the bank has another dealer's (Ada's) approved deal to seat 4, which is the deal alone.
   const register = JSON.parse(await readFile(path.join(root, 'data/media-roles.json'), 'utf8'));
   register.dealers.paow.entries.find((e: { id: string }) => e.id === 'paow-nyp-ny').state = 'gäller';
   register.dealers.paow.entries.find((e: { id: string }) => e.id === 'paow-vila-ung-2').state = 'gäller';
@@ -1003,7 +1005,7 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   await mkdir(path.join(root, 'motions'), { recursive: true });
   await writeFile(path.join(root, 'assets/motions/pamela-p4-c1-plan-deal-02/source.mp4'), film);
   const straight = { decision: 'ACCEPTED', userAccepted: true, userReview: 'Jakob 2026-11-11: Det ser bra ut.' };
-  const jobs = [{ id: 'pamela-p4-c1-plan-deal-02', from: 'READY', to: 'RELEASE(P4.C1)', duration: 4 }, { id: 'pamela-kort-01', from: 'READY', to: 'LAND(P4.C1)', duration: 2 }];
+  const jobs = [{ id: 'pamela-p4-c1-plan-deal-02', from: 'READY', to: 'RELEASE(P4.C1)', duration: 4, dealer: 'ada' }, { id: 'pamela-kort-01', from: 'READY', to: 'LAND(P4.C1)', duration: 2 }];
   await writeFile(path.join(root, 'data/clip-jobs.json'), JSON.stringify({ jobs }));
   await writeFile(path.join(root, 'motions/pamela-p4-c1-plan-deal-02.json'), JSON.stringify({ source: { frames: 120, fps: 30, sha256: sha(film) }, review: straight }));
   await writeFile(path.join(root, 'motions/pamela-kort-01.json'), JSON.stringify({ source: { frames: 60, fps: 30 } }));
@@ -1051,7 +1053,7 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   assert.deepEqual(f.generation, { provider: 'runway-app', tool: 'generate_video', model: 'kling-4', params: { resolution: '1080p', duration: 4 } }, 'the reference film is 4 s, and so is the film');
   assert.deepEqual([f.takes, f.prompt.style, f.prompt.template, f.motion.flipAxis, f.motion.hand, f.motion.pass], [1, 'KORT', 'film-giv-kort@12', 'FREE', 'LH', false]);
   assert.deepEqual(f.pictures.map((p: { name: string; label: string; sha256: string }) => [p.name, p.label, p.sha256]), [['first.png', 'Första bild · Paows A2.1', sha(files['paow-nyp-ny'])], ['last.png', 'Slutbild · Paows landning på plats 4', sha(landing)]], 'seat 4 ends on seat 4\'s own landing picture');
-  assert.deepEqual([f.reference.status, f.reference.clips, f.reference.path, f.reference.sha256, f.reference.seconds, f.reference.dealer, f.reference.approvedStraight, f.reference.from.verdict, f.reference.from.words], ['FINNS', ['pamela-p4-c1-plan-deal-02'], `assets/orders/${f.id}/reference.mp4`, sha(film), 4, 'pamela', true, 'GODKÄND', 'Det ser bra ut.']);
+  assert.deepEqual([f.reference.status, f.reference.clips, f.reference.path, f.reference.sha256, f.reference.seconds, f.reference.dealer, f.reference.approvedStraight, f.reference.from.verdict, f.reference.from.words], ['FINNS', ['pamela-p4-c1-plan-deal-02'], `assets/orders/${f.id}/reference.mp4`, sha(film), 4, 'ada', true, 'GODKÄND', 'Det ser bra ut.']);
   assert.equal((await call('GET', `/${f.reference.path}`)).bytes!.equals(film), true, 'the film is copied byte for byte');
   for (const part of ['Locked camera', 'video 1', 'yellow card', 'blue side up', 'last frame']) assert.ok(f.prompt.text.includes(part), `the deal's text names ${part}`);
   assert.deepEqual(f.notes, [recipeNote('giv-2.1-mitten')], 'the recipe and nothing against it');
@@ -1211,7 +1213,7 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   const bankFile = path.join(root, 'data/clip-jobs.json'), bankBefore = await readFile(bankFile, 'utf8');
   const bank = JSON.parse(bankBefore), referencePart = 'pamela-archived-return';
   const correctedId = 'pamela-p4-c1-plan-deal-02-fixed';
-  bank.edits = [...(bank.edits ?? []), {id: correctedId, source: {clip: f.reference.from.film}, dealer: 'pamela'}];
+  bank.edits = [...(bank.edits ?? []), {id: correctedId, source: {clip: f.reference.from.film}, dealer: 'ada'}];
   const correctedPath = path.join(root, 'assets/motions', correctedId, 'source.mp4');
   const correctedFilm = Buffer.from('a corrected copy of the four-second film');
   await mkdir(path.dirname(correctedPath), {recursive: true});
@@ -1227,7 +1229,7 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   const correctedFrozenBytes = await readFile(correctedFrozenPath);
   const pendingCorrection = await call('POST', '/api/orders', {body: correctedInput});
   assert.equal(pendingCorrection.status, 201, pendingCorrection.json.error);
-  bank.derived.push({ id: referencePart, clip: f.reference.from.film, from: 'P4.C1', to: 'READY', frames: [80, 119], dealer: 'pamela' });
+  bank.derived.push({ id: referencePart, clip: f.reference.from.film, from: 'P4.C1', to: 'READY', frames: [80, 119], dealer: 'ada' });
   await writeFile(bankFile, JSON.stringify(bank));
   await writeFile(path.join(root, `motions/${referencePart}.json`), JSON.stringify({ review: { archived: archive } }));
   const stalePart = await call('POST', `/api/orders/${f.id}/approve`, { match: line.json.revision });
@@ -1374,12 +1376,12 @@ test("whose each picture is: the dealer's own, the other dealer's arm only, neve
   const { call } = await lab(t);
   const still = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'ANKARE-2.1', base: 'paow-vila-ung-2' } })).json;
   assert.deepEqual(still.owners['anchor.png'], { dealer: 'paow', name: 'Paow', part: 'whole' });
-  assert.deepEqual(still.owners['pose-figure.png'], { dealer: 'pamela', name: 'Pamela', part: 'arm' });
+  assert.deepEqual(still.owners['pose-figure.png'], { dealer: 'ada', name: 'Ada', part: 'arm' });
   assert.equal(still.problems.length, 0);
   const film = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.2', target: 'P4.C1', ...TUR_WAN } })).json;
   assert.deepEqual([film.owners['first.png'].dealer, film.owners['last.png'].dealer], ['paow', 'paow'], 'what waits is still hers');
-  const mixed = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'ANKARE-2.1', base: 'pamela-vila' } })).json;
-  assert.match(mixed.problems.join(' '), /Paows A1: bilden är Pamelas, inte Paows/);
+  const mixed = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'ANKARE-2.1', base: 'ada-vila' } })).json;
+  assert.match(mixed.problems.join(' '), /Paows A1: bilden är Adas, inte Paows/);
   assert.equal((await call('POST', `/api/orders/${mixed.order.id}/approve`, { match: mixed.revision })).status, 409, 'a mix-up cannot be approved');
 });
 
@@ -1388,18 +1390,18 @@ test("anchor 2.2's pose: the other dealer's forearm and hand on the dealer's own
   const { W, H } = await import('./order-images.ts');
   const fill = (rgb: Buffer, x0: number, y0: number, x1: number, y1: number, c: number[]) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) rgb.set(c, (y * W + x) * 3); };
   const png = (rgb: Buffer) => sharp(rgb, { raw: { width: W, height: H, channels: 3 } }).png().toBuffer();
-  // Pamela's picture: a black shoe, a yellow card on it, her sleeve and a hand whose fingertips lie over the card's top.
+  // Ada's picture: a black shoe, a yellow card on it, her sleeve and a hand whose fingertips lie over the card's top.
   const source = Buffer.alloc(W * H * 3);
   fill(source, 0, 0, W - 1, H - 1, [10, 230, 60]); fill(source, 1180, 780, 1500, 900, [40, 40, 40]); fill(source, 1200, 820, 1270, 880, [248, 220, 0]);
   fill(source, 1220, 620, 1300, 744, [15, 15, 15]); fill(source, 1210, 745, 1260, 840, [230, 150, 120]);
   // Paow's two anchors 1: her shoe, her card at two places, her body.
   const anchor = (card: [number, number, number, number]) => { const rgb = Buffer.alloc(W * H * 3); fill(rgb, 0, 0, W - 1, H - 1, [0, 238, 45]); fill(rgb, 1180, 780, 1500, 900, [40, 40, 40]); fill(rgb, ...card, [248, 220, 0]); fill(rgb, 600, 300, 1000, 830, [30, 30, 30]); return rgb; };
   const [a, b] = [await png(anchor([1260, 760, 1320, 830])), await png(anchor([1250, 770, 1310, 840]))];
-  await writeFile(path.join(root, 'assets/anchors/pamela-nyp/anchor.png'), await png(source));
+  await writeFile(path.join(root, 'assets/anchors/ada-nyp/anchor.png'), await png(source));
   await writeFile(path.join(root, 'assets/anchors/paow-vila-ung-2/anchor.png'), a);
   await writeFile(path.join(root, 'assets/anchors/paow-vila-ung-1/anchor.png'), b);
   const lay = { sleeve: SLEEVE_AT_SHOE, shoe: SHOE_AT_ANCHOR };
-  const store = orderStore(root, { now: () => new Date('2026-11-13T09:00:00Z'), poses: { 'ANKARE-2.2': { entry: 'pamela-nyp', label: 'armen och handen ur Pamelas nyp, lagda på dealerns egen sko ur ankaret', keep: ARM_ALONE, what: POSE_ARM_WHAT, lay } } });
+  const store = orderStore(root, { now: () => new Date('2026-11-13T09:00:00Z'), poses: { 'ANKARE-2.2': { entry: 'ada-nyp', label: 'armen och handen ur Adas nyp, lagda på dealerns egen sko ur ankaret', keep: ARM_ALONE, what: POSE_ARM_WHAT, lay } } });
   const states = async (s: Record<string, string>) => {
     const file = path.join(root, 'data/media-roles.json'), reg = JSON.parse(await readFile(file, 'utf8'));
     for (const e of reg.dealers.paow.entries) if (s[e.id]) e.state = s[e.id];

@@ -43,9 +43,13 @@ export const dollStill = (doll: string) => path.posix.join(FOLDER, `docka-${doll
 export const DOLL_RECEIPT = path.posix.join(FOLDER, 'docka-receipt.json');
 export const DOLL_STILLS = 'node dealer3d/tools/doll-still.ts';
 /** Anchor 1 of the dealer standard: the rest film's first frame, whose shoe every dealer shares (data/dealer-standard.json shoe.perDealer). */
-export const REST = {film: 'pamela-idle-ready-entry-01', frame: 0};
-/** Bank films with their card lying on a place, for the fit: late in the P4 deal (the hand still on the card), and the return where it lies free. */
-export const PROOFS = [{film: 'pamela-p4-c1-plan-deal-02', frame: 119, place: 'P4.C1'}, {film: 'pamela-p4-c1-plan-return-ready-01', frame: 40, place: 'P4.C1'}] as const;
+export const REST = {film: 'paow-vila-01-01', frame: 0};
+/**
+ * Bank films with their card lying on a place, for the fit: Paow's main round trip to P4 (24 frames a second, the deal cut at
+ * frame 109), late in the deal with the hand still on the card, and in the return where it lies free. Chosen 2026-11-23 as
+ * Pamela's were (her deal's last frame, her return's frame 40), when her films left main; look at the first run's pictures.
+ */
+export const PROOFS = [{film: 'paow-giv-2-1-p4-04-01', frame: 108, place: 'P4.C1'}, {film: 'paow-giv-2-1-p4-04-01', frame: 141, place: 'P4.C1'}] as const;
 /** The felt's print without the card boxes (FELT_MARKS in src/scene3d-table.ts less 'boxes'). */
 export const MARKS = 'trim,arc,text,logo,rings,numbers';
 /** The scene's look: the shipped preset Basgrund, held still at the home view and without what moves or is drawn per card. */

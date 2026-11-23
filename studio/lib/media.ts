@@ -55,7 +55,7 @@ export type Source = { from: string; when?: string };
  * outside the repo, which the lab never hands out). frame: one frame of the film at path (fps given, 30 when not).
  * pattern: many files ("assets/frames/*\/*.png"), with path as the one picture shown.
  * still: for a whole film, the frame its tile shows. card: the card on the table ("P4.C1"). node: the graph's node the
- * picture stands for ("IDLE", "READY-B", "LAND(P4.C1)"). link: a page of the studio that plays it ("/?runda=v6-filmen").
+ * picture stands for ("IDLE", "READY-B", "LAND(P4.C1)"). link: a page of the studio that plays it ("/?runda=A2.1 - P4C1 - A2.1").
  */
 export type Entry = {
   id: string;

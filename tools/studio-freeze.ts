@@ -15,7 +15,6 @@ export type Release = {
   variants: boolean;
   proofs: ReleaseProof[];
   paow: boolean;
-  library: boolean;
   /** The scene's presets (data/scene-presets/, /api/scene-presets) go up read-only, Jakob's numbered places among them. */
   presets: boolean;
   /** The game (game.html with the engine of game/ in the page) goes up, and every take it can play for these dealers. */
@@ -26,8 +25,8 @@ export type Release = {
 };
 
 const ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-/** The dealers the copy carries: Pamela, the bank's first, and Paow while her switch is on. */
-export const releaseDealers = (release: Pick<Release, 'paow'>): string[] => ['pamela', ...(release.paow ? ['paow'] : [])];
+/** The dealers the copy carries: Paow while her switch is on (Pamela left main 2026-11-23). */
+export const releaseDealers = (release: Pick<Release, 'paow'>): string[] => (release.paow ? ['paow'] : []);
 const flag = (v: unknown, what: string) => { if (typeof v !== 'boolean') throw Error(`studio-release: ${what} ska vara true eller false.`); return v; };
 const count = (v: unknown, what: string, lo: number, hi: number) => { if (!Number.isInteger(v) || (v as number) < lo || (v as number) > hi) throw Error(`studio-release: ${what} ska vara ett heltal ${lo}–${hi}.`); return v as number; };
 
@@ -55,7 +54,7 @@ export function readRelease(json: unknown): Release {
   return {
     schemaVersion: 1,
     variants: flag(r.variants, 'variants'),
-    proofs, paow, library: flag(r.library, 'library'),
+    proofs, paow,
     presets: flag(r.presets, 'presets'), casino: {on, dealers: [...casino.dealers]},
     blocked: {folders: list(blocked.folders, 'blocked.folders'), names: list(blocked.names, 'blocked.names')},
     stills: {width: count(stills.width, 'stills.width', 120, 1920), quality: count(stills.quality, 'stills.quality', 40, 100)},

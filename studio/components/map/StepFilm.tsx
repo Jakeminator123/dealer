@@ -3,7 +3,7 @@
 // The films of one step in its panel on Karta (lib/primaries.ts stepFilms): the Primär large, and each secondary film as a
 // row (still, name, verdict, how the game uses it, and for the proposal the seam a Primär would give), with "Gör primär" and
 // "Arkivera" on his click only, "Jämför" and "I scenen". UseChip says the use in a word or two; its tooltip says it in a sentence.
-import { Archive, Ban, Columns2, Heart, MessageSquare, Play, Repeat, Shuffle, Star, type LucideIcon } from "lucide-react";
+import { Archive, Ban, Columns2, MessageSquare, Play, Repeat, Shuffle, Star, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import type { Edge, Take } from "../../../src/clip-graph.ts";
@@ -12,7 +12,7 @@ import { Button, buttonClasses, cn } from "@/components/ui";
 import { ARCHIVE_ACTION } from "@/lib/archive";
 import { isSnapshot } from "@/lib/mode";
 import { edgeName, takeName } from "@/lib/names";
-import { PRAISED_NOTE, type Film, type Seam, type Use, type UseKind } from "@/lib/primaries";
+import { type Film, type Seam, type Use, type UseKind } from "@/lib/primaries";
 import { RowStill } from "./RowStill";
 import type { Mark } from "./useOlder";
 
@@ -149,17 +149,12 @@ export function SecondaryFilm({
   /** What the take was built on that no longer holds (useOlder): the row is dimmed and says it. */
   marks?: readonly Mark[];
 }) {
-  const { take, use, seam, proposal, praised } = film;
+  const { take, use, seam, proposal } = film;
   const title = name ?? takeName(take, edge.takes);
   const versus = compare(edge, take, against);
   // Brass only where his best take waits and making it Primär gives no visible jump.
   const loud = proposal && seam?.tone !== "bad";
-  const eyebrow: ReactNode = praised ? (
-    <span className="inline-flex items-center gap-1 text-2xs font-semibold uppercase tracking-[0.08em] text-brass">
-      <Heart aria-hidden className="size-3 fill-current" />
-      {PRAISED_NOTE}
-    </span>
-  ) : proposal ? (
+  const eyebrow: ReactNode = proposal ? (
     <span className="text-2xs font-semibold uppercase tracking-[0.08em] text-faint">Bäst av dina godkända</span>
   ) : null;
   return (

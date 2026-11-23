@@ -50,9 +50,6 @@ package-lock.json
 dealer3d/data/
 dealer3d/standard/
 
-# The paused dealer's film registers (Pamela, paused 2026-11-12); see .ignore.
-motions/pamela-*
-
 # Library code that is not the project's own and is far too long to read: the three.js library as it was brought in with
 # the card material study, and the two built pages of that study (each is three.js plus about 300 lines of ours, packed
 # by webpack). They are used as they are and never edited; the study's own source is materials/source/src/.

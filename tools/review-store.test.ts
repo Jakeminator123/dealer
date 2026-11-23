@@ -88,7 +88,7 @@ test('nothing is written without the revision that was read, for an unknown clip
 });
 
 test('a real tracked record survives a round of decisions with everything outside review untouched', async t => {
-  const root = await temp(t), name = 'pamela-p7-c1-plan-deal-02', target = path.join(root, `motions/${name}.json`);
+  const root = await temp(t), name = 'paow-giv-2-3-p5-01-01', target = path.join(root, `motions/${name}.json`);
   await copyFile(`motions/${name}.json`, target);
   const original = JSON.parse(await readFile(target, 'utf8')), store = reviewStore(root, () => '2026-11-11');
   let revision = (await store.load(name)).revision;

@@ -112,7 +112,7 @@ function Uses({ entry }: { entry: EntryAnswer }) {
               {list.map((u) => {
                 const take = graph?.takes[u.job] ?? null;
                 const edge = take?.edge ?? u.edge;
-                const name = take ? takeName(take, graph?.edge[edge]?.takes) : u.job.replace(/^pamela-/, "");
+                const name = take ? takeName(take, graph?.edge[edge]?.takes) : u.job;
                 return (
                   <li key={`${u.job}-${side}`}>
                     <Link href={mapHref(edge, u.job)} className="group flex items-center gap-2 rounded-sm px-1.5 py-1 text-sm hover:bg-raised">

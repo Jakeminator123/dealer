@@ -1,4 +1,4 @@
-// The Pamela film inside the 3D scene: keyed in the shader and projected from the film camera onto two
+// The dealer's film inside the 3D scene: keyed in the shader and projected from the film camera onto two
 // surfaces, a vertical plane standing on the dealer-side table edge and the table top. Seen from the film
 // camera's own position this is the film pixel for pixel, whatever the camera figures are; turning the view
 // about that position stays exact, moving it is an approximation.
@@ -133,7 +133,7 @@ export type RoomGlow = {front: number[]; left: number[]; right: number[]};
 // follows the room; colour: how much of the room's colour she takes (a power of each channel over the light's luminance, so a
 // strong cast is softened more than a slight one), and reach: at most this far from grey in any channel; sides and sideReach:
 // how strong the left-right difference is, and at most how far from 1 a side goes. Tuned by eye 2026-11-13 on Venedig, Skogen
-// and Las Vegas with Paow and Pamela: past these a room's cast reads as a filter over her, not as its light on her.
+// and Las Vegas with Paow (and Pamela before her): past these a room's cast reads as a filter over her, not as its light on her.
 export const DEALER_LIGHT = {ref: 0.14, gamma: 0.5, lo: 0.78, hi: 1.1, colour: 0.5, reach: 0.12, sides: 0.6, sideReach: 0.2};
 const LINEAR = Array.from({length: 256}, (_, i) => { const c = i / 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; });
 /** The room's light on the dealer's front and sides from its panorama, RGBA bytes `width` × `height` (2:1, as the file has it), turned by `turn` radians as the sphere is and read backwards across unless `mirror`, as the sphere shows it. Linear RGB. */

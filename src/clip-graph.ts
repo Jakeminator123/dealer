@@ -6,7 +6,7 @@
 export type EdgeKind = 'DEAL' | 'RETURN' | 'ENTRY' | 'IDLE' | 'REVEAL' | 'ARRIVE' | 'LEAVE';
 export type Side = 'BACK' | 'FRONT';
 export type ImageRef = {frame?: {video: string; videoSha256: string; index: number}; file?: {path: string; sha256: string}; note?: string};
-// dealer: whose take it is (data/dealers.json); without it the take is Pamela's, the bank's first dealer (see dealersOf).
+// dealer: whose take it is (data/dealers.json); without it the take is the bank's first dealer's (DEALER, see dealersOf).
 export type BankJob = {id: string; kind: string; target: string | null; from: string; to: string; model: string; duration: number; ratio: string; audio: boolean; promptText: string; first: ImageRef; last?: ImageRef; purpose: string; playbackSpeed?: number; dealer?: string}; // without last: a film ordered from its first image alone
 export type MotionRecord = {
   source?: {path?: string; sha256?: string; bytes?: number; fps?: number; frames?: number; width?: number; height?: number};
@@ -44,15 +44,13 @@ export type EditTake = {id: string; source?: {clip?: string; sha256?: string}; m
 export type BankData = {jobs?: BankJob[]; derived?: DerivedTake[]; edits?: EditTake[]; budget?: {maximumCredits?: number} | null; motions?: Record<string, MotionRecord>; receipts?: Record<string, Receipt>; media?: Record<string, Media>; revisions?: Record<string, string>};
 
 // ── Dealers ─────────────────────────────────────────────────────────────────
-// The bank holds the takes of several dealers; a graph is always one dealer's. Pamela was the only dealer before the field existed.
-export const DEALER = 'pamela';
-// The dealer a visitor meets when nothing chooses for them (no word in the address, nothing remembered in the browser): Paow,
-// since Pamela is paused (data/dealers.json; Jakob 2026-11-12: "Vi pausar Pamela ... Sedan går vi vidare med Paow."). Until
-// 2026-11-13 it was Pamela, so the copy on the net opened on the paused dealer for everyone who came to it new.
-export const FIRST_DEALER = 'paow';
+// The bank holds the takes of several dealers; a graph is always one dealer's. DEALER is the bank's first dealer: whose a take
+// without a dealer field is, and the one a visitor meets when nothing chooses for them (no word in the address, nothing
+// remembered in the browser). Paow since Pamela left main (Jakob 2026-11-23; her archive: docs/DRIFT.md).
+export const DEALER = 'paow';
 const dealerWord = (value: unknown): string | null => typeof value === 'string' && /^[a-z0-9]+$/.test(value) ? value : null;
 // Whose each take is, by id. Its own dealer field first; without one, a derived take is the dealer's whose film it is cut from (or
-// corrects), an edit the dealer's whose clip it corrects, and anything left is Pamela's.
+// corrects), an edit the dealer's whose clip it corrects, and anything left is the first dealer's.
 export function dealersOf(data: Pick<BankData, 'jobs' | 'derived' | 'edits'> | null | undefined): Record<string, string> {
   const list = <T extends {id: string}>(v: T[] | undefined): T[] => (Array.isArray(v) ? v : []).filter(x => !!x && typeof x.id === 'string'), out: Record<string, string> = {}, film = new Map<string, string>();
   const jobs = list(data?.jobs), derived = list(data?.derived), edits = list(data?.edits);
@@ -220,7 +218,7 @@ export const FILM_MODE: FilmMode = 'SEAT';
 // alternative with known faults. missing: no film that may be played (none, or only rejected ones).
 export type Films = {mode: FilmMode; total: number; done: number; candidates: number; flaws: number; missing: number; required: string[]};
 export type Graph = {
-  dealer: string; // whose takes the graph holds: one dealer's only, Pamela's unless buildGraph is told otherwise
+  dealer: string; // whose takes the graph holds: one dealer's only, the first dealer's unless buildGraph is told otherwise
   edges: Edge[]; experiments: Edge[]; edge: Record<string, Edge>; takes: Record<string, Take>; unplaced: {id: string; reason: string}[]; mode: FilmMode;
   summary: Count & {optional: Count; experiments: Count; films: Films; credits: {committed: number | null; maximum: number | null}};
 };

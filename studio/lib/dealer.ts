@@ -1,18 +1,18 @@
-// Whose studio it is: the bank holds the takes of several dealers (src/clip-graph.ts dealersOf) and every view shows one
+// Whose studio it is: the bank can hold the takes of several dealers (src/clip-graph.ts dealersOf) and every view shows one
 // dealer's, the one chosen in the rail (Jakob 2026-11-13: "but where can I review everything?"). The choice is in the address
-// (?dealer=paow, the word the view Material uses) and remembered in this browser (a paused dealer only from a click on the
-// switch: keepsChoice); the address wins when it names a dealer,
-// then a take the address names (an old link to one of Pamela's takes opens her studio), then the remembered choice, then
-// the first dealer (Paow since 2026-11-13: Pamela is paused, and a visitor who has chosen nothing should not meet the paused
-// dealer). The first dealer's addresses carry no word; every other dealer's do. Names and the pause are
-// data/dealers.json's. Pure: no DOM, no network. The provider is lib/bank.ts.
-import { DEALER, FIRST_DEALER, buildGraph, resolveRound, type BankData, type Graph, type Step } from "../../src/clip-graph.ts";
+// (?dealer=<id>, the word the view Material uses) and remembered in this browser (a paused dealer only from a click on the
+// switch: keepsChoice); the address wins when it names a dealer, then a take the address names (a link to another dealer's
+// take opens that dealer's studio), then the remembered choice, then the bank's dealer (DEALER in src/clip-graph.ts).
+// The bank's dealer's addresses carry no word; every other dealer's do. Names and the pause are data/dealers.json's.
+// Pure: no DOM, no network. The provider is lib/bank.ts.
+import { DEALER, buildGraph, resolveRound, type BankData, type Graph, type Step } from "../../src/clip-graph.ts";
 import { awaitingJakob } from "./verdict.ts";
 
-/** The dealer a visitor meets when nothing chooses: no word in the address, no take named, nothing remembered. */
-export const DEFAULT_DEALER = FIRST_DEALER;
-/** The bank's first dealer: whose every take without a dealer of its own is, first in the switch, and whose saved rounds the views open on. */
-export const BANK_DEALER = DEALER;
+/**
+ * The dealer a visitor meets when nothing chooses (no word in the address, no take named, nothing remembered): the bank's
+ * dealer, whose every take without a dealer of its own is, first in the switch.
+ */
+export const DEFAULT_DEALER = DEALER;
 /** The address's word for the dealer, shared with the view Material. */
 export const DEALER_PARAM = "dealer";
 /** The address's words that name a take: Granska's, Karta's and Scen's tagning, Jämför's a and b. */
@@ -20,7 +20,7 @@ export const TAKE_PARAMS = ["tagning", "a", "b"] as const;
 /**
  * Where the browser remembers the choice (localStorage). The keys before, "studio.dealer" (to 2026-11-13: it kept a dealer the
  * visitor had only been given) and "studio.dealer.2" (to 2026-11-18: it kept a paused dealer an old link had named), are left
- * unread: no browser stays on Pamela without a click on her.
+ * unread: no browser stays on a paused dealer without a click on that dealer.
  */
 export const DEALER_MEMORY = "studio.dealer.3";
 
@@ -31,9 +31,9 @@ export const dealerId = (value: unknown): string | null => (typeof value === "st
 export const nameOf = (id: string): string => id.charAt(0).toUpperCase() + id.slice(1);
 
 // ── Who there is ────────────────────────────────────────────────────────────
-/** The dealers the bank holds takes of: Pamela first (the bank's first dealer, with or without takes), then the others in the order their first take comes. */
+/** The dealers the bank holds takes of: the bank's dealer first (with or without takes), then the others in the order their first take comes. */
 export function bankDealers(owners: Readonly<Record<string, string>>): string[] {
-  const out = [BANK_DEALER];
+  const out = [DEALER];
   for (const id of Object.values(owners)) if (dealerId(id) && !out.includes(id)) out.push(id);
   return out;
 }
@@ -63,7 +63,7 @@ export function dealerGraphs(bank: BankData, ids: readonly string[], build: (ban
 /** One dealer in the switch: name, pause, how many takes the bank holds and how many of them wait for Jakob's word. */
 export type DealerEntry = { id: string; name: string; paused: string | null; takes: number; waiting: number };
 
-/** The switch's dealers in the bank's order, a paused dealer after the others (Jakob 2026-11-18: Paow first, Pamela after). */
+/** The switch's dealers in the bank's order, a paused dealer after the others (Jakob 2026-11-18). */
 export function dealerEntries(ids: readonly string[], graphs: Readonly<Record<string, Graph>>, register: DealerRegister | null): DealerEntry[] {
   const order = [...ids].sort((a, b) => Number(!!register?.[a]?.paused) - Number(!!register?.[b]?.paused));
   return order.map((id) => {
@@ -86,9 +86,9 @@ export type Chosen = { id: string; from: "address" | "take" | "memory" | "defaul
 
 /**
  * The dealer every view shows: the address's own word, else the dealer of a take the address names, else the remembered
- * choice, else the first dealer (the bank's own where the bank does not hold her: a copy released without her). A word
- * counts only for a dealer there is (known: the bank's and the register's); while the bank is read (known null) any
- * well-formed word is taken as it stands. owners: whose each take is (dealersOf).
+ * choice, else the bank's dealer (DEFAULT_DEALER). A word counts only for a dealer there is (known: the bank's and the
+ * register's); while the bank is read (known null) any well-formed word is taken as it stands. owners: whose each take is
+ * (dealersOf).
  */
 export function chooseDealer(input: { address: DealerAddress | null; remembered: string | null; known: readonly string[] | null; owners: Readonly<Record<string, string>> }): Chosen {
   const ok = (id: string | null | undefined): id is string => !!dealerId(id) && (!input.known || input.known.includes(id!));
@@ -97,15 +97,14 @@ export function chooseDealer(input: { address: DealerAddress | null; remembered:
   const owner = input.address?.takes.map((t) => input.owners[t]).find(ok);
   if (owner) return { id: owner, from: "take" };
   if (ok(input.remembered)) return { id: input.remembered, from: "memory" };
-  return { id: !input.known || input.known.includes(DEFAULT_DEALER) ? DEFAULT_DEALER : BANK_DEALER, from: "default" };
+  return { id: DEFAULT_DEALER, from: "default" };
 }
 
 /**
  * Whether a choice is remembered without a click: one the address made (its word, or a take it names) for a dealer who is not
- * paused. A paused dealer the address names is shown and not kept, so one old link (/material/?dealer=pamela) does not make
- * every later address open on her (Jakob 2026-11-18: "Generellt förstår jag inte varför vi automatiskt kan komma in till
- * Pamela"); only a click on the switch keeps her (bank.ts setDealer). Nothing is kept while the pause is unknown (the register
- * not yet read; the online copy has none).
+ * paused. A paused dealer the address names is shown and not kept, so one old link (/material/?dealer=<paused>) does not
+ * make every later address open on that dealer (Jakob 2026-11-18); only a click on the switch keeps one (bank.ts setDealer).
+ * Nothing is kept while the pause is unknown (the register not yet read; the online copy has none).
  */
 export function keepsChoice(chosen: Chosen, register: DealerRegister | null): boolean {
   if (chosen.from !== "address" && chosen.from !== "take") return false;
@@ -140,7 +139,7 @@ export function withDealer(search: string, dealer: string | null): string {
 /** The same query without the dealer's word: for a view that writes its whole address and compares it with what it wrote. */
 export const withoutDealer = (search: string): string => withDealer(search, null);
 
-/** An address of the studio ("/karta/", "/granska/?vy=alla") that keeps the dealer: the first dealer's addresses carry no word. */
+/** An address of the studio ("/karta/", "/granska/?vy=alla") that keeps the dealer: the bank's dealer's addresses carry no word. */
 export function dealerHref(href: string, dealer: string): string {
   if (dealer === DEFAULT_DEALER) return href;
   const at = href.indexOf("?");
@@ -149,22 +148,23 @@ export function dealerHref(href: string, dealer: string): string {
 }
 
 /**
- * The word the address should carry for `dealer`, or null for none: the first dealer needs none (every address without one
- * is hers when nothing else is remembered), except where the address names a take of another dealer's (it would then decide).
+ * The word the address should carry for `dealer`, or null for none: the bank's dealer needs none (every address without one
+ * is that dealer's when nothing else is remembered), except where the address names a take of another dealer's (it would
+ * then decide).
  */
 export function addressWord(dealer: string, address: DealerAddress, owners: Readonly<Record<string, string>>): string | null {
   if (dealer !== DEFAULT_DEALER) return dealer;
   return address.takes.some((t) => owners[t] && owners[t] !== dealer) ? dealer : null;
 }
 
-/** A round's steps for this dealer: a step locked to another dealer's take (Pamela's favourite round) plays this dealer's film. */
+/** A round's steps for this dealer: a step locked to another dealer's take (a round copied from that dealer's studio) plays this dealer's film. */
 export function ownSteps(steps: readonly Step[], dealer: string, owners: Readonly<Record<string, string>>): Step[] {
   return steps.map((s) => (s.take && owners[s.take] && owners[s.take] !== dealer ? { from: s.from, to: s.to } : s));
 }
 
 /**
- * The ready round a dealer other than Pamela opens Scen on: the first one that plays without a gap, else the one that plays
- * the most of its steps (fewer gaps first, then the earlier). Rounds without steps (the reference films) are passed over.
+ * The ready round Scen opens on when the chosen card's own round cannot be read: the first one that plays without a gap,
+ * else the one that plays the most of its steps (fewer gaps first, then the earlier). Rounds without steps are passed over.
  */
 export function openingRound<R extends { steps: Step[] }>(graph: Graph, rounds: readonly R[], owners: Readonly<Record<string, string>>): R | null {
   let best: { round: R; played: number; gaps: number } | null = null;

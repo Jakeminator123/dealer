@@ -167,57 +167,6 @@
           "where": "docs/TAL.md (Rösten)"
         }
       ]
-    },
-    {
-      "dealer": "pamela",
-      "summary": "Ingenting av läppsynken finns för Pamela: ingen röst, ingen bank, inga repliker och inget prov.",
-      "mouth": null,
-      "lines": null,
-      "runner": [],
-      "checks": [
-        {
-          "what": "Talregistret har henne (bank-id, vilofilm, röst, språk)",
-          "answer": "nej",
-          "note": "data/speech.json har bara Paow",
-          "where": "data/speech.json"
-        },
-        {
-          "what": "Röst",
-          "answer": "nej",
-          "note": "ingen röst är vald för henne",
-          "where": "data/speech.json"
-        },
-        {
-          "what": "Bank för Scoutgamings renderer",
-          "answer": "nej",
-          "note": "inte gjort",
-          "where": "assets/speech/ (bara paow)"
-        },
-        {
-          "what": "Repliker i spelet",
-          "answer": "nej",
-          "note": "inte gjort",
-          "where": "assets/speech/ (bara paow)"
-        },
-        {
-          "what": "Köraren förberedd för någon av hennes filmer",
-          "answer": "nej",
-          "note": "inte gjort",
-          "where": "talbanans överlämning 2026-11-17"
-        },
-        {
-          "what": "Munnen i realtid prövad eller godkänd",
-          "answer": "nej",
-          "note": "inget prov är gjort för henne",
-          "where": "proofs"
-        },
-        {
-          "what": "Grundbilder och läppmått",
-          "answer": "nej",
-          "note": "inte gjort",
-          "where": "baseImages, lipsMeasured"
-        }
-      ]
     }
   ],
   "whenNew": {

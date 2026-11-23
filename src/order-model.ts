@@ -7,7 +7,7 @@
 // the left hand would cross her body; the bank's takes a reference film can be chosen from (referenceCandidates). No fs,
 // no network, no hashing (the caller hashes hashInput()); the studio builds it in.
 // Tests: tools/order-model.test.ts.
-import { dealersOf, parseEdge } from './clip-graph.ts';
+import { DEALER, dealersOf, parseEdge } from './clip-graph.ts';
 import type {ReviewEvidence} from './review-evidence.ts';
 
 // ── Words ───────────────────────────────────────────────────────────────────
@@ -874,7 +874,7 @@ export function referenceCandidates(bank: BankFacts, want: { dealer: string; ste
     const whole = !t.frames || !source?.frames || (t.frames[0] <= 0 && t.frames[1] >= source.frames - 1);
     const { verdict, straight, words } = verdictOf(record?.review);
     out.push({
-      take: t.id, film: t.film, path: `assets/motions/${t.film}/source.mp4`, dealer: owners[t.id] ?? 'pamela', edge: `${t.from}>${t.to}`, goesTo: e.target,
+      take: t.id, film: t.film, path: `assets/motions/${t.film}/source.mp4`, dealer: owners[t.id] ?? DEALER, edge: `${t.from}>${t.to}`, goesTo: e.target,
       match, verdict, approvedStraight: straight, words, seconds, frames: whole ? null : t.frames, also: derived.filter((d) => d.clip === t.film && d.id !== t.id).map((d) => d.id),
       fits: !range || (seconds !== null && seconds >= range[0] && seconds <= range[1]), sha256: source?.sha256 ?? null,
       check: bank.referenceChecks?.[t.film] ?? null, lays: record?.motion?.releaseHand === 'RH' ? 'RH' : 'LH',

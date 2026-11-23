@@ -12,10 +12,10 @@ const { isSnapshot } = await import("../lib/mode.ts");
 const { tabOf, vyFor, waitingInCopy } = await import("../components/review/copy.ts");
 
 const graph = buildGraph({
-  jobs: [{ id: "pamela-p1-c1-plan-deal-01", kind: "DEAL", target: null, from: "READY", to: "P1.C1", model: "wan3", duration: 4, ratio: "auto_1080p", audio: false, promptText: "", first: {}, purpose: "" }],
-  motions: { "pamela-p1-c1-plan-deal-01": { source: { frames: 120, fps: 30 } } },
-  media: { "pamela-p1-c1-plan-deal-01": { video: null } },
-  revisions: { "pamela-p1-c1-plan-deal-01": '"r"' },
+  jobs: [{ id: "paow-p1-c1-plan-deal-01", kind: "DEAL", target: null, from: "READY", to: "P1.C1", model: "wan3", duration: 4, ratio: "auto_1080p", audio: false, promptText: "", first: {}, purpose: "" }],
+  motions: { "paow-p1-c1-plan-deal-01": { source: { frames: 120, fps: 30 } } },
+  media: { "paow-p1-c1-plan-deal-01": { video: null } },
+  revisions: { "paow-p1-c1-plan-deal-01": '"r"' },
 });
 
 test("in the copy every decision is refused before a request is made", async () => {
@@ -28,9 +28,9 @@ test("in the copy every decision is refused before a request is made", async () 
   }) as typeof fetch;
   try {
     for (const decision of ["MAIN", "ACCEPTED", "VARIANT", "REJECTED", "PENDING"] as const)
-      await assert.rejects(decide(graph.takes["pamela-p1-c1-plan-deal-01"], decision, "", graph, putDecision), (e: Error & { kind?: string }) => e.kind === "refused");
+      await assert.rejects(decide(graph.takes["paow-p1-c1-plan-deal-01"], decision, "", graph, putDecision), (e: Error & { kind?: string }) => e.kind === "refused");
     // Archiving a take and taking it back are his in the lab only, as a decision is.
-    for (const archived of [true, false]) await assert.rejects(putArchive("pamela-p1-c1-plan-deal-01", archived, '"r"'), (e: Error & { kind?: string }) => e.kind === "refused");
+    for (const archived of [true, false]) await assert.rejects(putArchive("paow-p1-c1-plan-deal-01", archived, '"r"'), (e: Error & { kind?: string }) => e.kind === "refused");
     assert.equal(asked, 0);
   } finally {
     globalThis.fetch = real;
@@ -50,7 +50,7 @@ test("Granska opens on Alla in the copy and on the queue in the lab; the address
 });
 
 test("the copy's queue counts what waits and how many of them have a picture or a film there", () => {
-  const take = graph.takes["pamela-p1-c1-plan-deal-01"];
+  const take = graph.takes["paow-p1-c1-plan-deal-01"];
   const edge = graph.edge[take.edge];
   const withStill = { ...take, id: "b", media: { ...take.media, first: "assets/motions/b/first.webp" } };
   const withFilm = { ...take, id: "c", media: { ...take.media, video: "assets/motions/c/source.mp4" } };
@@ -61,7 +61,7 @@ test("the copy's queue counts what waits and how many of them have a picture or 
     { take: { ...take, id: "d" }, edge, group: "P1", decided: "ACCEPTED" },
   ];
   const w = waitingInCopy(items);
-  assert.deepEqual(w.items.map((i) => i.take.id), ["pamela-p1-c1-plan-deal-01", "b", "c"]);
+  assert.deepEqual(w.items.map((i) => i.take.id), ["paow-p1-c1-plan-deal-01", "b", "c"]);
   assert.equal(w.withPicture, 2);
   assert.equal(w.withFilm, 1);
 });

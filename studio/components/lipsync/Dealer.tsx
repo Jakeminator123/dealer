@@ -2,7 +2,7 @@
 // the rail's switch. Media first: the film (and still) of the proof her mouth was chosen in, beside what is set for her
 // (from the speech register: bank, rest film, voice, language; from the facts: the mouth with his yes, how the line films
 // are laid, the films prepared for the renderer and for the runner). Under it, what holds and what does not yet, as the
-// facts say it. Where nothing is made for her (Pamela) the section says so plainly; where no source says, "okänt".
+// facts say it. Where nothing is made for the dealer the section says so plainly; where no source says, "okänt".
 import { CircleCheck, CircleDashed, CircleHelp, FlaskConical } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";

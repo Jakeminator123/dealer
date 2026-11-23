@@ -5,9 +5,10 @@ import type { Take } from "../../../src/clip-graph.ts";
 
 export const REST_EDGE = "IDLE>IDLE";
 
-/** A rest film's word: "Andning", "Leende"; else its id without the dealer and the step ("smile 02"). */
-export function restWord(take: Pick<Take, "id" | "idle">): string {
-  const word = take.idle?.label?.trim() || take.id.replace(/^pamela-/, "").replace(/^idle-/, "").replace(/-/g, " ");
+/** A rest film's word: "Andning", "Leende"; else its id without the dealer and the step ("smile 02", "vila 01 01"). */
+export function restWord(take: Pick<Take, "id" | "idle"> & { dealer?: string }): string {
+  const own = take.dealer && take.id.startsWith(`${take.dealer}-`) ? take.id.slice(take.dealer.length + 1) : take.id;
+  const word = take.idle?.label?.trim() || own.replace(/^idle-/, "").replace(/-/g, " ");
   return word.charAt(0).toUpperCase() + word.slice(1);
 }
 

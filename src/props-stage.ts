@@ -26,10 +26,10 @@ export function stageFit(value: unknown): StageFit | null {
 }
 // pitch and zoom: the game page's lying framing. back: how far behind the edge the film's plane stands when her hands lie behind
 // it, dealer metres (behind the model's own rim). shoe: the film's shoe as a box of film pixels (x0, y0, x1, y1), with room for its
-// shadow: measured in the idle film, the shoe's lid begins at row 640 (column 1592) and its left side runs down to column 1192,
+// shadow: measured in Pamela's idle film (the bank's shoe stands at the same place for every dealer), the shoe's lid begins at row 640 (column 1592) and its left side runs down to column 1192,
 // while her left sleeve stays left of column 1192 except for 3 pixels about row 710 (a box from 1125, 560 cut up to 70 pixels off
-// her sleeve). The rooms are ROOMS below.
-export const STAGE_VIEW = {pitch: -8, zoom: 0.84, back: 0.06, film: 'assets/motions/pamela-idle-loop-01/source.mp4', shoe: [1192, 635, FILM.width, 960]};
+// her sleeve). The film is Paow's rest film, the one she speaks over (data/speech.json). The rooms are ROOMS below.
+export const STAGE_VIEW = {pitch: -8, zoom: 0.84, back: 0.06, film: 'assets/motions/paow-vila-01-01/source.mp4', shoe: [1192, 635, FILM.width, 960]};
 
 /**
  * The film's world laid on a table model: one scale and one move (a column-major 4 × 4). The film's felt (y = 0) comes to

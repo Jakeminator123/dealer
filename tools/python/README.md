@@ -46,7 +46,8 @@ delade låset. Användning står överst i varje skript.
 | Datasetet, i ordning | `inventory.py` (alla filmer), `probe.py` (snabbprov), `valj.py` (kortfilmerna), `dela.py` (listor för två etiketterare), `label.py` (kortets kontur per ruta), `export.py` (manifest och tabell). `sheet.py` ritar etiketten på filmrutor för ögat. |
 | Mätningar mot dagens spår | `storlek.py`, `spar_noter.py`, `spar_storlek.py`, `vandning.py`, `ljus_check.py` |
 | Modellen (v1 och v2; `--version 2` ritar märke, tryck och fingrar som störning) | `train.py`, `eval.py` (`--modell`, `--ut`) |
-| Modellens spår på alla filmer (Prov `kortmodell-v2-20261123`, sidan `/kortlandning.html`) | `spar_modell.py` (modellens hörn och sida per ruta, på grafikkortet under låset), `spar_modell.ts` (spåret per film och `index.json` med måtten mot dagens spår; regeln står överst i skriptet) |
+| Modellens spår på alla filmer (Prov `kortmodell-v2-20261123`, sidan `/kortlandning.html`) | `spar_modell.py` (modellens hörn och sida per ruta, på grafikkortet under låset), `spar_modell.ts` (spåret per film och `index.json` med måtten mot dagens spår; regeln står överst i skriptet; `--utan-styvt` ger modellens rutor som de är) |
+| Det styva kortet (Prov `styvt-kort-20261123`): ett kort med en storlek, med plats, riktning, höjd och lutning för hela filmen på en gång | `styvt_kort.ts` (anropas av `spar_modell.ts` för givar där kortet lägger sig; måtten och regeln står överst) |
 | Labbprovet | `spar_b.ts` (provets spår ur etiketterna, regeln `refineFrames` i `src/card-track.ts`), `spela_in.ts` (spelar in Scen ruta för ruta, headless under låset), `ljus_serie.py` (ljusets steg ur en inspelning), `titta_val.py` (spåren ritade på filmrutor), `prov_bygg.py` (provets filmer och stillbilder) |
 
 ```

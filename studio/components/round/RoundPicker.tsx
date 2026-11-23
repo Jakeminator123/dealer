@@ -7,9 +7,8 @@
 // can follow, and whether the bank has a film the round plays there, comes from the graph (lib/rounds.ts nextSteps); a step
 // without one is dashed with "ingen film" and is not added (a click says why), and a path typed with one plays it as a gap,
 // which the line under the field names. Ångra, Rensa, Spela. The path starts as the round on screen. Below it, small, the
-// ready-made rounds as examples: each loads its path and plays it, and he can go on from there. At the bottom, folded,
-// the reference films (the V6 film and the whole deals of the old public page): finished films, not rounds.
-import { ChevronRight, Film, Play, Undo2, X } from "lucide-react";
+// ready-made rounds as examples: each loads its path and plays it, and he can go on from there.
+import { Play, Undo2, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { WHY_LABEL, type Gap, type Graph } from "../../../src/clip-graph.ts";
 import { useOptionalBank } from "../../lib/bank.ts";
@@ -19,7 +18,6 @@ import {
   NO_FILM,
   addNode,
   isCard,
-  isReference,
   lastNode,
   nextSteps,
   ownRound,
@@ -65,9 +63,8 @@ export function RoundPicker({
   className?: string;
 }) {
   const graph = useOptionalBank()?.graph ?? null;
-  const examples = rounds.filter((r) => !/^P\d$/.test(r.name) && !isReference(r));
+  const examples = rounds.filter((r) => !/^P\d$/.test(r.name));
   const seats = rounds.filter((r) => /^P\d$/.test(r.name));
-  const references = rounds.filter(isReference);
 
   // The builder holds the round on screen until he changes it, and again whenever another round comes on screen.
   const shownKey = current ? `${current.key}#${current.text}` : "";
@@ -111,8 +108,6 @@ export function RoundPicker({
   };
   const submit = () => {
     if (typed === null) return play(path);
-    const reference = references.find((r) => r.key === typed.trim().toLowerCase());
-    if (reference) return pick(reference);
     // Nothing is guessed: a path with a word that could not be read is not played in part.
     const read = readPath(typed, graph);
     if (!read.path) return setSaid({ text: read.error ?? "Kunde inte läsa rundan.", tone: "bad" });
@@ -199,38 +194,6 @@ export function RoundPicker({
           </div>
         ) : null}
       </section>
-
-      {references.length ? (
-        <details className="group" open={isReference(current) || undefined}>
-          <summary className={cn(HEADING, "inline-flex cursor-pointer list-none items-center gap-1 rounded-sm hover:text-ink [&::-webkit-details-marker]:hidden")}>
-            <ChevronRight aria-hidden className="size-3.5 transition-transform duration-150 group-open:rotate-90" />
-            Referensfilmer
-          </summary>
-          <div className="mt-2 flex flex-col gap-1.5">
-            {references.map((round) => {
-              const on = current?.key === round.key;
-              return (
-                <button
-                  key={round.key}
-                  type="button"
-                  aria-pressed={on}
-                  onClick={() => pick(round)}
-                  className={cn(
-                    "flex flex-col gap-0.5 rounded-md border border-dashed px-3 py-2 text-left transition-[border-color,background-color] duration-150",
-                    on ? "border-brass/60 bg-brass/10" : "border-line-strong bg-transparent hover:border-brass/40 hover:bg-raised",
-                  )}
-                >
-                  <span className={cn("flex items-center gap-1.5 text-sm font-semibold", on ? "text-brass-hi" : "text-ink")}>
-                    <Film aria-hidden className="size-3.5 text-faint" />
-                    {round.name}
-                  </span>
-                  <span className="text-xs text-dim">{round.sub}</span>
-                </button>
-              );
-            })}
-          </div>
-        </details>
-      ) : null}
     </div>
   );
 }

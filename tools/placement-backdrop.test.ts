@@ -49,7 +49,7 @@ test("the address names a doll or a film; an old link's bakgrund=neutral, and an
   assert.deepEqual(shownBackdrop(old.backdrop, [], 'pamela'), shownBackdrop(null, [], 'pamela'));
   assert.deepEqual(shownBackdrop('docka-okand', [], 'paow'), shownBackdrop(null, [], 'paow'), 'an unknown name');
   assert.equal(readPlacementAddress(new URLSearchParams('plats=p4c2')).backdrop, null);
-  const film: Film = {id: 'paow-giv-p4-c2-01', title: 'A2.3 → A3P4C2', path: 'assets/motions/paow-giv-p4-c2-01/source.mp4', width: 1764, height: 1174, frames: 90, fps: 30, group: 'bank', start: 0, target: 'P4.C2'};
+  const film: Film = {id: 'paow-giv-p4-c2-01', title: 'A2.3 → A3P4C2', path: 'assets/motions/paow-giv-p4-c2-01/source.mp4', width: 1764, height: 1174, frames: 90, fps: 30, start: 0, target: 'P4.C2'};
   assert.deepEqual(shownBackdrop(film.id, [film], 'paow'), {kind: 'film', film});
   assert.deepEqual(shownBackdrop(film.id, [], 'pamela'), shownBackdrop(null, [], 'pamela'), "a film that is not the chosen dealer's is never shown");
 });

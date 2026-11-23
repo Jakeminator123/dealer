@@ -33,10 +33,11 @@ import { sceneWords } from "../../lib/bordet.ts";
 import { useBank } from "../../lib/bank.ts";
 import { ONLINE_CASINO, readGeometryWord, trialAddress, withGeometry } from "../../lib/casino.ts";
 import { stepFacts, useViewContext } from "../../lib/context.ts";
-import { BANK_DEALER, openingRound, ownSteps, withDealer } from "../../lib/dealer.ts";
+import { openingRound, ownSteps, withDealer } from "../../lib/dealer.ts";
 import { isSnapshot } from "../../lib/mode.ts";
 import { formatJakob } from "../../lib/names.ts";
-import { addressOf, contextRound, isReference, no3d, readAddress, readyRounds, roundFacts, roundFromText, roundParts, viewFor, type Round } from "../../lib/rounds.ts";
+import { partsOf } from "../../lib/parts.ts";
+import { addressOf, contextRound, readAddress, readyRounds, roundFacts, roundFromText, type Round } from "../../lib/rounds.ts";
 import { BRED_LINS, CASINO_PRESET } from "../../lib/scene-presets.ts";
 import { readSceneCardTrial, withSceneCardTrial } from "../../lib/scene-card-trial.ts";
 import { firstTree, useTrees } from "../map/useTrees";
@@ -95,10 +96,10 @@ export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: Scene
     const asked = address.asked;
     if (asked.kind === "runda") return roundFromText(asked.text, rounds);
     if (asked.kind === "kant") return graph ? contextRound(graph, asked.edge, asked.take) : null;
-    // No round asked: the chosen card's deal and back; a dealer other than Pamela with no film there: the ready round that
-    // plays most of her films.
+    // No round asked: the chosen card's deal and back; when that round cannot be read, the ready round that plays most of
+    // the dealer's films.
     const own = roundFromText(cardRound, rounds);
-    if (!own.errors.length || !graph || graph.dealer === BANK_DEALER) return own;
+    if (!own.errors.length || !graph) return own;
     return openingRound(graph, rounds, owners) ?? own;
   }, [chosen, address, graph, rounds, owners, cardRound]);
 
@@ -108,15 +109,14 @@ export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: Scene
     [graph, placesRead, round, places, owners],
   );
   const parts = useMemo(() => {
-    const parts = roundParts(round, segments), words = readSceneCardTrial(new URLSearchParams(searchText));
+    const parts = partsOf(segments), words = readSceneCardTrial(new URLSearchParams(searchText));
     return plan ? withSceneCardTrial(parts, segments, plan, tableGeometry(searchText), words ?? {}, words ? "film" : null) : parts;
-  }, [round, segments, plan, searchText]);
-  const notation = isReference(round) ? round.name : round?.steps.length ? formatJakob(round.steps) : "";
-  const mode = viewFor(round, kind === "rafilm" ? "platt" : "3d");
+  }, [segments, plan, searchText]);
+  const notation = round?.steps.length ? formatJakob(round.steps) : "";
+  const mode = kind === "rafilm" ? "platt" : "3d";
   const flat = mode === "platt";
-  const blocked3d = kind !== "rafilm" ? no3d(round) : null;
   // How far the dealer is, by the number Karta, the rail and Kön show ("Paow: Casino 22/36 steg"), while the tree lacks films.
-  const few = tree && dealer !== BANK_DEALER && tree.count.have < tree.count.total ? `${dealers.find((d) => d.id === dealer)?.name ?? dealer}: ${tree.tree.name} ${countWord(tree.count)} steg` : null;
+  const few = tree && tree.count.have < tree.count.total ? `${dealers.find((d) => d.id === dealer)?.name ?? dealer}: ${tree.tree.name} ${countWord(tree.count)} steg` : null;
 
   // The address follows the round and the look (a moment after the hand stops), beside Bordet's own words.
   const want = joinParts(roundText, editor.lookText);
@@ -168,11 +168,6 @@ export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: Scene
             {parts.length ? <span className="shrink-0 whitespace-nowrap">· {roundFacts(parts)}</span> : null}
             {few ? <span className="shrink-0 whitespace-nowrap text-faint">· {few}</span> : null}
           </span>
-          {blocked3d ? (
-            <span className="shrink-0 text-xs text-faint" title={blocked3d}>
-              Färdig film: bara Råfilm
-            </span>
-          ) : null}
           <div className="ml-auto flex flex-wrap items-center justify-end gap-1.5">
             {kind !== "rafilm" && (
               <div role="group" aria-label="Bordsperspektiv" className="flex shrink-0 items-center gap-0.5 rounded-md border border-line p-0.5">
@@ -213,7 +208,7 @@ export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: Scene
             ) : null}
           </div>
         </div>
-        {/* The presets apply to the 3D scene: on a flat picture (Råfilm, a finished film) they do nothing, and the row is not there. */}
+        {/* The presets apply to the 3D scene: on a flat picture (Råfilm) they do nothing, and the row is not there. */}
         {flat ? null : editor.bar}
         {status === "error" && !graph ? (
           <ErrorState className="min-h-0 flex-1" title="Klippbanken kunde inte läsas" error={error} onRetry={() => void reload()} />
@@ -235,8 +230,6 @@ export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: Scene
                 <Skeleton key={i} className="h-[78px] w-[244px] rounded-lg" />
               ))}
             </div>
-          ) : isReference(round) ? (
-            <RoundStrip segments={[]} parts={parts} film={round.film} clock={clock} onCue={(step) => stage.current?.cue(step)} />
           ) : segments.length ? (
             <RoundStrip segments={segments} parts={parts} clock={clock} onCue={(step) => stage.current?.cue(step)} />
           ) : (
@@ -250,8 +243,8 @@ export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: Scene
           <div className="min-h-0 flex-1 overflow-y-auto">{editor.afterwork ?? <Skeleton className="m-4 h-10 rounded-md" />}</div>
         ) : kind === "scen" ? (
           <div className="flex min-h-0 flex-1 flex-col">
-            {/* The picker keeps its full height; only a low window with Referensfilmer open lets it scroll, and the search
-                field and one group always stay in sight. */}
+            {/* The picker keeps its full height; only a low window lets it scroll, and the search field and one group
+                always stay in sight. */}
             <div className="shrink-0 border-b border-line px-4 py-3 lg:max-h-[calc(100%-8rem)] lg:overflow-y-auto">
               <RoundPicker rounds={rounds} current={round} problems={round?.errors ?? []} onPick={pick} />
             </div>
