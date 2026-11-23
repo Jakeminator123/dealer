@@ -6,6 +6,8 @@ import {buildGraph, resolveRound, type BankData, type Segment} from '../src/clip
 import {GAME_VOICE} from '../src/speech-lines.ts';
 import {readRelease, releaseDealers, gameTakes, namedAssets, engineSource, forEngine, copyGamePage, ENGINE_ENTRY, ENGINE_CRYPTO, blockedName, blockedPath, redactText, scrub, findLeaks, findTextLeaks, pickTakes, pickProofs, freezeBank, graphShape, safeRelative, prefetchAlias, objectName, type Proof, type Release} from './studio-freeze.ts';
 import {snapshotMaterial} from './studio-material.ts';
+import {cutBank, gameBank, type GameCut} from '../src/dealer-trees.ts';
+import {judgedBank} from '../src/game-director.ts';
 
 const release: Release = readRelease(JSON.parse(readFileSync(new URL('../data/studio-release.json', import.meta.url), 'utf8')));
 const digest = (text: string) => createHash('sha256').update(text).digest('hex');
@@ -245,6 +247,34 @@ test('a take Jakob has archived is never picked: its film does not go up, whatev
   assert.deepEqual(graphShape(copy), graphShape(graph));
   assert.deepEqual(played(resolveRound(copy, steps)), played(round));
   assert.deepEqual(findLeaks(frozen, rule), [], 'who archived it and when is no cost, path or blocked name');
+});
+
+test('the dealer trees decide what the copy plays: a tree that is not played sends no film up, and one played tree plays as in the lab', () => {
+  const bank = fixture(), rule = {...release, ...rules}, yes = {decision: 'ACCEPTED', userAccepted: true};
+  bank.motions!['paow-p4-c1-return-ready-01'].review = {decision: 'ACCEPTED', by: 'huvudagent'} as never;
+  // A tree being built (anchor READY-C): its deal, its return and a rest, all with his yes, so the game would play them uncut.
+  const tat = [['paow-tat-p4-deal-01', 'DEAL', 'READY-C', 'P4.C1', 'P4.C1'], ['paow-tat-p4-return-01', 'RETURN', 'P4.C1', 'READY-C', 'P4.C1'], ['paow-tat-vila-01', 'IDLE', 'IDLE', 'IDLE', undefined]] as const;
+  for (const [id, kind, from, to, target] of tat) { bank.jobs!.push({...bank.jobs![0], id, kind, from, to, target} as never); bank.motions![id] = {source: {fps: 30, frames: 90}, review: yes} as never; bank.media![id] = {video: `assets/motions/${id}/source.mp4`}; }
+  const tatIds = tat.map(t => t[0]), casino = ['paow-p4-c1-deal-01', 'paow-p4-c1-return-ready-01'];
+  assert.ok(tatIds.every(id => pickTakes(bank, 'paow', rule).picked.some(p => p.id === id)), 'uncut, the tree would go up');
+  const steps = [{from: 'READY', to: 'P4.C1'}, {from: 'P4.C1', to: 'READY'}];
+  for (const [cut, plays] of [
+    [{schemaVersion: 1, dealer: 'paow', played: ['casino'], hub: 'READY', own: casino, drop: tatIds}, casino], // as today: Casino (and Ingången, which shares it) played
+    [{schemaVersion: 1, dealer: 'paow', played: ['tatuerad'], hub: 'READY-C', own: tatIds, drop: casino}, tatIds.slice(0, 2)], // only the tree being built played: its anchor is the shoe
+  ] as [GameCut, string[]][]) {
+    const out = pickTakes(bank, 'paow', rule, cut);
+    assert.deepEqual(out.picked.map(p => p.id).sort(), [...cut.own].sort());
+    assert.ok(cut.drop.every(id => out.left.some(l => l.id === id && l.why === 'spelet spelar den inte')));
+    const shown = new Map(out.picked.map(p => [`assets/motions/${p.id}/source.mp4`, `assets/motions/${p.id}/source.mp4`]));
+    const frozen = freezeBank(bank, shown, new Set(out.picked.map(p => p.id)), rule, digest, {paow: cut});
+    assert.deepEqual(frozen.gameCuts, {paow: cut}, 'the copy has no /api/trees: its bank carries the cut');
+    assert.deepEqual(graphShape(buildGraph(frozen)), graphShape(buildGraph(bank)), 'the map shows every tree, as on the lab');
+    const live = buildGraph(judgedBank(cutBank(bank, cut)), {dealer: 'paow'}), copy = buildGraph(judgedBank(gameBank(frozen, null, 'paow')), {dealer: 'paow'});
+    assert.deepEqual(graphShape(copy), graphShape(live));
+    assert.deepEqual(resolveRound(copy, steps).map(s => s.take?.id), plays);
+    assert.deepEqual(played(resolveRound(copy, steps)), played(resolveRound(live, steps)));
+    assert.ok(!(copy.edge['IDLE>IDLE']?.takes ?? []).some(t => cut.drop.includes(t.id)), 'a rest of a tree not played does not rest in the copy');
+  }
 });
 
 // ── Paths of the output ─────────────────────────────────────────────────────

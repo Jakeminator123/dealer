@@ -30,8 +30,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
 - **Den enda vägen** (2026-11-13): en ny dealer och varje film görs längs `tools/dealer-line.md`.
 - **Fria händer med ansvar** (2026-11-14): "Du har fria privilegier och kör på. men se till att dokumentera coh städa".
 - **Ordlistan följer hans ord** (2026-11-17), och sidornas ord rättas efter den.
-- **Huvudagenten orkestrerar** (2026-11-13, 2026-11-18, 2026-11-20): delar ut arbetet till underagenter och sidochattar,
-  granskar, slår ihop, committar och svarar honom. Vem det är står i HANDOFF, "Vem äger vad".
+- **Huvudagenten orkestrerar** (2026-11-13, 2026-11-18, 2026-11-20, 2026-11-23): delar ut arbetet till underagenter och
+  sidochattar, granskar, slår ihop, committar och svarar honom: "så du och jag mer sitter och orchistrerar". Vem: HANDOFF.
 - **Han talar helst med huvudagenten** (2026-11-17): ett önskemål, inget förbud; han öppnar andra chattar när han vill.
 - **3D-banan** (2026-11-17): arbetar avskilt i `dealer3d/` och lämnar sitt arbete till huvudagenten.
 - **Spara tokens** (2026-11-18): kontots gräns delas av alla sessioner. En underagent bara för det han har beställt,
@@ -93,9 +93,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   Huvudagenten godkänner på hans uppdrag inom `data/order-policy.json`, genom Beställ och `tools/film-prompting.md`.
 - **Två tagningar per klipp** (2026-11-12, 2026-11-13): en ändring och en tagning per metodprov; två per klipp när
   metoden är vald, en tredje bara om båda faller. Varje omgång granskas oberoende i full upplösning före nästa.
-- **Mandatet** (2026-11-18): "Ja du får generera tills kontot är typ tomta!". 2026-11-23 kväll: "du får 1000 i timmen, men vi kan öka
-  till 2000 timmen idag"; kl. 21.10 "Du får 3k denna timme för att producera material" (`data/order-policy.json`). En granskad
-  pilot föregår en serie; kostnaden sägs efteråt.
+- **Mandatet** (2026-11-18): "Ja du får generera tills kontot är typ tomta!". 2026-11-23: "du får 1000 i timmen", och kl. 23.59
+  "du får 4k till ikväll" (taket 8 000; `data/order-policy.json`). En granskad pilot föregår en serie; kostnaden sägs efteråt.
 - **Kvalitet före kvantitet** (2026-11-18): "men om allt sitter, får du gärna gå vidare och skapa mycket material så
   länge det är bra."
 - **API-nyckeln** (2026-11-20): beställningar får gå genom nyckeln i `.env.local` (utvecklarprojektets krediter) när
@@ -139,6 +138,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   nu" (olika händer). Det tatuerade trädet byggs vidare; A2.1 görs om med hennes mindre händer och tatueringar.
 - **Tatuerads A2.1 och vilor** (2026-11-23 kl. 22.46 och 23.01, Beslut): ja till A2.1-bilden (`paow-nyp-tatuerad`; givarna från
   A2.1 görs om från den genom dockan) och till Casinots vilor med de tatuerade händerna inlagda ("Myckert bra").
+- **Vilorna in, och korta varianter** (2026-11-23 kl. 23.40–23.45): vilorna förs in "givet att de itne är dubeltter bara".
+  Korta varianter klipps ur en film där hon återvänder till A1, vävda mot ankaret; i Granska 2026-11-24: "gillar dessa korta klipp!"
 - **Fart** (2026-11-23): klipp ska kunna spelas i 1,5× eller 2×, sparat i en komposition och som klippets egen standard;
   givarna gärna i dubbel fart.
 - **Kartas meny, nivåer och bryggor** (2026-11-23 kl. 21.35): raden med träd och kompositioner är "ful" och görs om; i den
@@ -231,6 +232,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   gå snabbare"; andra armen och huvudets vridningar "behöver inte skyndas upp". Han vill ha det som en standard.
 - **Revansch på nästan bra klipp** (2026-11-23, i dealer-19:s chatt): de ska kunna användas "för att skapa om dem men
   med aningen mindre ändringar", som en standard, "utöver att jag i princip alltid vill gå via vår docka".
+- **Nya filmer: snabbare och bättre, inte kopior** (2026-11-23 kl. 23.45): de ska "gå snabbare är förgångaran" och
+  inte vara "helt likadana, utan bara rentav bättre"; kanske med "vår andra docka" eller SAM 3D-dockan som förlaga.
 - **Flera kameravinklar ur samma film** (2026-11-18): en sidovinkel görs av bankens egen film i Runways videoredigerare
   (35 % och 70 % åt sidan, också speglat), inte av en ny tagning. Först ett labbprov där två vinklar binds ihop.
 - **Givens sex steg från A2.1** (2026-11-13): Nyp, Dra, För fram, Vrid, Vänd upp, Lägg. Det är valet Vänd vid platsen
@@ -299,6 +302,9 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   föredrog 30 av 30 det han kallade "värre än förut"). Hans godkända `paow-tal-blackjack-sv-04` rörs inte.
 - **Sättet dokumenteras per dealer** (2026-11-17): vyn Lipsync och `data/lipsync.json`.
 - **Munnen ur hennes egen film** (2026-11-17, hans idé, obyggd): leendefilmen `paow-vila-03-01` som underlag.
+- **Talfilmerna in i nodträdet** (2026-11-23 kl. 23.45): "De ska väl rimligen in i nodtrdet också för de är ju väldigt
+  viktiga i spelet sedaen". De görs på projektets eget sätt (2026-11-24): "via vår mousetalk/runpod/lokala-typ-gpy-grejj
+  som har speciell mått för hennes mun", aldrig med en köpt läppmodell.
 
 ## Scenen och spelet
 
@@ -313,6 +319,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
 - **Spelet på telefon** (2026-11-14): markeröverlägget "smartare och mindre så det inte täckeer bla vart marker ska in",
   också liggande. Filmen före spelet ligger i mitten på en liggande telefon (2026-11-17).
 - **Görans material** används inte (`docs/SYSTEM.md`, "Återbruk och införande").
+- **Dela ut går före köade vilor** (2026-11-23 kl. 23.45): klickar spelaren på Deal efter sin insats "ska de köade
+  viloklippen ignoreras" så att A1 → A2.n får företräde. Och nodträdet binds ihop "så att vi kan lätt få ut PAOW i spel nu".
 
 ## Kopian och nätet
 

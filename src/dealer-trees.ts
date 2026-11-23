@@ -2,7 +2,8 @@
 // A3 per player and card) and its 36 steps against his measure (Jakob 2026-11-21: "en giv per kort för respektive
 // spelare"), each with its state, and the one number per tree ("Casino 22/36"). Pure: no file system, no DOM, no network.
 // The lab server places the films in the trees (tools/dealer-tree.ts, GET /api/trees) and calls treeView; the studio draws
-// the answer (Karta) and counts with treeCount (the rail); the game plays one tree with cutBank (?trad=<id>, src/game-page.ts).
+// the answer (Karta) and counts with treeCount (the rail); the game plays one tree with cutBank (?trad=<id>, src/game-page.ts),
+// and without a tree word plays the trees that are spelas (gameBank: one such tree exactly as ?trad=, the others left out).
 // Tests: studio/tests/dealer-trees.test.ts.
 //
 // The measure, per tree, with the tree's anchor at the shoe (its first A2.x anchor; A2.1 when it has none):
@@ -261,4 +262,38 @@ export function treePlay<B extends CutBank>(bank: B, word: string | null, reply:
   const name = cut.name ?? word;
   if (!(cut.count.have > 0)) return { bank, line: `${name} har inga filmer än.${usual}` };
   return { bank: cutBank(bank, { hub: cut.hub, own: cut.own, drop: cut.drop }), line: `${name} ${countWord(cut.count)}: kort utan film läggs utan hand` };
+}
+
+// ── The game without a tree word ────────────────────────────────────────────
+/**
+ * GET /api/trees?dealer=<id>&spel=1: what the game without ?trad= plays (tools/dealer-tree.ts gameCut), as cutBank takes it.
+ * played: the trees whose films it plays; drop: the takes placed in a tree it does not play, so that a tree being built does not
+ * leak into it. When the films of one tree are played, hub and own are that tree's anchor at the shoe and its takes: the game
+ * plays it exactly as ?trad=<id> does. With several, hub is READY and own empty: their films are only kept, nothing renamed.
+ */
+export type GameCut = { schemaVersion: 1; dealer: string; played: string[]; hub: string; own: string[]; drop: string[] };
+/** The trees whose films the game plays without a tree word: each tree that is spelas, as the tree whose films it plays (homeOf). */
+export const playedTrees = (trees: readonly TreeDef[]): Set<string> => new Set(trees.filter((t) => t.state === 'spelas').map((t) => homeOf(t, trees).id));
+/** The takes placed in a tree the game without a tree word does not play. A take placed in no tree (Borta, an older attempt) stays. */
+export function unplayedTakes(trees: readonly TreeDef[], takes: readonly Pick<TreeTake, 'id' | 'tree'>[]): string[] {
+  const played = playedTrees(trees);
+  return takes.filter((t) => t.tree !== null && !played.has(t.tree)).map((t) => t.id);
+}
+/**
+ * The cut the game without a tree word plays (GameCut). Ingången shares the Casino's films, so the two are one played tree.
+ * hubOf: a tree's anchor at the shoe (treeHubs, as treeCut gives it for ?trad=).
+ */
+export function playedCut(dealer: string, trees: readonly TreeDef[], takes: readonly Pick<TreeTake, 'id' | 'tree'>[], hubOf: (tree: TreeDef) => string): GameCut {
+  const played = [...playedTrees(trees)], one = played.length === 1 ? (trees.find((t) => t.id === played[0]) ?? null) : null;
+  return { schemaVersion: 1, dealer, played, hub: one ? hubOf(one) : 'READY', own: one ? takes.filter((t) => t.tree === one.id).map((t) => t.id) : [], drop: unplayedTakes(trees, takes) };
+}
+/**
+ * The bank the game plays without ?trad= (src/game-page.ts): the lab's cut (reply), else the one the bank carries for the dealer
+ * (gameCuts: the online copy has no /api/trees, and its frozen bank holds the cut it was built with, tools/studio-freeze.ts
+ * freezeBank); with neither, the bank as it is.
+ */
+export function gameBank<B extends CutBank>(bank: B, reply: TreeReply, dealer: string): B {
+  const usable = (c: unknown) => (c && typeof c === 'object' && Array.isArray((c as Partial<GameCut>).drop) ? (c as Partial<GameCut>) : null);
+  const cut = usable(reply?.status === 200 ? reply.answer : null) ?? usable((bank as { gameCuts?: Record<string, unknown> }).gameCuts?.[dealer]);
+  return cut ? cutBank(bank, { hub: typeof cut.hub === 'string' ? cut.hub : 'READY', own: Array.isArray(cut.own) ? cut.own.map(String) : [], drop: cut.drop!.map(String) }) : bank;
 }

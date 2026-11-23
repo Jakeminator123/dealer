@@ -6,15 +6,18 @@
 // it: a step with a film its films (EdgeSheet), another what an order of it has and lacks (StepOrder). A click on a picture
 // opens it large; while a path is picked (Väg) it adds the node to the path instead: the path's pictures ringed and numbered
 // in order, its lines lit, and the nodes it cannot go to next faded. Little text: the short names (A1, A2.3, A3P4C2) on the
-// pictures, the rest in each chip's title. Geometry: lib/map-layout.ts treeLayout.
+// pictures, the rest in each chip's title. Geometry: lib/map-layout.ts treeLayout. Where she speaks, on A1, the Tal chip
+// says how many of her lines the game has a talk film for in the tree ("25/25", lib/tree-talk.ts), a count of its own
+// beside the 36 steps; a click opens the tree's talk (TalkSheet).
 import "@xyflow/react/dist/style.css";
 import { Background, BackgroundVariant, BaseEdge, EdgeLabelRenderer, ReactFlow, useReactFlow, useStore, type Edge, type EdgeProps, type Node, type NodeProps } from "@xyflow/react";
-import { ImageOff } from "lucide-react";
+import { ImageOff, Speech } from "lucide-react";
 import { useEffect, useMemo, useRef } from "react";
 import { nodeCode, type TreeNode, type TreeView, type ViewStep } from "../../../src/dealer-trees.ts";
 import { cn } from "@/components/ui";
 import type { Dir, TreeBox, TreeLayout, TreeLine } from "@/lib/map-layout";
 import type { EntryAnswer } from "@/lib/media";
+import { talkWord, type TreeTalk } from "@/lib/tree-talk";
 import { VERDICT_LABEL } from "@/lib/verdict";
 import { ProofStill } from "../proofs";
 import { coverOfEntry } from "../material/Tile";
@@ -49,7 +52,9 @@ type Pic = { node: TreeNode | null; entry: EntryAnswer | null };
 /** One picture on the map as a button: its node, whether a click does anything, its places in the path, faded or not. */
 type Shot = { node: string; pic: Pic; can: boolean; mark: number[] | null; off: boolean };
 type Act = { picking: boolean; onOpen: (node: string) => void };
-type PictureData = { box: TreeBox; shot: Shot; act: Act; dim: boolean; note: string | null; label: string };
+/** The Tal chip on A1: the tree's talk count, whether its panel is open, and what opens it. */
+type TalkChipData = { have: number; total: number; on: boolean; onOpen: () => void };
+type PictureData = { box: TreeBox; shot: Shot; act: Act; dim: boolean; note: string | null; label: string; talk: TalkChipData | null };
 type CardsData = { box: TreeBox; shots: Shot[]; act: Act; dim: boolean };
 type PictureNodeType = Node<PictureData, "picture">;
 type CardsNodeType = Node<CardsData, "cards">;
@@ -61,8 +66,11 @@ type CardsNodeType = Node<CardsData, "cards">;
  */
 const labelScale = (zoom: number) => Math.round(Math.min(2, Math.max(1, 1 / zoom)) * 10) / 10;
 
-/** A picture of Material, or an empty box with the node's name when the tree has none for it; mark: its places in the path. */
-function Picture({ pic, code, small = false, mark = null }: { pic: Pic; code: string; small?: boolean; mark?: number[] | null }) {
+/**
+ * A picture of Material, or an empty box with the node's name when the tree has none for it; mark: its places in the path;
+ * stateTop: the state's mark stays at the top (the foot holds the Tal chip).
+ */
+function Picture({ pic, code, small = false, mark = null, stateTop = false }: { pic: Pic; code: string; small?: boolean; mark?: number[] | null; stateTop?: boolean }) {
   const scale = useStore((s) => labelScale(s.transform[2]));
   const cover = pic.entry ? coverOfEntry(pic.entry) : null;
   const state = pic.node?.state && pic.node.state !== "gäller" ? pic.node.state : null;
@@ -91,7 +99,7 @@ function Picture({ pic, code, small = false, mark = null }: { pic: Pic; code: st
       </span>
       {state ? (
         <span
-          className={cn("pointer-events-none absolute right-1 rounded-xs bg-black/65 px-1 text-faint backdrop-blur-sm", grown ? "bottom-1" : "top-1")}
+          className={cn("pointer-events-none absolute right-1 rounded-xs bg-black/65 px-1 text-faint backdrop-blur-sm", grown && !stateTop ? "bottom-1" : "top-1")}
           style={{ fontSize: Math.min(18, 10 * scale), lineHeight: grown ? 1.4 : "15px" }}
           aria-label={state}
         >
@@ -115,7 +123,7 @@ function Picture({ pic, code, small = false, mark = null }: { pic: Pic; code: st
  * A picture as a button: a click opens it large, or, while a path is picked, adds its node to the path (only a node the
  * path can go to next). No nopan: a drag over a picture still moves the map, and a drag never counts as a click.
  */
-function ShotButton({ shot, act, code, small = false }: { shot: Shot; act: Act; code: string; small?: boolean }) {
+function ShotButton({ shot, act, code, small = false, stateTop = false }: { shot: Shot; act: Act; code: string; small?: boolean; stateTop?: boolean }) {
   return (
     <button
       type="button"
@@ -129,17 +137,43 @@ function ShotButton({ shot, act, code, small = false }: { shot: Shot; act: Act; 
         shot.off && "opacity-35",
       )}
     >
-      <Picture pic={shot.pic} code={code} small={small} mark={shot.mark} />
+      <Picture pic={shot.pic} code={code} small={small} mark={shot.mark} stateTop={stateTop} />
+    </button>
+  );
+}
+
+/** The Tal chip at A1's foot, right (the rest's own chip is at the left): her lines with a talk film in the tree, "25/25". */
+function TalkChip({ talk }: { talk: TalkChipData }) {
+  const scale = useStore((s) => labelScale(s.transform[2]));
+  const none = talk.have === 0;
+  const title = `Tal: ${talk.have} av ${talk.total} repliker har en talfilm i trädet`;
+  return (
+    <button
+      type="button"
+      onClick={talk.onOpen}
+      title={title}
+      aria-label={title}
+      aria-pressed={talk.on}
+      className={cn(
+        "nodrag nopan pointer-events-auto absolute bottom-1.5 right-1.5 z-[1] inline-flex items-center gap-1 rounded-full bg-black/70 px-1.5 font-medium tabular-nums shadow-[0_1px_5px_rgb(0_0_0/0.55)] backdrop-blur-sm transition-shadow duration-150",
+        none ? "border border-dashed border-[#ef8b8b]/80 text-[#ef8b8b]" : "text-ink",
+        talk.on && "shadow-[0_0_0_2px_rgb(217_185_106/0.7)]",
+      )}
+      style={{ fontSize: Math.min(20, 11 * scale), lineHeight: "18px" }}
+    >
+      <Speech aria-hidden style={{ width: Math.min(22, 12 * scale), height: Math.min(22, 12 * scale) }} />
+      {talkWord(talk)}
     </button>
   );
 }
 
 function PictureNode({ data }: NodeProps<PictureNodeType>) {
-  const { box, shot, act, dim, note, label } = data;
+  const { box, shot, act, dim, note, label, talk } = data;
   return (
     <div style={{ width: box.box.w, height: box.box.h }} className={cn("relative transition-opacity duration-150", dim && "opacity-40")} aria-label={label}>
       <Hooks />
-      <ShotButton shot={shot} act={act} code={box.node ? nodeCode(box.node) : ""} small={box.kind === "halkort"} />
+      <ShotButton shot={shot} act={act} code={box.node ? nodeCode(box.node) : ""} small={box.kind === "halkort"} stateTop={!!talk} />
+      {talk ? <TalkChip talk={talk} /> : null}
       {note ? <span className="pointer-events-none absolute -bottom-4 left-0 whitespace-nowrap text-[10.5px] leading-4 text-faint">{note}</span> : null}
     </div>
   );
@@ -238,9 +272,14 @@ export type TreeCanvasProps = {
   onHover: (id: string | null) => void;
   /** A picture clicked: its node (open it large, or add it to the path). */
   onOpen: (node: string) => void;
+  /** The tree's talk (lib/tree-talk.ts), drawn as the Tal chip on A1; none: no chip (an older lab server). */
+  talk?: TreeTalk | null;
+  /** The Tal panel is open. */
+  talkOn?: boolean;
+  onTalk?: () => void;
 };
 
-export function TreeCanvas({ view, layout, media, active, hover, sheetOpen, path, onPick, onHover, onOpen }: TreeCanvasProps) {
+export function TreeCanvas({ view, layout, media, active, hover, sheetOpen, path, onPick, onHover, onOpen, talk = null, talkOn = false, onTalk }: TreeCanvasProps) {
   const width = useStore((s) => s.width);
   const height = useStore((s) => s.height);
   const { getViewport, setViewport } = useReactFlow();
@@ -291,9 +330,10 @@ export function TreeCanvas({ view, layout, media, active, hover, sheetOpen, path
       if (b.kind === "plats" || b.kind === "dealer") return { ...base, type: "cards", data: { box: b, shots: b.cards.map((c) => shot(c.card)), act, dim } } satisfies CardsNodeType;
       const given = b.kind === "annan" ? gives(b.node!) : [];
       const note = b.kind === "annan" ? (given.length ? `ger ${given.join(", ")}` : "ger inget steg") : b.kind === "vila" && opening ? `början: ${opening}` : null;
-      return { ...base, type: "picture", data: { box: b, shot: shot(b.node!), act, dim, note, label: nodeCode(b.node!) } } satisfies PictureNodeType;
+      const said = b.kind === "vila" && talk && onTalk ? { have: talk.have, total: talk.total, on: talkOn, onOpen: onTalk } : null;
+      return { ...base, type: "picture", data: { box: b, shot: shot(b.node!), act, dim, note, label: nodeCode(b.node!), talk: said } } satisfies PictureNodeType;
     });
-  }, [layout, view, media, active, litNodes, path, onOpen]);
+  }, [layout, view, media, active, litNodes, path, onOpen, talk, talkOn, onTalk]);
 
   const edges = useMemo<Edge[]>(() => {
     const rails: RailEdgeType[] = layout.rails.map((rail) => ({ id: rail.id, source: view.hub, target: "P1", type: "rail", data: { rail }, selectable: false, focusable: false, deletable: false }));

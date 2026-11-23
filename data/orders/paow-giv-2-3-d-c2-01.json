@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "title": "Paow · Tatuerad · hålkortet läggs stängt · A3DC2 · tur och retur",
+  "summary": "Gör en film av Paow: ett kort från ankare 2.3 till dealerns hålkort, tur och retur.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "GIV-2.3",
+    "label": "Två händer, ett kort till platsen",
+    "edge": "READY-C>D.C2",
+    "shape": "ROUND_TRIP",
+    "cutInto": [
+      "READY-C>D.C2",
+      "D.C2>READY-C"
+    ],
+    "makes": null
+  },
+  "motion": {
+    "grip": "TWO_HANDS",
+    "hand": "LH",
+    "pass": true,
+    "turn": false,
+    "flipAxis": null,
+    "target": "D.C2",
+    "side": "BACK",
+    "fromPlan": false,
+    "planned": {
+      "grip": "PINCH",
+      "flipAxis": null
+    }
+  },
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows A2.3 · arkiverad",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-giv-2-3-d-c2-01/first.png",
+      "sha256": "8e60b0eae86e271f5fd191dc16a37bc8256f2b5fb2a58a2fe65206623927e386",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-ankare-2-3-d",
+        "path": "assets/anchors/paow-ankare-2-3-d/anchor.png",
+        "note": "Blicken ned mot kortet, vänster hand uppifrån på kortet (arkiverad)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Slutbild · samma + kortet stängt på dealerns hålkort",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-giv-2-3-d-c2-01/last.png",
+      "sha256": "9ab566c1b4f68a365f1846d7b5bc65e30077472ec61e16104c5a86ddfb07bf3b",
+      "from": {
+        "built": "första bilden + kortet D.C2 där planen säger"
+      },
+      "waits": null,
+      "width": 1764,
+      "height": 1174,
+      "drawn": {
+        "target": "D.C2",
+        "side": "BACK",
+        "as": "verkligt perspektiv: ett verkligt kort genom bordets lins, formen 87 % (src/card-plan.ts)",
+        "plan": {
+          "path": "placements/default.json",
+          "sha256": "956bc38ac4c82cf13c1db453cfea18b5d9a2f11a09fba16024217d12672e1a55",
+          "updatedAt": "2026-11-21T18:16:55.501Z"
+        },
+        "texture": {
+          "image": "assets/cards/kortets-textur.png",
+          "sha256": "8a027a00d7f4dad1428b8db2c8b5a7ca283db92b8b93d96eb23cf77ce55df5a9"
+        },
+        "quad": [
+          [
+            878.5,
+            899
+          ],
+          [
+            945.5,
+            899
+          ],
+          [
+            950.7,
+            956.1
+          ],
+          [
+            875.6,
+            956.1
+          ]
+        ],
+        "centre": [
+          912.6,
+          927.6
+        ],
+        "measured": {
+          "centre": [
+            912.7,
+            928.7
+          ],
+          "area": 4458,
+          "box": [
+            76,
+            60
+          ],
+          "changedElsewhere": 0
+        },
+        "measuredOffsetPx": 1.1
+      }
+    }
+  ],
+  "reference": {
+    "status": "INGEN",
+    "why": "Ingen referensfilm vald."
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "kling-4",
+    "params": {
+      "resolution": "1080p",
+      "duration": 4
+    }
+  },
+  "prompt": {
+    "template": "film-giv-kort@15",
+    "style": "KORT",
+    "text": "Locked camera, one continuous shot. Her hand at the shoe strokes the yellow card out of the window and slides it flat on the felt a short way out from the shoe, where her other hand meets it. There her other hand takes it by its short end, palm down, and carries it on low over the felt, yellow side up, towards its place close in front of her, in the middle of the picture, where the last frame shows it. She lays it flat there. Then the hand that laid it glides back low over the felt, palm down, to the shoe, as in the first frame. The hand from the shoe lets go once her other hand holds the card and settles back at the shoe. Her head stays bowed and turns towards the place where the card will lie. Only one card moves: a small card, about half as long as her hand, which keeps the size it has in the last frame all the way from the shoe to its place. It is blank, solid yellow on one side and solid blue on the other, each colour reaching right out to its corners, and the next card in the window is the same blank yellow.",
+    "sha256": "76ae0c10a09e7e496d9a7942b42f2c354cb0856d59f0fc114db2739ae519f0f0",
+    "extra": null,
+    "middle": false
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 86,
+    "total": 86,
+    "worstPerTake": 94,
+    "worstTotal": 94,
+    "basis": "21,3 krediter per s × 4 s. Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12."
+  },
+  "limits": {
+    "maxCredits": 94,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Recept giv-2.3: prövat i 6 beställningar.",
+    "Undantag från receptet: tur och retur i stället för bara dit; mall 15 i stället för 14; ingen referensfilm fast receptet vill ha en; 4 s i stället för 3 s.",
+    "Mall 15 har ingen egen text för den här filmen: texten är mall 12:s, ord för ord."
+  ],
+  "createdBy": "huvudagenten, tools/order-new.ts",
+  "approval": null,
+  "status": "UTKAST",
+  "id": "paow-giv-2-3-d-c2-01",
+  "created": "2026-11-23T23:10:06.508Z"
+}

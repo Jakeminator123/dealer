@@ -2,8 +2,10 @@
 // the registers; its report goes to .runtime/dealer-trad/ (LASMIG.md in Jakob's words, trad.json with everything).
 //   node tools/dealer-tree.ts [--dealer <id>]
 // The same placing answers Karta's trees (GET /api/trees?dealer=<id>, serveTrees): each tree's nodes and its 36 steps against
-// his measure with their state (src/dealer-trees.ts treeView), and for a step without a film what an order of it has and lacks;
-// with &trad=<tree>, one tree for the game (treeCut: its takes and the other trees' takes, src/dealer-trees.ts cutBank).
+// his measure with their state (src/dealer-trees.ts treeView), for a step without a film what an order of it has and lacks,
+// and its talk: her lines and the talk film the game plays for each in the tree, a count of its own (studio/lib/tree-talk.ts);
+// with &trad=<tree>, one tree for the game (treeCut: its takes and the other trees' takes, src/dealer-trees.ts cutBank); with
+// &spel=1, what the game without a tree word plays (gameCut: one played tree as &trad=, else the others' takes left out, src/dealer-trees.ts gameBank).
 //
 // A tree is a set of anchors from Material (data/media-roles.json): A1, A2.x and, where one is chosen, an A3 per player and card.
 // Names come from the graph's nodes (src/dealer-trees.ts nodeCode, the studio's words): IDLE = A1, READY = A2.1, READY-B = A2.2,
@@ -21,7 +23,7 @@
 //                proposal.
 //   okopplad     no edge at all (a whole round, a sequence), or a film folder under assets/ that no register names.
 // Whether the game plays a take is the game's own answer: gameTakes (tools/studio-freeze.ts) over the bank the lab serves
-// (GET /api/clip-bank, with each record's speech), and usesOf (studio/lib/primaries.ts) for how often. Verdicts are
+// (GET /api/clip-bank, with each record's speech) cut as the game without a tree word cuts it (gameCut), and usesOf (studio/lib/primaries.ts) for how often. Verdicts are
 // verdictOf (studio/lib/verdict.ts). Sizes are stat sizes, each file once (a hard link is counted where it is first met);
 // no media file is opened. A kept collection (assets/noir/, Jakob 2026-11-21) is named but never loose material.
 import {existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync} from 'node:fs';
@@ -29,12 +31,14 @@ import type {IncomingMessage, ServerResponse} from 'node:http';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {buildGraph, type BankData, type Take} from '../src/clip-graph.ts';
-import {TREE_ID, countWord, isCard, isTreeHub, levelOf, nodeCode, nodesOf, orderCommand, stepName as stepWords, treeView, type Delivery, type MeasureStep, type Need, type OrderFacts, type TreeAnswer, type TreeCut, type TreeDef, type TreeRegister, type TreeState, type TreeStep, type TreeTake, type TreeView, type Verdict as TreeVerdict} from '../src/dealer-trees.ts';
+import {TREE_ID, countWord, cutBank, isCard, isTreeHub, levelOf, nodeCode, nodesOf, orderCommand, playedCut, stepName as stepWords, treeHubs, treeView, type Delivery, type GameCut, type MeasureStep, type Need, type OrderFacts, type TreeAnswer, type TreeCut, type TreeDef, type TreeRegister, type TreeState, type TreeStep, type TreeTake, type TreeView, type Verdict as TreeVerdict} from '../src/dealer-trees.ts';
+import {judgedBank} from '../src/game-director.ts';
 import {ANCHOR_NODE, costOf, modelFor, paramsOf, stepOf, type Policy, type StepKey} from '../src/order-model.ts';
 import {NO_RECIPE, methodFor, readMethods, recipeFor, referenceAbsent, secondsOf, triedWords, type MethodRegister} from '../src/order-methods.ts';
 import {GAME_VOICE, PHASE_LINE, spokenFilms, type SpeechTake} from '../src/speech-lines.ts';
 import {reviewerNote} from '../studio/lib/ledger.ts';
 import {gameGraph, usesOf, type Use} from '../studio/lib/primaries.ts';
+import {treeTalk, type TalkRegister, type TreeTalk} from '../studio/lib/tree-talk.ts';
 import {verdictOf} from '../studio/lib/verdict.ts';
 import {audit} from './media-audit.ts';
 import {readBank} from './produce.ts';
@@ -285,7 +289,8 @@ export async function buildReport(only: string | null = null) {
   // Each tree's number against his measure, the same Karta shows (src/dealer-trees.ts treeCount).
   const counts = Object.fromEntries(dealers.flatMap(d => viewsOf(world, d).map(v => [`${d}/${v.tree.id}`, countWord(v.count)])));
   const plays = new Map<string, Set<string>>(), games = new Map<string, ReturnType<typeof gameGraph>>();
-  for (const dealer of dealers) { plays.set(dealer, gameTakes(bank, dealer)); games.set(dealer, gameGraph(bank, dealer)); }
+  // The game without a tree word: the takes of trees it does not play left out (gameCut).
+  for (const dealer of dealers) { const own = cutBank(bank, playedCutOf(world, dealer)); plays.set(dealer, gameTakes(own, dealer)); games.set(dealer, gameGraph(own, dealer)); }
   const useCache = new Map<string, Map<string, Use>>();
   const useOf = (dealer: string, take: Take): Use | null => {
     const key = `${dealer} ${take.edge}`;
@@ -556,18 +561,30 @@ function orderFacts(f: Facts, view: Pick<TreeView, 'hub' | 'nodes'>, step: TreeS
   return {step: key, first, last: end, reference, recipe: recipeNeed, price: cost ? cost.worstTotal : null, command: orderCommand(f.dealer, step.from, step.to)};
 }
 
-/** Every tree of a dealer as Karta draws it, from what the placing already read. */
-function viewsOf(w: World, dealer: string): TreeView[] {
+/**
+ * The dealer's talk per tree (studio/lib/tree-talk.ts): her lines in data/speech.json and, per line, the talk film the game
+ * plays in a tree: among the rest takes of the game's bank (judgedBank) that the tree's cut keeps, its own and those of no tree.
+ */
+function talkOf(w: World, dealer: string, takes: readonly TreeTake[]): (home: string) => TreeTalk {
+  const placed = new Map(takes.map(t => [t.id, t.tree] as const)), treeOf = (id: string) => placed.get(id) ?? null;
+  const game = (buildGraph(judgedBank(w.bank), {dealer}).edge['IDLE>IDLE']?.takes ?? []) as unknown as SpeechTake[];
+  const all = [...w.takes.values()].filter(x => x.dealer === dealer && x.take.edge === 'IDLE>IDLE').map(x => x.take) as unknown as (SpeechTake & {archived?: boolean})[];
+  const register = json<TalkRegister>('data/speech.json');
+  return home => treeTalk(register, dealer, home, game, all, treeOf);
+}
+
+/** Every tree of a dealer as Karta draws it, from what the placing already read; with its talk, counted on its own (not in the 36). */
+function viewsOf(w: World, dealer: string): (TreeView & {talk: TreeTalk})[] {
   const defs = w.register.dealers[dealer]?.trees ?? [];
   if (!defs.length) return [];
-  const takes = placedTakes(w, dealer), sent = deliveries(w, dealer);
+  const takes = placedTakes(w, dealer), sent = deliveries(w, dealer), talk = talkOf(w, dealer, takes);
   const facts: Facts = {dealer, takes, entries: w.entries,
     methods: readMethods(json('data/order-methods.json')).register,
     prices: json<Policy>('data/order-policy.json')?.prices ?? [],
     refs: json<{films?: RefFilm[]}>('data/rendered-references.json')?.films ?? []};
   return defs.map(def => {
     const view = treeView(dealer, def, defs, w.entries, takes, sent);
-    return {...view, steps: view.steps.map(s => s.state === 'finns' ? s : {...s, order: orderFacts(facts, view, s)})};
+    return {...view, steps: view.steps.map(s => s.state === 'finns' ? s : {...s, order: orderFacts(facts, view, s)}), talk: talk(view.home)};
   });
 }
 
@@ -589,6 +606,23 @@ export async function treeCut(dealer: string, id: string): Promise<TreeCut | nul
 }
 
 /**
+ * GET /api/trees?dealer=<id>&spel=1: what the game without a tree word plays (src/dealer-trees.ts gameBank): one tree that is
+ * spelas as ?trad= plays it (its anchor at the shoe and its takes); with several, the takes of the trees it does not play left out.
+ */
+export async function gameCut(dealer: string, register?: TreeRegister): Promise<GameCut> {
+  const w = await readWorld(dealer);
+  return playedCutOf(w, dealer, register ?? w.register);
+}
+/**
+ * The game's cut without a tree word (src/dealer-trees.ts playedCut) from what the placing already read. register: whose trees'
+ * states decide (data/dealer-trees.json; another in memory says what the game would play if the trees stood so).
+ */
+function playedCutOf(w: World, dealer: string, register: TreeRegister = w.register): GameCut {
+  const defs = register.dealers[dealer]?.trees ?? [];
+  return playedCut(dealer, defs, placedTakes(w, dealer), def => treeHubs(def, w.entries).hub);
+}
+
+/**
  * What a composition of trees is drawn from (tools/dealer-composition.ts): the dealer's trees drawn, her takes placed in them,
  * and Material's pictures by entry id (the file and the name).
  */
@@ -605,7 +639,7 @@ export async function serveTrees(req: IncomingMessage, res: ServerResponse, url:
   if (!/^[a-z0-9-]+$/.test(dealer)) return send(400, {error: 'Ange ?dealer=<id>.'});
   if (tree !== null && !TREE_ID.test(tree)) return send(400, {error: `Trädet "${tree.slice(0, 40)}" är inget träd-id.`});
   try {
-    if (tree === null) return send(200, await treeAnswer(dealer));
+    if (tree === null) return send(200, url.searchParams.get('spel') === '1' ? await gameCut(dealer) : await treeAnswer(dealer));
     const cut = await treeCut(dealer, tree);
     send(cut ? 200 : 404, cut ?? {error: `${dealer} har inget träd "${tree}".`});
   } catch (e) { send(500, {error: e instanceof Error ? e.message : String(e)}); }
@@ -677,7 +711,6 @@ export function lasmig(r: Report): string {
   if (r.receiptsOnly.length) L.push('', `${r.receiptsOnly.length} mappar under assets/films/ har bara kvar ett kvitto (receipt.json); filmen är redan borta.`);
 
   L.push('', '## Varianter', '', 'Trädets läge är registrets ord (spelas, byggs, vilar); "Filmen spelas" är spelets eget svar när dealern är vald.', '');
-  for (const t of r.trees.filter(t => t.state !== 'spelas' && r.rows.some(y => y.tree === t.id && y.plays))) L.push(`- ${t.name} ${t.state}, men spelet har kvar dealerns filmer och spelar dem när dealern väljs i spelets Dealer-meny.`);
   L.push('', '| Variant | Träd | Steg | Trädets läge | Filmen spelas |', '|---|---|---|---|---|');
   for (const x of r.rows.filter(x => x.variant)) {
     const t = r.trees.find(t => t.id === x.tree);

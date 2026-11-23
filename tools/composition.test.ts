@@ -13,7 +13,7 @@ import {createLayout} from '../src/game-table.ts';
 import {cardRecords} from '../src/game-director.ts';
 import {createFilm, filmRate} from '../src/game-film.ts';
 import {cardFaces, tableCards} from '../src/game-view.ts';
-import {MEASURE_SIZE, cutBank, measure, treeView, type TreeDef, type TreeEntry, type TreeTake} from '../src/dealer-trees.ts';
+import {MEASURE_SIZE, cutBank, gameBank, measure, playedCut, treeView, unplayedTakes, type TreeDef, type TreeEntry, type TreeTake} from '../src/dealer-trees.ts';
 import {assign, checkComposition, compositionPlay, compositionView, createComposer, handsProblem, linkOf, pickFilm, seams, soloComposition, tempoOf, trace, treeBank, weave,
   type BridgeDef, type CompositionCut, type CompositionDef, type CutTree, type LegBeat, type Move} from '../src/composition.ts';
 import {compositionToSave} from './dealer-composition.ts';
@@ -221,6 +221,35 @@ test('ett ensamt träd är dagens trad: samma bank, samma träd för varje kort,
   assert.deepEqual(treeBank(bank, two, 'casino').jobs!.map(j => j.id), drop);
   assert.deepEqual(treeBank(bank, two, 'tatuerad').jobs!.find(j => j.id === 't-p1'), {id: 't-p1', from: 'READY', to: 'P1.C1'});
   assert.equal(treeBank(bank, two, 'tatuerad').derived!.length, 1, 'en film i inget träd följer med');
+});
+
+test('spelet utan trädord: ett träd som inte spelas läcker inte in, en film i inget träd följer med', () => {
+  const all = [...takes, {id: 'borta', tree: null}], tat = takes.filter(t => t.tree === 'tatuerad').map(t => t.id);
+  assert.deepEqual(unplayedTakes(defs, all), tat);
+  assert.deepEqual(unplayedTakes(defs.map(d => ({...d, state: 'spelas' as const})), all), [], 'när Tatuerad spelas följer allt med');
+  // A tree that is not spelas still plays when a tree that is shares it (Ingången plays the Casino's films).
+  assert.deepEqual(unplayedTakes(defs.map(d => d.id === 'casino' ? {...d, state: 'vilar' as const} : d), all), tat);
+  const bank = {jobs: all.map(t => ({id: t.id, from: t.id === 'borta' ? 'READY' : (t as TreeTake).from, to: t.id === 'borta' ? 'P5.C1' : (t as TreeTake).to}))};
+  assert.deepEqual(gameBank(bank, {status: 200, answer: {schemaVersion: 1, dealer: 'paow', played: ['casino'], drop: tat}}, 'paow').jobs.map(j => j.id), all.map(t => t.id).filter(id => !tat.includes(id)));
+  for (const reply of [null, {status: 404, answer: {error: 'x'}}, {status: 200, answer: {trees: []}}]) assert.equal(gameBank(bank, reply, 'paow'), bank, 'utan svar: som i dag');
+  // One played tree is the game: its anchor at the shoe and its own films, exactly as ?trad=<id>. Today that is the Casino, whose
+  // anchor is the shoe: Ingången shares it, so the two are one tree played and nothing is renamed.
+  const hubOf = (def: TreeDef) => views.find(v => v.tree.id === def.id)!.hub, today = playedCut('paow', defs, all, hubOf);
+  assert.deepEqual([today.played, today.hub, today.drop], [['casino'], 'READY', tat]);
+  assert.deepEqual(cutBank(bank, today), cutBank(bank, {hub: 'READY', own: [], drop: tat}), 'som i dag');
+  const onlyTat = defs.map(d => ({...d, state: d.id === 'tatuerad' ? 'spelas' as const : 'vilar' as const})), alone = playedCut('paow', onlyTat, all, hubOf);
+  const asTrad = {hub: 'READY-C', own: tat, drop: takes.filter(t => t.tree === 'casino').map(t => t.id)};
+  assert.deepEqual([alone.played, alone.hub, alone.own, alone.drop], [['tatuerad'], asTrad.hub, asTrad.own, asTrad.drop]);
+  assert.deepEqual(gameBank(bank, {status: 200, answer: alone}, 'paow'), cutBank(bank, asTrad), 'som ?trad=tatuerad');
+  assert.deepEqual(gameBank(bank, null, 'paow').jobs!.find(j => j.id === 't-p1'), {id: 't-p1', from: 'READY-C', to: 'P1.C1'}, 'utan svar och utan inbakat snitt: som i dag');
+  // Several trees played: nothing is renamed, nothing of theirs left out.
+  const several = playedCut('paow', defs.map(d => ({...d, state: 'spelas' as const})), all, hubOf);
+  assert.deepEqual([several.played, several.hub, several.own, several.drop], [['casino', 'tatuerad'], 'READY', [], []]);
+  // The copy on the net has no /api/trees: its frozen bank carries the cut (tools/studio-freeze.ts freezeBank), and the lab's answer goes first.
+  const frozen = {...bank, gameCuts: {paow: alone}};
+  assert.deepEqual(gameBank(frozen, null, 'paow').jobs, cutBank(bank, asTrad).jobs);
+  assert.deepEqual(gameBank(frozen, {status: 200, answer: today}, 'paow').jobs, cutBank(bank, today).jobs);
+  assert.equal(gameBank(frozen, null, 'ada'), frozen, 'en annan dealers snitt gäller inte');
 });
 
 test('registret: det som inte håller sägs', () => {

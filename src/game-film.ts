@@ -47,6 +47,8 @@ export type FilmPlayers = {
   toggle?(force?: boolean): void;
   /** The scene's queue: a chain played without cut waits for the part on screen, is read ahead, and is shown on its first frame when that part ends. */
   queues?: boolean;
+  /** Lets go of the chain waiting for the part on screen: that part plays to its end, and what is played next follows it. */
+  drop?(): void;
 };
 export type Placed = {quad: Pt[]; back: boolean; target: string; shoeDraw: number; gloss: number};
 /**
@@ -184,7 +186,7 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
    * film that ends in that pose.
    */
   function rest(how: {cut?: boolean; hold?: boolean} = {}) {
-    const mine = ++token, take = pickRest();
+    const mine = ++token, take = pickRest(); stood = null;
     if (!take) { resting = null; return; }
     resting = take; seen(take); heldRest = how.hold === true ? mine : null;
     restFilm(mine, take, how);
@@ -213,11 +215,41 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     const next = () => { if (mine !== token || asked) return; const after = pickRest(); if (!after) return; asked = true; restFilm(mine, after, {ahead: true}); };
     void trackOf(take).then(track => { if (mine !== token) return;
       players.play([{path: take.media.video!, start: range.start, end: range.end, ...fpsOf(take), ...modelOf(take), ...effectPart(take), rest: true, track, cards: cardOptions({own: null, lying}, table, records, layout, carry, words)}], {...(how.cut === true ? {cut: true} : {}),
-        onPart: () => { if (mine !== token) return; if (how.ahead) { resting = take; seen(take); } if (how.hold === true && heldRest === mine) players.toggle?.(true); else aheadSoon(next); },
+        onPart: () => { if (mine !== token) return; if (how.ahead) { resting = take; seen(take); } if (expected.length) players.preload?.(expected);
+          if (how.hold === true && heldRest === mine) players.toggle?.(true); else aheadSoon(next); },
         onEnd: next}); });
   }
   /** Lets a held rest run on (rest({hold: true})); nothing happens when another film has been played since, or none was held. */
   function release() { if (heldRest !== null && heldRest === token) players.toggle?.(false); heldRest = null; }
+
+  // ── a step asked for: the rest on screen ends, then the step's films (Jakob 2026-11-23: the queued rests are ignored, so that
+  // A1 to A2.n comes first and the deal after it) ──
+  /**
+   * The player has asked for a step (Dela ut, Kort, Stanna, ...) and its answer is on its way: the rest loop asks for nothing more,
+   * and a rest already queued behind the one on screen is dropped (players.drop). The film on screen plays on to its end, where
+   * she stands on A1 as every rest and line ends; there the step's films follow (play), or, if they are not there yet, its last
+   * frame stays until they are. Returns whether the rest stood still on its first frame (rest({hold: true})) when it was asked:
+   * that one is left at once, as nothing moves. Asked again before play, it changes nothing; rest() takes it back.
+   */
+  let stood: boolean | null = null;
+  function leave(): boolean {
+    if (stood === null) { stood = heldRest !== null && heldRest === token; ++token; heldRest = null; resting = null; players.drop?.(); }
+    return stood;
+  }
+  /**
+   * The player has laid a bet on these seats: the entry films a step from rest begins with (IDLE to the pose at the shoe each seat's
+   * first card is dealt from, and to READY) are fetched now, so that Dela ut does not wait for them, and are fetched again at each
+   * rest that comes while they may be needed (the queue's pool lets go of the least used); each later step from rest begins with
+   * them too. With a composition, each tree's entries.
+   */
+  let expected: string[] = [];
+  function expect(seats: number[]) {
+    const entries = () => { const hubs = seatHubs(), poses = new Set(['READY']);
+      for (const seat of seats) { const card = `P${seat}.C1`, hub = dealHub(card, hubs); if (hub !== 'READY' && fromHub(hub, card)) poses.add(hub); }
+      return [...poses].flatMap(hub => { const s = resolveRound(graph, [{from: 'IDLE', to: hub}], {places})[0]; return s?.video ? [s.video] : []; }); };
+    expected = [...new Set((composing ? Object.values(composing.graphs) : [graph]).flatMap(of => within(of, entries)))];
+    if (expected.length) players.preload?.(expected);
+  }
 
   // A card whose deal has no film that can be played (none made, or the only take rejected) is laid without a hand.
   const filmless = (target: string) => !resolveRound(graph, [{from: 'READY', to: target}], {places})[0]?.video;
@@ -309,7 +341,7 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
    * a playable film lands at once, in order. Resolves when the chain has played; the rest loop then goes on with the new table.
    */
   async function play(signals: FilmSignal[], next: {table: TableCards; records: CardRecord[]}, landed: (beat: Beat, index: number) => void = () => {}, said: {before?: Said[]; after?: Said[]} = {}): Promise<{gaps: string[]; beats: Beat[]}> {
-    const mine = ++token, leaving = resting, rate = dealTempo; resting = null;
+    const still = leave(); stood = null; const mine = ++token, rate = dealTempo;
     const standIn = STAND_IN_FILM[graph.dealer] ?? {}, plan = composing ? composed(next.table, signals, standIn) : null;
     const beats = plan?.beats ?? planBeats(next.table, lying, signals, filmless, toRest, standIn, seatHubs(), fromHub);
     table = next.table; records = next.records;
@@ -379,9 +411,10 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     const silentAfter = () => { for (const t of after) if (!t.part) t.begin(); };
     if (!all.length) { land(beats.length); silentAfter(); rest(); return {gaps, beats}; }
     await new Promise<void>(resolve => {
-      // A calm rest clip is cut at once; a gesture is played out faster, so that it lands, and the chain starts after it.
-      const cut = !leaving || idleExit(leaving) === 'CUT'; if (!cut) players.hurry(IDLE_RULE.exitRate);
-      players.preload?.(all.map(p => p.path));
+      // The chain follows the film on screen as it ends, on A1 (a rest or a line), never cut into the middle of its movement; only a
+      // rest standing still on its first frame (hold) is left at once. A film that ends before the chain is ready stands on its last
+      // frame meanwhile (the queue). Until 2026-11-23 a rest that may be cut (idle.cut) was cut at once, and so was a line.
+      const cut = still; if (!cut) players.hurry(IDLE_RULE.exitRate);
       let afterBegun = false, showing = -1;
       players.play(all, {cut, onPart: index => { if (mine !== token) return; showing = index;
         if (index < lead) { talkBefore[index].begin(); return; }
@@ -393,6 +426,9 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
         if (at !== null && frame >= at) land(beatOf[index - lead] + 1);
       },
       onEnd: () => { showing = -1; if (mine === token) { land(beats.length); if (!afterBegun) silentAfter(); } resolve(); }});
+      // The rest of the chain is fetched after the queue has taken its first film: fetched before, the films of a round (six or more)
+      // made the queue's pool let go of that one, the entry fetched at the bet (expect), and it was fetched again at the click.
+      players.preload?.([...new Set(all.map(p => p.path))]);
     });
     if (mine === token) rest();
     return {gaps, beats};
@@ -437,7 +473,7 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     return true;
   }
   return {
-    play, rest, release, swap, say, talkPart,
+    play, rest, release, swap, say, talkPart, leave, expect,
     /** Whether a rest asked for with hold still stands (nothing has been played since, and it has not been let go). */
     get held() { return heldRest !== null && heldRest === token; },
     /** How the carried card is shown from the next step on (Carry). */

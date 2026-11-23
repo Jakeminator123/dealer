@@ -3,6 +3,7 @@
 // server's read routes with every cost and private field taken out. No network and no files here: tools/build-studio-
 // snapshot.ts reads and writes, these decide. Tested in tools/studio-freeze.test.ts.
 import {buildGraph, resolveRound, type BankData, type Graph, type Step} from '../src/clip-graph.ts';
+import {cutBank, type GameCut} from '../src/dealer-trees.ts';
 import {judgedBank, hubChain, SEAT_HUB} from '../src/game-director.ts';
 import {GAME_VOICE, spokenFilms, spokenLine, type SpeechTake} from '../src/speech-lines.ts';
 import {posix} from 'node:path';
@@ -160,9 +161,11 @@ export type Left = {id: string; why: string};
  * voice). The takes that film has replaced are never played, and every delivery of re-laid lines adds as many films as she has
  * lines: on 2026-11-17 the copy's films for Blob had grown past their limit that way (2 250 MB against 2 200), with about a
  * hundred talk films in them that no page plays. A replaced take stays listed in the frozen clip bank, without its film.
+ * cut: the dealer trees' cut the game without a tree word plays (GET /api/trees?dealer=<id>&spel=1, src/dealer-trees.ts
+ * GameCut): a take of a tree it does not play is none of the game's.
  */
-export function gameTakes(bank: BankData, dealer: string): Set<string> {
-  const graph = buildGraph(judgedBank(bank), {dealer}), rests = (graph.edge['IDLE>IDLE']?.takes ?? []) as unknown as SpeechTake[];
+export function gameTakes(bank: BankData, dealer: string, cut: GameCut | null = null): Set<string> {
+  const graph = buildGraph(judgedBank(cut ? cutBank(bank, cut) : bank), {dealer}), rests = (graph.edge['IDLE>IDLE']?.takes ?? []) as unknown as SpeechTake[];
   const said = new Set(Object.values(spokenFilms(rests, dealer, {voice: GAME_VOICE})).map(s => s.clip));
   return new Set(Object.values(graph.takes).filter(t => t.stage === 'DONE' && t.decision !== 'REJECTED' && !!t.media.video && (spokenLine(t as unknown as SpeechTake) === null || said.has(t.id))).map(t => t.id));
 }
@@ -195,14 +198,15 @@ export function gameChoices(judged: Graph): Set<string> {
  * what the game plays, for a dealer of casino.dealers: gameTakes, and of its variants only those the game chooses itself
  * (gameChoices) unless release.variants is on; then every variant it can play goes up as well. The round of the map, his
  * accepted takes the game does not play and the takes that wait for him no longer go up (Jakob 2026-11-21); the copy lists
- * them without a film. When the dealer trees decide what plays (data/dealer-trees.json, tools/dealer-tree.ts: the trees in
- * state "spelas"), `source` below is where they come in, in place of the game's bank; nothing else here changes.
+ * them without a film. The dealer trees decide what plays (data/dealer-trees.json: the trees in state "spelas"): cut is the
+ * game's cut without a tree word (src/dealer-trees.ts GameCut), and both the source and the game's own choices are read in the
+ * bank as that cut plays it, so that a film of a tree the game does not play never goes up as the game's.
  * A take whose id or film names a blocked rule is never picked: when the source would pick it, the build stops (refused). A
  * take Jakob has archived (review.archived) is never picked, whatever its verdict.
  */
-export function pickTakes(bank: BankData, dealer: string, release: Release): {picked: Picked[]; left: Left[]; refused: Left[]} {
+export function pickTakes(bank: BankData, dealer: string, release: Release, cut: GameCut | null = null): {picked: Picked[]; left: Left[]; refused: Left[]} {
   const graph = buildGraph(bank, {dealer}), plays = release.casino.on && release.casino.dealers.includes(dealer);
-  const source = plays ? gameTakes(bank, dealer) : new Set<string>(), chosen = plays ? gameChoices(buildGraph(judgedBank(bank), {dealer})) : new Set<string>();
+  const source = plays ? gameTakes(bank, dealer, cut) : new Set<string>(), chosen = plays ? gameChoices(buildGraph(judgedBank(cut ? cutBank(bank, cut) : bank), {dealer})) : new Set<string>();
   const wanted = new Map<string, Picked['group']>();
   for (const id of source) { const take = graph.takes[id]; if (!take) continue; if (!take.variant || chosen.has(id)) wanted.set(id, 'spel'); else if (release.variants) wanted.set(id, 'variant'); }
   const picked: Picked[] = [], left: Left[] = [], refused: Left[] = [];
@@ -232,8 +236,10 @@ export function tokenFor(path: string, digest: (text: string) => string): string
  * the round come out as on the lab; without the budget, the cost and order times of every receipt, the revisions (nothing
  * can be saved), machine paths, costs and blocked names in any text. media holds paths only for a picked take and only for
  * a file that goes up: shown maps a lab path to the copy's path ("…/first.png" to "…/first.webp"); a path it lacks is null.
+ * cuts: each dealer's cut the game without a tree word plays (pickTakes), carried as gameCuts: the copy has no /api/trees, so its
+ * game reads the cut from its bank (src/dealer-trees.ts gameBank) and plays the trees the lab's game plays, and no other.
  */
-export function freezeBank(bank: BankData & Record<string, unknown>, shown: Map<string, string>, picked: Set<string>, release: Release, digest: (text: string) => string): BankData & {schemaVersion: 1; readable: true; frozen: true} {
+export function freezeBank(bank: BankData & Record<string, unknown>, shown: Map<string, string>, picked: Set<string>, release: Release, digest: (text: string) => string, cuts: Readonly<Record<string, GameCut>> = {}): BankData & {schemaVersion: 1; readable: true; frozen: true; gameCuts?: Record<string, GameCut>} {
   const imageRef = (ref: any) => {
     if (!ref || typeof ref !== 'object') return ref;
     const out = structuredClone(ref);
@@ -246,7 +252,8 @@ export function freezeBank(bank: BankData & Record<string, unknown>, shown: Map<
     const keep = (path: string | null | undefined) => (picked.has(id) && path && shown.get(path)) || null;
     return [id, {video: keep(m?.video), reversed: keep(m?.reversed), first: keep(m?.first), last: keep(m?.last), track: keep(m?.track), overrides: keep(m?.overrides)}];
   }));
-  const frozen = {schemaVersion: 1 as const, readable: true as const, frozen: true as const, jobs, derived: bank.derived ?? [], edits: bank.edits ?? [], motions: bank.motions ?? {}, receipts, media, revisions: {}};
+  const frozen = {schemaVersion: 1 as const, readable: true as const, frozen: true as const, jobs, derived: bank.derived ?? [], edits: bank.edits ?? [], motions: bank.motions ?? {}, receipts, media, revisions: {},
+    ...(Object.keys(cuts).length ? {gameCuts: structuredClone({...cuts})} : {})};
   return scrub(frozen, release);
 }
 

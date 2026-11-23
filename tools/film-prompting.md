@@ -318,6 +318,10 @@ tagningar vänder kortet en gång vid platsen så som en hand kan, med kortet in
   egen rörelse. Håller där händerna ligger still: tio av Casinots vilor för Tatuerad (Jakobs ja 2026-11-23;
   `tools/film-prov.md`, Det som håller). En vila ur text beställs bara för en ny rörelse, och texten nämner då bara
   ansiktet: ord om bordet, spelarna eller händerna lägger WAN 3 in i bilden.
+- Korta vilor ur EN film: kommer hon tillbaka till A1 mitt i filmen klipps den där till två vilor, var och en vävd på
+  ankaret vid snittet (`node tools/register-derived.ts ... --frames <a>-<b>`, `sourceFrames`). Det kom tillbaka med två
+  mycket små ansiktsrörelser och "Halfway through she is exactly as in the first frame again and holds still" emellan
+  (leende, nick); "a slow breath ... then a head tilt" kom inte tillbaka (öppen mun, höjd bål, ljusare band i grönt).
 
 ### 3.7 Stillbilder: ankare 2.1, 2.2, landningsbild
 Nano Banana Pro, 4K, 4:3, `referenceImages` `@anchor` (dealerns egen bild) och texten; ingen posebild går med, och

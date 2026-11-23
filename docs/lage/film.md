@@ -16,7 +16,7 @@ utfall står i handboken (`tools/film-prompting.md` §5), historien i Git.
 - Trädet Tatuerad (`/studio/karta/?dealer=paow&trad=tatuerad`, 20/36) fylls från A2.3. I banken: giv och återgång till
   plats 1–6, kort 1 (mall 15; plats 1–5 Jakobs "Ja, alla håller", plats 6 "Bra"), dealerns första kort (A3DC1, godkänd
   åt honom), utgången A2.3 → A1 (godkänd åt honom), hålkortet upp (variant åt honom) och vilorna: `paow-vila-20-01` och tio ur
-  Casinots (`paow-vila-tat-…`, hans ja, bara i labbet). Plats 7 är underkänd: händerna vänder inte kortet.
+  Casinots (`paow-vila-tat-…`, hans ja; åtta spelas, `-09-02` och `-10-01` bara i labbet). Plats 7 är underkänd: händerna vänder inte kortet.
 - Sista given går direkt till vila: `node tools/order-new.ts paow RETUR-1 P4.C1` gör en film på 3 s från givens
   sista ruta. I banken: plats 2–4 godkända åt honom, plats 1 och 5 varianter; plats 6 fick hans "Inte bra".
 - A3-bilder: A3P4C1 och A3P4C2 är kandidater; för plats 1 och 2 stoppar landningsverktyget ([BRISTER](../BRISTER.md)).
@@ -28,15 +28,14 @@ utfall står i handboken (`tools/film-prompting.md` §5), historien i Git.
 - Pengar: gränser, mandat och saldo i `data/order-policy.json`; giv med återgång 91, giv 3 s 68, retur 57, WAN 3 20 per s.
 
 **Nästa steg.**
-1. Spelet utan `?trad=` ska hoppa över filmer i träd som inte har läget spelas; häv sedan `review.labOnly` på
-   ingången till A2.1 och de tio vilorna ([BRISTER](../BRISTER.md), "Spelet och scenen").
+1. Dealerns hålkort (D.C2) från A2.3: två piloter utan dockans film (WAN 3 och Kling 4) väntar på granskning.
 2. Första given från A2.1: utkastet `paow-giv-2-1-p4-17` (107, inte lagt; läs saldot), sedan övriga platser.
 3. Plats 7: dockan ska hålla kortet genom vändningen ([LASMIG](../../dealer3d/LASMIG.md)); sedan dockans film,
    given igen och dess retur.
 4. Mall 15: mer frihet åt filmen i vändningen.
 5. Kortet bakom ryggen igen med en bild av ansiktet som referens (95). Kastet per stol: egen tagning, inte Aleph.
 6. Det vita i skons fönster: [kort](kort.md), Nästa steg 3.
-7. Fler vilor för Tatuerad: lokalt ur Casinots (handboken §3.6), inte de sju där händerna rör sig. D.C2 är inte beställd.
+7. Fler vilor för Tatuerad: lokalt ur Casinots, och korta vilor ur en film (handboken §3.6, inom taket).
 
 **Väntar på Jakob.** I chatten: ansiktsbilden, felet i plats 6, och om Tatuerad ska byta till A2.3 med märke (gäller i
 Material).

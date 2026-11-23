@@ -7,6 +7,7 @@ Huvudagentens bana: spelet, scenens filmlager, nätkopian och stängda banor. Ko
   flyttas från Scoutgaming. Paow är dealern. Spelets nödlösningar (en ersättare där en film saknas,
   utgången baklänges) ger vika när banken har egna filmer (`src/game-director.ts`). Kärnans gräns mot sidan är prövad
   (`docs/SYSTEM.md`, "Gränsen mellan kärnan och presentationen"; `de1883c`) och sedd i en webbläsare 2026-11-18.
+- Dela ut går före väntande vilor: vilan som visas spelas klart (hon står på A1) och ingången är nästa film; 0,55–3,9 s från klick till ingång ([SYSTEM](../SYSTEM.md), "Spelet"). Inte byggt: utgångsrutor i en vila där hon passerar A1.
 - Realtidsmunnen har Jakobs ja (`paow-realtid-mun-6`, F). Koden och profilhashen finns i `tools/python/mouth-runner`.
   Tre lokala GPU-prov 2026-11-18 använde samma hash; varm fart 5,6–6,7 rutor/s med fyra CPU:er, under realtidens 24.
 - Den neutrala munnen är standard för alla Paows repliker (Jakob 2026-11-21): spelet säger 24 av 25 så, och de fyra
@@ -25,7 +26,6 @@ Huvudagentens bana: spelet, scenens filmlager, nätkopian och stängda banor. Ko
   Bevis: `assets/proofs/paow-mobile-studio-20261118`. Stående beskär ytterplatser; liggande visar alla sju.
 - Filmen till hans chef ligger på hans skrivbord (`paow-runda-6-till-chefen-spelet.mp4` och `-scenen.mp4`, 124 s,
   blint granskad 3,75/5). Ingen granskare har hört ljudet, och `paow-runda-2-` till `-5-` ska inte skickas.
-- Filmen före spelet (`/trailer`) är `assets/films/intro/noir-3/film-2.mp4`.
 
 **Nästa steg.**
 1. Använd den versionerade köraren; ny Docker-image, strömning till spelet och podprov återstår. Podtaket är 5 USD med

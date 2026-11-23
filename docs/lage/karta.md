@@ -10,7 +10,8 @@ en fillista.
   `GET /api/trees`. Måttet är 36 steg, en giv per kort (`src/dealer-trees.ts`).
 - Paow har tre träd i Karta: Casino 22/36 (det spelet spelar, händer utan tatueringar), Ingången 22/36 och Tatuerad
   19/36 (byggs, från A2.3). Ingången ÄR Casino: den har bara A1, `shares: casino` och filmen före spelet som väg in,
-  men visas som ett eget träd.
+  men visas som ett eget träd. Utan `?trad=` spelar spelet bara träd med läget `spelas` (nu Casino), ett enda som `?trad=`. Tatuerad blir spelet med
+  `casino` och `ingangen` på `vilar`, `tatuerad` på `spelas` (hans ord).
 - En komposition lägger ihop träd (`data/dealer-compositions.json`, `src/composition.ts`, `tools/dealer-composition.ts`
   bakom `/api/compositions`): andel per träd och per film på ett steg, lån av steg ett träd saknar, returen hem till sitt
   eget ankare och kort 2 på kort 1:s film. Den står som chips efter träden i Karta, och labbets spel spelar den med
@@ -22,9 +23,9 @@ en fillista.
 - A1 finns i två bilder: `paow-vila-ung-2` (Casino) och `paow-vila-tatuerad` (Tatuerad; gäller i Material).
 - Jakob arkiverade 2026-11-23 Casinots A1 och A2.2 och den tatuerade A2.2 i Material. Casino behåller sina bilder:
   dess giv till plats 6 (hans Primär) börjar på A2.2, och givarna dit från A2.1 är underkända. Tatuerad har ingen A2.2.
+- Tal räknas för sig: på A1 en bricka (25/25, röd vid 0) och panelen Tal (`studio/lib/tree-talk.ts`); Tatuerad 0/25.
 - Ett steg har en Primär och sekundära filmer ("Gör primär" är hans klick). Ett klipp arkiveras och tas tillbaka i Karta.
-- Ett ankare kan bära `seat` 1–7 (S2-A2.2); ingen vy visar det. Provet `fran-stol-1-20261123` är första filmen från
-  en annan stol; receptet står i [FILMMODELLER](../FILMMODELLER.md), "Vinklar, 3D och Runways lista".
+- Ett ankare kan bära `seat` 1–7; ingen vy visar det. Receptet för en annan stol: [FILMMODELLER](../FILMMODELLER.md), "Vinklar, 3D och Runways lista".
 
 **Nästa steg.**
 1. Vyerna hänger ihop. Gå igenom var Karta, Material, Scen & bord (Kortplan, Kön), Granska och spelet säger olika om
@@ -54,7 +55,6 @@ filmregistret (`data/motions.jsonl`) och `tools/chain-consistency.test.ts`; beh�
 - Studion han ser byggs ur en commit av huvudagenten ([DRIFT](../DRIFT.md), "Labbservern och fliken"): en ändring
   syns i hans flik först efter fillista, commit och bygge.
 - Primär, domar och arkivering är hans klick: inget verktyg sätter dem, och en dom åt honom ser aldrig ut som hans.
-- Ett träds ankare får vara arkiverat i Material: trädet behåller bilden så länge dess filmer spelas.
 - Ett test som läser registren som de står (`tools/chain-consistency.test.ts`) blir rött av ett träd som inte
   stämmer med spelet: läs felet som ett fynd, inte som ett hinder.
 - Text räcker inte för honom: visa i Karta, i spelets storlek där en film ingår (skillen `visa-for-jakob`).

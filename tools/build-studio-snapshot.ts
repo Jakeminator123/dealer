@@ -37,6 +37,7 @@ import {fileURLToPath} from 'node:url';
 import sharp from 'sharp';
 import {buildGraph, type BankData, type Graph} from '../src/clip-graph.ts';
 import {judgedBank} from '../src/game-director.ts';
+import {cutBank, gameBank, type GameCut} from '../src/dealer-trees.ts';
 import {SCRIPTS, VENDOR, SCENE_FILES, PAGES, forBrowser} from './lab-routes.ts';
 import {STUDIO_TYPES} from './studio-files.ts';
 import {readRelease, releaseDealers, gameChoices, pickTakes, freezeBank, pickProofs, pickNotes, graphShape, scrub, findLeaks, findTextLeaks, blockedPath, safeRelative, prefetchAlias, objectName, namedAssets, engineSource, forEngine, copyGamePage, ENGINE_ENTRY, MEDIA_TYPES, type Proof, type Left, type Picked} from './studio-freeze.ts';
@@ -156,10 +157,18 @@ const bankText = await bankRead();
 const bank = JSON.parse(bankText) as BankData & Record<string, unknown>;
 // Each dealer of the copy on her own graph (buildGraph keeps one dealer's takes), as the studio's dealer switch shows her.
 const dealers = releaseDealers(release);
+// What the game without a tree word plays for each dealer (GET /api/trees?dealer=<id>&spel=1, tools/dealer-tree.ts gameCut): the
+// films go up by it, and the frozen bank carries it, so that the copy's game plays the trees the lab's game plays and no other.
+const cuts: Record<string, GameCut> = {};
+for (const dealer of dealers) {
+  const cut = JSON.parse((await lab(`/api/trees?dealer=${dealer}&spel=1`)).toString('utf8'));
+  if (!Array.isArray(cut?.drop) || !Array.isArray(cut?.own) || typeof cut?.hub !== 'string') throw Error(`Labbservern ger inte spelets träd för ${dealer} (/api/trees?spel=1): starta om den.`);
+  cuts[dealer] = cut;
+}
 type DealerPart = {graph: Graph; plays: boolean; picked: Picked[]; left: Left[]};
 const parts = new Map<string, DealerPart>();
 for (const dealer of dealers) {
-  const out = pickTakes(bank, dealer, release);
+  const out = pickTakes(bank, dealer, release, cuts[dealer]);
   if (out.refused.length) throw Error(`Spelet väljer spärrade tagningar: ${out.refused.map(r => `${r.id} (${r.why})`).join(', ')}`);
   parts.set(dealer, {graph: buildGraph(bank, {dealer}), plays: release.casino.on && release.casino.dealers.includes(dealer), picked: out.picked, left: out.left});
 }
@@ -202,17 +211,17 @@ for (const [from, to] of shown) if (/\.json$/.test(to) && from === to) {
 }
 
 const pickedIds = new Set(takes.picked.map(p => p.id));
-const frozenBank = freezeBank(bank, shown, pickedIds, release, digest);
+const frozenBank = freezeBank(bank, shown, pickedIds, release, digest, cuts);
 // The copy must decide as the lab does, for each dealer: every edge's main take, variants and status, and the same for the
 // game's own bank (only takes with a verdict), where the game must also choose the same take at every step and rest as on the
 // lab (gameChoices). Every film the game plays goes up. The map's round is no longer held to the lab's: a step whose film
-// does not go up shows no film there.
-const judgedLive = judgedBank(bank), judgedFrozen = judgedBank(frozenBank);
+// does not go up shows no film there. The game's bank is cut by the dealer trees: on the lab by the lab's answer, in the copy
+// by the cut its bank carries (src/dealer-trees.ts gameBank, as the copy's game page reads it).
 for (const [dealer, part] of parts) {
   const frozenGraph = buildGraph(frozenBank, {dealer});
   if (json(graphShape(frozenGraph)) !== json(graphShape(part.graph))) throw Error(`Den frysta klippbanken ger en annan graf än labbet (${dealer}).`);
   if (!part.plays) continue;
-  const gameLive = buildGraph(judgedLive, {dealer}), gameFrozen = buildGraph(judgedFrozen, {dealer});
+  const gameLive = buildGraph(judgedBank(cutBank(bank, cuts[dealer])), {dealer}), gameFrozen = buildGraph(judgedBank(gameBank(frozenBank, null, dealer)), {dealer});
   if (json(graphShape(gameFrozen)) !== json(graphShape(gameLive))) throw Error(`Spelets klippbank ger en annan graf i kopian än i labbet (${dealer}).`);
   if (json([...gameChoices(gameFrozen)].sort()) !== json([...gameChoices(gameLive)].sort())) throw Error(`Spelet väljer andra tagningar i kopian än i labbet (${dealer}).`);
   for (const {id} of part.picked) { const video = frozenGraph.takes[id]?.media.video; if (!video || !blob.has(video)) throw Error(`En film spelet spelar går inte upp (${dealer}): ${id}`); }

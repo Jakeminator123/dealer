@@ -7271,6 +7271,161 @@
         },
         "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
       }
+    },
+    {
+      "id": "paow-vila-27-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-27-01",
+      "frames": [
+        0,
+        147
+      ],
+      "purpose": "Beställning paow-vila-27, tagning 1: Tatuerad · vila · två små rörelser (ler, nickar).",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 5,
+      "promptText": "Locked camera, one continuous shot. She starts and ends exactly as in the first frame, and holds still for the last half second. Two very small movements with a still moment between. First she blinks, lowers her eyes and lifts them to the camera again with a small closed-lip smile that comes and goes. Halfway through she is exactly as in the first frame again and holds still. Then she gives one small, slow nod and blinks. Her hands stay exactly where they are. The plain green background, the shoe and the edges of the picture stay exactly as in the first frame all the way. The tattoos on her hands and throat keep their pattern.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-vila-27/first.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Första bilden i beställningen paow-vila-27."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-vila-27/last.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Sista bilden i beställningen paow-vila-27."
+      },
+      "order": {
+        "id": "paow-vila-27",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-vila-28-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-28-01",
+      "frames": [
+        0,
+        147
+      ],
+      "purpose": "Beställning paow-vila-28, tagning 1: Tatuerad · vila · två små rörelser (andas, vickar).",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 5,
+      "promptText": "Locked camera, one continuous shot. She starts and ends exactly as in the first frame, and holds still for the last half second. Two very small movements with a still moment between. First she takes one slow, calm breath: her chest and shoulders rise a little and settle, and she blinks. Halfway through she is exactly as in the first frame again and holds still. Then her head tilts a little to one side with a small closed-lip smile and comes back upright. Her hands stay exactly where they are. The plain green background, the shoe and the edges of the picture stay exactly as in the first frame all the way. The tattoos on her hands and throat keep their pattern.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-vila-28/first.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Första bilden i beställningen paow-vila-28."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-vila-28/last.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Sista bilden i beställningen paow-vila-28."
+      },
+      "order": {
+        "id": "paow-vila-28",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-vila-27-01-del1",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-27-01-del1",
+      "frames": [
+        0,
+        102
+      ],
+      "purpose": "Lokalt härledd ur paow-vila-27-01 rutor 0–102 på ankaret paow-vila-tatuerad (.runtime/vila-kort/del/skarva.ts).",
+      "dealer": "paow",
+      "model": "wan3 + skarva",
+      "duration": 3.433,
+      "first": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      },
+      "last": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      }
+    },
+    {
+      "id": "paow-vila-27-01-del2",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-27-01-del2",
+      "frames": [
+        0,
+        45
+      ],
+      "purpose": "Lokalt härledd ur paow-vila-27-01 rutor 102–147 på ankaret paow-vila-tatuerad (.runtime/vila-kort/del/skarva.ts).",
+      "dealer": "paow",
+      "model": "wan3 + skarva",
+      "duration": 1.533,
+      "first": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      },
+      "last": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      }
+    },
+    {
+      "id": "paow-vila-28-01-hel",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-28-01-hel",
+      "frames": [
+        0,
+        147
+      ],
+      "purpose": "Lokalt härledd ur paow-vila-28-01 på ankaret paow-vila-tatuerad (.runtime/vila-kort/del/skarva.ts).",
+      "dealer": "paow",
+      "model": "wan3 + skarva",
+      "duration": 4.933,
+      "first": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      },
+      "last": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      }
     }
   ],
   "edits": []

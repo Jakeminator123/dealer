@@ -12,8 +12,8 @@ export type MotionRecord = {
   source?: {path?: string; sha256?: string; bytes?: number; fps?: number; frames?: number; width?: number; height?: number};
   // idle: how a take of IDLE>IDLE takes part in the idle. weight: its share among the takes that may be picked. calm: breathing and
   // the like, as opposed to a gesture. onRequest: never picked by chance. label: what it shows, in a word or two. cut: whether a
-  // deal may cut into it at any frame (a calm take says yes unless it says cut: false: a rest where she turns her head counts as
-  // calm in the rotation, but is played out before the deal takes over).
+  // deal may cut into it at any frame (a calm take says yes unless it says cut: false). A rest that shows is now always played to
+  // its last frame before the deal takes over; see src/game-film.ts.
   // takeHand / releaseHand: the hand that takes the card at the shoe and the hand that lays it (LH, RH); on a return, the hand that comes back.
   // effect: something the scene does while the film plays (FilmEffect, effectOf below).
   motion?: {physicalEndSide?: string; landingFrame?: number; startsOn?: {clip?: string; frame?: number; seamPixelsOverThreshold?: number}; endsOn?: {clip?: string; frame?: number}; idle?: {weight?: number; calm?: boolean; onRequest?: boolean; label?: string; cut?: boolean}; takeHand?: string; releaseHand?: string;
@@ -444,10 +444,9 @@ export function experimentChains(graph: Graph): Chain[] {
 // gestures held a third, three calm clips apart. So a gesture came about every sixth clip, mostly a nod, and a rare one (the
 // champagne, the wave) once in four to ten minutes. Jakob, looking at the game: "Flera animationer kommer sedan inte in automatiskt
 // i 'grundloopen'". Now every gesture of Paow's ten is seen within a few minutes, and the weights still say which come oftener.
-// exitRate is how fast a gesture is played out when a deal waits. It was borrowed as 2,5; a film review 2026-11-13 found her head
-// jumping at that speed (a rest looks fast-forwarded above about 1,25) and it became 1,5; the same evening Jakob wrote of the
-// speed-ups that she was "jättesnabb i vissa lägen och ser konstig ut", so it is 1: she finishes what she is doing as it was filmed,
-// and then deals. With Paow's rests that is a wait of just under three seconds on average in a good third of the deals, eight at most.
+// exitRate is how fast the rest that shows is played out when a deal waits: 1, as filmed (2,5 and 1,5 made her look sped up).
+// The waiting rests in the queue are dropped; the one that shows plays to its last frame, and then the entry starts
+// (src/game-film.ts). With Paow's rests that is at most about eight seconds.
 export const IDLE_RULE = {calmBetweenGestures: 2, gestureMemory: 7, exitRate: 1, skipStart: 3, skipEnd: 3};
 export type IdlePick = {take: Take; why: string};
 export function pickIdle(takes: Take[], played: string[], random: number): IdlePick | null {
@@ -475,8 +474,8 @@ export function pickIdle(takes: Take[], played: string[], random: number): IdleP
 }
 // The frames of an idle clip that are played: a generated clip is brighter in its first frames and jumps in its last two.
 export const idleRange = (frames: number): {start: number; end: number} => ({start: Math.min(IDLE_RULE.skipStart, Math.max(0, frames - 1)), end: Math.max(Math.min(IDLE_RULE.skipStart, Math.max(0, frames - 1)) + 1, frames - IDLE_RULE.skipEnd)});
-// Leaving the idle to deal: a clip that may be cut is cut at once; a gesture, or a calm take that says cut: false, is played out
-// faster, so that it lands, and then the entry starts.
+// Leaving the idle to deal: the game plays the rest that shows to its last frame, and then the entry starts; a clip that may be
+// cut is cut only where a caller asks for it.
 export const idleExit = (take: Take): 'CUT' | 'FINISH_FAST' => take.idle && !take.idle.cut ? 'FINISH_FAST' : 'CUT';
 /**
  * Something the scene does while a film plays, asked for by the film's record (motion.effect). The one kind so far, 'room-flash'

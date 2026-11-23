@@ -124,7 +124,9 @@ flera spelare. Hållet av `tools/game-session.test.ts` och `tools/game-view.test
   är en talfilm, en vilotagning på begäran (`motion.idle.onRequest`), som slumpen aldrig väljer. En nödlösning
   (`motion.stopgap`) spelas bara där samma dealer saknar annan dömd tagning på kanten. Ett labbprov med
   `review.labOnly: true` går att spela i labbet men ingår aldrig i spelets bank; Jakobs eget godkännande, Variant eller
-  Primär häver gränsen, en preliminär dom gör det inte.
+  Primär häver gränsen, en preliminär dom gör det inte. Utan `?trad=` spelar spelet bara filmerna i träd med läget
+  `spelas` (`data/dealer-trees.json`, `gameCut` i `tools/dealer-tree.ts`); är det ETT träd spelar det trädets snitt som
+  `?trad=<id>`, och kopians frusna bank får samma snitt.
 - En retur till vila som saknar film spelas som returen till skon och utgången (`READY>IDLE`). Ett kort vars giv saknar
   film ges med filmen i `STAND_IN_FILM` (per dealer; hålkortet med första kortets film, ritat med ryggen upp), och
   ersättaren viker när kortets egen film finns. Dealerns tredje och fjärde kort läggs utan hand. Det ett steg inte kan
@@ -522,9 +524,10 @@ IDLE>READY | READY>P1.C1 | P1.C1>READY | READY>D.C1 | D.C1>READY | READY>P1.C2 |
   Scout). `pickIdle` i `src/clip-graph.ts` väljer nästa med viktad slump: aldrig samma klipp två gånger i rad, två lugna
   och sedan en gest (`calmBetweenGestures`), aldrig underkända klipp eller klipp på begäran, och inte någon av de
   senaste gesterna (`gestureMemory` 7, räknat per film); godkända vilofilmer går in av sig själva (BESKED, "Vilans
-  slinga"). Varje klipp spelas från ruta 3 till tre rutor före slutet, och nästa tar över med rakt klipp. "Dela ut nu"
-  klipper ett lugnt klipp direkt till ingången och spelar klart en gest först, i filmad fart (`IDLE_RULE.exitRate` 1;
-  BESKED, "Farten"); ett lugnt klipp med `cut: false` spelas också klart. Klippets del står i dess post:
+  slinga"). Varje klipp spelas från ruta 3 till tre rutor före slutet, och nästa tar över med rakt klipp. Dela ut går före väntande vilor (BESKED,
+  "Scenen och spelet"): kön håller en färdig film bakom den som visas; vid klicket släpps de väntande, vilan som visas
+  spelas till sista rutan (hon står på A1, ingen vila klipps) och ingångsfilmen A1 → A2.n är nästa, hämtad redan när
+  insatsen läggs (`src/game-film.ts`, `src/scene3d-film.ts`, `tools/game-film.test.ts`). Klippets del står i dess post:
   `motion.idle = {weight, calm, onRequest, label, cut}`; utan uppgift är ett klipp med `-idle-loop-` i namnet lugnt (vikt
   20) och övriga gester (vikt 3). Rundans `IDLE>IDLE`-steg spelar det lugnaste klippet, om inte ett är märkt `MAIN`.
 - En vilofilm kan be scenen om en effekt: `motion.effect = {kind: "room-flash", room, at, seconds, mono}` (en blixt,

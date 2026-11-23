@@ -7,7 +7,9 @@
 // A3P4C1, A2.3; PathBar) and Spela plays the films of those steps back to back (PathPlayer, lib/tree-path.ts). What is chosen
 // lives in the address (?trad=…&steg=…&kant=…&tagning=…&vag=A1-A2.3-…), so a link opens a tree, a step, a take or a path;
 // /primara/ leads here. Several trees put together are a composition (?komposition=<id>, CompositionKarta): the row's
-// button "Kompositioner" lists them, and the open one is a tab beside the trees.
+// button "Kompositioner" lists them, and the open one is a tab beside the trees. Her talk is a group of its own on A1: the
+// Tal chip opens the tree's lines and the talk film the game plays for each (TalkSheet, ?replik=<key>; lib/tree-talk.ts),
+// and the rest's films panel leaves the talk films out.
 // Where the lab has no trees to give (the online copy; an older lab server until it is restarted) Karta draws the bank's own
 // map instead (BankKarta): every step of the bank with what the game plays on it, one film per seat.
 import { ReactFlowProvider, useReactFlow } from "@xyflow/react";
@@ -18,6 +20,7 @@ import { TARGETS, buildGraph } from "../../../src/clip-graph.ts";
 import { nodeCode, type TreeAnswer, type ViewStep } from "../../../src/dealer-trees.ts";
 import { hubDeals, judgedBank } from "../../../src/game-director.ts";
 import { toPixels, type PlacementPlan } from "../../../src/placement-model.ts";
+import { spokenLine, type SpeechTake } from "../../../src/speech-lines.ts";
 import { BankStatus, Page } from "@/components/shell";
 import { Button, ErrorState, IconButton, Skeleton } from "@/components/ui";
 import { getPlacements } from "@/lib/api";
@@ -27,6 +30,7 @@ import { mapLayout, treeLayout, type PlanPoints } from "@/lib/map-layout";
 import type { EntryAnswer } from "@/lib/media";
 import { stepFilms, treeOrder, type Film } from "@/lib/primaries";
 import { takeName } from "@/lib/names";
+import { talkOf, talkWord } from "@/lib/tree-talk";
 import { nextNodes, parsePath, pathClips, pathParts, pathText } from "@/lib/tree-path";
 import { primarCount } from "@/lib/verdict";
 import { EdgeSheet, type Around } from "./EdgeSheet";
@@ -38,6 +42,7 @@ import { PathPlayer } from "./PathPlayer";
 import { REST_EDGE } from "./rest.ts";
 import { StepOrder } from "./StepOrder";
 import { StillViewer } from "./StillViewer";
+import { TalkSheet } from "./TalkSheet";
 import { TreeCanvas, TreeLegend, type PathMarks } from "./TreeCanvas";
 import { CompositionKarta } from "./CompositionKarta";
 import { TreeRow } from "./TreeRow";
@@ -150,7 +155,9 @@ function TreeKarta({ answer }: { answer: TreeAnswer }) {
   const films = useMemo(() => {
     const all = bank && graph && game && edgeId && graph.edge[edgeId] ? stepFilms(bank, graph, game, edgeId, hubs) : null;
     if (!all || !filmStep) return all;
-    const mine = new Set(filmStep.ids);
+    // The rest's panel lists the rest films; the talk films on it are Tal's (TalkSheet).
+    const talking = (id: string) => filmStep.kind === "vila" && !!graph?.takes[id] && spokenLine(graph.takes[id] as unknown as SpeechTake) !== null;
+    const mine = new Set(filmStep.ids.filter((id) => !talking(id)));
     const keep = (f: Film) => mine.has(f.take.id);
     const primary = all.primary && keep(all.primary) ? all.primary : null;
     const secondaries = all.secondaries.filter(keep);
@@ -173,10 +180,19 @@ function TreeKarta({ answer }: { answer: TreeAnswer }) {
   // What plays now is the game's: a tree the game does not play has no "Spelas nu" of its own (the game's edge plays A2.1).
   const idle = view.tree.state === "spelas" ? null : `Spelet spelar inte ${view.tree.name} ${view.tree.state === "byggs" ? "än" : "nu"}.`;
 
-  const sheetOpen = !!films || (!!step && step.state !== "finns");
+  // Tal (?replik=<key>): the tree's lines and the talk film the game plays for each; open beside no step's panel. It stays open
+  // when another tree is chosen, so that the trees' talk can be compared.
+  const talk = talkOf(view);
+  const replik = params.get("replik");
+  const talkOpen = replik !== null && !!talk;
+  const openTalk = useCallback(() => set({ replik: talkOpen ? null : (talk?.lines.find((l) => l.clip) ?? talk?.lines[0])?.key ?? null, steg: null, kant: null, tagning: null }), [set, talk, talkOpen]);
+  // Where the tree has no talk film: the trees that have.
+  const talkElsewhere = talk && talk.have === 0 ? answer.trees.filter((v) => v.tree.id !== view.tree.id && !v.tree.shares && (talkOf(v)?.have ?? 0) > 0).map((v) => `${v.tree.name} har ${talkWord(talkOf(v)!)}`).join(", ") || null : null;
+
+  const sheetOpen = !!films || (!!step && step.state !== "finns") || talkOpen;
   const fit = useFitMap(layout, false);
   const pick = useCallback(
-    (s: ViewStep) => set({ steg: s.id, kant: s.state === "finns" && graph?.edge[s.edge] ? s.edge : null, tagning: null }),
+    (s: ViewStep) => set({ steg: s.id, kant: s.state === "finns" && graph?.edge[s.edge] ? s.edge : null, tagning: null, replik: null }),
     [set, graph],
   );
   const choose = useCallback((id: string) => set({ trad: id, steg: null, kant: null, tagning: null, vag: null }), [set]);
@@ -246,7 +262,7 @@ function TreeKarta({ answer }: { answer: TreeAnswer }) {
   return (
     <Page title="Karta" full status={<TreeRow trees={answer.trees} chosen={view.tree.id} onChoose={choose} compositions={compositions} onCompose={(id) => set({ komposition: id })} />} actions={actions}>
       <div className="absolute inset-0">
-        <TreeCanvas view={view} layout={layout} media={media} active={step?.id ?? null} hover={hover} sheetOpen={sheetOpen} path={marks} onPick={pick} onHover={setHover} onOpen={open} />
+        <TreeCanvas view={view} layout={layout} media={media} active={step?.id ?? null} hover={hover} sheetOpen={sheetOpen} path={marks} onPick={pick} onHover={setHover} onOpen={open} talk={talk} talkOn={talkOpen} onTalk={openTalk} />
       </div>
       {picking ? (
         <PathBar
@@ -282,6 +298,7 @@ function TreeKarta({ answer }: { answer: TreeAnswer }) {
         onPickTake={(id) => set({ tagning: id })}
         onPickEdge={(id) => set({ kant: id, tagning: null, steg: view.steps.find((s) => s.edge === id && s.state === "finns")?.id ?? null })}
       />
+      <TalkSheet open={talkOpen} tree={view.tree.name} talk={talk} chosen={replik} elsewhere={talkElsewhere} onChoose={(key) => set({ replik: key })} onClose={() => set({ replik: null })} />
       <StillViewer entries={stills} index={still} onIndex={setStill} />
       <PathPlayer parts={parts} clips={clips} graph={graph} pic={pathPic} onClose={() => setPlaying(false)} />
     </Page>

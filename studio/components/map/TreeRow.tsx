@@ -9,7 +9,8 @@
 // composition that is open (?komposition=<id>, CompositionKarta) is a tab beside the trees for as long as it is open.
 // Prova i Casino after the tabs opens the Casino with the dealer and the chosen tree (lib/casino.ts casinoAddress, ?trad=):
 // the game plays that tree's films only, and a card without a film is laid without a hand (src/game-page.ts).
-import { Ban, ChevronDown, Layers, Play, Plus } from "lucide-react";
+// Beside a tree's meter its talk, a count of its own (lib/tree-talk.ts): her lines with a talk film in the tree, "25/25".
+import { Ban, ChevronDown, Layers, Play, Plus, Speech } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
@@ -19,6 +20,7 @@ import { casinoAddress } from "@/lib/casino";
 import { withDealer } from "@/lib/dealer";
 import type { EntryAnswer } from "@/lib/media";
 import { CASINO_PRESET } from "@/lib/scene-presets";
+import { talkOf, type TreeTalk } from "@/lib/tree-talk";
 import { buttonClasses, cn } from "@/components/ui";
 import { coverOfEntry } from "../material/Tile";
 import { ProofStill } from "../proofs";
@@ -83,6 +85,16 @@ function Meter({ have, total, stopped = false }: { have: number; total: number; 
   );
 }
 
+/** The tree's talk beside its meter: a small speech mark and 25/25; light red where the game has no talk film in the tree. */
+function TalkCount({ talk }: { talk: TreeTalk }) {
+  return (
+    <span className={cn("flex items-center gap-0.5 text-[10px] leading-none tabular-nums", talk.have ? "text-faint" : "text-[#ef8b8b]/80")}>
+      <Speech aria-hidden className="size-2.5" />
+      {talk.have}/{talk.total}
+    </span>
+  );
+}
+
 /** A name over its meter; mark: a dot or a stop mark after the name. */
 function Words({ name, mark, children }: { name: string; mark?: ReactNode; children: ReactNode }) {
   return (
@@ -127,6 +139,7 @@ export function TreeRow({
           const shares = v.tree.shares ? trees.find((t) => t.tree.id === v.tree.shares)?.tree.name : null;
           const state = STATE_WORD[v.tree.state];
           const rest = v.nodes.find((n) => n.node === "IDLE")?.entry;
+          const talk = talkOf(v);
           return (
             <button
               key={v.tree.id}
@@ -134,12 +147,15 @@ export function TreeRow({
               role="radio"
               aria-checked={on}
               onClick={() => onChoose(v.tree.id)}
-              title={`${v.tree.name}${state ? ` (${state})` : ""}: ${v.count.have} av ${v.count.total} steg har en film (Primär, Godkänd eller Variant)${shares ? `; spelar ${shares}s filmer, med filmen före spelet först` : ""}`}
+              title={`${v.tree.name}${state ? ` (${state})` : ""}: ${v.count.have} av ${v.count.total} steg har en film (Primär, Godkänd eller Variant)${talk ? `; tal: ${talk.have} av ${talk.total} repliker har en talfilm` : ""}${shares ? `; spelar ${shares}s filmer, med filmen före spelet först` : ""}`}
               className={tab(on)}
             >
               <Thumb entry={rest ? media.get(rest) : undefined} />
               <Words name={v.tree.name} mark={state ? <span aria-hidden className={cn("size-1.5 shrink-0 rounded-full", v.tree.state === "byggs" ? "bg-anmarkning" : "border border-faint")} /> : null}>
-                <Meter have={v.count.have} total={v.count.total} />
+                <span className="flex items-center gap-2">
+                  <Meter have={v.count.have} total={v.count.total} />
+                  {talk ? <TalkCount talk={talk} /> : null}
+                </span>
               </Words>
             </button>
           );

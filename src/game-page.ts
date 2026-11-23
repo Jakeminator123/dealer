@@ -75,9 +75,13 @@ const nameOf = (id: string) => DEALERS.find(d => d.id === id)?.label ?? id;
 // from GET /api/trees?dealer=<id>&trad=<id>, tools/dealer-tree.ts treeCut). The tree's anchor at the shoe is played as the shoe,
 // a take placed in no tree (Borta) follows, a take of another tree never plays, and a card the tree has no film for is laid
 // without a hand. An unknown tree, a tree without films or no answer is said on the page, and the game plays as without the
-// word. Without it nothing is read and the page is as before.
+// word. Without the word the game plays the trees that are spelas (src/dealer-trees.ts gameBank, from GET /api/trees?dealer=
+// <id>&spel=1, tools/dealer-tree.ts gameCut): one such tree exactly as ?trad=<id> plays it; with several, the takes placed only
+// in a tree being built or resting are left out, so that a tree's films do not leak into the plain game before he lets it play.
+// A take of no tree stays. The copy on the net has no such list: its frozen bank carries the cut it was built with (gameCuts),
+// and with neither the game plays all her judged films, saying nothing.
 const treeWord = query.get('trad');
-const treeRead = treeWord === null ? null : Promise.all([fetch(`api/trees?dealer=${encodeURIComponent(dealer)}&trad=${encodeURIComponent(treeWord)}`).then(async res => ({status: res.status, answer: await res.json().catch(() => null)}), () => null),
+const treeRead = Promise.all([fetch(`api/trees?dealer=${encodeURIComponent(dealer)}&${treeWord === null ? 'spel=1' : `trad=${encodeURIComponent(treeWord)}`}`).then(async res => ({status: res.status, answer: await res.json().catch(() => null)}), () => null),
   import('./dealer-trees.ts').catch(() => null)]);
 // Several trees put together (?komposition=<id>, Karta's Komposition; Jakob 2026-11-23): each tree plays its own films from its
 // own anchors, a share says how often each is chosen, and where two trees meet a bridge is played (src/composition.ts, from
@@ -104,9 +108,10 @@ const geometry = tableGeometry(location.search, preset?.geometri ?? null);
 const panoramas = registered.filter(r => r.game || r.id === asked.room);
 // ?fan=<px>: one fan step for every seat, for trying values; 0 and 1 are the scene's fan shadow when a look is read.
 const fanWord = query.get('fan'), fanStep = fanWord !== null && Number.isFinite(Number(fanWord)) && !(lookCode && ['0', '1'].includes(fanWord)) ? Math.max(0, Math.min(80, Number(fanWord))) : null;
-// The tree's cut (treeRead above, src/dealer-trees.ts treePlay), or in plain words why the game plays as without it.
-const treeCut = treeWord === null ? {bank, line: null as string | null}
-  : treeAnswer![1]?.treePlay(bank, treeWord, treeAnswer![0], nameOf(dealer)) ?? {bank, line: `Trädet "${treeWord.slice(0, 40)}" kunde inte läsas. Spelet spelar som vanligt, med alla hennes filmer.`};
+// The tree's cut (treeRead above, src/dealer-trees.ts treePlay), or in plain words why the game plays as without it; without
+// the word, the played trees' cut (gameBank), without a line.
+const treeCut = treeWord === null ? {bank: treeAnswer[1]?.gameBank(bank, treeAnswer[0], dealer) ?? bank, line: null as string | null}
+  : treeAnswer[1]?.treePlay(bank, treeWord, treeAnswer[0], nameOf(dealer)) ?? {bank, line: `Trädet "${treeWord.slice(0, 40)}" kunde inte läsas. Spelet spelar som vanligt, med alla hennes filmer.`};
 // The composition's cut (compositionRead above, src/composition.ts compositionPlay), or in plain words why the game plays as
 // without it. With one, the bank the page plays from is its home tree's: the tree the hand rests in, with the rest and talk films.
 const compositionCode = compositionAnswer?.[1] ?? null;
@@ -302,6 +307,7 @@ const controls: Parameters<typeof mountOverlay>[1] = {
     if (now + value > snapshot.limits.max || betTotal(page.bets) + value > page.balance) return;
     if (heard.table) sound?.chip(page.bets[seat]?.length ? 'stack' : 'felt', {height: page.bets[seat]?.length ?? 0, pan: panOf(seat)});
     page.bets[seat] = [...(page.bets[seat] ?? []), value]; order.push(seat); render();
+    film.expect(Object.keys(page.bets).map(Number)); // her entry films are fetched now, not at Dela ut (src/game-film.ts expect)
   },
   // A chip picked up from a ring: the last one laid there. It leaves the order of laying too, so that Ångra still takes the latest.
   take(seat) {
@@ -311,25 +317,27 @@ const controls: Parameters<typeof mountOverlay>[1] = {
   },
   undo() { if (!mayAsk(snapshot, page, 'undo')) return; const seat = order.pop(); if (seat === undefined) return; page.bets[seat] = page.bets[seat].slice(0, -1); if (!page.bets[seat].length) delete page.bets[seat]; render(); },
   clear() { if (!mayAsk(snapshot, page, 'clear')) return; page.bets = {}; order.length = 0; render(); },
-  rebet() { if (!mayAsk(snapshot, page, 'rebet') || !page.last) return; page.bets = Object.fromEntries(Object.entries(page.last).map(([seat, chips]) => [seat, [...chips]])); order.length = 0; for (const [seat, chips] of Object.entries(page.bets)) for (const _ of chips) order.push(Number(seat)); render(); },
+  rebet() { if (!mayAsk(snapshot, page, 'rebet') || !page.last) return; page.bets = Object.fromEntries(Object.entries(page.last).map(([seat, chips]) => [seat, [...chips]])); order.length = 0; for (const [seat, chips] of Object.entries(page.bets)) for (const _ of chips) order.push(Number(seat)); render(); film.expect(Object.keys(page.bets).map(Number)); },
   async deal() {
     if (!mayAsk(snapshot, page, 'deal')) return;
     panel.close(); // an open menu closes when the round begins
     const bets = Object.entries(page.bets).map(([seat, chips]) => ({seat: Number(seat), main: chips.reduce((a, b) => a + b, 0)}));
-    page.busy = true; render();
-    const next = await send({op: 'start', bets}); if (!next) { page.busy = false; render(); return; }
+    // The rest on screen plays to its end and the deal follows it, with no rest queued between (src/game-film.ts leave); the loop
+    // goes on if the engine does not answer. The same in every step below.
+    page.busy = true; render(); film.leave();
+    const next = await send({op: 'start', bets}); if (!next) { page.busy = false; render(); film.rest(); return; }
     page.last = page.bets; page.shown = {}; page.settled = null; page.line = null;
     await present(next, false);
   },
   async act(action: Action) {
     const r = round(); if (!mayAsk(snapshot, page, action) || !r || r.activeSeat === null) return;
-    page.busy = true; render();
-    const next = await send({op: 'act', seat: r.activeSeat, handIndex: r.active, action, roundId: snapshot.view.roundId, turnSeq: snapshot.view.turnSeq}); if (!next) { page.busy = false; render(); return; }
+    page.busy = true; render(); film.leave();
+    const next = await send({op: 'act', seat: r.activeSeat, handIndex: r.active, action, roundId: snapshot.view.roundId, turnSeq: snapshot.view.turnSeq}); if (!next) { page.busy = false; render(); film.rest(); return; }
     await present(next, next.view.round?.phase === 'settled' || next.view.round?.phase === 'dealer');
   },
   async insurance(take: boolean) {
-    if (!mayAsk(snapshot, page, 'insurance')) return; page.busy = true; render();
-    const next = await send({op: 'insurance', roundId: snapshot.view.roundId, take}); if (!next) { page.busy = false; render(); return; }
+    if (!mayAsk(snapshot, page, 'insurance')) return; page.busy = true; render(); film.leave();
+    const next = await send({op: 'insurance', roundId: snapshot.view.roundId, take}); if (!next) { page.busy = false; render(); film.rest(); return; }
     await present(next, next.view.round?.phase === 'settled');
   },
   async next() {

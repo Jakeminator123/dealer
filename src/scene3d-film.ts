@@ -767,6 +767,14 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     if (chain && shown && !held && !options.cut) { waiting = next; prime(next, 0); const on = shown.video; begin(on, () => !paused && shown?.video === on); return; }
     enter(next, 0, held);
   }
+  // Lets go of the chain that waits for the part on screen (a rest asked for ahead), so that what is played next follows that part
+  // directly: the part plays on to its end and its last frame stays until then. When the part had ended and the waiting chain was
+  // on its way in, not yet shown, it is stopped there: the last frame stays, as at the end of a chain.
+  function dropWaiting() {
+    if (gone || !waiting) return; const c = waiting; waiting = null;
+    if (entering === c) { token++; entering = null; awaited = null; held = true; }
+    forget(c);
+  }
   function toggle(force?: boolean) { if (gone) return; paused = force ?? !paused; const v = players[current]?.video; if (v) { if (paused) v.pause(); else begin(v, () => !paused && players[current]?.video === v); } onChange(); }
   // The film that is meant to be running now: the part being brought on screen, else the part on screen of a chain that has not ended.
   const live = () => awaited ?? (chain && !held ? players[current]?.video ?? null : null);
@@ -785,8 +793,9 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     globalThis.document?.addEventListener?.('visibilitychange', () => { if (globalThis.document.visibilityState === 'visible') wake(); }, {signal: ending.signal});
   }
   return {
-    load, seek, play, touched, wake,
-    // A chain played without cut waits for the part on screen (waiting, above): the game asks for the next rest film ahead.
+    load, seek, play, touched, wake, drop: dropWaiting,
+    // A chain played without cut waits for the part on screen (waiting, above): the game asks for the next rest film ahead, and
+    // drops it (drop) when the player asks for a step.
     queues: true,
     // What the queue holds and what last happened in it, for a page that shows it to someone looking for a fault (key diagnos in the game).
     diagnosis() { const state = (v: HTMLVideoElement) => `${fileOf(v)} rs${v.readyState} ns${v.networkState}${v.paused ? ' står' : ' går'}${v.muted ? '' : ' hörs'}${v.error ? ` FEL${v.error.code}` : ''} ${(v.currentTime || 0).toFixed(2)}`;
@@ -797,8 +806,9 @@ export function createPlayers(onShow: (texture: T.Texture, path: string) => void
     hurry(rate: number) { const p = players[current]; if (p && !p.part.mouth && p.part.sound !== true) p.video.playbackRate = Math.max(rate, speedOf(p.part, !!chain)); }, // a spoken line is never hurried: its voice is in the film
     // The tempo of a round's films (key filmTempo; 1 = as filmed), from now on and for the part on screen.
     tempo(value: number) { const next = Number.isFinite(value) ? Math.min(4, Math.max(0.25, value)) : 1; if (next === tempo) return; tempo = next; for (const p of players) p.video.playbackRate = speedOf(p.part, !!chain); },
-    // Fetches clips the game may ask for next, so the change does not wait for the network. The pool holds ${POOL} elements.
-    preload(paths: string[]) { if (!gone) for (const path of paths) if (!pool.some(m => m.path === path)) media(path).busy = false; },
+    // Fetches clips the game may ask for next, so the change does not wait for the network. The pool holds ${POOL} elements; one it
+    // holds already counts as just used, so that it is not the next to be let go (the entry films the game asks for at every rest).
+    preload(paths: string[]) { if (!gone) for (const path of paths) { const had = pool.find(m => m.path === path && !m.broken); if (had) had.used = ++used; else media(path).busy = false; } },
     // The part on screen, with what it carries (track, cards).
     get part(): Part | null { return players[current]?.part ?? null; },
     toggle,

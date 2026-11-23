@@ -46,6 +46,9 @@ Prövade och inte att göra om:
 - **Kling 3.0 4K** (`kling-3-4k`): inte skarpare än WAN 3 i bankens ruta, mjukare tatueringar, 172 krediter mot 80;
   beställs inte (`MODELS['kling-3-4k'].off` i `src/order-model.ts` har skälet). En film i banken, en ingång, vars
   baklänges kopia är Paows nödlösning för utgången.
+- **WAN 3 mot Kling 4 i vilor** (granskning, ingen dom): Casinots vilor `paow-vila-01` till `-16` (WAN 3) håller 0,80–0,82 av ankarets
+  detalj i ansiktet; Kling 4-vilan `paow-vila-17` 0,43, stilla 1,2 s i början, svagast. WAN 3 ger bankens ruta (1764x1174,
+  30 rutor/s, 13–22 Mbit/s), Kling 4 1764x1172 i 24 rutor/s och 5–6,5 Mbit/s.
 - **Kling 3.0 Pro**: kontrollprovet 2026-11-10, underkänt för vändningen.
 - **Kling 3.0 Motion Control** (handboken §3.8): tar ingen sista bild; kortet genomskinligt grönt, skons fönster tomt.
 - **Aleph 2 som rättare** (handboken §5): ansiktet byttes och skons fönster tömdes; den rättade kopian är underkänd.
