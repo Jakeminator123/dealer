@@ -8,8 +8,14 @@
           "id": "casino-tatuerad",
           "name": "Casino + Tatuerad",
           "trees": [
-            { "tree": "casino", "share": 80 },
-            { "tree": "tatuerad", "share": 20 }
+            {
+              "tree": "casino",
+              "share": 80
+            },
+            {
+              "tree": "tatuerad",
+              "share": 20
+            }
           ],
           "bridges": [
             {
@@ -26,8 +32,14 @@
           "id": "tatuerad-med-lan",
           "name": "Tatuerad, lånar av Casino",
           "trees": [
-            { "tree": "tatuerad", "share": 100 },
-            { "tree": "casino", "share": 0 }
+            {
+              "tree": "tatuerad",
+              "share": 100
+            },
+            {
+              "tree": "casino",
+              "share": 0
+            }
           ],
           "bridges": [
             {
@@ -39,6 +51,29 @@
             }
           ],
           "note": "Prov: Tatuerad spelar allt den har; vilan, talet och dealerns kort lånas av Casino."
+        },
+        {
+          "id": "casino-tatuerad-2",
+          "name": "Casino + Tatuerad 2",
+          "trees": [
+            {
+              "tree": "casino",
+              "share": 20
+            },
+            {
+              "tree": "tatuerad",
+              "share": 85
+            }
+          ],
+          "bridges": [
+            {
+              "a": "paow-vila-ung-2",
+              "b": "paow-vila-tatuerad",
+              "ab": "assets/proofs/brygga-mellan-trad-20261123/bryggor/a1-till-a1-tatuerad-ton-020.mp4",
+              "ba": "assets/proofs/brygga-mellan-trad-20261123/bryggor/a1-tatuerad-till-a1-ton-020.mp4",
+              "seconds": 0.2
+            }
+          ]
         }
       ]
     }

@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "title": "Tatuerad · vila · blicken runt bordet",
+  "summary": "Gör en vilofilm av Paow: från och till ankare 1.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "VILA",
+    "label": "Vila, samma bild först och sist",
+    "edge": "IDLE>IDLE",
+    "shape": "ONE_WAY",
+    "cutInto": [],
+    "makes": null
+  },
+  "motion": null,
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows A1",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-vila-21/first.png",
+      "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-vila-tatuerad",
+        "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+        "note": "Vila, tatuerade händer (gäller)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Slutbild · Paows A1",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-vila-21/last.png",
+      "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-vila-tatuerad",
+        "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+        "note": "Vila, tatuerade händer (gäller)"
+      },
+      "waits": null
+    }
+  ],
+  "reference": {
+    "status": "INGEN",
+    "why": "WAN 3 tar ingen referensfilm tillsammans med första och sista bild."
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "wan3",
+    "params": {
+      "resolution": "1080p",
+      "duration": 5,
+      "ratio": "adaptive",
+      "generateAudio": false
+    }
+  },
+  "prompt": {
+    "template": "film-vila-kort@12",
+    "style": "KORT",
+    "text": "Locked camera, one continuous shot. She starts and ends exactly as in the first frame, and holds still for the last half second. Her eyes and head turn calmly to the players at the left of the picture and rest there a moment, then move across to the players at the right of the picture, and come back to the camera. She blinks once on the way, and her shoulders turn a little with her head. Her hands rest on the felt. The tattoos on her hands and throat keep their pattern.",
+    "sha256": "29790cb30a80ac12fc540c288fbd74cf8ec5b668f5cce8806a02cb301ca8bd98",
+    "extra": "Her eyes and head turn calmly to the players at the left of the picture and rest there a moment, then move across to the players at the right of the picture, and come back to the camera. She blinks once on the way, and her shoulders turn a little with her head. Her hands rest on the felt. The tattoos on her hands and throat keep their pattern.",
+    "middle": false
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 100,
+    "total": 100,
+    "worstPerTake": 100,
+    "worstTotal": 100,
+    "basis": "20 krediter per s × 5 s. DRIFT, Lärdomar som gäller, som sidan stod till commit f6f68ef (git show f6f68ef:docs/DRIFT.md): 20 per s i full storlek; en ingång på 4 s kostade 80 (handboken, tools/film-prompting.md §5)."
+  },
+  "limits": {
+    "maxCredits": 100,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Recept vila: prövat i 8 beställningar.",
+    "Undantag från receptet: 5 s i stället för 4 s."
+  ],
+  "createdBy": "huvudagenten, tools/order-new.ts",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-23T20:16:04.845Z",
+    "orderSha256": "1a230aa2c560bf3f8b960d8018fd581dd577e30bc7df3ccbf56c9da5e4cf5e19",
+    "mandate": "Jakob 2026-11-23 kl. 21.10: \"skapa nya sådanna ... så de får in just tatueringarna\" (vilorna vid A1) och \"Du får 3k denna timme för att producera materail\". Pilot: tre vilor från Tatuerads A1, texterna ur paow-vila-01, -09 och -10, lästa av dealer-ac."
+  },
+  "status": "GODKÄND",
+  "id": "paow-vila-21",
+  "created": "2026-11-23T20:15:48.582Z"
+}

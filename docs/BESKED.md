@@ -92,7 +92,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
 - **Två tagningar per klipp** (2026-11-12, 2026-11-13): en ändring och en tagning per metodprov; två per klipp när
   metoden är vald, en tredje bara om båda faller. Varje omgång granskas oberoende i full upplösning före nästa.
 - **Mandatet** (2026-11-18): "Ja du får generera tills kontot är typ tomta!". 2026-11-23 kväll: "du får 1000 i timmen, men vi kan öka
-  till 2000 timmen idag" (`data/order-policy.json`). En granskad pilot föregår en serie; kostnaden sägs efteråt.
+  till 2000 timmen idag"; kl. 21.10 "Du får 3k denna timme för att producera material" (`data/order-policy.json`). En granskad
+  pilot föregår en serie; kostnaden sägs efteråt.
 - **Kvalitet före kvantitet** (2026-11-18): "men om allt sitter, får du gärna gå vidare och skapa mycket material så
   länge det är bra."
 - **API-nyckeln** (2026-11-20): beställningar får gå genom nyckeln i `.env.local` (utvecklarprojektets krediter) när
@@ -132,6 +133,10 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   hur det ses från stolen, "inte tidpunkt", och kameran "känns högre än kamera frammifrån".
 - **Träd läggs ihop till en komposition** (2026-11-23): nodträd kombineras med andelar ("A2.3 … 20% och 80% A2.1"), varianter
   likaså; en retur går hem till sitt eget A2, med skarv eller kort brygga emellan. Alla vyer ska hänga ihop med träden.
+- **Bara träd som passar ihop** (2026-11-23 kl. 21.10): "för nu … INTE får sätta samman nodträd om de är inkompatibla såsom
+  nu" (olika händer). Det tatuerade trädet byggs vidare; A2.1 görs om med hennes mindre händer och tatueringar.
+- **Fart** (2026-11-23): klipp ska kunna spelas i 1,5× eller 2×, sparat i en komposition och som klippets egen standard;
+  givarna gärna i dubbel fart.
 - **Flera namngivna träd per dealer** (2026-11-21): omkring tre träd, och löst material för sig som är lätt att radera,
   på hans ord. Datorn och nätet ska kunna läsa samma Blob; uppladdning kräver hans ord.
 - **Den tatuerade uppsättningen är förstahandsvalet** (2026-11-17, 2026-11-18): tatuerade händer, 10 % mindre. Nya
