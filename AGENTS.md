@@ -24,11 +24,11 @@ Allt annat slås upp när arbetet kräver det, ETT AVSNITT i taget (sök på rub
   arbetsinstruktionerna i `tools/*.md` (`tools/dealer-line.md` är ingången för en ny dealer eller en filmbeställning).
 - Ett arbetsmoment som återkommer (beställa eller granska en film, visa Jakob något, avsluta och pusha, arbeta bredvid
   andra sessioner, en ny dealer, publicera kopian) har en skill i `.claude/skills/<namn>/SKILL.md`: läs den som gäller
-  innan du börjar. Den säger vilka regler som oftast bryts och pekar på dokumentet med rutinen, som den aldrig skriver om.
+  innan du börjar. Den pekar på dokumentet med rutinen och skriver aldrig om den.
 
 Sökningen ser inte allt, med avsikt: `.ignore` och `.cursorignore` döljer maskindata, binärer, `evidence/`, dockans
-rörelsedata och pausade Pamelas filmregister (Jakob 2026-11-18, för att spara tokens). Filerna finns kvar och läses med
-sin sökväg; en tom sökträff där betyder inte att filen saknas. `.claude/settings.json` nekar läsning av modeller,
+rörelsedata och pausade Pamelas filmregister (Jakob 2026-11-18, för att spara tokens). Filerna läses med
+sin sökväg; en tom sökträff betyder inte att filen saknas. `.claude/settings.json` nekar läsning av modeller,
 film, ljud och låsfiler, och en vakt (`.claude/hooks/read-guard.mjs`) nekar en hel läsning av ett dokument eller
 register över 32 KB: sök upp stället och läs med `offset` och `limit`, högst 400 rader åt gången.
 
@@ -68,19 +68,27 @@ behöver veta och namnger högst tre filer eller avsnitt att läsa.
   huvudagenten och en oberoende granskare döma i hans ställe (`node tools/review-put.ts`): domen ser aldrig ut som
   hans, den väntar inte i hans kö (Jakob 2026-11-13: "Med andra ord vill jag inte se en sån här lista när jag är
   tillbaka!"), den går att hitta i Granska under Dömda åt dig, och hans eget beslut ersätter den.
-- V6 är arkiverad på Jakobs ord (2026-11-20); filmen och 18 rutor står kvar. Bevara original och referenser; ändra
-  aldrig en referenshash för att dölja en avvikelse.
+- Bevara original och referenser (V6 är arkiverad, 2026-11-20); ändra aldrig en referenshash för att dölja en
+  avvikelse.
 - Det tidigare projektet (arkivet snyggare-dealer) och Scoutgaming är bara läsreferenser: inga länkar, junctions eller
   beroenden dit, och en fil som hämtas därifrån registreras i `data/manifest.json`.
 - Spelregler, slump och kortvärden flyttas inte från Scoutgaming. Undantaget är den fristående spelmotorn i `game/`
   (Jakob 2026-11-11); inget ändras i Scoutgaming härifrån.
 
+## Regler och spärrar
+
+- En regel står här eller i en skill bara om den är Jakobs ord (daterat i `docs/BESKED.md`) eller skyddar honom
+  (ovan). Annat en agent har skrivit är råd och stryks när det hindrar.
+- Efter ett fel rättas orsaken: inget nytt förbud, test eller spärrande status (Jakob 2026-11-23).
+- När hans ord ändrar en regel ändras den där den står, i samma commit.
+- Rött i kontrollen stoppar; utred orsaken. Ett test som bara låser hur kod eller text ser ut i dag stryks när det
+  hindrar; skyddet sänks aldrig och ingen referens ändras för att få grönt.
+
 ## Labbservern
 
-- En adress, `http://127.0.0.1:4319` (`START.cmd`, `STATUS.cmd`, `STOPP.cmd`), och en flik i Jakobs webbläsare.
-- En labbflik; i vanlig webbläsare öppnas den med `node tools/preview.ts --open "<sida>"`.
-- Godkänd lokal testning omfattar omladdning, navigering och Dealer-skärmbilder utan upprepade frågor.
-  Systemets säkerhetsgranskning och kraven för externa överföringar och betalda jobb gäller fortsatt.
+- En adress, `http://127.0.0.1:4319` (`START.cmd`, `STATUS.cmd`, `STOPP.cmd`), och en flik i Jakobs webbläsare,
+  öppnad med `node tools/preview.ts --open "<sida>"`.
+- Omladdning, navigering och skärmbilder i labbet görs utan att fråga.
 - Före en länk till Jakob: `node tools/preview.ts --ensure`, så att servern går.
 - Stoppa servern bara med `STOPP.cmd` eller `node tools/preview.ts --stop`, aldrig via processnamn eller port, och rör
   inte andra projekts servrar.
@@ -88,23 +96,18 @@ behöver veta och namnger högst tre filer eller avsnitt att läsa.
 
 ## Git och samarbete
 
-- Allt arbete görs i mappen `dealer` på C:, på `main`; en gren eller ett eget träd bara när ett arbete uttryckligen
-  behöver isoleras. Byggträdet `../dealer-bygg` är bara för `push-clean` och `studio-from-commit` (DRIFT).
+- Allt arbete görs i mappen `dealer` på C:, på `main`, den enda långlivade grenen; en gren eller ett eget träd bara
+  när ett arbete uttryckligen behöver isoleras, och den slås sedan ihop i `main` eller tas bort. Byggträdet `../dealer-bygg` är bara för `push-clean` och `studio-from-commit` (DRIFT).
 - Checka in egna färdiga filer direkt, i små commits, så att `dealer` oftast är rent.
-- Tillfälliga arbetsfiler hör hemma i `.runtime/<uppgift>/` i projektet. Avsluta med verifierad städning av egna
-  kopior och byggrester. Medier städas enligt `tools/local-work.md`; en gammal fil är inte automatiskt oanvänd.
-  Efter mediearbete: `npm run media:status` ger storlek, syfte och förändring sedan föregående inventering.
-- En huvudagent äger commits, taggar och push. Vilken session det är, och vem som äger vilka filer, står på raden
-  "Vem äger vad" i HANDOFF och ingen annanstans. Andra sessioner skriver bara i sina egna filer och lämnar över till
-  huvudagenten med en fillista. En skribent per fil.
-- `main` är den enda långlivade grenen. En kortlivad gren för ett avgränsat arbete slås ihop i `main` eller tas bort.
+- Tillfälliga arbetsfiler hör hemma i `.runtime/<uppgift>/`; städa egna kopior och byggrester efteråt. Medier städas
+  enligt `tools/local-work.md` (en gammal fil är inte automatiskt oanvänd); `npm run media:status` visar läget.
+- En huvudagent äger commits, taggar och push; vem det är och vem som äger vilka filer står under "Vem äger vad" i
+  HANDOFF. Andra sessioner skriver bara i egna filer och lämnar över med en fillista. En skribent per fil.
 - Installera kontrollen en gång per checkout: `npm run hooks:install` (pre-push kör då publiceringskontrollen,
   `tools/publication-check.ts`).
 - Avsluta färdigt arbete så här: uttrycklig staging av egna filer, commit, `npm run check` (hela sviten, en gång),
   push och fjärrens SHA. Stoppar kontrollen på andras öppna filer: `push-clean` från byggträdet. GitHub kör ingen.
 - Ingen force-push, ingen `--no-verify`, ingen filbevakare och ingen automatisk commit av utkast.
-- Rött i kontrollen stoppar; utred orsaken och rätta den. Sänk aldrig en kontroll eller ändra en referens bara för att
-  få grönt. En verklig kvarvarande begränsning skrivs kort i `docs/BRISTER.md`.
 - Städa löpande: det som en ändring gör överflödigt (kod som inget anropar, ersatt status, döda sökvägar) tas bort i
   samma ändring, och det nya beteendet beskrivs där det hör hemma.
 
