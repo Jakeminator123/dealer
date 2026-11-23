@@ -4258,6 +4258,20 @@
           }
         },
         {
+          "id": "paow-film-giv-2-3-p3-03-t1",
+          "role": "film",
+          "name": "Paow · Två händer, ett kort till platsen · A3P3C1 · prov utan vit linje i skon, ",
+          "path": "assets/films/paow/giv-2-3-p3-03-t1/source.mp4",
+          "still": 40,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i Kön. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-23"
+          }
+        },
+        {
           "id": "paow-film-intro-noir-3-startruta",
           "role": "arbetsmaterial",
           "name": "Startrutan till filmen före spelet",

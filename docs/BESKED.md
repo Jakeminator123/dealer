@@ -426,7 +426,10 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   att det blir så?" och hans egen gissning: "Kanske är det för att det på referensantakeret är som lite vitt runt
   själva det gula/kortets rygg?" (skons ljusa fönsterram i A2.3). På kortet i Beslut samma morgon: "Vad är det som
   gör att det blir en vit kantlinje på kortet? Det sk inte finnas." Texten ber inte om en kant och dockans kort har
-  ingen; hans gissning är inte prövad. Se också "Ingen vit rand" (2026-11-17) längre ned.
+  ingen. Hans gissning prövades samma dag med en giv till A3P3C1 där linjen var bortmålad i första bilden: kanten var
+  kvar (95 % av kortets fria kontur mot 80–95 % i de fyra tidigare) och skons fönster blev svart när kortet lämnat
+  det, så linjen i skon ska vara kvar och kanten tas bort i efterarbetet i stället. Se också "Ingen vit rand"
+  (2026-11-17) längre ned.
 - **Given till plats 4, kort 2: vändningen ser fel ut** (Beslut 2026-11-23, kl. 07.13, kortet om given från A2.3):
   "Nej, vändningen ser fel ut", med orden "vändningen ser inte helt naturlig ut heller, kortet blir lixom för långt
   från fingrarna". Om dockan med Paows mått svarade han samma minut "Måtten ser fel ut": "Ser i och för sig mycket

@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-giv-2-3-p3-03-01",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-giv-2-3-p3-03-01/source.mp4",
+    "sha256": "83cb70ab306e5c7e4f8dc4cb3fd3aea05db6d0460b85d10208f3ec038ddf44c2",
+    "bytes": 2947251,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 73,
+    "provider": "Runway developer API",
+    "model": "kling-4"
+  },
+  "motion": {
+    "kind": "DEAL",
+    "from": "READY-C",
+    "to": "P3.C1",
+    "takeHand": "LH",
+    "releaseHand": "RH",
+    "pass": true,
+    "basis": "SOURCE_FRAME_REVIEW"
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob: förd in från beställningen paow-giv-2-3-p3-03, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
+    "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-23: Detta är okej. Vit kant runt kortet dock, aningen robotliknande rörese. men är helt okej"
+  },
+  "order": {
+    "id": "paow-giv-2-3-p3-03",
+    "take": 1,
+    "path": "data/orders/paow-giv-2-3-p3-03.json",
+    "orderSha256": "aff819c178a1ac831064ae53f5dde8f7129098a2c2da7f0ab3d3f9f0d98d5f41",
+    "receipt": "assets/orders/paow-giv-2-3-p3-03/receipt.json",
+    "taskId": "e9caca8f-1ce5-4622-854c-3f4b7520e496",
+    "delivered": {
+      "path": "assets/orders/paow-giv-2-3-p3-03/take-1/after.mp4",
+      "sha256": "83cb70ab306e5c7e4f8dc4cb3fd3aea05db6d0460b85d10208f3ec038ddf44c2"
+    }
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/paow-giv-2-3-p3-03-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}
