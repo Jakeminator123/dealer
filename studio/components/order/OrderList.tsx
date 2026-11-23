@@ -139,7 +139,7 @@ export function OrderList({ menu, all, onOpen }: { menu: ReactNode; all: OrdersA
             ),
           )
         ) : (
-          <EmptyState title="Inga beställningar än">En film beställs i Kortplan: välj ett kort, lägg filmen i listan under steg 3 Beställ och tryck Förhandsvisa.</EmptyState>
+          <EmptyState title="Inga beställningar än">En film beställs i Kortplan, steg 3 Ny film: välj trädets steg, se hur det görs och spara utkastet under Skicka.</EmptyState>
         )}
         <p className="rounded-lg border border-line bg-surface px-4 py-3 text-sm text-ink">{HANDOVER}</p>
       </div>

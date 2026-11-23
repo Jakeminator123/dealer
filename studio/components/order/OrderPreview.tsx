@@ -1,15 +1,19 @@
 "use client";
 
+// The server's exact draft before it is saved (POST /api/orders/preview): the text, the pictures, the reference film and the
+// values, as Bordet's guide Ny film shows them in Hur and Skicka (components/bordet/NewFilm.tsx). usePreview reads it again
+// a moment after the order's body changes; useDraftSave saves it ("Spara utkastet") and approves nothing. An uncertain save
+// (no answer: the draft may already be saved) is retried with the same body and revision, never a new one.
 import { useEffect, useState } from "react";
-import { MODELS, credits, stepOf } from "../../../src/order-model.ts";
+import { MODELS, credits } from "../../../src/order-model.ts";
 import { asApiError } from "../../lib/api.ts";
 import { referenceName } from "../../lib/bordet.ts";
 import { labUrl } from "../../lib/lab.ts";
-import { createOrder, orderLine, orderSaveFailure, previewOrder, type CreatedOrders, type Order, type OrderPreview as Preview, type OrderPreviewInput } from "../../lib/orders.ts";
-import { Button, Sheet } from "../ui";
+import { createOrder, orderSaveFailure, picturesInOrder, previewOrder, type CreatedOrders, type NewOrderInput, type Order, type OrderPreview as Preview } from "../../lib/orders.ts";
 import { PictureCard } from "./Pictures";
 
-function values(order: Order) {
+/** "Kling 2.1 · 5 s · 1080p · 2 tagningar · 128 krediter": what the draft is made with, and its price. */
+export function previewValues(order: Order): string {
   const { model, params } = order.generation;
   return [
     MODELS[model]?.label ?? model,
@@ -20,111 +24,84 @@ function values(order: Order) {
   ].filter(Boolean).join(" · ");
 }
 
-function differences(previous: Order, current: Order) {
-  const media = (order: Order) => order.pictures.map(({ name, sha256 }) => [name, sha256]);
-  const reference = (order: Order) => order.reference.status === "FINNS" ? [order.reference.clips, order.reference.sha256] : [order.reference.status];
-  return [
-    previous.prompt.sha256 !== current.prompt.sha256 ? "texten" : null,
-    JSON.stringify(media(previous)) !== JSON.stringify(media(current)) ? "bilderna" : null,
-    JSON.stringify(reference(previous)) !== JSON.stringify(reference(current)) ? "referensfilmen" : null,
-  ].filter(Boolean).join(", ");
+/** A moment after the last change, so that a click through the recipe's choices asks the server once. */
+const SETTLE_MS = 350;
+
+/** The draft as the server would save it, for `input` (null: nothing to read). loading: an answer for this input is on its way. */
+export function usePreview(input: NewOrderInput | null): { preview: Preview | null; error: string | null; loading: boolean; reload: () => void } {
+  const key = input ? JSON.stringify(input) : null;
+  const [round, setRound] = useState(0);
+  const [got, setGot] = useState<{ key: string; round: number; preview: Preview | null; error: string | null } | null>(null);
+  useEffect(() => {
+    if (!key) return;
+    let live = true;
+    const wait = setTimeout(() => {
+      void previewOrder(JSON.parse(key) as NewOrderInput).then(
+        (preview) => live && setGot({ key, round, preview, error: null }),
+        (cause) => live && setGot({ key, round, preview: null, error: asApiError(cause, "Förhandsvisningen").message }),
+      );
+    }, SETTLE_MS);
+    return () => {
+      live = false;
+      clearTimeout(wait);
+    };
+  }, [key, round]);
+  const now = got && got.key === key && got.round === round ? got : null;
+  return { preview: now?.preview ?? null, error: now?.error ?? null, loading: !!key && !now, reload: () => setRound((n) => n + 1) };
 }
 
-/**
- * Förhandsvisa: the drafts exactly as the server would save them (text, pictures, reference film, values), before they are
- * saved; "Skapa utkast" saves them and approves nothing. `note`: one line where nothing can be approved now (orderingState).
- */
-export function OrderPreview({ input, names = {}, note = null, onClose, onCreated }: { input: OrderPreviewInput; names?: Record<string, string>; note?: string | null; onClose: () => void; onCreated: (answer: CreatedOrders) => void }) {
-  const [preview, setPreview] = useState<Preview | null>(null);
-  const [previous, setPrevious] = useState<Preview | null>(null);
-  const [reload, setReload] = useState(0);
-  const [loading, setLoading] = useState(true);
+/** Saving a previewed draft. failure.frozen: the body and revision an uncertain save is retried with. */
+export function useDraftSave(onCreated: (answer: CreatedOrders) => void) {
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<{message: string; retrySave: boolean} | null>(null);
-
-  useEffect(() => {
-    let active = true;
-    void previewOrder(input).then(
-      (answer) => { if (active) { setPreview(answer); setLoading(false); } },
-      (cause) => { if (active) { setError({message: asApiError(cause, "Förhandsvisningen").message, retrySave: false}); setLoading(false); } },
-    );
-    return () => { active = false; };
-  }, [input, reload]);
-
-  const refresh = () => {
-    if (error?.retrySave) return;
-    if (preview) setPrevious(preview);
-    setPreview(null);
-    setError(null);
-    setLoading(true);
-    setReload((count) => count + 1);
-  };
-
-  const save = async () => {
-    if (!preview || saving || (error && !error.retrySave)) return;
+  const [failure, setFailure] = useState<{ message: string; frozen: { input: NewOrderInput; revision: string } | null } | null>(null);
+  const save = async (input: NewOrderInput, revision: string) => {
+    if (saving) return;
+    const use = failure?.frozen ?? { input, revision };
     setSaving(true);
-    setError(null);
+    setFailure(null);
     try {
-      onCreated(await createOrder(input, preview.revision));
+      onCreated(await createOrder(use.input, use.revision));
     } catch (cause) {
-      setError(orderSaveFailure(cause));
+      const f = orderSaveFailure(cause);
+      setFailure({ message: f.message, frozen: f.retrySave ? use : null });
     } finally {
       setSaving(false);
     }
   };
+  return { save, saving, failure };
+}
 
-  const count = preview?.orders.length ?? 0;
+/** The pictures the draft sends (not a reference picture), large, each with what it is and where it comes from. */
+export function PreviewPictures({ order }: { order: Order }) {
   return (
-    <Sheet
-      open
-      modal
-      width={920}
-      className="max-sm:w-screen!"
-      onOpenChange={(open) => { if (!open && !saving) onClose(); }}
-      title="Förhandsvisning av beställningen"
-      footer={
-        <>
-          <Button variant="quiet" disabled={saving} onClick={onClose}>Tillbaka</Button>
-          {error && !error.retrySave ? <Button variant="secondary" onClick={refresh}>Hämta ny förhandsvisning</Button> : null}
-          <Button variant="primary" disabled={!count || loading || saving || (!!error && !error.retrySave)} loading={saving} onClick={() => void save()}>
-            {error?.retrySave ? "Försök spara samma utkast igen" : count > 1 ? `Skapa ${count} utkast` : "Skapa utkast"}
-          </Button>
-        </>
-      }
-    >
-      {note ? <p data-ordering className="mb-4 rounded-sm bg-[#3a2a1a] px-2.5 py-1.5 text-sm text-[#f0b07a]">{note} Utkasten kan sparas, men inget kan godkännas så länge.</p> : null}
-      {loading ? <p role="status" className="text-sm text-dim">Hämtar texten och bilderna …</p> : null}
-      {error ? <p role="alert" className="mb-4 text-sm text-[#f0b07a]">{error.message}{error.retrySave ? " Svaret saknas; utkastet kan redan vara sparat. Försök igen med samma underlag för att få tillbaka resultatet." : ""}</p> : null}
-      <div className="flex flex-col gap-8">
-        {preview?.orders.map((order, i) => {
-          const before = previous?.orders[i];
-          const changes = before ? differences(before, order) : "";
-          const reference = order.reference.status === "FINNS" ? order.reference : null;
-          return (
-            <section key={order.id} className="flex flex-col gap-3">
-              {/* his notation and the step's name, not the title the store builds (it still says "Ankare 1 → 2.1") */}
-              <h3 className="flex flex-wrap items-baseline gap-x-2 text-md font-semibold text-ink">
-                <span>{names[order.dealer] ?? order.dealer}</span>
-                {orderLine(order) ? <span className="font-mono">{orderLine(order)}</span> : null}
-                <span className="text-sm font-normal text-dim">{stepOf(order.step.key)?.label ?? order.step.label}</span>
-              </h3>
-              {before && values(before) !== values(order) ? <p className="text-sm text-dim">Förra förhandsvisningen · {values(before)}</p> : null}
-              <p className="text-sm tabular-nums text-ink">{values(order)}</p>
-              {changes ? <p className="text-sm text-brass-hi">Ändrat underlag · {changes}</p> : null}
-              <div className="grid grid-cols-2 gap-2">
-                {order.pictures.map((picture) => <PictureCard key={picture.name} picture={picture} />)}
-              </div>
-              {reference ? (
-                <div className="flex flex-col gap-1.5">
-                  <p className="text-sm text-ink">Referensfilm · {referenceName({ dealer: reference.dealer ?? order.dealer, edge: reference.from?.edge ?? `READY>${reference.goesTo}`, goesTo: reference.goesTo }, names)} · {String(reference.seconds).replace(".", ",")} s</p>
-                  <video src={labUrl(reference.path)} controls muted playsInline preload="metadata" className="w-full rounded-md border border-line bg-well" />
-                </div>
-              ) : <p className="text-sm text-dim">Ingen referensfilm</p>}
-              <p className="select-text whitespace-pre-wrap rounded-lg border border-line bg-well px-4 py-3 text-sm text-ink">{order.prompt.text}</p>
-            </section>
-          );
-        })}
-      </div>
-    </Sheet>
+    <div className="grid grid-cols-2 gap-2">
+      {picturesInOrder(order.pictures)
+        .filter((p) => p.goesAs !== "referenceImage")
+        .map((picture) => (
+          <PictureCard key={picture.name} picture={picture} />
+        ))}
+    </div>
+  );
+}
+
+/** Everything the draft sends: its values and price, the pictures, the reference film and the text word for word. */
+export function PreviewOrder({ order, names }: { order: Order; names: Record<string, string> }) {
+  const reference = order.reference.status === "FINNS" ? order.reference : null;
+  return (
+    <section data-preview className="flex flex-col gap-3">
+      <p data-values className="text-sm tabular-nums text-ink">{previewValues(order)}</p>
+      <PreviewPictures order={order} />
+      {reference ? (
+        <div className="flex flex-col gap-1.5">
+          <p className="text-sm text-ink">
+            Referensfilm · {referenceName({ dealer: reference.dealer ?? order.dealer, edge: reference.from?.edge ?? `READY>${reference.goesTo}`, goesTo: reference.goesTo }, names)} · {String(reference.seconds).replace(".", ",")} s
+          </p>
+          <video src={labUrl(reference.path)} controls muted playsInline preload="metadata" className="w-full rounded-md border border-line bg-well" />
+        </div>
+      ) : (
+        <p className="text-sm text-dim">Ingen referensfilm</p>
+      )}
+      <p className="select-text whitespace-pre-wrap rounded-lg border border-line bg-well px-4 py-3 text-sm text-ink">{order.prompt.text}</p>
+    </section>
   );
 }

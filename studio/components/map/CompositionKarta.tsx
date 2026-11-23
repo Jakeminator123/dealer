@@ -4,7 +4,8 @@
 // göras 20% och 80% A2.1"). He picks the trees, sets each tree's share and how two trees meet (the same picture, a bridge
 // film, a plain cut, or not at all), and sees at once what each of the 36 steps is covered by: the film that plays, a bar
 // with the trees' shares, and a mark when the step is played with the seat's film (återbruk), borrowed from another tree
-// (lånat) or missing. A step opens its films, where a variant gets a share of its own. Spara writes
+// (lånat) or missing. A step opens its films, where a variant gets a share of its own, and for each tree that lacks the
+// step's own film "Beställ till <träd>" (Bordet's guide Ny film on that tree and step, lib/new-film.ts guideHref). Spara writes
 // data/dealer-compositions.json through the lab (tools/dealer-composition.ts); Prova i Casino plays the saved composition
 // (?komposition=<id>). The rules, and the words, are src/composition.ts; this file only draws them.
 // The address: /karta/?komposition=<id> (ny: a new one).
@@ -23,6 +24,7 @@ import {
   type CompositionView,
   type Cover,
   type CoverPart,
+  stepKey as coverKey,
 } from "../../../src/composition.ts";
 import { nodeCode, type StepKind, type TreeAnswer } from "../../../src/dealer-trees.ts";
 import { Page } from "@/components/shell";
@@ -30,6 +32,7 @@ import { TakeThumb } from "@/components/takes";
 import { Button, EmptyState, Select, Skeleton, Slider, Switch, buttonClasses, cn, useToast } from "@/components/ui";
 import { useBank } from "@/lib/bank";
 import type { EntryAnswer } from "@/lib/media";
+import { guideHref } from "@/lib/new-film";
 import { ProofStill } from "../proofs";
 import { coverOfEntry } from "../material/Tile";
 import { RowStill } from "./RowStill";
@@ -109,6 +112,15 @@ function Editor({ trees, got, saved, graph, dealer, set, reload }: { trees: Tree
   const colorOf = (tree: string) => TREE_COLORS[Math.max(0, got.trees.findIndex((t) => t.tree === tree)) % TREE_COLORS.length];
   const nameOf = (tree: string) => got.trees.find((t) => t.tree === tree)?.name ?? tree;
   const step = view.steps.find((s) => s.key === stepKey) ?? null;
+  // The composition's trees (not resting) whose own step has no film: "Beställ till <träd>" opens Bordet's guide on it.
+  const orderLinks = step
+    ? view.trees
+        .filter((t) => t.share > 0 && t.state !== "vilar")
+        .flatMap((t) => {
+          const s = trees.trees.find((v) => v.tree.id === t.tree)?.steps.find((x) => coverKey(x) === step.key && x.state === "saknas");
+          return s ? [{ tree: t.tree, href: guideHref(dealer, t.tree, { from: s.from, to: s.to }, saved?.def.id ?? null) }] : [];
+        })
+    : [];
 
   const setShare = (tree: string, share: number | null) =>
     setDraft((d) => ({ ...d, trees: share === null ? d.trees.filter((t) => t.tree !== tree) : d.trees.some((t) => t.tree === tree) ? d.trees.map((t) => (t.tree === tree ? { ...t, share } : t)) : [...d.trees, { tree, share }] }));
@@ -286,7 +298,7 @@ function Editor({ trees, got, saved, graph, dealer, set, reload }: { trees: Tree
             )),
           )}
         </div>
-        {step ? <StepFilms step={step} graph={graph} colorOf={colorOf} nameOf={nameOf} reuse={got.reuse} onShare={setFilm} onOpen={(tree, edge, take) => set({ komposition: null, trad: tree, steg: null, kant: edge, tagning: take })} /> : null}
+        {step ? <StepFilms step={step} graph={graph} colorOf={colorOf} nameOf={nameOf} reuse={got.reuse} orders={orderLinks} held={dirty} onShare={setFilm} onOpen={(tree, edge, take) => set({ komposition: null, trad: tree, steg: null, kant: edge, tagning: take })} /> : null}
         <Reuse rows={got.reuse} />
       </div>
     </div>
@@ -390,7 +402,7 @@ function Tile({ step, label, graph, colorOf, active, onPick, className }: { step
 }
 
 /** The chosen step's films, tree by tree: each film plays here, and a variant gets a share of its own. */
-function StepFilms({ step, graph, colorOf, nameOf, reuse, onShare, onOpen }: { step: Cover; graph: Graph | null; colorOf: (tree: string) => string; nameOf: (tree: string) => string; reuse: CompositionAnswer["reuse"]; onShare: (part: CoverPart, film: string, share: number) => void; onOpen: (tree: string, edge: string, take: string) => void }) {
+function StepFilms({ step, graph, colorOf, nameOf, reuse, orders, held, onShare, onOpen }: { step: Cover; graph: Graph | null; colorOf: (tree: string) => string; nameOf: (tree: string) => string; reuse: CompositionAnswer["reuse"]; orders: readonly { tree: string; href: string }[]; held: boolean; onShare: (part: CoverPart, film: string, share: number) => void; onOpen: (tree: string, edge: string, take: string) => void }) {
   const moved = step.card ? reuse.find((r) => r.card === step.card) : undefined;
   const reach = step.reach === "skon" ? "vid skon" : step.reach === "vila" ? "via vilan" : "utan väg dit: kortet läggs utan hand";
   return (
@@ -400,6 +412,20 @@ function StepFilms({ step, graph, colorOf, nameOf, reuse, onShare, onOpen }: { s
         {step.lacking.length ? <span className="text-xs text-dim">{step.lacking.map(nameOf).join(", ")} saknar steget och lånar det {reach}</span> : null}
         {!step.parts.length ? <span className="text-xs text-[#ef8b8b]">Inget träd har en film: kortet läggs utan hand</span> : null}
       </div>
+      {/* Leaving for Bordet would lose what is not saved: the way to order waits for Spara. */}
+      {orders.length ? (
+        held ? (
+          <span className="text-xs text-dim">Spara kompositionen för att beställa steget härifrån.</span>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {orders.map((o) => (
+              <Link key={o.tree} href={o.href} className={buttonClasses({ variant: "secondary", size: "sm" })}>
+                Beställ till {nameOf(o.tree)}
+              </Link>
+            ))}
+          </div>
+        )
+      ) : null}
       {step.parts.map((part) => (
         <div key={part.tree} className="flex flex-col gap-2">
           <div className="flex items-center gap-2 text-sm text-ink">

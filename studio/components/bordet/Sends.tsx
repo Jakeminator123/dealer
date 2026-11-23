@@ -1,6 +1,6 @@
 "use client";
 
-// "Det här skickas" for one film of Bordet's step 3, in one glance (Jakob 2026-11-17: "Vad är det som skickas till Runway?"):
+// "Det här skickas" for one film of Bordet's step 3 (the guide Ny film's Hur), in one glance (Jakob 2026-11-17: "Vad är det som skickas till Runway?"):
 // what is missing and what to do about it, or what the film waits for (a return for its deal, said quietly: nothing is
 // wrong); what has been tried with the recipe, in plain words; the reference film as a choice in sight, with the film or
 // without, and the film itself played there (it is never a condition: where the recipe's rule finds none the row says so and
@@ -8,7 +8,7 @@
 // (open where a step has no recipe, since the model and the length are chosen there). A deal to a seat with no last picture
 // yet goes without one and says so on Slutbild: nothing is chosen for it.
 // Only what step 2 does not already steer is an exception here: the hand and the side are the plan's (step 2), never chosen
-// twice. A draft is made only from the list's Förhandsvisa. Once the draft is made the same panel shows the stored order
+// twice. A draft is made only from the guide's Skicka (NewFilm.tsx). Once the draft is made the same panel shows the stored order
 // and the way to approve it in Kön. "Förra filmen", folded: where the film has been ordered before, the takes that came of it
 // (the protocol, lib/ledger.ts: the film, Jakob's verdict, the reviewer's score, the way to Granska), and nothing of the
 // order's own model or text beside this recipe.
@@ -116,15 +116,12 @@ export function RowSends({
   const choose = !model || (step.kind === "FILM" && line.seconds === null);
   return (
     <div data-sends={row.key} className="flex flex-col gap-4">
-      <div className="flex items-baseline gap-2">
-        <h2 className="shrink-0 whitespace-nowrap font-mono text-md font-semibold text-ink">{row.line}</h2>
-        <span className="min-w-0 truncate text-xs text-dim">{row.label}</span>
-        {row.chosen ? (
-          <button type="button" onClick={() => onChoice(null)} className="ml-auto shrink-0 text-xs text-dim hover:text-ink hover:underline">
-            Tillbaka till receptet
-          </button>
-        ) : null}
-      </div>
+      {/* the guide names the film above (NewFilm.tsx); here only the way back from his exceptions */}
+      {row.chosen ? (
+        <button type="button" onClick={() => onChoice(null)} className="self-end text-xs text-dim hover:text-ink hover:underline">
+          Tillbaka till receptet
+        </button>
+      ) : null}
       {row.orderable || !row.why ? null : (
         <p data-why data-waits={row.waits ? "1" : undefined} className={cn("rounded-sm px-2.5 py-1.5 text-sm", row.waits ? "border border-line text-dim" : "bg-[#3a2a1a] text-[#f0b07a]")}>
           {sentence(row.why)}

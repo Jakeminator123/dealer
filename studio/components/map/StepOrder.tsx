@@ -3,17 +3,19 @@
 // The panel of a step of a tree that has no film (saknas) or one that waits (prov): its first and last picture side by side
 // (a click opens one large),
 // what an order of it has and lacks (first and last picture, reference film, recipe) as the lab reads them
-// (tools/dealer-tree.ts orderFacts), and, unless the tree rests, the estimated price and the command that makes a draft of
-// it, with a copy button. The step's takes that did not hold lie in Granska, a link away. The panel only shows: it orders
-// nothing, approves nothing and runs no command (Beställ and tools/order-new.ts do that).
+// (tools/dealer-tree.ts orderFacts), and, unless the tree rests, "Beställ" (Bordet's guide Ny film on this tree and step,
+// lib/new-film.ts guideHref), the estimated price and the command that makes a draft of it, with a copy button. The step's
+// takes that did not hold lie in Granska, a link away. The panel only shows: it orders nothing, approves nothing and runs
+// no command (the guide and tools/order-new.ts make drafts, Kön approves them).
 import { ArrowRight, ArrowUpRight, Check, Copy, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import type { Need, TreeView, ViewStep } from "../../../src/dealer-trees.ts";
-import { Button, Sheet, cn, useToast } from "@/components/ui";
+import { Button, Sheet, buttonClasses, cn, useToast } from "@/components/ui";
 import { useBank } from "@/lib/bank";
 import type { EntryAnswer } from "@/lib/media";
 import { takeName } from "@/lib/names";
+import { guideHref } from "@/lib/new-film";
 import { ProofStill } from "../proofs";
 import { coverOfEntry } from "../material/Tile";
 
@@ -111,7 +113,14 @@ export function StepOrder({ view, step, media, onClose, onOpen }: { view: TreeVi
             </div>
           ) : null}
 
-          {view.tree.state === "vilar" ? <p className="text-sm text-dim">{view.tree.name} vilar: inget beställs till trädet nu.</p> : null}
+          {view.tree.state === "vilar" ? (
+            <p className="text-sm text-dim">{view.tree.name} vilar: inget beställs till trädet nu.</p>
+          ) : (
+            <Link href={guideHref(view.dealer, view.tree.id, { from: shown.from, to: shown.to })} className={cn(buttonClasses({ variant: "primary", size: "md" }), "self-start")}>
+              Beställ
+              <ArrowRight />
+            </Link>
+          )}
 
           {order ? (
             <>
@@ -142,7 +151,7 @@ export function StepOrder({ view, step, media, onClose, onOpen }: { view: TreeVi
                         Kopiera
                       </Button>
                     </div>
-                    <span className="text-xs text-faint">Utkastet godkänns och läggs i Beställ; panelen beställer inget.</span>
+                    <span className="text-xs text-faint">Utkastet godkänns i Kön; panelen beställer inget.</span>
                   </div>
                 </>
               ) : null}
