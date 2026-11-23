@@ -14,8 +14,7 @@ import path from 'node:path';
 // repository, and the receipts in evidence/, which describe the repository as it was.
 
 /** A mention that is history on purpose: the file is gone and the sentence says so. */
-const HISTORY = [
-  {doc: 'docs/DRIFT.md', path: 'tools/build-public.ts'}, // "gick med gamla labbet 2026-11-17 och finns kvar i Git-historiken"
+const HISTORY: {doc: string; path: string}[] = [
 ];
 
 const FOLDERS = /^(?:\.\.\/)*(?:src|tools|data|docs|studio|dealer3d|game|pages|cloud|motions|placements|materials|functions|tests|page)\//;

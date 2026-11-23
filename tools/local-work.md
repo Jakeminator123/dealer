@@ -91,7 +91,8 @@ kvar. Bygget av v4 läser ljud och typsnitt ur slaskdiskens `tmp/trailer-2/`: de
 
 `media-audit.ts` visar användning men är inte ensam ett raderingstillstånd: exempelvis en gammal Prov-mapp
 kan fortfarande visas och ha anteckningar. Kontrollera spelbank, scen, Material, Prov/Beslut, användardomar,
-beställningar, referenser och pågående arbete. V6 och nu använda original skyddas. Spara skälet och exakta sökvägar.
+beställningar, referenser och pågående arbete. Det som står kvar av V6 (filmen och 18 rutor i `assets/reference/`,
+duken och plåten; resten är arkiverat, DRIFT "D: och städning") och nu använda original skyddas. Spara skälet och exakta sökvägar.
 Unikt material som verifierats oanvänt får raderas enligt Jakobs besked 2026-11-19; arkivera inte allt för att det
 en gång kostade krediter. Registren ska samtidigt beskriva att materialet tagits bort, så inga aktiva länkar bryts.
 

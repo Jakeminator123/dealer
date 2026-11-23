@@ -68,8 +68,8 @@ behöver veta och namnger högst tre filer eller avsnitt att läsa.
   huvudagenten och en oberoende granskare döma i hans ställe (`node tools/review-put.ts`): domen ser aldrig ut som
   hans, den väntar inte i hans kö (Jakob 2026-11-13: "Med andra ord vill jag inte se en sån här lista när jag är
   tillbaka!"), den går att hitta i Granska under Dömda åt dig, och hans eget beslut ersätter den.
-- V6 är Jakobs visuella referens och återskapas byteidentiskt. Bevara original och referenser; ändra aldrig en
-  referenshash för att dölja en avvikelse.
+- V6 är arkiverad på Jakobs ord (2026-11-20); filmen och 18 rutor står kvar. Bevara original och referenser; ändra
+  aldrig en referenshash för att dölja en avvikelse.
 - Det tidigare projektet (arkivet snyggare-dealer) och Scoutgaming är bara läsreferenser: inga länkar, junctions eller
   beroenden dit, och en fil som hämtas därifrån registreras i `data/manifest.json`.
 - Spelregler, slump och kortvärden flyttas inte från Scoutgaming. Undantaget är den fristående spelmotorn i `game/`
@@ -78,8 +78,7 @@ behöver veta och namnger högst tre filer eller avsnitt att läsa.
 ## Labbservern
 
 - En adress, `http://127.0.0.1:4319` (`START.cmd`, `STATUS.cmd`, `STOPP.cmd`), och en flik i Jakobs webbläsare.
-- Återanvänd Codex webview; visar inventeringen ingen styrbar labbflik, öppna exakt en och behåll flik-ID.
-  I vanlig webbläsare används `node tools/preview.ts --open "<sida>"`.
+- En labbflik; i vanlig webbläsare öppnas den med `node tools/preview.ts --open "<sida>"`.
 - Godkänd lokal testning omfattar omladdning, navigering och Dealer-skärmbilder utan upprepade frågor.
   Systemets säkerhetsgranskning och kraven för externa överföringar och betalda jobb gäller fortsatt.
 - Före en länk till Jakob: `node tools/preview.ts --ensure`, så att servern går.

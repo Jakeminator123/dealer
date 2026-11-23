@@ -121,8 +121,7 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   adress (`filmEven`, `filmTempo`, `dealerLife`, `cups`, `cards`).
 - **En labbflik** (2026-11-12): varje labbsida håller en ström öppen mot servern (`src/preview-ui.ts`, `/tab/events`).
   Den nyaste sidan är labbfliken; en äldre stänger sig själv, eller blir tom där webbläsaren vägrar.
-  Codex webview föredras: inventera och återanvänd dess labbflik. Om ingen är åtkomlig öppnas exakt en via
-  datorverktyget, och dess ID behålls för fortsatt testning. Redan godkända lokala tester kräver inte nya frågor om
+  Redan godkända lokala tester kräver inte nya frågor om
   omladdning, navigering eller skärmbilder. I vanlig webbläsare återanvänder `node tools/preview.ts --open "<sida>"`
   den öppna fliken. Öppna aldrig labbadressen med `Start-Process` eller `start` (AGENTS, "Labbservern").
 - Servern står kvar tills den stoppas med `STOPP.cmd` eller `--stop`. Före en länk till Jakob: `node tools/preview.ts
@@ -182,7 +181,7 @@ bilder och filmer som används eller kan användas ligger i `assets/` (AGENTS). 
 | GitHub connector + CLI | Båda autentiserade som `Jakeminator123`; repo skapat privat, därefter ändrat till publikt av Jakob och bekräftat 2026-11-10. |
 | Runway connector | Autentiserad workspace `Jakob`, ID `67037521`. Inloggning och skrivschema kontrolleras var för sig; modellistan från `whoami` bevisar inte att klienten kan skicka modellens parametrar. |
 | Runway MCP-server | `https://mcp.runwayml.com/mcp`, appkontots krediter (workspace `Jakob`). Claude har servern som `runway`, Codex som `Runway`; inloggningen tillhör respektive klient och är inte gemensam. Kontrollera den aktuella sessionen före beställning. `https://dev.runwayml.com/mcp/claude` är en annan server (utvecklarportalen), inte för generering. |
-| Direkt API | Ingen kod i repot anropar Runways API. Sedan 2026-11-20 får beställningar gå genom API-nyckeln när MCP-inloggningen saknas ([BESKED](BESKED.md), "API-nyckeln, 3 000 krediter och granskning utan kö"); klienten och liggaren ligger utanför repot i `.runtime/ankare-2-3-c/api/`. `RUNWAY_API_KEY` ligger i den Git-ignorerade `.env.local` och drar developer-projektets krediter, en annan pott än appkontots; API-svaret ger inget projekt- eller workspace-ID, så nyckeln bevisar inte samma saldo. Kvitto från 2026-11-10: `.runtime/connection-check.json`. |
+| Direkt API | Ingen kod i repot anropar Runways API. Sedan 2026-11-20 får beställningar gå genom API-nyckeln när MCP-inloggningen saknas ([BESKED](BESKED.md), under Ersatta besked "API-nyckeln, 3 000 krediter och granskning utan kö", det som står kvar); klienten och liggaren ligger utanför repot i `.runtime/ankare-2-3-c/api/`. `RUNWAY_API_KEY` ligger i den Git-ignorerade `.env.local` och drar developer-projektets krediter, en annan pott än appkontots; API-svaret ger inget projekt- eller workspace-ID, så nyckeln bevisar inte samma saldo. Kvitto från 2026-11-10: `.runtime/connection-check.json`. |
 
 **Modellkunskap och API (kontrollerat 2026-11-19).** [Runway Dev-pluginen](https://docs.dev.runwayml.com/guides/plugin/)
 ger dokumentation, modellfält, priser och API-jobbdiagnostik; den genererar inte filmer. Cursor installerar med
@@ -270,35 +269,21 @@ beställningsagentens instruktion; här står det som rör banken, uppspelningen
 - **Kostnad för en hel dealer:** skattat 2026-11-12 cirka 5 000 krediter för en uppsättning med ett utdelningssätt (16
   kort och omtagningar); Paow hade 2026-11-13 kostat cirka 5 400 utan att vara färdig (räknat ur kvittona).
 
-## Publik granskningssida och Blob
-
-- Sida: `https://dealer-delta-eosin.vercel.app/`, team `scoutgaming`, projekt `dealer`, ID
-  `prj_7zd112w6MIX9YnpcR7Nj64Ke50yk`. Canonisk lokal projektbindning: `.runtime/public-deploy/.vercel/project.json`.
-- Blob: `dealer-media`, ID `store_qeojzIHuA5ewT4uO`, public, region `arn1`. Aktuella filantal/byte och anonym
-  SHA-256-verifiering finns i [manifestet](../data/public-media.json) och
-  [kvittot](../evidence/public-media-verification.json).
-- `node tools/sync-public-media.ts` visar en plan utan uppladdning. `--upload` synkar endast det uttryckligen avgränsade
-  biblioteket. Varje fil har innehållshash i namnet; befintliga objekt skrivs inte över. Granska tillåtna klipp-ID:n,
-  antal och totalbyte tillsammans med varje katalogutökning. Vid avbruten uppladdning: kontrollera kvittot och exakt
-  objekt, ladda inte upp en ny kopia på chans.
-- Blob-nyckeln ligger enbart i Git-ignorerade `.runtime/blob-sync/.env.local`, skild från Runway-nyckeln. Ingen nyckel
-  ska ligga i public-deploy eller byggpaketet. Den statiska sajten kräver ingen skrivnyckel.
-- Sidan är gamla labbet som det var vid den senaste publiceringen och byggs inte längre härifrån: byggverktyget
-  (`tools/build-public.ts`) gick med gamla labbet 2026-11-17 och finns kvar i Git-historiken. Den sparar kortplanen i
-  besökarens webbläsare, aldrig på datorn. Att ta ned sidan är en
-  deploy-åtgärd och Jakobs beslut. Studions publicerade kopia är [den låsta kopian](#den-låsta-kopian-på-nätet).
-- Aliaset `dealer-scoutgaming.vercel.app` är skyddat och ska inte delas som publik länk. Senaste deployment och den
-  gamla sidans avveckling (också det borttagna projektet `scoutgaming/scout-dealerlab`) står i
-  [slutkvittot](../evidence/public-release.json).
-
 ## Den låsta kopian på nätet
 
 Studion som låst kopia för Jakobs chef (Jakob 2026-11-12 och 2026-11-13: lösenordet (ordet skrivs inte ut här), Scen och Casino med Paow).
-Allt går att läsa och spela, inget går att ändra, och inga kostnader visas.
+Allt går att läsa och spela, inget går att ändra, och inga kostnader visas. Kopian är den enda sidan på nätet.
 
-- **Adresser:** `https://dealer-lake.vercel.app` (den Jakob känner) och `https://dealer-studio-one.vercel.app` (projektets
-  egen), båda produktionsadresser för `dealer-studio`. Lösenordet skrivs inte ut här (nytt sedan 2026-11-18; det gamla
-  nekas). Efter lösenordet kommer studion med vänsterspalten: Bordet (Kortplan, Scen, Råfilm och Efterarbete; inget sparas
+- **Gamla labbet på nätet är nedtaget** (Jakob 2026-11-23, [BESKED](BESKED.md#kopian-och-nätet)): Vercel-projektet
+  `dealer` i teamet `scoutgaming` med adresserna `dealer-delta-eosin` och `dealer-scoutgaming` är raderat, liksom dess
+  Blob-lager `dealer-media` och verktyget som laddade upp dit. Före raderingen låg alla 24 filmer på lagret också på
+  datorn eller i arkivet på D:, med samma SHA-256. Äldre register bär adresser dit som inte längre svarar (`publicReview`
+  i Pamelas filer under `motions/`, kvittona i `evidence/`); det sista kvittot är
+  [evidence/public-release.json](../evidence/public-release.json).
+- **Adress:** `https://dealer-lake.vercel.app`, den enda produktionsadressen för `dealer-studio`; projektets egen
+  (`dealer-studio-one`) togs bort 2026-11-23 på Jakobs ord. Dörrarna `/casino` (spelet ensamt) och `/trailer` (filmen
+  före spelet och sedan Paows casino) står kvar, på hans ord samma dag. Lösenordet skrivs inte ut här (nytt sedan
+  2026-11-18; det gamla nekas). Efter lösenordet kommer studion med vänsterspalten: Bordet (Kortplan, Scen, Råfilm och Efterarbete; inget sparas
   och inget beställs), Karta, Granska (med Prov, tom i kopian sedan 2026-11-21), Material, Casino och Önskemål. Vilken commit kopian bär säger
   `/meta.json` på kopian, och läget står i [lägesfilen](lage/spelet.md).
 - **Vercel:** team `jakeminator123s-projects` (Pro), projekt `dealer-studio`, utan Git-
@@ -473,11 +458,11 @@ Arbetsrutin, radering av verifierat oanvänt material och hashkontrollerad rensn
 [Lokal arbetsplats och städning](../tools/local-work.md).
 
 Ändra inte global TEMP/PATH och skapa inga nya runtime-junctions. Tillfälliga jobb kan få processlokal `TEMP`/`TMP` mot
-`D:/dealer-scratch/tmp`. V6-renderern skriver till `output/v6` i repot; ingen miljövariabel flyttar det.
+`D:/dealer-scratch/tmp`.
 
-`data/library.json` refererar till den bevarade porträttreproduktionen i `output/v6/take-01`. Den får inte rensas som
-slask medan katalogen refererar dit. Katalogen innehåller bara sökvägar/hashar, inga uppladdade filmer; diagnostiska
-beslut hämtas från motions-registret.
+`data/library.json` pekar på V6:s porträttreproduktion i `assets/proofs/filmbiblioteket/` (samma fil som låg i
+`output/v6/take-01`, SHA-256 jämförd 2026-11-23). Katalogen innehåller bara sökvägar/hashar, inga uppladdade filmer;
+diagnostiska beslut hämtas från motions-registret.
 
 **Vad en mapp i `assets/` eller `output/` är och om något använder den:** `node tools/media-audit.ts [--json] [<mapp>]`
 (bara läsning). Per film, ankare, beställning eller prov: vad det är, storlek, datum, vilket register som nämner det och
@@ -490,6 +475,13 @@ den tidigare regeln att alltid arkivera betalda resultat är ersatt av Jakobs be
 **Arkivet av det oanvända, 2026-11-17** (`53dc116`): 367 enheter (1 073 filer, 3,96 GB) ligger med samma sökvägar i
 `D:/dealer-archive/dealer-ej-anvant-2026-11-17/`, varje fil kontrollerad på SHA-256. Planen, loggen och skriptet som tar
 tillbaka allt (`aterstall.mjs`) ligger i `D:/dealer-scratch/tmp/stadning/inventering-2026-11-17/`.
+
+**V6-arkivet, 2026-11-23** (Jakobs ja på Beslut-kortet `v6-arkiv`, 2026-11-20): V6:s råmaterial (`assets/frames`,
+733 MB), återskapningen (`output/v6`, 130 MB), renderaren och dess kod, med en kopia av det som stannar (filmen, 18
+rutor, duken, plåten, tidslinjen, spåren, maskerna och manifestet), ligger i `D:/dealer-archive/v6-2026-11-23/`: 1 138 filer,
+959,7 MB, med `SHA256SUMS`, kvittot `arkiv.json` och en README om hur V6 återskapas. Varje fil lästes tillbaka mot
+hashlistan, mot projektets fil och mot hashen i `data/manifest.json` innan råmaterialet och återskapningen togs ur
+projektet. En post i manifestet med `archived` pekar dit, och `npm run verify` hoppar över den.
 
 **Om en bild eller film passar dagens regler:** `node tools/media-audit.ts --fit [--write]` mäter kortet i varje landning
 och i varje ankare med kort på en plats (gult eller blått som `src/card-track.ts` läser) och det liggande kortet i
@@ -545,5 +537,5 @@ skrivare och atomisk historik behövs; ingen produktionsdatabas är skapad här.
 En kopia av repot i en molnmiljö (Codex Cloud eller en annan sandlåda ur GitHub) är en separat körning utan media och
 inte säkert med rätt Node: där går bara de tester som klarar sig utan media, och ingenting döms där. Ingen sådan miljö
 är uppsatt för dealer (senast kontrollerat 2026-11-10), och Scouts miljö återanvänds inte utan uttrycklig
-projektbindning. Den som sätter upp en behöver repot, Node 24.22.3 och `npm ci`; V6-verifiering och rendering kräver
-dessutom registrerad media, FFmpeg/FFprobe och högst fyra arbetare. Kopiera aldrig hela `.env.local` dit.
+projektbindning. Den som sätter upp en behöver repot, Node 24.22.3 och `npm ci`; hashkontrollen `npm run verify`
+kräver dessutom registrerad media. Kopiera aldrig hela `.env.local` dit.

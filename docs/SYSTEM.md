@@ -1,26 +1,25 @@
 # System och koordinater
 
-Kontrakt: koordinater, register, scen, spel och klippbank. Engelska systemord, svensk förklaring. Två uppspelningar
-finns. Klippbankens rundor (`resolveRound` i `src/clip-graph.ts`) spelas i studion, i 3D-scenen och i spelet. V6:s
-bildrutetidslinje (`assets/timeline.json`, `tools/render.ts`) återskapar V6 byteidentiskt och används inte för andra
-filmer. Sekvenssträngar och nodvy är presentation av samma metadata, aldrig en andra motor. Nodvyn visar planerad avsikt; den fastställer inte en källfilms händelser.
+Kontrakt: koordinater, register, scen, spel och klippbank. Engelska systemord, svensk förklaring. Klippbankens rundor
+(`resolveRound` i `src/clip-graph.ts`) spelas i studion, i 3D-scenen och i spelet. Renderaren som återskapade V6
+byteidentiskt ur bildrutetidslinjen (`assets/timeline.json`) är arkiverad sedan 2026-11-23 på Jakobs ja, med
+råmaterialet (README, "Verifierad bas och gräns"). Sekvenssträngar och nodvy är presentation av samma metadata, aldrig en andra motor. Nodvyn visar planerad avsikt; den fastställer inte en källfilms händelser.
 
 ## V6: tre ytor, två format
 
-V6 komponerar tre ytor: bakgrund (rummet, `assets/scene/room.png`), bord (matta, bordskant och mottagaryta,
-`assets/scene/table.png`) och dealer (frilagd person och rörelse, `assets/frames/` och `assets/tracking/`). Kort,
-marker, masker och kontaktskuggor komponerar dessa tre ytor; de är inga ytterligare valbara scenytor.
-Hand-/kortocklusion måste bevaras. V6 ger slutkomponerade bildrutor, inte tre fristående videolager. 3D-scenen nedan har
-egna lager.
+V6 komponerades av tre ytor: bakgrund (rummet, `assets/scene/room.png`), bord (matta, bordskant och mottagaryta,
+`assets/scene/table.png`) och dealer (frilagd person och rörelse: råmaterialet, nu i V6-arkivet, och `assets/tracking/`).
+Kort, marker, masker och kontaktskuggor komponerades på dessa tre ytor; de är inga ytterligare valbara scenytor.
+V6 gav slutkomponerade bildrutor, inte tre fristående videolager. 3D-scenen nedan har egna lager.
 
 | Format | Storlek | Regel |
 | --- | --- | --- |
 | Native / desktop | 1762×1174, exakt 881:587 | Bevara godkänd vinkel och yta. Ingen automatisk omformning till 16:9 eller exakt 3:2. |
 | Porträtt / mobil | 1080×1920, 9:16 | Egen bord-/bakgrundskomposition och dealertransform. |
 
-Verifierad kod i `src/pamela-card-contact-v6.ts`: native dealerkomposition skalas till 1586×1057, beskärs vid
-`(left=250,top=0,width=1080,height=1057)` och placeras på porträttytan vid `(0,80)`. Mattans native-utsnitt
-`(278,838,1200,336)` blir 1080×1086 vid `(0,834)`; kanten `(278,817,1200,21)` blir 1080×19 vid `(0,815)`. En global
+V6:s verifierade kompositör (pamela-card-contact-v6.ts, nu i V6-arkivet): native dealerkomposition skalades till
+1586×1057, beskars vid `(left=250,top=0,width=1080,height=1057)` och placerades på porträttytan vid `(0,80)`. Mattans
+native-utsnitt `(278,838,1200,336)` blev 1080×1086 vid `(0,834)`; kanten `(278,817,1200,21)` blev 1080×19 vid `(0,815)`. En global
 bildtransform kan därför inte beskriva alla tre ytorna. Återinför inte äldre bordskanter/magklippning utan separat
 granskning.
 
@@ -475,7 +474,7 @@ spelet: filmens egen sko ligger kvar i filmen, och en 3D-sko kan ersätta den f�
 
 ## Bottom-up och koordinatreferenser
 
-Bottom-up betyder att höjd ökar uppåt. V6 mäter idag bildpixlar från övre vänstra hörnet med y nedåt. Originalmätningar
+Bottom-up betyder att höjd ökar uppåt. V6:s mätningar är bildpixlar från övre vänstra hörnet med y nedåt. Originalmätningar
 och referenshashar bevaras; en adapter ska konvertera vid en uttrycklig systemgräns.
 
 Dokumenterat förslag för normaliserad **bildrymd**: `u` ökar åt höger, `v` uppåt, båda i `[0,1]`. `(0,0)` är nedersta
@@ -546,7 +545,7 @@ Villkorliga målskillnader i analysen är inte uppmätt handkontakt i en framtid
 
 Rörelsernas framtida bindning använder `placementRef`, `sceneProfileId`, `viewProfileId`; inga x/y-tal i
 sekvenssträngen. Film och varje overlay (spelets i `game.html`, studions) ska använda samma uppslag och samma
-resize/crop/letterbox-offset. Editorns placeringsfil är ännu inte kopplad till V6-renderern eller Scout. DRAFT-ordningen
+resize/crop/letterbox-offset. Editorns placeringsfil är ännu inte kopplad till Scout. DRAFT-ordningen
 i en planerad sekvens är inte uppmätta filmannoteringar; noder eller dokument får inte hitta på saknade mätningar.
 
 ## Ordlista och gräns mot Scout
@@ -602,9 +601,9 @@ källbevis: den nyare P4.C2-källan stöder BACK→EDGE→FRONT, medan dess loka
   Kortplan, Referens i Bordets Scen och Råfilm). Original, historiska sekvenser och diagnostiska överlägg
   hålls isär; beslut hämtas från `motionRef`. P4-gulprovet och de återställda native-sekvenserna är 1764×1174 i
   källrymd, inte V6:s native-vy 1762×1174.
-- `data/public-media.json` binder publicerade katalogfilmer till Blob-URL:er med samma SHA-256. Nya lokala poster kan
-  invänta publicering. `publicReview` anger exakt publicerad granskningsfil; publicering innebär inte godkänd rörelse
-  eller Scoutintegration.
+- `publicReview` i ett äldre register anger vilken granskningsfil som låg på den gamla publika sidan, nedtagen
+  2026-11-23 ([DRIFT](DRIFT.md#den-låsta-kopian-på-nätet)): adresserna där svarar inte längre, och publiceringen innebar
+  aldrig godkänd rörelse eller Scoutintegration.
 - Nya original placeras i `assets/motions/<clip-id>/source.mp4`. Korrigerad visningsversion har egen hash/relation till
   original. Befintliga registrerade original får refereras där de ligger; inga kopior per godkännandestatus.
 - `KEYFRAME` är en källruta. `ANCHOR` är en utpekad källruta för exempelvis grepp, kantläge, kontakt, släpp eller vila:

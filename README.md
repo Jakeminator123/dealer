@@ -2,8 +2,8 @@
 
 Självständig arbetsyta för en filmad dealer i Scoutgaming: två kort till sju spelare och en dealer, med trovärdig
 utdelning. Rörelserna är korta filmklipp mellan fasta ankare (vila, redo, kortets plats) i en klippbank; en runda är en
-väg genom klippen, och samma rundor spelas i labbet, i 3D-scenen och i spelet. V6 är Jakobs valda visuella referens och
-återskapas byteidentiskt. Scoutgaming äger regler, slump och kortvärden.
+väg genom klippen, och samma rundor spelas i labbet, i 3D-scenen och i spelet. V6, Pamelas referensfilm, är arkiverad på
+Jakobs ord (2026-11-20); filmen och 18 rutor står kvar. Scoutgaming äger regler, slump och kortvärden.
 
 Mapparna:
 
@@ -111,18 +111,18 @@ Dokumenten länkar till dessa i stället för att föra egna statusregister. Med
   och dokumentens tak.
   `npm run hooks:install` aktiverar lokal pre-push; `npm run check` kontrollerar commitintervallet före push/PR. Se
   [rutinen](docs/DRIFT.md#git-och-kontroller).
-- `npm run verify` kontrollerar registrerade lokala filer. `npm run verify -- --frames` återrenderar 18 kontrollrutor
-  och kräver pixelidentitet.
-- `npm run render -- --render --take=02` startar ett nytt fullständigt V6-försök med fyra arbetare. Välj alltid ett
-  oanvänt tvåsiffrigt nummer; `take-01` är bevarat. Kräver FFmpeg/FFprobe via PATH eller `FFMPEG`/`FFPROBE`.
+- `npm run verify` kontrollerar de registrerade lokala filerna mot sin hash i `data/manifest.json`; det som är
+  arkiverat (V6:s råmaterial och renderare) hoppas över.
 
 ## Verifierad bas och gräns
 
-Enligt [reproduktionskvittot](evidence/reproduction.json) har hela V6 återrenderats lokalt: 926 rutor, 30 fps, 1762×1174
-och 1080×1920. Båda MP4-filerna är byteidentiska med originalen; 18 kontrollrutor är pixelidentiska enligt
+Enligt [reproduktionskvittot](evidence/reproduction.json) återrenderades hela V6 lokalt: 926 rutor, 30 fps, 1762×1174
+och 1080×1920. Båda MP4-filerna var byteidentiska med originalen; 18 kontrollrutor var pixelidentiska enligt
 [bildrutekvittot](evidence/frame-verification.json), också efter renderinläsningsrättningarna
-([V6-kvitto](evidence/render-safety-frames.json)). Detta verifierar V6, inte utdelning till alla åtta platser. Kända
-begränsningar för fingermask, rörelsekanter och källskarvar kvarstår.
+([V6-kvitto](evidence/render-safety-frames.json)). Det verifierade V6, inte utdelning till alla åtta platser. På Jakobs
+ja (Beslut `v6-arkiv`, 2026-11-20) ligger råmaterialet, renderaren och återskapningen sedan 2026-11-23 i
+`D:/dealer-archive/v6-2026-11-23`, med hashlista och en README om hur V6 återskapas därifrån; filmen och 18
+rutor i `assets/reference/`, duken och plåten står kvar. Kända begränsningar för fingermask, rörelsekanter och källskarvar kvarstår.
 
 `src/` och `tools/` kör utan det förra projektet (snyggare-dealer, arkivet på D:). `materials/` är separata kort- och
 markerprov; TS-materialkällorna har inte återbyggts till de frysta JS-bundlarna. Labbet och 3D-scenen läser
@@ -130,8 +130,8 @@ kortmaterialets TS-källa direkt; det ändrar inte V6-filmen eller de historiska
 
 Publikt källrepo: [Jakeminator123/dealer](https://github.com/Jakeminator123/dealer), utan media och hemligheter. Vad som
 kräver Jakobs uttryckliga ord står i [AGENTS](AGENTS.md), "Det som skyddar Jakob". Den äldre publika sidan
-(`dealer-delta-eosin.vercel.app`, gamla labbet som det var när det publicerades sist) byggs inte längre härifrån:
-[DRIFT](docs/DRIFT.md#publik-granskningssida-och-blob).
+(gamla labbet på nätet) togs ned 2026-11-23 på Jakobs ord; studions kopia är den enda sidan på nätet:
+[DRIFT](docs/DRIFT.md#den-låsta-kopian-på-nätet).
 
 ## Historiskt underlag
 

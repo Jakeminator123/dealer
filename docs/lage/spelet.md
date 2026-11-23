@@ -38,7 +38,7 @@ Huvudagentens bana: spelet, scenens filmlager, nätkopian och stängda banor. Ko
 **Väntar på Jakob.** Inget utanför Beslut.
 
 **Var saker ligger.** Kopians adresser och publicering i [DRIFT](../DRIFT.md) och skillen `publicera-kopian`.
-`/meta.json` på kopian visar commit. Den äldre publika sajten visar 22 filmer från `b65fd9b` (`evidence/public-release.json`).
+`/meta.json` på kopian visar commit. Den äldre publika sajten är nedtagen (2026-11-23, DRIFT).
 Talet i [TAL](../TAL.md) och vyn Lipsync. Under `D:/dealer-scratch/tmp/` finns
 `tal/LASMIG-OVERLAMNING-2026-11-17.md`, `tal/korare/`, `tal/realtid/PLAN.md` och `tal/stabilt/LASMIG.md`.
 Scenbanan finns i `levande-objekt/`, skarvarna i `levande-objekt/ljus/`, rummets film i `levande-objekt/rumsliv/`.

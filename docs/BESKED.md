@@ -21,7 +21,7 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   gärna allt med en push till main på master". Stegen är de han gav samma kväll (Labbet och studion, "Bordet ska
   byggas om …"), och dockan lades till kl. 19.55 (Filmerna och given). Läst så (huvudagentens tolkning): PR,
   sammanslagning och push till `main` är beställda för det arbetet; beställningarna görs inom mandatet, som
-  huvudagenten förnyar före första ordern, och huvudagenten satte själv ett tak på 1 500 krediter för natten.
+  huvudagenten förnyar före första ordern.
 
 - **Datorn bär bara det som det arbetas med; resten ligger på den nya Blobben, och det ersatta gallras** (2026-11-21,
   sent): "idag ser jag att 'assets' har sjukt mkt material. Ska man inte göra så att det raderas massa om nya versioner
@@ -253,18 +253,8 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   En granskad pilot föregår serien. 3D-Dealer har ett eget repo; saldot samordnas i skrivbordets DISKMASKIN.TXT.
   Senare samma dag: "max 2000 mer idag" gäller hans möjliga påfyllning; saldot räknas inte upp före ett kvitto.
 
-- **Timtaket för sessionen 222 KORTMÄRKE** (2026-11-20): "Andra agenten får beställa för 800 krediter per timme - så
-  'ja'." Sagt till sessionen dealer-29 om den nya stillbilden av Paows ankare 2.3 (två bilder, 2 × 40 krediter).
-  Samma dag om städningen, om dubbletterna i `assets/` och om förkastade tagningar och äldre prov: "radera"
-  (`tools/local-work.md`, "Radera oanvänt material").
-
-- **API-nyckeln, 3 000 krediter och granskning utan kö** (2026-11-20, kl. 13.05, till sessionen dealer-37 när Runways
-  MCP-inloggning saknades). Han pekade på `RUNWAY_API_KEY` i `.env.local` och skrev: "Du har 3k i budget, men behöver
-  inte använda så mkt såkalrt. me ngår allt bra - fortsä'tt. Livegranskning avklipp med second opinion funkar skitbra
-  från browsern så jag inte behöver gransla allt heal tiden". Beställningar får alltså gå genom API-nyckeln
-  (utvecklarprojektets krediter) inom 3 000 krediter; timtaket 800 står kvar, och mandatet i `data/order-policy.json`
-  är förnyat med de talen. En tagning döms av en oberoende granskare som ser den i rörelse i webbläsaren, och väntar
-  inte på honom.
+- **Städningen: radera** (2026-11-20, om dubbletterna i `assets/` och om förkastade tagningar och äldre prov):
+  "radera" (`tools/local-work.md`, "Radera oanvänt material").
 
 - **Domar åt honom, och ingen kö** (2026-11-13): "jag måste sova och du får granska och godkänna alla klipp", och kl.
   15.50, på väg ut: "jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna
@@ -301,9 +291,6 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   om elller oavsätt. Elelr ha dem på om jag pushar. men går dem nu om Kevin eller Emil pushar också?" Den stora
   kontrollen där (`croupier.yml`) är avstängd hos GitHub, ingen fil är ändrad; vad som är gjort och hur det slås på igen
   står i `D:/dealer-scratch/tmp/github-kostnad/FORSLAG-TILL-SCOUTGAMING.md`.
-- **Två tusen krediter för proven** (2026-11-18, cirka kl. 02.45, om provet från en annan vinkel och givarna från
-  ankare 2.3): "du får 2000 krediter att använda om du vill.. Ändra där det står 260 krediter som gräns.." Taket för de
-  proven är 2 000 krediter i stället för 260; varje anrop står i en liggare, och kostnaden berättas efter varje omgång.
 
 ## Dealern och ankarna
 
@@ -597,13 +584,16 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   `pamela-p4-c1-plan-return-idle-01`): "väldigt bra". Betyg samma dag: P4.C1 rått original 4,5/5, V6 4/5, vita banken
   3/5, gul/blå sekvens 2,5/5, READY2 "konstiga". Senare ord om V6: se nästa punkt.
 - **V6 som läge i labbet** (2026-11-18, cirka kl. 00.00): "V6-läget är jag skeptisk mot i sin helhet". V6-bilden är ute
-  ur Kortplans lista. V6 står kvar som referens och kontrolleras vid varje push (AGENTS); om den ska arkiveras är hans
-  ord och inte frågat än. Senare ord om V6: se nästa punkt.
+  ur Kortplans lista. Senare ord om V6: se nästa punkt.
 - **V6 behöver inte längre vara en referens att dö för** (2026-11-20, i Beslut, anteckningen på kortet
   `stada-paketen`): ""V6"- kan vi cokså "läätta" lite på. Det som har att göra med det kan vi kanske lägga lite
   säkrare, mne behöver inte vara referenser att dö för längre alls". Skyddet får alltså lättas och V6-materialet
-  läggas säkrare undan. Inget som rör V6 ändras förrän städsessionen har inventerat det och han har sett förslaget;
-  regeln i AGENTS (byteidentisk återskapning, kontrollen vid varje push) gäller tills den är omskriven där.
+  läggas säkrare undan. Senare ord om V6: se nästa punkt.
+- **V6 arkiveras, filmen står kvar** (2026-11-20, kl. 12.07, i Beslut, kortet `v6-arkiv`, "V6: arkivera råmaterialet
+  och renderaren, men behåll filmen att titta på?"): han valde "Ja, arkivera". Kortets löfte: råmaterialet och
+  renderarens kod går till ett prövat arkiv med hashlista och tas sedan ur projektet; filmen, 18 rutor, duken och
+  plåten står kvar. Utfört 2026-11-23: arkivet är `D:/dealer-archive/v6-2026-11-23` ([DRIFT](DRIFT.md), "D: och
+  städning"), och V6 återskapas inte längre i projektet.
 - **Trailern med tatuerade händer** (2026-11-17, kl. 19.40): rollblad 4 har hans ja, "Ja hennes 5-faldiga bilder:er är
   nu bra". **Pausad** samma kväll: "Om allt med videon är dåligt.. Låt mig titta, mne strunt i det och pausa det
   sålänge". Inget beställs och inget byts i trailern tills han säger till.
@@ -739,6 +729,12 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 
 ## Kopian och nätet
 
+- **Gamla labbet och de udda adresserna bort, filmdörren kvar** (2026-11-23, till sessionen dealer-37): "Ja men radera
+  allt som borde raderas angåend e onstiga adresser osv samt det "gammla labbet". men se til len sak bara. Det ska
+  finnas som en länk som gör att kman kommer in via en noir-film till casinodelen som är en specialanpassning för PAOW.
+  Detta vill jag ha kvar dock?" Utfört samma dag: gamla labbets projekt, dess två adresser och dess Blob-lager är
+  raderade, och kopians andra adress är borttagen. Kopian på `dealer-lake.vercel.app` är orörd, med dörren `/trailer`
+  (noir-filmen och sedan Paows casino). Vad som togs bort står i [DRIFT](DRIFT.md#den-låsta-kopian-på-nätet).
 - **Casinot på nätet visar det som är inställt i studion** (2026-11-21, kl. 16.20): "Jag vill också att det som jag
   tex nu har inställt … är det som faktiskt ska kunna publiceras ut till nätet … bara det att casinolayouten ändras
   till det som faktiskt är inställt här lokalt i studion", med en länk eller knapp för att se Casinot på nätet; "ställer
@@ -794,6 +790,28 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 - **Räddningsomgångens första budget** (2026-11-18, Codex): "Högst 1 000 krediter totalt" för nya betalda Runway-försök
   under femtimmarsarbetet. Ersatt samma dag av 800 per timme och 2 500 totalt (Domar, beställningar och pengar).
 
+- **Två tusen krediter för proven** (2026-11-18, cirka kl. 02.45, om provet från en annan vinkel och givarna från
+  ankare 2.3): "du får 2000 krediter att använda om du vill.. Ändra där det står 260 krediter som gräns.." Taket för de
+  proven var 2 000 krediter i stället för 260. Förbrukat; ersatt av "Ja du får generera tills kontot är typ tomta!"
+  (2026-11-18) och 2026-11-23 av timtaket 1 000 i dag (Domar, beställningar och pengar). Det som står kvar: varje anrop står
+  i en liggare, och kostnaden berättas efter varje omgång (Betald generering, samma avsnitt).
+
+- **Timtaket för sessionen 222 KORTMÄRKE** (2026-11-20): "Andra agenten får beställa för 800 krediter per timme - så
+  'ja'." Sagt till sessionen dealer-29 om den nya stillbilden av Paows ankare 2.3 (två bilder, 2 × 40 krediter).
+  Förbrukat med den beställningen; timtaket står i "Timtaket 1 000 i dag" (Domar, beställningar och pengar), och
+  hans ord samma dag om städningen står kvar där ("Städningen: radera").
+
+- **API-nyckeln, 3 000 krediter och granskning utan kö** (2026-11-20, kl. 13.05, till sessionen dealer-37 när Runways
+  MCP-inloggning saknades). Han pekade på `RUNWAY_API_KEY` i `.env.local` och skrev: "Du har 3k i budget, men behöver
+  inte använda så mkt såkalrt. me ngår allt bra - fortsä'tt. Livegranskning avklipp med second opinion funkar skitbra
+  från browsern så jag inte behöver gransla allt heal tiden". Beställningar fick alltså gå genom API-nyckeln
+  (utvecklarprojektets krediter) inom 3 000 krediter. Talet är förbrukat; ersatt av timtaket och totalmandatet i Domar,
+  beställningar och pengar. Det som står kvar av svaret: beställningar får gå genom API-nyckeln, och en tagning döms
+  av en oberoende granskare som ser den i rörelse i webbläsaren och väntar inte på honom (Domar åt honom, och ingen kö).
+
+- **Huvudagentens eget tak på 1 500 krediter för natten** (2026-11-21, natten med underagenter; huvudagentens, inte
+  hans). Förbrukat med natten; taket står i "Timtaket 1 000 i dag" (Domar, beställningar och pengar).
+
 - **Publicering efter varje färdig del** (hans stående ord enligt den gamla överlämningen, som inte återgav det som
   citat: kopian publiceras ur `main` efter varje färdig del, push och publicering, så att det syns på Vercel). Ersatt
   2026-11-17 av "Allt på nätet är sekundärt" (Kopian och nätet); inget har publicerats sedan dess, och AGENTS kräver
@@ -816,6 +834,11 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   det äldre sättet ([BRISTER.md](BRISTER.md), Kortet).
 - **V6 som den bästa filmen och förlaga för kortens storlek** (2026-11-12). Delvis ersatt 2026-11-18 av "V6-läget är
   jag skeptisk mot i sin helhet" (Filmerna och given): V6 är kvar som skyddad referens men inte som läge i labbet.
+  Sedan 2026-11-20 ("Ja, arkivera", samma avsnitt) är bara filmen, 18 rutor, duken och plåten kvar i projektet.
+- **V6 återskapas byteidentiskt och kontrolleras vid varje push; arkiveringen är inte frågad** (2026-11-12 till
+  2026-11-20, regeln i AGENTS och agenternas läsning av hans ord, inte citat; push-kontrollen hade inget V6-steg).
+  Också: inget som rör V6 ändras förrän städsessionen har inventerat det och han har sett förslaget. Ersatt
+  2026-11-20 kl. 12.07 av "Ja, arkivera" på kortet `v6-arkiv` (Filmerna och given); utfört 2026-11-23.
 - **En yta för beställning** (2026-11-17): "Vart är min 'labb'-yta där jag kan se en typ avatar/siluett och sedan kort
   och bord, jag kan ställa in allt som jag vill, sedan ska jag kunna lägga en beställning för en film. Tex 'A2.2 till
   P3C2 och tillbaka till A2.2'?" Uppfyllt och ersatt samma kväll av beskedet om Bordet (Labbet och studion).

@@ -10,8 +10,8 @@ from a picture to a finished dealer, with every format and name: `tools/dealer-l
 ## What an order is
 - `data/orders/<id>.json`: the order (in Git). Only orders with `"status": "GODKÄND"` and an `approval` are placed. You never
   write this file, never write `approval`, never change a draft. Its values came from the step's recipe
-  (`data/order-methods.json`: a trial one take, a deal bara dit on Kling 4 with a reference film, never a handbyte by
-  default, the turn not a choice) or an exception its notes name (`tools/film-prompting.md` §2).
+  (`data/order-methods.json`: a trial one take, a deal bara dit on Kling 4 with a reference film; from A2.1 one
+  hand and no handbyte by default, from A2.3 two hands; the turn not a choice) or an exception its notes name (`tools/film-prompting.md` §2).
 - `assets/orders/<id>/`: the pictures that go out (a film: `first.png`, `last.png`, and `reference.mp4` when it has a
   reference film; a still: `anchor.png` and `pose-figure.png`, the other dealer's forearm and hand cut out, for anchor 2.2
   laid on the dealer's own shoe and card), and later what you fetch. Outside Git.

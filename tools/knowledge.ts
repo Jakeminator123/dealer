@@ -377,7 +377,7 @@ export const DEALER_DOCS = {
   HANDOFF: {drop: /^(?:Före avslut|Läs för ditt ämne)$/, core: ['Läget', 'Nästa steg', 'Vem äger vad', 'Väntar på Jakob']},
   README: {drop: /^(?:Kör lokalt)$/, core: ['Inledning']},
   SYSTEM: {drop: null as RegExp | null, core: ['Ordlista och gräns mot Scout', 'Klippbank och nodnotation', 'Återbruk och införande']},
-  DRIFT: {drop: /^(?:Identitet och ansvar|Anslutningar och miljö|Publik granskningssida och Blob|Molnmiljö|D: och städning|Headless Chrome och verktyg på D:)$/, core: [] as string[]},
+  DRIFT: {drop: /^(?:Identitet och ansvar|Anslutningar och miljö|Molnmiljö|D: och städning|Headless Chrome och verktyg på D:)$/, core: [] as string[]},
 };
 export const SCOUT_DROP = /drift|infrastruktur|miljö|environment|incident|getting started|repository map|deploy|hemlig|secret|^struktur$|^underhåll$|regel- och undantagsfiler|^fynd$|^kretslopp$|^mergat|^öppna pr|studio-workern/i;
 export const SCOUT_CORE: Record<string, string[]> = {

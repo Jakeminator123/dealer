@@ -10,8 +10,8 @@ för servern och för svaret i [`AGENTS.md`](../../../AGENTS.md), "Labbservern" 
 
 ## Reglerna som oftast bryts
 
-1. **En flik.** Återanvänd Codex webview; saknas en styrbar labbflik får exakt en öppnas enligt AGENTS, "Labbservern".
-   I vanlig webbläsare används `node tools/preview.ts --open "<sida>"`; aldrig `Start-Process` eller `start` (DRIFT).
+1. **En flik** (AGENTS, "Labbservern"). I vanlig webbläsare används `node tools/preview.ts --open "<sida>"`; aldrig
+   `Start-Process` eller `start` (DRIFT).
 2. **Före en länk:** `node tools/preview.ts --ensure`. Servern startas, stoppas och startas om bara av den HANDOFF säger
    ("Vem äger vad"), och bara med `STOPP.cmd`, `--stop` eller `--restart`, aldrig via processnamn eller port (AGENTS).
 3. **Studion han ser är byggd ur det incheckade:** `node tools/studio-from-commit.ts` bygger en commit i ett rent träd

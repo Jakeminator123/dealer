@@ -6,7 +6,7 @@
 //                                                            from the credential file and nothing is sent
 //   node tools/sync-studio-media.ts --upload --store <id>    upload, on Jakob's word only
 //
-// Same rules as tools/sync-public-media.ts: every object is named by its SHA-256 ("studio/<sha256>.<ext>"), an existing
+// The rules: every object is named by its SHA-256 ("studio/<sha256>.<ext>"), an existing
 // object is never overwritten (allowOverwrite false; one of the right size is reused), and every object is read back
 // anonymously and hashed before it enters .runtime/studio-blob/studio-media.json, the receipt the next snapshot build reads.
 // The receipt is not in Git: the repo is public, and every film's address in Blob would let anyone past the copy's lock. The store's

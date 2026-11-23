@@ -1,6 +1,6 @@
 // The card plan drawn in the real perspective (src/card-plan.ts): on "Plant bord" each card is a real card through the table's
 // lens at its own place (size and place), in the plan's shape (the table's perspective, one keystone rule for every card), the
-// plan's own rule elsewhere, and V6's cards measured against a real card. Needs no media; the plan is the model's start proposal
+// plan's own rule elsewhere. Needs no media; the plan is the model's start proposal
 // (with seat 4's and the dealer's first cards where placements/default.json had them on 2026-11-17), so the test holds after
 // Jakob saves his.
 // Run: node --test tools/card-plan.test.ts
@@ -8,7 +8,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { TABLE_PERSPECTIVE, TARGETS, defaultPlan, planQuad, setTablePerspective, setTableProjection, toPixels, validatePlan, type PlacementPlan } from '../src/placement-model.ts';
 import { TABLE_LENS, quadMeasure, realCardQuad, type Pixel } from '../src/table-lens.ts';
-import { V6_CARD, V6_CARD_SIZE, filmToPlan, planCardQuad, planTaper, planToFilm, realCardAcross, screenMeasure, throughLens } from '../src/card-plan.ts';
+import { filmToPlan, planCardQuad, planTaper, planToFilm, screenMeasure, throughLens } from '../src/card-plan.ts';
 import { readFile } from 'node:fs/promises';
 import { VIEWS, flatQuad, quad } from '../src/placement-model.ts';
 import { CARD, FILM, SEAT_FOUR_CARD, cardCorners, feltToPixel, inFrame, lensForFocal, pixelToFelt, planPixel, type Lens, type Vec3 } from '../src/table-lens.ts';
@@ -46,15 +46,6 @@ test('the plan\'s own rule where the lens does not apply: a table taken off "Pla
   for (const id of ['P1.C1', 'P4.C1', 'D.C2']) assert.deepEqual(planCardQuad(own, id, 'native'), planQuad(own, id, 'native'));
   const p = plan();
   for (const id of ['P1.C1', 'P4.C1']) assert.deepEqual(planCardQuad(p, id, 'portrait'), planQuad(p, id, 'portrait'));
-});
-
-test('V6\'s cards (frame 694) against a real card lying the same way at the same place: 1.46 wide, 1.47 deep, 1.38 as a whole', () => {
-  const c = { x: V6_CARD.reduce((s, q) => s + q.x, 0) / 4, y: V6_CARD.reduce((s, q) => s + q.y, 0) / 4 };
-  const v6 = screenMeasure(V6_CARD), real = screenMeasure(realCardAcross(c)!);
-  near(v6.near / real.near, 1.458, 0.005, 'near edge');
-  near(v6.depth / real.depth, 1.472, 0.005, 'depth');
-  near(Math.sqrt(v6.area / real.area), V6_CARD_SIZE, 0.005, 'as a whole');
-  near(v6.far / v6.near, 0.736, 0.005, 'V6\'s own taper (its camera is wider)');
 });
 
 // placements/default.json on 2026-11-17 (tools/table-lens.test.ts PLAN): seat 4's and the dealer's first card, with seat 4's
