@@ -424,8 +424,13 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   Om nattens fyra givar till plats 1–3 och plats 4 kort 2: "De som du dömt som bra, är verkligen bra."
 - **Den vita ramen runt kortet** (2026-11-23): "Varför är det som en vit karm runt kortet? Någonting måste ju göra så
   att det blir så?" och hans egen gissning: "Kanske är det för att det på referensantakeret är som lite vitt runt
-  själva det gula/kortets rygg?" (skons ljusa fönsterram i A2.3). Texten ber inte om en kant och dockans kort har
+  själva det gula/kortets rygg?" (skons ljusa fönsterram i A2.3). På kortet i Beslut samma morgon: "Vad är det som
+  gör att det blir en vit kantlinje på kortet? Det sk inte finnas." Texten ber inte om en kant och dockans kort har
   ingen; hans gissning är inte prövad. Se också "Ingen vit rand" (2026-11-17) längre ned.
+- **Given till plats 4, kort 2: vändningen ser fel ut** (Beslut 2026-11-23, kl. 07.13, kortet om given från A2.3):
+  "Nej, vändningen ser fel ut", med orden "vändningen ser inte helt naturlig ut heller, kortet blir lixom för långt
+  från fingrarna". Om dockan med Paows mått svarade han samma minut "Måtten ser fel ut": "Ser i och för sig mycket
+  bättre ut. men osäker på om vi bygger ännu en ny dock..".
 
 - **Dockan ska se naturlig ut och ha dealerns mått, och en vald docka ersätter Siluett i studion** (2026-11-21,
   kl. 19.55): "om docka ska användas. Kolla då om dockan kan göras bättre så dockan inte ser onaturlig ut.. typ lite

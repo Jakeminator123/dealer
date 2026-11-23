@@ -31,7 +31,11 @@
       ],
       "asked": "2026-11-21",
       "from": "film",
-      "answer": null
+      "answer": {
+        "value": "vandning",
+        "note": "Vad är det som gör att det blir en vit kantlinje på kortet? Det sk inte finnas. men vändningen ser inte helt naturlig ut heller, kortet blir lixom för långt från fingrarna.",
+        "at": "2026-11-23T06:13:41.512Z"
+      }
     },
     {
       "id": "docka-paow-matt",
@@ -58,7 +62,11 @@
       ],
       "asked": "2026-11-21",
       "from": "3d",
-      "answer": null
+      "answer": {
+        "value": "matt",
+        "note": "Ser i och för sig mycket bättre ut. men osäker på om vi bygger ännu en ny dock..",
+        "at": "2026-11-23T06:14:22.824Z"
+      }
     },
     {
       "id": "kortet-i-handen-provet-i-spelet",
