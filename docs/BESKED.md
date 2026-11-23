@@ -122,9 +122,16 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   vänster hand drar ut kortet och höger lägger det.
 - **A2.3 som gäller** (2026-11-18, 2026-11-20, 2026-11-23): en riktig filmruta med blicken ned mot kortet
   (`paow-ankare-2-3-d`, "Ja, byt blicken"). A1 får gå direkt till A2.3; ingången `paow-ingang-2-3-03-01`: "Jättebra!"
-- **A2.2 som gäller** (2026-11-18, 2026-11-20): blicken mot skon och en styvare hand; `paow-ankare-2-2-blick-a`.
+- **A2.2 är arkiverad** (2026-11-23): han arkiverade båda A2.2-bilderna i Material: "Ser inte att den används".
+  Casinots giv till plats 6 börjar där tills den "kan passas in i de andra nodträden via befintliga klipp".
 - **S är sätet, kameravinkeln ett ankare ses ifrån** (2026-11-21): S2-A2.2 är ankaret sett från plats 2:s kamera;
-  utan S är det den raka kameran. Inget byggs för sätena nu: han vill återkomma.
+  utan S är det den raka kameran.
+- **Karta får kameran som en dimension** (2026-11-23): den börjar på "standard-plats 4-kameran", och "ett reglage",
+  kanske musens hjul, byter till kamera 1–7. En film från en annan stol sparas i sitt träd där.
+- **En film från en annan stol** (2026-11-23): "Detta skulle kunna vara en bra video", men kortet ska byta sida efter
+  hur det ses från stolen, "inte tidpunkt", och kameran "känns högre än kamera frammifrån".
+- **Träd läggs ihop** (2026-11-23): "lägga ihop flera olika typer av nodträd för att sedan skapa … variationer". Casino
+  spelas tills vidare och binds samman med Ingången; Tatuerad byggs vidare från A2.3. Alla vyer ska hänga ihop med träden.
 - **Flera namngivna träd per dealer** (2026-11-21): omkring tre träd, och löst material för sig som är lätt att radera,
   på hans ord. Datorn och nätet ska kunna läsa samma Blob; uppladdning kräver hans ord.
 - **Den tatuerade uppsättningen är förstahandsvalet** (2026-11-17, 2026-11-18): tatuerade händer, 10 % mindre. Nya
@@ -215,8 +222,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   passera A2.'n' över huvud taget"; ingången baklänges fick nej. Returerna för plats 2–5: "Bra", "återgången till A1 kanon"; plats 6: "Inte bra".
 - **Varianter på lek** (2026-11-23): till t.ex. plats 3 får hon göra "något helt annat": kasta upp kortet, låta det
   landa och rätta till det leende. Det som godkänns byggs in så att det hänger ihop med Scen & bord.
-- **Given får avvika från dockan** (2026-11-23): "kan man inte frångå bara lite?" Den fria given till plats 4 duger som
-  variant ("ja"), men "hennes andra hand är för stel"; en fri giv är ett eget nummer med namn ("kortet bakom ryggen").
+- **Fria givar är varianter med namn** (2026-11-23): "kan man inte frångå bara lite?" Plats 4 "ja"; Kortet i luften och
+  plats 7 "Svinbra variant!"; Kortet bakom ryggen "hon ser inte ut som PAOW riktigt när hon tittar mot oss". Andra handen ska arbeta.
 - **Högerhanden vid nedsläppet** (2026-11-23): den ska inte vara "så vriden vid nedsläpp". Given till plats 5 gjordes
   om så, och givarna till plats 1–5, kort 1, med återgång fick hans "Ja, alla håller" i Beslut.
 - **V6 är arkiverad** (2026-11-20): råmaterialet och renderaren ligger i arkivet på D:, filmen och 18 rutor står kvar

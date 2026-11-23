@@ -1412,26 +1412,26 @@
           "role": "keystone",
           "name": "Stående A",
           "path": "assets/keystones/paow-staende/keystone.png",
-          "state": "ersatt",
+          "state": "arkiverad",
           "note": "Jakobs val 2026-11-12: de yngre och nättare bilderna. 4K på vitt. Inte granskad i full storlek.",
           "source": {
             "from": "Nano Banana Pro 4K, omgång b18 (D:/dealer-scratch/tmp/paow/filmer/b18/bas-helkropp-1.png)",
             "when": "2026-11-12"
           },
-          "stateBy": "Jakob 2026-11-18 00:24: gäller → ersatt (Stående, tatuerade händer godkändes, hans besked till huvudagenten i chatten natten till 2026-11-18, \"vi också sätter hennes tatuerade keystone/som förstahandsval\"; infört av huvudagenten)"
+          "stateBy": "Jakob 2026-11-23 17:16: ersatt → arkiverad (Material)"
         },
         {
           "id": "paow-sittande",
           "role": "keystone",
           "name": "Sittande A",
           "path": "assets/keystones/paow-sittande/keystone.png",
-          "state": "ersatt",
+          "state": "arkiverad",
           "note": "Samma inramning som A1. Förlagan för nya ankare när grundstandarden är satt. Inte granskad i full storlek.",
           "source": {
             "from": "Nano Banana Pro 4K, omgång b18 (D:/dealer-scratch/tmp/paow/filmer/b18/bas-sittande-2.png)",
             "when": "2026-11-12"
           },
-          "stateBy": "Jakob 2026-11-18 00:24: gäller → ersatt (Sittande, tatuerade händer godkändes, hans besked till huvudagenten i chatten natten till 2026-11-18, \"vi också sätter hennes tatuerade keystone/som förstahandsval\"; infört av huvudagenten)"
+          "stateBy": "Jakob 2026-11-23 17:17: ersatt → arkiverad (Material)"
         },
         {
           "id": "paow-sittande-tatuerad",
@@ -1474,7 +1474,9 @@
           "source": {
             "from": "Nano Banana Pro 4K, omgång b18",
             "when": "2026-11-12"
-          }
+          },
+          "state": "arkiverad",
+          "stateBy": "Jakob 2026-11-23 17:16: kandidat → arkiverad (Material)"
         },
         {
           "id": "paow-sittande-b",
@@ -1485,7 +1487,9 @@
           "source": {
             "from": "Nano Banana Pro 4K, omgång b18",
             "when": "2026-11-12"
-          }
+          },
+          "state": "arkiverad",
+          "stateBy": "Jakob 2026-11-23 17:16: kandidat → arkiverad (Material)"
         },
         {
           "id": "paow-vila-ung-2",
@@ -1493,13 +1497,13 @@
           "name": "Vila, yngre, kandidat 2",
           "path": "assets/anchors/paow-vila-ung-2/anchor.png",
           "node": "IDLE",
-          "state": "ersatt",
+          "state": "arkiverad",
           "note": "Bäst mätt: händer 2,4 och 4,4 px, ögon 7,7 px, kroppen slutar rad 830–831, inga skuggor ovanför kanten. Inte godkänd, inte oberoende granskad.",
           "source": {
             "from": "redigering av kavajankaret, Nano Banana Pro 4K, omgång b24 (D:/dealer-scratch/tmp/paow/ankare/kandidat-paow-vila-ung-2.png)",
             "when": "2026-11-12"
           },
-          "stateBy": "Jakob 2026-11-18 00:37: gäller → ersatt (Vila, tatuerade händer godkändes, hans svar Ja i Beslut 2026-11-17 på kortet \"Nytt ankare 1: tatuerade händer, 10 % mindre. Ska nya filmer göras från det?\" och hans besked natten till 2026-11-18 att den tatuerade uppsättningen är förstahandsvalet; infört av huvudagenten)"
+          "stateBy": "Jakob 2026-11-23 17:17: ersatt → arkiverad (Material)"
         },
         {
           "id": "paow-vila-tatuerad",
@@ -1709,7 +1713,7 @@
           "fps": 24,
           "card": "P4.C1",
           "node": "LAND(P4.C1)",
-          "state": "ersatt",
+          "state": "arkiverad",
           "builtOn": [
             "paow-film-ny-giv-p4-t2"
           ],
@@ -1718,7 +1722,7 @@
             "from": "beställningen paow-giv-p4, tagning 2, ruta 104",
             "when": "2026-11-13"
           },
-          "stateBy": "Jakob 2026-11-13 02:39: kandidat → gäller (Material); Huvudagentens underagent 2026-11-18 02:56: gäller → ersatt (huvudagentens beslut på Jakobs ord i huvudagentens chatt 2026-11-18 cirka 01.54 om landningarna: ”Detta bör rimligtvis tas bort helt, eller så bör vi skapa nya bilder för respektive position.” Bilden visar handryggen och ingen film slutar på den; lagd åt sidan, inte raderad)"
+          "stateBy": "Jakob 2026-11-23 17:19: ersatt → arkiverad (Material)"
         },
         {
           "id": "paow-profil-kavaj",
@@ -4487,13 +4491,13 @@
           "name": "Paow · A2.2 (släp), tagning 1",
           "path": "assets/anchors/paow-ankare-2-2-t1/anchor.png",
           "node": "READY-B",
-          "state": "ersatt",
+          "state": "arkiverad",
           "note": "A2.2 lagd till i studion 2026-11-13.",
           "source": {
             "from": "uppladdad: after-2.png",
             "when": "2026-11-13"
           },
-          "stateBy": "Jakob 2026-11-20 08:34: gäller → ersatt (Material)"
+          "stateBy": "Jakob 2026-11-23 17:18: ersatt → arkiverad (Material)"
         },
         {
           "id": "paow-ankare-2-2-blick-a",
@@ -4501,7 +4505,7 @@
           "name": "Blicken mot kortet, tatuerad hand",
           "path": "assets/anchors/paow-ankare-2-2-blick-a/anchor.png",
           "node": "READY-B",
-          "state": "gäller",
+          "state": "arkiverad",
           "builtOn": [
             "paow-ankare-2-2-t1",
             "paow-vila-tatuerad"
@@ -4511,7 +4515,7 @@
             "from": "paow-ankare-2-2-t1 redigerad (Nano Banana Pro 2K för huvud och hand, storlek och inpassning lokalt; kvittot ligger bredvid bilden)",
             "when": "2026-11-18"
           },
-          "stateBy": "Jakob 2026-11-20 08:34: kandidat → gäller (Material)"
+          "stateBy": "Jakob 2026-11-23 17:18: gäller → arkiverad (Material)"
         },
         {
           "id": "paow-ankare-2-3-a",
@@ -4934,7 +4938,7 @@
           "name": "A2.3 utan vit linje runt kortet i skon, prov",
           "path": "assets/anchors/paow-ankare-2-3-utan-vit-linje/anchor.png",
           "node": "READY-C",
-          "state": "ersatt",
+          "state": "arkiverad",
           "builtOn": [
             "paow-ankare-2-3-c"
           ],
@@ -4943,7 +4947,7 @@
             "from": "A2.3:s bild, ändrad i skons fönster (receipt.json bredvid bilden)",
             "when": "2026-11-23"
           },
-          "stateBy": "Jakob 2026-11-23 09:29: kandidat → ersatt (Blicken ned mot kortet, vänster hand uppifrån på kortet godkändes, hans svar i Beslut 2026-11-23 kl. 09.16, kortet a2-3-blick-pa-kortet: \"Ja, byt blicken\")"
+          "stateBy": "Jakob 2026-11-23 17:18: ersatt → arkiverad (Material)"
         },
         {
           "id": "paow-ankare-2-3-d",

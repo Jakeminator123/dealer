@@ -12,7 +12,7 @@ som gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompt
   samma med kortet på platsen, dockans film med plan hand i 24 rutor/s som referensfilm. `node tools/order-bring.ts`
   delar den där handen börjar gå tillbaka och sparar given och returen i banken.
 - Ett ankare heter alltid A och numret (A1, A2.3, A3P4C1), aldrig med en bokstav efter (Jakob 2026-11-21); bokstäverna
-  i id:n är arbetsnamn: A2.3 är `paow-ankare-2-3-d` (blicken på kortet; givarna hittills börjar på `-c`), A2.2 `paow-ankare-2-2-blick-a`.
+  i id:n är arbetsnamn: A2.3 är `paow-ankare-2-3-d` (blicken på kortet; givarna hittills börjar på `-c`); A2.2 är arkiverad.
 - Trädet Tatuerad (`/studio/karta/?dealer=paow&trad=tatuerad`) fylls från A2.3. I banken: giv och återgång till plats
   1–6, kort 1 (mall 15; plats 1–5 Jakobs "Ja, alla håller", plats 6 "Bra"). Plats 7 är
   underkänd: kortet vänds inte av händerna (BESKED, "Kortet vänds av hennes händer").
@@ -22,8 +22,9 @@ som gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompt
   `--extra` ersätter receptets tillägg, `--extra-efter` lägger till.
 - A3-bilder: A3P4C1 och A3P4C2 är kandidater; för plats 1 och 2 stoppar landningsverktyget ([BRISTER](../BRISTER.md)).
 - Fria givar (Kling 4, bankens första och sista bild, ingen dockfilm): kortet vänds i fingrarna, men takt och väg styrs
-  inte. Plats 4 har hans ja som variant; två namngivna nummer och plats 7 i Prov `fria-givar-20261123`.
-- En annan stol: 3D-scenen ritar dockan från stolens öga; receptet i [FILMMODELLER](../FILMMODELLER.md), "Vinklar, 3D och Runways lista". Aleph tappar kortet vid stol 1:s vinkel.
+  inte. Hans ja som varianter: plats 4, Kortet i luften och plats 7 (Prov `fria-givar-20261123`); i Kortet bakom
+  ryggen är ansiktet inte hennes.
+- En annan stol: 3D-scenen ritar dockan från stolens öga; receptet i [FILMMODELLER](../FILMMODELLER.md), "Vinklar, 3D och Runways lista". Stol 1 fick "nästan": kortet byter sida utan skäl.
 - Pengar: gränser, mandat och saldo i `data/order-policy.json`. Giv med återgång 91 krediter, giv på 3 s 68, retur till
   vila 57, genom API-nyckeln.
 
@@ -31,13 +32,12 @@ som gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompt
 1. Plats 7: dockan ska hålla kortet genom vändningen ([LASMIG](../../dealer3d/LASMIG.md)); sedan dockans film,
    given igen och dess retur. Därefter kort 2.
 2. Mall 15: mer frihet åt filmen i vändningen; landningens mening skrivs redan i texten.
-3. Den fria given till plats 4 in i banken som variant. Kastet per stol: en egen tagning ur stolens bilder, inte Aleph.
-4. Karta och trädets mått räknar inte returerna till vila. Spelet väljer inte träd än (`buildGraph` blandar alla
-   filmer), så Tatuerad spelas inte; ingången A1 → A2.3 klipps ur ankarets film; hålkortet och dealerns kort.
+3. De tre fria givarna in i banken som varianter; Kortet bakom ryggen igen med en bild av ansiktet som referens.
+   Kastet per stol: en egen tagning ur stolens bilder, inte Aleph.
+4. Karta, trädens mått (returerna räknas inte) och hur spelet väljer träd är Kartabanans ([karta](karta.md));
+   ingången A1 → A2.3 klipps ur ankarets film; hålkortet och dealerns kort.
 
-**Väntar på Jakob.** Kort i Beslut: given sedd från stol 1 och de fria givarna. Frågor i chatten: nytt mandat,
-vad som felar i plats 6, returerna i trädets mått, egen film för kort 2,
-om tatuerade A2.2 är blickbilden eller en ny nypbild, och hur spelet väljer träd.
+**Väntar på Jakob.** Frågor i chatten: nytt mandat, en bättre bild av hennes ansikte, vad som felar i plats 6 och egen film för kort 2.
 
 **Var saker ligger.** Vägen för en ny dealer i [tools/dealer-line.md](../../tools/dealer-line.md), handboken i
 [tools/film-prompting.md](../../tools/film-prompting.md), granskningen i `tools/film-review.md`, läget per dealer med

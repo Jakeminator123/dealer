@@ -56,10 +56,12 @@ const anchors = Object.keys(ANCHOR_ROLE) as (keyof typeof ANCHOR_ROLE)[];
 const roleOfNode = new Map(anchors.map(a => [ANCHOR_NODE[a], ANCHOR_ROLE[a]]));
 
 // ── Material: which picture holds ────────────────────────────────────────────
-test('every dealer of data/dealers.json has a block in Material, and anchors 1, 2.1 and 2.2 each have one picture that holds, at its node', () => {
+// The other poses at the shoe (2.2, 2.3) are a tree's own (data/dealer-trees.json): Jakob archived both A2.2 pictures in Material
+// 2026-11-23, and the Casino tree keeps its own for the one deal that starts there.
+test('every dealer of data/dealers.json has a block in Material, and anchors 1 and 2.1 each have one picture that holds, at its node', () => {
   for (const d of dealerList) {
     assert.ok(roles.dealers[d.id], `${d.id} has no block in data/media-roles.json`);
-    for (const a of ['1', '2.1', '2.2'] as const) {
+    for (const a of ['1', '2.1'] as const) {
       const holds = entriesOf(d.id).filter(e => e.role === ANCHOR_ROLE[a] && e.state === 'gäller' && !e.card);
       assert.equal(holds.length, 1, `${d.name}: ${holds.length} pictures hold for ankare ${a}`);
       assert.equal(holds[0].node, ANCHOR_NODE[a], `${d.name}: ankare ${a} (${holds[0].id}) stands at ${holds[0].node}, not ${ANCHOR_NODE[a]}`);
@@ -98,7 +100,9 @@ test('a picture that holds for a dealer who is not paused says who made it hold 
 });
 
 // ── The game's own maps against the registers ────────────────────────────────
-test('the game\'s maps name real places and real anchors: SEAT_HUB deals a seat\'s first card from a READY variant whose anchor holds in Material; STAND_IN_FILM stands one card for another', () => {
+test('the game\'s maps name real places and real anchors: SEAT_HUB deals a seat\'s first card from a READY variant that is an anchor of a tree the game plays; STAND_IN_FILM stands one card for another', () => {
+  const trees = json('data/dealer-trees.json').dealers as Record<string, {trees: {state: string; anchors: {entry: string}[]}[]}>;
+  const played = (dealer: string) => new Set((trees[dealer]?.trees ?? []).filter(t => t.state === 'spelas').flatMap(t => t.anchors.map(a => a.entry)));
   for (const [dealer, map] of Object.entries(SEAT_HUB)) {
     assert.ok(dealerList.some(d => d.id === dealer), `SEAT_HUB names ${dealer}, who is not in data/dealers.json`);
     for (const [card, hub] of Object.entries(map)) {
@@ -107,7 +111,7 @@ test('the game\'s maps name real places and real anchors: SEAT_HUB deals a seat\
       assert.notEqual(hub, 'READY', `${dealer}: ${card} is mapped to plain READY`);
       const role = roleOfNode.get(hub);
       assert.ok(role, `${dealer}: ${hub} is no anchor the order model knows (ANCHOR_NODE)`);
-      assert.ok(entriesOf(dealer).some(e => e.role === role && e.node === hub && !e.card && e.state === 'gäller'), `${dealer}: the game deals ${card} from ${hub}, but no ${role} holds in Material`);
+      assert.ok(entriesOf(dealer).some(e => e.role === role && e.node === hub && !e.card && played(dealer).has(e.id)), `${dealer}: the game deals ${card} from ${hub}, but no tree that is played has a ${role} there`);
     }
   }
   for (const [dealer, map] of Object.entries(STAND_IN_FILM)) for (const [card, film] of Object.entries(map)) {

@@ -27,7 +27,11 @@
       ],
       "asked": "2026-11-23",
       "from": "film",
-      "answer": null
+      "answer": {
+        "value": "nastan",
+        "note": "",
+        "at": "2026-11-23T16:41:18.914Z"
+      }
     },
     {
       "id": "paow-fria-givar",
@@ -54,7 +58,11 @@
       ],
       "asked": "2026-11-23",
       "from": "film",
-      "answer": null
+      "answer": {
+        "value": "nagra",
+        "note": "alla är kommentertade separat",
+        "at": "2026-11-23T16:41:49.650Z"
+      }
     },
     {
       "id": "paow-fri-giv-p4",
