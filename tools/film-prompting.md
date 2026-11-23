@@ -363,7 +363,7 @@ styr tillåtna kombinationer; färsk `whoami` och verktygsschemat styr vad vår 
 underlag. P6/P7 har både godkända och underkända sjusekundersprov: lång tid är en hypotes om extrarörelser, inte en
 fastställd ensam orsak. Mät grepp, kantvändning, kontakt, släpp och skarv enligt `film-review.md`.
 
-**Mall 14: dockans film är en grov ledning (2026-11-23, oprövad som text).** Jakob om filmerna från A2.3, som är gjorda
+**Mall 14: dockans film är en grov ledning (2026-11-23).** Jakob om filmerna från A2.3, som är gjorda
 med dockans film som video 1: "lite lite robotliknande och onaturliga", och "filmen ska få rörelserna av vår dealer att
 vara naturlig primärt, så var inte extremt nitsk med dockans rörelse" (hela beskedet: `docs/BESKED.md`). Mall 14 är
 mall 12 ord för ord utom två meningar i Kort (`SAY.v14` i `src/order-prompts.ts`). Referensfilmens mening
@@ -372,8 +372,13 @@ ledning, att händerna går samma väg vid ungefär samma ögonblick och att hon
 dealer med mjuka, avspända armar och händer; den säger fortfarande att video 1 bara visar rörelsen, eftersom dockan är
 vit och saknar ansikte. Ingången till 2.3 säger var den andra handen slutar i ankaret som nu är sista bild
 (`paow-ankare-2-3-c`): platt på filten framför henne, där mall 12 säger att båda händerna går till skon och att den
-andra väntar intill den. Mall 14 är ett val per order (`--mall 14`), inte förvalet, och mall 13:s korta texter ingår
-inte. Den prövas först på en giv bredvid en godkänd film med mall 12:s text, med samma bilder och samma dockfilm.
+andra väntar intill den. Mall 13:s korta texter ingår inte. Sedan 2026-11-23 är mall 14 receptets mall för given från
+A2.3 och ingången dit (GIV-2.3 och INGANG-2.3 i `data/order-methods.json`, båda fortfarande prov): en order av de stegen
+skrivs med den utan att säga något, och mall 12 är där ett val (`--mall 12`); för andra steg är mall 14 ett val per order
+(`--mall 14`). Jakobs domar samma dag: given `paow-giv-2-3-p3-02` (mall 14) godkänd, "godkänd i labbet."; given
+`paow-giv-2-3-p3-03` (mall 12, samma dockfilm, en annan första bild) godkänd med orden "aningen robotliknande rörese";
+ingången `paow-ingang-2-3-02` (mall 14) underkänd för blicken, "Annars bra!", och blicken kommer ur ankarbilden, inte ur
+texten. Mall 14 ändrar bara den korta texten: en film i den minimala texten skrivs med mall 12.
 
 **Kort rörelse, stilla slut.** I ett nytt tidsprov kan prompten ange att hela rörelsen inklusive returen når
 slutankaret tidigt och därefter håller samma pose. Ändra inte receptet för befintliga order. `film-after.ts` föreslår

@@ -680,9 +680,11 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     const noRecipe = `${step.label} har ingen metod än (data/order-methods.json), så inget är förvalt`;
     const style = input.style ?? recipe?.style ?? defaultStyle(step.kind);
     if (!stylesFor(step.kind, step).includes(style)) throw new StoreError(400, step.styles ? `${step.label} skrivs ${step.styles.join(' eller ')}.` : step.kind === 'STILL' ? 'En bild skrivs KORT.' : 'Texten är KORT eller MINIMAL; den långa texten (UTFÖRLIG) skrivs inte längre för en ny beställning.');
-    // The template: today's unless the order chooses another (TEMPLATE_CHOICES), written into the draft's prompt so that
-    // the text keeps it when written again (orderPrompt).
-    const mall = input.template ?? recipe?.template ?? TEMPLATE_VERSION;
+    // The template: the order's own choice (TEMPLATE_CHOICES), else the recipe's, written into the draft's prompt so that the
+    // text keeps it when written again (orderPrompt). Templates 13 and 14 are short texts only, so a film in another style
+    // that names no template is written with today's, and the draft's notes say so (the exceptions below): Bordet's row
+    // offers the minimal text beside the short one, also where the recipe's template is 14 (the deal from 2.3 since 2026-11-23).
+    const mall = input.template ?? (step.kind === 'FILM' && style === 'KORT' ? recipe?.template : null) ?? TEMPLATE_VERSION;
     if (!TEMPLATE_CHOICES.includes(mall)) throw new StoreError(400, `Mallen är ${TEMPLATE_CHOICES_WORDS}.`);
     if (mall !== TEMPLATE_VERSION && (step.kind !== 'FILM' || style !== 'KORT')) throw new StoreError(400, `Mall ${mall} skrivs bara för en film i den korta texten (KORT).`);
     const returnStart = return23 ? await frozenReturnStart(register, dealer.id, target!, input, watch) : null;

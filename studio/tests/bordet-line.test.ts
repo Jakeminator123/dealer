@@ -217,7 +217,13 @@ test("Bordet's rows for a card with handbyte and one without say what the store'
       // The return from the right hand's A3: its first picture is there; it waits for its recipe.
       assert.equal(words(back)["Första bild"], "A3P4C2");
       assert.equal(sumWords(rows), "3 filmer · 1 kan beställas · 64 krediter");
-      assert.equal(motionLine("paow", card, intent, all.methods!), "A2.3 · vänster hand drar ut, höger hand vänder kortet och lägger det · rörelsen följer dockfilmen");
+      // The line's last words say what the recipe's text says of the doll's film. The deal from A2.3 is written with template
+      // 14 since 2026-11-23 (Jakob: "naturlig primärt, så var inte extremt nitsk med dockans rörelse"): a rough guide, her
+      // natural movement first. With template 12 or 13, or 14 in the minimal text, the text says she moves like the film.
+      assert.equal(motionLine("paow", card, intent, all.methods!), "A2.3 · vänster hand drar ut, höger hand vänder kortet och lägger det · dockfilmen visar vägen, naturlig rörelse går före");
+      assert.match(deal.text!, /Video 1 shows only the movement, as a rough guide/);
+      const written = (template: number, style: "KORT" | "MINIMAL" = "KORT") => motionLine("paow", card, intent, { methods: all.methods!.methods.map((m) => (m.id === "giv-2.3" ? { ...m, template, style } : m)) });
+      for (const line of [written(12), written(13), written(14, "MINIMAL")]) assert.equal(line, "A2.3 · vänster hand drar ut, höger hand vänder kortet och lägger det · rörelsen följer dockfilmen");
       // New in round two (2026-11-21): "Utan slutbild", what the command's --no-end makes, is a choice of the row, with the
       // command's note; the row says the text and the price the store freezes for it.
       const open = filmRow("paow", deal.wish, all.methods!, all.policy, { bank, entries: shown, plan: all.plan ?? null, dealers: all.dealers, marks: all.marks, choice: { end: null } });
@@ -248,6 +254,7 @@ test("Bordet's rows for a card with handbyte and one without say what the store'
       assert.doesNotMatch(deal.recipe, /höger hand/);
       assert.equal(gameLine("paow", card, intent), null);
       assert.equal(motionLine("paow", card, intent, all.methods!), "A2.1 · vänster hand nyper kortet och vänder det på vägen · rörelsen följer dockfilmen, annars en godkänd giv");
+      assert.match(deal.text!, /she moves like the dealer in video 1, with the same timing/, "template 12: the text says she follows the film, as the line does");
     }
   }
   assert.equal(sumWords([]), "Inga filmer");

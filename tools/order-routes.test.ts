@@ -1571,9 +1571,12 @@ test('the template is a choice per order (12, 13 or 14), kept when the draft is 
     assert.equal(refused.status, 400);
     assert.match(refused.json.error, why);
   }
-  const twelve = await call('POST', '/api/orders', { body: input });
+  // The deal from 2.3 is written with template 14 where the order names none (the recipe's since 2026-11-23,
+  // data/order-methods.json); 12 is then a choice, and the draft names it as the exception it is.
+  const twelve = await call('POST', '/api/orders', { body: { ...input, template: 12 } });
   assert.equal(twelve.status, 201, twelve.json.error);
   assert.equal(twelve.json.order.prompt.template, 'film-giv-kort@12');
+  assert.ok(twelve.json.order.notes.some((n: string) => /mall 12 i stället för 14/.test(n)), twelve.json.order.notes.join('\n'));
   const made = await call('POST', '/api/orders', { body: { ...input, template: 13 } });
   assert.equal(made.status, 201, made.json.error);
   const { order, revision } = made.json;
@@ -1581,7 +1584,7 @@ test('the template is a choice per order (12, 13 or 14), kept when the draft is 
   assert.equal(order.prompt.template, 'film-giv-kort@13');
   assert.equal(order.prompt.text, twelve.json.order.prompt.text);
   assert.ok(order.notes.some((n: string) => /Mall 13 har ingen egen text för den här filmen/.test(n)), order.notes.join('\n'));
-  assert.ok(order.notes.some((n: string) => /mall 13 i stället för 12/.test(n)), order.notes.join('\n'));
+  assert.ok(order.notes.some((n: string) => /mall 13 i stället för 14/.test(n)), order.notes.join('\n'));
   const changed = await call('PUT', `/api/orders/${order.id}`, { body: { takes: 2 }, match: revision });
   assert.equal(changed.status, 200, changed.json.error);
   assert.equal(changed.json.order.prompt.template, 'film-giv-kort@13');
@@ -1590,12 +1593,22 @@ test('the template is a choice per order (12, 13 or 14), kept when the draft is 
   const refreshed = await call('POST', `/api/orders/${order.id}/refresh`, { match: changed.json.revision });
   assert.equal(refreshed.status, 200, refreshed.json.error);
   assert.equal(refreshed.json.order.prompt.template, 'film-giv-kort@13');
-  // 14 (2026-11-23) is taken the same way. It changes the reference film's sentence, and this draft has no reference film:
-  // 12's words, named @14, and the draft says so.
-  const fourteen = await call('POST', '/api/orders', { body: { ...input, template: 14 } });
-  assert.equal(fourteen.status, 201, fourteen.json.error);
-  assert.deepEqual([fourteen.json.order.prompt.template, fourteen.json.order.prompt.text], ['film-giv-kort@14', twelve.json.order.prompt.text]);
-  assert.ok(fourteen.json.order.notes.some((n: string) => /Mall 14 har ingen egen text för den här filmen/.test(n)), fourteen.json.order.notes.join('\n'));
+  // 14 (2026-11-23) is this step's own, so an order that names no template is written with it, as one that names 14 is, and
+  // neither is an exception. It changes the reference film's sentence, and this draft has no reference film: 12's words,
+  // named @14, and the draft says so.
+  for (const body of [input, { ...input, template: 14 }]) {
+    const fourteen = await call('POST', '/api/orders', { body });
+    assert.equal(fourteen.status, 201, fourteen.json.error);
+    assert.deepEqual([fourteen.json.order.prompt.template, fourteen.json.order.prompt.text], ['film-giv-kort@14', twelve.json.order.prompt.text]);
+    assert.ok(fourteen.json.order.notes.some((n: string) => /Mall 14 har ingen egen text för den här filmen/.test(n)), fourteen.json.order.notes.join('\n'));
+    assert.ok(!fourteen.json.order.notes.some((n: string) => /mall 14 i stället för/.test(n)), fourteen.json.order.notes.join('\n'));
+  }
+  // Templates 13 and 14 are short texts only: a film in the minimal text that names no template is written with today's
+  // and names the exception, instead of being refused (Bordet's row offers the minimal text beside the short one).
+  const minimal = await call('POST', '/api/orders', { body: { ...input, style: 'MINIMAL' } });
+  assert.equal(minimal.status, 201, minimal.json.error);
+  assert.equal(minimal.json.order.prompt.template, 'film-giv-minimal@12');
+  assert.ok(minimal.json.order.notes.some((n: string) => /mall 12 i stället för 14/.test(n)), minimal.json.order.notes.join('\n'));
   // tools/order-new.ts: the words of the command line are the order the routes take.
   // Changed in round two (2026-11-21): the command also says the tree it holds the pictures to (--trad), null when none, and
   // the doll whose film goes with it (--docka), null when none.

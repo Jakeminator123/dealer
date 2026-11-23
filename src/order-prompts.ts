@@ -117,8 +117,9 @@ export const TEMPLATE_VERSION = 12;
  * dockans rörelse..'" (docs/BESKED.md). The sentence still says that video 1 shows only the movement: the doll is white and
  * has no face. Two: the entry to anchor 2.3 says where her other hand ends in the anchor now used as last picture
  * (paow-ankare-2-3-c), flat on the felt in front of her (SAY.v14.reach23); 12 says both hands go to the shoe and the other
- * one waits close beside it, against that picture. Not the default, and untried as texts: a deal with it is tried beside
- * an approved film of 12's text first.
+ * one waits close beside it, against that picture. Not today's template (TEMPLATE_VERSION), but since 2026-11-23 the one
+ * the recipes of the deal from 2.3 and the entry to it are written with (data/order-methods.json, whose evidence carries
+ * Jakob's verdicts of that day on one deal and one entry written with it).
  */
 export const TEMPLATE_CHOICES: readonly number[] = [TEMPLATE_VERSION, 13, 14];
 /** The choices as the words of a Swedish message: "12, 13 eller 14". */
@@ -375,7 +376,8 @@ export const SAY = {
       '1': 'Both her hands come back low over the felt, palm down, and rest flat in front of her, as in the last frame.',
     },
   },
-  // Template 14 (TEMPLATE_CHOICES; untried as texts): 12 but for these two sentences of the short text.
+  // Template 14 (TEMPLATE_CHOICES; since 2026-11-23 the recipes' template for the deal from 2.3 and the entry to it,
+  // data/order-methods.json): 12 but for these two sentences of the short text.
   v14: {
     // The reference film as a rough guide, her natural movement first (Jakob 2026-11-23: "naturlig primärt, så var inte
     // extremt nitsk med dockans rörelse"). It still shows only the movement: the doll in video 1 is white and has no face.

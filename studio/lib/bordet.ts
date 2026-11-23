@@ -162,19 +162,32 @@ export function stepTwoSummary(dealer: string, place: Place, intent: Pick<Intent
 
 const HAND_WORD = { LH: "vänster hand", RH: "höger hand" } as const;
 const TURN_WORDS: Record<FlipAxis, string> = { AT_PLACE: "vänder det vid platsen", FREE: "vänder det på vägen", LONG_EDGE: "rullar det kring långsidan på vägen" };
+// What the recipe's text says of its reference film, per rule that finds the film. Templates 12 and 13: she moves like the
+// film, with the same timing (SAY.reference in src/order-prompts.ts).
 const FOLLOWS: Record<ReferenceRule, string | null> = {
   ingen: null,
   renderad: "rörelsen följer dockfilmen",
   "renderad-eller-samma-plats": "rörelsen följer dockfilmen, annars en godkänd giv",
   "samma-plats-rakt-godkänd": "rörelsen följer en godkänd giv till platsen",
 };
+// Template 14's short text: the film is a rough guide, her hands go the way its hands go, and above all she moves naturally
+// (SAY.v14.reference; Jakob 2026-11-23: "naturlig primärt, så var inte extremt nitsk med dockans rörelse").
+const GUIDES: Record<ReferenceRule, string | null> = {
+  ingen: null,
+  renderad: "dockfilmen visar vägen, naturlig rörelse går före",
+  "renderad-eller-samma-plats": "dockfilmen, annars en godkänd giv, visar vägen, naturlig rörelse går före",
+  "samma-plats-rakt-godkänd": "en godkänd giv till platsen visar vägen, naturlig rörelse går före",
+};
+/** The words for a recipe's reference film, by the template its text is written with: only 14's short text says a rough guide (order-prompts.ts fourteen). */
+const referenceWords = (recipe: Pick<Recipe, "reference" | "template" | "style">) => (recipe.template === 14 && recipe.style === "KORT" ? GUIDES : FOLLOWS)[recipe.reference];
 /**
  * What the recipe of the card's deal does with the motion, in one line (Bordet's step 2): the anchor, the hands and the turn the
- * text says, and the reference film the movement follows. "A2.3 · vänster hand drar ut, höger hand vänder kortet och lägger
- * det · rörelsen följer dockfilmen". The plan's grip, where and how it turns and the hand at the release are not choices: the
- * anchor and the recipe decide them, and the reference film the axis (the review of the methods, 2026-11-21; pilot 02 turned
- * the card as its reference did). Where the recipe's turn is the plan's (the dealer's own cards), the plan's turn is said.
- * Null for the shoe or a place without a card.
+ * text says, and what the text says of the reference film: that the movement follows it, or with template 14 that the film
+ * shows the way and her natural movement comes first. "A2.3 · vänster hand drar ut, höger hand vänder kortet och lägger det ·
+ * dockfilmen visar vägen, naturlig rörelse går före". The plan's grip, where and how it turns and the hand at the release are
+ * not choices: the anchor and the recipe decide them, and the reference film the axis (the review of the methods, 2026-11-21;
+ * pilot 02 turned the card as its reference did). Where the recipe's turn is the plan's (the dealer's own cards), the plan's
+ * turn is said. Null for the shoe or a place without a card.
  */
 export function motionLine(dealer: string, place: Place, intent: Pick<Intent, "pass" | "endSide" | "turnAt" | "flipAxis"> | null, methods: Pick<MethodRegister, "methods"> | null): string | null {
   if (place === SHOE || !intent) return null;
@@ -189,7 +202,7 @@ export function motionLine(dealer: string, place: Place, intent: Pick<Intent, "p
     const axis = recipe.turn ?? defaultFlip(step.key, intent.turnAt, intent.flipAxis);
     how = `${HAND_WORD[hand]} ${takes} och ${open ? TURN_WORDS[axis] : "lägger det stängt"}`;
   }
-  return [code, how, FOLLOWS[recipe.reference]].filter(Boolean).join(" · ");
+  return [code, how, referenceWords(recipe)].filter(Boolean).join(" · ");
 }
 
 // ── Step 3: the films to order ──────────────────────────────────────────────

@@ -82,7 +82,7 @@
       "model": "kling-4",
       "resolution": "1080p",
       "style": "KORT",
-      "template": 12,
+      "template": 14,
       "seconds": 3,
       "takes": 1,
       "turn": null,
@@ -92,17 +92,21 @@
       "lastPicture": "ankare",
       "extra": null,
       "evidence": {
-        "orders": ["paow-ingang-2-3-01"],
+        "orders": ["paow-ingang-2-3-01", "paow-ingang-2-3-02"],
         "reviewer": [],
         "owner": [
           {
             "take": "paow-ingang-2-3-01-01",
             "words": "Jakob 2026-11-18: Från ruta 45 är hon i samma possition hela tiden. Rimligen ska denna göras på halva tiden, eller görqas utifrån A1 till A2.3 och till sedan A3P'n' som sedan klipps eller nått"
+          },
+          {
+            "take": "paow-ingang-2-3-02-01",
+            "words": "Jakob 2026-11-23: hennes blick ska vara på skon/kortet, inte bara random till vänster (hennes vänster). Annars bra!"
           }
         ],
-        "note": "Ankare 1 till ankare 2.3 (båda händerna vid skon precis före draget, blicken på handen som stryker ut kortet; Jakobs beställning 2026-11-18). Beställd en gång genom Beställ (paow-ingang-2-3-01: Kling 4, 3 s, dockans film som referens; Jakob underkände tagning 1 i Granska 2026-11-18, docs/BESKED.md \"Ingången på halva tiden, eller en film genom hela rörelsen\"). Längden är referensfilmens; receptets 3 s är det kortaste Kling 4 tar och det som beställdes (receptet sade 4 s förut, längden på dockans första film till 2.3, som Jakob fann för långsam 2026-11-18 och som dockans film på 3,0 s ersatte; se referensfilmens kvitto). Mätt 2026-11-20 (promptgranskningen, bildskillnad ruta för ruta): i den levererade filmen pågår rörelsen 1,4 s av 3,0 s och bilden står stilla de sista 1,4 s; dockans filmer till 2.3 rör sig 1,3 s av 3 s och 2,1 s av 4 s. Det är en levererad film och två referensfilmer, inte tre leveranser: stillheten kommer ur referensfilmen, inte ur texten, och kortas den filmen kan modellen ändå inte ta under 3 s."
+        "note": "Ankare 1 till ankare 2.3 (båda händerna vid skon precis före draget, blicken på handen som stryker ut kortet; Jakobs beställning 2026-11-18). Beställd en gång genom Beställ (paow-ingang-2-3-01: Kling 4, 3 s, dockans film som referens; Jakob underkände tagning 1 i Granska 2026-11-18, docs/BESKED.md \"Ingången på halva tiden, eller en film genom hela rörelsen\"). Längden är referensfilmens; receptets 3 s är det kortaste Kling 4 tar och det som beställdes (receptet sade 4 s förut, längden på dockans första film till 2.3, som Jakob fann för långsam 2026-11-18 och som dockans film på 3,0 s ersatte; se referensfilmens kvitto). Mätt 2026-11-20 (promptgranskningen, bildskillnad ruta för ruta): i den levererade filmen pågår rörelsen 1,4 s av 3,0 s och bilden står stilla de sista 1,4 s; dockans filmer till 2.3 rör sig 1,3 s av 3 s och 2,1 s av 4 s. Det är en levererad film och två referensfilmer, inte tre leveranser: stillheten kommer ur referensfilmen, inte ur texten, och kortas den filmen kan modellen ändå inte ta under 3 s. Beställd en andra gång 2026-11-23, med mall 14 (paow-ingang-2-3-02: Kling 4, 3 s, dockans film docka-vila-till-2-3-c, slutbild paow-ankare-2-3-c): Jakob underkände tagning 1 samma dag för blicken, med orden \"Annars bra!\". Blicken kommer ur ankarbilden, inte ur texten (huvudagentens läsning), så underkännandet talar inte mot texten. Mall 14 är receptets mall sedan 2026-11-23 (Jakob samma dag: \"naturlig primärt, så var inte extremt nitsk med dockans rörelse\", docs/BESKED.md); receptet är fortfarande prov."
       },
-      "setBy": "huvudagentens underagent (rak linje), på Jakobs ord 2026-11-18 om för många val; ur handboken §5 och de tidigare raderna",
+      "setBy": "huvudagentens underagent (rak linje), på Jakobs ord 2026-11-18 om för många val; ur handboken §5 och de tidigare raderna; mallen 14: huvudagenten genom en underagent 2026-11-23, på Jakobs domar samma dag",
       "setAt": "2026-11-18"
     },
     {
@@ -369,7 +373,7 @@
       "model": "kling-4",
       "resolution": "1080p",
       "style": "KORT",
-      "template": 12,
+      "template": 14,
       "seconds": 3,
       "takes": 1,
       "turn": "FREE",
@@ -379,12 +383,21 @@
       "lastPicture": "platsens-slutbild",
       "extra": null,
       "evidence": {
-        "orders": ["paow-giv-2-3-p4-h24-03", "paow-giv-2-3-p4-h24-cykel-01", "paow-giv-2-3-p4-h24-cykel-02", "paow-giv-2-3-p4-c2-h24-cykel-01"],
+        "orders": ["paow-giv-2-3-p4-h24-03", "paow-giv-2-3-p4-h24-cykel-01", "paow-giv-2-3-p4-h24-cykel-02", "paow-giv-2-3-p4-c2-h24-cykel-01", "paow-giv-2-3-p3-02", "paow-giv-2-3-p3-03"],
         "reviewer": ["H24-03: giv Variant 4/5. Cykel01: giv underkänd, retur Variant 4/5. Cykel02: giv Variant 3/5, retur Variant 4/5. C2-cykel01 t1: giv Variant 3/5, retur Variant 4/5. Detaljer och bildbevis ligger vid tagningarna."],
-        "owner": [],
-        "note": "Giv med två händer från ankare 2.3. Receptet är fortfarande prov: H24-03 (3 s, MINIMAL) gav Variant 4/5, och undantaget H24-cykel02 (4 s, giv och retur) gav Variant 3/5 respektive 4/5. Det är inte belägg för seriereceptet ovan. Cykelns skokort håller gult med slutbild, framsidan bleknar; färgat filmkort är synprovat i scenen. Orderspecifika inställningar och bevis finns i respektive order, sammanvägningen i tools/film-prov.md. Ytterplatser och hela given återstår."
+        "owner": [
+          {
+            "take": "paow-giv-2-3-p3-02-01",
+            "words": "Jakob 2026-11-23: godkänd i labbet."
+          },
+          {
+            "take": "paow-giv-2-3-p3-03-01",
+            "words": "Jakob 2026-11-23: Detta är okej. Vit kant runt kortet dock, aningen robotliknande rörese. men är helt okej"
+          }
+        ],
+        "note": "Giv med två händer från ankare 2.3. Receptet är fortfarande prov: H24-03 (3 s, MINIMAL) gav Variant 4/5, och undantaget H24-cykel02 (4 s, giv och retur) gav Variant 3/5 respektive 4/5. Det är inte belägg för seriereceptet ovan. Cykelns skokort håller gult med slutbild, framsidan bleknar; färgat filmkort är synprovat i scenen. Orderspecifika inställningar och bevis finns i respektive order, sammanvägningen i tools/film-prov.md. Ytterplatser och hela given återstår. Mall 14 är receptets mall sedan 2026-11-23 (Jakob samma dag: \"naturlig primärt, så var inte extremt nitsk med dockans rörelse\", docs/BESKED.md). Belägget är två givar till plats 3 med samma dockfilm (docka-2-3-p3c1-svep24d), en tagning var, båda godkända av Jakob 2026-11-23: paow-giv-2-3-p3-02 (mall 14) \"godkänd i labbet.\", och paow-giv-2-3-p3-03 (mall 12, och en annan första bild: provet utan vit linje i skon) med orden \"aningen robotliknande rörese\". En plats och en film per mall: receptet är fortfarande prov."
       },
-      "setBy": "huvudagentens underagent (rak linje), på Jakobs ord 2026-11-18 om för många val; ur handboken §5 och de tidigare raderna",
+      "setBy": "huvudagentens underagent (rak linje), på Jakobs ord 2026-11-18 om för många val; ur handboken §5 och de tidigare raderna; mallen 14: huvudagenten genom en underagent 2026-11-23, på Jakobs domar samma dag",
       "setAt": "2026-11-18"
     },
     {
