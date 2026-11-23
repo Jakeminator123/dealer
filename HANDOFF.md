@@ -7,7 +7,7 @@ Läs AGENTS.md, den här sidan och EN lägesfil för din bana. Ersätt inaktuell
 
 - Målet är en trovärdig utdelning i spelet i studion: två kort till plats 1–7 och två eller tre till dealern, med
   returer till redo och vila. Paow är dealern; Pamela är pausad (namnet bär också dockans rörelser `giv-pamela-*` och en scenfilm: skriv
-  vilken du menar). Scoutgaming är slutmålet på sikt.
+  vilken du menar). Projektet är tills vidare frikopplat från Scoutgaming (Jakob 2026-11-23).
 - Labbet är en vy, Bordet, där en film beställs längs en rak linje: kortets plats och steget, receptet ger resten.
   Kommandot `node tools/order-new.ts` gör samma utkast; Karta visar varje dealers träd och vad som saknas.
 - Den tatuerade uppsättningen är hans förstahandsval, och A2.3 gäller. Trädet Tatuerad fylls från A2.3 med en giv per

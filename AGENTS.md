@@ -1,8 +1,8 @@
 # Dealer – arbetsregler
 
 Här byggs en filmad dealer till Jakobs blackjackspel: korta filmklipp mellan fasta ankare, spelade i studion, i
-3D-scenen och i spelet. Scoutgaming (ett annat repo) är slutmålet på sikt och äger regler, slump och kortvärden.
-Jakob äger projektet; han är inte programmerare, så förklara val i vanliga ord.
+3D-scenen och i spelet. Projektet är tills vidare frikopplat från Scoutgaming (Jakob 2026-11-23) och behöver inget
+därifrån. Jakob äger projektet; han är inte programmerare, så förklara val i vanliga ord.
 
 ## Läs först
 
