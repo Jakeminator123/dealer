@@ -209,8 +209,9 @@ export type Picture = {
   sha256: string | null;
   width?: number | null;
   height?: number | null;
-  /** cut: the picture is the cut frame of a round trip in the bank (cutFrameOf): the film and the frame, where its return begins. */
-  from: { entry?: string; path?: string; frame?: number; built?: string; note?: string; cut?: { clip: string; frame: number; ret: string; shoeFrom?: string | null } | null } | null;
+  /** cut: the picture is the cut frame of a round trip in the bank (cutFrameOf): the film and the frame, where its return begins.
+   *  With deal: the last frame of that give, as the first picture of the return to rest that continues it (giveEndOf). */
+  from: { entry?: string; path?: string; frame?: number; built?: string; note?: string; cut?: { clip: string; frame: number; ret: string; shoeFrom?: string | null; deal?: string } | null } | null;
   waits?: Waits | null;
   drawn?: Drawn | null;
   /** Other cards of the plan drawn on the same picture (the hole card's turn drew the dealer's first card, open, until round 6). */
@@ -510,6 +511,27 @@ export function endsOnOf(pictures: readonly { goesAs: string; from?: { cut?: { c
   return cut && typeof cut.clip === 'string' && Number.isInteger(cut.frame) ? { clip: cut.clip, frame: cut.frame! } : null;
 }
 /**
+ * Where a return to rest begins when it continues a give (Jakob 2026-11-23: after the last give she goes "direkt" from the
+ * laid card to A1 and passes no A2): the last frame of a give in the bank to the seat, the one its own return begins after
+ * (a give bara dit: its last frame). The give named, by its take, its film or its order; else the newest that plays as
+ * good: Godkänd or Primär, his verdict or one given for him, never a variant. An archived or rejected give is never one,
+ * nor one whose last frame is written down as not holding (BankFacts.cutChecks: its card lies off the plan's, where the
+ * return's last picture draws it).
+ * lays: the hand that laid the card, which is the hand that goes back.
+ */
+export type GiveEnd = { clip: string; frame: number; deal: string; ret: string | null; lays: 'LH' | 'RH'; path: string };
+export function giveEndOf(bank: BankFacts | null | undefined, want: { dealer: string; target: string | null | undefined; named?: string | null }): GiveEnd | null {
+  if (!bank || !want.target) return null;
+  const owners = dealersOf(bank as never), shoe = new Set([ANCHOR_NODE['2.1'], ANCHOR_NODE['2.2'], ANCHOR_NODE['2.3']]);
+  const gives = (bank.derived ?? []).filter((d) => d.to === want.target && shoe.has(d.from) && (d.dealer ?? owners[d.id]) === want.dealer && !isArchived(bank, d.id) && !isArchived(bank, d.clip) && bank.motions?.[d.id]?.review?.decision !== 'REJECTED'
+    && bank.cutChecks?.[cutCheckKey(d.clip, d.frames[1], want.target!)]?.holds !== false);
+  const good = (id: string) => { const r = bank.motions?.[id]?.review; return (r?.decision === 'ACCEPTED' || r?.decision === 'MAIN') && r.acceptedAs !== 'VARIANT'; };
+  const deal = want.named ? gives.find((d) => d.id === want.named || d.clip === want.named || d.order?.id === want.named) : gives.filter((d) => good(d.id)).at(-1);
+  if (!deal) return null;
+  const ret = (bank.derived ?? []).find((r) => r.clip === deal.clip && r.from === want.target && r.frames[0] === deal.frames[1] + 1);
+  return { clip: deal.clip, frame: deal.frames[1], deal: deal.id, ret: ret?.id ?? null, lays: bank.motions?.[deal.id]?.motion?.releaseHand === 'RH' ? 'RH' : 'LH', path: `assets/motions/${deal.clip}/source.mp4` };
+}
+/**
  * Where a deal bara dit to a seat ends (Jakob 2026-11-18: a landing "bör rimligtvis tas bort helt, eller så bör vi skapa nya
  * bilder för respektive position"; the main agent's decision the same night): on THAT seat's own end picture. Its landing
  * picture where one holds for the seat (LANDNING), else the cut frame of the bank's own film from the same anchor to the
@@ -748,7 +770,7 @@ export const REF_MATCH_LABEL = ['samma steg och plats', 'samma plats, annat grep
 /** The bank as GET /api/clip-bank answers it (src/clip-graph.ts BankData), only what a reference needs. */
 export type BankFacts = {
   jobs?: { id: string; from: string; to: string; duration?: number; dealer?: string }[];
-  derived?: { id: string; from: string; to: string; clip: string; frames: [number, number]; dealer?: string; editOf?: string; kind?: string }[];
+  derived?: { id: string; from: string; to: string; clip: string; frames: [number, number]; dealer?: string; editOf?: string; kind?: string; order?: { id?: string } }[];
   edits?: { id: string; source?: { clip?: string }; dealer?: string }[];
   motions?: Record<string, { source?: { sha256?: string; fps?: number; frames?: number }; review?: { decision?: string; acceptedAs?: string; userAccepted?: boolean; userReview?: string; provisional?: unknown; archived?: unknown }; motion?: { releaseHand?: string } } | null | undefined>;
   media?: Record<string, { video?: string | null } | null | undefined>;

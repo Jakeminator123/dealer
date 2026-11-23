@@ -126,7 +126,7 @@ test("Bordet's row and the store agree for every standard step and card, and the
   const shown = entries.map((e) => ({ ...e, served: e.path }));
 
   const made: Record<string, string | null> = {}, refused: Record<string, string> = {}, without: Record<string, string> = {};
-  let compared = 0, texts = 0, opened = 0;
+  let compared = 0, texts = 0, opened = 0, drawnReturns = 0;
   // The dealers' looks and the landing pictures' marks, as the page has them, so that the row writes the text it shows.
   const rowOf = (wish: FilmWish, choice?: RowChoice) => filmRow("paow", wish, register, all.policy, { bank, entries: shown, plan: all.plan ?? null, dealers: all.dealers, marks: all.marks, choice });
   // The hole card's turn is left out: its pictures are drawn from a bank film that the temporary lab does not have.
@@ -158,6 +158,10 @@ test("Bordet's row and the store agree for every standard step and card, and the
       assert.equal(inList.orderable !== null, !row.why, `${key}: the row says "${row.why ?? "it can be sent"}", the production list says "${inList.words}"`);
       if (!row.why) assert.equal(inList.method?.reference ?? null, row.reference?.take ?? null, `${key}: the production list's reference film`);
     }
+    // A return with a recipe ends on its anchor with the card drawn, from a bank film that the temporary lab does not have (as
+    // the hole card's turn): the row is compared with the production list above, and its draft where that film is
+    // (tools/order-routes.test.ts).
+    if (step.start === "LAND" && !row.why) { drawnReturns++; continue; }
     const preview = await call("POST", "/api/orders/preview", input);
     if (row.why) {
       // What the row cannot send as it stands, the store refuses, and for the same reason. The row says what to do about
@@ -176,7 +180,7 @@ test("Bordet's row and the store agree for every standard step and card, and the
       refused[key] = row.why;
       continue;
     }
-    assert.equal(preview.status, 200, `${key}: no preview`);
+    assert.equal(preview.status, 200, `${key}: no preview: ${JSON.stringify(preview.json).slice(0, 300)}`);
     const answer = await call("POST", "/api/orders", input, preview.json.revision);
     assert.equal(answer.status, 201, `${key}: the row can be sent, and the store refused: ${JSON.stringify(answer.json).slice(0, 300)}`);
     assert.deepEqual(row.body, { dealer: "paow", step: step.key, ...(target ? { target } : {}) }, `${key}: the row sends the line and nothing else`);
@@ -233,9 +237,12 @@ test("Bordet's row and the store agree for every standard step and card, and the
   assert.equal(compared, 7 + 8 + 8 + 1 + 2 + 8, `${compared} orders compared`);
   assert.equal(opened, 2 + 8, `${opened} deals made without a last picture, by the row and the store alike`);
   assert.equal(texts, compared, `${texts} of ${compared} texts compared word for word`);
-  // Refused as they stand, in the row and in the store alike: every return, which has no recipe; the three from the
-  // dealer's first card wait for the deal there before that.
-  assert.equal(Object.keys(refused).length, 3 * 9, "the returns");
+  // Refused as they stand, in the row and in the store alike: the returns to 2.1 and 2.2, which have no recipe, and the
+  // return to rest from the dealer's first card; the three from that card wait for the deal there before that. The return
+  // to rest from the other eight cards has a recipe (2026-11-23) and starts on the card's landing picture.
+  assert.equal(Object.keys(refused).length, 2 * 9 + 1, "the returns");
+  assert.equal(drawnReturns, 8, "the returns to rest that can be sent");
+  assert.equal(refused["RETUR-1 D.C1"], "väntar på A3DC1: returen börjar i sista rutan av given dit, och A3DC1 görs ur den");
   assert.equal(refused["RETUR-2.1 D.C1"], "väntar på A3DC1: returen börjar i sista rutan av given dit, och A3DC1 görs ur den");
   // Every step the production list has a row for is compared (the dealer's graph: the steps of 2.1 and 2.2, rest and the ways out).
   assert.ok(listed >= 20, `${listed} steps compared with the production list`);

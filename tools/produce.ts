@@ -24,7 +24,7 @@ import { existsSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SEATS, bankEdges, buildGraph, parseEdge, roundSequence, type BankData, type EdgeKind, type Graph } from '../src/clip-graph.ts';
-import { ANCHOR_NODE, ANCHOR_ROLE, LANDING_ROLE, MODELS, SHOWN_LABEL, landingNode, readCutChecks, seatEndOf, seatWords, stepOf, type Anchor as AnchorKey, type BankFacts, type Order, type Shown, type StepKey } from '../src/order-model.ts';
+import { ANCHOR_NODE, ANCHOR_ROLE, LANDING_ROLE, MODELS, SHOWN_LABEL, giveEndOf, landingNode, readCutChecks, seatEndOf, seatWords, stepOf, type Anchor as AnchorKey, type BankFacts, type Order, type Shown, type StepKey } from '../src/order-model.ts';
 import { methodFor, readMethods, recipeFor, recipeHands, recipeWords, referenceAbsent, referenceByRule, type Method, type MethodRegister } from '../src/order-methods.ts';
 import { bankSummary, hubAnchor, playing, type Hubs, type Summary } from '../studio/lib/edge-stats.ts';
 import { hubDeals } from '../src/game-director.ts';
@@ -236,7 +236,8 @@ export function productionList(input: ProductionInput): Production {
     if (def) {
       const anchors = new Set<AnchorKey>(def.start === 'LAND' ? [def.to ?? def.from] : [def.from, ...(def.to ? [def.to] : [])]);
       for (const a of anchors) if (!anchorHolding(entries, a)) needs.push(anchorWords(a));
-      if (def.start === 'LAND' && !landingHolding(entries, at!.target)) needs.push(`landningsbild på ${cardWords(at!.target!)}`);
+      // The return to rest also starts on the last frame of a good give there in the bank (giveEndOf), as the store takes it.
+      if (def.start === 'LAND' && !landingHolding(entries, at!.target) && !(at!.step === 'RETUR-1' && giveEndOf(input.bank, { dealer: dealer.id, target: at!.target }))) needs.push(`landningsbild på ${cardWords(at!.target!)}`);
     } else if (edge.kind === 'ARRIVE' || edge.kind === 'LEAVE') {
       needs.push('en bild av bordet utan henne (ingen roll i Material än)');
       const standing = entries.some((e) => e.role === 'keystone' && e.state === 'gäller' && isStanding(e));

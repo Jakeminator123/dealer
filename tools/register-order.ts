@@ -10,6 +10,9 @@
 //     is found in the film itself (tools/round-trip-split.ts: the first frame that moves after the hand has stood still at
 //     the lying card); --split <frame>, the first frame of the return as a reader saw it, goes before what is found. No safe
 //     frame found and none given: nothing is written. The return starts on that frame of the deal (motion.startsOn).
+//   - A return ordered on the last frame of a give in the bank (the order's first picture names the give, from.cut.deal): the
+//     take carries no first picture and its record starts on that frame of the give (motion.startsOn), so the graph plays
+//     it as the give's continuation and not as a film from an anchor.
 //   - Every take gets a record motions/<id>.json with review PENDING and review.inbox true: it plays only where its step has no
 //     other film until Jakob decides (src/clip-graph.ts); his decision takes the flag away (tools/review-store.ts).
 //   - --fixed <k>: the fixed copy fixed-<k>.mp4 beside the film (tools/film-fix.ts) becomes a corrected copy of each of the
@@ -114,7 +117,13 @@ export async function planRegistration(root: string, id: string, take: number, o
   // The takes and where the film is split.
   const takes: Entry[] = [], records: Plan['records'] = {};
   if (!trip) {
-    takes.push(takeOf(target, edges[0], target, [0, frames - 1], order, ref, {...(first ? {first} : {}), ...(last ? {last} : {}), ...(ref.fix ? {editOf: ours[0].id} : {})}));
+    // A return to rest that continues a give (its first picture is that give's last frame, giveEndOf): it starts on that frame of
+    // the deal, like a return cut from a round trip, so the take names no first picture of its own (the graph would read one as
+    // a landing anchor); generation.json keeps the picture.
+    const from = (order as {pictures?: {goesAs: string; from?: {cut?: {deal?: string; frame?: number} | null} | null}[]}).pictures?.find(p => p.goesAs === 'startFrame')?.from?.cut;
+    const continues = from && typeof from.deal === 'string' && Number.isInteger(from.frame) ? {clip: from.deal, frame: from.frame!} : null;
+    takes.push(takeOf(target, edges[0], target, [0, frames - 1], order, ref, {...(first && !continues ? {first} : {}), ...(last ? {last} : {}), ...(ref.fix ? {editOf: ours[0].id} : {})}));
+    if (continues) { records[target] = {startsOn: continues}; notes.push(`Returen fortsätter given ${continues.clip}: den börjar på dess ruta ${continues.frame}.`); }
     // A deal bara dit whose last picture is the cut frame of a round trip in the bank (cutFrameOf): that film's return follows it.
     const endsOn = endsOnOf((order as {pictures?: {goesAs: string; from?: {cut?: {clip?: string; frame?: number} | null} | null}[]}).pictures ?? []);
     if (endsOn) records[target] = {endsOn};

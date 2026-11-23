@@ -16,7 +16,7 @@
 import type { Graph } from "../../src/clip-graph.ts";
 import { INTRO_FRAME, INTRO_FRAMING, focalOf } from "../../src/game-intro.ts";
 import {
-  ANCHOR_NODE, ANCHOR_ROLE, LANDS_LABEL, a3Candidates, a3Name, costOf, credits, defaultFlip, genitive, handsOf, landingOf, modelFor, paramsOf, referenceCandidates, seatEndOf, seatWords, stepOf,
+  ANCHOR_NODE, ANCHOR_ROLE, LANDS_LABEL, a3Candidates, a3Name, costOf, credits, defaultFlip, genitive, giveEndOf, handsOf, landingOf, modelFor, paramsOf, referenceCandidates, seatEndOf, seatWords, stepOf,
   type Anchor, type BankFacts, type DealerLook, type FlipAxis, type HandChoice, type ModelDef, type PlanAnswer, type Policy, type RefCandidate, type SeatEnd, type Shape, type StepDef, type StepKey, type TextStyle,
 } from "../../src/order-model.ts";
 import { NO_RECIPE, TWO_HAND_TURN, methodFor, recipeFor, recipeHands, recipeWords, referenceAbsent, referenceByRule, secondsOf, triedWords, type MethodRegister, type Recipe, type ReferenceRule } from "../../src/order-methods.ts";
@@ -402,9 +402,13 @@ export function lineOf(input: {
   // last frame of the deal there. Until that picture is made from the deal the return waits for it, which is no fault of
   // the row's. The words name the picture, not the deal: the deal may be there already, with its A3 not made yet.
   const startLanding = def.start === "LAND" ? landingOf(entries, wish.target, lays) : null;
+  // The return to rest continues a give (Jakob 2026-11-23: from the laid card "direkt" to A1): with no landing picture it
+  // starts on the last frame of the newest good give there in the bank, as the store takes it (giveEndOf), and the hand
+  // that laid the card goes back.
+  const giveEnd = wish.step === "RETUR-1" && !startLanding ? giveEndOf(bank, { dealer, target: wish.target }) : null;
   const a3 = wish.target ? a3Name(wish.target) : "";
   const first = def.start === "LAND"
-    ? (startLanding ? ready("Första bild", a3) : waiting("Första bild", `väntar på ${a3}`, `väntar på ${a3}: returen börjar i sista rutan av given dit, och ${a3} görs ur den`))
+    ? (startLanding ? ready("Första bild", a3) : giveEnd ? ready("Första bild", `sista rutan i given ${giveEnd.clip}`) : waiting("Första bild", `väntar på ${a3}`, `väntar på ${a3}: returen börjar i sista rutan av given dit, och ${a3} görs ur den`))
     : anchorMark("Första bild", def.from);
   const last = def.kind !== "FILM" ? ready("Slutbild", "ingen, en bild")
     : open ? ready("Slutbild", `ingen, ${a3} görs efteråt`)
@@ -427,7 +431,7 @@ export function lineOf(input: {
   // draws none, and the marks where the picture that shows the open card shows them.
   const look = input.dealers?.find((d) => d.id === dealer) ?? null;
   const shows = def.start === "LAND" ? startLanding : end?.kind === "LANDNING" ? end.entry : null;
-  const drawnOrCut = (deal && shape === "ROUND_TRIP") || !!def.cards?.length || end?.kind === "SNITTRUTA";
+  const drawnOrCut = (deal && shape === "ROUND_TRIP") || !!def.cards?.length || end?.kind === "SNITTRUTA" || !!giveEnd;
   let text: string | null = null;
   if (writable && look && model && def.kind === "FILM" && first.ready && last.ready && !drawnOrCut && (!def.card || seat)) {
     const turn = wish.step === "GIV-2.3" ? side === "FRONT" : def.start !== "LAND" && !!seat && side !== seat.startSide;

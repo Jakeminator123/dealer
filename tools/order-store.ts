@@ -45,8 +45,8 @@ import { mediaRoles } from './media-roles.ts';
 import { readMandateBudget } from './order-mandate.ts';
 import {
   ANCHOR_NODE, ANCHOR_ROLE, CARD_SCALES, EXTRA_LIMIT, MODELS, FILE_NAME, FLIP_AXES, FLIP_LABEL, STYLE_LABEL, ORDER_ID, RETURN_23_BLOCK, RETURN_23_TRIAL, SEAT_TARGETS, SHORT_TWO_HAND_TURN_HELP, TAKES_MAX, scaleWords, shortTwoHandTurnProblem,
-  LANDING_ROLE, bodyLine, canonical, checkPolicy, costOf, crossesBody, cutFrameOf, cutFrameWords, cutIntoOf, tidyMotion, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, hashInput, landingMissing, landingOf, a3Candidates, a3Name, openEndWords, archivedReferenceIds, isArchived, modelFor, modelsFor, paramsOf, plannedOf, readCutChecks, referenceCandidates, seatList, seatWords, secondsWords, shownOf, spentOn, stepOf, stylesFor, summaryOf, twoHandDealSideProblem, twoHandDraftProblem, twoHandMotion, validateOrder, waitingOf,
-  type Anchor, type BankFacts, type CutFrame, type Drawn, type FlipAxis, type Motion, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Policy, type PoseAnswer, type Receipt, type RefCandidate, type Reference, type RenderedReference, type SeatPlan, type Shape, type StepDef, type StepKey, type TextStyle, type Waits,
+  LANDING_ROLE, bodyLine, canonical, checkPolicy, costOf, crossesBody, cutFrameOf, cutFrameWords, cutIntoOf, tidyMotion, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, giveEndOf, hashInput, landingMissing, landingOf, a3Candidates, a3Name, openEndWords, archivedReferenceIds, isArchived, modelFor, modelsFor, paramsOf, plannedOf, readCutChecks, referenceCandidates, seatList, seatWords, secondsWords, shownOf, spentOn, stepOf, stylesFor, summaryOf, twoHandDealSideProblem, twoHandDraftProblem, twoHandMotion, validateOrder, waitingOf,
+  type Anchor, type BankFacts, type CutFrame, type Drawn, type GiveEnd, type FlipAxis, type Motion, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Policy, type PoseAnswer, type Receipt, type RefCandidate, type Reference, type RenderedReference, type SeatPlan, type Shape, type StepDef, type StepKey, type TextStyle, type Waits,
 } from '../src/order-model.ts';
 import { readMethods, recipeFor, recipeHands, referenceAbsent, referenceByRule, secondsOf, triedWords, type MethodRegister } from '../src/order-methods.ts';
 import { TEMPLATE_CHOICES, TEMPLATE_CHOICES_WORDS, TEMPLATE_VERSION, handsIn, orderPrompt } from '../src/order-prompts.ts';
@@ -664,7 +664,8 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     if (!step) throw new StoreError(400, 'Okänt steg.');
     const return23 = step.key === 'RETUR-2.3';
     if (!return23 && step.off) throw new StoreError(400, `${step.label}: ${step.off}`);
-    if (!return23 && input.continues !== undefined) throw new StoreError(400, 'Föregående giv väljs bara för returprovet till 2.3.');
+    const toRest = step.key === 'RETUR-1';
+    if (!return23 && !toRest && input.continues !== undefined) throw new StoreError(400, 'Föregående giv väljs bara för en retur från kortet: returprovet till 2.3 eller returen till vila.');
     const dealers = await readDealers(watch), dealer = dealers.find((d) => d.id === input.dealer);
     if (!dealer) throw new StoreError(400, unknownDealer(input.dealer));
     // A paused dealer (data/dealers.json paused, his words and date) gets nothing new; her drafts and orders stay as they are.
@@ -698,8 +699,13 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     const laid = handsIn(input.hand !== undefined || input.pass !== undefined
       ? { hand: input.pass ? 'LH' : (input.hand ?? planned?.takeHand ?? 'LH'), pass: !!input.pass && !!planned }
       : recipeHands(step, recipe, planned ? { hand: planned.takeHand, pass: planned.pass } : null)).lays;
-    const landing = step.start === 'LAND' && !return23 ? landingEntry(register, dealer.id, target, laid) : null;
-    if (step.start === 'LAND' && !returnStart && !landing) throw new StoreError(400, landingMissing(dealer.name, target));
+    const landing = step.start === 'LAND' && !return23 && !(toRest && input.continues) ? landingEntry(register, dealer.id, target, laid) : null;
+    // The return to rest continues a give (Jakob 2026-11-23: from the laid card "direkt" to A1): where no landing picture
+    // holds, or the order names the give, it starts on that give's last frame in the bank's own film (giveEndOf).
+    const giveEnd = toRest && !landing ? giveEndOf(await readBank(watch), { dealer: dealer.id, target, named: input.continues ?? null }) : null;
+    if (toRest && input.continues && !giveEnd) throw new StoreError(400, `${input.continues} är ingen giv i banken till ${seatWords(target)} som en retur kan fortsätta (en annan plats, arkiverad eller underkänd).`);
+    if (step.start === 'LAND' && !returnStart && !landing && !giveEnd) throw new StoreError(400, landingMissing(dealer.name, target));
+    if (giveEnd && ((input.hand !== undefined && input.hand !== giveEnd.lays) || input.pass === true)) throw new StoreError(400, 'Returen fortsätter given i banken: handen som lade kortet går tillbaka, utan handbyte.');
     if (returnStart && !holding(register, dealer.id, ANCHOR_ROLE['2.3'], ANCHOR_NODE['2.3'])) throw new StoreError(400, 'Returprovet behöver ett gällande ankare 2.3 som sista bild.');
     if (returnStart && (input.hand === 'LH' || input.pass === true || input.flipAxis !== undefined || (input.side !== undefined && input.side !== returnStart.side))) {
       throw new StoreError(400, 'Returprovet följer bilden: höger hand tillbaka utan handbyte och kortet ligger med samma sida upp.');
@@ -737,8 +743,8 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     // Nothing said: the one rule Bordet's row and the production list take too (recipeHands).
     const said = input.pass !== undefined || input.hand !== undefined;
     const byLine = recipeHands(step, recipe, intent ? { hand: intent.takeHand, pass: intent.pass } : null);
-    const pass = twoHands?.pass ?? (returnStart ? false : !said ? byLine.pass : !step.card || !intent ? false : (input.pass ?? false));
-    const hand: 'LH' | 'RH' = twoHands?.hand ?? (returnStart ? 'RH' : !said ? byLine.hand : pass ? 'LH' : (input.hand ?? intent?.takeHand ?? 'LH'));
+    const pass = twoHands?.pass ?? (returnStart || giveEnd ? false : !said ? byLine.pass : !step.card || !intent ? false : (input.pass ?? false));
+    const hand: 'LH' | 'RH' = twoHands?.hand ?? (returnStart ? 'RH' : giveEnd ? giveEnd.lays : !said ? byLine.hand : pass ? 'LH' : (input.hand ?? intent?.takeHand ?? 'LH'));
     if (!twoHands && pass && input.hand === 'RH') throw new StoreError(400, 'Handbyte går från vänster hand till höger: vänster tar kortet ur skon.');
     const lays: 'LH' | 'RH' = handsIn({ hand, pass }).lays;
     const bank = step.kind === 'FILM' ? await readBank(watch) : null;
@@ -844,7 +850,8 @@ export function orderStore(root: string, options: StoreOptions = {}) {
           ...(await save('first.png', returnStart.bytes)), width: 1764, height: 1174,
           from: { entry: returnStart.entry.id, path: returnStart.path, note: 'Fryst slutbild ur den godkända given' }, waits: null,
         }, bytes: null,
-      } : step.start === 'LAND' ? { picture: await landingPicture(landing!, 'first.png', `Första bild · ${landingWords}`, 'startFrame'), bytes: null } : await anchorPicture('first.png', (w) => `Första bild · ${w}`, 'startFrame', step.from);
+      } : giveEnd ? { picture: await giveEndPicture(save, giveEnd, watch), bytes: null }
+        : step.start === 'LAND' ? { picture: await landingPicture(landing!, 'first.png', `Första bild · ${landingWords}`, 'startFrame'), bytes: null } : await anchorPicture('first.png', (w) => `Första bild · ${w}`, 'startFrame', step.from);
       pictures.push(first.picture);
       if (step.card && intent) {
         motion = { grip: step.grip ?? 'PINCH', hand, pass, turn, flipAxis: turn ? flipAxis : null, target, side, fromPlan: false, ...(cardScale !== 1 ? { cardScale } : {}) };
@@ -1010,6 +1017,18 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       };
     }
     throw new StoreError(400, `${seatWords(target).replace(/^./, (c) => c.toUpperCase())} har ingen slutbild som håller: ${lacks.join('; ')}.`);
+  }
+
+  /** The first picture of a return to rest that continues a give: the give's last frame, taken out of the bank's own film (giveEndOf). */
+  async function giveEndPicture(save: SavePicture, end: GiveEnd, watch?: WatchSource): Promise<Picture> {
+    await watch?.(path.join(root, end.path));
+    let frame: Buffer;
+    try { frame = await (options.frame ?? ((source) => pictureBytes(root, source)))({ path: end.path, frame: end.frame }); }
+    catch { throw new StoreError(409, `Filmen ${end.clip} finns inte i banken (${end.path}): returen kan inte börja på dess ruta.`); }
+    return {
+      name: 'first.png', label: `Första bild · ruta ${end.frame} ur given ${end.clip}`, goesAs: 'startFrame', ...(await save('first.png', frame)), width: 1764, height: 1174,
+      from: { path: end.path, frame: end.frame, note: `Sista rutan i given ${end.deal}: returen fortsätter där`, cut: { clip: end.clip, frame: end.frame, ret: end.ret ?? end.deal, deal: end.deal } }, waits: null,
+    };
   }
 
   /** One draft per seat, sharing a group ("Alla sju"), each with its own text and last picture. */

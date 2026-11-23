@@ -234,9 +234,20 @@ test("Bordet's rows for a card with handbyte and one without say what the store'
     // The returns are listed too, and none of them is a dead end (changed 2026-11-23): a row that lacks something says what
     // to do, never only that it cannot be ordered.
     for (const r of [back, rest]) {
-      assert.ok(!r.orderable && r.body === null && r.cost === null && r.why, `${r.key}: listed, something is missing`);
       assert.doesNotMatch(`${r.why} ${r.recipe} ${r.tried} ${r.marks.map((m) => m.words).join(" ")}`, /kan inte beställas/, `${r.key}: what to do, not only a stop`);
       assert.doesNotMatch(recipeWords(methodFor(all.methods!, r.wish.step, card), card), /bara given|tur och retur/, `${r.key}: a return is no deal`);
+      if (r.wish.step === "RETUR-1") {
+        // The return to rest has a recipe (a trial, 2026-11-23): the row is sent as it stands, from the card's landing
+        // picture, and the store's preview is the row's.
+        assert.ok(r.orderable && r.why === null && r.cost !== null, `${r.key}: ${r.why}`);
+        if (!textured) continue;
+        const made = await previewOf(r);
+        assert.equal(made.status, 200, `${r.key}: ${made.json.error}`);
+        assert.equal(made.json.orders[0].cost.total, r.cost, `${r.key}: the price`);
+        if (r.text) assert.equal(made.json.orders[0].prompt.text, r.text, `${r.key}: the text, word for word`);
+        continue;
+      }
+      assert.ok(!r.orderable && r.body === null && r.cost === null && r.why, `${r.key}: listed, something is missing`);
       assert.equal((await call("POST", "/api/orders/preview", { dealer: "paow", step: r.wish.step, target: card })).status, 400, `${r.key}: the store asks for the same`);
       if (r.wish.step === "RETUR-2.3") {
         // The return to A2.3 continues an approved deal on its frozen last picture, which the command finds (StepDef.off).
@@ -283,7 +294,8 @@ test("Bordet's rows for a card with handbyte and one without say what the store'
       assert.deepEqual([o.motion.grip, o.motion.hand, o.motion.pass, o.motion.flipAxis], ["TWO_HANDS", "LH", true, "FREE"]);
       // The return from the right hand's A3: its first picture is there; it waits for its recipe.
       assert.equal(words(back)["Första bild"], "A3P4C2");
-      assert.equal(sumWords(rows), "3 filmer · 1 kan beställas · 64 krediter");
+      // Two of the three can be sent: the deal, and the return to rest (its recipe a trial since 2026-11-23).
+      assert.equal(sumWords(rows), "3 filmer · 2 kan beställas · 128 krediter");
       // The line's last words say what the recipe's text says of the doll's film. The deal from A2.3 is written with template
       // 14 since 2026-11-23 (Jakob: "naturlig primärt, så var inte extremt nitsk med dockans rörelse"): a rough guide, her
       // natural movement first. With template 12 or 13, or 14 in the minimal text, the text says she moves like the film.

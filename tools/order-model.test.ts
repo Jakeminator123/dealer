@@ -7,7 +7,7 @@ import { committedFiles, committedText } from './committed.ts';
 import { createHash } from 'node:crypto';
 import {
   archivedReferenceIds,
-  ALL_SEVEN, CARD_SCALES, cutFrameOf, cutFrameWords, endsOnOf, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, SHAPE_LABEL, MODELS, SEAT_TARGETS, STEPS, TEXT_STYLES, plannedDiffers, plannedOf, bodyLine, canonical, checkPolicy, costOf, crossesBody, cutIntoOf, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, groupBudget, handChoiceOf, handsOf, hashInput, isArchived, cutCheckKey, readCutChecks, landingMissing, landingOf, lengthFor, lengthOfReference, modelFor, modelsFor, paramsOf, priceOf, referenceCandidates, requestOf, scaleQuad, scaleWords, seatEndOf, seatEndWords, seatList, seatWords, shownOf, spentOn, stepOf, stepOfEdge, styleOf, stylesFor, summaryOf, takeStates, tidyMotion, validateOrder, verdictOf, waitWords,
+  ALL_SEVEN, CARD_SCALES, cutFrameOf, cutFrameWords, endsOnOf, giveEndOf, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, SHAPE_LABEL, MODELS, SEAT_TARGETS, STEPS, TEXT_STYLES, plannedDiffers, plannedOf, bodyLine, canonical, checkPolicy, costOf, crossesBody, cutIntoOf, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, groupBudget, handChoiceOf, handsOf, hashInput, isArchived, cutCheckKey, readCutChecks, landingMissing, landingOf, lengthFor, lengthOfReference, modelFor, modelsFor, paramsOf, priceOf, referenceCandidates, requestOf, scaleQuad, scaleWords, seatEndOf, seatEndWords, seatList, seatWords, shownOf, spentOn, stepOf, stepOfEdge, styleOf, stylesFor, summaryOf, takeStates, tidyMotion, validateOrder, verdictOf, waitWords,
   type BankFacts, type Order, type Policy, type Receipt,
 } from '../src/order-model.ts';
 import * as model from '../src/order-model.ts';
@@ -575,6 +575,51 @@ test('the last picture of a deal bara dit by rule: the cut frame of a round trip
   // The deal that ends there carries it: the last picture's from.cut.
   assert.deepEqual(endsOnOf([{ goesAs: 'startFrame' }, { goesAs: 'endFrame', from: { cut: { clip: 'slap-p4', frame: 126 } } }]), { clip: 'slap-p4', frame: 126 });
   assert.equal(endsOnOf([{ goesAs: 'endFrame', from: { path: 'assets/anchors/x/anchor.png' } as never }]), null);
+});
+
+test('the return to rest continues a give: the last frame of the newest good give to the seat in the bank, or of the give named', () => {
+  // Jakob 2026-11-23: after the last give she goes "direkt" from the laid card to A1. The return's first picture is the frame
+  // the give ends on, where its own return begins; a verdict given for him counts, a variant only when it is named.
+  const good = { decision: 'ACCEPTED' }, trip = (id: string, to: string, split: number, more: object = {}) => [
+    { id: `${id}-deal`, from: 'READY-C', to, clip: id, frames: [0, split - 1] as [number, number], dealer: 'paow', order: { id: id.slice(0, -3) }, ...more },
+    { id: `${id}-return-ready-c`, from: to, to: 'READY-C', clip: id, frames: [split, 96] as [number, number], dealer: 'paow' },
+  ];
+  const bank: BankFacts = {
+    derived: [
+      ...trip('paow-giv-2-3-p5-04-01', 'P5.C1', 63), ...trip('paow-giv-2-3-p5-05-01', 'P5.C1', 62), ...trip('paow-giv-2-3-p5-kast-01', 'P5.C1', 70),
+      ...trip('paow-giv-2-3-p4-01-01', 'P4.C1', 60), ...trip('paow-giv-2-3-p2-01-01', 'P2.C1', 61), ...trip('paow-giv-2-3-p1-01-01', 'P1.C1', 62),
+      { id: 'paow-giv-2-3-p3-03-01', from: 'READY-C', to: 'P3.C1', clip: 'paow-giv-2-3-p3-03-01', frames: [0, 72], dealer: 'paow' },
+      ...trip('pamela-giv-p5-01', 'P5.C1', 50, { dealer: 'pamela' }),
+    ],
+    motions: {
+      'paow-giv-2-3-p5-04-01-deal': { review: { ...good, userAccepted: true }, motion: { releaseHand: 'RH' } },
+      'paow-giv-2-3-p5-05-01-deal': { review: good, motion: { releaseHand: 'RH' } },
+      'paow-giv-2-3-p5-kast-01-deal': { review: { ...good, acceptedAs: 'VARIANT' }, motion: { releaseHand: 'RH' } },
+      'paow-giv-2-3-p4-01-01-deal': { review: { decision: 'REJECTED' } },
+      'paow-giv-2-3-p2-01-01-deal': { review: { ...good, archived: { at: '2026-11-23' } } },
+      'paow-giv-2-3-p1-01-01-deal': { review: good },
+      'paow-giv-2-3-p3-03-01': { review: good, motion: { releaseHand: 'RH' } },
+      'pamela-giv-p5-01-deal': { review: good },
+    },
+    cutChecks: { 'paow-giv-2-3-p1-01-01@61>P1.C1': { holds: false, problems: ['kortet ligger utanför planens kort'], windowPrinted: false, offFromPlan: 40 } },
+  };
+  const of = (target: string | null, named?: string) => { const e = giveEndOf(bank, { dealer: 'paow', target, named }); return e ? [e.deal, e.frame, e.ret, e.lays] : null; };
+  // The newest good give of her own, cut where its return begins; the hand that laid the card.
+  assert.deepEqual(of('P5.C1'), ['paow-giv-2-3-p5-05-01-deal', 61, 'paow-giv-2-3-p5-05-01-return-ready-c', 'RH']);
+  assert.equal(giveEndOf(bank, { dealer: 'paow', target: 'P5.C1' })!.path, 'assets/motions/paow-giv-2-3-p5-05-01/source.mp4');
+  // A give named by its order, its film or its take, also a variant: a variant has its own return to rest.
+  assert.deepEqual(of('P5.C1', 'paow-giv-2-3-p5-04'), ['paow-giv-2-3-p5-04-01-deal', 62, 'paow-giv-2-3-p5-04-01-return-ready-c', 'RH']);
+  assert.deepEqual(of('P5.C1', 'paow-giv-2-3-p5-kast-01')?.slice(0, 2), ['paow-giv-2-3-p5-kast-01-deal', 69]);
+  // A give bara dit ends on its own last frame and has no return in its film.
+  assert.deepEqual(of('P3.C1'), ['paow-giv-2-3-p3-03-01', 72, null, 'RH']);
+  // Never a rejected or archived give, one whose last frame is written down as off the plan, another dealer's, or another seat's.
+  assert.equal(of('P4.C1'), null);
+  assert.equal(of('P4.C1', 'paow-giv-2-3-p4-01-01-deal'), null);
+  assert.equal(of('P2.C1'), null);
+  assert.equal(of('P1.C1'), null);
+  assert.equal(of('P6.C1'), null);
+  assert.equal(of('P6.C1', 'paow-giv-2-3-p5-05'), null);
+  assert.equal(of(null), null);
 });
 
 test('a reference film whose check fails is not offered first: on edge before the turn, a colour change without an edge', () => {

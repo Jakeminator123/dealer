@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 1,
+  "title": "Paow · Tillbaka till vila · A3P4C1",
+  "summary": "Gör en film av Paow: från kortet på plats 4 till ankare 1.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "RETUR-1",
+    "label": "Tillbaka till vila",
+    "edge": "P4.C1>IDLE",
+    "shape": "ONE_WAY",
+    "cutInto": [
+      "P4.C1>IDLE"
+    ],
+    "makes": null
+  },
+  "motion": {
+    "grip": "PINCH",
+    "hand": "RH",
+    "pass": false,
+    "turn": false,
+    "flipAxis": null,
+    "target": "P4.C1",
+    "side": "FRONT",
+    "fromPlan": false
+  },
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · ruta 61 ur given paow-giv-2-3-p4-02-01",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-retur-1-p4-01/first.png",
+      "sha256": "825df632a0a351bcd6c2c542317d0a5da65a03039e74536384096bfd24de3382",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "path": "assets/motions/paow-giv-2-3-p4-02-01/source.mp4",
+        "frame": 61,
+        "note": "Sista rutan i given paow-giv-2-3-p4-02-01-deal: returen fortsätter där",
+        "cut": {
+          "clip": "paow-giv-2-3-p4-02-01",
+          "frame": 61,
+          "ret": "paow-giv-2-3-p4-02-01-return-ready-c",
+          "deal": "paow-giv-2-3-p4-02-01-deal"
+        }
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Slutbild · Paows A1 + kortet öppet på plats 4",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-retur-1-p4-01/last.png",
+      "sha256": "27ea48dd3988bde492684a9533e4a5e18dafc9231bdeb93b3f514d00da1c9870",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-vila-tatuerad",
+        "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+        "note": "Vila, tatuerade händer (gäller)",
+        "built": "ankare 1 + kortet P4.C1 där planen säger"
+      },
+      "waits": null,
+      "drawn": {
+        "target": "P4.C1",
+        "side": "FRONT",
+        "as": "verkligt perspektiv: ett verkligt kort genom bordets lins, formen 87 % (src/card-plan.ts)",
+        "plan": {
+          "path": "placements/default.json",
+          "sha256": "461541d5db823936e5e29a32970c2b60e8a88b9352d213cfc8e094f6e7747a62",
+          "updatedAt": "2026-11-21T18:16:55.501Z"
+        },
+        "texture": {
+          "video": "assets/motions/pamela-p4-c1-plan-return-idle-01/source.mp4",
+          "frame": 89,
+          "sha256": "0b3cba9be4a969334bf1ba23623b80be6d0bd119a3c4dd8236db27145d479aa7",
+          "quadFrom": "assets/anchors/pamela-idle-p4-c1-plan-01/receipt.json"
+        },
+        "quad": [
+          [
+            820.4,
+            1066.2
+          ],
+          [
+            893.9,
+            1066.2
+          ],
+          [
+            898.3,
+            1138.1
+          ],
+          [
+            813.8,
+            1138.1
+          ]
+        ],
+        "centre": [
+          856.6,
+          1102.2
+        ],
+        "measured": {
+          "centre": [
+            856.7,
+            1103.5
+          ],
+          "area": 6178,
+          "box": [
+            85,
+            75
+          ],
+          "changedElsewhere": 0
+        },
+        "measuredOffsetPx": 1.3,
+        "mark": {
+          "cross": [
+            255,
+            120,
+            200
+          ],
+          "dot": [
+            225,
+            30,
+            35
+          ]
+        }
+      }
+    }
+  ],
+  "reference": {
+    "status": "INGEN",
+    "why": "Ingen referensfilm vald."
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "kling-4",
+    "params": {
+      "resolution": "1080p",
+      "duration": 3
+    }
+  },
+  "prompt": {
+    "template": "film-retur-kort@13",
+    "style": "KORT",
+    "text": "Locked camera, one continuous shot. Her hand on the blue card lifts off it, and the card stays where it lies. Both her hands come back low over the felt, palm down, and rest flat in front of her, as in the last frame. She moves naturally, like a practised dealer, with soft, relaxed arms and hands, and lifts her eyes to the camera as she comes to rest. The yellow card stays in the window of the shoe all the time.",
+    "sha256": "6ef32d65f68098051c0ecf2ddd13df9eb7ce0f7fcb87aee03aadfff1448d5c06",
+    "extra": "She moves naturally, like a practised dealer, with soft, relaxed arms and hands, and lifts her eyes to the camera as she comes to rest. The yellow card stays in the window of the shoe all the time.",
+    "middle": false,
+    "faceMark": true
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 64,
+    "total": 64,
+    "worstPerTake": 71,
+    "worstTotal": 71,
+    "basis": "21,3 krediter per s × 3 s. Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12."
+  },
+  "limits": {
+    "maxCredits": 71,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Recept retur-1: inte prövat än."
+  ],
+  "createdBy": "huvudagenten, tools/order-new.ts",
+  "approval": null,
+  "status": "UTKAST",
+  "id": "paow-retur-1-p4-01",
+  "created": "2026-11-23T14:39:59.625Z"
+}
