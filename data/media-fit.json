@@ -35,32 +35,6 @@
         }
       }
     },
-    "pamela-v6-filmen": {
-      "verdict": "annan kamera",
-      "for": "kontroll",
-      "usedBy": [
-        "V6, hashen i data/manifest.json (tools/verify.ts)"
-      ],
-      "measured": {
-        "width": 1762,
-        "height": 1174,
-        "edgeRow": null
-      },
-      "words": "En annan kamera än bankens (1762 × 1174, bordskanten på rad ? mot 831.5): en referens för kontroll av V6, inte för mått eller platser."
-    },
-    "pamela-v6-rutor": {
-      "verdict": "annan kamera",
-      "for": "kontroll",
-      "usedBy": [
-        "V6, hashen i data/manifest.json (tools/verify.ts)"
-      ],
-      "measured": {
-        "width": 1762,
-        "height": 1174,
-        "edgeRow": null
-      },
-      "words": "En annan kamera än bankens (1762 × 1174, bordskanten på rad ? mot 831.5): en referens för kontroll av V6, inte för mått eller platser."
-    },
     "paow-vila-tatuerad": {
       "verdict": "stämmer",
       "words": "Båda händerna mätta i gällande ankare 1 (paow-vila-tatuerad), dealerns kalibreringsbild.",

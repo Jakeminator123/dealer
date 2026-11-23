@@ -12,7 +12,8 @@
     "fps": 30,
     "frames": 926,
     "width": 1762,
-    "height": 1174
+    "height": 1174,
+    "archived": "D:/dealer-archive/v6-2026-11-23"
   },
   "runtime": {
     "assetRoot": "assets",
@@ -30,8 +31,12 @@
     "archived": {
       "at": "D:/dealer-archive/v6-2026-11-23",
       "date": "2026-11-23",
-      "why": "Jakob, Beslut card v6-arkiv, \"Ja, arkivera\" 2026-11-20: the raw frames, the re-created film and the renderer left the project; the film, the 18 frames, the cloth and the plate stay",
-      "receipt": "D:/dealer-archive/v6-2026-11-23/arkiv.json"
+      "why": "Jakob, Beslut card v6-arkiv, \"Ja, arkivera\" 2026-11-20: the raw frames, the re-created film and the renderer left the project; the cloth and the plate stay. The film, the 18 frames and the raw films in assets/originals followed on 2026-11-23 (Jakob: everything of Pamela archived, nothing in main to need her references)",
+      "receipt": "D:/dealer-archive/v6-2026-11-23/arkiv.json",
+      "receipts2026_11_23": [
+        "D:/dealer-archive/v6-2026-11-23/arkiv-tillagg-2-2026-11-23.json",
+        "D:/dealer-archive/v6-2026-11-23/arkiv-prov-v6-referens.json"
+      ]
     }
   },
   "motionSchema": {
@@ -65,28 +70,32 @@
       "sha256": "00efe62636916b79052b4cf9d5fa88ba1ad52c17d531f1dcc86875f94c91084c",
       "bytes": 8164506,
       "source": "runs/20261109-pamela-reference-kit/original/pamela-vila-till-redo-wan3.mp4",
-      "role": "original"
+      "role": "original",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/originals/deal.mp4",
       "sha256": "2445bb2ef5122fe558134d582533d277603da72c4b98b6c782be01a5bf06235a",
       "bytes": 16802367,
       "source": "runs/20261109-pamela-sequence/original/pamela-central-base-wan3.mp4",
-      "role": "original"
+      "role": "original",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/originals/retreat.mp4",
       "sha256": "81a63227a56531103bd9d86b364442869b72eef0ddd3be65e718f3494ee2147b",
       "bytes": 8455042,
       "source": "runs/20261109-pamela-sequence/original/pamela-from-shoe-wan3.mp4",
-      "role": "original"
+      "role": "original",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/originals/idle.mp4",
       "sha256": "213bf02130cf7e02fc9d68b9ddc6f34a08dff9c5cb22c537af82a0c56bffe3d8",
       "bytes": 31874749,
       "source": "runs/20261109-pamela-continuous-idle/original/pamela-continuous-wan3.mp4",
-      "role": "original"
+      "role": "original",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/idle/frame-001.png",
@@ -8286,7 +8295,8 @@
       "sourceSha256": "38a682369e2006da29101c7b9f023b36c8a60f4b17257fccbe49044d26965e8d",
       "sha256": "38a682369e2006da29101c7b9f023b36c8a60f4b17257fccbe49044d26965e8d",
       "role": "path-adapted-code",
-      "bytes": 3237
+      "bytes": 3237,
+      "archived": "Git-historiken (borttagen i ae79f17, 2026-11-23)"
     },
     {
       "path": "src/pamela-contact-shadow.ts",
@@ -8338,7 +8348,8 @@
       "sha256": "412a2fa01f9e852e8894002076b5771181bd6afd4ddeef1be76c0640d5853a2d",
       "bytes": 21108259,
       "source": "runs/20261109-pamela-v6-sequence/take-01/render/idle-deal-idle-native.mp4",
-      "role": "user-approved-visual-reference"
+      "role": "user-approved-visual-reference",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/candidates/p4-left-c2.mp4",
@@ -8361,140 +8372,160 @@
       "sha256": "39ebbd2592f37c057da0ad79ffd2d8da6d43cd242450971b43c239945e21a0a4",
       "bytes": 1563193,
       "source": "runs/20261109-pamela-v6-sequence/take-01/qa/native-0000.png",
-      "role": "uncompressed-reference-frame"
+      "role": "uncompressed-reference-frame",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/reference/native-0230.png",
       "sha256": "e487c369c3d4c5d00cf00c2741e1e4e0cfb8fc26541975f95ab316cfe5b831fd",
       "bytes": 1624614,
       "source": "runs/20261109-pamela-v6-sequence/take-01/qa/native-0230.png",
-      "role": "uncompressed-reference-frame"
+      "role": "uncompressed-reference-frame",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/reference/native-0231.png",
       "sha256": "331d3cc3d201365bcad55f480a02e3e3f3d9cfa0b71cf51307b992103d6fa953",
       "bytes": 1626044,
       "source": "runs/20261109-pamela-v6-sequence/take-01/qa/native-0231.png",
-      "role": "uncompressed-reference-frame"
+      "role": "uncompressed-reference-frame",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/reference/native-0344.png",
       "sha256": "b29ba66f3495fb8d0defac05933502e0672bdf7ff90876e7f1b6da9c22a1dfab",
       "bytes": 1629424,
       "source": "runs/20261109-pamela-v6-sequence/take-01/qa/native-0344.png",
-      "role": "uncompressed-reference-frame"
+      "role": "uncompressed-reference-frame",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/reference/native-0345.png",
       "sha256": "6906dcb15a78d762217d0760f9828025c2dafd0aca8c23a69b244bf0fa843792",
       "bytes": 1585096,
       "source": "runs/20261109-pamela-v6-sequence/take-01/qa/native-0345.png",
-      "role": "uncompressed-reference-frame"
+      "role": "uncompressed-reference-frame",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/reference/native-0431.png",
       "sha256": "6659c9d44222dcfd965e2d2cb0898b96a34053929bcfc8b4d70b8c504ab81947",
       "bytes": 1634588,
       "source": "runs/20261109-pamela-v6-sequence/take-01/qa/native-0431.png",
-      "role": "uncompressed-reference-frame"
+      "role": "uncompressed-reference-frame",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/reference/native-0432.png",
       "sha256": "93d42b4b8cf46983f88ecf430a26580ea22679e458d5e1f5a17434f1be28ff82",
       "bytes": 1618975,
       "source": "runs/20261109-pamela-v6-sequence/take-01/qa/native-0432.png",
-      "role": "uncompressed-reference-frame"
+      "role": "uncompressed-reference-frame",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/reference/native-0462.png",
       "sha256": "fa6190829bc288b458ce891597470d59271a708670b2c3f48e5ab8225ed51757",
       "bytes": 1586005,
       "source": "runs/20261109-pamela-v6-sequence/take-01/qa/native-0462.png",
-      "role": "uncompressed-reference-frame"
+      "role": "uncompressed-reference-frame",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/reference/native-0463.png",
       "sha256": "fa1b3d69d83fb71eb04f27b24136e47abbc0414bd3921f17adcb704facafd9aa",
       "bytes": 1576641,
       "source": "runs/20261109-pamela-v6-sequence/take-01/qa/native-0463.png",
-      "role": "uncompressed-reference-frame"
+      "role": "uncompressed-reference-frame",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/reference/native-0591.png",
       "sha256": "6a8291fb97aefbcd2208dd6be457c67cd75d7fcb4e024a914d40bff2db24d956",
       "bytes": 1622910,
       "source": "runs/20261109-pamela-v6-sequence/take-01/qa/native-0591.png",
-      "role": "uncompressed-reference-frame"
+      "role": "uncompressed-reference-frame",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/reference/native-0592.png",
       "sha256": "fd94b76025e994b3fc4550631d4b1a8b5bf6f6990f3f3784af47b10d9cb8ff73",
       "bytes": 1612443,
       "source": "runs/20261109-pamela-v6-sequence/take-01/qa/native-0592.png",
-      "role": "uncompressed-reference-frame"
+      "role": "uncompressed-reference-frame",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/reference/native-0693.png",
       "sha256": "e97502086c2d05e0549ae7f819d06feb8351e27a98417eeb3a9ad7ebd22085bb",
       "bytes": 1656092,
       "source": "runs/20261109-pamela-v6-sequence/take-01/qa/native-0693.png",
-      "role": "uncompressed-reference-frame"
+      "role": "uncompressed-reference-frame",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/reference/native-0694.png",
       "sha256": "0fc96f65a03212ed6ca1bc27f2ab966bd1a557ddcba703088b2cc029e3bf357d",
       "bytes": 1654317,
       "source": "runs/20261109-pamela-v6-sequence/take-01/qa/native-0694.png",
-      "role": "uncompressed-reference-frame"
+      "role": "uncompressed-reference-frame",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/reference/native-0746.png",
       "sha256": "02514aa10a617bcde3a7b2eb9697a5d9861057db4a68c91139da22c8abf7b599",
       "bytes": 1619780,
       "source": "runs/20261109-pamela-v6-sequence/take-01/qa/native-0746.png",
-      "role": "uncompressed-reference-frame"
+      "role": "uncompressed-reference-frame",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/reference/native-0747.png",
       "sha256": "8eaaf205e3b94ed1cfe0f5bfeee869ade2599ed629e59a66ed97e0a2abaee2be",
       "bytes": 1581474,
       "source": "runs/20261109-pamela-v6-sequence/take-01/qa/native-0747.png",
-      "role": "uncompressed-reference-frame"
+      "role": "uncompressed-reference-frame",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/reference/native-0835.png",
       "sha256": "9020478bb65238fe22d7606b9e7c3e28e45130495792c1d0257a754b6a21d8e1",
       "bytes": 1621098,
       "source": "runs/20261109-pamela-v6-sequence/take-01/qa/native-0835.png",
-      "role": "uncompressed-reference-frame"
+      "role": "uncompressed-reference-frame",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/reference/native-0836.png",
       "sha256": "0419f5d27827e1006ea0c575d737800cee559573acd6c62686b7615be678456e",
       "bytes": 1580139,
       "source": "runs/20261109-pamela-v6-sequence/take-01/qa/native-0836.png",
-      "role": "uncompressed-reference-frame"
+      "role": "uncompressed-reference-frame",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/reference/native-0925.png",
       "sha256": "86fbfd3178401c77a43050c54978771066acbd08f2dddc6d473986775457a09d",
       "bytes": 1618811,
       "source": "runs/20261109-pamela-v6-sequence/take-01/qa/native-0925.png",
-      "role": "uncompressed-reference-frame"
+      "role": "uncompressed-reference-frame",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "evidence/v6-original.json",
       "sha256": "68ad65fddc447d05a3856d344868dfd3b3d78b5a7e9176fe3ff1efea32d4d018",
       "bytes": 657476,
       "source": "runs/20261109-pamela-v6-sequence/take-01/sequence-evidence.json",
-      "role": "historical-evidence-not-runtime"
+      "role": "historical-evidence-not-runtime",
+      "archived": "Git-historiken (borttagen i ae79f17, 2026-11-23)"
     },
     {
       "path": "evidence/motion-v1.json",
       "sha256": "6632426731aa50cf0cdf4f814e64e55dd0e8515c6099375dfd6a5f889f9f4c8a",
       "bytes": 35407,
       "source": "references/pamela-motion-contract.json",
-      "role": "historical-schema-not-runtime"
+      "role": "historical-schema-not-runtime",
+      "archived": "Git-historiken (borttagen i ae79f17, 2026-11-23)"
     },
     {
       "path": "materials/kortmaterial.js",

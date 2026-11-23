@@ -7,7 +7,7 @@
       "missing": {},
       "films": {
         "from": null,
-        "note": "Pamela lämnade main 2026-11-23 (Jakob: \"Du ska ta bort Pamela ur main\"); hennes filmer, bilder och bank ligger i D:/dealer-archive/pamela-2026-11-23. Kvar här är bara det Beställ lånar och V6, som Jakob ville behålla att titta på (2026-11-20)."
+        "note": "Pamela lämnade main 2026-11-23 (Jakob: \"Du ska ta bort Pamela ur main\"); hennes filmer, bilder och bank ligger i D:/dealer-archive/pamela-2026-11-23. Kvar här är bara det Beställ lånar, tills beställningsvägen klarar sig utan det; V6 och originalen ligger i D:/dealer-archive/v6-2026-11-23."
       },
       "outside": null,
       "entries": [
@@ -61,31 +61,6 @@
             "from": "gamla labbets vilobild med kort (direct/end.png), kortet ur pamela-p4-c1-deal-calm-01 ruta 119",
             "when": "2026-11-10"
           }
-        },
-        {
-          "id": "pamela-v6-filmen",
-          "role": "referens",
-          "name": "V6-filmen",
-          "path": "assets/reference/v6.mp4",
-          "still": 520,
-          "fps": 30,
-          "note": "Jakobs valda visuella referens: en hel giv till P4 med rum, bord och kort. Byter hand, större kort än planens.",
-          "source": {
-            "from": "gamla labbet, byggd av de fyra råfilmerna",
-            "when": "2026-11-10"
-          }
-        },
-        {
-          "id": "pamela-v6-rutor",
-          "role": "referens",
-          "name": "V6-rutor vid skarvarna",
-          "path": "assets/reference/native-0000.png",
-          "pattern": "assets/reference/native-*.png",
-          "note": "Okomprimerade V6-rutor vid skarvarna, för kontroll. Inget ankare.",
-          "source": {
-            "from": "V6-filmen",
-            "when": "2026-11-10"
-          }
         }
       ]
     },
@@ -93,7 +68,7 @@
       "name": "Paow",
       "missing": {
         "ankare-2.2": "A2.2 görs om på Jakobs ord (blicken mot skon, en styvare hand). Tre försök i bildmodellen föll; det tas nu ur en film som dockan styr. Bilden som gäller används tills dess.",
-        "referens": "Ingen godkänd egen än. En giv beställs med dockans film till platsen som referensfilm, annars med en rakt godkänd giv dit (Pamelas)."
+        "referens": "Ingen godkänd egen än. En giv beställs med dockans film till platsen som referensfilm, annars med en rakt godkänd giv dit."
       },
       "films": {
         "from": "data/clip-jobs.json",
@@ -108,7 +83,7 @@
             "file": "bestallningar-b1a.json",
             "films": 8,
             "usable": 1,
-            "note": "Samma giv till P4 på åtta sätt. Kling 4 med Pamelas film som referens användbar med anmärkningar; 3 föll, 4 bara mätta. Prov paow-samma-film."
+            "note": "Samma giv till P4 på åtta sätt. Kling 4 med en godkänd giv som referens användbar med anmärkningar; 3 föll, 4 bara mätta. Provet arkiverat 2026-11-23."
           },
           {
             "file": "bestallningar-b1b.json",
@@ -150,7 +125,7 @@
             "file": "bestallningar-b7.json",
             "films": 4,
             "usable": 2,
-            "note": "Spelare 3 kort 2 ur labbets plan, två med Paow och två med Pamela. Kling 4-filmerna användbara med anmärkningar (Pamela etta, Paow tvåa). Prov plan-till-film-p3c2."
+            "note": "Spelare 3 kort 2 ur labbets plan, två med Paow och två med den förra dealern (arkiverade 2026-11-23). Kling 4-filmerna användbara med anmärkningar. Prov plan-till-film-p3c2."
           },
           {
             "file": "bestallningar-b8.json",
@@ -246,7 +221,7 @@
             "file": "bestallningar-b23.json",
             "films": 0,
             "usable": 0,
-            "note": "Bara bilder: nytt A1, första försöket (ny person i Pamelas bild). Används inte."
+            "note": "Bara bilder: nytt A1, första försöket (en ny person i en äldre bild). Används inte."
           },
           {
             "file": "bestallningar-b24.json",
@@ -403,7 +378,7 @@
           "state": "arkiverad",
           "note": "Det första utseendet. Filmerna b9–b12 utgår härifrån. Kallas keystone i provet men är ett ankare.",
           "source": {
-            "from": "GPT Image 2.5 ur Pamelas vila och Jakobs bilder, plagget förlängt lokalt",
+            "from": "GPT Image 2.5 ur en äldre vilobild och Jakobs bilder, plagget förlängt lokalt",
             "when": "2026-11-11"
           },
           "stateBy": "Jakob 2026-11-20 08:35: ersatt → arkiverad (Material)"
@@ -3929,7 +3904,7 @@
     "petra": {
       "name": "Petra",
       "missing": {
-        "ankare-1": "Inga ankare. Petra är ett arbetsnamn för ett avskilt spår (dealer-bf, 2026-11-13) med Pamelas utseende; Jakob har inte bestämt namnet, och inget beställs för henne i Beställ.",
+        "ankare-1": "Inga ankare. Petra är ett arbetsnamn för ett avskilt spår (dealer-bf, 2026-11-13); Jakob har inte bestämt namnet, och inget beställs för henne i Beställ.",
         "keystone": "Sex kandidater ligger i Prov petra-keystone; ingen är vald."
       },
       "films": {
