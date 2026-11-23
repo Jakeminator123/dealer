@@ -22,6 +22,7 @@ import os from "node:os";
 import path from "node:path";
 import sharp from "sharp";
 import { orderRoutes } from "../../tools/order-routes.ts";
+import { motionRegister } from "../../tools/register-store.ts";
 import { STEPS, openEndWords, readCutChecks, seatWords, type BankFacts, type OrdersAnswer } from "../../src/order-model.ts";
 import { productionList, readProduction } from "../../tools/produce.ts";
 import { REFERENCE_ABSENT, recipeFor } from "../../src/order-methods.ts";
@@ -35,7 +36,7 @@ const SEATS = ["P1.C1", "P2.C1", "P3.C1", "P4.C1", "P5.C1", "P6.C1", "P7.C1", "D
 test("Bordet's row and the store agree for every standard step and card, and the return trial needs its named source", async (t) => {
   const root = await mkdtemp(path.join(base, "line-same-"));
   t.after(() => rm(root, { recursive: true, force: true }));
-  for (const dir of ["data", "placements", "motions", "assets/anchors/paow-bild"]) await mkdir(path.join(root, dir), { recursive: true });
+  for (const dir of ["data", "placements", "assets/anchors/paow-bild"]) await mkdir(path.join(root, dir), { recursive: true });
   for (const file of ["data/order-policy.json", "data/dealers.json", "data/order-methods.json"]) await copyFile(path.join(repo, file), path.join(root, file));
   // The plan's places as they are, its hands and turns fixed here (the pinch, the left hand, no handbyte), so that what Jakob
   // has set for a card in Kortplan does not change what this test compares.
@@ -60,7 +61,7 @@ test("Bordet's row and the store agree for every standard step and card, and the
     films[id] = Buffer.from(`film ${id}`);
     await mkdir(path.join(root, "assets/motions", id), { recursive: true });
     await writeFile(path.join(root, "assets/motions", id, "source.mp4"), films[id]);
-    await writeFile(path.join(root, "motions", `${id}.json`), JSON.stringify({ source: { frames: seconds * 30, fps: 30, sha256: sha(films[id]) }, review: more.review ?? straight, ...(more.motion ? { motion: more.motion } : {}) }));
+    motionRegister(root).put(id, { id, source: { frames: seconds * 30, fps: 30, sha256: sha(films[id]) }, review: more.review ?? straight, ...(more.motion ? { motion: more.motion } : {}) });
   };
   // Another dealer's films (a made-up second dealer, "ada"), which the rule may take as reference films, and Paow's own.
   const jobs = [
@@ -83,7 +84,7 @@ test("Bordet's row and the store agree for every standard step and card, and the
     { id: "paow-giv-2-1-p2-03-01-deal", from: "READY", to: "P2.C1", clip: "paow-giv-2-1-p2-03-01", frames: [0, 124], dealer: "paow" }, { id: "paow-giv-2-1-p2-03-01-return", from: "P2.C1", to: "READY", clip: "paow-giv-2-1-p2-03-01", frames: [125, 209], dealer: "paow" },
     { id: "paow-giv-2-1-d-01-01-deal", from: "READY", to: "D.C1", clip: "paow-giv-2-1-d-01-01", frames: [0, 99], dealer: "paow" }, { id: "paow-giv-2-1-d-01-01-return-ready", from: "D.C1", to: "READY", clip: "paow-giv-2-1-d-01-01", frames: [100, 209], dealer: "paow" },
   ];
-  for (const d of derived) await writeFile(path.join(root, "motions", `${d.id}.json`), JSON.stringify({ review: straight }));
+  motionRegister(root).putAll(derived.map((d) => ({ id: d.id, review: straight })));
   await writeFile(path.join(root, "data/clip-jobs.json"), JSON.stringify({ jobs, derived }));
   // The cut frame where that film's return begins lies off the plan's card (data/cut-frames.json): it is no end picture, so
   // the dealer's first card has none, for the row, the store and the production list alike.
@@ -118,7 +119,7 @@ test("Bordet's row and the store agree for every standard step and card, and the
   const register = all.methods!;
   assert.deepEqual(all.rendered!.map((r) => r.id), rendered.map((r) => r.id));
   const motions: NonNullable<BankFacts["motions"]> = {};
-  for (const id of [...jobs.map((j) => j.id), ...derived.map((d) => d.id)]) motions[id] = JSON.parse(await readFile(path.join(root, "motions", `${id}.json`), "utf8"));
+  for (const id of [...jobs.map((j) => j.id), ...derived.map((d) => d.id)]) motions[id] = motionRegister(root).get(id) as NonNullable<BankFacts["motions"]>[string];
   for (const d of derived) motions[d.id] = { ...motions[d.id], source: motions[d.clip]!.source };
   const bank: BankFacts = { jobs, derived: derived as BankFacts["derived"], motions, rendered: all.rendered, cutChecks: readCutChecks(cutFrames) };
   // The production list (node tools/produce.ts), read from the lab as the command reads a checkout, before any draft exists.

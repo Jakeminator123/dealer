@@ -1,7 +1,7 @@
 # Drift, anslutningar och återbruk
 
 Rutiner som görs i dag, och det som gäller den här datorn. Läget och ägarna står i HANDOFF och i banornas lägesfiler
-(`docs/lage/`), beslut per film i `motions/`, Jakobs besked i [BESKED](BESKED.md).
+(`docs/lage/`), beslut per film i filmregistret (`data/motions.jsonl`), Jakobs besked i [BESKED](BESKED.md).
 
 ## Identitet och ansvar
 
@@ -291,8 +291,15 @@ delade tjänster. Rutinen och radering av verifierat oanvänt material: [lokal a
   agenternas minne namnger med sökväg (`SOURCES`; namnge undermappen som ska leva kvar i banans lägesfil),
   beställningsliggare och kvitton, `chrome-meshy`, Python-miljöer, mappar som en process eller en länk namnger, film
   och ljud, och allt utanför `D:/dealer-scratch`.
-- Registren och körkvittona är JSON; ett återbyggbart SQLite-index samlar sökning och spårbarhet
-  ([evidens](../tools/evidence.md)). Ingen produktionsdatabas är skapad.
+- **Filmregistret städar sig självt:** en film som gallras (`node tools/media-thin.ts`) tar sina poster och tagningar
+  ur registret, och deras rader ur `data/clip-jobs.json`. `node tools/register.ts sweep --dry` visar poster vars film
+  inte längre finns på disken, och `sweep` tar dem; ett träd utan filmer under `assets/motions/` rörs aldrig. Domen
+  på en borttagen post (Jakobs, eller en given åt honom) står kvar som en rad i `data/motions-removed.jsonl`, och
+  posten tas tillbaka ur Git.
+- Registren och körkvittona är JSON. Filmregistret är en textfil i Git (`data/motions.jsonl`) med en arbetskopia i
+  SQLite under `.runtime/register/`, som byggs om ur texten (SYSTEM, "Ett rörelseregister och tydliga bevis"). Ett
+  återbyggbart SQLite-index samlar sökning och spårbarhet ([evidens](../tools/evidence.md)). Ingen produktionsdatabas
+  är skapad.
 
 ## Molnmiljö
 

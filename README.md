@@ -20,8 +20,8 @@ src/          den delade motorn och sidornas kod: 3D-scen, klippgraf, kort, plac
 tools/        kommandon, labbservern (preview.ts), instruktionerna (*.md) och testerna (*.test.ts)
 cloud/        studions onlinekopia: lås och bot
 materials/    kort- och markerprov
-data/         register: manifest.json (filernas SHA-256), klippjobb, scenkontrakt, filmkatalog
-motions/      en post per film med Jakobs dom
+data/         register: manifest.json (filernas SHA-256), klippjobb, scenkontrakt, filmkatalog och filmregistret
+              (motions.jsonl: en post per film och tagning, med Jakobs dom)
 placements/   Jakobs kortplan
 evidence/     verifieringskvitton
 docs/         SYSTEM, DRIFT, TAL, FILMMODELLER, BESKED, BRISTER och läget per bana (lage/)
@@ -49,7 +49,10 @@ Arkivet är det tidigare projektet på D: (snyggare-dealer). Sidorna har kvar si
 
 ## Register
 
-- `motions/<clip-id>.json` är ensam källa för en films klassning och Jakobs beslut.
+- Filmregistret är ensam källa för en films klassning och Jakobs beslut: en post per film och tagning i
+  `data/motions.jsonl` (en rad per post), läst och skriven genom `tools/register-store.ts`. Arbetskopian är en
+  SQLite-databas under `.runtime/register/`, som byggs om ur textfilen. Sökningen döljer textfilen: läs en post med
+  `node tools/register.ts get <id>`. Kontraktet står i SYSTEM, "Ett rörelseregister och tydliga bevis".
 - `data/clip-jobs.json` är klippbankens register: ankare, jobb (filmerna som gjordes genom Runways API; inga nya läggs
   där), härledda tagningar (bland dem allt från Beställ) och API-tidens kredittak. `data/orders/<id>.json` är studions beställningar;
   `data/dealers.json` och `data/media-roles.json` säger vilka dealers som finns och vilka bilder som gäller;
@@ -98,7 +101,7 @@ Dokumenten länkar till dessa i stället för att föra egna statusregister. Med
   - **Docka**: en del av Scen & bord (`/studio/bordet/?lage=docka`): Ställ dockan (Docklabbet i en ram, med reglage och
     Spara som standard) och Dockans filmer bredvid de beställda tagningarna (`dealer3d/page/`, [dealer3d/LASMIG.md](dealer3d/LASMIG.md)).
     Knappen Beställ given gör dockans film ur den sparade rörelsen och ett utkast i Kön (`node tools/doll-order.ts paow P6.C1`).
-  - **Granska**: Filmer, med Jakobs domar som skrivs i `motions/`, och Prov, provmapparna under `assets/proofs/`
+  - **Granska**: Filmer, med Jakobs domar som skrivs i filmregistret, och Prov, provmapparna under `assets/proofs/`
     (`/studio/granska/?prov=<mapp>`; `/studio/prov/` leder dit).
   - **Material** (vilka bilder som gäller), **Lipsync** (var munnen görs och vad som är inställt, skrivskyddad) och
     **Casino** (spelet med vald look).
@@ -130,7 +133,7 @@ kräver Jakobs uttryckliga ord står i [AGENTS](AGENTS.md), "Det som skyddar Jak
 ## Historiskt underlag
 
 Kvittona som gäller i dag ligger i `evidence/`, ett per fråga, och det som följer av dem står i SYSTEM, "Återbruk och
-införande"; beslut per film står i `motions/`. Runway-underlaget från 10 november (promptar, start- och slutbilder,
+införande"; beslut per film står i filmregistret (`data/motions.jsonl`). Runway-underlaget från 10 november (promptar, start- och slutbilder,
 resultat) är Prov-mappen `runway-underlaget-10-nov`. Kvitton som inget annat dokument pekar på: placeringslabbets
 grundkontroller ([placement-lab](evidence/placement-lab.json)), vy- och nodkontroller
 ([plane-and-nodemap](evidence/plane-and-nodemap.json)), den externa granskningen

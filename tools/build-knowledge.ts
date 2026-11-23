@@ -15,6 +15,7 @@ import path from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import {buildGraph, type BankData, type Graph} from '../src/clip-graph.ts';
 import {readRelease, type Proof, type Release} from './studio-freeze.ts';
+import {motionRegister} from './register-store.ts';
 import {DEALER_DOCS, OWN_VIEWS, assemble, bankSections, cleanDoc, commitSection, prioFrom, proofSections, scanLeaks, viewSection, wordSections, type Built, type Doc, type Removed, type ViewText} from './knowledge.ts';
 import {Index, type Knowledge} from '../cloud/studio/bot-search.ts';
 
@@ -100,14 +101,15 @@ export async function localBank(root: string): Promise<BankData> {
   const file = await readJson(at('data/clip-jobs.json')), named = (list: unknown) => (Array.isArray(list) ? list : []).filter((x: any) => typeof x?.id === 'string' && CLIP.test(x.id));
   const jobs = named(file?.jobs), edits = named(file?.edits).filter((e: any) => typeof e.source?.clip === 'string'), derived = named(file?.derived).filter((d: any) => typeof d.clip === 'string' && CLIP.test(d.clip));
   const motions: Record<string, unknown> = {}, receipts: Record<string, unknown> = {}, media: Record<string, unknown> = {};
+  const posts = motionRegister(root).posts(); // the register of films and takes (tools/register-store.ts)
   const tracking = async (id: string) => ({track: await exists(at(`assets/tracking/${id}/card-track.json`)) ? `assets/tracking/${id}/card-track.json` : null, overrides: await exists(at(`assets/tracking/${id}/overrides.json`)) ? `assets/tracking/${id}/overrides.json` : null});
   for (const take of derived as any[]) {
-    const own = await readJson(at(`motions/${take.id}.json`)), clip = await readJson(at(`motions/${take.clip}.json`));
+    const own = posts.get(take.id) as any, clip = posts.get(take.clip) as any;
     motions[take.id] = {source: clip?.source, motion: own?.motion, review: own?.review};
     media[take.id] = {video: await exists(at(`assets/motions/${take.clip}/source.mp4`)) ? `assets/motions/${take.clip}/source.mp4` : null, first: null, last: null, ...await tracking(take.clip)};
   }
   for (const job of [...jobs, ...edits] as any[]) {
-    const motion = await readJson(at(`motions/${job.id}.json`)), receipt = await readJson(at(`assets/motions/${job.id}/generation.json`));
+    const motion = posts.get(job.id) as any, receipt = await readJson(at(`assets/motions/${job.id}/generation.json`));
     if (motion) motions[job.id] = {source: motion.source, motion: motion.motion, review: motion.review};
     if (receipt) receipts[job.id] = {status: receipt.status, output: receipt.output ? {fps: receipt.output.fps, frames: receipt.output.frames, width: receipt.output.width, height: receipt.output.height} : null};
     const present = async (name: string) => await exists(at(`assets/motions/${job.id}/${name}`)) ? `assets/motions/${job.id}/${name}` : null;

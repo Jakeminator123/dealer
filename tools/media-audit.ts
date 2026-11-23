@@ -27,6 +27,7 @@ import type {PlacementPlan} from '../src/placement-model.ts';
 import {execFileSync} from 'node:child_process';
 import {stat} from 'node:fs/promises';
 import {mediaFileSha256, mediaFileStamp} from './media-roles.ts';
+import {MOTIONS_TEXT, motionRegister} from './register-store.ts';
 import {writeFileSync} from 'node:fs';
 
 export type Use = 'spelas' | 'visas' | 'referens' | 'bara registrerad' | 'okänd';
@@ -173,16 +174,14 @@ export function audit(repo: string): {items: Item[]; judged: Map<string, string>
   const jobsFile = json('data/clip-jobs.json') ?? {}, list = (v: unknown) => (Array.isArray(v) ? v : []) as {id: string; clip?: string; source?: {clip?: string}}[];
   const jobs = list(jobsFile.jobs), derived = list(jobsFile.derived), edits = list(jobsFile.edits);
   const motions: Record<string, never> = {}, receipts: Record<string, never> = {}, media: Record<string, {video: string | null}> = {}, judged = new Map<string, string>();
+  const posts = motionRegister(repo).posts() as Map<string, any>; // the register of films and takes (tools/register-store.ts)
   for (const t of [...jobs, ...edits, ...derived]) {
-    const m = json(`motions/${t.id}.json`), clip = t.clip ?? t.id;
-    if (m) { motions[t.id] = m as never; if (judgedBy(m.review)) judged.set(t.id, `motions/${t.id}.json review (${m.review.decision ?? ''})`); }
+    const m = posts.get(t.id), clip = t.clip ?? t.id;
+    if (m) { motions[t.id] = m as never; if (judgedBy(m.review)) judged.set(t.id, `${MOTIONS_TEXT} ${t.id} review (${m.review.decision ?? ''})`); }
     const r = json(`assets/motions/${t.id}/generation.json`); if (r) receipts[t.id] = r as never;
     media[t.id] = {video: existsSync(path.join(repo, `assets/motions/${clip}/source.mp4`)) ? `assets/motions/${clip}/source.mp4` : null};
   }
-  for (const f of readdirSync(path.join(repo, 'motions')).filter(f => f.endsWith('.json'))) {
-    const m = json(`motions/${f}`), id = f.slice(0, -5);
-    if (m && judgedBy(m.review) && !judged.has(id)) judged.set(id, `motions/${f} review (${m.review.decision ?? ''})`);
-  }
+  for (const [id, m] of posts) if (judgedBy(m.review) && !judged.has(id)) judged.set(id, `${MOTIONS_TEXT} ${id} review (${m.review.decision ?? ''})`);
   const data = {jobs, derived, edits, motions, receipts, media} as unknown as BankData;
   const dealers = [...new Set([...Object.values(dealersOf(data as never)), ...list(json('data/dealers.json')?.dealers).map(d => d.id)])];
   const played = playedTakes(data, dealers), clipOf = new Map(derived.map(d => [d.id, String(d.clip)]));
@@ -193,7 +192,7 @@ export function audit(repo: string): {items: Item[]; judged: Map<string, string>
     const p = ref?.file?.path; if (typeof p === 'string') claims.push({path: p, use: played.has(t.id) ? 'referens' : 'bara registrerad', why: `data/clip-jobs.json ${t.id} ${ref === t.first ? 'first' : 'last'}.file`});
   }
   for (const t of [...jobs, ...edits, ...derived]) if (!played.has(t.id)) claims.push({path: `assets/motions/${t.clip ?? t.id}`, use: 'bara registrerad', why: `data/clip-jobs.json ${t.id} (${String((motions[t.id] as {review?: {decision?: string}} | undefined)?.review?.decision ?? 'ingen dom')}, spelas inte)`});
-  for (const f of readdirSync(path.join(repo, 'motions')).filter(f => f.endsWith('.json'))) for (const p of pathsIn(read(`motions/${f}`))) claims.push({path: p, use: 'bara registrerad', why: `motions/${f}`});
+  for (const [id, m] of posts) for (const p of pathsIn(JSON.stringify(m))) claims.push({path: p, use: 'bara registrerad', why: `${MOTIONS_TEXT} ${id}`});
   // Mouth patches the game lays on its films.
   for (const p of list(json('data/speech-patches.json')?.patches) as {path?: string; film?: string; id: string}[]) if (p.path && p.film && playedClips.has(/assets\/motions\/([^/]+)\//.exec(p.film)?.[1] ?? '')) claims.push({path: p.path, use: 'spelas', why: `data/speech-patches.json ${p.id}`});
   else if (p.path) claims.push({path: p.path, use: 'bara registrerad', why: `data/speech-patches.json ${p.id} (filmen spelas inte)`});
@@ -351,11 +350,12 @@ export async function fitAll(repo: string, loadPixels = pixels): Promise<{rule: 
   const entries: Record<string, Fit> = {}, takes: Record<string, Fit & {approved: boolean; played: boolean}> = {};
   // The bank's deals with a card track.
   const jobsFile = json('data/clip-jobs.json') ?? {}, all = [...(jobsFile.jobs ?? []), ...(jobsFile.derived ?? []), ...(jobsFile.edits ?? [])] as {id: string; kind?: string; to?: string; clip?: string}[];
+  const posts = motionRegister(repo).posts() as Map<string, any>;
   const {items} = audit(repo), playedFolders = new Set(items.filter(i => i.use === 'spelas' && i.top === 'assets/motions').map(i => i.path.split('/')[2]));
   for (const t of all.filter(t => t.kind === 'DEAL' || /\.C\d$/.test(String(t.to)))) {
     const clip = t.clip ?? t.id, track = json(`assets/tracking/${clip}/card-track.json`), card = /(?:P[1-7]|D)\.C[1-3]/.exec(String(t.to))?.[0];
     if (!card || takes[clip]) continue;
-    const m = json(`motions/${t.id}.json`), approved = judgedBy(m?.review) === 'Jakob' && /ACCEPTED|APPROVED/.test(String(m?.review?.decision ?? ''));
+    const m = posts.get(t.id), approved = judgedBy(m?.review) === 'Jakob' && /ACCEPTED|APPROVED/.test(String(m?.review?.decision ?? ''));
     const want = ruleCard(card);
     if (!track?.restQuad || !want) { takes[clip] = {verdict: 'går inte att mäta', words: !want ? `Planen har ingen plats ${card}.` : 'Filmen har inget kortspår med ett liggande kort.', approved, played: playedFolders.has(clip)}; continue; }
     const q = (track.restQuad as number[][]).map(([x, y]) => ({x, y})), mm = measureCard(q, want, card);

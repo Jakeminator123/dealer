@@ -1,7 +1,8 @@
 // Offline tests for the clip-bank graph. No network, media or ffmpeg.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFile, readdir} from 'node:fs/promises';
+import {readFile} from 'node:fs/promises';
+import {motionRegister} from './register-store.ts';
 import * as graph from '../src/clip-graph.ts';
 import type {BankData, BankJob, MotionRecord} from '../src/clip-graph.ts';
 import {INITIAL_TARGETS as PLAN_TARGETS, defaultPlan, toPixels} from '../src/placement-model.ts';
@@ -382,7 +383,7 @@ test('the tree is laid out like the table: P1 far left, P7 far right, the dealer
 
 test('every tracked take is shown: known nodes map to model edges, unknown nodes land in the experiment group', async () => {
   const file = JSON.parse(await readFile('data/clip-jobs.json', 'utf8')), motions: Record<string, MotionRecord> = {};
-  for (const name of await readdir('motions')) if (name.endsWith('.json')) motions[name.slice(0, -5)] = JSON.parse(await readFile(`motions/${name}`, 'utf8'));
+  for (const [id, post] of motionRegister(process.cwd()).posts()) motions[id] = post as MotionRecord;
   // The graph is the first dealer's: another dealer's takes in the same file are theirs to show.
   const owner = graph.dealersOf(file), mine = (list?: BankJob[]) => (list ?? []).filter(j => owner[j.id] === graph.DEALER);
   file.jobs = mine(file.jobs); file.derived = mine(file.derived);
@@ -635,7 +636,7 @@ test('she comes to the table and leaves it: two edges with rest as their fixed e
 
 test('the real job file in seat mode: 33 needed films, every entry placed, and each shared second card follows its seat', async () => {
   const file = JSON.parse(await readFile('data/clip-jobs.json', 'utf8')), motions: Record<string, MotionRecord> = {};
-  for (const name of await readdir('motions')) if (name.endsWith('.json')) motions[name.slice(0, -5)] = JSON.parse(await readFile(`motions/${name}`, 'utf8'));
+  for (const [id, post] of motionRegister(process.cwd()).posts()) motions[id] = post as MotionRecord;
   const g = graph.buildGraph({jobs: file.jobs, derived: file.derived, edits: file.edits, budget: file.budget, motions}), f = g.summary.films;
   // Every entry is placed in its dealer's graph; this one is the first dealer's.
   const owner = graph.dealersOf(file), hers = (list?: {id: string}[]) => (list ?? []).filter(x => owner[x.id] === graph.DEALER).length;
@@ -827,7 +828,7 @@ function takesBeforePrimary(g: graph.Graph, steps: graph.Step[]): (string | null
 
 test('a bank without any Primär resolves as before: the takes of the rule before Primär, cut exactly as when the round names each of them', async () => {
   const file = JSON.parse(await readFile('data/clip-jobs.json', 'utf8')), motions: Record<string, MotionRecord> = {};
-  for (const name of await readdir('motions')) if (name.endsWith('.json')) motions[name.slice(0, -5)] = JSON.parse(await readFile(`motions/${name}`, 'utf8'));
+  for (const [id, post] of motionRegister(process.cwd()).posts()) motions[id] = post as MotionRecord;
   // The real bank as it is, with any Primär Jakob has set since taken away again.
   for (const motion of Object.values(motions)) if (motion.review?.acceptedAs === 'MAIN') delete motion.review.acceptedAs;
   const real: BankData = {jobs: file.jobs, derived: file.derived, edits: file.edits, motions}, whole = graph.roundSequence({seats: graph.SEATS, reveal: true, thirdDealerCard: true});
@@ -859,7 +860,7 @@ test('every segment of a whole round says why its take plays, with a short Swedi
   const fit = graph.resolveRound(graph.buildGraph(primaryBank()), graph.parseSequence('READY>P4.C1@p4-deal-01 | P4.C1>READY').steps);
   assert.deepEqual(played(fit), [['READY>P4.C1', 'p4-deal-01', 'LOCKED', 96, 'FRAME'], ['P4.C1>READY', 'p4-back-ready-01', 'FITS_DEAL', null, null]]);
   const file = JSON.parse(await readFile('data/clip-jobs.json', 'utf8')), motions: Record<string, MotionRecord> = {};
-  for (const name of await readdir('motions')) if (name.endsWith('.json')) motions[name.slice(0, -5)] = JSON.parse(await readFile(`motions/${name}`, 'utf8'));
+  for (const [id, post] of motionRegister(process.cwd()).posts()) motions[id] = post as MotionRecord;
   for (const segments of [round, graph.resolveRound(graph.buildGraph({jobs: file.jobs, derived: file.derived, edits: file.edits, motions}), graph.roundSequence({seats: graph.SEATS, reveal: true, thirdDealerCard: true}))])
     for (const s of segments) { assert.ok(s.why in graph.WHY_LABEL, s.id); assert.equal(s.why === 'GAP', !s.take, s.id); }
 });

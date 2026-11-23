@@ -10,6 +10,7 @@ import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import {buildGraph, type Take} from '../src/clip-graph.ts';
 import {readFlip, type FlipReading, type FlipTrack} from '../src/flip-axis.ts';
+import {motionRegister} from './register-store.ts';
 
 if (path.resolve(process.cwd()) !== path.resolve(fileURLToPath(new URL('../', import.meta.url)))) throw Error('Run from the dealer checkout.');
 const args = process.argv.slice(2), jsonAt = args.indexOf('--json'), jsonOut = jsonAt >= 0 ? args[jsonAt + 1] : null, all = args.includes('--all');
@@ -24,9 +25,10 @@ const named = (list: unknown) => (Array.isArray(list) ? list : []).filter((item:
 const file = await readJson('data/clip-jobs.json');
 const jobs = named(file?.jobs), edits = named(file?.edits).filter((e: any) => typeof e.source?.clip === 'string'), derived = named(file?.derived).filter((d: any) => typeof d.clip === 'string' && clipId.test(d.clip));
 const motions: Record<string, any> = {}, receipts: Record<string, any> = {}, media: Record<string, any> = {};
-for (const take of derived) { const own = await readJson(`motions/${take.id}.json`), clip = await readJson(`motions/${take.clip}.json`);
+const posts = motionRegister(process.cwd()).posts() as Map<string, any>; // the register of films and takes (tools/register-store.ts)
+for (const take of derived) { const own = posts.get(take.id), clip = posts.get(take.clip);
   motions[take.id] = {source: clip?.source, motion: own?.motion, review: own?.review}; media[take.id] = {video: await exists(`assets/motions/${take.clip}/source.mp4`) ? `assets/motions/${take.clip}/source.mp4` : null}; }
-for (const job of [...jobs, ...edits]) { const motion = await readJson(`motions/${job.id}.json`), receipt = await readJson(`assets/motions/${job.id}/generation.json`);
+for (const job of [...jobs, ...edits]) { const motion = posts.get(job.id), receipt = await readJson(`assets/motions/${job.id}/generation.json`);
   if (motion) motions[job.id] = {source: motion.source, motion: motion.motion, review: motion.review};
   if (receipt) receipts[job.id] = {status: receipt.status, estimatedCredits: receipt.estimatedCredits, output: receipt.output ? {fps: receipt.output.fps, frames: receipt.output.frames} : null};
   media[job.id] = {video: await exists(`assets/motions/${job.id}/source.mp4`) ? `assets/motions/${job.id}/source.mp4` : null}; }

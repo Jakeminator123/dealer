@@ -46,7 +46,7 @@ kort 5, och om kompositionens tempo ska gälla alla handfilmer i rundan (som nu)
 `map-layout.ts`, `tree-path.ts`, `primaries.ts` och `edge-stats.ts`, `src/dealer-trees.ts`, `tools/dealer-tree.ts`,
 `data/dealer-trees.json` och testerna `studio/tests/dealer-trees.test.ts` och `tree-path.test.ts`. Huvudagentens,
 läs men ändra inte: `src/clip-graph.ts`, `src/game-director.ts`, `tools/preview.ts`, `data/media-roles.json`,
-`motions/` och `tools/chain-consistency.test.ts`; behövs en ändring där, skriv vad och varför till huvudagenten.
+filmregistret (`data/motions.jsonl`) och `tools/chain-consistency.test.ts`; behövs en ändring där, skriv vad och varför till huvudagenten.
 `node tools/dealer-tree.ts` skriver sin rapport i `.runtime/dealer-trad/`. Hans ord står i
 [BESKED](../BESKED.md): sök på "Träd läggs ihop", "Karta får kameran", "Karta med Primära" och "Flera namngivna träd".
 

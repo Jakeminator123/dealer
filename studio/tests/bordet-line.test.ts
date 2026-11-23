@@ -153,7 +153,7 @@ test("the ordering block's state in one line", () => {
 test("Bordet's rows for a card with handbyte and one without say what the store's preview freezes", async (t) => {
   const root = await mkdtemp(path.join(base, "bordet-line-"));
   t.after(() => rm(root, { recursive: true, force: true }));
-  for (const dir of ["data", "placements", "motions", "assets/anchors/paow-bild"]) await mkdir(path.join(root, dir), { recursive: true });
+  for (const dir of ["data", "placements", "assets/anchors/paow-bild"]) await mkdir(path.join(root, dir), { recursive: true });
   for (const file of ["data/order-policy.json", "data/dealers.json", "data/order-methods.json"]) await copyFile(path.join(repo, file), path.join(root, file));
   // The plan's places as they are (read from his plan, written only into this temporary lab), its motions fixed here: seat
   // 4's second card with handbyte, every other card without.

@@ -10,6 +10,7 @@ import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {DAY, MARKER, blocked, carryOut, emptyShield, emptyTrash, factOf, freedBytes, guardKeys, protect, type Action, type GroupPlan, type Plan} from './media-thin.ts';
 import {unitOf} from './media-audit.ts';
+import {motionRegister} from './register-store.ts';
 
 const OLD = Date.now() - 10 * DAY;
 const sha = (s: string) => createHash('sha256').update(s).digest('hex');
@@ -26,7 +27,7 @@ const planOf = (groups: Partial<GroupPlan>[]): Plan => ({schemaVersion: 1, about
 test('the guard: kept collections, V6, originals, references, outside assets/, young files and guarded names never pass', () => {
   const now = Date.now(), s = emptyShield(now), fact = (p: string, mtimeMs = OLD, key = `1:${p}`) => ({path: p, mtimeMs, key});
   for (const p of ['assets/noir/v4.mp4', 'assets/films/intro/intro.mp4', 'assets/v6/frame.png', 'assets/reference/v6.mp4', 'assets/originals/a.mp4',
-    'private/recovery/x.mp4', 'output/v6/a.png', 'assets/../private/x.mp4', 'assets/motions/../../x.mp4', 'motions/x.json']) assert.ok(blocked(fact(p), s), p);
+    'private/recovery/x.mp4', 'output/v6/a.png', 'assets/../private/x.mp4', 'assets/motions/../../x.mp4', 'data/motions.jsonl']) assert.ok(blocked(fact(p), s), p);
   assert.match(blocked(fact('assets/motions/old-01/source.mp4', now - DAY), s) ?? '', /tre dygn/);
   assert.equal(blocked(fact('assets/motions/old-01/source.mp4'), s), null);
   protect(s, 'assets/motions/good-01', 'spelet har good-01', unitOf);
@@ -51,7 +52,7 @@ test('bytes are freed only when the last name of a file goes', () => {
   assert.equal(freedBytes([{key: 'a', bytes: 100, links: 3}, {key: 'a', bytes: 100, links: 3}, {key: 'b', bytes: 5, links: 1}]), 5);
 });
 
-test('carrying out: moved to the trash after both SHA-256 agree, RADERAD.txt written, guarded, young and changed units left whole', async () => {
+test('carrying out: moved to the trash after both SHA-256 agree, RADERAD.txt written, the film\'s posts out of the register, guarded, young and changed units left whole', async () => {
   const t = sandbox();
   try {
     const film = t.put('assets/motions/bad-01/source.mp4', 'a rejected take'), twin = 'assets/orders/o1/take-1/after.mp4';
@@ -71,6 +72,9 @@ test('carrying out: moved to the trash after both SHA-256 agree, RADERAD.txt wri
       {id: 'private', reason: 'test', marker: null, files: [t.row(secret)]},
     ];
     writeFileSync(path.join(t.repo, changed), 'after, and longer');
+    // The register: the film that goes has its own post and a take cut from it with his verdict; the kept film has a post too.
+    const register = motionRegister(t.repo), post = (id: string, clip: string, review?: unknown) => ({id, dealer: 'paow', source: {path: `assets/motions/${clip}/source.mp4`}, ...(review ? {review} : {})});
+    register.putAll([post('bad-01', 'bad-01'), post('bad-01-deal', 'bad-01', {decision: 'REJECTED', userAccepted: false, userReview: 'Jakob 2026-11-20: Inte bra.'}), post('good-01', 'good-01')]);
     const shield = emptyShield();
     protect(shield, 'assets/motions/good-01', 'spelet har good-01', unitOf);
     guardKeys(shield, [factOf(path.join(t.repo, noir), noir)]);
@@ -94,6 +98,11 @@ test('carrying out: moved to the trash after both SHA-256 agree, RADERAD.txt wri
     assert.match(result.skipped[4].reason, /utanför assets/);
     const saved = JSON.parse(readFileSync(receipt, 'utf8'));
     assert.equal(saved.done.length, 2); assert.equal(saved.error, null);
+    // The film is gone, so its posts left the register with it; his verdict is kept as one row, and the kept film's post stands.
+    assert.deepEqual(saved.posts, ['bad-01', 'bad-01-deal']);
+    assert.deepEqual(register.ids(), ['good-01']);
+    assert.deepEqual(register.removed().map(r => [r.id, r.decision, r.note]), [['bad-01-deal', 'REJECTED', 'Inte bra.']]);
+    assert.match(readFileSync(path.join(t.repo, 'assets/motions/bad-01', MARKER), 'utf8'), /borttagna ur registret: bad-01, bad-01-deal/);
   } finally { t.done(); }
 });
 

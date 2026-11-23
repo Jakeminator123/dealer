@@ -19,7 +19,7 @@ export type ClipBankResponse = BankData & {
   motions: Record<string, MotionRecord>;
   receipts: Record<string, Receipt>;
   media: Record<string, Media>;
-  /** '"<sha256>"' of each motions/<id>.json; sent back as If-Match with a decision. */
+  /** '"<sha256>"' of each take's post in the register; sent back as If-Match with a decision. */
   revisions: Record<string, string>;
 };
 
@@ -154,7 +154,7 @@ export const getProofs = (): Promise<ProofList> => read<ProofList>("api/proofs",
 export async function putDecision(id: string, decision: Decision, note: string, revision: string): Promise<DecisionResult> {
   if (isSnapshot) throw new ApiError(SNAPSHOT_REFUSAL, 403, "refused");
   if (note.length > NOTE_LIMIT) throw new ApiError(`Anteckningen får vara högst ${NOTE_LIMIT} tecken.`, 400, "invalid");
-  if (!revision) throw new ApiError("Tagningen har ingen post i motions/ ännu, så beslutet kan inte sparas.", 428, "precondition");
+  if (!revision) throw new ApiError("Tagningen har ingen post i registret ännu, så beslutet kan inte sparas.", 428, "precondition");
   const text = await send(`api/clip-bank/review/${encodeURIComponent(id)}`, "Beslutet", {
     method: "PUT",
     headers: { "content-type": "application/json", "if-match": revision },
@@ -173,7 +173,7 @@ export async function putDecision(id: string, decision: Decision, note: string, 
  */
 export async function putArchive(id: string, archived: boolean, revision: string): Promise<DecisionResult> {
   if (isSnapshot) throw new ApiError(SNAPSHOT_REFUSAL, 403, "refused");
-  if (!revision) throw new ApiError("Tagningen har ingen post i motions/ ännu, så den kan inte arkiveras.", 428, "precondition");
+  if (!revision) throw new ApiError("Tagningen har ingen post i registret ännu, så den kan inte arkiveras.", 428, "precondition");
   const text = await send(`api/clip-bank/archive/${encodeURIComponent(id)}`, archived ? "Arkiveringen" : "Ta tillbaka", {
     method: "PUT",
     headers: { "content-type": "application/json", "if-match": revision },

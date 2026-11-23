@@ -100,7 +100,9 @@ Byteidentiska mediefiler i `assets/` kan dela en och samma fil på disken genom 
 "radera" om dubbletterna; båda sökvägarna finns kvar, så inget register ändras). Skriv därför aldrig om en färdig
 mediefil på plats: en ny version får ett nytt namn, eller skrivs till en tillfällig fil som sedan byter namn, annars
 ändras tvillingen med. Talets filer (`assets/speech/`), originalen och referenserna delar inte fil med något.
-En förkastad tagning vars film är raderad har en `RADERAD.txt` i sin mapp; registret i `motions/` står kvar.
+En film som gallras bort lämnar en `RADERAD.txt` i sin mapp, och dess poster går ur filmregistret med sina tagningar
+(Jakob 2026-11-23); domen på dem står kvar som en rad i `data/motions-removed.jsonl`. Poster vars film har försvunnit på
+annat sätt visas av `node tools/register.ts sweep --dry`.
 
 För gamla dubbla arbetskopior finns `node tools/media-dedupe.ts --source <absolut slaskmapp>`.
 Förvalet inventerar bara. `--apply` raderar gamla mediekopior först efter SHA-256-jämförelse med en bevarad fil

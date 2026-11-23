@@ -1,7 +1,7 @@
 // Which spoken film a dealer has for what she is to say. No file and no page in here: the game and the chat hand in the takes
 // of the step IDLE>IDLE as the clip bank has them (src/clip-graph.ts, graph.edge['IDLE>IDLE'].takes) and get back the film to play.
 //
-// A spoken film is a rest take with a sound track, made by tools/speech.ts. Its record (motions/<id>.json) says so in `speech`:
+// A spoken film is a rest take with a sound track, made by tools/speech.ts. Its post in the register (tools/register-store.ts) says so in `speech`:
 // the line's key, the text as the voice reads it, the voice, and where the sound lies in the film. The keys are the ten lines a
 // table needs (the SpeakLine ids of game/presentation.ts) and the chat's fixed replies (data/speech.json, `lines` and `chat`).
 //
@@ -44,7 +44,7 @@ export function chatKey(written: string, count = 0): string {
   return CHAT_FALLBACK[((count % CHAT_FALLBACK.length) + CHAT_FALLBACK.length) % CHAT_FALLBACK.length];
 }
 
-/** A take as the clip bank has it; only what is read here. motion is its record (motions/<id>.json), with `speech` if it is spoken. */
+/** A take as the clip bank has it; only what is read here. motion is its post in the register, with `speech` if it is spoken. */
 export type SpeechTake = {id: string; dealer?: string; decision?: string; stage?: string; inbox?: boolean; fps?: number | null; frames?: number | null; media?: {video?: string | null} | null; motion?: unknown};
 /** A film to play: the clip's id and file, the text as the voice reads it, and where the sound lies in the film, in seconds. */
 export type Spoken = {key: string; clip: string; video: string | null; text: string; language: string; voice: string | null; fps: number; frames: number | null; seconds: number | null; soundStart: number; soundEnd: number | null; judged: boolean};

@@ -14,7 +14,7 @@
 //     take carries no first picture, skips its own first frame (the give's last frame once more) and its record says where
 //     the give is cut (motion.startsOn: the frame after that one, the same as for the give's own return), so the graph plays
 //     it as the give's continuation and not as a film from an anchor.
-//   - Every take gets a record motions/<id>.json with review PENDING and review.inbox true: it plays only where its step has no
+//   - Every take gets a post in the register (tools/register-store.ts) with review PENDING and review.inbox true: it plays only where its step has no
 //     other film until Jakob decides (src/clip-graph.ts); his decision takes the flag away (tools/review-store.ts).
 //   - --fixed <k>: the fixed copy fixed-<k>.mp4 beside the film (tools/film-fix.ts) becomes a corrected copy of each of the
 //     take's takes (editOf), with its own record in the inbox; it is reviewed again on its own.
@@ -28,6 +28,7 @@ import {probe, sha256File} from './film-fix.ts';
 import {orderTake, OrderError, ORDER_ID, type OrderLike} from './order-collect.ts';
 import {endsOnOf} from '../src/order-model.ts';
 import {splitOfFilm, type Found} from './round-trip-split.ts';
+import {motionRegister} from './register-store.ts';
 
 const CLIP = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 /**
@@ -154,7 +155,8 @@ export async function planRegistration(root: string, id: string, take: number, o
     if (was && !(was.order?.id === id && was.order.take === take && (was.order.fix ?? null) === (ref.fix ?? null))) throw new OrderError(`${t.id} finns redan i data/clip-jobs.json och kommer inte från ${id} tagning ${take}.`);
   }
   // Never over a decision of Jakob's: not the record, not the film, not the entry.
-  for (const id2 of [...takes.map(t => t.id), target]) { const file = path.join(root, 'motions', `${id2}.json`); if (existsSync(file) && decided(await json(file))) throw new OrderError(`${id2} har Jakobs beslut: inget skrivs över.`); }
+  const posts = new Map(motionRegister(root).list().map(e => [e.id, e.post]));
+  for (const id2 of [...takes.map(t => t.id), target]) if (decided(posts.get(id2) as Parameters<typeof decided>[0] ?? null)) throw new OrderError(`${id2} har Jakobs beslut: inget skrivs över.`);
   const dir = path.join(root, 'assets', 'motions', target), source = path.join(dir, 'source.mp4');
   if (existsSync(source) && await sha256File(source) !== filmSha) throw new OrderError(`En annan film ligger redan i ${posix(root, source)}.`);
   const sourceRel = posix(root, source), bytes = (await stat(film)).size, model = order.generation?.model ?? 'okänd', through = placedThrough(entry as Parameters<typeof placedThrough>[0]);
@@ -188,7 +190,7 @@ export async function planRegistration(root: string, id: string, take: number, o
 export async function register(root: string, plan: Plan): Promise<void> {
   if (plan.files.copy) { const [from, to] = plan.files.copy, temporary = `${to}.${randomUUID()}.part`; await mkdir(path.dirname(to), {recursive: true}); await copyFile(from, temporary); await rename(temporary, to); }
   await writeAtomic(plan.files.generation[0], JSON.stringify(plan.files.generation[1], null, 2) + '\n');
-  for (const [id, record] of Object.entries(plan.records)) await writeAtomic(path.join(root, 'motions', `${id}.json`), JSON.stringify(record, null, 2) + '\n');
+  motionRegister(root).putAll(Object.values(plan.records));
   const file = path.join(root, 'data', 'clip-jobs.json'), data = await json(file);
   data.derived ??= [];
   for (const t of plan.takes) { const at = data.derived.findIndex((d: {id: string}) => d?.id === t.id); if (at < 0) data.derived.push(t); else data.derived[at] = t; }

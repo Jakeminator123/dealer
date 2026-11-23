@@ -5,7 +5,7 @@
 // every cut frame of a dealer and writes the answers down, so that all three say the same: a frame written here as not
 // holding is no end picture anywhere (cutFrameOf leaves it out), and the store's own check stays the last word.
 //
-//   node tools/order-cut-frames.ts <dealer> [--root <folder with data, motions and assets>] [--out <file>] [--dry]
+//   node tools/order-cut-frames.ts <dealer> [--root <folder with data and assets>] [--out <file>] [--dry]
 //
 // Run it again when the plan's cards have moved or new films have come into the bank. It reads films with FFmpeg and writes
 // only the one file (default data/cut-frames.json of the root). Pure part: cutCheckKey and readCutChecks, tested in
@@ -16,6 +16,7 @@ import { fileURLToPath } from 'node:url';
 import { SEAT_TARGETS, STEPS, cutCheckKey, cutFrameOf, type BankFacts, type CutCheck } from '../src/order-model.ts';
 import { checkCutFrame } from '../src/cut-frame.ts';
 import { H, W, pictureBytes, planQuad, readPlan, readRgb } from './order-images.ts';
+import { motionRegister } from './register-store.ts';
 
 export type CutFramesFile = { about: string; schemaVersion: 1; plan: { path: string; sha256: string }; checkedAt: string; frames: (CutCheck & { dealer: string; step: string; clip: string; frame: number; target: string })[] };
 
@@ -26,9 +27,9 @@ async function json<T>(file: string): Promise<T | null> { try { return JSON.pars
 /** The bank as cutFrameOf needs it, read from a checkout (as tools/order-store.ts readBank reads it). */
 async function readBank(root: string): Promise<BankFacts> {
   const file = await json<{ jobs?: { id: string }[]; derived?: NonNullable<BankFacts['derived']> }>(path.join(root, 'data/clip-jobs.json'));
-  const derived = file?.derived ?? [], motions: NonNullable<BankFacts['motions']> = {};
+  const derived = file?.derived ?? [], motions: NonNullable<BankFacts['motions']> = {}, posts = motionRegister(root).posts();
   for (const d of derived) {
-    const own = await json<{ review?: object; motion?: object }>(path.join(root, 'motions', `${d.id}.json`)), clip = await json<{ source?: object; review?: object }>(path.join(root, 'motions', `${d.clip}.json`));
+    const own = posts.get(d.id) as { review?: object; motion?: object } | undefined, clip = (posts.get(d.clip) ?? null) as { source?: object; review?: object } | null;
     motions[d.id] = { source: clip?.source, review: own?.review, motion: own?.motion } as never;
     if (!(d.clip in motions)) motions[d.clip] = clip as never;
   }

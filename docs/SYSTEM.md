@@ -378,8 +378,18 @@ bevisar ensam ingen vändning; en författad etikett överordnas inte sammanhän
 
 ## Ett rörelseregister och tydliga bevis
 
-- `motions/<clip-id>.json` är ensam källa för rörelsens klassning och beslut. Hand, pose, fysisk sida, spelstatus, mål
-  och variant hålls separata.
+- Filmregistret är ensam källa för rörelsens klassning och beslut: en post per film och tagning. Hand, pose, fysisk
+  sida, spelstatus, mål och variant hålls separata.
+- Registret läses och skrivs bara genom `tools/register-store.ts`. Git bär textfilen `data/motions.jsonl`: en post per
+  rad, sorterad på id, nycklarna i postens egen ordning. Arbetskopian är en SQLite-databas under `.runtime/register/`
+  (utanför Git), som byggs om ur texten när de skiljer sig; varje skrivning uppdaterar båda under samma lås. Postens
+  revision är hashen av posten, och en skrivning mot en äldre revision nekas (409). En rad som inte går att läsa gör
+  hela registret oläsbart (422 med raden) tills den är rättad.
+- Registret städar sig självt: en film som tas bort tar sina tagningar med sig, och deras rader i
+  `data/clip-jobs.json`. Domen på en borttagen post, Jakobs egen eller en som gavs åt honom (märkt `forHim`), står kvar
+  som en rad i `data/motions-removed.jsonl`, och Protokoll räknar den som förut.
+  Arkivering är ingen borttagning: den är en flagga i posten. Kommandon: `node tools/register.ts` (`get <id>` läser en
+  post, eftersom sökningen döljer textfilen; `sweep --dry` visar poster vars film inte finns på disken).
 - `publicReview` i ett äldre register pekar på den gamla publika sidan, som är nedtagen
   ([DRIFT](DRIFT.md#den-låsta-kopian-på-nätet)); publiceringen där innebar aldrig godkänd rörelse.
 - Nya original placeras i `assets/motions/<clip-id>/source.mp4`. En korrigerad visningsversion har egen hash och
@@ -436,7 +446,7 @@ ibland en referensfilm; planen ger målkortets hörn i sista bilden. Studions be
 - Ett utkast följer det ankare som gäller i Material (`picture.replaced` säger vad bilden var). En stillbild
   (ANKARE-2.1, ANKARE-2.2) går ut med ankaret och texten, utan posebild; dockan är posekällan framåt. En godkänd
   beställning ändras aldrig. En hel bild av en annan dealer i ett utkast stoppar godkännandet.
-- Prompt och bildhashar står i jobbet i `data/clip-jobs.json` och i `motions`-posten; bilderna och kvittot i
+- Prompt och bildhashar står i jobbet i `data/clip-jobs.json` och i filmens post i registret; bilderna och kvittot i
   `assets/motions/<clip-id>/`. Protokollet räknas, aldrig för hand: `node tools/order-ledger.ts` och vyn Protokoll
   (`GET /api/orders/ledger`, `studio/lib/ledger.ts`) ger en rad per tagning ur beställningen, kvittot, bankens poster
   och Materials bilder. Granskarens dom förs in med `order-put.ts review`, och `tools/order-bring.ts` för en levererad
@@ -486,7 +496,7 @@ IDLE>READY | READY>P1.C1 | P1.C1>READY | READY>D.C1 | D.C1>READY | READY>P1.C2 |
 - READY kan ha namngivna varianter (`READY-B`): `READY-B>P4.C1` är en tagning av kanten `READY>P4.C1` med annan
   startpose, spelad bara när rundan skriver den så. Jobb med andra noder tappas aldrig: de bildar gruppen Experiment.
 - Kartan är presentation, inget eget statusregister: `src/clip-graph.ts` räknar grafen ur `data/clip-jobs.json`,
-  lokala kvitton och `motions/<id>.json` och läser om var fjärde sekund. Huvudtagning är godkänd före ogranskad och,
+  lokala kvitton och filmregistret och läser om var fjärde sekund. Huvudtagning är godkänd före ogranskad och,
   bland lika, den senaste med en passande retur. Underkända tagningar väljs aldrig. `review.acceptedAs: "MAIN"` går
   före härledningen; `"VARIANT"` visas bredvid och väljs först när ingen annan spelbar tagning finns.
 - **Ankarregeln och skarvregeln:** en retur vars första bild är en fil (landningsankaret) passar varje tagning av given,
@@ -538,8 +548,8 @@ IDLE>READY | READY>P1.C1 | P1.C1>READY | READY>D.C1 | D.C1>READY | READY>P1.C2 |
 - **Domar** sätts i tagningen: Primär (`acceptedAs: "MAIN"`, spelas i första hand på sin kant, också en retur direkt
   efter en giv; två primära som inte passar ihop spelas båda med en skarvnotis, och bara en låst tagning `@id` och
   kravet på kortsida går före; varje steg bär skälet i `why`, orden i `WHY_LABEL`), Godkänn, Variant, Underkänn och en
-  anteckning. `PUT /api/clip-bank/review/<id>` skriver bara `review` i `motions/<id>.json` (`decision`, `acceptedAs`,
-  `userReview` med datum, `userAccepted`), med eget ursprung, `If-Match` mot postens revision och atomiskt namnbyte
+  anteckning. `PUT /api/clip-bank/review/<id>` skriver bara `review` i filmens post i registret (`decision`, `acceptedAs`,
+  `userReview` med datum, `userAccepted`), med eget ursprung och `If-Match` mot postens revision
   (`tools/review-store.ts`). Inget skrivs vid inläsning, och en tagning utan post kan inte beslutas.
 - **En preliminär dom** (`node tools/review-put.ts`, `applyProvisional`) sätts bara när Jakob har lämnat över domen för
   vissa filmer (BESKED, "Domar åt honom, och ingen kö"): `decision` `ACCEPTED`, eventuellt `acceptedAs: "VARIANT"` men

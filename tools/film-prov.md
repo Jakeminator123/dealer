@@ -82,7 +82,7 @@ belägget.
 | 4K-filmmodell för skärpa | `paow-ingang-2-1-02`: ingen skärpevinst i bankens ruta, 172 mot 80 | faller |
 | Bildmodellen flyttar kameran (sidovy) | fyra försök, 160 krediter (`D:/dealer-scratch/tmp/dealer-bf/LASMIG.md`) | faller |
 
-**Omgång 5, granskad och dömd 2026-11-13 (V, kvittona och `motions/`).** Granskaren (giv/retur): `p1-08` t1 4/3,5 och t2
+**Omgång 5, granskad och dömd 2026-11-13 (V, kvittona och filmregistret).** Granskaren (giv/retur): `p1-08` t1 4/3,5 och t2
 4/0,5 (ett andra gult kort stoppas in i skon i returen), `p2-03` 3,5/3,5 möjlig variant, `p1-07` t2 2/3 (kortet
 kakigrönt), `d-01` 1/3 (kortet halveras i längd). Jakob: `p1-08` t1 underkänd ("Kortet kapas när det läggs ner"), t2
 godkänd; `p2-03` godkänd; `p1-07` t2 underkänd; `d-01` godkänd ("Den är mycket bra."); `p7-04` godkänd ("gjord med
@@ -109,7 +109,7 @@ läggs plant framför skon och skjuts (`SAY.layAndSlide`, eftersom omgång 6:s s
 blått syntes och bytte storlek); hålkortets vändning har bara hålkortet på sina bilder (med båda korten lyfte hon båda,
 `paow-halkort-01`).
 
-**Omgång 7–10 (2026-11-13, 31 tagningar på de 6 000 krediter Jakob lade till; V: kvittona och `motions/`).**
+**Omgång 7–10 (2026-11-13, 31 tagningar på de 6 000 krediter Jakob lade till; V: kvittona och filmregistret).**
 - Mall 7 (hon rör sig medan hon delar ut) i 18 tagningar: hon rör sig (huvudet cirka tre gånger så långt), men kortet
   gick fel i 15 (färgbyte utan kantruta, kortet långt i handen och kort när det läggs, en vickning mot kant), och i 3
   delade hennes andra hand (`c81c548`). Mall 8 tar bort meningen; givar slutar åter på "The other hand rests on the felt."
@@ -138,7 +138,7 @@ skon i planen. I spelet läggs plats 6:s kort utan hand. Från ankare 2.2 har pl
 (`2-2-p6-02`, omgång 14: given Variant och returen godkänd, dömda åt honom); i spelet ändras inget förrän ingången till
 och utgången från 2.2 är dömda (omgång 15, nedan).
 
-**Omgång 12–15 (2026-11-13, 22 tagningar av filmproducenten åt huvudagenten; V: kvittona och `motions/`).** Order-id
+**Omgång 12–15 (2026-11-13, 22 tagningar av filmproducenten åt huvudagenten; V: kvittona och filmregistret).** Order-id
 förkortas `vila-09` = `paow-vila-09` och `2-2-p6-02` = `paow-giv-2-2-p6-02`. Domar som huvudagenten och en oberoende
 granskare gav på Jakobs mandat står som dömda åt honom; hans egna står med hans ord.
 - Vilor med en handling i orderns tillägg, WAN 3, 5 s (`vila-09`–`-11`, två tagningar var): 5 av 6 användbara för

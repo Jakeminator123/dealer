@@ -46,6 +46,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createStrip, writePatch} from './speech-patch.ts';
+import {motionRegister} from './register-store.ts';
 import {BRIDGE, RENDER, bridgeProblems, bridgeFilter, clipLength, filmFrameOf, lineFrames, longestSound, restPath, planRows, canonical, sourcesOf, bakeJob, answerVideo, sameWords,
   changedBox, unionBox, grownBox, featherMask, blendFrame, heardFrames, speechGate, mixFrame, GATE, LIPS, mouthWindow, cutPlanes, lipMap, lipsMiddle, lipTone, lipLine, mouthOpens, mouthDrop, mouthLift, mouthMoves, layMouth, type Gate, type Lips, type BakeJob, type BankId, type Box, type Bridge, type PlanRow, type Sources} from '../src/speech-plan.ts';
 
@@ -82,12 +83,12 @@ export const RECIPE: {gate: Gate; lips: Lips | null; sound: {lufs: number; peakD
 // standard-läppsynk för PAOW". Every other dealer is laid back with RECIPE.
 export const NEUTRAL_MOUTH: readonly string[] = ['paow'];
 export const recipeOf = (dealer: string): typeof RECIPE => NEUTRAL_MOUTH.includes(dealer) ? {...RECIPE, lips: null} : RECIPE;
-// The next number of a take or film stem: after the highest there is among the dealer's speech folders, the bank's records
-// (motions/) and their films (assets/motions/), so that a take set aside, moved or taken in under its number never gives that
-// number to the next.
+// The next number of a take or film stem: after the highest there is among the dealer's speech folders, the bank's posts
+// (tools/register-store.ts, those removed with a verdict included) and their films (assets/motions/), so that a take set
+// aside, moved, removed or taken in under its number never gives that number to the next.
 async function nextNumber(root: string, dealer: string, stem: string): Promise<string> {
-  const names: string[] = [];
-  for (const dir of [path.join(root, 'assets/speech', dealer), path.join(root, 'motions'), path.join(root, 'assets/motions')]) if (existsSync(dir)) names.push(...(await readdir(dir)).map(n => n.replace(/\.json$/, '')));
+  const register = motionRegister(root), names: string[] = [...register.ids(), ...register.removed().map(r => r.id)];
+  for (const dir of [path.join(root, 'assets/speech', dealer), path.join(root, 'assets/motions')]) if (existsSync(dir)) names.push(...(await readdir(dir)).map(n => n.replace(/\.json$/, '')));
   const highest = Math.max(0, ...names.filter(n => n.startsWith(stem) && /^\d+$/.test(n.slice(stem.length))).map(n => Number(n.slice(stem.length))));
   return stem + String(highest + 1).padStart(2, '0');
 }

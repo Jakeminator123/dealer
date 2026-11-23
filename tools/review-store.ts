@@ -1,15 +1,15 @@
-// Review decisions from the lab. Rewrites only the `review` block of motions/<id>.json: the rest of the
-// record, its key order included, stays byte for byte as it was. Same guards as the placement store:
-// the caller must hold the revision it read, writes are queued and the file is replaced atomically.
+// Review decisions from the lab. Rewrites only the `review` block of a take's post in the register (tools/register-store.ts):
+// the rest of the post, its key order included, stays as it was. The caller must hold the revision it read, and the
+// register changes the post only while it is still that one.
 // A provisional verdict (applyProvisional, tools/review-put.ts) is one the reviewer and the main agent gave for Jakob on
 // his hand-over ("dömd åt dig"): it plays as its decision says, never carries his words (userReview) or his acceptance
 // (userAccepted), does not wait in his queue (studio/lib/verdict.ts awaitingJakob), and his next decision through
 // applyChange, a reset included, replaces it.
 // Archiving a take by hand (applyArchive, from Karta) sets or removes review.archived and touches nothing else.
-import {readFile, writeFile, mkdir, rename} from 'node:fs/promises';
-import {createHash, randomUUID} from 'node:crypto';
+import {writeFile, mkdir} from 'node:fs/promises';
 import path from 'node:path';
 import {StoreError} from './placement-store.ts';
+import {motionRegister} from './register-store.ts';
 
 export const DECISIONS = ['MAIN', 'ACCEPTED', 'VARIANT', 'SECONDARY', 'REJECTED', 'PENDING'] as const;
 export type Decision = typeof DECISIONS[number];
@@ -116,16 +116,12 @@ export function applyArchive(review: unknown, archived: boolean, at: string, by:
 }
 
 export function reviewStore(root: string, today: () => string = () => new Date().toISOString().slice(0, 10), now: () => string = () => new Date().toISOString()) {
-  let queue: Promise<unknown> = Promise.resolve();
-  const fileOf = (id: string) => { if (typeof id !== 'string' || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) throw new StoreError(400, 'Ogiltigt klipp-id.'); return path.join(root, 'motions', `${id}.json`); };
-  const revisionOf = (text: string) => '"' + createHash('sha256').update(text).digest('hex') + '"';
+  const register = motionRegister(root);
+  const known = (id: string) => { if (typeof id !== 'string' || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) throw new StoreError(400, 'Ogiltigt klipp-id.'); return id; };
   async function load(id: string) {
-    let text: string;
-    try { text = await readFile(fileOf(id), 'utf8'); }
-    catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') throw new StoreError(404, 'Klippet har ingen post i motions/ ännu, så beslutet kan inte sparas.'); throw error; }
-    const record: unknown = JSON.parse(text);
-    if (!object(record)) throw new StoreError(422, 'Posten i motions/ går inte att läsa.');
-    return {record, revision: revisionOf(text)};
+    const entry = register.entry(known(id));
+    if (!entry) throw new StoreError(404, 'Klippet har ingen post i registret ännu, så beslutet kan inte sparas.');
+    return {record: entry.post, revision: entry.revision};
   }
   /** Jakob's decision from the lab (PUT /api/clip-bank/review/<id>). */
   async function save(id: string, value: unknown, expected: string | undefined) {
@@ -148,22 +144,13 @@ export function reviewStore(root: string, today: () => string = () => new Date()
     return write(id, expected, review => applyArchive(review, archived, now(), by, where));
   }
   async function write(id: string, expected: string | undefined, next: (review: unknown) => Record<string, unknown>) {
-    fileOf(id);
-    const task = queue.then(async () => {
-      const before = await load(id);
-      if (!expected) throw new StoreError(428, 'Läs klippbanken innan du sparar ett beslut.');
-      if (before.revision !== expected) throw new StoreError(409, 'Posten har ändrats sedan den lästes. Läs om klippbanken och försök igen.');
-      const review = next(before.record.review);
-      // Spreading keeps every key where it was; only the value of `review` is new.
-      const text = JSON.stringify({...before.record, review}, null, 2) + '\n';
-      await mkdir(path.join(root, '.runtime'), {recursive: true});
-      await writeFile(path.join(root, '.runtime/review-previous.json'), JSON.stringify({id, review: before.record.review ?? null}, null, 2) + '\n');
-      const temporary = path.join(root, 'motions', `.${randomUUID()}.tmp`);
-      await writeFile(temporary, text, {flag: 'wx'}); await rename(temporary, fileOf(id));
-      return {id, review, revision: revisionOf(text)};
-    });
-    queue = task.then(() => {}, () => {});
-    return task;
+    await load(id); // an unknown take is said before a missing revision
+    if (!expected) throw new StoreError(428, 'Läs klippbanken innan du sparar ett beslut.');
+    // Spreading keeps every key where it was; only the value of `review` is new. A refusal from next changes nothing.
+    const saved = register.patch(id, post => ({...post, review: next(post.review)}), {revision: expected});
+    await mkdir(path.join(root, '.runtime'), {recursive: true});
+    await writeFile(path.join(root, '.runtime/review-previous.json'), JSON.stringify({id, review: saved.before.review ?? null}, null, 2) + '\n');
+    return {id, review: saved.post.review as Record<string, unknown>, revision: saved.revision};
   }
-  return {load, save, saveProvisional, saveArchive, revisionOf};
+  return {load, save, saveProvisional, saveArchive};
 }

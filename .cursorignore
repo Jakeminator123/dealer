@@ -24,6 +24,11 @@ assets/**
 assets/tracking/
 assets/speech/
 
+# The register of films and takes and the rows about his verdicts on removed films (Jakob 2026-11-23: out of the
+# index). One post is read with `node tools/register.ts get <id>`. The same lines stand in .ignore.
+data/motions.jsonl
+data/motions-removed.jsonl
+
 # Receipts of studies that are over; nothing reads them by name (see .ignore). Hidden until Jakob has said whether the
 # folder is to be taken out of Git.
 evidence/
