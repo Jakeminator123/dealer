@@ -84,6 +84,23 @@ kredit kostar 0,01 dollar och köps i utvecklarportalen, per projekt.
   och behåller hennes rörelse, 112 krediter för 4 s. Vid cirka 30° följde kortet med; vid stol 1:s 63° tappades kortets
   väg (kastet kom tillbaka till handen, ett extra kort på bordet) (Ö). Gemini Omni Flash 1.2 ändrade inte vinkeln.
 
+## Tatueringar i färdiga filmer
+
+Pilot 2026-11-23 på Casinots giv till plats 4, de första 4 s (Prov `tatuering-a21-pilot-20261123`; mätt av huvudagenten,
+Jakobs dom väntar i Beslut). Först en stillbild: A2.1 med tatuerade händer (Nano Banana 2.1 på ett utsnitt av händerna,
+6 krediter, inlagt i ankaret så att inget utanför händerna ändras).
+
+| Sätt | Krediter | Utfall |
+|---|---|---|
+| Aleph 2.0, stillbilden som nyckelbild vid 0 s | 112 | Samma film ruta för ruta (0,17 px i median), ansikte och hals kvar, men bläcket är svagt och suddigt (M, Ö) |
+| Kling 4 som filmredigerare (`/v1/video_to_video`), stillbilden som första bild, bläcket som referensbild | 91 | Skarpt, stadigt bläck i varje ruta, också på handen som ger; rörelsen 0,25 px, kortet 0,6 px ifrån; halstatueringen försvann (M, Ö) |
+| Klings händer inlagda i den godkända filmen, lokalt | 0 | Allt utanför händerna är filmens eget: rörelsen 0,02 px, halsen kvar, kortets mitt 0,1 px ifrån; 2,7 % av bilden är Klings (M) |
+
+- **Förslaget** är det tredje: Kling 4 gör bläcket och bara händerna läggs in (`.runtime/tatuering/hander-film.py`).
+- **Där händerna ligger stilla** (vila, tal) görs det lokalt utan kostnad: bläcket ur stillbilden bärs av bildflödet
+  (`vila-tatuering.py`); rosen blir tunnare än Klings (Ö).
+- Hela A2.1-trädet, 22 steg, skattas till 1 600–1 900 krediter. Händerna är Casinots, 10 % större än i `paow-vila-tatuerad`.
+
 ## Fingeravtryck: filmen som den kommer och som banken har den
 
 Leveransen ur `fetched.json`, banken ur ffprobe på varje `source.mp4`, efterarbetet ur `TREATMENTS` i `src/film-after.ts`

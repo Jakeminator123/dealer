@@ -3,6 +3,32 @@
   "about": "What waits for Jakob: one entry per question (kind beslut) or per thing only he can do (kind gora), shown as one card each in the studio's view Beslut (/studio/beslut/, lab only). The list's order is the order of urgency, the most urgent first. An entry: id, kind, question (at most 14 words), leads (one sentence: what his answer leads to), optionally proof (a folder under assets/proofs/) with file, page (an address in the lab, e.g. game.html?table=casino), link (an address outside, shown as text to open on his phone) and cost (free text), chips (two to four {value, label} for beslut, one to four for gora), asked (date), from (the lane that asks) and answer. An agent adds an entry with answer null, changes only its own entries, reads the file right before editing it and keeps the form JSON.stringify gives with two spaces; it closes an entry by taking it out once his answer is carried out, and the commit says what he answered. Only the page writes answer ({value, note, at}, tools/decision-store.ts); no agent sets, changes or clears an answer he has given. The strict reader is tools/decision-register.ts. The repo is public: no secret, personal detail or path of this machine.",
   "decisions": [
     {
+      "id": "tatuering-casinots-filmer",
+      "kind": "beslut",
+      "question": "Tatueringarna: ska Casinots filmer få tatuerade händer på det här sättet?",
+      "leads": "Ja betyder att de 22 stegen från A2.1 görs om så, med kortet, landningen, ansiktet och halsen orörda, efter en oberoende granskning av piloten.",
+      "proof": "tatuering-a21-pilot-20261123",
+      "file": "1-given-till-plats-4-fore-och-efter-spelets-storlek.mp4",
+      "cost": "Skattat 1 600–1 900 krediter för hela trädet; vilan utan kostnad. Piloten kostade 209.",
+      "chips": [
+        {
+          "value": "ja",
+          "label": "Ja, gör hela trädet"
+        },
+        {
+          "value": "nej",
+          "label": "Nej, låt dem vara"
+        },
+        {
+          "value": "vanta",
+          "label": "Vänta"
+        }
+      ],
+      "asked": "2026-11-23",
+      "from": "Filmbanan",
+      "answer": null
+    },
+    {
       "id": "paow-fran-stol-1",
       "kind": "beslut",
       "question": "Håller given till plats 4 sedd från stol 1?",

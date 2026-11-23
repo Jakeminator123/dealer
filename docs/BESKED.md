@@ -91,8 +91,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   Huvudagenten godkänner på hans uppdrag inom `data/order-policy.json`, genom Beställ och `tools/film-prompting.md`.
 - **Två tagningar per klipp** (2026-11-12, 2026-11-13): en ändring och en tagning per metodprov; två per klipp när
   metoden är vald, en tredje bara om båda faller. Varje omgång granskas oberoende i full upplösning före nästa.
-- **Mandatet** (2026-11-18): "Ja du får generera tills kontot är typ tomta!". 2026-11-23 kväll: "Du har nytt mandat", läst som
-  1 000 krediter till 2026-11-24 (`data/order-policy.json`). En granskad pilot föregår en serie; kostnaden sägs efteråt.
+- **Mandatet** (2026-11-18): "Ja du får generera tills kontot är typ tomta!". 2026-11-23 kväll: "du får 1000 i timmen, men vi kan öka
+  till 2000 timmen idag" (`data/order-policy.json`). En granskad pilot föregår en serie; kostnaden sägs efteråt.
 - **Kvalitet före kvantitet** (2026-11-18): "men om allt sitter, får du gärna gå vidare och skapa mycket material så
   länge det är bra."
 - **API-nyckeln** (2026-11-20): beställningar får gå genom nyckeln i `.env.local` (utvecklarprojektets krediter) när

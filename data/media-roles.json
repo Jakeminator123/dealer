@@ -3392,6 +3392,34 @@
           }
         },
         {
+          "id": "paow-film-giv-2-3-p4-03-t1",
+          "role": "film",
+          "name": "Paow · prov: märke på gula sidan, utan det vita i skon · A3P4C1 · tur och retur,",
+          "path": "assets/films/paow/giv-2-3-p4-03-t1/source.mp4",
+          "still": 53,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Oberoende granskare (Opus, full upplösning) 2026-11-23: användbar med anmärkningar, förslag variant; given 3/5, returen 4/5, delning ruta 63. Rörelsen är samma som den godkända p4-02 (kortets rutor inom cirka 2 px), kortet landar 0,5 px från sista bilden, och skons fönster är fritt från vitt i alla 97 rutor. Märket på gula sidan håller till hälften: den röda cirkeln står kvar (ruta 16–37), men de…",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-23"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-3-d-01-t1",
+          "role": "film",
+          "name": "Paow · Två händer, ett kort till platsen · A3DC1 · tur och retur, tagning 1",
+          "path": "assets/films/paow/giv-2-3-d-01-t1/source.mp4",
+          "still": 53,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Oberoende granskare (Opus, full upplösning) 2026-11-23: användbar, förslag godkänn; given 4/5, returen 3/5, delning ruta 53. En naturlig giv utan dockans svagheter: handryggen upp och armbågen nära kroppen. Kortet vänds gult till blått med kantrutor 28–29 och landar 0,1 px från planens mitt (ytan −5 %), skjutet 14–18 px av fingertoppen i ruta 36–43. I en ruta (19) glider kortet cirka 10 px utan s…",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-23"
+          }
+        },
+        {
           "id": "paow-film-intro-noir-3-startruta",
           "role": "arbetsmaterial",
           "name": "Startrutan till filmen före spelet",
