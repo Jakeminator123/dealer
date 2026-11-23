@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dealer · Docklabb</title>
+<script type="importmap">{"imports":{"three":"/vendor/three.module.js","three/addons/":"/vendor/"}}</script>
+<style>
+  :root { color-scheme: dark; --bg: #0d0f0e; --panel: #141816; --line: #27302b; --text: #e8ece9; --muted: #93a098; --gold: #d9b96a; --warn: #f0a35e; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.35 system-ui, 'Segoe UI', sans-serif; }
+  main { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 14px; padding: 14px; align-items: start; }
+  .frame { position: relative; width: min(100%, calc((100vh - 92px) * 1764 / 1174)); aspect-ratio: 1764 / 1174; margin: 0 auto; background: #0b0d0f; border-radius: 10px; overflow: hidden; }
+  .frame canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+  .frame canvas:active { cursor: grabbing; }
+  .views { position: absolute; left: 10px; top: 10px; right: 10px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; pointer-events: none; }
+  .views > * { pointer-events: auto; }
+  .views .switch { margin-left: 8px; background: #141816d9; border: 1px solid var(--line); border-radius: 7px; padding: 5px 10px; }
+  .hint { width: min(100%, calc((100vh - 92px) * 1764 / 1174)); margin: 8px auto 0; color: var(--muted); font-size: 12px; }
+  .note { position: absolute; left: 12px; bottom: 10px; right: 12px; margin: 0; font-size: 13px; text-shadow: 0 1px 3px #000; pointer-events: none; }
+  .note b { font-weight: 600; } .note .warn { color: var(--warn); }
+  .transport { display: flex; align-items: center; gap: 12px; width: min(100%, calc((100vh - 92px) * 1764 / 1174)); margin: 10px auto 0; }
+  .transport input[type=range] { flex: 1; min-width: 80px; }
+  .transport output { min-width: 58px; text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+  button { font: inherit; color: var(--text); background: #1c221f; border: 1px solid var(--line); border-radius: 7px; padding: 6px 11px; cursor: pointer; }
+  button:hover:not(:disabled) { border-color: #3b4841; }
+  button[aria-pressed=true] { background: var(--gold); border-color: var(--gold); color: #17140a; font-weight: 600; }
+  button:disabled { color: #5d6862; cursor: default; }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .views button { background: #141816d9; padding: 5px 10px; }
+  .views button[aria-pressed=true] { background: var(--gold); }
+  #play { min-width: 72px; background: var(--gold); border-color: var(--gold); color: #17140a; font-weight: 600; }
+  .seg { display: flex; gap: 6px; flex-wrap: wrap; }
+  aside { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 10px; position: sticky; top: 14px; max-height: calc(100vh - 28px); overflow-y: auto; }
+  h1 { margin: 0; font-size: 17px; font-weight: 600; }
+  .head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  h2 { margin: 0 0 6px; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .small { margin: 6px 0 0; font-size: 12px; color: var(--muted); }
+  .grid { display: grid; grid-template-columns: 46px repeat(8, 1fr); gap: 4px; align-items: center; }
+  .grid span { font-size: 12px; color: var(--muted); text-align: center; }
+  .grid span.row { text-align: left; }
+  .grid button { padding: 5px 0; position: relative; min-height: 28px; }
+  .grid button.saved::after { content: ''; position: absolute; right: 3px; top: 3px; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
+  .grid button[aria-pressed=true].saved::after { background: #17140a; }
+  .switch { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .switch input { width: 16px; height: 16px; accent-color: var(--gold); }
+  .knob { display: grid; grid-template-columns: 1fr auto; gap: 0 8px; margin-top: 4px; }
+  .knob output { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .knob input { grid-column: 1 / 3; width: 100%; margin: 1px 0 0; accent-color: var(--gold); }
+  .knob.off { color: #5d6862; } .knob.off output { color: #5d6862; }
+  h3 { margin: 8px 0 0; font-size: 12px; font-weight: 600; color: var(--muted); }
+  #knobs h3:first-child { margin-top: 0; }
+  .acts { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  #save { background: var(--gold); border-color: var(--gold); color: #17140a; font-weight: 600; }
+  #save:disabled { background: #1c221f; border-color: var(--line); color: #5d6862; font-weight: 400; }
+  #status.warn { color: var(--warn); }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } aside { position: static; max-height: none; } }
+</style>
+</head>
+<body>
+<main>
+  <section>
+    <div class="frame" id="frame">
+      <canvas id="stage"></canvas>
+      <div class="views" id="views" role="group" aria-label="Vy">
+        <button data-view="film">Filmens kamera</button><button data-view="side">Från sidan</button><button data-view="above">Uppifrån</button><button data-view="player">Från spelaren</button><button data-view="card">Nära kortet</button>
+        <label class="switch"><input id="joints" type="checkbox">Leder</label>
+      </div>
+      <p class="note" id="note">Laddar …</p>
+    </div>
+    <div class="transport">
+      <button id="play">Spela</button>
+      <input id="scrub" type="range" min="0" max="1000" value="0" aria-label="Tid">
+      <output id="clock">0,00 s</output>
+      <div class="seg" id="speed" role="group" aria-label="Fart"><button data-speed="0.25">Kvart</button><button data-speed="0.5">Halv</button><button data-speed="1">Hel</button></div>
+      <label class="switch"><input id="loop" type="checkbox">Slinga</label>
+    </div>
+    <p class="hint">Dra vrider · hjulet zoomar · högerknapp eller skift flyttar</p>
+  </section>
+  <aside>
+    <div class="head"><h1>Docklabb</h1><div class="seg" id="dolls" role="group" aria-label="Docka"><button data-doll="paow">Paow</button><button data-doll="standard">Standarddockan</button></div></div>
+    <div><h2>Ställning</h2>
+      <div class="seg" id="poses"><button data-pose="A1">A1</button><button data-pose="A2.1">A2.1</button><button data-pose="A2.2" disabled title="Inte byggd">A2.2</button><button data-pose="A2.3">A2.3</button></div>
+      <p class="small">A2.2: inte byggd</p></div>
+    <div><h2>Giv från A2.3 till</h2><div class="grid" id="places"></div><p class="small" id="closed"></p></div>
+    <div><h2>Styr</h2>
+      <div id="knobs"></div>
+      <div class="acts"><button id="atplace">Vänd vid platsen</button><button id="reset">Återställ</button><button id="save">Spara som standard</button></div>
+      <p class="small" id="status"></p></div>
+  </aside>
+</main>
+<script type="module" src="/preview-ui.js"></script>
+<script type="module" src="/dealer3d/page/docka.ts"></script>
+</body>
+</html>

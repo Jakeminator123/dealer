@@ -3,12 +3,12 @@
 // The left rail: whose studio it is at the top (DealerSwitch: Pamela | Paow), the views with the active one marked, counts
 // where they help (the chosen dealer's takes waiting for Jakob beside Granska, beside Karta the number of the tree the game
 // plays, "22/36 steg", from src/dealer-trees.ts countWord, as Karta's row shows it), whether
-// the lab answers, and at the bottom the two pages beside the studio, Ljud and Modeller (same tab). A view's link keeps the
+// the lab answers, and at the bottom the three pages beside the studio, Docka, Ljud and Modeller (same tab). A view's link keeps the
 // chosen dealer in the address. In the online copy (lib/mode.ts) those pages are not there, so their links are not drawn;
 // instead the bot is there: the view
 // Önskemål (with the answers from Jakob not yet seen) and "Fråga", which opens and closes the panel (components/bot).
 // In the lab Beslut stands first in the foot, with the number of things waiting for his answer (components/decisions).
-import { Box, Images, Inbox, LayoutPanelLeft, ListChecks, MessageCircleQuestion, ScanEye, Spade, Speech, Volume2, Workflow } from "lucide-react";
+import { Box, Images, Inbox, LayoutPanelLeft, ListChecks, MessageCircleQuestion, PersonStanding, ScanEye, Spade, Speech, Volume2, Workflow } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, type ComponentType } from "react";
@@ -135,9 +135,10 @@ function AskButton() {
   );
 }
 
-// The two pages beside the studio, reached at their own addresses (tools/lab-routes.ts PAGES). They become parts of a
-// later view (Efterarbete); until then they are quiet links in the foot.
+// The pages beside the studio, reached at their own addresses: the doll lab (dealer3d/page/server.ts) and the sound and
+// model pages (tools/lab-routes.ts PAGES), which become parts of a later view (Efterarbete). Quiet links in the foot.
 const PAGE_LINKS: readonly { href: string; label: string; icon: ComponentType<{ className?: string }> }[] = [
+  { href: "/dealer3d/docka", label: "Docka", icon: PersonStanding },
   { href: "/sound.html", label: "Ljud", icon: Volume2 },
   { href: "/props.html", label: "Modeller", icon: Box },
 ];
@@ -231,7 +232,7 @@ export function Rail() {
         {isSnapshot ? null : (
           <>
             <div className="mx-2 h-px w-[calc(100%-32px)] bg-line" />
-            {/* The sound and model pages (pages/sound.html, pages/props.html) until they become parts of a later view. */}
+            {/* The doll lab, and the sound and model pages (pages/sound.html, pages/props.html) until they become parts of a later view. */}
             {PAGE_LINKS.map(({ href, label, icon: Icon }) => (
               <a
                 key={href}

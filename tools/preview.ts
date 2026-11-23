@@ -17,6 +17,7 @@ import {resolveStudio,sendFile} from './studio-files.ts';
 import {SCRIPTS as scripts,VENDOR as vendor,PAGES as pages,SCENE_FILES as sceneFiles,forBrowser,studioAddress} from './lab-routes.ts';
 import {mediaRoles} from './media-roles.ts';
 import {handleOrders} from './order-routes.ts';
+import {handleDollLab} from '../dealer3d/page/server.ts';
 import {UPLOAD_LIMIT} from '../studio/lib/media.ts';
 import {dealersOf} from '../src/clip-graph.ts';
 import {DOLL_BACKDROPS} from '../src/placement-model.ts';
@@ -188,6 +189,7 @@ if(has('--restart')){
    // Film orders and the state of a candidate picture (tools/order-routes.ts): answered there when the address is theirs.
    if(url.pathname==='/api/orders/ledger'){await (await import('./order-ledger.ts')).serveLedger(req,res);return;} // Protokoll (tools/order-ledger.ts), before the orders' own routes, which would take "ledger" for an order id.
    if(await handleOrders(req,res,url))return;
+   if(await handleDollLab(req,res,url))return; // Docklabbet (dealer3d/page/server.ts): /dealer3d/docka, its modules and motions, and the saved standards in dealer3d/standard/.
    if(url.pathname==='/api/trees'){await (await import('./dealer-tree.ts')).serveTrees(req,res,url);return;} // Karta's trees: nodes, 36 steps and number per tree (tools/dealer-tree.ts)
    if(url.pathname==='/api/placements'){
     res.setHeader('Content-Type','application/json; charset=utf-8');

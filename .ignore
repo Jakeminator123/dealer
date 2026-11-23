@@ -43,6 +43,7 @@
 *.wasm
 package-lock.json
 /dealer3d/data/
+/dealer3d/standard/
 
 # The paused dealer's film registers (Pamela, paused by Jakob 2026-11-12): 147 files that a search for a film or a
 # seat should not mix with Paow's. Take the line out the day she is taken up again.

@@ -50,6 +50,7 @@ evidence/
 *.wasm
 package-lock.json
 dealer3d/data/
+dealer3d/standard/
 
 # The paused dealer's film registers (Pamela, paused 2026-11-12); see .ignore.
 motions/pamela-*
