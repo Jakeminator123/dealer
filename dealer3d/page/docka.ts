@@ -51,7 +51,7 @@ const WAYS: Record<How, string> = {naturlig: 'Naturlig', forut: 'Som förut', re
 // begins (lay.ts readDeal). A2.2 has no pose in the code.
 const POSES: Record<Pose, {film: string; end: boolean; read?: boolean; said?: string}> = {
   'A1': {film: 'till-ankare-2-3-c', end: false}, 'A2.3': {film: 'till-ankare-2-3-c', end: true},
-  'A2.1': {film: 'giv-pamela-p4', end: false, read: true, said: 'Avläst nyp'}};
+  'A2.1': {film: 'giv-avlast-p4', end: false, read: true, said: 'Avläst nyp'}};
 const placeWords = (id: string) => { const m = /^(?:P([1-7])|D)\.C([123])$/.exec(id)!; return m[1] ? `plats ${m[1]}, kort ${m[2]}` : `dealern, kort ${m[2]}`; };
 const knobsOf = (k?: Partial<Knobs>): Knobs => ({shoulderR: [...(k?.shoulderR ?? NO_KNOBS.shoulderR)] as [number, number], shoulderL: [...(k?.shoulderL ?? NO_KNOBS.shoulderL)] as [number, number], elbowOut: [...(k?.elbowOut ?? NO_KNOBS.elbowOut)] as [number, number]});
 

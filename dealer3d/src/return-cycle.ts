@@ -48,7 +48,7 @@ function validateMotion(motion: DealMotion): void {
     throw new Error('Expected a timed deal with at least two frames of a settled card');
   }
   const cardId = motion.frames[0]?.card?.id;
-  // A deal read from a film (dealer3d/data/giv-pamela-*.json) has no gaze point g in any frame; a laid deal has it in every frame.
+  // A deal read from a film (dealer3d/data/giv-avlast-*.json) has no gaze point g in any frame; a laid deal has it in every frame.
   const gazes = motion.frames[0]?.g !== undefined;
   for (const [i, frame] of motion.frames.entries()) {
     const card = frame?.card;

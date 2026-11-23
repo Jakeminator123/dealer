@@ -166,7 +166,7 @@ export type Entry = 'A2.1' | 'A2.2' | 'A2.3';
 /** A saved standard's name (dealer3d/standard/<name>.json): <doll>-<place> from A2.3, as every standard saved before the entries were, and <doll>-a2-1-<place> (a2-2-) from the others. */
 export const standardName = (doll: string, entry: Entry, place: string) => `${doll}-${entry === 'A2.3' ? '' : `${entry.toLowerCase().replace('.', '-')}-`}${place.toLowerCase().replace('.', '')}`;
 /** The one-hand deals from A2.1 (dealer3d/data/, laid into the room once by dealer3d/tools/lift.ts from the hand and the card of a filmed deal; the names stay, proofs name the files): her left hand takes the card out of the shoe and lays it; all four begin on the same frame, the pose A2.1. */
-export const READ_DEALS: Record<string, string> = {'P1.C1': 'giv-pamela-p1', 'P3.C1': 'giv-pamela-p3', 'P4.C1': 'giv-pamela-p4', 'P5.C1': 'giv-pamela-p5'};
+export const READ_DEALS: Record<string, string> = {'P1.C1': 'giv-avlast-p1', 'P3.C1': 'giv-avlast-p3', 'P4.C1': 'giv-avlast-p4', 'P5.C1': 'giv-avlast-p5'};
 export type EntryPlace = PlaceRecipe | {read: string} | {none: 'unread' | 'unbuilt'};
 /** Where a deal from `entry` to a place of the plan comes from, or why there is none; null for a place the lab does not know. */
 export function placeFrom(entry: Entry, target: string): EntryPlace | null {
@@ -175,7 +175,7 @@ export function placeFrom(entry: Entry, target: string): EntryPlace | null {
   return Object.hasOwn(READ_DEALS, target) ? {read: READ_DEALS[target]} : 'none' in known ? known : {none: 'unread'};
 }
 
-/** A deal read off a film, as dealer3d/data/giv-pamela-*.json have it (one card, her left hand holding it, no gaze point). */
+/** A deal read off a film, as dealer3d/data/giv-avlast-*.json have it (one card, her left hand holding it, no gaze point). */
 export type ReadFrame = {card: {c: number[]; l: number[]; n: number[]; id?: number}; L: {s: number[]; e: number[]; w: number[]; k: number; p: number[][]}; R: unknown; h: number[]; g?: number[]};
 export type ReadStored = {fps: number; frameCount: number; rests: number; to?: unknown; frames: ReadFrame[]} & Record<string, unknown>;
 const READ_CARRY = 0.2; // metres the card goes from the shoe of before over which the move into the films' shoe eases out

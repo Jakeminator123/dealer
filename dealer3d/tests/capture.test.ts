@@ -1,6 +1,6 @@
 // node --test dealer3d/tests/capture.test.ts
 // The lifting of a hand read off a film into the room (src/capture.ts, placeHand), on a made-up hand: no media and no
-// stored deal is read. The read deals from A2.1 (dealer3d/data/giv-pamela-*.json) are data, not held by a test.
+// stored deal is read. The read deals from A2.1 (dealer3d/data/giv-avlast-*.json) are data, not held by a test.
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {TABLE_LENS, filmEye, see, type Vec3} from '../../src/table-lens.ts';

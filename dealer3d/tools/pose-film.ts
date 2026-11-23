@@ -12,7 +12,7 @@
 // players, 90 toward the picture's right): here where Paow's hand lay in the first take of anchor 2.3 C. --head-turn <degrees>:
 // she does not look down at the card (in that take her eyes fell); her head turns that far toward the shoe, her chin as at rest.
 // The move is done at 1.5 s. A deal laid from this film with deal-film.ts --pose-film begins on its last frame, to the digit.)
-// Reads dealer3d/data/giv-pamela-p4.json (the read deal from A2.1: the resting hand, the card standing in the shoe, the hip)
+// Reads dealer3d/data/giv-avlast-p4.json (the read deal from A2.1: the resting hand, the card standing in the shoe, the hip)
 // and writes one file. Prints what the pose asks of the body.
 //
 // Read: the shape of a flat hand (the right hand resting through the read deal; the left is its mirror, so the two are
@@ -35,7 +35,7 @@ const FPS = 30, N = Number(arg('--frames') ?? 120), GOES = pair('--goes', [15, 8
 const BODY = pair('--body', [10, 8]), RIGHT_AT = arg('--right-at')?.split(',').map(Number) ?? null, HEAD_TURN = arg('--head-turn') ? Number(arg('--head-turn')) : null;
 const POSE = {lean: BODY[0], twist: BODY[1], wristAtShoe: SHOE.frontHeight, beforeShoe: 0.11, thumb: 35, arcL: 0.05, arcR: 0.035}; // degrees and metres
 
-const read = JSON.parse(await readFile(new URL('../data/giv-pamela-p4.json', import.meta.url), 'utf8')), first = read.frames[0], lens = TABLE_LENS, frame = standing(lens);
+const read = JSON.parse(await readFile(new URL('../data/giv-avlast-p4.json', import.meta.url), 'utf8')), first = read.frames[0], lens = TABLE_LENS, frame = standing(lens);
 const smooth = (t: number) => t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t), lerp = (a: Vec3, b: Vec3, t: number): Vec3 => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t], rad = (d: number) => d * Math.PI / 180, deg = (r: number) => r * 180 / Math.PI;
 type Axes = {forward: Vec3; palm: Vec3; across: Vec3};
 /** A hand's own axes: along wrist to middle knuckle, the way its palm looks (`sign` as in the read deals: +1 her right, -1 her left), and across. */
