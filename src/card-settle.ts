@@ -12,7 +12,7 @@ import {restOf, type CardTrack} from './card-overlay.ts';
 // (mm, along the way it came) and how turned (degrees) it lies under her fingers. frames: how many frames the way back takes
 // once the hand leaves. shift: frames earlier (negative) or later than the track's own measure (the fingers begin to go) that the way back begins.
 export type Settle = {bump: number; bumpFrames: number; slide: number; turn: number; frames: number; shift: number};
-export const SETTLE: Settle = {bump: 0.8, bumpFrames: 6, slide: 1.5, turn: 0.7, frames: 4, shift: 0};
+export const SETTLE: Settle = {bump: 1, bumpFrames: 6, slide: 2.5, turn: 1.2, frames: 4, shift: 0};
 export const STILL: Settle = {bump: 0, bumpFrames: 6, slide: 0, turn: 0, frames: 4, shift: 0};
 // The card's real sides in millimetres, as the card plan has them (src/card-plan.ts: 63 x 88): the plan's outline is such a card
 // on the table, so its sides in the picture say what a millimetre of the table is there.
