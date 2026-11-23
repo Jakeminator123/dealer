@@ -91,8 +91,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   Huvudagenten godkänner på hans uppdrag inom `data/order-policy.json`, genom Beställ och `tools/film-prompting.md`.
 - **Två tagningar per klipp** (2026-11-12, 2026-11-13): en ändring och en tagning per metodprov; två per klipp när
   metoden är vald, en tredje bara om båda faller. Varje omgång granskas oberoende i full upplösning före nästa.
-- **Mandatet** (2026-11-18): "Ja du får generera tills kontot är typ tomta!", med 800 krediter per timme (1 000 bara
-  2026-11-23). En granskad pilot föregår en serie, och kostnaden berättas efter varje omgång.
+- **Mandatet** (2026-11-18): "Ja du får generera tills kontot är typ tomta!", 800 krediter per timme (1 000 den
+  2026-11-23, då också "mandat till 1000 till"). En granskad pilot föregår en serie; kostnaden sägs efter varje omgång.
 - **Kvalitet före kvantitet** (2026-11-18): "men om allt sitter, får du gärna gå vidare och skapa mycket material så
   länge det är bra."
 - **API-nyckeln** (2026-11-20): beställningar får gå genom nyckeln i `.env.local` (utvecklarprojektets krediter) när
@@ -152,6 +152,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   sparad giv per spelare och per ingång. Uppdraget: fyll A2.3 → spelarnas C1 och tillbaka, återgången sparad.
 - **Handens vinkel −30 är det normala** (2026-11-23): han satte −30 för plats 4 och 5; Återställ ska ge den vridningen
   ("ser naturligare ut"). Återgången ska gå att välja i Docklabbet.
+- **Handens landning ska gå att välja** (2026-11-23): läget vid det lagda kortet "är bra", men långfingret pekar alltid
+  ned kortet. Dockan ska ha förval eller egna landningar, så att slutposen inte är samma för alla platser.
 - **Docklabbet** (2026-11-23): "Jag gillar verkligen docklabbet!" Konstiga ställningar blir naturligare som standard,
   vridning och axlar är reglage, fingrarna visar hur de verkar på kortet; allt "kompatibelt med material skapat".
 - **Dockan framåt** (2026-11-23): en giv till en spelare tar 2 s som förval, valbart i Docka. För framtiden: A2.2 ur
@@ -205,8 +207,10 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
 - **Fria händer med beställningstexterna** (2026-11-17): huvudagenten skriver om dem efter vad proven visar.
 - **Giv och återgång i samma film** (2026-11-23): provet till plats 5 fick "Rätt … i övrigt - perfekt". Återgången
   klipps ut och sparas i banken automatiskt: "dessa är faktist nästa alltid bra".
-- **Sista given går direkt till vila** (2026-11-23): från läget där kortet är lagt ska hon "återgå till A1-vila direkt";
-  är given den sista av flera ska hon "inte passera A2.'n' över huvud taget". Plats 6 och 7 beställs när dockan är klar.
+- **Sista given går direkt till vila** (2026-11-23): från det lagda kortet ska hon "återgå till A1-vila direkt" och "inte
+  passera A2.'n' över huvud taget"; ingången baklänges fick nej. Provet från kortet till vila (plats 5): "Jättebra".
+- **Varianter på lek** (2026-11-23): till t.ex. plats 3 får hon göra "något helt annat": kasta upp kortet, låta det
+  landa och rätta till det leende. Det som godkänns byggs in så att det hänger ihop med Scen & bord.
 - **Högerhanden vid nedsläppet** (2026-11-23): den ska inte vara "så vriden vid nedsläpp". Given till plats 5 gjordes
   om så, och givarna till plats 1–5, kort 1, med återgång fick hans "Ja, alla håller" i Beslut.
 - **V6 är arkiverad** (2026-11-20): råmaterialet och renderaren ligger i arkivet på D:, filmen och 18 rutor står kvar

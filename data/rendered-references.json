@@ -345,6 +345,28 @@
       "shape": "ROUND_TRIP",
       "check": null,
       "doll": "paow"
+    },
+    {
+      "id": "docka-paow-2-3-p6c1-bestalld-a",
+      "edge": "READY-C>P6.C1",
+      "path": "assets/references/docka/docka-paow-2-3-p6c1-bestalld-a/source.mp4",
+      "sha256": "a0b43233480050166aac1354a9042651ecff96786f92622ac72c0665079c78aa",
+      "seconds": 3.875,
+      "lays": "RH",
+      "shape": "ROUND_TRIP",
+      "check": null,
+      "doll": "paow"
+    },
+    {
+      "id": "docka-paow-2-3-p7c1-bestalld-a",
+      "edge": "READY-C>P7.C1",
+      "path": "assets/references/docka/docka-paow-2-3-p7c1-bestalld-a/source.mp4",
+      "sha256": "9ba63ada53d3b0c58235c15817a5604b76ba943e1b8c0418ca7500bd516a2278",
+      "seconds": 3.875,
+      "lays": "RH",
+      "shape": "ROUND_TRIP",
+      "check": null,
+      "doll": "paow"
     }
   ]
 }

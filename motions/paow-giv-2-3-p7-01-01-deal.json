@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-giv-2-3-p7-01-01-deal",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-giv-2-3-p7-01-01/source.mp4",
+    "sha256": "aea079210243a75faaf015c17830cb7e70283c28f77bebc60b5013c79ca3ee31",
+    "bytes": 4327851,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 97,
+    "provider": "Runway developer API",
+    "model": "kling-4"
+  },
+  "motion": {
+    "kind": "DEAL",
+    "from": "READY-C",
+    "to": "P7.C1",
+    "takeHand": "LH",
+    "releaseHand": "RH",
+    "pass": true,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "segment": {
+      "clip": "paow-giv-2-3-p7-01-01",
+      "frames": [
+        0,
+        58
+      ]
+    }
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob: förd in från beställningen paow-giv-2-3-p7-01, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
+    "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten dealer-c2 och en oberoende granskare",
+      "at": "2026-11-23T14:21:35.439Z",
+      "mandate": "Jakob 2026-11-13: \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"; 2026-11-23: fyll givarna från A2.3 till spelarnas C1 och tillbaka",
+      "note": "Giv till plats 7, kort 1: 4/5 (oberoende granskare). Kortet 0,2 px från planen. Anmärkning: kortet glider fritt cirka 12 px efter draget innan högerhanden tar det, och hon lutar sig långt."
+    }
+  },
+  "order": {
+    "id": "paow-giv-2-3-p7-01",
+    "take": 1,
+    "path": "data/orders/paow-giv-2-3-p7-01.json",
+    "orderSha256": "d69a2c3a054f217c5554d800c58fb3411c412a771f5a915a2361cf9163d6db04",
+    "receipt": "assets/orders/paow-giv-2-3-p7-01/receipt.json",
+    "taskId": "7595800a-e830-4163-8bce-2b14fdebb323",
+    "delivered": {
+      "path": "assets/orders/paow-giv-2-3-p7-01/take-1/after.mp4",
+      "sha256": "aea079210243a75faaf015c17830cb7e70283c28f77bebc60b5013c79ca3ee31"
+    }
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/paow-giv-2-3-p7-01-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

@@ -4359,6 +4359,34 @@
           }
         },
         {
+          "id": "paow-film-giv-2-3-p7-01-t1",
+          "role": "film",
+          "name": "Paow · A3P7C1 · giv och återgång, dockans sparade rörelse, tagning 1",
+          "path": "assets/films/paow/giv-2-3-p7-01-t1/source.mp4",
+          "still": 53,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Oberoende granskare, full upplösning 2026-11-23: given 4/5, återgången 4/5. Skarvarna 0 px mot bilderna, kortet 0,2 px från planen, fönstret gult hela filmen, fingrarna rätt. Anmärkningar: kortet byter form rutorna 13-15, ligger fritt och glider cirka 12 px rutorna 19-21 (anmärkning och inget fall enligt handboken), hängsmycket mörknar rutorna 25-77 och hon lutar sig mest av givarna.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-23"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-3-p6-01-t1",
+          "role": "film",
+          "name": "Paow · A3P6C1 · giv och återgång, dockans sparade rörelse, tagning 1",
+          "path": "assets/films/paow/giv-2-3-p6-01-t1/source.mp4",
+          "still": 53,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Oberoende granskare, full upplösning 2026-11-23: given 4/5, återgången 5/5. Skarvarna 0 px mot bilderna, kortet 0,6 px från planen, fönstret gult hela filmen, fingrarna rätt. Anmärkningar: kortet byter form under vänsterhanden rutorna 13-15 och ligger fritt och glider cirka 4 px rutorna 19-21; vänsterhanden lyfter från skon rutorna 18-33.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-23"
+          }
+        },
+        {
           "id": "paow-film-intro-noir-3-startruta",
           "role": "arbetsmaterial",
           "name": "Startrutan till filmen före spelet",

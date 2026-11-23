@@ -542,6 +542,38 @@
         "at": "2026-11-23T09:55:41.836Z"
       },
       "read": "2026-11-23T09:55:41.836Z"
+    },
+    {
+      "id": 47,
+      "proof": "utgang-2-3-baklanges-20261123",
+      "file": "2-utgangen-baklanges.mp4",
+      "choice": null,
+      "text": "Trr typ aldrig denna behövs denna video. När ska hon gå från A2.3 till A1?",
+      "at": "2026-11-23T13:56:48.738Z"
+    },
+    {
+      "id": 48,
+      "proof": "utgang-2-3-baklanges-20261123",
+      "file": "1-plats-5-och-ut-till-vila-spelets-storlek.mp4",
+      "choice": "inte-bra",
+      "text": "",
+      "at": "2026-11-23T13:57:30.640Z"
+    },
+    {
+      "id": 49,
+      "proof": "retur-till-vila-p5-20261123",
+      "file": "1-given-och-direkt-till-vila-spelets-storlek.mp4",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-23T14:10:20.805Z"
+    },
+    {
+      "id": 50,
+      "proof": "retur-till-vila-p5-20261123",
+      "file": "2-returen-till-vila.mp4",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-23T14:10:32.278Z"
     }
   ]
 }

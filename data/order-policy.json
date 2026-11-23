@@ -8,12 +8,12 @@
     "startsAt": "2026-11-23T06:57:00Z",
     "endsAt": "2026-11-23T23:00:00Z",
     "rollingHourCredits": 1000,
-    "totalCredits": 1600
+    "totalCredits": 2600
   },
   "maxPerOrder": 2000,
   "minBalance": 0,
   "timeZone": "Europe/Stockholm",
-  "balance": { "credits": 1262, "at": "2026-11-23T13:08:00Z", "source": "Runways API (svaret på den senast lagda ordern, paow-giv-2-3-p4-02), utvecklarprojektet som API-nyckeln drar från. Av mandatet dealer-b0-20261123 är 966 av 1 600 använda: fem filmer à 68 (tre givar från A2.3, ingången paow-ingang-2-3-03 och given paow-giv-2-3-p5-03), sex givar med återgång à 91 (paow-giv-2-3-p5-04, -p5-05, -p1-03, -p2-02, -p3-04 och -p4-02) och fyra provbilder à 20. De 288 och 152 krediter som ingen order här förklarade tidigare samma dag är Jakobs andra projekt på samma konto (hans ord 2026-11-23)." },
+  "balance": { "credits": 1023, "at": "2026-11-23T13:36:00Z", "source": "Runways API (svaret på den senast lagda beställningen, provet paow-retur-vila-p5-prov), utvecklarprojektet som API-nyckeln drar från. Mandatet dealer-b0-20261123 är 2 600 sedan Jakob gav 1 000 till (2026-11-23, i chatten); 1 205 är använda: fem filmer à 68 (tre givar från A2.3, ingången paow-ingang-2-3-03 och given paow-giv-2-3-p5-03), åtta givar med återgång à 91 (paow-giv-2-3-p5-04, -p5-05, -p1-03, -p2-02, -p3-04, -p4-02, -p6-01 och -p7-01), fyra provbilder à 20 och provet från kortet till vila, 57, lagt utanför Beställ. De 288 och 152 krediter som ingen order här förklarade tidigare samma dag är Jakobs andra projekt på samma konto (hans ord 2026-11-23)." },
   "prices": [
     { "model": "kling-4", "resolution": "1080p", "perSecond": 21.3, "listedPerSecond": 23.5, "source": "Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12." },
     { "model": "kling-4", "resolution": "720p", "perSecond": 15.7, "listedPerSecond": 15.7, "source": "Listpris i verktyget generate_video 2026-11-12; inte mätt i någon liggare." },
