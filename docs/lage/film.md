@@ -19,11 +19,10 @@ som gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompt
 - Sista given går direkt till vila: `node tools/order-new.ts paow RETUR-1 P4.C1` gör en film på 3 s som
   fortsätter givens sista ruta. I banken: plats 2, 3 och 4 godkända åt honom, plats 1 (visar
   handflatorna) och 5 (sveper över filten) som varianter; plats 6 fick hans "Inte bra". Receptet bär meningen om den korta vägen.
-  `--extra` ersätter receptets tillägg, `--extra-efter` lägger till.
 - A3-bilder: A3P4C1 och A3P4C2 är kandidater; för plats 1 och 2 stoppar landningsverktyget ([BRISTER](../BRISTER.md)).
-- Fria givar (Kling 4, bankens första och sista bild, ingen dockfilm): kortet vänds i fingrarna, men takt och väg styrs
-  inte. Hans ja som varianter: plats 4, Kortet i luften och plats 7 (Prov `fria-givar-20261123`); i Kortet bakom
-  ryggen är ansiktet inte hennes.
+- Fria givar (Kling 4, bankens första och sista bild, ingen dockfilm): takt och väg styrs inte. I banken som varianter
+  på hans ord: plats 4, Kortet i luften och plats 7 (`tools/order-import.ts`, delade för hand med `--split`); i de två
+  sista glider kortet den sista biten själv.
 - En annan stol: 3D-scenen ritar dockan från stolens öga; receptet i [FILMMODELLER](../FILMMODELLER.md), "Vinklar, 3D och Runways lista". Stol 1 fick "nästan": kortet byter sida utan skäl.
 - Pengar: gränser, mandat och saldo i `data/order-policy.json`. Giv med återgång 91 krediter, giv på 3 s 68, retur till
   vila 57, genom API-nyckeln.
@@ -32,12 +31,13 @@ som gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompt
 1. Plats 7: dockan ska hålla kortet genom vändningen ([LASMIG](../../dealer3d/LASMIG.md)); sedan dockans film,
    given igen och dess retur. Därefter kort 2.
 2. Mall 15: mer frihet åt filmen i vändningen; landningens mening skrivs redan i texten.
-3. De tre fria givarna in i banken som varianter: leveranserna och vägen står i `LASMIG.txt` under
-   `assets/proofs/fria-givar-20261123/leveranser/`. Kortet bakom ryggen igen med en bild av ansiktet som referens (95). Kastet per stol: en egen tagning ur stolens bilder, inte Aleph.
-4. Karta, trädens mått (returerna räknas inte) och hur spelet väljer träd är Kartabanans ([karta](karta.md));
+3. Kortet bakom ryggen igen med en bild av ansiktet som referens (95). Kastet per stol: egen tagning, inte Aleph.
+4. Det vita i skons fönster bort (BESKED, "Ingen vit kant"): kandidaten A2.3 utan det vita (Prov
+   `kort-marke-gula-sidan-20261123`), genomgång av ankare, skoplatta och filmer, provfilm (91) med märket före byte.
+5. Karta, trädens mått (returerna räknas inte) och hur spelet väljer träd är Kartabanans ([karta](karta.md));
    ingången A1 → A2.3 klipps ur ankarets film; hålkortet och dealerns kort.
 
-**Väntar på Jakob.** Frågor i chatten: nytt mandat, en bättre bild av hennes ansikte, vad som felar i plats 6 och egen film för kort 2.
+**Väntar på Jakob.** I chatten: nytt mandat, en bild av hennes ansikte, märkets läsning, felet i plats 6, film för kort 2.
 
 **Var saker ligger.** Vägen för en ny dealer i [tools/dealer-line.md](../../tools/dealer-line.md), handboken i
 [tools/film-prompting.md](../../tools/film-prompting.md), granskningen i `tools/film-review.md`, läget per dealer med

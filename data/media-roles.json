@@ -4475,6 +4475,48 @@
           }
         },
         {
+          "id": "paow-film-fri-giv-p4-01-t1",
+          "role": "film",
+          "name": "Paow · Fri giv till plats 4 (variant)",
+          "path": "assets/films/paow/fri-giv-p4-01-t1/source.mp4",
+          "still": 53,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Fri giv: Kling 4 mellan bankens första och sista bild, utan dockans film. Jakobs ja som variant (Beslut paow-fri-giv-p4, 2026-11-23); hans anteckning: andra handen är för stel. Delad för hand vid ruta 68.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-23"
+          }
+        },
+        {
+          "id": "paow-film-fri-giv-p4-luften-01-t1",
+          "role": "film",
+          "name": "Paow · Kortet i luften, plats 4 (variant)",
+          "path": "assets/films/paow/fri-giv-p4-luften-01-t1/source.mp4",
+          "still": 67,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Kortet i luften: fri giv, Kling 4 mellan bankens första och sista bild, utan dockans film. Jakob i Prov 2026-11-23: \"Svinbra varaint!\". Delad för hand vid ruta 80; kortet glider den sista biten själv.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-23"
+          }
+        },
+        {
+          "id": "paow-film-fri-giv-p7-01-t1",
+          "role": "film",
+          "name": "Paow · Fri giv till plats 7 (variant)",
+          "path": "assets/films/paow/fri-giv-p7-01-t1/source.mp4",
+          "still": 53,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Fri giv till plats 7: Kling 4 mellan bankens första och sista bild, utan dockans film. Jakob i Prov 2026-11-23: \"Svinbra varaint!\". Kortet vänds i hennes fingrar (ruta 38) och glider den sista biten själv. Delad för hand vid ruta 71.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-23"
+          }
+        },
+        {
           "id": "paow-film-intro-noir-3-startruta",
           "role": "arbetsmaterial",
           "name": "Startrutan till filmen före spelet",

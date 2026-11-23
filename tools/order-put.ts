@@ -234,12 +234,12 @@ export function receipts(root: string, options: { now?: () => Date } = {}) {
     });
   }
   /**
-   * A take placed OUTSIDE Beställ (an agent's call through Runway's MCP server, written down in a ledger), recorded once, by
+   * A take placed OUTSIDE Beställ (an agent's call through Runway's MCP server or, with via: api, the API key, written down in a ledger), recorded once, by
    * tools/order-import.ts: the call's own time and task id, the film as it was fetched, and, where the film was after-worked
    * already, that too. Only for an order that says it was placed outside (order.outside) and a take with no entry yet. Nothing
    * is placed by it; the history says who placed it and when, so the receipt never looks like a call made from here.
    */
-  async function imported(id: string, takeValue: unknown, call: { requestedAt: string; taskId: string; creditsRemainingAfter: number | null; file: string; placedBy: string; fetched: string; after?: string | null }) {
+  async function imported(id: string, takeValue: unknown, call: { requestedAt: string; taskId: string; creditsRemainingAfter: number | null; file: string; placedBy: string; fetched: string; after?: string | null; via?: 'api' | 'mcp' }) {
     if (!/^[A-Za-z0-9-]{8,80}$/.test(call.taskId ?? '')) throw new StoreError(400, 'Ogiltigt task-id.');
     if (!/^\d{4}-\d{2}-\d{2}T/.test(call.requestedAt ?? '')) throw new StoreError(400, 'requestedAt ska vara en tid (ISO).');
     const fileBytes = await readFile(path.resolve(root, call.file));
@@ -252,7 +252,7 @@ export function receipts(root: string, options: { now?: () => Date } = {}) {
         { at: now(), status: 'HÄMTAD' as TakeStatus, note: call.fetched },
         ...(call.after ? [{ at: now(), status: 'EFTERARBETAD' as TakeStatus, note: call.after }] : []),
       ];
-      return { take, status: call.after ? 'EFTERARBETAD' : 'HÄMTAD', requestedAt: call.requestedAt, taskId: call.taskId, creditsRemainingAfter: call.creditsRemainingAfter, error: null, file: path.relative(root, path.resolve(root, call.file)).split(path.sep).join('/'), sha256: sha(fileBytes), outside: true, history } as Take;
+      return { take, status: call.after ? 'EFTERARBETAD' : 'HÄMTAD', requestedAt: call.requestedAt, taskId: call.taskId, creditsRemainingAfter: call.creditsRemainingAfter, error: null, file: path.relative(root, path.resolve(root, call.file)).split(path.sep).join('/'), sha256: sha(fileBytes), outside: true, ...(call.via ? { via: call.via } : {}), history } as Take;
     });
   }
   /** Correct display wording only. Original approval hash and original receipt remain independently verifiable. */

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-fri-giv-p4-01-01",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-fri-giv-p4-01-01/source.mp4",
+    "sha256": "ed187841ea18286e2bb925f7d53cfc5eb71953c26b9a7ed4bb847aec821e752c",
+    "bytes": 3772520,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 97,
+    "provider": "Runway developer API",
+    "model": "kling-4"
+  },
+  "cutInto": [
+    "paow-fri-giv-p4-01-01-deal",
+    "paow-fri-giv-p4-01-01-return-ready-c"
+  ],
+  "order": {
+    "id": "paow-fri-giv-p4-01",
+    "take": 1,
+    "path": "data/orders/paow-fri-giv-p4-01.json",
+    "orderSha256": "e7c85d7548bf47c7605f9fc26ef3c58150a4bd4a73aca7282e0a04f9346b341b",
+    "receipt": "assets/orders/paow-fri-giv-p4-01/receipt.json",
+    "taskId": "5e028c5d-0e4e-4492-a4a4-088f56223500",
+    "delivered": {
+      "path": "assets/orders/paow-fri-giv-p4-01/take-1/after.mp4",
+      "sha256": "ed187841ea18286e2bb925f7d53cfc5eb71953c26b9a7ed4bb847aec821e752c"
+    }
+  },
+  "generationRef": "assets/motions/paow-fri-giv-p4-01-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

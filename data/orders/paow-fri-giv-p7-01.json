@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-fri-giv-p7-01",
+  "title": "Två händer, ett kort till platsen · plats 7 · beställd utanför Beställ (paow-fri-giv-p7-take-1)",
+  "summary": "Gör en film av Paow: två händer, ett kort till platsen till plats 7, tur och retur. Beställd utanför Beställ genom Runways API (utvecklarprojektets krediter) och införd i efterhand ur liggaren.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "GIV-2.3",
+    "label": "Två händer, ett kort till platsen",
+    "edge": "READY-C>P7.C1",
+    "shape": "ROUND_TRIP",
+    "cutInto": [
+      "READY-C>P7.C1",
+      "P7.C1>READY-C"
+    ],
+    "makes": null
+  },
+  "motion": {
+    "grip": "TWO_HANDS",
+    "hand": "LH",
+    "pass": false,
+    "turn": true,
+    "flipAxis": "FREE",
+    "target": "P7.C1",
+    "side": "FRONT"
+  },
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · first.png",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-fri-giv-p7-01/first.png",
+      "sha256": "8e60b0eae86e271f5fd191dc16a37bc8256f2b5fb2a58a2fe65206623927e386",
+      "from": {
+        "path": "assets/proofs/fria-givar-20261123/leveranser/plats-7/first.png",
+        "note": "ur liggaren ledger.json (.runtime/fri-giv-p7/first.png)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Sista bild · last.png",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-fri-giv-p7-01/last.png",
+      "sha256": "031802000f3ec71e80535c7ed011ccb13599d93d498a373a5e946ed441da7b3b",
+      "from": {
+        "path": "assets/proofs/fria-givar-20261123/leveranser/plats-7/last.png",
+        "note": "ur liggaren ledger.json (.runtime/fri-giv-p7/last.png)"
+      },
+      "waits": null
+    }
+  ],
+  "reference": {
+    "status": "INGEN",
+    "why": "Ingen referensfilm skickades (liggaren)."
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "kling-4",
+    "params": {
+      "resolution": "1080p",
+      "duration": 4
+    }
+  },
+  "prompt": {
+    "template": null,
+    "text": "Locked camera, one continuous shot. A practised card dealer deals one card with both hands at work. Her hand at the shoe strokes the yellow card out of the window and takes it by its edges between thumb and fingers. She carries it low over the felt the short way to its place in front of the shoe, at the lower right of the picture, where the last frame shows it. On the way her wrist turns over and the card turns with it in her fingers, from its yellow back to its blue face: the card never turns by itself and never leaves her fingers before it lies. She lays it flat at its place and lets go. While she does this her other hand does not lie still: it lifts a little from the table and opens toward the card's place in a small, easy presenting gesture as the card comes down, then settles back flat on the table in front of her, as in the last frame. The hand that dealt goes back to the shoe and rests on it, as in the last frame. Her eyes follow the card. She moves naturally, with soft, relaxed arms and wrists. Only one card moves: a small card, about half as long as her hand, which keeps the size it has in the last frame all the way from the shoe to its place. Its back is plain solid yellow and its face is solid blue with a small pink cross in the middle and a small red dot in one corner, as the last frame shows it. A yellow card shows in the window of the shoe all the time: as she strokes one out, the next one is already there.",
+    "sha256": "6c0bbc0551dbc77c8ebe0c73761b5261888c79528e09d8384f827b057354a438",
+    "extra": null,
+    "middle": false
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 76,
+    "total": 76,
+    "worstPerTake": 76,
+    "worstTotal": 76,
+    "basis": "liggaren: saldot före minus saldot efter"
+  },
+  "limits": {
+    "maxCredits": 76,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Beställd utanför Beställ: huvudagenten dealer-c2 lade anropet genom Runways API (utvecklarprojektets krediter) (generate_video, kling-4) 2026-11-23T16:20:26.528Z, task 8bbd52f8-0bf3-4e42-847e-1dddeb5f39c2, 76 krediter (saldot 11765 före, 11689 efter).",
+    "Texten är den som skickades, ord för ord (liggarens body.promptText), inte promptFor:s."
+  ],
+  "created": "2026-11-23T16:20:26.528Z",
+  "createdBy": "huvudagenten dealer-c2",
+  "outside": {
+    "ledger": "c:/Users/jakem/dev/super-feature-sg/dealer/assets/proofs/fria-givar-20261123/leveranser/ledger.json",
+    "ledgerSha256": "dc1ff1f09b88c6a29ad06f7cfb6a4a3632664a0758915e3b69e652d163ee6319",
+    "entry": "paow-fri-giv-p7-take-1",
+    "placedBy": "huvudagenten dealer-c2",
+    "approvedBy": "Prov utanför Beställ, på Jakobs svar i Beslut 2026-11-23 (kortet paow-fri-giv-p4: \"Ja, som variant\"; kortet lovar att samma sätt prövas för plats 7, vars giv med dockans film är underkänd) och hans anteckning 61 (\"hennes andra hand är för stel.. Hon gör ingenting med den\"): paow, A2.3 till plats 7 och tillbaka till A2.3, Kling 4, 4 s, 1080p, första och sista bild ur ordern paow-giv-2-3-p7-01, ingen referensfilm.",
+    "mandate": null,
+    "importedAt": "2026-11-23T17:29:02.789Z",
+    "importedBy": "tools/order-import.ts",
+    "note": "Godkänd av huvudagenten före anropet, med orden i approvedBy; approval nedan är det godkännandet, skrivet när ordern fördes in, med hashen av ordern som den står här."
+  },
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-23T16:20:26.528Z",
+    "orderSha256": "fe6f6a79357dd9d4ba0fcb12a8c935d481f7308a279f83ec479f84ade4f2d20f",
+    "mandate": "Prov utanför Beställ, på Jakobs svar i Beslut 2026-11-23 (kortet paow-fri-giv-p4: \"Ja, som variant\"; kortet lovar att samma sätt prövas för plats 7, vars giv med dockans film är underkänd) och hans anteckning 61 (\"hennes andra hand är för stel.. Hon gör ingenting med den\"): paow, A2.3 till plats 7 o"
+  },
+  "status": "GODKÄND"
+}

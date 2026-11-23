@@ -22,7 +22,7 @@ Läs AGENTS.md, den här sidan och EN lägesfil för din bana. Ersätt inaktuell
 Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-18), med EN trovärdig giv först ([film](docs/lage/film.md)).
 
 1. Giv och återgång i en film är sättet (Jakob 2026-11-23): plats 1–6, kort 1, ligger i banken; plats 7 görs om och
-   kort 2 återstår. Sista given går direkt till vila, en retur per plats. Hans godkända fria givar förs in i banken
+   kort 2 återstår. Sista given går direkt till vila, en retur per plats. Hans godkända fria givar ligger i banken
    som varianter ([film](docs/lage/film.md)).
 2. Dockan: kortet i handen genom vändningen, ingångarna A2.1–A2.3 och handen över skon
    ([LASMIG](dealer3d/LASMIG.md), "Naturlig ställning", Kvar).
@@ -32,10 +32,9 @@ Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-
 
 ## Vem äger vad
 
-- **Huvudagentens adress: `dealer-c2`.** Claude-sessionen `dealer-c2` äger commits, push, taggar, studion,
-  labbservern, spelet, 3D-scenens filmlager, `src/clip-graph.ts`, registren och styrdokumenten. Allt arbete görs på
-  `main` i mappen `dealer`; en gren bara när ett arbete uttryckligen behöver isoleras (AGENTS, "Git och samarbete").
-  Sessionen avslutas 2026-11-23: den som tar över skriver sin adress på raden ovan och säger den till de andra.
+- **Huvudagentens adress: `dealer-ac`.** Claude-sessionen `dealer-ac` äger commits, push, taggar, studion,
+  labbservern, spelet, 3D-scenens filmlager, `src/clip-graph.ts`, registren och styrdokumenten.
+  En i taget kör kontrollen och pushar: den som ska pusha säger det till den andre och väntar på "kör".
 - **Jakob talar helst med huvudagenten, som delegerar** (hans ord 2026-11-17), men öppnar andra chattar när han
   vill. Den som gör något på hans ord säger det till huvudagenten och lämnar en fillista. Ingen skriver i en annans filer.
 - **Huvudagentens banor:** film, kort, labbet och studion, och spelet. Filerna de äger står under Var saker ligger i varje lägesfil.
@@ -44,8 +43,10 @@ Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-
   ord) och börjar från [dealer3d/LASMIG.md](dealer3d/LASMIG.md). Mätningen är stängd; givarna från A2.3 är filmbanans.
 - **Kartabanan** (vyn Karta och dealerns träd) är en egen session sedan 2026-11-23 och börjar från
   [docs/lage/karta.md](docs/lage/karta.md).
-- **Andra sessioner 2026-11-23:** `dealer-e7` har grafiken på kortet (kortmodellen, `/kortlandning.html`).
-  `dealer-a4` städar repot (tester som låser form, V6-rester, Pamela ur main) och har sagt att den committar det själv.
+- **Andra sessioner 2026-11-23:** `dealer-e7` har grafiken på kortet (kortmodellen, `/kortlandning.html`) och lämnar
+  fillistor till huvudagenten. `dealer-a4` städar repot (tester som låser form, V6-rester, Pamela ur main) och
+  committar och pushar just den städningen själv, med uttrycklig staging; `data/clip-jobs.json` och
+  `data/media-roles.json` skrivs av en i taget, efter fråga.
 - **Jakobs egna:** planen `placements/default.json` och hans domar i `motions/` (`review`), som skrivs från Granska och
   aldrig skrivs över av ett verktyg. En dom som getts åt honom (`node tools/review-put.ts`) är aldrig hans.
 - **En ny session** arbetar i mappen `dealer` och avgränsar sina filer först. Extra arbetsträd bara vid

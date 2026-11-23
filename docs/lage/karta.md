@@ -1,7 +1,8 @@
 # Läget: karta
 
 Kartabanans egen session (Jakob 2026-11-23): vyn Karta, dealerns träd och hur de hänger ihop med Material, Scen &
-bord, Granska och spelet. Huvudagenten `dealer-c2` committar och bygger studion; lämna en fillista.
+bord, Granska och spelet. Huvudagenten (adressen står i HANDOFF, "Vem äger vad") committar och bygger studion; lämna
+en fillista.
 
 **Läget.**
 - Ett träd är en uppsättning ankare ur Material (`data/dealer-trees.json`). Filmerna står inte där:
@@ -42,7 +43,7 @@ eller spelet läser ett nytt format.
 `map-layout.ts`, `tree-path.ts`, `primaries.ts` och `edge-stats.ts`, `src/dealer-trees.ts`, `tools/dealer-tree.ts`,
 `data/dealer-trees.json` och testerna `studio/tests/dealer-trees.test.ts` och `tree-path.test.ts`. Huvudagentens,
 läs men ändra inte: `src/clip-graph.ts`, `src/game-director.ts`, `tools/preview.ts`, `data/media-roles.json`,
-`motions/` och `tools/chain-consistency.test.ts`; behövs en ändring där, skriv vad och varför till `dealer-c2`.
+`motions/` och `tools/chain-consistency.test.ts`; behövs en ändring där, skriv vad och varför till huvudagenten.
 `node tools/dealer-tree.ts` skriver sin rapport i `.runtime/dealer-trad/`. Hans ord står i
 [BESKED](../BESKED.md): sök på "Träd läggs ihop", "Karta får kameran", "Karta med Primära" och "Flera namngivna träd".
 

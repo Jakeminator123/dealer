@@ -9929,6 +9929,168 @@
         "id": "paow-retur-1-p6-01",
         "take": 1
       }
+    },
+    {
+      "id": "paow-fri-giv-p4-01-01-deal",
+      "kind": "DEAL",
+      "from": "READY-C",
+      "to": "P4.C1",
+      "clip": "paow-fri-giv-p4-01-01",
+      "frames": [
+        0,
+        67
+      ],
+      "purpose": "Beställning paow-fri-giv-p4-01, tagning 1: Två händer, ett kort till platsen · plats 4 · beställd utanför Beställ (paow-fri-giv-p4-prov-take-1).",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 4,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe strokes the yellow card out of the window and slides it flat on the felt a short way out from the shoe. Her other hand takes the card there, holding it by its edges between thumb and fingers, and carries it low over the felt to its place in the middle of the picture, where the last frame shows it. On the way her wrist turns over and the card turns with it in her fingers, from its yellow back to its blue face: the card never turns by itself and never leaves her fingers before it lies. She lays it flat at its place and lets go. Then that hand glides back low over the felt and comes to rest flat in front of her, and her hand from the shoe settles back on the shoe, as in the last frame. Her eyes follow the card. She moves naturally, like a practised dealer, with soft, relaxed arms and hands. Only one card moves: a small card, about half as long as her hand, which keeps the size it has in the last frame all the way from the shoe to its place. Its back is plain solid yellow and its face is solid blue with a small pink cross in the middle and a small red dot in one corner, as the last frame shows it. A yellow card shows in the window of the shoe all the time: as she strokes one out, the next one is already there.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-fri-giv-p4-01/first.png",
+          "sha256": "8e60b0eae86e271f5fd191dc16a37bc8256f2b5fb2a58a2fe65206623927e386"
+        },
+        "note": "Första bilden i beställningen paow-fri-giv-p4-01."
+      },
+      "order": {
+        "id": "paow-fri-giv-p4-01",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-fri-giv-p4-01-01-return-ready-c",
+      "kind": "RETURN",
+      "from": "P4.C1",
+      "to": "READY-C",
+      "clip": "paow-fri-giv-p4-01-01",
+      "frames": [
+        68,
+        96
+      ],
+      "purpose": "Beställning paow-fri-giv-p4-01, tagning 1: Två händer, ett kort till platsen · plats 4 · beställd utanför Beställ (paow-fri-giv-p4-prov-take-1).",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 4,
+      "promptText": "Locked camera, one continuous shot. Her hand at the shoe strokes the yellow card out of the window and slides it flat on the felt a short way out from the shoe. Her other hand takes the card there, holding it by its edges between thumb and fingers, and carries it low over the felt to its place in the middle of the picture, where the last frame shows it. On the way her wrist turns over and the card turns with it in her fingers, from its yellow back to its blue face: the card never turns by itself and never leaves her fingers before it lies. She lays it flat at its place and lets go. Then that hand glides back low over the felt and comes to rest flat in front of her, and her hand from the shoe settles back on the shoe, as in the last frame. Her eyes follow the card. She moves naturally, like a practised dealer, with soft, relaxed arms and hands. Only one card moves: a small card, about half as long as her hand, which keeps the size it has in the last frame all the way from the shoe to its place. Its back is plain solid yellow and its face is solid blue with a small pink cross in the middle and a small red dot in one corner, as the last frame shows it. A yellow card shows in the window of the shoe all the time: as she strokes one out, the next one is already there.",
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-fri-giv-p4-01/last.png",
+          "sha256": "14de05204aa917015764d28d109d4288c94b0a8e6141efd4ef09ddebe90e8c8f"
+        },
+        "note": "Sista bilden i beställningen paow-fri-giv-p4-01."
+      },
+      "order": {
+        "id": "paow-fri-giv-p4-01",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-fri-giv-p4-luften-01-01-deal",
+      "kind": "DEAL",
+      "from": "READY-C",
+      "to": "P4.C1",
+      "clip": "paow-fri-giv-p4-luften-01-01",
+      "frames": [
+        0,
+        79
+      ],
+      "purpose": "Beställning paow-fri-giv-p4-luften-01, tagning 1: Två händer, ett kort till platsen · plats 4 · beställd utanför Beställ (paow-fri-giv-p4-kortet-i-luften-take-1).",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 5,
+      "promptText": "Locked camera, one continuous shot. A practised card dealer shows a little flourish with both hands. Her hand at the shoe strokes the yellow card out of the window, takes it in her fingers and with a light flick of the wrist tosses it up in front of her. The card rises to the height of her chest, turning end over end in the air, and her other hand lifts from the table and catches it in the air between thumb and fingers. That hand then brings the card down and lays it flat at its place in the middle of the picture, blue face up, where the last frame shows it, lets go, and glides back to rest flat on the table in front of her. The hand that tossed the card settles back on the shoe, as in the last frame. Her eyes follow the card up into the air and down to the table. Both hands work, lightly and surely, with soft, relaxed arms and wrists; she is calm and a little pleased with herself. Only one card moves: a small card, about half as long as her hand, which keeps the size it has in the last frame all the way. Its back is plain solid yellow and its face is solid blue with a small pink cross in the middle and a small red dot in one corner, as the last frame shows it. A yellow card shows in the window of the shoe all the time: as she strokes one out, the next one is already there.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-fri-giv-p4-luften-01/first.png",
+          "sha256": "8e60b0eae86e271f5fd191dc16a37bc8256f2b5fb2a58a2fe65206623927e386"
+        },
+        "note": "Första bilden i beställningen paow-fri-giv-p4-luften-01."
+      },
+      "order": {
+        "id": "paow-fri-giv-p4-luften-01",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-fri-giv-p4-luften-01-01-return-ready-c",
+      "kind": "RETURN",
+      "from": "P4.C1",
+      "to": "READY-C",
+      "clip": "paow-fri-giv-p4-luften-01-01",
+      "frames": [
+        80,
+        120
+      ],
+      "purpose": "Beställning paow-fri-giv-p4-luften-01, tagning 1: Två händer, ett kort till platsen · plats 4 · beställd utanför Beställ (paow-fri-giv-p4-kortet-i-luften-take-1).",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 5,
+      "promptText": "Locked camera, one continuous shot. A practised card dealer shows a little flourish with both hands. Her hand at the shoe strokes the yellow card out of the window, takes it in her fingers and with a light flick of the wrist tosses it up in front of her. The card rises to the height of her chest, turning end over end in the air, and her other hand lifts from the table and catches it in the air between thumb and fingers. That hand then brings the card down and lays it flat at its place in the middle of the picture, blue face up, where the last frame shows it, lets go, and glides back to rest flat on the table in front of her. The hand that tossed the card settles back on the shoe, as in the last frame. Her eyes follow the card up into the air and down to the table. Both hands work, lightly and surely, with soft, relaxed arms and wrists; she is calm and a little pleased with herself. Only one card moves: a small card, about half as long as her hand, which keeps the size it has in the last frame all the way. Its back is plain solid yellow and its face is solid blue with a small pink cross in the middle and a small red dot in one corner, as the last frame shows it. A yellow card shows in the window of the shoe all the time: as she strokes one out, the next one is already there.",
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-fri-giv-p4-luften-01/last.png",
+          "sha256": "14de05204aa917015764d28d109d4288c94b0a8e6141efd4ef09ddebe90e8c8f"
+        },
+        "note": "Sista bilden i beställningen paow-fri-giv-p4-luften-01."
+      },
+      "order": {
+        "id": "paow-fri-giv-p4-luften-01",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-fri-giv-p7-01-01-deal",
+      "kind": "DEAL",
+      "from": "READY-C",
+      "to": "P7.C1",
+      "clip": "paow-fri-giv-p7-01-01",
+      "frames": [
+        0,
+        70
+      ],
+      "purpose": "Beställning paow-fri-giv-p7-01, tagning 1: Två händer, ett kort till platsen · plats 7 · beställd utanför Beställ (paow-fri-giv-p7-take-1).",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 4,
+      "promptText": "Locked camera, one continuous shot. A practised card dealer deals one card with both hands at work. Her hand at the shoe strokes the yellow card out of the window and takes it by its edges between thumb and fingers. She carries it low over the felt the short way to its place in front of the shoe, at the lower right of the picture, where the last frame shows it. On the way her wrist turns over and the card turns with it in her fingers, from its yellow back to its blue face: the card never turns by itself and never leaves her fingers before it lies. She lays it flat at its place and lets go. While she does this her other hand does not lie still: it lifts a little from the table and opens toward the card's place in a small, easy presenting gesture as the card comes down, then settles back flat on the table in front of her, as in the last frame. The hand that dealt goes back to the shoe and rests on it, as in the last frame. Her eyes follow the card. She moves naturally, with soft, relaxed arms and wrists. Only one card moves: a small card, about half as long as her hand, which keeps the size it has in the last frame all the way from the shoe to its place. Its back is plain solid yellow and its face is solid blue with a small pink cross in the middle and a small red dot in one corner, as the last frame shows it. A yellow card shows in the window of the shoe all the time: as she strokes one out, the next one is already there.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-fri-giv-p7-01/first.png",
+          "sha256": "8e60b0eae86e271f5fd191dc16a37bc8256f2b5fb2a58a2fe65206623927e386"
+        },
+        "note": "Första bilden i beställningen paow-fri-giv-p7-01."
+      },
+      "order": {
+        "id": "paow-fri-giv-p7-01",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-fri-giv-p7-01-01-return-ready-c",
+      "kind": "RETURN",
+      "from": "P7.C1",
+      "to": "READY-C",
+      "clip": "paow-fri-giv-p7-01-01",
+      "frames": [
+        71,
+        96
+      ],
+      "purpose": "Beställning paow-fri-giv-p7-01, tagning 1: Två händer, ett kort till platsen · plats 7 · beställd utanför Beställ (paow-fri-giv-p7-take-1).",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 4,
+      "promptText": "Locked camera, one continuous shot. A practised card dealer deals one card with both hands at work. Her hand at the shoe strokes the yellow card out of the window and takes it by its edges between thumb and fingers. She carries it low over the felt the short way to its place in front of the shoe, at the lower right of the picture, where the last frame shows it. On the way her wrist turns over and the card turns with it in her fingers, from its yellow back to its blue face: the card never turns by itself and never leaves her fingers before it lies. She lays it flat at its place and lets go. While she does this her other hand does not lie still: it lifts a little from the table and opens toward the card's place in a small, easy presenting gesture as the card comes down, then settles back flat on the table in front of her, as in the last frame. The hand that dealt goes back to the shoe and rests on it, as in the last frame. Her eyes follow the card. She moves naturally, with soft, relaxed arms and wrists. Only one card moves: a small card, about half as long as her hand, which keeps the size it has in the last frame all the way from the shoe to its place. Its back is plain solid yellow and its face is solid blue with a small pink cross in the middle and a small red dot in one corner, as the last frame shows it. A yellow card shows in the window of the shoe all the time: as she strokes one out, the next one is already there.",
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-fri-giv-p7-01/last.png",
+          "sha256": "031802000f3ec71e80535c7ed011ccb13599d93d498a373a5e946ed441da7b3b"
+        },
+        "note": "Sista bilden i beställningen paow-fri-giv-p7-01."
+      },
+      "order": {
+        "id": "paow-fri-giv-p7-01",
+        "take": 1
+      }
     }
   ],
   "edits": [

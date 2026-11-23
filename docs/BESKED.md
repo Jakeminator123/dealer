@@ -202,7 +202,7 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
 - **Handen vänds en gång, i luften, aldrig i slutet** (2026-11-18); ordningen per ankare står i
   `tools/film-prompting.md` §5.
 - **Ingen vit kant på kortet** (2026-11-17, 2026-11-23): "Det sk inte finnas." Ingen order ber om den; kanten tas
-  bort i efterarbetet. Det vita runt kortet i skons fönster "vill eller funderar" han på att ta bort (till dealer-e7).
+  bort i efterarbetet. Det vita bakom kortet i skons fönster ska bort, synkat så att "ingenting vi har idag förstörs".
 - **Kanten bort: rätt håll, men inte förval än** (2026-11-23): i en A3-bild fylls kantlinjen med det blå; i en färdig
   film kan kortet ersättas av kortöverlägget: "kortet är ju ändå bara referens för hur ett kort ska ersättas".
 - **En giv är tre sekunder** (2026-11-18, 2026-11-21): "Ja, tre sekunder är lagom".
