@@ -142,7 +142,7 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
 - **Kartas meny, nivåer och bryggor** (2026-11-23 kl. 21.35): raden med träd och kompositioner är "ful" och görs om; i den
   sammanlagda vyn ska träden gå att se som nivåer man rullar mellan, och bryggorna ska gå att klicka fram.
 - **Registren i en databas** (2026-11-23 kl. 21.35): "Alla .json i tex 'motion' måste in" i en SQLite-databas och filerna
-  tas bort, "självsanerande": tas en film bort försvinner dess poster. Byggs på grenen `register-sqlite`.
+  tas bort, "självsanerande": tas en film bort försvinner dess poster. Filmregistret är flyttat (`node tools/register.ts`).
 - **Flera namngivna träd per dealer** (2026-11-21): omkring tre träd, och löst material för sig som är lätt att radera,
   på hans ord. Datorn och nätet ska kunna läsa samma Blob; uppladdning kräver hans ord.
 - **Den tatuerade uppsättningen är förstahandsvalet** (2026-11-17, 2026-11-18): tatuerade händer, 10 % mindre. Nya

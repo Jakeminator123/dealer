@@ -45,9 +45,9 @@ Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-
 - **Kartabanan** (vyn Karta och dealerns träd) är en egen session sedan 2026-11-23 och börjar från
   [docs/lage/karta.md](docs/lage/karta.md).
 - **Andra sessioner 2026-11-23:** `dealer-a4` har dockan (`dealer3d/`) och pushar efter huvudagentens "kör";
-  `dealer-e7` (kortet) är stängd. Registret `motions/` flyttas till SQLite på grenen `register-sqlite` i
-  `../dealer-register` (BESKED, "Registren i en databas"); huvudagenten gör bytet på `main` och tar sedan bort trädet.
-- **Jakobs egna:** planen `placements/default.json` och hans domar i `motions/` (`review`), som skrivs från Granska och
+  `dealer-e7` (kortet) är stängd. Filmregistret är `data/motions.jsonl`, läst genom en SQLite-databas under
+  `.runtime/register/` (`node tools/register.ts`; BESKED, "Registren i en databas").
+- **Jakobs egna:** planen `placements/default.json` och hans domar i `data/motions.jsonl` (`review`), som skrivs från Granska och
   aldrig skrivs över av ett verktyg. En dom som getts åt honom (`node tools/review-put.ts`) är aldrig hans.
 - **En ny session** arbetar i mappen `dealer` och avgränsar sina filer först. Extra arbetsträd bara vid
   isoleringsbehov (skillen `bredvid-andra-sessioner`).

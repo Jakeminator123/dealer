@@ -26,7 +26,11 @@
       ],
       "asked": "2026-11-23",
       "from": "Filmbanan",
-      "answer": null
+      "answer": {
+        "value": "ja",
+        "note": "",
+        "at": "2026-11-23T21:46:39.648Z"
+      }
     },
     {
       "id": "styvt-kort-vit-kant",

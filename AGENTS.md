@@ -48,7 +48,7 @@ behöver veta och namnger högst tre filer eller avsnitt att läsa.
 - Ett ämne som växer ur sitt avsnitt får en egen sida under `docs/`, länkad från README:s tabell.
 - Hur ett arbetsmoment görs: en instruktion i `tools/` bredvid verktygen (som `tools/dealer-line.md`,
   `tools/python/README.md`).
-- Beslut och fakta per film, bild eller körning: registren (`motions/`, `data/*.json`, `placements/`, `evidence/`).
+- Beslut och fakta per film, bild eller körning: registren (`data/motions.jsonl`, `data/*.json`, `placements/`, `evidence/`).
   Dokumenten länkar dit i stället för att kopiera.
 - Vad som hände och varför: commitmeddelandet.
 - Skriv kort, det som gäller nu, på rätt ställe och en gång (Jakob 2026-11-23); historien står i Git.
