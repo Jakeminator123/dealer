@@ -27,7 +27,11 @@
       ],
       "asked": "2026-11-23",
       "from": "film",
-      "answer": null
+      "answer": {
+        "value": "ja",
+        "note": "",
+        "at": "2026-11-23T08:16:06.506Z"
+      }
     },
     {
       "id": "a3p6c1-som-bild",
