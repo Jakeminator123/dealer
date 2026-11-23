@@ -378,6 +378,17 @@
       "shape": "ROUND_TRIP",
       "check": null,
       "doll": "paow"
+    },
+    {
+      "id": "docka-paow-2-1-p4c1-avlast-11-a",
+      "edge": "READY>P4.C1",
+      "path": "assets/references/docka/docka-paow-2-1-p4c1-avlast-11-a/source.mp4",
+      "sha256": "cf0aad26d23c45ff6ba3cd160828c7b776e78b11fa6bdcea8f578a4e1574d94d",
+      "seconds": 4.75,
+      "lays": "LH",
+      "shape": "ROUND_TRIP",
+      "check": null,
+      "doll": "paow"
     }
   ]
 }

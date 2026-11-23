@@ -30,13 +30,13 @@ export const FOLLOW = {more: [5, 10, 5], out: 3, slack: 15} as const;
 export type Bends = {flex: [number, number, number]; side: [number, number, number]};
 const Z: Vec3 = [0, 0, 1];
 /** The bends of the fingers (forefinger to little finger: index 0 to 3) of a hand in its own axes (hand-pose.ts `local`). */
-const bendsOf = (q: Vec3[]): Bends[] => FINGERS.slice(1).map(c => { const chain = [q[0], ...c.map(k => q[k])], b = [1, 2, 3, 4].map(k => unit(sub(chain[k], chain[k - 1])));
+export const bendsOf = (q: Vec3[]): Bends[] => FINGERS.slice(1).map(c => { const chain = [q[0], ...c.map(k => q[k])], b = [1, 2, 3, 4].map(k => unit(sub(chain[k], chain[k - 1])));
   const flex = [0, 0, 0] as [number, number, number], side = [0, 0, 0] as [number, number, number];
   for (let j = 0; j < 3; j++) { const u = b[j], v = b[j + 1], h = unit(sub(Z, mul(u, dot(Z, u))));
     flex[j] = deg(Math.atan2(dot(cross(u, v), h), dot(u, v) || 1e-12)); side[j] = deg(Math.asin(Math.max(-1, Math.min(1, dot(v, h))))); }
   return {flex, side}; });
 /** Finger `f`'s (1 forefinger … 4 little finger) middle joint, end joint and tip in the hand's own axes, from its knuckle and its bones' lengths bent as `b` says: bendsOf read back. */
-const fingerFrom = (q: Vec3[], f: number, b: Bends, lens: number[]): Vec3[] => {
+export const fingerFrom = (q: Vec3[], f: number, b: Bends, lens: number[]): Vec3[] => {
   let u = unit(sub(q[FINGERS[f][0]], q[0])), at = q[FINGERS[f][0]]; const out: Vec3[] = [];
   for (let j = 0; j < 3; j++) { const h = unit(sub(Z, mul(u, dot(Z, u)))), w = cross(h, u), fl = rad(b.flex[j]), s = rad(b.side[j]);
     u = add(mul(add(mul(u, Math.cos(fl)), mul(w, Math.sin(fl))), Math.cos(s)), mul(h, Math.sin(s))); at = add(at, mul(u, lens[j])); out.push(at); }

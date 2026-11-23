@@ -15,14 +15,14 @@
 // that hide each other is its own guess; it was tried and found too unsteady to say which face of the card the thumb is
 // on, which is why the card's turning is the track's and not the hand's.
 import {CARD, FILM, add, cross, dot, filmEye, length, mul, onPlane, onUpright, see, sub, unit, type Lens, type Pixel, type Vec3} from './camera.ts';
-import {ASSUMED, SHOE, dealerEdge, shoeCard, shoePose} from './world.ts';
+import {ASSUMED, SHOE, dealerEdge, shoeCard, shoePose, type Shoe} from './world.ts';
 import {BODY, solveBody, standing, turned} from './body.ts';
 import {HAND, type CardPose} from './deal.ts';
 
 export type HandMarks = {image: number[][]; world: number[][]; score: number};
 export type PoseMarks = {image: number[][]; world: number[][]};
 export type Landmarks = {film: string; fps: number; frameCount: number; frames: {i: number; hands: {L?: HandMarks; R?: HandMarks}; pose: PoseMarks | null}[]};
-export type Track = {leavesShoe: number | null; restFrom: number | null; restQuad: number[][] | null; edgeWindow: number[] | null; frames: {frame: number; side: string; quad: number[][] | null; edge: number[][] | null}[]};
+export type Track = {leavesShoe: number | null; restFrom: number | null; restQuad: number[][] | null; edgeWindow: number[] | null; flips?: {from: number; to: number}[]; frames: {frame: number; side: string; quad: number[][] | null; edge: number[][] | null}[]};
 export type ArmPose = {shoulder: Vec3; elbow: Vec3; wrist: Vec3; stretch: number; points: Vec3[]};
 /** One frame of a performance: the card, her left arm and hand (the dealing one, at image right), her right, and her head. */
 export type Moment = {card: CardPose; L: ArmPose; R: ArmPose; head: Vec3; hip: Vec3};
@@ -135,17 +135,42 @@ const squared = (centre: Vec3, longRaw: Vec3, toward: Vec3): CardPose => { const
 const between = (a: CardPose, b: CardPose, t: number): CardPose => squared(lerp(a.centre, b.centre, t), lerp(a.long, b.long, t), lerp(a.normal, b.normal, t));
 
 /**
- * The whole deal in the room. `track` is the film's card track (the card's corners frame by frame, when it leaves the shoe,
- * when it is edge-on, when it lies and where). Throws if a hand or the body is missing in every frame.
+ * How near the card's outline must be to where it comes to lie, at every corner, for a deal cut short (`cut`) to count it
+ * as lying: bank pixels (some 8 mm at seat 4; the card is 82 pixels across there).
  */
-export function perform(lens: Lens, marks: Landmarks, track: Track, options: {away?: number} = {}): Performance {
-  const n = marks.frameCount, eye = filmEye(lens), cam = camera(lens), leaves = track.leavesShoe ?? 0, rests = track.restFrom ?? n - 1, edge: [number, number] = [track.edgeWindow?.[0] ?? Math.round((leaves + rests) / 2), track.edgeWindow?.[1] ?? Math.round((leaves + rests) / 2)];
+export const NEAR_REST = 10;
+/**
+ * A film's deal up to and with frame `last`: the landmarks and the track cut there. A film that goes on after its deal
+ * (Paow's from A2.1 go back to the shoe; the register's `motion.segment.frames` names the deal's) is read only so far.
+ * The card lies from the first frame its outline is within NEAR_REST of the outline it comes to lie in, or from the
+ * track's own restFrom if that is sooner: the track counts the card as lying only once it is quite still, and in her films
+ * the fingers nudge it a few pixels after it is down, past the end of the deal. Throws if it does not lie by `last`.
+ */
+export function cut(marks: Landmarks, track: Track, last: number): {marks: Landmarks; track: Track} {
+  if (!Number.isInteger(last) || last < 1 || last >= marks.frameCount) throw Error(`The film has frames 0 to ${marks.frameCount - 1}; ${last} cannot end its deal.`);
+  const rest = track.restQuad, leaves = track.leavesShoe ?? 0; if (!rest) throw Error('The track has no resting card.');
+  const near = track.frames.find(f => f.frame > leaves && f.frame <= last && f.quad?.length === 4 && f.side === track.frames[track.frames.length - 1].side && Math.max(...f.quad.map((q, k) => Math.hypot(q[0] - rest[k][0], q[1] - rest[k][1]))) <= NEAR_REST)?.frame;
+  const restFrom = Math.min(track.restFrom ?? Infinity, near ?? Infinity); if (!(restFrom <= last)) throw Error(`The card does not lie by frame ${last}.`);
+  return {marks: {...marks, frameCount: last + 1, frames: marks.frames.slice(0, last + 1)}, track: {...track, restFrom, frames: track.frames.filter(f => f.frame <= last)}};
+}
+
+/**
+ * The whole deal in the room. `track` is the film's card track (the card's corners frame by frame, when it leaves the shoe,
+ * when it is edge-on, when it lies and where). Where the track has no frame with the card edge-on (it turns between two
+ * frames), the turn is between the frames of its first flip. `shoe`: the shoe the card is taken from (SHOE, the films', by
+ * default). `slides`: the card slides up out of the shoe with her fingers before it leaves it, as far as they have gone
+ * up along it since the first frame (never back), as she draws it out in Paow's films; without it the card stands still
+ * in the shoe until it leaves (the first read deals). Throws if a hand or the body is missing in every frame.
+ */
+export function perform(lens: Lens, marks: Landmarks, track: Track, options: {away?: number; shoe?: Shoe; slides?: boolean} = {}): Performance {
+  const n = marks.frameCount, eye = filmEye(lens), cam = camera(lens), leaves = track.leavesShoe ?? 0, rests = track.restFrom ?? n - 1, flip = track.flips?.find(f => f.from >= leaves && f.to <= rests);
+  const edge: [number, number] = track.edgeWindow ? [track.edgeWindow[0], track.edgeWindow[1]] : flip ? [flip.from, flip.to] : [Math.round((leaves + rests) / 2), Math.round((leaves + rests) / 2)];
   const filled = <T,>(get: (i: number) => T | undefined | null): T[] => { // a frame without the thing takes it from the nearest frame that has it
     const got = Array.from({length: n}, (_, i) => get(i) ?? null), out: T[] = [];
     for (let i = 0; i < n; i++) { let d = 0; while (d < n && !(got[i - d] ?? got[i + d])) d++; const v = got[i - d] ?? got[i + d]; if (!v) throw Error(`Nothing to carry over at frame ${i}.`); out.push(v); }
     return out; };
   const left = filled(i => marks.frames[i].hands.L), right = filled(i => marks.frames[i].hands.R), pose = filled(i => marks.frames[i].pose);
-  const away = options.away ?? 1, inShoe = shoeCard(shoePose(lens)), shoeTop = add(inShoe.centre, mul(inShoe.up, CARD.height / 2 - HAND.inFromEdge));
+  const away = options.away ?? 1, shoe = options.shoe ?? SHOE, inShoe = shoeCard(shoePose(lens, shoe), shoe), shoeTop = add(inShoe.centre, mul(inShoe.up, CARD.height / 2 - HAND.inFromEdge));
 
   // Her right hand rests on the felt the whole time, flat and in full view: its lowest point lies on the felt, and how large
   // it is drawn there says how large her hands are. Her left hand is the same size.
@@ -177,6 +202,9 @@ export function perform(lens: Lens, marks: Landmarks, track: Track, options: {aw
   const standing = (() => { const long = inShoe.up, raw = unit(cross(inShoe.across, long)), face = raw[1] > 0 ? mul(raw, -1) : raw; return {centre: inShoe.centre, long, normal: face, across: cross(face, long)}; })(); // its back out of the plate, toward the eye
   const grips = Array.from({length: n}, (_, i) => lerp(handsL[4][i], handsL[8][i], 0.5)), seenAt: (CardPose | null)[] = Array.from({length: n}, (_, i) => { const f = track.frames[i];
     return f?.quad?.length === 4 && (f.side === 'BACK' || f.side === 'FRONT') && i >= leaves ? trackedCard(lens, f.quad, f.side, cam.depthOf(grips[i]), see(eye, grips[i])!) : null; });
+  // How far the card has slid up out of the shoe with her fingers, frame by frame until it leaves (`slides`; else none).
+  const slid: number[] = []; for (let i = 0; i < n; i++) slid.push(options.slides ? Math.max(slid[i - 1] ?? 0, dot(sub(grips[Math.min(i, leaves)], grips[0]), standing.long)) : 0);
+  const inShoeAt = (i: number): CardPose => slid[i] ? {...standing, centre: add(standing.centre, mul(standing.long, slid[i]))} : standing;
   // The frames where the card is a line: carried across from the last frame with its back to the camera to the first with its face, the face coming up and over.
   // The turn-over. Close to the frames where the card is a line, its outline is a sliver: one pair of its sides is drawn a
   // few pixels long, and which way such a side points is the tracker's noise. Read frame by frame, the card then rolled
@@ -203,7 +231,7 @@ export function perform(lens: Lens, marks: Landmarks, track: Track, options: {aw
   const moments: Moment[] = [];
   for (let i = 0; i < n; i++) {
     const L = pointsOf(handsL, i), R = pointsOf(handsR, i), film = squared(centres[i], longs[i], normals[i]);
-    const card = i < leaves - 1 ? standing : i < leaves + 5 ? between(standing, film, smooth((i - leaves + 2) / 6)) : i <= folds ? film : i < rests ? between(film, lying, smooth((i - folds) / (rests - folds))) : lying;
+    const card = i < leaves - 1 ? inShoeAt(i) : i < leaves + 5 ? between(inShoeAt(i), film, smooth((i - leaves + 2) / 6)) : i <= folds ? film : i < rests ? between(film, lying, smooth((i - folds) / (rests - folds))) : lying;
     // No part of the card goes under the felt.
     const floor = CARD.thickness / 2 + CARD.height / 2 * Math.abs(card.long[1]) + CARD.width / 2 * Math.abs(card.across[1]); if (card.centre[1] < floor) card.centre = [card.centre[0], floor, card.centre[2]];
     moments.push({card, L: arm(lens, shoulderL[i], L[0], {x: elbowL[i][0], y: elbowL[i][1]}, L), R: arm(lens, shoulderR[i], R[0], {x: elbowR[i][0], y: elbowR[i][1]}, R), head: heads[i], hip});
@@ -275,12 +303,12 @@ export function moved(lens: Lens, p: Performance, to: Vec3, swingDeg?: number): 
  * The frames in which a point of the dealing hand, or the card's middle, is inside the shoe. The shoe is the model wedge
  * standing where the film has it (shoePose, SHOE). The frames while the card is taken, up to `after` frames past the one
  * where it leaves the shoe, are not looked at: the fingers are in the shoe's window then. A deal moved to a seat on the
- * shoe's side can carry the hand straight through it, which no joint limit notices.
+ * shoe's side can carry the hand straight through it, which no joint limit notices. `shoe`: the one the deal was read with.
  */
-export function throughShoe(lens: Lens, p: Performance, after = 8): number[] {
-  const pose = shoePose(lens), run = SHOE.frontHeight / Math.tan(SHOE.plateLean);
+export function throughShoe(lens: Lens, p: Performance, after = 8, shoe: Shoe = SHOE): number[] {
+  const pose = shoePose(lens, shoe), run = shoe.frontHeight / Math.tan(shoe.plateLean);
   const inside = (q: Vec3) => { const d = sub(q, pose.front), s = dot(d, pose.back), f = dot(d, pose.far);
-    return s > 0.005 && s < SHOE.length && f > 0.005 && f < SHOE.width - 0.005 && q[1] < (s < run ? s * Math.tan(SHOE.plateLean) : SHOE.frontHeight + (SHOE.backHeight - SHOE.frontHeight) * (s - run) / (SHOE.length - run)) - 0.005; };
+    return s > 0.005 && s < shoe.length && f > 0.005 && f < shoe.width - 0.005 && q[1] < (s < run ? s * Math.tan(shoe.plateLean) : shoe.frontHeight + (shoe.backHeight - shoe.frontHeight) * (s - run) / (shoe.length - run)) - 0.005; };
   return p.moments.map((m, i) => i > p.leavesShoe + after && (inside(m.card.centre) || m.L.points.some(inside)) ? i : -1).filter(i => i >= 0);
 }
 

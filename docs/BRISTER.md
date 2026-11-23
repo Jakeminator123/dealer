@@ -77,6 +77,9 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   per ruta under bara vänsterhandens fingertoppar (6–7 rutor per svepplats, P4 ruta 17–23), och rulldelarna P6.C1, P7.C1,
   D.C1 och D.C3 vänder kortet i luften 10–28 mm från handen (BESKED, "Ett kort vänds av händer och fingrar"). De två
   vinklarna gav P1 och P2 fler handregelfel (1 till 5–7 rutor). Stänger: kortet lyfts först när högerhanden har det.
+- **Paows avlästa giv svepar med handleden i vändningen** (klipp 11 ruta 44–47, mätt 2026-11-23): handen sitter fast på
+  kortet, så handleden flyttas ~100 mm per ruta och böjs över 95°. Klipp 04, 08 och 10 har 1, 3 och 9 handfel kvar (10:
+  upp till 11 mm mellan fingrar och kort). Stänger: handleden rullar kortet (`dealer3d/src/read-hand.ts`, LASMIG steg 6).
 - **Rosen på högra handryggen blir en mandala** i A3P4C1 och i given till A3P3C1 från ruta 46; en retur därifrån byter
   tillbaka (`paow-retur-2-3-p4-01`). Stänger: A3-bilden rättas mot handen i A2.3 innan fler returer beställs, och
   granskaren jämför handryggen i slutrutan med ankaret.

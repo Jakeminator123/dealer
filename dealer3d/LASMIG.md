@@ -20,9 +20,19 @@ slaskdisken.
 - -f finns för alla åtta kort (P1–P7, D.C1) i `D:/dealer-scratch/tmp/dealer-3d/ut/giv-fran-2-3-<plats>/` med ark,
   närbild, slutruta och `KLAR-f.txt` (där står vad som håller och inte). Plats 1 ser inte ut som en människa som delar:
   armen ligger längs filten, för dockan sitter med axeln lågt över bordet.
-- Äldre versioner -b till -e: i sina `KLAR-*.txt`. Den avlästa given (A2.1, `src/capture.ts`) är orörd; inget betalt lagt.
+- Äldre versioner -b till -e: i sina `KLAR-*.txt`.
 - **A2.1 är dockans egna data:** "Avläst giv" i docklabbet spelar `data/giv-avlast-*.json` (hette giv-pamela-* till
   2026-11-23; tre äldre prov namnger dem så). Inget i mappen läser den arkiverade dealerns filmer, kortspår eller vilobild.
+- **Paows egen giv från A2.1** (2026-11-23; Jakob om första versionen: given bra, men i nypet höll hon inte kortet;
+  rättat, inte sett av honom): Docklabbet, Paow, Från A2.1, plats 4 kort 1, spelar hennes giv läst ur fyra av hennes
+  A2.1-filmer (`data/giv-avlast-paow-p4-<nr>.json`, nr 04, 08, 10, 11; valet "Paows klipp", `klipp=11` i adressen, förval 11).
+  Vänsterhanden är hennes egen (`src/read-hand.ts`): nyper kortets hållna ände från skon tills det läggs, vrids med
+  kortet och trycker det ovanifrån där det ligger på filten (04 och 08 skjuter det på filten). Mätt på dockan
+  (`tools/hand-check.ts`): klipp 11 inga fel, fingertopparna 0,3–0,6 mm från kortet i alla 69 nyprutor; 04 ett fel,
+  08 tre, 10 nio (före: fel i varje ruta). Svagt: i vändningen (11: ruta 44–47) svepar handleden ~100 mm per ruta och
+  böjs över 95°, för handen sitter fast på kortet; 08:s kortspår stämmer sämst med filmen (16 px i median). Dockfilm
+  av klipp 11, giv och återgång (4,75 s): `docka-paow-2-1-p4c1-avlast-11-a` i `data/rendered-references.json`, rörelsen
+  `data/giv-fran-2-1-p4c1-avlast-11-a-paow.json`. De gamla avlästa givarna är oförändrade (omlagda och jämförda).
 - **Dockorna** (se **Dockorna**): `src/doll.ts` har `standard` (som förut, låst) och `paow`, rättad 2026-11-23 efter
   hennes filmer (38 cm bakom bordskanten, egna armbågar och händer); `?docka=paow`, `shoot.ts --doll paow`. Jakob
   2026-11-23 om vändningen vid platsen: "Bättre, men inte än", vänsterarmen ser fel ut mot skon. Scenens sko är rättad
@@ -61,6 +71,7 @@ förblir vänd tills kortet ligger); ingen ring som kortet rullar i, och inga fi
 3. Svepet (flera kort i en film) i -f: `tools/deal-film.ts --beats` tar i dag ETT kort.
 4. Dockans filmer in i `data/rendered-references.json` gör huvudagenten; id som `docka-2-3-p4c1-f`, aldrig samma id två gånger.
 5. SAM-dockan: Jakobs ja 2026-11-23 (BESKED); vad som finns och vad som saknas står sist i **Dockorna**.
+6. Paows egen giv: handleden rullar kortet i vändningen i stället för att svepa med det (`src/read-hand.ts` heldBy).
 
 **Väntar på Jakob.** Inget utanför Beslut.
 
@@ -112,7 +123,9 @@ använder repots låsta `three` och `sharp`.
 | `page/` | Sidan. `?motion=<namn>` spelar en lagrad rörelse ur `data/`; `?model=1` sätter den riggade modellen (`/model.glb`, som inspelaren serverar med `--model`) på dockans plats; `?eyes=1,4` ögon (en stol 1–7, `film` för bankens kamera, eller `runt35` för bankens kamera buren 35° runt dealern åt hennes vänster, `runt-35` åt hennes höger), `?to=P4.C1` kortplatsen för den handritade given, `?look=plain` eller `bare`, `?tags=0`, `?t=1.9`, `?play=1`, `?docka=paow` dockan (annars den rörelsen bär, eller standard). |
 | `tools/prov-sam.py`, `tools/prov-lay.ts`, `tools/prov-shoot.ts`, `src/prov-card.ts`, `page/prov.html`, `page/prov.ts` | **Provet en giv, två stolar** (2026-11-20). `prov-sam.py` läser en film med SAM 3D Body (en kroppsyta och 70 leder per ruta under bordets lins; Python eftersom SAM är det, körs i SAM-appens egen miljö och under GPU-låset). `prov-lay.ts` lägger en rörelsekälla i rummet (`--source sam` eller `pack`, det köpta klippet) och skriver `.runtime/3d-prov/scene/<källa>.json` med kortet per ruta och måtten. `prov-card.ts` ger kortet per ruta: ur filmens kortspår lagt där fingrarna är (läsningen är `capture.ts` egen, upprepad; går provet vidare ska den delade delen exporteras därifrån), eller hållet i en riggad hand. `page/prov.*` visar det, och `prov-shoot.ts` spelar in sidan huvudlöst under låset (Chrome-hanteringen är `shoot.ts` egen, upprepad). Paketets filer och SAM:s utdata ligger bara i `.runtime/3d-prov/`, utanför Git. |
 | `../tools/python/landmarks.py` (repots Python-mapp) | Läser en film ruta för ruta med MediaPipe och skriver händernas och kroppens punkter som JSON. Resultatet är mellanlager utanför Git. |
-| `tools/lift.ts` | Lägger en films punkter i rummet (`capture.ts`) med filmens kortspår, skriver `data/<namn>.json` och skriver ut vad som mättes: handens storlek, varje leds omfång, och hur kortet stämmer med filmens. |
+| `tools/lift.ts` | Lägger en films punkter i rummet (`capture.ts`) med filmens kortspår, skriver `data/<namn>.json` och skriver ut vad som mättes: handens storlek, varje leds omfång, och hur kortet stämmer med filmens. `--frames 0,93` läser bara givens rutor (registrets segment, ges som flagga), `--hand paow` lägger dockans egna händer (`src/read-hand.ts`). |
+| `src/read-hand.ts` | **Hennes egen hand på en avläst giv:** vänsterhanden med dockans ben nyper kortets hållna ände (greppet läst i skon och tippat så att tumme och pekfinger går runt kortet), kortet får vrida sig i nypet så att handleden hamnar på filmens siktlinje utanför filten, och där nypet skulle gå i filten trycks kortet ovanifrån; släpper till den lästa handen när kortet läggs. Armbågen svängs där handleden annars böjs mer än den lästa, tummen vrids ur fingrarna. Ren räkning. |
+| `data/giv-avlast-paow-p4-04.json`, `-08`, `-10`, `-11` | Paows egna givar från A2.1 till plats 4, kort 1, en per film (`paow-giv-2-1-p4-<nr>-01`, givens rutor 0–108, 0–133, 0–103, 0–93; 08 i 30 rutor/s, de andra 24), i filmens takt; docklabbet visar dem för Paow (`page/lay.ts` PAOW_READS, förval 11). Gjorda med `node dealer3d/tools/lift.ts --marks <landmarks.py-utdata> --track assets/tracking/<film>/card-track.json --frames 0,<sista> --hand paow --out dealer3d/data/giv-avlast-paow-p4-<nr>.json`; `tools/docka-cykel.ts --from A2.1 --to P4.C1 --klipp 11` ger giv och återgång. |
 | `tools/measure.ts` | Kalibreringen som tal: linsfamiljen, den valda linsen, ett verkligt kort på planens platser mot planens kontur, kortet i skon, stolarnas ögon. |
 | `tools/camera-proof.ts` | Bilderna till provet `dealer-3d-kamera`: planens kort och verkliga kort på en filmruta, och skons kort förstorat. |
 | `tools/shoot.ts` | Spelar in sidan utan labbserver: en egen filserver på 127.0.0.1 under körningen, headless Chrome med egen profil och port, en PNG per tidpunkt. `--doll paow` väljer dockan. Körs under det delade låset. |

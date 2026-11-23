@@ -172,6 +172,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   högerhand som tar emot kortet görs … vid själva slutet … snarare -30", främst P4. Återgången väljs i Docklabbet.
 - **Ett kort vänds av händer och fingrar** (2026-11-23, sagt förut): "ett kort måste vändas av händer och fingrar och ska
   inte kunna vändas av tom luft".
+- **Dockan härmar de bästa A2.1-klippen** (2026-11-23): "återskapa nya filmer från det gamla materialet genom dockan som
+  härmar rörelsemönstret från 2.1 som faktiskt är och var bra"; han vill själv "ta ut de bästa klippen". Farten är spelets.
 - **Handens landning ska gå att välja** (2026-11-23): läget vid det lagda kortet "är bra", men långfingret pekar alltid
   ned kortet. Dockan ska ha förval eller egna landningar, så att slutposen inte är samma för alla platser.
 - **Händerna fria i givarna** (2026-11-23): överlämningen vid skon är "ihopkrånglat med dealerns överdrivna vridningar

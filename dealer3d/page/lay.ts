@@ -167,24 +167,40 @@ export type Entry = 'A2.1' | 'A2.2' | 'A2.3';
 export const standardName = (doll: string, entry: Entry, place: string) => `${doll}-${entry === 'A2.3' ? '' : `${entry.toLowerCase().replace('.', '-')}-`}${place.toLowerCase().replace('.', '')}`;
 /** The one-hand deals from A2.1 (dealer3d/data/, laid into the room once by dealer3d/tools/lift.ts from the hand and the card of a filmed deal; the names stay, proofs name the files): her left hand takes the card out of the shoe and lays it; all four begin on the same frame, the pose A2.1. */
 export const READ_DEALS: Record<string, string> = {'P1.C1': 'giv-avlast-p1', 'P3.C1': 'giv-avlast-p3', 'P4.C1': 'giv-avlast-p4', 'P5.C1': 'giv-avlast-p5'};
-export type EntryPlace = PlaceRecipe | {read: string} | {none: 'unread' | 'unbuilt'};
-/** Where a deal from `entry` to a place of the plan comes from, or why there is none; null for a place the lab does not know. */
-export function placeFrom(entry: Entry, target: string): EntryPlace | null {
+/**
+ * Paow's own deals from A2.1, for the doll paow (Jakob 2026-11-23: her motion from the A2.1 films he approved, "genom
+ * dockan"): per place the clips read off her films (dealer3d/data/giv-avlast-paow-<place>-<clip>.json, lift.ts --frames
+ * from the register's segment, --hand paow), `first` the one shown where none is chosen and `why` in words. Where she has none, READ_DEALS.
+ */
+export const PAOW_READS: Record<string, {first: string; why: string; clips: Record<string, {read: string; film: string}>}> = {
+  'P4.C1': {first: '11', why: 'Jakob tycker att 11 nog är bäst, och den mäter bäst: inga fel mot handregeln och fingertopparna på kortet genom hela nypet.', clips: {
+    '04': {read: 'giv-avlast-paow-p4-04', film: 'paow-giv-2-1-p4-04-01'}, '08': {read: 'giv-avlast-paow-p4-08', film: 'paow-giv-2-1-p4-08-01'},
+    '10': {read: 'giv-avlast-paow-p4-10', film: 'paow-giv-2-1-p4-10-01'}, '11': {read: 'giv-avlast-paow-p4-11', film: 'paow-giv-2-1-p4-11-01'}}}};
+/** The doll's own read clip to a place: `clip` where the place has it, else the place's first; null where the doll has none there. */
+export function readClip(doll: string | null | undefined, target: string, clip?: string | null): {clip: string; read: string; film: string} | null {
+  const own = doll === 'paow' && Object.hasOwn(PAOW_READS, target) ? PAOW_READS[target] : null; if (!own) return null;
+  const id = clip && Object.hasOwn(own.clips, clip) ? clip : own.first; return {clip: id, ...own.clips[id]};
+}
+export type EntryPlace = PlaceRecipe | {read: string; clip?: string} | {none: 'unread' | 'unbuilt'};
+/** Where a deal from `entry` to a place of the plan comes from, or why there is none; null for a place the lab does not know. From A2.1 the doll's own clip (readClip, `clip` chosen) where it has one there, else the read deal of READ_DEALS. */
+export function placeFrom(entry: Entry, target: string, doll?: string | null, clip?: string | null): EntryPlace | null {
   const known = recipeFor(target); if (!known || entry === 'A2.3') return known;
   if (entry === 'A2.2') return {none: 'unbuilt'};
+  const own = readClip(doll, target, clip); if (own) return {read: own.read, clip: own.clip};
   return Object.hasOwn(READ_DEALS, target) ? {read: READ_DEALS[target]} : 'none' in known ? known : {none: 'unread'};
 }
 
-/** A deal read off a film, as dealer3d/data/giv-avlast-*.json have it (one card, her left hand holding it, no gaze point). */
+/** A deal read off a film, as dealer3d/data/giv-avlast-*.json have it (one card, her left hand holding it, no gaze point; `shoe` the shoe it was read with, lift.ts). */
 export type ReadFrame = {card: {c: number[]; l: number[]; n: number[]; id?: number}; L: {s: number[]; e: number[]; w: number[]; k: number; p: number[][]}; R: unknown; h: number[]; g?: number[]};
-export type ReadStored = {fps: number; frameCount: number; rests: number; to?: unknown; frames: ReadFrame[]} & Record<string, unknown>;
+export type ReadStored = {fps: number; frameCount: number; rests: number; to?: unknown; shoe?: string; frames: ReadFrame[]} & Record<string, unknown>;
 const READ_CARRY = 0.2; // metres the card goes from the shoe of before over which the move into the films' shoe eases out
 /**
- * A deal from A2.1 (READ_DEALS) as the lab lays it, to `place`, with the films' shoe: it was read with the shoe of before
- * 2026-11-23, 3 cm off. While its card is in that shoe's window the card and her left hand, which holds it, are moved as
- * one into the films' shoe (the move cardInFilmsShoe gives the card), and as the card goes out the move eases off over
- * READ_CARRY metres, so that the card is laid where it was read; the left arm is laid again to the moved wrist (body.ts
- * arm, the standard's bones), her right hand and head are as read. Every card has the id 0 (one card). The file is not changed.
+ * A deal from A2.1 (READ_DEALS, PAOW_READS) as the lab lays it, to `place`, with the films' shoe. One read with the
+ * films' shoe (`shoe: 'films'`) is laid as read. One read with the shoe of before 2026-11-23, 3 cm off (no `shoe`):
+ * while its card is in that shoe's window the card and her left hand, which holds it, are moved as one into the films'
+ * shoe (the move cardInFilmsShoe gives the card), and as the card goes out the move eases off over READ_CARRY metres,
+ * so that the card is laid where it was read; the left arm is laid again to the moved wrist (body.ts arm, the
+ * standard's bones), her right hand and head are as read. Every card has the id 0 (one card). The file is not changed.
  */
 export function readDeal(name: string, stored: ReadStored, place: string | null) {
   const lens = TABLE_LENS, basis = (s: Shoe) => { const k = shoeCard(shoePose(lens, s), s); return {o: k.centre, b: [k.up, k.across, cross(k.up, k.across)]}; };
@@ -196,7 +212,7 @@ export function readDeal(name: string, stored: ReadStored, place: string | null)
   const moved = (p: number[], w: number) => { const q = turned([p[0] - from.o[0], p[1] - from.o[1], p[2] - from.o[2]], axis, angle * w); return [0, 1, 2].map(i => from.o[i] + step[i] * w + q[i]); };
   const turnedBy = (v: number[], w: number) => turned(v as Vec3, axis, angle * w) as number[];
   const frames = stored.frames.map(f => {
-    const away = Math.hypot(f.card.c[0] - from.o[0], f.card.c[1] - from.o[1], f.card.c[2] - from.o[2]), x = Math.min(1, away / READ_CARRY), w = 1 - x * x * (3 - 2 * x);
+    const away = Math.hypot(f.card.c[0] - from.o[0], f.card.c[1] - from.o[1], f.card.c[2] - from.o[2]), x = Math.min(1, away / READ_CARRY), w = stored.shoe === 'films' ? 0 : 1 - x * x * (3 - 2 * x);
     const card = {c: f.card.c, l: f.card.l, n: f.card.n, id: 0};
     if (w <= 0) return {...f, card};
     const wrist = moved(f.L.w, w) as Vec3, laid = arm(f.L.s as Vec3, wrist, [f.L.e[0] - f.L.s[0], f.L.e[1] - f.L.s[1], f.L.e[2] - f.L.s[2]]);
