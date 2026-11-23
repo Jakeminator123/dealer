@@ -36,6 +36,13 @@ slaskdisken.
   de sista ~60° faller kortet fritt (4–5 rutor), handen rullar tillbaka ~80° på de rutorna, och handleden är mer böjd
   än förut på P6 (46° mot 29°) och P4 (37° mot 21°), P7 35° mot 31°. Nästa: släppet mjukare (ett ryck på 30 mm första
   rutan), ett reglage för hur mycket handleden vrider, och renderade remsor (inga gjorda; vänta på GPU-låset).
+- **Fingrarna** (2026-11-23, Jakob: "inget finger kan försvinna på ett konstigt sätt"; sedd i headless, inte av honom):
+  i Naturlig följer hennes ringfinger och lillfinger grannen mot de hållande fingrarna, lyfts vid knogen ur filten och
+  hålls på handflatans sida om kortet (`src/hand-rule.ts`, en regel för alla platser, se **Fingrarna** under
+  **Dockorna**). Mätt med `tools/hand-check.ts --platser`: högerhandens fria fingrar fel i 68–82 av 90 rutor före, 0–1
+  efter på P1–P6. Kvar: P7.C1, D.C1 och D.C3 där handen ligger på sidan med lillfingrets knoge i filten (handens läge,
+  inte fingrarna). Bilder: `assets/proofs/docka-fingrar-20261123/`. Filmer gjorda före görs om med `--fingrar-som-forut`.
+  Första filmen med regeln: giv och återgång till D.C1 (`data/giv-fran-2-3-dc1-bestalld-a-paow.json`, Naturlig).
 - **Provet en giv, två stolar** (2026-11-20, Jakobs "Ja kör" i Beslut; prov `3d-prov-en-giv-tva-stolar-20261120`; hans
   "ja" på kortet samma dag, och 2026-11-21 "SAM-dockan ska in, men inte nu" i BESKED): given till plats 4 med ett 3D-kort från stol 4 och stol 1. SAM 3D Body över filmen
   `paow-giv-2-3-p4-h24-cykel-02-01` (varannan ruta) ser ut som en människa som ger från båda stolarna (underagentens
@@ -379,6 +386,20 @@ fingrar ska sitta som hennes innan dockan används.
   (kvittot `liftedMm`, labbet varnar). Struket: tummen och pekfingret som släpper vid kanten (i filmens storlek som
   `pek`, tummen skymd). `platt` på P3 och P6: pekfingrets topp ligger strax utanför kortets sida. Mätskript och bilder:
   `.runtime/docka-landning/`.
+- **Fingrarna** (2026-11-23; sedd i headless, inte av Jakob). Orsaken till stumparna: de hållande fingrarnas toppar
+  läggs där standarddockans låg, så Paows mindre hand vrider pekfinger och långfinger 17–25° mot lillfingret, medan
+  ringfingret och lillfingret behåller greppets form och böjs ännu mer i bärandet (ring 45/94/32°) och hamnar under
+  långfingret. `src/hand-rule.ts`: människans gränser (`LIMITS`), vad som bryts i en hand (`handFaults`: led, ben,
+  fingrar i varandra, grannar ur ordning, mer böjt än grannen, i kortet, i filten) och regeln (`humaneMotion`, sist i
+  Naturlig i `page/natural-lab.ts`): de fria fingrarna följer grannen (`FOLLOW`) så långt som behövs, gånger hur långt
+  handleden är från ankaret, och lyfts vid knogen ur filten och till handflatans sida om kortet; allt jämnas över
+  rutorna (högst 0,1 per ruta) och är noll där handleden står exakt som i första rutan (ankaret, en returs slut). Tummen,
+  pekfingret, långfingret, handlederna, benens längder och kortet är orörda; Som förut och standarddockan går aldrig
+  genom regeln. Hans sparade standarder ändras bara i ring- och lillfingret; mest P7.C1 (`pek-lang` krökte dem förbi
+  gränsen, slutet nu 78/58 mm annorlunda vid topparna), minst P6.C1:s slut (3–5 mm). Kvar: de hållande fingrarnas fel
+  (pekfingrets knoge 33–41° i sidled, långfingret över pekfingret i bärandet, 5–9 mm mellan tumme och pekfinger), som
+  kommer av samma toppar; handen på sidan i filten på P7.C1, D.C1 och D.C3; vänsterhandens form i ankaret (ringfingrets
+  ytterled 25° i sidled), som är hennes bild. Mät: `node dealer3d/tools/hand-check.ts --platser` eller `<rörelse.json> --rutor`.
 - **Kedja paow-filmer**: ingångsfilmen till A2.3 (`data/till-ankare-2-3-c.json`) är standarddockans. `doll-pose.ts`
   på den börjar i hennes vila och slutar där paow-givarna börjar (armbågar och handleder 0,0 mm isär, prövat
   2026-11-23), men ingen film är gjord av den.
@@ -449,7 +470,8 @@ En dockfilm med giv och återgång till valfri plats, lagd som Docklabbet lägge
 eller Jakobs sparade standard för docka, ingång och plats där en finns, i det val han sparade den i), görs i ett steg.
 Det skriver en ny datafil och renderkommandot; `--from` är ingången (A2.3 om den utelämnas, A2.1 för Pamelas avlästa
 givar), `--no-standard` lägger platsen som om ingen standard fanns, `--flat-hand` lägger högerhanden plan vid
-nedsläppet (bara Naturlig), `--sam-hand --recipe-grip-yaw` lägger Naturlig som före 2026-11-23, och cykelns flaggor är
+nedsläppet (bara Naturlig), `--sam-hand --recipe-grip-yaw --fingrar-som-forut` lägger Naturlig som före 2026-11-23
+(den sista: de fria fingrarna utan `src/hand-rule.ts`, för en film gjord före regeln), och cykelns flaggor är
 `return-cycle.ts`:s. Det styrda i en Naturlig standard går ut under återgången, så att sista rutan är den första.
 Landningen är standardens `lab.landing` (utan den `lang`); `--landning <id>` tar ett förval i stället (bara Naturlig).
 Verktyget skriver raden `landning <id>` (`ingen` utanför Naturlig, ` (egen: …)` med hans reglage), och kvittot i

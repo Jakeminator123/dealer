@@ -8,13 +8,15 @@
 // - "Som förut": the deal as the lab laid it before (lay.ts without `natural`), posed on the doll as she is.
 // - withReturn: either deal, or one read off a film (from A2.1), with its return to the pose it began in, in one motion.
 // In "Naturlig" her right hand ends at the laid card as `landing` says (dealer3d/src/landing.ts); without one, or with the
-// default, as it did before landings were made, to the last digit.
+// default, as it did before landings were made, to the last digit. Last, her free fingers keep to what a hand can do
+// (dealer3d/src/hand-rule.ts `humaneMotion`, Jakob 2026-11-23: "inget finger kan försvinna på ett konstigt sätt").
 import {layDeal, type PoseFilm, type Recipe, type Steer} from './lay.ts';
 import {poseOnDoll, type PoseOptions} from './pose-on-doll.ts';
 import {natural} from '../src/natural.ts';
 import {LANDING_DEFAULT, landed, landingTimes, type Landing} from '../src/landing.ts';
 import {TURN_DEFAULT, turnedInHand, type TurnId} from '../src/turn-in-hand.ts';
 import {naturalDoll, type Doll} from '../src/doll.ts';
+import {humaneMotion} from '../src/hand-rule.ts';
 import {buildReturnCycle, type DealMotion, type ReturnCycleOptions} from '../src/return-cycle.ts';
 import type {Plan} from '../src/world.ts';
 import type {Lens} from '../src/camera.ts';
@@ -31,10 +33,13 @@ export const NO_KNOBS: Knobs = {shoulderR: [0, 0], shoulderL: [0, 0], elbowOut: 
 export const NATURAL_GRIP_YAW = -30;
 /**
  * What "Naturlig" lays differently from what it laid before 2026-11-23, each to be had as before to make a film made then
- * again (dealer3d/tools/docka-cykel.ts --sam-hand, --recipe-grip-yaw): `samHand`, her left hand at the shoe as SAM read it
- * (doll.ts `hand.left`); `recipeGripYaw`, the recipe's own angle of the hand on the card where nothing steers it.
+ * again (dealer3d/tools/docka-cykel.ts --sam-hand, --recipe-grip-yaw, --fingrar-som-forut): `samHand`, her left hand at
+ * the shoe as SAM read it (doll.ts `hand.left`); `recipeGripYaw`, the recipe's own angle of the hand on the card where
+ * nothing steers it; `fingers`, her free fingers as her grip and the moving left them, without dealer3d/src/hand-rule.ts.
  */
-export type AsBefore = {samHand?: boolean; recipeGripYaw?: boolean};
+export type AsBefore = {samHand?: boolean; recipeGripYaw?: boolean; fingers?: boolean};
+/** The motion with her free fingers kept to what a hand can do, unless as before. */
+const humaneUnless = <M extends {frames: unknown[]}>(motion: M, before: AsBefore = {}): M => before.fingers ? motion : humaneMotion(motion);
 type Posed = {motion: {frames: unknown[]; frameCount: number}; receipt: {frames: {shortMm: [number, number]}[]}};
 
 /** A motion made with the standard doll, on `doll`; and how far her arm is too short at the worst, millimetres. */
@@ -56,7 +61,7 @@ export function layNatural(input: {plan: Plan; target: string; recipe: Recipe; p
   const {plan, target, recipe, pose, steer, lens} = input, before = input.before ?? {}, doll = dollFor('naturlig', input.doll, before);
   const gripYaw = steer.gripYaw ?? (recipe.pace.contactGrip && !before.recipeGripYaw ? NATURAL_GRIP_YAW : null);
   const deal = layDeal({plan, target, recipe, pose, steer: {...steer, gripYaw, body: null}, natural: true}), posed = onDoll(lens, deal, doll);
-  return {deal, motion: posed.motion, shortMm: posed.shortMm, doll};
+  return {deal, motion: posed.motion, shortMm: posed.shortMm, doll, before};
 }
 export type LaidNatural = ReturnType<typeof layNatural>;
 
@@ -72,7 +77,7 @@ export function moveNatural(laid: LaidNatural, body: [number, number, number] | 
   const {motion: moved, receipt} = natural(lens, laid.motion as never, laid.doll, {body: bodyMore(body, laid.deal.lab.bodyAsked), ...knobs});
   const inHand = turnedInHand(moved as never, laid.doll, turn ?? TURN_DEFAULT), motion = inHand.motion as typeof moved;
   const end = landed(motion, laid.doll, landing ?? {id: LANDING_DEFAULT}, landingTimes(motion as never));
-  return {motion: end.motion as unknown as typeof laid.motion, receipt, bodyShare: Math.min(...receipt.frames.map(f => f.bodyShare)), landing: end.receipt, turn: inHand.receipt};
+  return {motion: humaneUnless(end.motion, laid.before) as unknown as typeof laid.motion, receipt, bodyShare: Math.min(...receipt.frames.map(f => f.bodyShare)), landing: end.receipt, turn: inHand.receipt};
 }
 
 /**
@@ -92,5 +97,5 @@ export function withReturn<D extends DealMotion & {lab?: {bodyAsked?: [number, n
   const moved = natural(lens, posed.motion as never, doll, {body: bodyMore(input.body, deal.lab!.bodyAsked!), ...input.knobs, steerOut: [cycle.cycle.liftStarts, cycle.cycle.readyFrom], ...(input.flatHand ? {flatHand: true} : {})});
   const inHand = turnedInHand(moved.motion as never, doll, input.turn ?? TURN_DEFAULT), motion = inHand.motion as typeof moved.motion;
   const end = landed(motion, doll, input.landing ?? {id: LANDING_DEFAULT}, landingTimes(motion as never, cycle.cycle));
-  return {cycle, motion: end.motion as unknown as typeof posed.motion, shortMm: posed.shortMm, bodyShare: Math.min(...moved.receipt.frames.map(f => f.bodyShare)), receipt: moved.receipt, landing: end.receipt, turn: inHand.receipt};
+  return {cycle, motion: humaneUnless(end.motion, input.before) as unknown as typeof posed.motion, shortMm: posed.shortMm, bodyShare: Math.min(...moved.receipt.frames.map(f => f.bodyShare)), receipt: moved.receipt, landing: end.receipt, turn: inHand.receipt};
 }
