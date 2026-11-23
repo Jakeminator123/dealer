@@ -1,7 +1,7 @@
 // The chain from picture to played film, read from the registers as they stand when the test runs (data/media-roles.json,
 // data/dealers.json, data/clip-jobs.json, motions/, data/orders/): anchors, verdicts, the clip bank's graph and what the game
-// plays from it. Each test holds something that is consistent today; a contradiction found by the rescue lane Kedjan is a
-// test.todo naming its finding (D:/dealer-scratch/tmp/raddning-kedja/FYND.md), never a red test. No media is needed: a film
+// plays from it. Each test holds something that is consistent today; a contradiction that still stands is no test here,
+// neither red nor todo: it is a line in docs/BRISTER.md. No media is needed: a film
 // counts as there when its record says it was made (as the lab server serves it where the file lies), and the checks that
 // need a file run only where assets/ is. Nothing reads placements/default.json: what is held does not depend on his plan.
 import test from 'node:test';
@@ -261,7 +261,7 @@ test('the hole card\'s turn is one node of the map, which the game takes from th
   assert.ok(MODEL.has(`IDLE>${game.REVEAL_NODE}`));
 });
 
-// ── Findings of the rescue lane Kedjan that the registers or the code still contradict (FYND.md) ──
+// ── Findings of the rescue lane Kedjan (FYND 1 to 11) that have been put right, each held by a test ──
 // FYND 1: the anchor a card is dealt from had two sources. The game's (SEAT_HUB: Paow's seat 6 from anchor 2.2, Jakob's own word
 // 2026-11-13, "Förvalen han sade ja till" in docs/BESKED.md) is the one; the plan's grip is not. Bordet's default round and the
 // deal on Beställ's row for a card followed the grip, so the lab played seat 6 from 2.1, where she has no film.
@@ -280,8 +280,6 @@ test('Bordet\'s default round and Beställ\'s row deal a card from the anchor th
   }
   assert.equal(B.roundFor('P6.C1', 'paow'), 'A2.2 - A3P6C1 - A2.2'); // his notation since 2026-11-21: the card's anchor is A3 + player + card
 });
-// FYND 2: the seams and hands now reach the step's gaps (src/game-film.ts; no test of its own holds them now); showing them on the page waits for his yes.
-test.todo('FYND 2: the game page shows a step\'s gaps (a card laid without a hand, a stand-in, a seam, the other hand) behind a key in the address, once Jakob has said yes in Beslut');
 // FYND 4, fixed by the branch rak-linje: an archived take could still be offered as a reference film or give a deal its last picture.
 test('an archived take is never a reference film or a cut frame: with every take of the bank archived, the order model offers none', () => {
   const steps = ['GIV-2.1', 'GIV-2.2', 'GIV-2.3', 'RETUR-2.1', 'RETUR-1'].map(stepOf).filter((s): s is NonNullable<ReturnType<typeof stepOf>> => !!s);
@@ -303,5 +301,3 @@ test('the game page brings no film of its own to the dealer change: it plays the
   assert.match(page, /await film\.swap\(away, changed \? graphOf\(next\.id\) : null\)/, 'swap is handed no films of the page\'s own');
   assert.match(page, /gaps\.push\(\.\.\.change\.gaps\)/, 'what the change could not play is a gap');
 });
-test.todo('FYND 7: no view says which plan and which card drawing a bank film was ordered against (order pictures[].drawn.plan, drawn.as): Paow\'s deals were drawn with flatQuad on plan e0fb924d');
-test.todo('FYND 8: the anchor 1 that holds for Paow (paow-vila-tatuerad) is measured against Pamela\'s hands in data/dealer-standard.json and shows as "avviker" in Material');

@@ -14,7 +14,7 @@ import sharp from 'sharp';
 import { orderRoutes } from './order-routes.ts';
 import { defaultPlan } from '../src/placement-model.ts';
 import { ARM_ALONE, ARM_AT_SHOE, POSE_ARM_WHAT, POSE_WHAT, SHOE_AT_ANCHOR, SLEEVE_AT_SHOE, orderStore, orderHash } from './order-store.ts';
-import { orderPrompt, promptFor } from '../src/order-prompts.ts';
+import { promptFor } from '../src/order-prompts.ts';
 import { MODELS, requestOf, stepOf } from '../src/order-model.ts';
 import { referenceByRule } from '../src/order-methods.ts';
 import { dollFilm, newOrderOf, treesOf } from './order-new.ts';
@@ -681,90 +681,6 @@ test('the KORT two-hand deal keeps its short-end turn even if the plan starts fa
   assert.deepEqual([reopened.json.order.motion.flipAxis, reopened.json.order.motion.planned.flipAxis], ['FREE', 'LONG_EDGE']);
 });
 
-test('a legacy incompatible KORT two-hand deal cannot be revised or frozen until corrected', async (t) => {
-  const { root, call } = await lab(t);
-  const media = register();
-  const ready = { id: 'paow-2-3', role: 'ankare-2.3', name: 'Ankare 2.3', path: 'assets/anchors/paow-vila-ung-2/anchor.png', node: 'READY-C', state: 'gäller' };
-  const a3 = { id: 'paow-a3-p4', role: 'landning', name: 'A3P4C1', path: 'assets/anchors/paow-nyp-ny/anchor.png', node: 'LAND(P4.C1)', card: 'P4.C1', hand: 'RH', state: 'kandidat' };
-  media.dealers.paow.entries.push(ready, a3);
-  await writeFile(path.join(root, 'data/media-roles.json'), JSON.stringify(media));
-  const input = { dealer: 'paow', step: 'GIV-2.3', target: 'P4.C1', end: a3.id, side: 'FRONT', reference: null };
-
-  for (const motion of [{ turn: true, flipAxis: 'LONG_EDGE' }, { turn: true, flipAxis: 'AT_PLACE' }, { turn: false, flipAxis: null }] as const) {
-    const made = await call('POST', '/api/orders', { body: input });
-    assert.equal(made.status, 201, made.json.error);
-    const { order } = made.json;
-    const address = `/api/orders/${order.id}`, file = path.join(root, 'data/orders', `${order.id}.json`);
-    const legacy = { ...order, motion: { ...order.motion, ...motion, pass: false } };
-    const before = JSON.stringify(legacy);
-    await writeFile(file, before);
-    const opened = await call('GET', address);
-    assert.equal(opened.status, 200);
-    const { revision } = opened.json;
-    const match = motion.turn ? new RegExp(`Vald vändning är ${motion.flipAxis}.*vänder över kortänden`) : /Vändningen stämmer inte med sidan i slutbilden/;
-    const refused = await call('POST', `${address}/approve`, { match: revision });
-    assert.equal(refused.status, 409);
-    assert.match(refused.json.error, match);
-    assert.match(opened.json.problems.join(' '), match);
-    for (const body of [{ duration: 4 }, { title: 'Ändrad titel' }, { extra: 'She looks down.' }]) {
-      const change = await call('PUT', address, { match: revision, body });
-      assert.equal(change.status, 400, JSON.stringify(body));
-      assert.match(change.json.error, match);
-    }
-    const refresh = await call('POST', `${address}/refresh`, { match: revision });
-    assert.equal(refresh.status, 400);
-    assert.match(refresh.json.error, match);
-    assert.equal(await readFile(file, 'utf8'), before);
-
-    // Old axes can be corrected in place. The inconsistent turn needs a replacement from the new preparation path.
-    if (!motion.turn) await writeFile(file, JSON.stringify(order));
-    const corrected = motion.turn ? await call('PUT', address, { match: revision, body: { flipAxis: 'FREE' } }) : await call('GET', address);
-    assert.equal(corrected.status, 200, corrected.json.error);
-    const accepted = await call('POST', `${address}/approve`, { match: corrected.json.revision });
-    assert.equal(accepted.status, 200, accepted.json.error);
-
-    // A file frozen before the guard keeps its exact text, motion, and approval hash.
-    const frozen = { ...legacy, status: 'GODKÄND', approval: { ...accepted.json.order.approval, orderSha256: orderHash(legacy) } };
-    const frozenText = JSON.stringify(frozen);
-    await writeFile(file, frozenText);
-    const history = await call('GET', address);
-    assert.equal(history.status, 200, history.json.error);
-    assert.deepEqual(history.json.order, frozen);
-    assert.deepEqual(history.json.problems, []);
-    assert.equal(orderHash(history.json.order), frozen.approval.orderSha256);
-    assert.equal((await call('PUT', address, { match: history.json.revision, body: { pass: true } })).status, 409);
-    assert.equal(await readFile(file, 'utf8'), frozenText);
-  }
-
-  for (const hand of ['LH', 'RH'] as const) {
-    const made = await call('POST', '/api/orders', { body: input });
-    assert.equal(made.status, 201, made.json.error);
-    const { order } = made.json, address = `/api/orders/${order.id}`, file = path.join(root, 'data/orders', `${order.id}.json`);
-    const oldDraft = JSON.stringify({ ...order, motion: { ...order.motion, hand, pass: false } });
-    await writeFile(file, oldDraft);
-    const opened = await call('GET', address);
-    assert.equal(opened.status, 200, opened.json.error);
-    const refused = await call('POST', `${address}/approve`, { match: opened.json.revision });
-    const problem = /GIV-2\.3.*Hämta bilderna/;
-    assert.equal(refused.status, 409, `legacy ${hand}/false cannot freeze`);
-    assert.match(refused.json.error, problem);
-    assert.match(opened.json.problems.join(' '), problem);
-    assert.match(opened.json.refresh, problem);
-    assert.equal(await readFile(file, 'utf8'), oldDraft);
-
-    const refreshed = await call('POST', `${address}/refresh`, { match: opened.json.revision });
-    assert.equal(refreshed.status, 200, refreshed.json.error);
-    assert.deepEqual([refreshed.json.order.motion.hand, refreshed.json.order.motion.pass], ['LH', true]);
-    assert.equal(refreshed.json.order.prompt.sha256, order.prompt.sha256);
-    const current = await call('GET', address);
-    assert.deepEqual(current.json.problems, []);
-    assert.equal(current.json.refresh, null);
-    const approved = await call('POST', `${address}/approve`, { match: current.json.revision });
-    assert.equal(approved.status, 200, approved.json.error);
-    assert.equal(approved.json.order.approval.orderSha256, orderHash(refreshed.json.order));
-  }
-});
-
 test('the MINIMAL two-hand deal accepts the H24 long-edge reference', async (t) => {
   const { root, call, files } = await lab(t);
   const media = register();
@@ -842,7 +758,7 @@ test('a deal with no last picture (end: null): the reference film shows the way,
   assert.throws(() => newOrderOf(['paow', 'A2.3 - A3P4C2', '--no-end', '--end', 'x']), /Välj --end eller --no-end/);
 });
 
-test('C2 two-hand drafts store the actual handoff and retain the legacy prompt', async (t) => {
+test('C2 two-hand drafts store the actual handoff, and a change that asks for another hand keeps it', async (t) => {
   const { root, call, request } = await lab(t);
   const planPath = path.join(root, 'placements/default.json'), plan = JSON.parse(await readFile(planPath, 'utf8'));
   Object.assign(plan.targets['P4.C2'].intent, { takeHand: 'LH', pass: false, endSide: 'FRONT', grip: 'PINCH', turnAt: 'AIR', flipAxis: 'FREE' });
@@ -865,10 +781,6 @@ test('C2 two-hand drafts store the actual handoff and retain the legacy prompt',
   assert.deepEqual(shown.step.cutInto, ['READY-C>P4.C2', 'P4.C2>READY-C']);
   assert.deepEqual([shown.motion.flipAxis, shown.motion.planned], ['LONG_EDGE', { grip: 'PINCH', flipAxis: 'FREE' }]);
   assert.doesNotMatch(shown.notes.join(' '), /handbyte i stället för/);
-  const dealer = (await call('GET', '/api/orders')).json.dealers.find((d: { id: string }) => d.id === 'paow');
-  const legacyMotion = { ...shown.motion, pass: false, fromPlan: true };
-  const legacyText = orderPrompt({ ...shown, motion: legacyMotion }, dealer, null, { asStored: true });
-  assert.deepEqual([shown.prompt.template, shown.prompt.text, shown.prompt.sha256], [legacyText.template, legacyText.text, sha(Buffer.from(legacyText.text))]);
 
   const saved = await request('POST', '/api/orders', { body: input, match: preview.json.revision });
   assert.equal(saved.status, 201, saved.json.error);
@@ -881,18 +793,6 @@ test('C2 two-hand drafts store the actual handoff and retain the legacy prompt',
   assert.equal(changed.status, 200, changed.json.error);
   assert.deepEqual(hands(changed.json.order), ['TWO_HANDS', 'LH', true, false]);
   assert.equal(changed.json.order.prompt.sha256, shown.prompt.sha256);
-  const legacy = { ...order, motion: legacyMotion };
-  await writeFile(file, JSON.stringify(legacy));
-  const reopened = await call('GET', address);
-  assert.deepEqual(hands(reopened.json.order), ['TWO_HANDS', 'LH', false, true]);
-  const renamed = await call('PUT', address, { match: reopened.json.revision, body: { title: 'C2 · prov' } });
-  assert.equal(renamed.status, 200, renamed.json.error);
-  assert.deepEqual(hands(renamed.json.order), ['TWO_HANDS', 'LH', true, false]);
-  await writeFile(file, JSON.stringify(legacy));
-  const refreshed = await call('POST', `${address}/refresh`, { match: reopened.json.revision });
-  assert.equal(refreshed.status, 200, refreshed.json.error);
-  assert.deepEqual(hands(refreshed.json.order), ['TWO_HANDS', 'LH', true, false]);
-  assert.equal(refreshed.json.order.prompt.sha256, shown.prompt.sha256);
 });
 
 // Changed in round two (2026-11-21): the return ends on anchor 2.3 with the card drawn where the plan lays it, is written

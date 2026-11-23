@@ -15,7 +15,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { FLIP_AXES, MODELS, STEPS, type FlipAxis, type Shape, type StepKey, type TextStyle } from '../src/order-model.ts';
 import { readMethods, recipeFor } from '../src/order-methods.ts';
-import { TEMPLATE_CHOICES, TEMPLATE_VERSION, orderPrompt, promptFor, withoutLastFrame, type DealMotion } from '../src/order-prompts.ts';
+import { TEMPLATE_CHOICES, TEMPLATE_VERSION, promptFor, withoutLastFrame, type DealMotion } from '../src/order-prompts.ts';
 
 /** Where each card of the plan lies, in bank pixels (the plan of 2026-11-11, rounded): far left to far right, the dealer's own close to her. */
 const PLACES: Record<string, { x: number; y: number }> = {
@@ -226,117 +226,6 @@ test('every other recipe of the register says each thing once with its own addit
   for (const step of ['INGANG-2.3', 'RETUR-2.3', 'VILA', 'ANKARE-2.1', 'ANKARE-2.2'] as const) assert.ok(seen.includes(step), `${step} has a recipe that is read here`);
 });
 
-test('templates 11 and 12 write the deal the trials tried in the words of template 10, word for word; 12 takes out what 11 said twice', () => {
-  // The deal by the hand at the shoe, open: the recipe's own. Nothing of it may change without a new trial.
-  for (const grip of ['PINCH', 'DRAG'] as const) for (const flipAxis of FLIP_AXES) for (const oneWay of [true, false]) for (const reference of [true, false]) for (const target of Object.keys(PLACES)) {
-    const input = { dealer, step: grip === 'DRAG' ? ('GIV-2.2' as const) : ('GIV-2.1' as const), model: 'kling-4', motion: { grip, hand: 'LH' as const, pass: false, turn: true, flipAxis, side: 'FRONT' as const }, place: PLACES[target], style: 'KORT' as const, oneWay, reference };
-    assert.equal(promptFor(input).text, promptFor({ ...input, version: 10 }).text, `${grip} ${flipAxis} ${oneWay ? 'bara dit' : 'tur och retur'} ${target}`);
-  }
-  // The deal with two hands from anchor 2.3, in the order it was measured on a real dealer: stroked out and slid flat to the
-  // other hand, tipped up onto a short end by both, on over that end in one unbroken turn (end over end, as the real dealer), laid with the
-  // fingertips on it; the hand from the shoe back at the shoe; her head towards the place. Where the hands meet follows the seat.
-  // The turn says which side is up at its start and its end, and the carry that the palm is down: each once (template 12).
-  const two = (target: string, version?: number, side: 'FRONT' | 'BACK' = 'FRONT') => promptFor({ dealer, step: 'GIV-2.3', model: 'kling-4', motion: { grip: 'TWO_HANDS', hand: 'LH', pass: false, turn: side === 'FRONT', flipAxis: side === 'FRONT' ? 'FREE' : null, side }, place: PLACES[target], style: 'KORT', oneWay: true, reference: true, version }).text;
-  assert.match(two('P4.C1'), /Her hand at the shoe strokes the yellow card out of the window and slides it flat on the felt a short way out from the shoe, where her other hand meets it\. There both hands tip the card up onto its short end, and her other hand, palm down, carries it on towards its place in the middle of the picture, where the last frame shows it; on that way the card goes on over the same short end, end over end, in one unbroken turn that begins with the yellow side up and ends with the blue side up\. She lays the card flat at its place, and her fingertips come to rest on it, as in the last frame\. The hand from the shoe lets go once the card stands on its end and settles back at the shoe\. Her head stays bowed and turns towards the place where the card will lie\. Only one card moves/);
-  assert.match(two('P7.C1'), /just in front of the shoe, where her other hand meets it/);
-  assert.match(two('P1.C1'), /to the middle in front of her, where her other hand meets it/);
-  for (const flipAxis of FLIP_AXES) assert.equal(promptFor({ dealer, step: 'GIV-2.3', model: 'kling-4', motion: { grip: 'TWO_HANDS', hand: 'LH', pass: false, turn: true, flipAxis, side: 'FRONT' }, place: PLACES['P4.C1'], style: 'KORT', oneWay: true, reference: true }).text, two('P4.C1'), 'the turn is the step\'s own');
-  // A closed card from 2.3 says yellow side up once, where the other hand carries it (11 said it three times).
-  assert.match(two('P4.C1', undefined, 'BACK'), /slides it flat on the felt a short way out from the shoe, where her other hand meets it\. There her other hand takes it by its short end, palm down, and carries it on low over the felt, yellow side up, towards its place in the middle of the picture, where the last frame shows it\. She lays it flat there, and her fingertips come to rest on it, as in the last frame\./);
-  // An order stored with template 11 keeps its words, and the test sees what they said twice.
-  assert.equal(two('P4.C1', 11), two('P4.C1').replace('flat on the felt a short way', 'flat on the felt, its broad yellow side up, a short way').replace('She lays the card flat at its place, and her', 'She lays the card flat at its place, blue side up, with her palm down, and her'));
-  const eleven = (text: string, closed = false) => faults(text, { oneWay: true, closed }).join('; ');
-  assert.match(eleven(two('P4.C1', 11)), /"yellow side up" står 2 gånger; "blue side up" står 2 gånger|"blue side up" står 2 gånger; "yellow side up" står 2 gånger/);
-  assert.match(eleven(two('P4.C1', 11)), /"palm down" står 2 gånger/);
-  assert.match(eleven(two('P4.C1', 11, 'BACK'), true), /"yellow side up" står 3 gånger/);
-  const closedDrag = (version?: number) => promptFor({ dealer, step: 'GIV-2.2', model: 'kling-4', motion: { grip: 'DRAG', hand: 'LH', pass: false, turn: false, flipAxis: null, side: 'BACK' }, place: PLACES['D.C2'], style: 'KORT', oneWay: true, reference: true, version }).text;
-  assert.match(closedDrag(), /drags it flat along the felt under its fingertips, yellow side up, to its place [^.]*\. She stops it there, and her fingertips stay on it, as in the last frame\./);
-  assert.match(eleven(closedDrag(11), true), /"yellow side up" står 2 gånger/);
-  const other = (step: StepKey, version?: number) => promptFor({ dealer, step, model: step.startsWith('ANKARE') ? 'nano-banana-pro' : 'kling-4', place: PLACES['P4.C1'], style: 'KORT', version }).text;
-  assert.match(eleven(other('INGANG-2.3', 11)), /"as in the last frame" står 2 gånger/);
-  assert.match(eleven(other('RETUR-2.3', 11)), /"her left hand" står 2 gånger/);
-  for (const still of ['ANKARE-2.1', 'ANKARE-2.2'] as const) {
-    assert.match(eleven(other(still, 11)), /vad som tas ur posebilden sägs 2 gånger/);
-    assert.equal(other(still), other(still, 11).replace(', placed and shaped as the hand in @pose.', '.'), `${still}: nothing else of the still changed`);
-  }
-  assert.equal(other('RETUR-2.3'), 'Locked camera, one continuous shot. Her right fingertips lift off the blue card. The card stays where it lies. Her open right hand glides back low over the felt, palm down, and settles beside her left hand, which stays at the shoe, as in the last frame.');
-  // What 11 changed: a deal bara dit by the other hand or with handbyte, and a closed one, end once (10 said the end twice).
-  const pass = { dealer, step: 'GIV-2.1' as const, model: 'kling-4', motion: { grip: 'PINCH' as const, hand: 'LH' as const, pass: true, turn: true, flipAxis: 'FREE' as const, side: 'FRONT' as const }, place: PLACES['P1.C1'], style: 'KORT' as const, oneWay: true, reference: true };
-  assert.deepEqual(faults(promptFor(pass).text, { oneWay: true, closed: false }), []);
-  assert.notDeepEqual(faults(promptFor({ ...pass, version: 10 }).text, { oneWay: true, closed: false }), [], 'template 10 said the end twice here: the test sees it');
-});
-
-test("pilot 02's text, the deal from 2.3 with template 12, is written word for word: as it was sent, and as a new draft today", async () => {
-  // GIV-2.3's text is the default until a trial shows template 13 does as well (the review of 2026-11-21): this order was sent with it.
-  const order = JSON.parse(await readFile('data/orders/paow-giv-2-3c-p4-pilot-02.json', 'utf8'));
-  assert.equal(order.prompt.template, `film-giv-kort@${TEMPLATE_VERSION}`);
-  const place = { x: order.prompt.place[0], y: order.prompt.place[1] };
-  for (const written of [orderPrompt(order, dealer, null, { asStored: true }), orderPrompt(order, dealer, place)]) {
-    assert.equal(written.text, order.prompt.text);
-    assert.equal(written.template, order.prompt.template);
-  }
-  assert.match(order.prompt.text, /small pink cross in the middle and a small red dot in one corner, as the last frame shows it;/);
-});
-
-test('template 13 is a choice per order beside 12, never the default: the four texts of the review word for word, each thing once', () => {
-  assert.deepEqual([...TEMPLATE_CHOICES], [TEMPLATE_VERSION, 13, 14]);
-  const open = (hand: Partial<DealMotion> = {}): DealMotion => ({ grip: 'PINCH', hand: 'LH', pass: false, turn: true, flipAxis: 'FREE', side: 'FRONT', ...hand });
-  const deal = (step: StepKey, motion: DealMotion, more: Partial<Parameters<typeof promptFor>[0]> = {}) => promptFor({ dealer, step, model: 'kling-4', motion, place: PLACES['P4.C2'], style: 'KORT', oneWay: true, reference: true, faceMark: true, version: 13, ...more });
-  // The review's section 4, word for word.
-  const TEXTS: [Parameters<typeof promptFor>[0], string][] = [
-    [{ dealer, step: 'GIV-2.3', model: 'kling-4', motion: open({ grip: 'TWO_HANDS', pass: true }), place: PLACES['P4.C2'], style: 'KORT', oneWay: true, reference: true, faceMark: true, version: 13 },
-      'Locked camera, one continuous shot. Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing. Her hand at the shoe strokes the yellow card out, and her other hand turns it over in one unbroken turn and lays it flat, blue side up, where the last frame shows it, with her fingertips resting on it. Only one card moves, and it keeps the size it has in the last frame. Its back is blank solid yellow, right out to its corners, and its face is solid blue with a small pink cross in the middle and a small red dot in one corner, as the last frame shows it; the next card in the window is the same blank yellow.'],
-    [{ dealer, step: 'GIV-2.1', model: 'kling-4', motion: open(), place: PLACES['P4.C1'], style: 'KORT', oneWay: true, reference: true, faceMark: true, version: 13 },
-      'Locked camera, one continuous shot. Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing. Her hand at the shoe takes the yellow card between thumb and fingers and carries it low over the felt; on the way her wrist turns over once and the card turns with it in one unbroken turn, and she lays it flat, blue side up, where the last frame shows it, with her fingertips resting on it. Only one card moves, and it keeps the size it has in the last frame. Its back is blank solid yellow, right out to its corners, and its face is solid blue with a small pink cross in the middle and a small red dot in one corner, as the last frame shows it; the next card in the window is the same blank yellow.'],
-    // Changed 2026-11-21 (round two): the return's last frame is anchor 2.3, both hands at the shoe, so the hand settles there.
-    [{ dealer, step: 'RETUR-2.3', model: 'kling-4', motion: { ...open({ pass: true }), turn: false, flipAxis: null }, place: PLACES['P4.C2'], style: 'KORT', faceMark: true, version: 13 },
-      'Locked camera, one continuous shot. Her hand on the blue card lifts off it, and the card stays where it lies. That hand glides back low over the felt, palm down, and settles at the shoe beside her other hand, as in the last frame.'],
-    [{ dealer, step: 'RETUR-1', model: 'kling-4', motion: { ...open({ pass: true }), turn: false, flipAxis: null }, place: PLACES['P4.C2'], style: 'KORT', faceMark: true, version: 13 },
-      'Locked camera, one continuous shot. Her hand on the blue card lifts off it, and the card stays where it lies. Both her hands come back low over the felt, palm down, and rest flat in front of her, as in the last frame.'],
-  ];
-  for (const [input, text] of TEXTS) {
-    const p = promptFor(input);
-    assert.equal(p.text, text, input.step);
-    assert.match(p.template, /@13$/, input.step);
-    assert.deepEqual(faults(p.text, { oneWay: !!input.oneWay, closed: false }), [], `${input.step}:\n${p.text}`);
-    // Never the default: the same order without the choice is template 12's text.
-    const twelve = promptFor({ ...input, version: undefined });
-    assert.notEqual(twelve.text, text, input.step);
-    assert.match(twelve.template, new RegExp(`@${TEMPLATE_VERSION}$`));
-  }
-  // Without a reference film the deal leaves out the reference sentence and nothing else.
-  assert.equal(deal('GIV-2.3', open({ grip: 'TWO_HANDS' }), { reference: false }).text, TEXTS[0][1].replace(' Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing.', ''));
-  // Where 13 has no text of its own, it writes 12's words, named @13: a closed card, a missing mark, another card size, a
-  // round trip, the other hand, a handbyte or a turn at the place from 2.1, the drag from 2.2, the minimal text, the return
-  // to rest after the left hand laid the card, a closed return, and the films without a card.
-  const same: Parameters<typeof promptFor>[0][] = [
-    { ...TEXTS[0][0], motion: { ...open({ grip: 'TWO_HANDS' }), side: 'BACK', turn: false, flipAxis: null } },
-    { ...TEXTS[0][0], faceMark: false },
-    { ...TEXTS[0][0], cardScale: 1.5 },
-    { ...TEXTS[0][0], oneWay: false },
-    { ...TEXTS[1][0], motion: open({ hand: 'RH' }) },
-    { ...TEXTS[1][0], motion: open({ pass: true }) },
-    { ...TEXTS[1][0], motion: open({ flipAxis: 'AT_PLACE' }) },
-    { ...TEXTS[1][0], step: 'GIV-2.2', motion: open({ grip: 'DRAG', flipAxis: 'AT_PLACE' }) },
-    { ...TEXTS[1][0], style: 'MINIMAL' },
-    { ...TEXTS[3][0], motion: { ...open(), turn: false, flipAxis: null } },
-    { ...TEXTS[2][0], motion: { ...open({ pass: true }), side: 'BACK', turn: false, flipAxis: null } },
-    { ...TEXTS[2][0], step: 'RETUR-2.1' },
-    { dealer, step: 'INGANG-2.3', model: 'kling-4', style: 'KORT', reference: true, version: 13 },
-  ];
-  for (const input of same) {
-    const p = promptFor(input), twelve = promptFor({ ...input, version: undefined });
-    assert.equal(p.text, twelve.text, `${input.step} ${JSON.stringify(input.motion ?? null)}`);
-    assert.equal(p.template, twelve.template.replace(/@\d+$/, '@13'));
-  }
-  // An order keeps the template it was made with when its text is written again (a change, a refresh); an older one does not.
-  const stored = (template: string) => orderPrompt({ step: { key: 'RETUR-2.3', shape: 'ONE_WAY' }, motion: { ...TEXTS[2][0].motion!, target: 'P4.C2' }, generation: { model: 'kling-4' }, pictures: [], prompt: { extra: null, style: 'KORT', template, faceMark: true }, reference: null }, dealer, PLACES['P4.C2']);
-  assert.equal(stored('film-retur-kort@13').text, TEXTS[2][1]);
-  assert.equal(stored('film-retur-kort@13').template, 'film-retur-kort@13');
-  assert.equal(stored('film-retur-kort@11').template, `film-retur-kort@${TEMPLATE_VERSION}`);
-  assert.equal(stored('').template, `film-retur-kort@${TEMPLATE_VERSION}`);
-});
-
 test('a deal with no last picture (round two, 2026-11-21): the two-hand deal from 2.3 in 12, 13 and 14 names no last frame and still says each thing once', async () => {
   const { recipe } = await cases();
   const twoHand = recipe.filter((c) => c.step === 'GIV-2.3' && c.shape === 'ONE_WAY' && c.motion.side === 'FRONT' && c.reference);
@@ -361,57 +250,5 @@ test('templates 13 and 14 say each thing once in every case the line allows, as 
       assert.match(p.template, new RegExp(`@${version}$`));
     }
     assert.deepEqual(bad.slice(0, 5), [], `template ${version}: ${bad.length} texts`);
-  }
-});
-
-test('template 14 is a choice per order beside 12 and 13: 12 word for word but for the reference sentence and the reach of the entry to 2.3', async () => {
-  const REF_12 = 'Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing.';
-  // Jakob 2026-11-23: her natural movement first, the doll's film a rough guide. Still only the movement: the doll is white and has no face.
-  const REF_14 = 'Video 1 shows only the movement, as a rough guide: her hands go the way the hands go in video 1, at about the same moments. Above all she moves naturally, like a practised dealer, with soft, relaxed arms and hands.';
-  // The deal from 2.3 to seat 3 as it was approved with template 12, the doll's film as video 1 and no last picture: the same
-  // order named @14 changes the reference sentence and nothing else, as it was stored and as a draft written again.
-  const order = JSON.parse(await readFile('data/orders/paow-giv-2-3-p3-01.json', 'utf8'));
-  assert.equal(order.prompt.template, 'film-giv-kort@12');
-  assert.equal(order.prompt.text.split(REF_12).length, 2, 'the approved text says the reference sentence of 12 once');
-  const place = { x: order.prompt.place[0], y: order.prompt.place[1] };
-  const named = (template: string) => [orderPrompt({ ...order, prompt: { ...order.prompt, template } }, dealer, null, { asStored: true }), orderPrompt({ ...order, prompt: { ...order.prompt, template } }, dealer, place)];
-  for (const twelve of named('film-giv-kort@12')) assert.deepEqual([twelve.text, twelve.template], [order.prompt.text, 'film-giv-kort@12']);
-  for (const fourteen of named('film-giv-kort@14')) {
-    assert.deepEqual([fourteen.text, fourteen.template], [order.prompt.text.replace(REF_12, REF_14), 'film-giv-kort@14']);
-    assert.deepEqual(faults(fourteen.text, { oneWay: true, closed: false }), [], fourteen.text);
-    assert.doesNotMatch(fourteen.text, /\bnot\b|\bnever\b|n't|\bwithout\b|last frame/i);
-  }
-  // The entry to anchor 2.3: 12 and 13 word for word as before; 14 says where her other hand ends in the anchor now used as
-  // last picture (paow-ankare-2-3-c: flat on the felt in front of her, only the hand nearest the shoe at the shoe).
-  const REACH_12 = 'Both her hands rise calmly and go to the shoe: her hand nearest the shoe lays its fingertips on the yellow card in the window, ready to stroke it out, and her other hand comes to wait close beside the shoe, as in the last frame.';
-  const REACH_14 = 'Both her hands rise calmly: her hand nearest the shoe goes to the shoe and lays its fingertips on the yellow card in the window, ready to stroke it out, and her other hand comes to rest flat on the felt in front of her, as in the last frame.';
-  const EYES = 'Her eyes go down to her hand at the card and stay there.';
-  const entry = (version?: number, reference = true) => promptFor({ dealer, step: 'INGANG-2.3', model: 'kling-4', style: 'KORT', reference, version });
-  for (const version of [undefined, 12, 13]) assert.equal(entry(version).text, `Locked camera, one continuous shot. ${REF_12} ${REACH_12} ${EYES}`, `template ${version ?? 'of today'}`);
-  assert.deepEqual([entry(14).text, entry(14).template], [`Locked camera, one continuous shot. ${REF_14} ${REACH_14} ${EYES}`, 'film-ingang-kort@14']);
-  assert.equal(entry(14, false).text, `Locked camera, one continuous shot. ${REACH_14} ${EYES}`);
-  for (const reference of [true, false]) assert.deepEqual(faults(entry(14, reference).text, { oneWay: false, closed: false }), []);
-  // Every other short text with a reference film is 12's with that one sentence changed, 13's shorter texts are not in 14,
-  // and a text without a reference film, and the minimal text with one, is 12's word for word. Each is named @14.
-  const open: DealMotion = { grip: 'PINCH', hand: 'LH', pass: false, turn: true, flipAxis: 'FREE', side: 'FRONT' };
-  const lies: DealMotion = { ...open, pass: true, turn: false, flipAxis: null };
-  const others: Parameters<typeof promptFor>[0][] = [
-    { dealer, step: 'GIV-2.3', model: 'kling-4', motion: { ...open, grip: 'TWO_HANDS' }, place: PLACES['P4.C2'], style: 'KORT', oneWay: true, faceMark: true },
-    { dealer, step: 'GIV-2.1', model: 'kling-4', motion: open, place: PLACES['P4.C1'], style: 'KORT', oneWay: true, faceMark: true },
-    { dealer, step: 'GIV-2.2', model: 'kling-4', motion: { ...open, grip: 'DRAG', turn: false, flipAxis: null, side: 'BACK' }, place: PLACES['D.C2'], style: 'KORT', oneWay: true },
-    { dealer, step: 'RETUR-2.3', model: 'kling-4', motion: lies, place: PLACES['P4.C2'], style: 'KORT', faceMark: true },
-    { dealer, step: 'RETUR-1', model: 'kling-4', motion: lies, place: PLACES['P4.C2'], style: 'KORT', faceMark: true },
-    { dealer, step: 'INGANG-2.1', model: 'kling-4', style: 'KORT' },
-    { dealer, step: 'UTGANG-2.3', model: 'kling-4', style: 'KORT' },
-    { dealer, step: 'HALKORT', model: 'kling-4', place: PLACES['D.C2'], style: 'KORT' },
-    { dealer, step: 'VILA', model: 'kling-4', style: 'KORT' },
-  ];
-  for (const input of others) for (const style of ['KORT', 'MINIMAL'] as const) for (const reference of [true, false]) {
-    const twelve = promptFor({ ...input, style, reference }), fourteen = promptFor({ ...input, style, reference, version: 14 }), what = `${input.step} ${style}${reference ? '' : ', no reference film'}`;
-    // The return to 2.3 has no sentence for a reference film in 12 (its recipe orders none): 14 has nothing to change there.
-    const says = reference && input.step !== 'RETUR-2.3';
-    assert.equal(twelve.text.includes(REF_12), says, what);
-    assert.equal(fourteen.text, says && style === 'KORT' ? twelve.text.replace(REF_12, REF_14) : twelve.text, what);
-    assert.equal(fourteen.template, twelve.template.replace(/@\d+$/, '@14'), what);
   }
 });

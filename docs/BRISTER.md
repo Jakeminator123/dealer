@@ -222,6 +222,8 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   bara den första sekunden och ryggen är platt). Syns: Prov `trailer-noir-3`. Prövat: rollblad 4 med tatuerade händer
   och dagens film som förlaga. Stänger: arbetet är pausat på hans ord; fortsätter det måste också gränd-glimten och de
   tre scenerna efter trappan göras om.
+- **Ingen vy säger vilken plan en bankfilm beställdes mot.** Ordern bär det (`pictures[].drawn.plan` och `drawn.as`);
+  Paows givar ritades med flatQuad på plan e0fb924d. Stänger: en rad i Karta eller Granska.
 
 ## Läpparna och rösten
 
@@ -296,6 +298,8 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   Stänger: ingen väg vald.
 - **Reglage för `cardBack` och `cardFace` finns inte i Bordets läge Scen.** Syns: filmens egna kortfärger kan bara väljas
   med adressens ord. Prövat: inget. Stänger: två reglage i Scen, när efterarbetet byggs.
+- **Ett stegs luckor syns inte på spelsidan.** Kort lagt utan hand, ersättningsfilm, skarv och fel hand räknas fram i
+  `src/game-film.ts` men visas inte. Stänger: en visning bakom en nyckel i adressen.
 
 ## Labbet och verktygen
 
@@ -357,6 +361,8 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   ytterplatserna. Material kallar sex av åtta ankare saknade när de inte ingår i publiceringsurvalet, även om de finns
   lokalt. Stänger: telefonprov och tydlig skillnad mellan opublicerat och saknat material. Äldre kontrollskript i
   `huvudagent11/look/` använder ett ersatt lösenord och ska inte köras.
+- **Paows ankare 1 visas som "avviker" i Material.** `paow-vila-tatuerad` mäts mot Pamelas händer i
+  `data/dealer-standard.json`. Stänger: ett mått per dealer.
 
 ## Pamela
 
