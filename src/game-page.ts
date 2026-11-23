@@ -16,6 +16,7 @@ import {readRegister} from './scene3d-room.ts';
 import {FILM, cameraFromContract, filmPixel, filmToScene, sceneToSpot, solveCamera, spotToScene, viewUnder, type FilmCamera} from './scene3d-geometry.ts';
 import {createLayout, slotOf} from './game-table.ts';
 import {tableGeometry} from './card-plan.ts';
+import {GAME_OWN, OWN_WORDS} from './game-own.ts';
 import {cardRecords, judgedBank, speakMoments, talkOn} from './game-director.ts';
 import {cardsChoice, cardWords, createFilm, type FilmPlayers, type Said} from './game-film.ts';
 import {chipsFor, mountOverlay, type Action, type Anchors} from './game-overlay.ts';
@@ -37,7 +38,7 @@ const query = new URLSearchParams(location.search);
 // marks the stage, game.css lays it out): standing, under the picture; lying on a stage lower than sideBelow (a phone on its
 // side), at the picture's right; else over the picture's lower edge. The film before the game (src/game-intro.ts) ends in these framings, so the
 // two change together.
-const FRAMING = {wide: {pitch: -8, zoom: 0.84}, tall: {pitch: -4.4, zoom: 1.55}, tallBelow: 0.8, sideBelow: 540, turnShare: 0.6, turnLimit: 40};
+const FRAMING = {wide: {pitch: GAME_OWN.pitch, zoom: GAME_OWN.zoom}, tall: {pitch: -4.4, zoom: 1.55}, tallBelow: 0.8, sideBelow: 540, turnShare: 0.6, turnLimit: 40};
 function placeConsole() {
   const box = stage.getBoundingClientRect(), standing = box.width / Math.max(1, box.height) < FRAMING.tallBelow;
   stage.classList.toggle('tall', standing); stage.classList.toggle('side', !standing && box.height < FRAMING.sideBelow); // the picture box follows at once (game.css)
@@ -59,8 +60,8 @@ const table = /^[a-z0-9-]{1,40}$/.test(query.get('table') ?? '') ? `?table=${que
 // A look from the studio (src/game-look.ts). Its module is read only when the address holds more than the game's own words,
 // so the page without them reads and does exactly what it did before. ?inbaddad=1 (the Casino view shows the game in a
 // frame) hides nothing: the frame shows none of what this page shows, and src/preview-ui.ts keeps a framed page from
-// taking the lab tab by itself.
-const OWN_WORDS = ['table', 'tema', 'bricka', 'chatt', 'robot', 'inbaddad', 'dealer', 'intro', 'diagnos', 'geometri', 'dealTempo'], forval = query.get('forval');
+// taking the lab tab by itself. The game's own words: src/game-own.ts OWN_WORDS.
+const forval = query.get('forval');
 const lookAsked = [...query.keys()].some(word => !OWN_WORDS.includes(word) && !['kort', 'cardBack', 'cardFace'].includes(word)); // kort, cardBack, cardFace: how the card in her hand is shown (below), not a look
 
 const [contract, placements, bank, first, register, lookCode, presetAnswer] = await Promise.all([read('data/scene-contract.json', 'Scenkontraktet'), read('api/placements', 'Placeringsplanen'), read('api/clip-bank', 'Klippbanken'), read(`api/game${table}`, 'Spelet'), read('data/scene-rooms.json', 'Rumsregistret'),
@@ -128,12 +129,12 @@ const ROOMS = [
 ].map(r => ({...r, thumb: `assets/scene/thumbs/room-${r.id}.jpg`}));
 const soundOf = (id: string) => ROOMS.find(r => r.id === id)?.sound ?? null;
 const remembered = (() => { try { return localStorage.getItem('dealer.room'); } catch { return null; } })();
-let room = ROOMS.find(r => r.id === (asked.room ?? query.get('room') ?? remembered))?.id ?? 'panorama';
+let room = ROOMS.find(r => r.id === (asked.room ?? query.get('room') ?? remembered))?.id ?? GAME_OWN.room;
 // The drawn cards and how the card in her hand is shown (cardsChoice in src/game-film.ts): the address's cards= and kort= first, then
 // the saved scene preset, then the player's remembered choice, then on. A saved look must survive an old browser setting.
 const cardsMemory = (() => { try { return localStorage.getItem('dealer.cards'); } catch { return null; } })();
 const cardsNow = cardsChoice({address: (look?.keys as {cards?: boolean} | undefined)?.cards, preset: preset?.state.cards, kort: query.get('kort'), memory: cardsMemory, inHand: asked.cardInHand});
-scene.set({format: 'fill', room: room as never, blur: ROOMS.find(r => r.id === room)!.blur, tray: true, cards: true, pitch: Number(query.get('pitch') ?? FRAMING.wide.pitch), zoom: Number(query.get('zoom') ?? FRAMING.wide.zoom)});
+scene.set({format: GAME_OWN.format, room: room as never, blur: ROOMS.find(r => r.id === room)!.blur, tray: GAME_OWN.tray, cards: GAME_OWN.cards, pitch: Number(query.get('pitch') ?? FRAMING.wide.pitch), zoom: Number(query.get('zoom') ?? FRAMING.wide.zoom)});
 // The look over the game's own settings, before the first picture. A room of it that the menu does not offer (a built room
 // of the lab) is shown all the same, and the menu marks none. The table is built by now, so the room is changed with a cut,
 // and the look's own way of changing rooms holds from then on.
@@ -317,7 +318,7 @@ const panel = mountPanel(overlay.root.querySelector<HTMLElement>('.go-bar')!, RO
     room = id; // a look from the studio leaves the room the game remembers alone
     if (forval === null) try { localStorage.setItem('dealer.room', id); } catch { /* a private window keeps nothing */ }
     if (asked.roomShift === 'cut') scene.set({roomShift: 'cut', room: id, blur: next.blur} as never); // a look that changes rooms with a cut
-    else scene.set({roomShift: 'shimmer', room: id, blur: next.blur} as never); // the background shimmers and changes under the shimmer
+    else scene.set({roomShift: GAME_OWN.roomShift, room: id, blur: next.blur} as never); // the background shimmers and changes under the shimmer
     if (heard.ambience) sound?.ambience(soundOf(id)); panel.set({room: id});
   },
   // She leaves, the table stands empty, the dealer chosen comes in (the same one again when she is chosen). Only the bank's judged

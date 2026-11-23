@@ -56,8 +56,8 @@ automatisk commit. En push är skild från deploy, mediauppladdning och genereri
   som ligger utanför Git, med en `LASMIG.md` om hur läget återställs; skripten i mappens `kvitton/skript/` körs om med
   nytt namn för nästa version. Version 1: `V2-backup-studio/` (taggen `fore-struktur`); version 2:
   `aterstallningsbar-version-2/` (taggen med samma namn).
-- Fem dokument måste finnas, annars stoppar kontrollen (`CANONICAL` i `tools/publication-check.ts`): README, AGENTS,
-  HANDOFF, SYSTEM och DRIFT. Tak har bara HANDOFF och lägesfilerna (`tools/handoff.test.ts`).
+- Tak har bara HANDOFF, lägesfilerna och AGENTS (`tools/handoff.test.ts`); hur sidorna är uppställda bestämmer den som
+  skriver.
 
 ## Labbservern och fliken
 

@@ -5,7 +5,7 @@ import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {execFileSync,spawnSync} from 'node:child_process';
 import {stripTypeScriptTypes} from 'node:module';
-import {inspectBlob,parsePush,dirtyTestInputs,scanRange,listedTests,reusablePass,sameNodeMajor,buildTreeOf,REUSE_HOURS,CANONICAL} from './publication-check.ts';
+import {inspectBlob,parsePush,dirtyTestInputs,scanRange,listedTests,reusablePass,sameNodeMajor,buildTreeOf,REUSE_HOURS} from './publication-check.ts';
 
 function fixture(t:TestContext){
   // The repository lies one folder down, as dealer does: what the check puts beside it (the build tree, push-logg) then
@@ -34,7 +34,7 @@ function pushFixture(t:TestContext){
   // The Node this repository pins, so that npm in the fixture's build tree is the one already installed.
   const pinned=JSON.parse(readFileSync('package.json','utf8')).volta.node as string;
   const base=f.commitAll({
-    ...Object.fromEntries(CANONICAL.map(name=>[name,'# Fixture\n'])),
+    'README.md':'# Fixture\n',
     '.gitignore':'.runtime/\nnode_modules/\n',
     'package.json':JSON.stringify({private:true,volta:{node:pinned},scripts:{test:'node --test tools/missing.test.ts',check:'node tools/fixture-check.mjs'}}),
     'tools/fixture-check.mjs':"if(process.env.FIXTURE_CHECK==='red'){console.log('fixture test fails');process.exit(1);}\nconsole.log('fixture check green');\n",
@@ -67,10 +67,6 @@ test('documents are not measured: a long document or a new page under docs/ give
   f.commit('docs/DRIFT.md','line\n'.repeat(400));
   const head=f.commit('docs/new-subject.md','# A new subject');
   assert.deepEqual(scanRange(f.root,head,base),[]);
-});
-
-test('the canonical documents, whose absence stops a push, are all in the repository',()=>{
-  assert.deepEqual(CANONICAL.filter(name=>!existsSync(name)),[]);
 });
 
 test('every file but the user card plan counts as open: studio, registers and documents too',()=>{

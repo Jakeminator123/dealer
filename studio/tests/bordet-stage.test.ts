@@ -6,7 +6,6 @@
 // Run: node --test "studio/tests/bordet-stage.test.ts"
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import { VIEWS } from "../../src/placement-model.ts";
 import { STAGE_MIN, STAGE_SHARE, ZOOM_MAX, actualCamera, clampCamera, closeUp, columnStage, fitCamera, gameCamera, gameScale, panBy, pictureOrigin, zoomAt, type Camera, type Size } from "../lib/bordet.ts";
 import { PLAN_VIEW } from "../lib/placement.ts";
@@ -69,23 +68,4 @@ test("one column: the picture's own shape, at most the share of what is seen of 
       assert.ok(h <= Math.round(width / aspect) && h <= Math.max(STAGE_MIN, Math.round(seen * STAGE_SHARE)), `${width} wide, ${seen} seen: ${h}`);
     }
   }
-});
-
-test("the view: its parts are squeezed only side by side, and the stage clips its picture", () => {
-  const view = readFileSync(new URL("../components/bordet/BordetView.tsx", import.meta.url), "utf8");
-  const board = readFileSync(new URL("../components/placement/Board.tsx", import.meta.url), "utf8");
-  const classes = (source: string, tag: RegExp) => {
-    const found = tag.exec(source);
-    assert.ok(found, `${tag} is in the source`);
-    return found[1].split(/\s+/);
-  };
-  // In one column a part that may be squeezed (min-h-0) shares the window's height with the other, and the picture, which
-  // keeps its height, runs on under the place buttons: that was the fault. Side by side each part scrolls within itself.
-  for (const part of [classes(view, /<section ref=\{column\} className="([^"]+)"/), classes(view, /<aside className="([^"]+)" data-nudge>/)]) {
-    assert.ok(!part.includes("min-h-0"), "never squeezed in one column");
-    assert.ok(part.includes("lg:landscape:min-h-0"), "squeezed side by side, where it scrolls within itself");
-  }
-  const stage = classes(view, /<div ref=\{stageArea\} className="([^"]+)"/);
-  for (const word of ["shrink-0", "h-[var(--stage-column)]", "lg:landscape:h-[var(--stage-height)]"]) assert.ok(stage.includes(word), `the stage's box has ${word}`);
-  assert.ok(classes(board, /data-stage\s+className=\{cn\("([^"]+)"/).includes("overflow-hidden"), "the stage clips the zoomed picture");
 });

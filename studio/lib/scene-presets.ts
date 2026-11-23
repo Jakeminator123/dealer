@@ -31,6 +31,8 @@ export const OWN_LIMIT = 100;
 export const BASE = "basgrund";
 /** The editable look used when Casino or Scen & bord is opened without an explicit preset. */
 export const CASINO_PRESET = "casino";
+/** What a saved preset carries of the perspective: only Casino's, and only when Bred lins is chosen (Jakob 2026-11-21). */
+export const savedGeometri = (name: string, bred: boolean): { geometri?: string } => (name === CASINO_PRESET && bred ? { geometri: BRED_LINS } : {});
 
 // What the game sets on the scene today (src/game-page.ts): room, blur, format, tray, cards and the framing on line 58 (the
 // room is Las Vegas when the player has chosen none, line 57; its blur 5 is its entry in data/scene-rooms.json; pitch −8 and

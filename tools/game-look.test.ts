@@ -8,6 +8,7 @@ import {BUILT_BLUR as STUDIO_BLUR, BUILT_ROOMS as STUDIO_ROOMS, ROOM_ID as STUDI
 import {NAME_LIMIT as STUDIO_NAME_LIMIT, PRESET_NAME as STUDIO_PRESET_NAME, SHIPPED, effective} from '../studio/lib/scene-presets.ts';
 import {DEFAULTS} from '../src/scene3d-view.ts';
 import {cardsChoice} from '../src/game-film.ts';
+import {OWN_WORDS} from '../src/game-own.ts';
 
 const params = (text: string) => new URLSearchParams(text);
 const kindOf = (s: KeySpec): KeyKind => {
@@ -73,19 +74,8 @@ test('a preset saved with Bred lins (Använd i Casino, Jakob 2026-11-21) hands t
   for (const geometri of ['bred', 'constructor', 1, null]) assert.equal(presetFrom({preset: {...casino, geometri}})?.geometri, undefined, String(geometri));
 });
 
-test('game.html: one geometry for the scene and the lying cards, the address\'s word before the preset\'s', async () => {
-  // Read from the code as loosely as the rule allows, so that the page can be written anew: the geometry is settled in one
-  // place, from the address and the preset's word (which goes first: tableGeometry, tools/card-plan.test.ts and
-  // studio/tests/casino.test.ts), and that one value goes to both the lying cards and the scene.
-  const page = await readFile('src/game-page.ts', 'utf8');
-  assert.equal(page.match(/\btableGeometry\(/g)?.length, 1, 'the geometry is settled in one place');
-  assert.match(page, /tableGeometry\(location\.search,[^)\n]*\bpreset\b/);
-  assert.match(page, /createLayout\([^)\n]*\bgeometry\b/, 'the lying cards get it');
-  assert.match(page, /createScene\([^\n]*\bgeometry\b/, 'the scene gets it');
-  // a preset is asked for only with ?forval and read only when the address names one, so a page without (the film before the
-  // game, cloud/studio/gate.ts TRAILER_HOME) never gets a saved geometry
-  assert.match(page, /\bforval\s*\?\s*fetch\(`api\/scene-presets\//);
-  assert.match(page, /\bforval\s*\?\s*lookCode\.presetFrom\(/);
+test('a preset is asked for only with ?forval: the film before the game gets no saved geometry', () => {
+  // the address of the film before the game (cloud/studio/gate.ts TRAILER_HOME) names no preset
   assert.equal(readLook(params('intro=noir-3&room=monaco&roomLife=1&table=casino&dealer=paow')).forval, null);
 });
 
@@ -112,24 +102,14 @@ test('what the page says when part of the look could not be used', () => {
   assert.ok(both.includes('borta') && both.includes('zoom'), both);
 });
 
-test('game.html without a look reads no look module and sets what it set before', async () => {
-  const page = await readFile('src/game-page.ts', 'utf8');
-  // The look (src/game-look.ts), a film before the game (src/game-intro.ts) and the browser's own account on the picture
-  // (src/game-diagnosis.ts) are read only when the address asks for them: never by every page.
-  for (const module of ['game-look', 'game-intro', 'game-diagnosis']) {
-    assert.doesNotMatch(page, new RegExp(`^import (?!type )[^\\n]*'\\./${module}\\.ts'`, 'm'), `${module} is not read by every page`);
-    assert.match(page, new RegExp(`import\\('\\./${module}\\.ts'\\)`), `${module} is read when asked for`);
-  }
-  // The game's own words are never read as a look: none of them is a key of the scene, and among them are the words the
-  // Casino view writes into the frame for itself (studio/lib/casino.ts gameSrc; dealer, which it adds).
-  const own = JSON.parse((/const OWN_WORDS = (\[[^\]]*\])/.exec(page)?.[1] ?? '[]').replaceAll("'", '"')) as string[];
-  assert.deepEqual(own.filter(word => word in KEYS), []);
-  for (const word of ['table', 'inbaddad', 'dealer', 'geometri']) assert.ok(own.includes(word), `${word} is the game's own word`);
-  // and the look is laid only when there is one
-  assert.match(page, /Object\.keys\(asked\)\.length/);
+test('the game\'s own words are never read as a look', () => {
+  // None of them is a key of the scene, and among them are the words the Casino view writes into the frame for itself
+  // (studio/lib/casino.ts gameSrc; dealer, which it adds).
+  assert.deepEqual(OWN_WORDS.filter(word => word in KEYS), []);
+  for (const word of ['table', 'inbaddad', 'dealer', 'geometri']) assert.ok(OWN_WORDS.includes(word), `${word} is the game's own word`);
 });
 
-test('the drawn cards and her lines: the game draws cards unless the player or a look says off; tal=av keeps her silent', async () => {
+test('the drawn cards and her lines: the game draws cards unless the player or a look says off; tal=av keeps her silent', () => {
   const rooms = [...BUILT_ROOMS], blurOf = () => 11;
   // cards is the scene's own key: ?cards=0 (a link or a recording writes it) turns the drawn cards off, over a preset too.
   assert.deepEqual(readLook(params('cards=0'), rooms).keys, {cards: false});
@@ -137,7 +117,6 @@ test('the drawn cards and her lines: the game draws cards unless the player or a
   assert.equal(lookState(DEFAULTS, null, {}, blurOf).cards, undefined, 'without a look the game keeps its own (on)');
   // who decides (cardsChoice in src/game-film.ts, which the page asks): the address, then the look, then the player's memory,
   // then on
-  assert.match(await readFile('src/game-page.ts', 'utf8'), /\bcardsChoice\(/);
   assert.equal(cardsChoice({}).cards, true, 'on when nobody says otherwise');
   assert.equal(cardsChoice({memory: 'off'}).cards, false, 'the player turned them off');
   assert.equal(cardsChoice({preset: false, memory: 'on'}).cards, false, 'a look says off over the memory');

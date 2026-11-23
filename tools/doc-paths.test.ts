@@ -13,10 +13,6 @@ import path from 'node:path';
 // a clean checkout such as push-clean's. Not checked: a path with a placeholder or a pattern in it, a path outside the
 // repository, and the receipts in evidence/, which describe the repository as it was.
 
-/** A mention that is history on purpose: the file is gone and the sentence says so. */
-const HISTORY: {doc: string; path: string}[] = [
-];
-
 const FOLDERS = /^(?:\.\.\/)*(?:src|tools|data|docs|studio|dealer3d|game|pages|cloud|motions|placements|materials|functions|tests|page)\//;
 
 /** Git without what a hook may have exported, so it reads the checkout the test runs in (as tools/publication-check.ts). */
@@ -66,17 +62,8 @@ test('a path in backticks in a document names a file or folder that is there',()
   const ignored=ignoredByGit(missing);
   const isThere=(p:string)=>existsSync(p)||ignored.has(p);
   const dead:string[]=[];
-  for(const {doc,line,at} of lines)for(const named of deadPaths(doc,line,isThere)){
-    if(!HISTORY.some(h=>h.doc===doc&&h.path===named))dead.push(`${doc}:${at} ${named}`);
-  }
-  assert.deepEqual(dead,[],'a document names a path that is not there: change the document in the same change, or say in it that the file is gone');
-});
-
-test('each mention kept as history is still in its document, and its file is still gone',()=>{
-  for(const h of HISTORY){
-    assert.ok(readFileSync(h.doc,'utf8').includes('`'+h.path+'`'),`${h.doc} no longer names ${h.path}: take it out of HISTORY`);
-    assert.ok(!existsSync(h.path),`${h.path} is there again: take it out of HISTORY`);
-  }
+  for(const {doc,line,at} of lines)for(const named of deadPaths(doc,line,isThere))dead.push(`${doc}:${at} ${named}`);
+  assert.deepEqual(dead,[],'a document names a path that is not there: change the document in the same change');
 });
 
 test('what Git ignores counts as there, also a folder that is missing from a checkout',()=>{

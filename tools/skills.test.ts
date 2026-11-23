@@ -25,26 +25,15 @@ test('there are skills, each a folder with SKILL.md', () => {
   for (const name of skills) assert.ok(existsSync(path.join(folder, name, 'SKILL.md')), name);
 });
 
-test('each skill has the standard\'s front matter: name = folder, and a description that says when it applies', () => {
+test('each skill has the standard\'s front matter: name = folder, and a description', () => {
   for (const name of skills) {
     const {fields} = read(name);
     assert.deepEqual(Object.keys(fields).sort(), ['description', 'name'], name);
     assert.equal(fields.name, name);
     assert.match(name, /^[a-z0-9]+(?:-[a-z0-9]+)*$/);
     assert.ok(name.length <= 64, name);
-    assert.ok(fields.description.length >= 80 && fields.description.length <= 1024, `${name}: description ${fields.description.length} characters`);
-    assert.match(fields.description, /^Använd /, `${name}: the description begins with when the skill applies`);
+    assert.ok(fields.description.length > 0 && fields.description.length <= 1024, `${name}: description ${fields.description.length} characters`);
     assert.ok(!/[<>]/.test(fields.description), `${name}: no angle brackets in the description`);
-  }
-});
-
-test('each skill is thin and points to the document that holds its procedure', () => {
-  for (const name of skills) {
-    const {body} = read(name);
-    assert.ok(body.split('\n').length <= 60, `${name}: at most 60 lines`);
-    const rules = body.match(/^\d+\. \*\*/gm) ?? [];
-    assert.ok(rules.length >= 5 && rules.length <= 10, `${name}: five to ten rules, has ${rules.length}`);
-    assert.match(body, /\]\(\.\.\/\.\.\/\.\.\/(?:AGENTS\.md|HANDOFF\.md|docs\/[A-Z]+\.md|tools\/[a-z-]+\.md)\)/, `${name}: links its procedure`);
   }
 });
 

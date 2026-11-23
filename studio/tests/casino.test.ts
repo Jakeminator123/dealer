@@ -2,13 +2,12 @@
 // The game page's side, reading the same address, is tested in tools/game-look.test.ts.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import { tableGeometry } from "../../src/card-plan.ts";
 import { DEFAULTS } from "../../src/scene3d-view.ts";
 import { readLook } from "../../src/game-look.ts";
 import { cardsChoice, cardWords } from "../../src/game-film.ts";
 import { CASINO_TABLE, ONLINE_CASINO, casinoAddress, casinoSearch, freshTable, gameSrc, readCasino, readGeometryWord, scenHref, shownGeometry, trialAddress, withGeometry } from "../lib/casino.ts";
-import { SHIPPED, effective, patchOf, readAddress, scenePageAddress } from "../lib/scene-presets.ts";
+import { BRED_LINS, CASINO_PRESET, SHIPPED, effective, patchOf, readAddress, savedGeometri, scenePageAddress } from "../lib/scene-presets.ts";
 
 const params = (text: string) => new URLSearchParams(text);
 
@@ -134,16 +133,10 @@ test("the plain Casino link: no word in the address, the perspective saved with 
   assert.equal(new URL(scenHref({ ...plain, geometri: shownGeometry(plain, standard) }), lab).searchParams.has("geometri"), false);
 });
 
-test("Scen's buttons: Använd i Casino is open under Bred lins, Prova i Casino names the perspective, På nätet is the lab's only", () => {
-  const scen = readFileSync(new URL("../components/bordet/SceneBody.tsx", import.meta.url), "utf8");
-  assert.match(scen, /<Button size="sm" disabled=\{!editor\.ready \|\| editor\.savingCasino\} /, "Bred lins no longer closes Använd i Casino");
-  assert.match(scen, /<Link href=\{trialAddress\(editor\.casino, geometri\)\}/);
-  assert.match(scen, /useSceneEditor\(\(\) => lookOf\(params\), \{ geometri \}\)/);
-  assert.match(scen, /\{!isSnapshot \? \(\s*<Tooltip[^>]*>\s*<a href=\{ONLINE_CASINO\} target="_blank"/);
-  const editor = readFileSync(new URL("../components/scene-editor/useSceneEditor.tsx", import.meta.url), "utf8");
-  assert.match(editor, /\.\.\.\(name === CASINO_PRESET && bred \? \{ geometri: BRED_LINS \} : \{\}\)/, "only Casino's preset carries the perspective");
-  const casino = readFileSync(new URL("../components/casino/CasinoView.tsx", import.meta.url), "utf8");
-  assert.match(casino, /\{!isSnapshot \? \(\s*<a href=\{ONLINE_CASINO\} target="_blank"/);
+test("only Casino's preset carries the perspective, and only under Bred lins; På nätet leads to the copy's Casino", () => {
+  assert.deepEqual(savedGeometri(CASINO_PRESET, true), { geometri: BRED_LINS });
+  assert.deepEqual(savedGeometri(CASINO_PRESET, false), {}, "saved with Standard: no word, the file as it was");
+  assert.deepEqual(savedGeometri("levande", true), {}, "another preset never carries it");
   assert.equal(ONLINE_CASINO, "https://dealer-lake.vercel.app/casino");
 });
 

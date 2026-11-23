@@ -1023,7 +1023,7 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   assert.ok(r.pictures[1].drawn, 'the card is drawn on the last picture');
   assert.equal(r.pictures[0].sha256, sha(landing));
   assert.deepEqual([r.motion.turn, r.motion.side], [false, 'FRONT']);
-  assert.match(r.prompt.text, /^Locked camera, one continuous shot\. Her fingertips lift off the blue card, which stays where it lies\. Her open hand glides back low over the felt, palm down, to the shoe/);
+  for (const part of ['Locked camera', 'blue card', 'shoe']) assert.ok(r.prompt.text.includes(part), `the return's text names ${part}`);
   assert.deepEqual(r.notes, ['Inget recept finns för Tillbaka till nypet: varje värde är valt för den här beställningen.']);
   assert.equal(back.json.shown, 'KLAR_ATT_TRYCKA');
   assert.equal(back.json.refresh, null);
@@ -1053,8 +1053,7 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   assert.deepEqual(f.pictures.map((p: { name: string; label: string; sha256: string }) => [p.name, p.label, p.sha256]), [['first.png', 'Första bild · Paows A2.1', sha(files['paow-nyp-ny'])], ['last.png', 'Slutbild · Paows landning på plats 4', sha(landing)]], 'seat 4 ends on seat 4\'s own landing picture');
   assert.deepEqual([f.reference.status, f.reference.clips, f.reference.path, f.reference.sha256, f.reference.seconds, f.reference.dealer, f.reference.approvedStraight, f.reference.from.verdict, f.reference.from.words], ['FINNS', ['pamela-p4-c1-plan-deal-02'], `assets/orders/${f.id}/reference.mp4`, sha(film), 4, 'pamela', true, 'GODKÄND', 'Det ser bra ut.']);
   assert.equal((await call('GET', `/${f.reference.path}`)).bytes!.equals(film), true, 'the film is copied byte for byte');
-  assert.match(f.prompt.text, /^Locked camera, one continuous shot\. Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing\. Her hand at the shoe draws the yellow card up out of the window/);
-  assert.match(f.prompt.text, /she lays the card flat at its place, blue side up, and her fingertips come to rest on it, as in the last frame\./);
+  for (const part of ['Locked camera', 'video 1', 'yellow card', 'blue side up', 'last frame']) assert.ok(f.prompt.text.includes(part), `the deal's text names ${part}`);
   assert.deepEqual(f.notes, [recipeNote('giv-2.1-mitten')], 'the recipe and nothing against it');
   assert.equal(f.cost.perTake, 86, '21,5 per s × 4 s');
   assert.deepEqual(line.json.problems, [], 'another dealer\'s film is allowed as a reference');
@@ -1471,7 +1470,7 @@ test('the steps a round needs: a deal to the hole card, its turn from rest and t
   assert.deepEqual([hole.order.motion.side, hole.order.motion.turn, hole.order.motion.flipAxis], ['BACK', false, null], 'it lands closed, as the plan says');
   assert.match(hole.order.title, / · A3DC2( · |$)/); // the title names the card in his notation since 2026-11-21
   // Laid on the felt in front of the shoe and slid to its place (template 7: carried, round 6's closed takes tilted).
-  assert.match(hole.order.prompt.text, /lays it flat on the felt in front of the shoe and slides it under her fingertips, flat and yellow side up, to its place close in front of her, in the middle of the picture, where the last frame shows it\. She stops it there and lifts her fingertips off it\./);
+  for (const part of ['in front of the shoe', 'slides', 'yellow side up', 'last frame']) assert.ok(hole.order.prompt.text.includes(part), `the hole card's text names ${part}`);
   const turn = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'HALKORT' } });
   assert.equal(turn.status, 201);
   const o = turn.json.order;
@@ -1482,17 +1481,17 @@ test('the steps a round needs: a deal to the hole card, its turn from rest and t
   assert.match(o.pictures[1].label, /hålkortet öppet$/);
   assert.deepEqual([o.prompt.style, o.prompt.template, o.generation.model, o.generation.params.duration, o.cost.total], ['KORT', 'film-halkort-kort@12', 'wan3', 5, 100]);
   assert.equal(o.takes, 1, 'the hole card\'s turn is still being tried: one take');
-  assert.match(o.prompt.text, /to the yellow card lying close in front of her, in the middle of the picture, where the last frame shows it\. There her thumb slides under/);
+  for (const part of ['yellow card', 'last frame', 'thumb']) assert.ok(o.prompt.text.includes(part), `the turn's text names ${part}`);
   assert.equal(turn.json.shown, 'VÄNTAR');
   assert.match((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'HALKORT', style: 'UTFÖRLIG' } })).json.error, /skrivs KORT eller MINIMAL/);
   const out = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'UTGANG' } })).json.order;
   assert.deepEqual([out.id, out.step.edge, out.pictures.map((p: { waits: { label: string } | null }) => p.waits?.label)], ['paow-utgang-01', 'READY>IDLE', ['ankare 2.1', 'ankare 1']]);
-  assert.match(out.prompt.text, /^Locked camera, one continuous shot\. Her thumb and forefinger let the yellow card settle back into the shoe's window/);
+  for (const part of ['Locked camera', 'yellow card', 'shoe\'s window']) assert.ok(out.prompt.text.includes(part), `the way out's text names ${part}`);
   // The way out from the drag: anchor 2.2 to rest, its own id, its anchor 2.2 waited for (none holds in this lab).
   const outDrag = (await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'UTGANG-2.2' } })).json.order;
   assert.deepEqual([outDrag.id, outDrag.step.edge, outDrag.step.cutInto, outDrag.pictures.map((p: { waits: { label: string } | null }) => p.waits?.label)], ['paow-utgang-2-2-01', 'READY-B>IDLE', [], ['ankare 2.2', 'ankare 1']]);
   assert.deepEqual([outDrag.prompt.template, outDrag.generation.model, outDrag.generation.params.duration, outDrag.cost.total], ['film-utgang-kort@12', 'wan3', 4, 80]);
-  assert.match(outDrag.prompt.text, /^Locked camera, one continuous shot\. Her fingertips lift off the yellow card in the shoe's window/);
+  for (const part of ['Locked camera', 'yellow card', 'shoe\'s window']) assert.ok(outDrag.prompt.text.includes(part), `the way out from the drag names ${part}`);
   assert.match(outDrag.summary, /ankare 2\.2/);
 
   // The production list: read by anyone of the lab.

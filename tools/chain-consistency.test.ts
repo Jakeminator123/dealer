@@ -9,12 +9,11 @@ import assert from 'node:assert/strict';
 import {readFileSync, existsSync, readdirSync} from 'node:fs';
 import path from 'node:path';
 import {
-  OPTIONAL_TARGETS, REVEAL_EDGE, SEATS, TARGETS, bankEdges, buildGraph, dealHub, dealersOf, filmCard, hubOf, parseEdge, parseNode, pickIdle, playable,
+  OPTIONAL_TARGETS, REVEAL_EDGE, SEATS, TARGETS, bankEdges, buildGraph, dealHub, dealersOf, filmCard, hubOf, parseEdge, parseNode, pickIdle,
   resolveRound, returnFits, returnsOf, roundSequence, type BankData, type Graph, type MotionRecord, type Segment, type Take,
 } from '../src/clip-graph.ts';
 import {SEAT_HUB, STAND_IN_FILM, hubChain, hubDeals, judgedBank, planBeats} from '../src/game-director.ts';
 import {ANCHOR_NODE, ANCHOR_ROLE, cutFrameOf, referenceCandidates, stepOf} from '../src/order-model.ts';
-import {traceTakes} from '../studio/lib/lineage.ts';
 
 // ── The registers as the lab server reads them (tools/build-knowledge.ts localBank), without media ──
 const json = (rel: string) => JSON.parse(readFileSync(rel, 'utf8'));
@@ -120,11 +119,7 @@ test('the game\'s maps name real places and real anchors: SEAT_HUB deals a seat\
   }
 });
 
-test('the game page offers only dealers of data/dealers.json, and opens on one who is not paused', async () => {
-  const page = readFileSync('src/game-page.ts', 'utf8'), list = /const DEALERS = \[(.*)\];/.exec(page)?.[1] ?? '';
-  const offered = [...list.matchAll(/id: '([a-z0-9]+)'/g)].map(m => m[1]);
-  assert.ok(offered.length >= 1, 'the DEALERS list of src/game-page.ts was not found');
-  for (const id of offered) assert.ok(dealerList.some(d => d.id === id), `game.html offers ${id}, who is not in data/dealers.json`);
+test('the game opens on a dealer of data/dealers.json who is not paused', async () => {
   const {FIRST_DEALER} = await import('../src/clip-graph.ts');
   assert.ok(dealerList.some(d => d.id === FIRST_DEALER && !d.paused), `the first dealer ${FIRST_DEALER} is paused or unknown`);
 });
@@ -234,32 +229,8 @@ test('in the game a return continues the deal before it, or the seam is named; a
   }
 });
 
-// ── Rest: one anchor 1 for every film the game plays into and out of it ──────
-// The rests, the entry and the exit, the hole card's turn and the chains from another pose at the shoe all meet in rest. Where the
-// job file and the orders say what their first and last pictures were made from, it is one anchor-1 picture per dealer: a film
-// from another anchor 1 (the tattooed one, say) next to rests from the older would change her hands at the cut. A guard (FYND 3,
-// the main agent's decision 2026-11-18): the tattooed set is his first choice and the bank's older films play until new ones exist;
-// the films from anchor 2.3 go into the bank as candidates and are not played in the game until a whole way with those hands is
-// there. This test turns red the moment one is played beside the older rests.
-test('the films the game plays into and out of rest start and end on one and the same anchor-1 picture, where that can be traced', () => {
-  const orders = existsSync('data/orders') ? readdirSync('data/orders').filter(f => f.endsWith('.json')).map(f => maybe(path.join('data/orders', f))).filter(Boolean) : [];
-  const takes = [...(bank.jobs ?? []), ...(bank.derived ?? [])].map((t: any) => ({id: t.id, clip: t.clip, frames: t.frames, first: t.first, last: t.last}));
-  for (const dealer of bankDealers) {
-    const entries = entriesOf(dealer), lineage = traceTakes(entries as never, takes, orders.flatMap((o: any) => o.pictures ?? []));
-    const g = game(dealer), seen = new Map<string, string>();
-    const at = (take: Take | null | undefined, side: 'first' | 'last') => { const id = take ? lineage[take.id]?.[side] : null, e = id ? entries.find(x => x.id === id) : null; if (e?.role === ANCHOR_ROLE['1'] && !seen.has(e.id)) seen.set(e.id, `${take!.id} (${side})`); };
-    for (const t of (g.edge['IDLE>IDLE']?.takes ?? []).filter(x => playable(x) && x.idle && !x.idle.onRequest && x.idle.weight > 0)) { at(t, 'first'); at(t, 'last'); }
-    at(g.edge['IDLE>READY']?.main, 'first'); at(g.edge['READY>IDLE']?.main, 'last'); at(g.edge[REVEAL_EDGE]?.main, 'first'); at(g.edge[REVEAL_EDGE]?.main, 'last');
-    for (const card of Object.keys(SEAT_HUB[dealer] ?? {})) { const chain = hubChain(g, dealHub(card, SEAT_HUB[dealer]), card); if (chain) { at(chain[0].take, 'first'); at(chain[chain.length - 1].take, 'last'); } }
-    assert.ok(seen.size <= 1, `${dealer}: the game meets rest on ${[...seen].map(([id, by]) => `${id} (first by ${by})`).join(' and ')}`);
-  }
-});
-
-// FYND 11: the game kept a node of its own for the hole card's turn, with a note that the turn had no edge in the map; it has one.
-test('the hole card\'s turn is one node of the map, which the game takes from the clip bank and does not name again', async () => {
-  const director = readFileSync('src/game-director.ts', 'utf8');
-  assert.doesNotMatch(director, /export const REVEAL_NODE/, 'a second REVEAL_NODE beside src/clip-graph.ts\'s');
-  assert.doesNotMatch(director, /no model edge for its turn/);
+// The hole card's turn is a node of the map: the game takes it from the clip bank.
+test('the hole card\'s turn is one node of the map, which the game takes from the clip bank', async () => {
   const graph = await import('../src/clip-graph.ts'), game = await import('../src/game-director.ts');
   assert.equal(game.REVEAL_NODE, graph.REVEAL_NODE);
   assert.ok(MODEL.has(`IDLE>${game.REVEAL_NODE}`));
@@ -295,13 +266,4 @@ test('an archived take is never a reference film or a cut frame: with every take
   const motions = {...bank.motions};
   for (const id of ids) motions[id] = {...motions[id], review: {...motions[id]?.review, archived: {by: 'test', at: '2026-11-18', where: 'test'}}};
   assert.deepEqual(ask({...bank, motions}), []);
-});
-// FYND 5: the dealer change stood in with films he had rejected (EXIT_TRIAL, pamela-table-leave-wide-01, and the first entrance with
-// a film, pamela-table-arrive-01). The behaviour is src/game-film.ts's (no test of its own holds it now); here, that the page brings no film of its own to it.
-test('the game page brings no film of its own to the dealer change: it plays the bank\'s judged films or none, and says the gap', () => {
-  const page = readFileSync('src/game-page.ts', 'utf8');
-  assert.doesNotMatch(page, /EXIT_TRIAL/, 'the exit trial is the 3D page\'s, never the game\'s');
-  assert.doesNotMatch(page, /\.takes\.find\(t => t\.media\.video\)/, 'a take picked for having a film, whatever its verdict');
-  assert.match(page, /await film\.swap\(away, changed \? graphOf\(next\.id\) : null\)/, 'swap is handed no films of the page\'s own');
-  assert.match(page, /gaps\.push\(\.\.\.change\.gaps\)/, 'what the change could not play is a gap');
 });

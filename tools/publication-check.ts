@@ -14,10 +14,6 @@ export function listedTests(packageJson:string):string[] {
   if(!tests.length)throw Error('Skriptet test i package.json namnger inga testfiler; kontrollen vet inte vad som ska köras.');
   return tests;
 }
-// The documents every reader starts from: a push without one of them stops. Their length is not checked here (the cap on
-// HANDOFF.md and on the lane files under docs/lage/ is held by tools/handoff.test.ts), and new pages under docs/ or
-// tools/ are welcome where a subject needs one (AGENTS.md, "Var kunskap står").
-export const CANONICAL = ['AGENTS.md','README.md','HANDOFF.md','docs/SYSTEM.md','docs/DRIFT.md'];
 const zero = /^0+$/;
 const oid = /^[a-f0-9]{40,64}$/i;
 const git = (root:string,...args:string[]) => {
@@ -174,8 +170,6 @@ function main() {
   }
   if(!ranges.length){console.log('Ingen ny commit att kontrollera.');return;}
   const findings=ranges.flatMap(r=>scanRange(root,r.local,r.remote));
-  const names=git(root,'ls-tree','-r','--name-only','-z',head).split('\0');
-  for(const name of CANONICAL)if(!names.includes(name))findings.push({level:'RED',path:name,message:'Ett kanoniskt dokument saknas; återställ eller samordna dokumentstrukturen.'});
   findings.forEach(emit);
   if(findings.some(f=>f.level==='RED'))throw Error('Publiceringen stoppad. Utred fynd och eventuell felaktig kontroll; använd inte --no-verify.');
   // From here on only a red test run on exactly this commit stops, never a file that lies open in the working tree.

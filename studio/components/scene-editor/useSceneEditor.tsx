@@ -19,7 +19,7 @@ import { casinoAddress } from "../../lib/casino.ts";
 import { isSnapshot } from "../../lib/mode.ts";
 import { placesOf } from "../../lib/rounds.ts";
 import { BUILT_BLUR, sameValue, type GroupId, type SceneKey } from "../../lib/scene-keys.ts";
-import { BASE, BRED_LINS, CASINO_PRESET, SHIPPED, differences, effective, initialSceneState, isShipped, matchPreset, patchOf, scenePageAddress } from "../../lib/scene-presets.ts";
+import { BASE, BRED_LINS, CASINO_PRESET, SHIPPED, differences, effective, initialSceneState, isShipped, matchPreset, patchOf, savedGeometri, scenePageAddress } from "../../lib/scene-presets.ts";
 import type { Scene } from "../stage";
 import { SegmentedControl, Skeleton, Switch, useToast } from "../ui";
 import { askedPart, lookPart, type LookAsk } from "./address.ts";
@@ -236,7 +236,7 @@ export function useSceneEditor(firstLook: () => LookAsk, page: { geometri?: stri
   const saveAs = async (name: string, label: string, about: string, revision: string | null) => {
     if (!current || !defaults) return;
     try {
-      await savePreset(name, { label, about, state: patchOf(current, defaults), ...(name === CASINO_PRESET && bred ? { geometri: BRED_LINS } : {}) }, revision);
+      await savePreset(name, { label, about, state: patchOf(current, defaults), ...savedGeometri(name, bred) }, revision);
     } catch (error) {
       void reloadPresets(); // made or changed in another tab: the bar shows it as the lab holds it, and the next try can work
       throw error;

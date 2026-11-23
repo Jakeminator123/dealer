@@ -14,6 +14,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {stripTypeScriptTypes} from 'node:module';
 import {STANDARDS, dollLabRoutes, faultOf, placeOf} from './server.ts';
+import {VENDOR} from '../../tools/lab-routes.ts';
 
 const REPO = fileURLToPath(new URL('../../', import.meta.url));
 const limb = () => ({s: [0, 0.4, -2], e: [0.1, 0.2, -1.9], w: [0.2, 0.1, -1.8], k: 1, p: Array.from({length: 21}, (_, i) => [0.2 + i / 1000, 0.1, -1.8])});
@@ -111,7 +112,6 @@ test('the routes hand out the page, its modules without types, the motions and t
 test('every module the page asks for is one the routes hand out', () => {
   // The page's own import map: three and its addons come from the lab server's /vendor/ (tools/lab-routes.ts VENDOR).
   const html = readFileSync(path.join(REPO, 'dealer3d/page/docka.html'), 'utf8'), map = JSON.parse(/<script type="importmap">([\s\S]*?)<\/script>/.exec(html)![1]).imports as Record<string, string>;
-  const vendor = readFileSync(path.join(REPO, 'tools/lab-routes.ts'), 'utf8');
   const seen = new Set<string>(), queue = [...html.matchAll(/<script type="module" src="(\/dealer3d\/[^"]+)"/g)].map(m => m[1]); assert.ok(queue.length, 'the page loads a module of its own');
   while (queue.length) { const address = queue.pop()!; if (seen.has(address)) continue; seen.add(address);
     const m = /^\/dealer3d\/(page|src)\/([\w-]+)\.ts$/.exec(address), file = m ? `dealer3d/${m[1]}/${m[2]}.ts` : address === '/src/table-lens.ts' ? 'src/table-lens.ts' : null;
@@ -121,6 +121,6 @@ test('every module the page asks for is one the routes hand out', () => {
     for (const found of code.matchAll(/(?:\bfrom\s*|\bimport\s*\(\s*|\bimport\s+)(['"])([^'"\n]+)\1/g)) { const spec = found[2];
       if (spec.startsWith('.')) queue.push(new URL(spec, `http://lab${address}`).pathname);
       else { const prefix = Object.keys(map).filter(k => spec === k || (k.endsWith('/') && spec.startsWith(k))).sort((a, b) => b.length - a.length)[0]; assert.ok(prefix, `${address} asks for ${spec}, which the page's import map does not name`);
-        const at = map[prefix] + spec.slice(prefix.length); assert.ok(vendor.includes(`'${at}'`), `${address} asks for ${spec} (${at}), which the lab server's VENDOR does not hand out`); } } }
+        const at = map[prefix] + spec.slice(prefix.length); assert.ok(Object.hasOwn(VENDOR, at), `${address} asks for ${spec} (${at}), which the lab server's VENDOR does not hand out`); } } }
   assert.ok(seen.has('/dealer3d/src/stage.ts') && seen.has('/src/table-lens.ts'));
 });
