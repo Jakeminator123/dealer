@@ -1,6 +1,7 @@
 // What must hold of the register of films and takes (tools/register-store.ts): a post comes out as it went in, a write is
 // made only against the revision that was read, a removed film takes the posts of its takes with it and leaves the row
-// about Jakob's verdict, the database follows the text file in Git, and a tree without media never empties the register.
+// about the verdict (Jakob's, or one given for him), the database follows the text file in Git, and a tree without media
+// never empties the register.
 // Every write goes to a temporary folder; the checkout's own register is only read.
 // Run: node --test tools/register-store.test.ts
 import test from 'node:test';
@@ -8,7 +9,7 @@ import assert from 'node:assert/strict';
 import {existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync} from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {MOTIONS_TEXT, REGISTER_DB, REMOVED_TEXT, motionRegister, parseRegisterText, revisionOf, sweepMotions} from './register-store.ts';
+import {MOTIONS_TEXT, REGISTER_DB, REMOVED_TEXT, motionRegister, parseRegisterText, postOfRemoved, revisionOf, sweepMotions} from './register-store.ts';
 
 const base = existsSync('D:/dealer-scratch/tmp') ? 'D:/dealer-scratch/tmp' : os.tmpdir();
 function temp(t: {after(fn: () => void): void}) {
@@ -79,7 +80,7 @@ test('a write is made only against the revision that was read', t => {
   assert.deepEqual(Object.keys(register.get(post.id)!), Object.keys(post), 'a changed block stays where it stood');
 });
 
-test('a removed film takes the posts of its takes and their job entries with it; his verdict is kept as one row', t => {
+test('a removed film takes the posts of its takes and their job entries with it; the verdict, his or one given for him, is kept as one row', t => {
   const root = temp(t), register = motionRegister(root);
   register.putAll([...film('paow-giv-01', his), ...film('paow-giv-02', {decision: 'ACCEPTED', userAccepted: false, provisional: {by: 'huvudagenten', at: 'x', mandate: 'm', note: 'n'}}), ...film('paow-giv-03')]);
   mkdirSync(path.join(root, 'data'), {recursive: true});
@@ -91,24 +92,30 @@ test('a removed film takes the posts of its takes and their job entries with it;
   assert.deepEqual(register.ids().filter(id => id.startsWith('paow-giv-01')), [], 'the film and every take cut from it');
   assert.equal(register.ids().length, 6, 'the other films stand');
   // One row about his verdict, in a table and a text of its own that no removal cascades to.
-  const row = {id: 'paow-giv-01-deal', film: 'paow-giv-01', dealer: 'paow', step: 'DEAL READY>P4.C1', model: 'wan3', order: 'paow-giv', decision: 'ACCEPTED', acceptedAs: 'MAIN', by: 'Jakob', at: '2026-11-20',
-    note: 'Den här är bäst.', removedAt: '2026-11-23T20:00:00.000Z', why: 'filmen gallrad'};
+  const row = {id: 'paow-giv-01-deal', film: 'paow-giv-01', dealer: 'paow', step: 'DEAL READY>P4.C1', model: 'wan3', order: 'paow-giv', take: 1, decision: 'ACCEPTED', acceptedAs: 'MAIN', accepted: true as const,
+    by: 'Jakob', at: '2026-11-20', note: 'Den här är bäst.', removedAt: '2026-11-23T20:00:00.000Z', why: 'filmen gallrad'};
   assert.deepEqual(gone.verdicts, [row]); assert.deepEqual(register.removed(), [row]);
   assert.equal(text(root, REMOVED_TEXT), JSON.stringify(row) + '\n');
+  // The row gives his verdict back in the register's own words, for the readers that count verdicts per take (the protocol).
+  assert.deepEqual(postOfRemoved(row).review, his); assert.deepEqual(postOfRemoved(row).order, {id: 'paow-giv', take: 1});
   // The job file loses the film's entries and keeps the rest as it was.
   assert.equal(gone.jobs, 3);
   assert.deepEqual(JSON.parse(text(root, 'data/clip-jobs.json')), jobsOf(['paow-giv-02', 'paow-giv-03']));
 
-  // A verdict given for him is not his: the film goes without a row. A take alone leaves its film and its name in cutInto.
-  assert.deepEqual(register.remove('paow-giv-02', {why: 'filmen gallrad'}).verdicts, []);
+  // A verdict given for him is kept too, marked as not his, and comes back as a provisional verdict, never as his words.
+  const given = register.remove('paow-giv-02', {why: 'filmen gallrad', at: '2026-11-23T20:01:00.000Z'}).verdicts;
+  assert.deepEqual(given.map(v => [v.id, v.forHim, v.by, v.note, v.accepted]), [['paow-giv-02-deal', true, 'huvudagenten', 'n', undefined]]);
+  assert.deepEqual(postOfRemoved(given[0]).review, {decision: 'ACCEPTED', userAccepted: false, provisional: {by: 'huvudagenten', at: 'x', note: 'n'}});
+  // A take alone leaves its film and its name in cutInto; a post without a verdict leaves no row.
   const take = register.remove('paow-giv-03-deal', {why: 'tagningen togs bort'});
+  assert.deepEqual(take.verdicts, []);
   assert.deepEqual(take.removed, ['paow-giv-03-deal']); assert.deepEqual(take.films, []);
   assert.deepEqual(register.ids(), ['paow-giv-03', 'paow-giv-03-return-ready']);
   assert.deepEqual(register.get('paow-giv-03')!.cutInto, ['paow-giv-03-return-ready']);
   assert.deepEqual(JSON.parse(text(root, 'data/clip-jobs.json')).derived.map((d: {id: string}) => d.id), ['paow-giv-03-return-ready']);
   // The rows stay when everything else has gone, and a removal says why.
   register.remove('paow-giv-03', {why: 'filmen gallrad'});
-  assert.deepEqual(register.ids(), []); assert.deepEqual(register.removed(), [row]);
+  assert.deepEqual(register.ids(), []); assert.deepEqual(register.removed(), [row, ...given]);
   assert.throws(() => register.remove('paow-giv-03', {why: ' '}), fails(400));
 });
 

@@ -293,8 +293,9 @@ delade tjänster. Rutinen och radering av verifierat oanvänt material: [lokal a
   och ljud, och allt utanför `D:/dealer-scratch`.
 - **Filmregistret städar sig självt:** en film som gallras (`node tools/media-thin.ts`) tar sina poster och tagningar
   ur registret, och deras rader ur `data/clip-jobs.json`. `node tools/register.ts sweep --dry` visar poster vars film
-  inte längre finns på disken, och `sweep` tar dem; ett träd utan filmer under `assets/motions/` rörs aldrig. Jakobs
-  egen dom på en borttagen post står kvar som en rad i `data/motions-removed.jsonl`, och posten tas tillbaka ur Git.
+  inte längre finns på disken, och `sweep` tar dem; ett träd utan filmer under `assets/motions/` rörs aldrig. Domen
+  på en borttagen post (Jakobs, eller en given åt honom) står kvar som en rad i `data/motions-removed.jsonl`, och
+  posten tas tillbaka ur Git.
 - Registren och körkvittona är JSON. Filmregistret är en textfil i Git (`data/motions.jsonl`) med en arbetskopia i
   SQLite under `.runtime/register/`, som byggs om ur texten (SYSTEM, "Ett rörelseregister och tydliga bevis"). Ett
   återbyggbart SQLite-index samlar sökning och spårbarhet ([evidens](../tools/evidence.md)). Ingen produktionsdatabas

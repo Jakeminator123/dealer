@@ -12,7 +12,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { dealersOf } from '../src/clip-graph.ts';
-import { MOTIONS_TEXT, motionRegister } from './register-store.ts';
+import { MOTIONS_TEXT, motionRegister, postOfRemoved } from './register-store.ts';
 import {
   GROUP_BY, STEP_GROUPS, STEP_GROUP_LABEL, filterRows, ledgerOf, methodChips, scoreWords, summarize, verdictWords,
   type GroupBy, type Ledger, type LedgerInput, type LedgerRow, type StepGroup, type StillInput, type SummaryRow,
@@ -46,7 +46,10 @@ export async function readLedgerInput(root: string): Promise<LedgerInput> {
   // The bank's records that name one of them.
   const records: Record<string, unknown> = {};
   try {
-    for (const [id, post] of motionRegister(root).posts()) { const ref = isObj(post.order) ? post.order : null; if (ref && typeof ref.id === 'string' && ids.has(ref.id)) records[id] = post; }
+    const register = motionRegister(root);
+    for (const [id, post] of register.posts()) { const ref = isObj(post.order) ? post.order : null; if (ref && typeof ref.id === 'string' && ids.has(ref.id)) records[id] = post; }
+    // A take whose film has been removed is still judged: the row kept about his verdict stands in for its post.
+    for (const row of register.removed()) if (row.order && ids.has(row.order) && !records[row.id]) records[row.id] = postOfRemoved(row);
   } catch (error) { problems.push(`Registret över filmer och tagningar (${MOTIONS_TEXT}) kunde inte läsas: ${(error as Error).message}`); }
   // The register's pictures of the dealers ordered for, with what their receipts say they were made from.
   const dealers = new Set(orders.map((o) => String(o.dealer)));

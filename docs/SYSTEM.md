@@ -386,7 +386,8 @@ bevisar ensam ingen vändning; en författad etikett överordnas inte sammanhän
   revision är hashen av posten, och en skrivning mot en äldre revision nekas (409). En rad som inte går att läsa gör
   hela registret oläsbart (422 med raden) tills den är rättad.
 - Registret städar sig självt: en film som tas bort tar sina tagningar med sig, och deras rader i
-  `data/clip-jobs.json`. Jakobs egen dom på en borttagen post står kvar som en rad i `data/motions-removed.jsonl`.
+  `data/clip-jobs.json`. Domen på en borttagen post, Jakobs egen eller en som gavs åt honom (märkt `forHim`), står kvar
+  som en rad i `data/motions-removed.jsonl`, och Protokoll räknar den som förut.
   Arkivering är ingen borttagning: den är en flagga i posten. Kommandon: `node tools/register.ts` (`get <id>` läser en
   post, eftersom sökningen döljer textfilen; `sweep --dry` visar poster vars film inte finns på disken).
 - `publicReview` i ett äldre register pekar på den gamla publika sidan, som är nedtagen

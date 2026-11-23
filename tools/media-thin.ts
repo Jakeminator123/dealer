@@ -9,7 +9,7 @@
 // Levels:
 //   säkert   what one rule decides alone: the films of a take with Jakob's OWN verdict Inte bra (never one given for him), that the
 //            game does not hold, that nothing else points to and that is older than three days (the film's posts leave the
-//            register with it, tools/register-store.ts: his verdict stays as one row in data/motions-removed.jsonl, and the
+//            register with it, tools/register-store.ts: the verdict stays as one row in data/motions-removed.jsonl, and the
 //            folder gets RADERAD.txt); what can provably be made again from a kept file by a command (none today: see the report);
 //            byte-identical files under assets/ made one file with hard links (talets filer, V6, originals and references never share).
 //   förslag  never without his word: verdicts Inte bra that are not his own; loose films (half or not linked to a tree) not judged
@@ -501,7 +501,7 @@ export async function carryOut(p: Plan, groups: string[], o: {repo: string; tras
         const register = motionRegister(o.repo), named = filmFiles(register.ofFilm(film).map(e => e.post));
         if (named.length && !named.some(f => existsSync(path.join(o.repo, f)))) { gone = register.remove(film, {why: `gallrad ${day} av tools/media-thin.ts, gruppen ${g.name}: ${u.reason}`}); result.posts.push(...gone.removed); save(); }
       }
-      const posts = gone?.removed.length ? `Filmens poster är borttagna ur registret: ${gone.removed.join(', ')}. De kan tas tillbaka ur Git (${MOTIONS_TEXT}).${gone.verdicts.length ? ' Jakobs dom står kvar som en rad i data/motions-removed.jsonl.' : ''}\n` : '';
+      const posts = gone?.removed.length ? `Filmens poster är borttagna ur registret: ${gone.removed.join(', ')}. De kan tas tillbaka ur Git (${MOTIONS_TEXT}).${gone.verdicts.length ? ' Domen (Jakobs, eller den som gavs åt honom) står kvar som en rad i data/motions-removed.jsonl.' : ''}\n` : '';
       if (u.marker && moved.length) {
         const file = path.join(o.repo, u.marker, MARKER), had = existsSync(file) ? readFileSync(file, 'utf8') + '\n' : '';
         mkdirSync(path.dirname(file), {recursive: true});

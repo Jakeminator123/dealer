@@ -19,7 +19,7 @@ const removed = new Map(register.removed().map(r => [r.id, r]));
 const word = (decision: unknown, acceptedAs: unknown) => decision === 'REJECTED' ? 'UNDERKÄND' : decision === 'ACCEPTED' ? (acceptedAs === 'MAIN' ? 'PRIMÄR' : acceptedAs === 'VARIANT' ? 'VARIANT' : 'GODKÄND') : null;
 const verdict = (id: string): Verdict => {
   const post = posts.get(id);
-  if (!post) { const row = removed.get(id), v = row?.note ? word(row.decision, row.acceptedAs) : null; return v ? {v, words: `${row!.note.slice(0, 60)} (filmen borttagen)`} : null; }
+  if (!post) { const row = removed.get(id), v = row && !row.forHim && row.note ? word(row.decision, row.acceptedAs) : null; return v ? {v, words: `${row!.note.slice(0, 60)} (filmen borttagen)`} : null; }
   const r = post.review ?? {};
   if (r.provisional || !r.userReview) return null;
   const v = word(r.decision, r.acceptedAs);

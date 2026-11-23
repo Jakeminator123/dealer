@@ -4,7 +4,8 @@
 //
 //   data/motions.jsonl                  one post per line, sorted on id, keys in the order they were written: the truth
 //                                       between machines and commits. A commit shows the one line of the film that changed.
-//   data/motions-removed.jsonl          one line about Jakob's verdict for each removed post that carried one
+//   data/motions-removed.jsonl          one line about the verdict of each removed post that carried one: Jakob's own, or
+//                                       one given for him (marked forHim)
 //   .runtime/register/register.sqlite   this checkout's working copy (outside Git): keys, and the cascade film → takes
 //
 // Every write goes through here. Under SQLite's write lock the rows change, the text file is written anew (a temporary
@@ -28,9 +29,14 @@ import {StoreError} from './placement-store.ts';
 
 export type Post = Record<string, unknown>;
 export type Entry = {id: string; post: Post; revision: string};
-/** What is kept of a removed post that carried Jakob's verdict: one short row, never cascaded. */
-export type RemovedVerdict = {id: string; film: string; dealer: string | null; step: string | null; model: string | null; order: string | null;
-  decision: string; acceptedAs?: string; by: string; at: string | null; note: string; removedAt: string; why: string};
+/** What is kept of a removed post that carried a verdict, Jakob's or one given for him: one short row, never cascaded. */
+export type RemovedVerdict = {id: string; film: string; dealer: string | null; step: string | null; model: string | null;
+  /** The order and take the post came from, and the number of a mended version: how the protocol finds the take again. */
+  order: string | null; take: number | null; fix?: number;
+  decision: string; acceptedAs?: string;
+  /** accepted: he accepted it himself (userAccepted). forHim: the verdict was given for him under his mandate (review.provisional) and is not his. */
+  accepted?: true; forHim?: true;
+  by: string; at: string | null; note: string; removedAt: string; why: string};
 export type Removal = {removed: string[]; films: string[]; verdicts: RemovedVerdict[]; jobs: number};
 
 export const MOTIONS_TEXT = 'data/motions.jsonl', REMOVED_TEXT = 'data/motions-removed.jsonl', REGISTER_DB = '.runtime/register/register.sqlite';
@@ -204,19 +210,38 @@ function write<T>(root: string, kinds: Kind[], work: (db: DatabaseSync, changed:
   } finally { db.close(); }
 }
 
-// ── Jakob's verdict on a removed post ───────────────────────────────────────
-/** One row about his verdict (his words or his acceptance), or null when the post carries none of his. A verdict given for him is not his. */
+// ── The verdict on a removed post ───────────────────────────────────────────
+/**
+ * One row about the verdict a post carries: Jakob's own (his words or his acceptance), else one given for him under his
+ * mandate (review.provisional), marked forHim so that it never reads as his. null when the post carries neither.
+ */
 export function removedVerdict(post: Post, removedAt: string, why: string): RemovedVerdict | null {
   const review = object(post.review) ? post.review : null;
   if (!review) return null;
   const said = typeof review.userReview === 'string' ? review.userReview.trim() : '';
-  if (!said && review.userAccepted !== true) return null;
+  const his = !!said || review.userAccepted === true, given = !his && object(review.provisional) ? review.provisional : null;
+  if (!his && !given) return null;
   const words = /^(\S+) (\d{4}-\d{2}-\d{2}): ([\s\S]*)$/.exec(said);
   const motion = object(post.motion) ? post.motion : {}, source = object(post.source) ? post.source : {}, order = object(post.order) ? post.order : {};
-  const text = (v: unknown) => typeof v === 'string' && v ? v : null;
+  const text = (v: unknown) => typeof v === 'string' && v ? v : null, count = (v: unknown) => typeof v === 'number' && Number.isInteger(v) && v > 0 ? v : null;
   return {id: String(post.id), film: filmOf(post), dealer: text(post.dealer), step: text(motion.kind) ? `${String(motion.kind)} ${String(motion.from ?? '?')}>${String(motion.to ?? '?')}` : null,
-    model: text(source.model), order: text(order.id), decision: String(review.decision ?? 'PENDING'), ...(text(review.acceptedAs) ? {acceptedAs: String(review.acceptedAs)} : {}),
-    by: words?.[1] ?? 'Jakob', at: words?.[2] ?? null, note: words?.[3] ?? said, removedAt, why};
+    model: text(source.model), order: text(order.id), take: count(order.take), ...(count(order.fix) ? {fix: count(order.fix)!} : {}),
+    decision: String(review.decision ?? 'PENDING'), ...(text(review.acceptedAs) ? {acceptedAs: String(review.acceptedAs)} : {}), ...(review.userAccepted === true ? {accepted: true as const} : {}),
+    ...(given ? {forHim: true as const, by: text(given.by) ?? 'okänd', at: text(given.at), note: text(given.note) ?? ''} : {by: words?.[1] ?? 'Jakob', at: words?.[2] ?? null, note: words?.[3] ?? said}),
+    removedAt, why};
+}
+/**
+ * The row as the post it stands for, with only what it kept: the order and take, the kind of step and the verdict in the
+ * register's own words (his in userReview, one given for him in provisional). For the readers that count verdicts per
+ * take (the protocol); it names no film.
+ */
+export function postOfRemoved(row: RemovedVerdict): Post {
+  const verdict = row.forHim ? {userAccepted: false, provisional: {by: row.by, at: row.at, note: row.note}}
+    : {...(row.note ? {userReview: row.at ? `${row.by} ${row.at}: ${row.note}` : row.note} : {}), ...(row.accepted ? {userAccepted: true} : {})};
+  return {id: row.id, ...(row.dealer ? {dealer: row.dealer} : {}), ...(row.order ? {order: {id: row.order, ...(row.take ? {take: row.take} : {}), ...(row.fix ? {fix: row.fix} : {})}} : {}),
+    ...(row.step ? {motion: {kind: row.step.split(' ')[0]}} : {}),
+    review: {decision: row.decision, ...(row.acceptedAs ? {acceptedAs: row.acceptedAs} : {}), ...verdict},
+    removed: {at: row.removedAt, why: row.why}};
 }
 
 /** Takes the entries of removed posts and films out of data/clip-jobs.json (jobs, derived, edits); returns how many went. */
@@ -311,8 +336,8 @@ export function motionRegister(root: string) {
   }
   /**
    * Removes posts. The id of a film removes the film and, by the cascade, every post cut from it; the id of a take removes
-   * that post alone (and its name in the film's cutInto). For each removed post that carried Jakob's verdict one row is
-   * kept in data/motions-removed.jsonl. The entries of what went leave data/clip-jobs.json as well.
+   * that post alone (and its name in the film's cutInto). For each removed post that carried a verdict (Jakob's, or one
+   * given for him) one row is kept in data/motions-removed.jsonl. The entries of what went leave data/clip-jobs.json as well.
    */
   function remove(target: string | string[], options: {why: string; at?: string}): Removal {
     const targets = [...new Set(Array.isArray(target) ? target : [target])];
@@ -344,7 +369,7 @@ export function motionRegister(root: string) {
     });
     return {...out, jobs: out.removed.length ? dropJobs(root, out.removed, out.films) : 0};
   }
-  /** The rows kept about his verdicts on removed posts, oldest removal first per id. */
+  /** The rows kept about the verdicts on removed posts (his, and those given for him), oldest removal first per id. */
   const removed = (): RemovedVerdict[] => read(root, [REMOVED], db => (db.prepare(REMOVED.lines).all() as {body: string}[]).map(row => JSON.parse(row.body) as RemovedVerdict));
   /** Where the register stands: counts, and the text's hash as the database carries it. */
   const status = () => read(root, KINDS, db => ({

@@ -5,7 +5,7 @@
 //   node tools/register.ts list [text]              the ids, or only those whose post contains the text
 //   node tools/register.ts film <id>                the posts of one film: its own and the takes cut from it
 //   node tools/register.ts status                   how many posts and films, and where they stand
-//   node tools/register.ts removed                  the rows kept about Jakob's verdicts on removed posts
+//   node tools/register.ts removed                  the rows kept about the verdicts on removed posts (his, or given for him)
 //   node tools/register.ts remove <id> --why "<text>"   removes a post; the id of a film removes the film and its takes
 //   node tools/register.ts sweep [--dry] [--all]    removes the posts of films that are no longer on the disk
 //   node tools/register.ts migrate [--dry]          the one-time move of motions/*.json into the register
@@ -83,26 +83,26 @@ function main(argv: string[]) {
     if (!own.length) say(`Ingen post hör till filmen ${id}.`);
   } else if (command === 'status') {
     const s = register.status();
-    say(`${s.posts} poster i ${s.films} filmer · ${s.text} (${Math.round(s.bytes / 1024)} kB) · databasen ${s.database} · ${s.removedVerdicts} rader om hans domar på borttagna poster (${REMOVED_TEXT})`);
+    say(`${s.posts} poster i ${s.films} filmer · ${s.text} (${Math.round(s.bytes / 1024)} kB) · databasen ${s.database} · ${s.removedVerdicts} rader om domar på borttagna poster (${REMOVED_TEXT})`);
     if (existsSync(path.join(root, 'motions'))) say('motions/ finns kvar: flytten är inte gjord här (node tools/register.ts migrate --dry).');
   } else if (command === 'removed') {
     const rows = register.removed();
-    for (const r of rows) say(`${r.id}  ${r.decision}${r.acceptedAs ? ` (${r.acceptedAs})` : ''}  ${r.by} ${r.at ?? ''}: ${r.note.slice(0, 90)}  [borttagen ${r.removedAt.slice(0, 10)}: ${r.why}]`);
-    if (!rows.length) say('Inga rader: ingen borttagen post bar hans dom.');
+    for (const r of rows) say(`${r.id}  ${r.decision}${r.acceptedAs ? ` (${r.acceptedAs})` : ''}${r.forHim ? '  åt honom av' : ''}  ${r.by} ${(r.at ?? '').slice(0, 10)}: ${r.note.slice(0, 90)}  [borttagen ${r.removedAt.slice(0, 10)}: ${r.why}]`);
+    if (!rows.length) say('Inga rader: ingen borttagen post bar en dom.');
   } else if (command === 'remove') {
     const why = valueOf('--why');
     if (!why) throw new Error('Säg varför: node tools/register.ts remove <id> --why "<text>"');
     const done = register.remove(need(), {why});
     if (!done.removed.length) { say(`${id} har ingen post i registret; inget togs bort.`); return; }
     say(`Tog bort ${done.removed.length} poster${done.films.length ? ` (filmen ${done.films.join(', ')} med sina tagningar)` : ''}: ${done.removed.join(', ')}`);
-    say(`${done.verdicts.length} bar hans dom och har en rad i ${REMOVED_TEXT}; ${done.jobs} rader gick ur data/clip-jobs.json.`);
+    say(`${done.verdicts.length} bar en dom (hans, eller given åt honom) och har en rad i ${REMOVED_TEXT}; ${done.jobs} rader gick ur data/clip-jobs.json.`);
   } else if (command === 'sweep') {
     const s = sweepMotions(root, {dry: flags.has('--dry'), all: flags.has('--all')});
     if (!s.ran) { say(`Svepet körde inte. ${s.why}`); for (const f of s.films.slice(0, 12)) say(`  saknas: ${f.film}`); return; }
     const count = s.films.reduce((n, f) => n + f.posts.length, 0);
     say(`${s.dry ? 'Skulle ta' : 'Tog'} bort ${count} poster i ${s.films.length} filmer som inte finns på disken (${s.present} filmer finns).`);
     for (const f of s.films) say(`  ${f.film}: ${f.posts.join(', ')}`);
-    if (s.verdicts.length) { say(`${s.verdicts.length} av dem bär hans dom${s.dry ? ' och får' : ' och har'} en rad i ${REMOVED_TEXT}:`); for (const v of s.verdicts) say(`  ${v.id}  ${v.decision}  ${v.by} ${v.at ?? ''}: ${v.note.slice(0, 70)}`); }
+    if (s.verdicts.length) { say(`${s.verdicts.length} av dem bär en dom (${s.verdicts.filter(v => !v.forHim).length} hans egna, resten givna åt honom)${s.dry ? ' och får' : ' och har'} en rad i ${REMOVED_TEXT}:`); for (const v of s.verdicts) say(`  ${v.id}  ${v.decision}${v.forHim ? '  åt honom av' : ''}  ${v.by} ${(v.at ?? '').slice(0, 10)}: ${v.note.slice(0, 70)}`); }
     if (s.jobs.length) say(`${s.jobs.length} rader ${s.dry ? 'går' : 'gick'} ur data/clip-jobs.json.`);
     if (s.left.length) say(`Kvar på disken (inget raderas här; node tools/media-thin.ts städar media): ${s.left.join(', ')}`);
   } else if (command === 'migrate') {
