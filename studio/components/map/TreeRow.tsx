@@ -87,7 +87,7 @@ function Meter({ have, total, stopped = false }: { have: number; total: number; 
 function Words({ name, mark, children }: { name: string; mark?: ReactNode; children: ReactNode }) {
   return (
     <span className="flex min-w-0 flex-col gap-[5px]">
-      <span className="flex items-center gap-1.5 text-[12.5px] font-medium leading-none">
+      <span className="flex items-center gap-1.5 text-[12.5px] font-medium leading-tight">
         <span className="max-w-[150px] truncate">{name}</span>
         {mark}
       </span>

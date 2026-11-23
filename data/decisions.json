@@ -26,7 +26,11 @@
       ],
       "asked": "2026-11-23",
       "from": "Kortbanan",
-      "answer": null
+      "answer": {
+        "value": "ja",
+        "note": "",
+        "at": "2026-11-23T20:51:05.637Z"
+      }
     },
     {
       "id": "styvt-kort-i-handen",

@@ -66,6 +66,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   markernas utseende ändras bara i Bordets läge Efterarbete; valören ritas när rundan spelas.
 - **Grafiken på kortet** (2026-11-23, till dealer-e7): "grafiken" är det som läggs på kortets baksida och framsida, på
   kortmodellens spår. Han vill se den "på och mot" alla filmer som finns (`/kortlandning.html`) och "ett bra system med grafiken".
+- **Styvt kort i handen, utan vit kant** (2026-11-23, två ja i Beslut): Scen ritar kortet med en storlek i handen och tar
+  bort den vita kanten kring filmens kort. Spelet rörs inte förrän han har sagt ja till det där.
 - **Kortets efterarbete görs i förväg per film** (2026-11-17): spelet målar inte kortet medan filmen spelas; det ritade
   kortet är "något procent större än kortet".
 - **Kortbanan följer filmerna** (2026-11-17, "VIKTIGT"): labbets ritade bana och vändning stämmer med hur dealern

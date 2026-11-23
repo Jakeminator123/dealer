@@ -570,9 +570,10 @@ export const cardInFront = (overrides: Override[], frame: number) => overrides.s
 // by the clip's name, with no word (trackFolder below). A film without a stiff card keeps its stored track; ?kortprov=idag gives the
 // stored track for every film, and spar still reads its own. Scen is the lab's 3D page and the studio's views, which mount the
 // same scene (SCEN below); the game's page (game.html, also where the studio's Casino shows it) reads the stored track.
-// ?kortprov=kant is a trial on top of it (off until he has seen it): in a film whose card has a white rim round its colour the
-// stiff track also carries the card with that rim (`whole`), and what is light and not warm inside it goes with the film's card
-// (WHITE_RIM: readMatte here, the key in src/scene3d-film.ts). Without the word the frames are read without `whole` (trialTrack).
+// The white rim goes with the film's card (his yes in Beslut 2026-11-23, card styvt-kort-vit-kant): in a film whose card has a
+// white rim round its colour the stiff track also carries the card with that rim (`whole`), and what is light and not warm inside
+// it goes with the film's card (WHITE_RIM: readMatte here, the key in src/scene3d-film.ts). ?kortprov=medkant reads the frames
+// without `whole` (trialTrack), as before his yes.
 // slew: how far the card's brightness (against the same card lying flat) may change per frame: the film's own card changes by at
 // most 0.116 per frame through a turn (13 of 255 on the face, paow-giv-2-3-p4-h24-cykel-02-01 frames 34-56), the jumps it removes
 // were about twice that. slope, decay: the same for the light's fall across the card (per film pixel) and for letting go of a fall
@@ -584,14 +585,14 @@ export const TRIAL = {word: 'kortprov', folder: 'assets/proofs/kort-fram-bak-202
 // mark: the pink mark the film draws on its card's face goes with it there too (green this far under both red and blue; skin has
 // blue under green), since the film's card reaches beyond the drawn one while it is carried.
 export const WHITE_RIM = {light: 440, warm: 12, beyond: 3, mark: 40};
-export type TrialPart = typeof TRIAL.parts[number] | 'mat' | 'styvt' | 'idag' | 'kant';
+export type TrialPart = typeof TRIAL.parts[number] | 'mat' | 'styvt' | 'idag' | 'medkant';
 const SCEN = /(^|\/)scene3d\.html$|^\/studio\//;
 /** The trial's parts asked for by a page's address, or null: only Scen, only by its word. */
 export function trialParts(path: string, search: string): Set<TrialPart> | null {
   if (!SCEN.test(path)) return null;
   const word = new URLSearchParams(search).get(TRIAL.word); if (!word) return null;
   if (word === '1') return new Set<TrialPart>(TRIAL.parts);
-  const asked = word.split(',').filter(w => w === 'mat' || w === 'styvt' || w === 'idag' || w === 'kant' || (TRIAL.parts as readonly string[]).includes(w)) as TrialPart[];
+  const asked = word.split(',').filter(w => w === 'mat' || w === 'styvt' || w === 'idag' || w === 'medkant' || (TRIAL.parts as readonly string[]).includes(w)) as TrialPart[];
   return asked.length ? new Set(asked) : null;
 }
 /** The folder a page reads the card's track from by the clip's name, or null for the stored track: in Scen the stiff card's, unless its address says otherwise (see above). */
@@ -602,7 +603,7 @@ export function trackFolder(path: string, search: string): string | null {
 }
 /**
  * The stored track with the trial's frames; the stored track itself when the trial's file is of another film (its clip, its number
- * of frames). rim: whether the frames keep the film card's white rim (`whole`, the trial "kant").
+ * of frames). rim: whether the frames keep the film card's white rim (`whole`), so that it goes with the film's card.
  */
 export function trialTrack(stored: CardTrack, trial: Pick<CardTrack, 'clip' | 'frames' | 'edgeWindow'> | null, rim = false): CardTrack {
   if (!trial || !stored.clip || trial.clip !== stored.clip || trial.frames?.length !== stored.frames.length) return stored;

@@ -81,7 +81,7 @@ export function LevelRail({ levels, value, onChange, step, label = "Nivå", clas
   const rail = useRef<HTMLDivElement>(null);
   useLevelWheel(rail, step);
   return (
-    <div ref={rail} role="radiogroup" aria-label={label} title="Rulla här, eller pil upp och ned, för att byta nivå" className={cn("relative flex w-[92px] shrink-0 flex-col gap-1 rounded-lg border border-line bg-surface p-1.5", className)}>
+    <div ref={rail} role="radiogroup" aria-label={label} title="Rulla här, eller pil upp och ned, för att byta nivå" className={cn("relative flex w-[116px] shrink-0 flex-col gap-1 rounded-lg border border-line bg-surface p-1.5", className)}>
       <span className="flex items-center justify-between px-1 pb-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-faint">
         {label} <ChevronsUpDown className="size-3" />
       </span>
@@ -95,7 +95,7 @@ export function LevelRail({ levels, value, onChange, step, label = "Nivå", clas
             aria-checked={on}
             onClick={() => onChange(l.id)}
             title={l.title ?? l.name}
-            className={cn("flex w-full items-center gap-1.5 rounded-md border px-1.5 py-1.5 text-left text-[11.5px] font-medium leading-none transition-colors duration-150", on ? "border-brass/70 bg-brass/10 text-ink" : "border-transparent text-dim hover:bg-raised hover:text-ink", l.dim && !on && "opacity-50")}
+            className={cn("flex w-full items-center gap-1.5 rounded-md border px-1.5 py-1.5 text-left text-[11.5px] font-medium leading-tight transition-colors duration-150", on ? "border-brass/70 bg-brass/10 text-ink" : "border-transparent text-dim hover:bg-raised hover:text-ink", l.dim && !on && "opacity-50")}
           >
             <Dot level={l} />
             <span className="min-w-0 truncate">{l.name}</span>

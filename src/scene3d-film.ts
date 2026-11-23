@@ -60,8 +60,8 @@ float skinOf(vec3 c){ return smoothstep(.03, .08, c.r - c.b) * smoothstep(-.02, 
 // the back's, 1 the face's, 2 none), trust how far the core is the card itself (the track's confidence); inside the shoe box
 // only the card itself and its rim go (the next card seated there stays). strength: how far all of this is done (1 in full, 0 the
 // film as it is), so a card can be keyed away over a few frames while the drawn card lies under it (the hand-over at rest).
-// wholeQ, wholeOn: a film card with a white rim round its colour, that rim included (the stiff card's track knows it; the trial
-// "kant"), else wholeOn is 0. Inside it, and three pixels beyond, whatever is light and not warm is that rim, mixed with the
+// wholeQ, wholeOn: a film card with a white rim round its colour, that rim included (the stiff card's track knows it, see
+// card-overlay.ts WHITE_RIM), else wholeOn is 0. Inside it, and three pixels beyond, whatever is light and not warm is that rim, mixed with the
 // screen's green along its outer edge (white in green keeps blue at least as high as red; skin, the only other light thing
 // there, has red well over blue also where it meets the green), and nothing pale beyond the drawn card is kept as its edge.
 // The rule is WHITE_RIM's in src/card-overlay.ts, made soft.

@@ -370,10 +370,10 @@ export function createDealLayer(o: Options) {
   const trial = typeof location === 'undefined' ? null : trialParts(location.pathname, location.search);
   // The card's track in place of the film's stored one, fetched once per film by the clip's name; the stored track until it has
   // come, and for good where there is none. In Scen it is the stiff card's (card-overlay.ts trackFolder; only a film that has a
-  // stiff card, the file's `stiff`), with the word spar the trial's own. kant: the trial of the film card's white rim (`whole`).
+  // stiff card, the file's `stiff`), with the word spar the trial's own. rim: the film card's white rim goes with it (`whole`), unless the word medkant.
   // The file is asked for from the server's root, since the studio mounts this scene on its own pages.
   const fetched = new Map<string, Pick<CardTrack, 'clip' | 'frames' | 'edgeWindow'> | null>(), swapped = new WeakMap<object, CardTrack>();
-  const folder = typeof location === 'undefined' ? null : trackFolder(location.pathname, location.search), rim = !!trial?.has('kant');
+  const folder = typeof location === 'undefined' ? null : trackFolder(location.pathname, location.search), rim = folder === TRIAL.stiff && !trial?.has('medkant');
   const trialOf = (stored: CardTrack | null): CardTrack | null => {
     if (!folder || !stored?.clip || !stored.frames) return stored;
     const done = swapped.get(stored); if (done) return done;
