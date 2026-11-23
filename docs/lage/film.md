@@ -36,8 +36,8 @@ som gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompt
    vita är borta, men krysset blir en röd prick; ankare och filmer byts när märket håller.
 5. Dealerns kort: D.C2 och vilan är inte beställda för Tatuerad; kompositionen lånar dem av Casino ([karta](karta.md)).
 
-**Väntar på Jakob.** I chatten: ansiktsbilden och felet i plats 6. I Beslut: tatuerade händer i Casinots
-filmer ([FILMMODELLER](../FILMMODELLER.md), "Tatueringar i färdiga filmer").
+**Väntar på Jakob.** I chatten: ansiktsbilden och felet i plats 6. Tatueringar i Casinots filmer fick hans nej
+i Beslut 2026-11-23 ([FILMMODELLER](../FILMMODELLER.md), "Tatueringar i färdiga filmer").
 
 **Var saker ligger.** Vägen för en ny dealer i [tools/dealer-line.md](../../tools/dealer-line.md), handboken i
 [tools/film-prompting.md](../../tools/film-prompting.md), granskningen i `tools/film-review.md`, läget per dealer med

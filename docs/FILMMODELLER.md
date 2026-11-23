@@ -86,8 +86,8 @@ kredit kostar 0,01 dollar och köps i utvecklarportalen, per projekt.
 
 ## Tatueringar i färdiga filmer
 
-Pilot 2026-11-23 på Casinots giv till plats 4, de första 4 s (Prov `tatuering-a21-pilot-20261123`; mätt av huvudagenten,
-Jakobs dom väntar i Beslut). Först en stillbild: A2.1 med tatuerade händer (Nano Banana 2.1 på ett utsnitt av händerna,
+Pilot 2026-11-23 på Casinots giv till plats 4, de första 4 s (Prov `tatuering-a21-pilot-20261123`; mätt av huvudagenten).
+**Jakobs svar i Beslut samma kväll: nej, Casinots filmer får vara som de är.** Sätten står kvar för den som frågar igen. Först en stillbild: A2.1 med tatuerade händer (Nano Banana 2.1 på ett utsnitt av händerna,
 6 krediter, inlagt i ankaret så att inget utanför händerna ändras).
 
 | Sätt | Krediter | Utfall |
@@ -96,10 +96,10 @@ Jakobs dom väntar i Beslut). Först en stillbild: A2.1 med tatuerade händer (N
 | Kling 4 som filmredigerare (`/v1/video_to_video`), stillbilden som första bild, bläcket som referensbild | 91 | Skarpt, stadigt bläck i varje ruta, också på handen som ger; rörelsen 0,25 px, kortet 0,6 px ifrån; halstatueringen försvann (M, Ö) |
 | Klings händer inlagda i den godkända filmen, lokalt | 0 | Allt utanför händerna är filmens eget: rörelsen 0,02 px, halsen kvar, kortets mitt 0,1 px ifrån; 2,7 % av bilden är Klings (M) |
 
-- **Förslaget** är det tredje: Kling 4 gör bläcket och bara händerna läggs in (`.runtime/tatuering/hander-film.py`).
+- **Det tredje höll bäst:** Kling 4 gör bläcket och bara händerna läggs in (`.runtime/tatuering/hander-film.py`).
 - **Där händerna ligger stilla** (vila, tal) görs det lokalt utan kostnad: bläcket ur stillbilden bärs av bildflödet
   (`vila-tatuering.py`); rosen blir tunnare än Klings (Ö).
-- Hela A2.1-trädet, 22 steg, skattas till 1 600–1 900 krediter. Händerna är Casinots, 10 % större än i `paow-vila-tatuerad`.
+- Hela A2.1-trädet, 22 steg, skattades till 1 600–1 900 krediter. Händerna är Casinots, 10 % större än i `paow-vila-tatuerad`.
 
 ## Fingeravtryck: filmen som den kommer och som banken har den
 
