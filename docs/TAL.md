@@ -203,6 +203,7 @@ sparade svar, som en ny tagning: ingen ny läsning, inget grafikkort, cirka tio 
 ljudet tas från den, och numret blir det första efter alla tagningar av repliken. Munnen läggs som dealern har den
 (`recipeOf`), utan att någon anger det. Varje ljud skickas tillbaka till ElevenLabs tal-till-text och jämförs med
 texten; en avvikelse skrivs ut och står i kvittot. En ny dealer: Vid en ny film eller en ny dealer, ovan.
+`say --from <tagning> --rest <vila>` lägger samma svar på ett annat träds vila som är bankens film med andra händer (Tatuerads `paow-vila-tat-01-01`): lådan mäts mot bankens film, och tagningen får ett eget id (`…-tat-sv-01`), utan anrop och grafikkort.
 
 Tider på RTX 3060: banken 80–150 s; en replik 63–110 s kallt när datorn vilar, upp till 245 s när andra arbeten går.
 Det mesta är att renderern läser in sin modell för varje replik.

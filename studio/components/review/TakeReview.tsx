@@ -3,8 +3,9 @@
 // <TakeReview take={take} edge={edge} … />: one take, large, for Jakob's decision: its name in his words (the step
 // "A2.1 → P4C1" and the take's short name), the film, what a reviewer noted (two lines, more on demand), the decision
 // bar, "Ursprung" (what the film was made from, folded), and "Jämför mot primär" when the step has another film. Space
-// plays, ← → step a frame. A take judged for him (review.provisional: "dömd åt dig", not in his queue) shows that
-// verdict, who gave it, under which words of his and why above his buttons, marked as not his; his click replaces it.
+// plays, ← → step a frame. A film with sound (take.sound: a talk film) is heard, with a sound button. A take judged for
+// him (review.provisional: "dömd åt dig", not in his queue) shows that verdict, who gave it, under which words of his and
+// why above his buttons, marked as not his; his click replaces it.
 import { ArrowLeftRight, ChevronLeft, ChevronRight, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useRef, type Ref } from "react";
@@ -115,6 +116,7 @@ export function TakeReview({
         speed={take.speed}
         marks={marks}
         keys
+        audio={take.sound}
         label={`Film: ${name}`}
         className="min-h-[min(400px,55vh)] flex-1"
       />

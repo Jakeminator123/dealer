@@ -10,7 +10,7 @@ import * as RD from "@radix-ui/react-dialog";
 import { ChevronLeft, ChevronRight, HardDrive, ImageOff, Info, Maximize2, Minimize2, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { useBank } from "../../lib/bank.ts";
+import { useBank, useOptionalBank } from "../../lib/bank.ts";
 import { labUrl } from "../../lib/lab.ts";
 import { ROLE_LABEL, sizeWords, usedWords, type EntryAnswer } from "../../lib/media.ts";
 import { edgeName, nodeName, takeName } from "../../lib/names.ts";
@@ -33,6 +33,9 @@ function Picture({ entry, close }: { entry: EntryAnswer; close: boolean }) {
   const film = !!entry.served?.endsWith(".mp4");
   const fps = entry.fps ?? 30;
   const at = entry.frame ?? entry.still ?? 0;
+  // A whole film of the bank with sound (a talk film) is heard here too: the take that plays this file says so (take.sound).
+  const graph = useOptionalBank()?.graph;
+  const sound = film && entry.frame === undefined && !!graph && Object.values(graph.takes).some((t) => t.sound && t.media.video === entry.path);
   useEffect(() => {
     const v = video.current;
     if (!v || !film) return;
@@ -60,12 +63,12 @@ function Picture({ entry, close }: { entry: EntryAnswer; close: boolean }) {
     <div className={cn("h-full", close ? "overflow-auto" : "overflow-hidden")} style={close ? undefined : { padding: PAD }}>
       <div className={cn(close ? "grid min-h-full min-w-full place-items-center" : "h-full")}>
         {film ? (
-          // A frame of a film is the film itself, paused on that frame; a whole film plays with its own controls.
+          // A frame of a film is the film itself, paused on that frame; a whole film plays with its own controls, muted unless it has sound.
           <video
             ref={video}
             key={src}
             src={src}
-            muted
+            muted={!sound}
             playsInline
             preload="auto"
             controls={entry.frame === undefined}

@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "title": "Tatuerad · vila · två små rörelser (blick åt sidan, ler)",
+  "summary": "Gör en vilofilm av Paow: från och till ankare 1.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "VILA",
+    "label": "Vila, samma bild först och sist",
+    "edge": "IDLE>IDLE",
+    "shape": "ONE_WAY",
+    "cutInto": [],
+    "makes": null
+  },
+  "motion": null,
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows A1",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-vila-29/first.png",
+      "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-vila-tatuerad",
+        "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+        "note": "Vila, tatuerade händer (gäller)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Slutbild · Paows A1",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-vila-29/last.png",
+      "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-vila-tatuerad",
+        "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+        "note": "Vila, tatuerade händer (gäller)"
+      },
+      "waits": null
+    }
+  ],
+  "reference": {
+    "status": "INGEN",
+    "why": "WAN 3 tar ingen referensfilm tillsammans med första och sista bild."
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "wan3",
+    "params": {
+      "resolution": "1080p",
+      "duration": 5,
+      "ratio": "adaptive",
+      "generateAudio": false
+    }
+  },
+  "prompt": {
+    "template": "film-vila-kort@12",
+    "style": "KORT",
+    "text": "Locked camera, one continuous shot. She starts and ends exactly as in the first frame, and holds still for the last half second. Two very small movements with a still moment between. First her eyes go to one side, her head following a little, and come back to the camera. Halfway through she is exactly as in the first frame again and holds still for half a second. Then a small closed-lip smile comes and goes with one blink. She ends holding still. Her lips stay closed and her shoulders and torso do not move. Her hands stay exactly where they are. The green background, the shoe and the edges of the picture stay as in the first frame. The tattoos keep their pattern.",
+    "sha256": "e044ba52f0551188400b1376c416dff2e55d05eb74c68d329ca75ecf39fd3288",
+    "extra": "Two very small movements with a still moment between. First her eyes go to one side, her head following a little, and come back to the camera. Halfway through she is exactly as in the first frame again and holds still for half a second. Then a small closed-lip smile comes and goes with one blink. She ends holding still. Her lips stay closed and her shoulders and torso do not move. Her hands stay exactly where they are. The green background, the shoe and the edges of the picture stay as in the first frame. The tattoos keep their pattern.",
+    "middle": false
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 100,
+    "total": 100,
+    "worstPerTake": 100,
+    "worstTotal": 100,
+    "basis": "20 krediter per s × 5 s. DRIFT, Lärdomar som gäller, som sidan stod till commit f6f68ef (git show f6f68ef:docs/DRIFT.md): 20 per s i full storlek; en ingång på 4 s kostade 80 (handboken, tools/film-prompting.md §5)."
+  },
+  "limits": {
+    "maxCredits": 100,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Recept vila: prövat i 8 beställningar.",
+    "Undantag från receptet: 5 s i stället för 4 s."
+  ],
+  "createdBy": "huvudagenten, tools/order-new.ts",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-23T23:21:23.304Z",
+    "orderSha256": "1001b9f7aba6f621c7bffb86e4c9c5e97a584301390638dd11bf8fda7e4180c5",
+    "mandate": "Jakob 2026-11-23 ca kl. 23.40: \"skapar några korta varainter i vila-loopen\"; i Granska 2026-11-24 om första omgången: \"gillar dessa korta klipp!\". Omgång 2 efter granskad pilot: en tagning var, WAN 3, 5 s, 100 var; lästa av dealer-ac."
+  },
+  "status": "GODKÄND",
+  "id": "paow-vila-29",
+  "created": "2026-11-23T23:21:03.802Z"
+}

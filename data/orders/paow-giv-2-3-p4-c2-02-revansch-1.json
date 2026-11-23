@@ -1,0 +1,211 @@
+{
+  "schemaVersion": 1,
+  "title": "Paow · A3P4C2 · prov: P4C1-filmen som referens, 2 s med återgång · revansch",
+  "summary": "Gör en film av Paow: ett kort från ankare 2.3 till plats 4, kort 2, tur och retur.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "GIV-2.3",
+    "label": "Två händer, ett kort till platsen",
+    "edge": "READY-C>P4.C2",
+    "shape": "ROUND_TRIP",
+    "cutInto": [
+      "READY-C>P4.C2",
+      "P4.C2>READY-C"
+    ],
+    "makes": null
+  },
+  "motion": {
+    "grip": "TWO_HANDS",
+    "hand": "LH",
+    "pass": true,
+    "turn": true,
+    "flipAxis": "FREE",
+    "target": "P4.C2",
+    "side": "FRONT",
+    "fromPlan": true,
+    "planned": {
+      "grip": "DRAG",
+      "flipAxis": "AT_PLACE"
+    }
+  },
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows A2.3 · arkiverad",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-giv-2-3-p4-c2-02-revansch-1/first.png",
+      "sha256": "8e60b0eae86e271f5fd191dc16a37bc8256f2b5fb2a58a2fe65206623927e386",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-ankare-2-3-d",
+        "path": "assets/anchors/paow-ankare-2-3-d/anchor.png",
+        "note": "Blicken ned mot kortet, vänster hand uppifrån på kortet (arkiverad)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Slutbild · samma + kortet öppet på plats 4, kort 2",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-giv-2-3-p4-c2-02-revansch-1/last.png",
+      "sha256": "058535ed0b112c9a29dc1f386492493dad68fc1a33d5ce613afdf8f1673ddc23",
+      "from": {
+        "built": "första bilden + kortet P4.C2 där planen säger"
+      },
+      "waits": null,
+      "width": 1764,
+      "height": 1174,
+      "drawn": {
+        "target": "P4.C2",
+        "side": "FRONT",
+        "as": "verkligt perspektiv: ett verkligt kort genom bordets lins, formen 87 % (src/card-plan.ts)",
+        "plan": {
+          "path": "placements/default.json",
+          "sha256": "956bc38ac4c82cf13c1db453cfea18b5d9a2f11a09fba16024217d12672e1a55",
+          "updatedAt": "2026-11-21T18:16:55.501Z"
+        },
+        "texture": {
+          "image": "assets/cards/kortets-textur.png",
+          "sha256": "8a027a00d7f4dad1428b8db2c8b5a7ca283db92b8b93d96eb23cf77ce55df5a9"
+        },
+        "quad": [
+          [
+            869.3,
+            1055.9
+          ],
+          [
+            942.4,
+            1055.9
+          ],
+          [
+            948.9,
+            1126.9
+          ],
+          [
+            865,
+            1126.9
+          ]
+        ],
+        "centre": [
+          906.4,
+          1091.4
+        ],
+        "measured": {
+          "centre": [
+            906.5,
+            1092.9
+          ],
+          "area": 6048,
+          "box": [
+            84,
+            74
+          ],
+          "changedElsewhere": 0
+        },
+        "measuredOffsetPx": 1.5,
+        "mark": {
+          "cross": [
+            255,
+            120,
+            200
+          ],
+          "dot": [
+            225,
+            30,
+            35
+          ]
+        }
+      }
+    }
+  ],
+  "reference": {
+    "status": "FINNS",
+    "clips": [
+      "paow-giv-2-3-p4-02-01-deal"
+    ],
+    "path": "assets/orders/paow-giv-2-3-p4-c2-02-revansch-1/reference.mp4",
+    "sha256": "aaa8e1b73a5a959212eac654ecec21e90e291b76dc112cf1021f151cfa82a2ca",
+    "seconds": 3,
+    "goesTo": "P4.C1",
+    "approvedStraight": false,
+    "dealer": "paow",
+    "from": {
+      "film": "paow-giv-2-3-p4-02-01",
+      "path": "assets/motions/paow-giv-2-3-p4-02-01/source.mp4",
+      "sha256": "b180712d6934e0c2ff346feb8a2df64fbaea5c9ef5ccc7bccc9bf8806d6f8b29",
+      "edge": "READY-C>P4.C1",
+      "verdict": "GODKÄND",
+      "words": null,
+      "frames": [
+        0,
+        61
+      ],
+      "also": [
+        "paow-giv-2-3-p4-02-01-return-ready-c"
+      ]
+    }
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "kling-4",
+    "params": {
+      "resolution": "1080p",
+      "duration": 3
+    }
+  },
+  "prompt": {
+    "template": "film-giv-kort@15",
+    "style": "KORT",
+    "text": "Locked camera, one continuous shot. Video 1 shows only the movement, as a rough guide: her hands go the way the hands go in video 1, at about the same moments. Above all she moves naturally, like a practised dealer, with soft, relaxed arms and hands. Her hand at the shoe strokes the yellow card out of the window and slides it flat on the felt a short way out from the shoe, where her other hand meets it. There both hands tip the card up onto its short end, and her other hand, palm down, carries it on towards its place in the middle of the picture, where the last frame shows it; on that way the card goes on over the same short end, end over end, in one unbroken turn that begins with the yellow side up and ends with the blue side up. She lays the card flat at its place. As the card comes down her hand lies flat above it, with a straight, relaxed wrist. Then the hand that laid it glides back low over the felt, palm down, and comes to rest flat on the felt in front of her, as in the first frame. The hand from the shoe lets go once the card stands on its end and settles back at the shoe. A yellow card shows in the window of the shoe all the time: as she strokes one out, the next one is already there. Her head stays bowed and turns towards the place where the card will lie. Only one card moves: a small card, about half as long as her hand, which keeps the size it has in the last frame all the way from the shoe to its place. Its back is blank solid yellow, right out to its corners, and its face is solid blue with a small pink cross in the middle and a small red dot in one corner, as the last frame shows it; the next card in the window is the same blank yellow. The whole movement, the deal and the way back, is quick and over in about two seconds, as in video 1; after that she stays still, as in the last frame, until the end. Her blackjack deal looks a little more natural than in video 1: one smooth, flowing movement out to the place and back, without pauses or stiff angles, the way a practised blackjack dealer deals. In video 1 the card goes to a place a little further to the left in the picture; here it goes to the place the last frame shows. Video 2 shows her earlier take of this same deal: it was nearly right. Make the same deal again, not an identical copy but plainly better. Keep what video 2 does well: her manner, the way of the card and the framing stay as in video 2, and her body stays as still. She lays the card exactly at the place the last frame shows, not to the left of it, and the hand already waiting there keeps its fingers clear: the card lands free on the felt and never slides in under a finger. Her hands ease out of stillness and gather speed smoothly, instead of jumping to full speed at once. The way out to the place takes about 1.3 seconds and the way back about 0.8 seconds: calm and sharp, without motion blur.",
+    "sha256": "6723f6fa2648919cdc4f778cc90de7aad6c265d5585abca3dd1400e449f57dc1",
+    "extra": "The whole movement, the deal and the way back, is quick and over in about two seconds, as in video 1; after that she stays still, as in the last frame, until the end. Her blackjack deal looks a little more natural than in video 1: one smooth, flowing movement out to the place and back, without pauses or stiff angles, the way a practised blackjack dealer deals. In video 1 the card goes to a place a little further to the left in the picture; here it goes to the place the last frame shows.",
+    "middle": false,
+    "faceMark": true
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 99,
+    "total": 99,
+    "worstPerTake": 114,
+    "worstTotal": 114,
+    "basis": "21,3 krediter per s × 3 s + 11,28 krediter per s indatafilm utöver filmens längd × 3,04 s. Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12. Prislistan 2026-11-24: 11,28 per s av 'the greater of total input duration and output duration' till 2026-11-30, sedan 14,1; referensfilmer är indata."
+  },
+  "limits": {
+    "maxCredits": 114,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Recept giv-2.3: prövat i 6 beställningar.",
+    "Undantag från receptet: tur och retur i stället för bara dit; mall 15 i stället för 14; 3 s i stället för 4 s.",
+    "Prov på Jakobs ord 2026-11-23 (chatten med dealer-19): samma giv och återgång som P4.C1 men till P4.C2, med bankens egen P4.C1-film (paow-giv-2-3-p4-02 tagning 1) som referensfilm i stället för dockans, lite mer naturlig, 2 s totalt med återgången till A2.3. Kling 4 tar minst 3 s, så referensfilmen är P4.C1-filmen i dubbel fart (rutorna 0, 2, 4 … 96 av 97, alltså 48 rutor = 2 s, första och sista rutan exakt) och sedan sista rutan stilla i 1 s (72 rutor = 3 s; .runtime/p4c2-2s/make-ref.mjs). Filmen kortas till 2 s efteråt där hon står stilla. Jämförs med P4.C1-filmen.",
+    "Revansch på paow-giv-2-3-p4-c2-02 tagning 1 (BESKED 2026-11-23 \"Revansch på nästan bra klipp\"): tagningens film är video 2, texten säger vad som behålls och vad som görs bättre."
+  ],
+  "createdBy": "tools/revansch-order.ts",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-23T23:43:08.280Z",
+    "orderSha256": "ecd4917d061b9cc45d87647f3e38fa527f9e3d6a00fd10edf8d2b6568f977385",
+    "mandate": "Jakob 2026-11-23 (BESKED \"Revansch på nästan bra klipp\"): \"göra om den, men bara litegranna för att definitivt göra den bra\". Pilot: en tagning, Kling 4, 3 s, förra tagningen som video 2; väntat 99, värst 114; läst av dealer-ac."
+  },
+  "status": "GODKÄND",
+  "id": "paow-giv-2-3-p4-c2-02-revansch-1",
+  "created": "2026-11-23T23:41:38.859Z",
+  "revansch": {
+    "of": {
+      "order": "paow-giv-2-3-p4-c2-02",
+      "take": 1
+    },
+    "path": "assets/orders/paow-giv-2-3-p4-c2-02-revansch-1/forra.mp4",
+    "sha256": "5309a89b25637de8add809c716588b03f827f9e8d3aec1869ca3e999421d2ede",
+    "seconds": 3.04,
+    "fixes": [
+      "She lays the card exactly at the place the last frame shows, not to the left of it, and the hand already waiting there keeps its fingers clear: the card lands free on the felt and never slides in under a finger.",
+      "Her hands ease out of stillness and gather speed smoothly, instead of jumping to full speed at once.",
+      "The way out to the place takes about 1.3 seconds and the way back about 0.8 seconds: calm and sharp, without motion blur."
+    ]
+  }
+}

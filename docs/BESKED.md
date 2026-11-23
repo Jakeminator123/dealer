@@ -230,8 +230,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   rörelsen är klar. Bordets gröna är densamma genom filmen, och kortet är slätt, utan vitt eller mönster.
 - **Snabbare: bara händerna med kortet** (2026-11-23, i dealer-19:s chatt): "det är hennes rörelser med kortet som ska
   gå snabbare"; andra armen och huvudets vridningar "behöver inte skyndas upp". Han vill ha det som en standard.
-- **Revansch på nästan bra klipp** (2026-11-23, i dealer-19:s chatt): de ska kunna användas "för att skapa om dem men
-  med aningen mindre ändringar", som en standard, "utöver att jag i princip alltid vill gå via vår docka".
+- **Revansch på nästan bra klipp** (2026-11-23 och 2026-11-24, i dealer-19:s chatt): "göra om den, men bara litegranna för att
+  definitivt göra den bra", som en standard utöver dockan. Givens tid: "kanske 1,3 sek ... att deala ut, sedan ca 0,8 tillbaka".
 - **Nya filmer: snabbare och bättre, inte kopior** (2026-11-23 kl. 23.45): de ska "gå snabbare är förgångaran" och
   inte vara "helt likadana, utan bara rentav bättre"; kanske med "vår andra docka" eller SAM 3D-dockan som förlaga.
 - **Flera kameravinklar ur samma film** (2026-11-18): en sidovinkel görs av bankens egen film i Runways videoredigerare

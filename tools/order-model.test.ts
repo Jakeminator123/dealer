@@ -143,6 +143,14 @@ test('cost from the price table, with the worst case where the listed price is h
   assert.equal(costOf({ model: 'wan3', params: { resolution: '1080p', duration: 4 } }, 1, prices)?.total, 80, 'the plan: entrance 4 s = 80');
   assert.equal(costOf({ model: 'nano-banana-pro', params: { imageSize: '4K' } }, 2, prices)?.total, 80);
   assert.equal(costOf({ model: 'nano-banana-pro', params: { imageSize: '1K' } }, 1, prices), null, 'no price, no order');
+  // Input film beyond the film's own length (a revansch sends two films): priced per input second, or not priced at all.
+  const withInput = [{ model: 'kling-4', resolution: '1080p', perSecond: 21.3, listedPerSecond: 23.5, perInputSecond: 11.28, listedPerInputSecond: 14.1, source: 's' }];
+  const two = priceOf({ model: 'kling-4', params: { resolution: '1080p', duration: 3 } }, withInput, 6.04);
+  assert.equal(two?.perTake, 99, '3 x 21,3 + 3,04 x 11,28 = 98,2');
+  assert.equal(two?.worstPerTake, 114, '3 x 23,5 + 3,04 x 14,1 = 113,4');
+  assert.match(two!.basis, /indatafilm utöver filmens längd × 3,04 s/);
+  assert.equal(priceOf({ model: 'kling-4', params: { resolution: '1080p', duration: 3 } }, withInput.map(({ perInputSecond: _i, listedPerInputSecond: _l, ...p }) => p), 6.04), null, 'without the input rate the take cannot be priced');
+  assert.equal(priceOf({ model: 'kling-4', params: { resolution: '1080p', duration: 3 } }, withInput, 3)?.perTake, 64, 'input no longer than the film costs nothing extra');
 });
 
 test('the policy: switch, cap per order, cap per day, floor on the balance; the worst case counts', async () => {
@@ -471,6 +479,17 @@ test('a reference film from the bank: the same step and seat first, the dealer\'
   assert.match(validateOrder({ ...film, reference: { ...ref, path: 'assets/motions/p/source.mp4' } }).errors.join(' '), /filmen ska ligga i assets\/orders\/<id>\//);
   assert.match(validateOrder({ ...film, reference: { ...ref, seconds: 2 } }).errors.join(' '), /3–30 s för Kling 4/);
   assert.deepEqual(requestOf({ ...film, reference: ref } as unknown as Order, 1).args.referenceVideos, [{ url: '$file:reference.mp4', durationSeconds: 4 }]);
+  // A revansch (BESKED 2026-11-23): the predecessor's film goes as video 2 after the reference, and the order says what it remakes.
+  const rev = { of: { order: 'x', take: 1 }, path: 'assets/orders/x/forra.mp4', sha256: 'c'.repeat(64), seconds: 3.04, fixes: ['Lay the card at the place the last frame shows.'] };
+  assert.deepEqual(validateOrder({ ...film, reference: ref, revansch: rev }).errors, []);
+  assert.deepEqual(requestOf({ ...film, reference: ref, revansch: rev } as unknown as Order, 1).args.referenceVideos, [{ url: '$file:reference.mp4', durationSeconds: 4 }, { url: '$file:forra.mp4', durationSeconds: 3.04 }]);
+  // Without a reference film the previous take is the only video (Jakobs vila-exempel 2026-11-24); an unsettled SAKNAS is refused.
+  assert.deepEqual(validateOrder({ ...film, reference: { status: 'INGEN', why: 'w' }, revansch: rev }).errors, []);
+  assert.deepEqual(requestOf({ ...film, reference: { status: 'INGEN', why: 'w' }, revansch: rev } as unknown as Order, 1).args.referenceVideos, [{ url: '$file:forra.mp4', durationSeconds: 3.04 }]);
+  assert.match(validateOrder({ ...film, reference: { status: 'SAKNAS', why: 'w', candidates: [] }, revansch: rev }).errors.join(' '), /referensfilm eller ingen/);
+  assert.match(validateOrder({ ...film, reference: ref, revansch: { ...rev, path: 'assets/orders/y/forra.mp4' } }).errors.join(' '), /forra\.mp4/);
+  assert.match(validateOrder({ ...film, reference: ref, revansch: { ...rev, seconds: 2 } }).errors.join(' '), /förra filmen ska vara 3–30 s/);
+  assert.match(validateOrder({ ...film, reference: ref, revansch: { ...rev, fixes: [] } }).errors.join(' '), /fixes/);
 });
 
 test('a card size for one order: grown about its centre, stopped at the picture\'s edge as the plan stops a card', () => {

@@ -5,7 +5,9 @@
 // actions below. onSelect makes the picture and text one button; the actions stay separate buttons beside it.
 // play: a play button on the still plays the film in place with the shared player (speeds, ±1 frame, the frame read-out;
 // a cut-out take only its own frames), one film at a time (play-slot.ts). onExpand: a button that opens it over the whole
-// window (FilmViewer). Neither is shown for a take without a film.
+// window (FilmViewer). Neither is shown for a take without a film. A film with sound (take.sound: a talk film) is heard,
+// with a sound button: his click on the play button is the click a browser asks for before it lets a film sound, and where
+// a browser still refuses, the film waits on its first picture with the player's own play button.
 import { Maximize2, Play, X } from "lucide-react";
 import { useRef, useState, type ReactNode } from "react";
 import type { Take } from "../../../src/clip-graph.ts";
@@ -107,6 +109,7 @@ export function TakeCard({
             range={take.segment}
             speed={take.speed}
             marks={take.landingFrame !== null ? [{ frame: take.landingFrame, label: "Landning", kind: "landing" }] : []}
+            audio={take.sound}
             label={`Film: ${title}`}
             onLoaded={() => void player.current?.play()}
             onPlayingChange={(on) => (on ? slot.claim() : undefined)}

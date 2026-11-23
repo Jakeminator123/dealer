@@ -5,7 +5,8 @@
 // the shared player's transport under it (play/pause, ±1 frame, 0,25 / 0,5 / 1, the frame read-out; a cut-out take only
 // its own frames), the take's step, name and chip on top, ‹ › to the take before and after in the list it was opened
 // from, and a button for the browser's own full screen. Keys: Space plays, ← → one frame (Shift: ten), Page Up / Page
-// Down the take before and after, Esc closes. Only one film plays at a time (play-slot.ts).
+// Down the take before and after, Esc closes. Only one film plays at a time (play-slot.ts). A film with sound (take.sound: a
+// talk film) is heard, with a sound button in the transport.
 import * as RD from "@radix-ui/react-dialog";
 import { ChevronLeft, ChevronRight, Maximize, Minimize, X } from "lucide-react";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
@@ -106,6 +107,7 @@ export function FilmViewer({ takes, index, onIndex }: { takes: readonly Take[]; 
                   range={take.segment}
                   speed={take.speed}
                   marks={take.landingFrame !== null ? [{ frame: take.landingFrame, label: "Landning", kind: "landing" }] : []}
+                  audio={take.sound}
                   label={`Film: ${name}`}
                   onPlayingChange={(playing) => (playing ? slot.claim() : undefined)}
                   className="min-h-0 flex-1"

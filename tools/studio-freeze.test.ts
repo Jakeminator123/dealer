@@ -343,6 +343,15 @@ test('of a spoken line the copy carries the film the game says: a newer take rep
   for (const id of ['paow-tal-hej-sv-09', 'paow-tal-win-sv-13', 'paow-tal-lose-sv-02']) { assert.equal(groups[id], undefined, id); assert.ok(left.some(l => l.id === id), `${id} is named among those left`); }
 });
 
+test("a film with a sound track says so on its take, in the lab's bank and in the copy's alike: the studio's players then let it be heard", () => {
+  const bank = fixture(), talk = 'paow-tal-hej-sv-01', film = `assets/motions/${talk}/source.mp4`;
+  bank.jobs!.push({...bank.jobs![0], id: talk, kind: 'IDLE', target: undefined, from: 'IDLE', to: 'IDLE', first: {file: {path: 'assets/anchors/idle.png'}}, last: {file: {path: 'assets/anchors/idle.png'}}} as never);
+  bank.motions![talk] = {source: {fps: 24, frames: 60, audio: true}, motion: {idle: {onRequest: true, calm: true}}, speech: {line: 'hej', language: 'sv', text: 'Hej!', voice: GAME_VOICE}, review: {decision: 'PENDING'}} as never;
+  bank.media![talk] = {video: film, first: null, last: null, track: null, overrides: null};
+  const frozen = freezeBank(bank, new Map([[film, film]]), new Set([talk]), {...release, ...rules}, digest);
+  for (const graph of [buildGraph(bank), buildGraph(frozen)]) assert.deepEqual([graph.takes[talk].sound, graph.takes['paow-p4-c1-deal-01'].sound], [true, false]);
+});
+
 test('the files a module names by a plain path are found; a path built at run time or leaving the folder is not', () => {
   const text = "const a = 'assets/scene/table.png', b = \"assets/props/tray.glb\", c = `assets/scene/thumbs/room-${id}.jpg`;\n" +
     "load('assets/scene/rooms/venedig-liv.mp4'); load('assets/scene/table.png'); load('assets/../secret.png'); load('assets/x.exe'); load('data/x.json');";

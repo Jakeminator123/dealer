@@ -98,7 +98,9 @@ export function receipts(root: string, options: { now?: () => Date } = {}) {
     const policy = JSON.parse(await readFile(path.join(root, 'data/order-policy.json'), 'utf8')) as Policy;
     if (policy?.enabled !== true) throw new StoreError(403, 'Beställningar är avstängda (enabled: false i data/order-policy.json).');
     const files = [];
-    const all = [...order.pictures.map((p) => ({ name: p.name, path: p.path, sha256: p.sha256, tag: p.tag, goesAs: p.goesAs as string })), ...(order.reference.status === 'FINNS' ? [{ name: order.reference.path.split('/').pop()!, path: order.reference.path, sha256: order.reference.sha256, tag: undefined, goesAs: 'referenceVideo' }] : [])];
+    const all = [...order.pictures.map((p) => ({ name: p.name, path: p.path, sha256: p.sha256, tag: p.tag, goesAs: p.goesAs as string })), ...(order.reference.status === 'FINNS' ? [{ name: order.reference.path.split('/').pop()!, path: order.reference.path, sha256: order.reference.sha256, tag: undefined, goesAs: 'referenceVideo' }] : []),
+      // A revansch sends its predecessor's film as the last reference video (video 2 in the text; src/order-model.ts requestOf).
+      ...(order.revansch ? [{ name: order.revansch.path.split('/').pop()!, path: order.revansch.path, sha256: order.revansch.sha256, tag: undefined, goesAs: 'referenceVideo' }] : [])];
     for (const f of all) {
       if (!f.path || !f.sha256) throw new StoreError(409, `${id}: ${f.name} saknas.`);
       let bytes: Buffer;

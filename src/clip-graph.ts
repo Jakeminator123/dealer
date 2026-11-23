@@ -9,7 +9,8 @@ export type ImageRef = {frame?: {video: string; videoSha256: string; index: numb
 // dealer: whose take it is (data/dealers.json); without it the take is the bank's first dealer's (DEALER, see dealersOf).
 export type BankJob = {id: string; kind: string; target: string | null; from: string; to: string; model: string; duration: number; ratio: string; audio: boolean; promptText: string; first: ImageRef; last?: ImageRef; purpose: string; playbackSpeed?: number; dealer?: string}; // without last: a film ordered from its first image alone
 export type MotionRecord = {
-  source?: {path?: string; sha256?: string; bytes?: number; fps?: number; frames?: number; width?: number; height?: number};
+  // audio: the film file has a sound track (tools/speech.ts writes it for every talk film it makes; no other film says it).
+  source?: {path?: string; sha256?: string; bytes?: number; fps?: number; frames?: number; width?: number; height?: number; audio?: boolean};
   // idle: how a take of IDLE>IDLE takes part in the idle. weight: its share among the takes that may be picked. calm: breathing and
   // the like, as opposed to a gesture. onRequest: never picked by chance. label: what it shows, in a word or two. cut: whether a
   // deal may cut into it at any frame (a calm take says yes unless it says cut: false). A rest that shows is now always played to
@@ -188,6 +189,7 @@ export type Take = {
   dealer: string;          // whose take it is; every take of a graph is its dealer's
   inbox: boolean;          // came in from an order and waits for Jakob: it plays only where its step has nothing else to play
   archived?: boolean;      // Jakob archived it (review.archived): never played or counted, listed only where it can be taken back (Karta); his verdict is kept
+  sound: boolean;          // its film has a sound track (its record's source.audio: a talk film): the studio's players play it with sound and a sound button
   // The hand that lays the card (a deal) or comes back from it (a return): its record's motion.releaseHand; a return without one
   // has the hand of the deal it was cut from. null: not known.
   releaseHand: Hand | null;
@@ -332,7 +334,7 @@ export function buildGraph(data: BankData, options: {mode?: FilmMode; holeCardDo
       credits: receipt?.estimatedCredits ?? job.duration * (CREDITS_PER_SECOND[job.ratio] ?? 0), startsOn, anchorStart, landingFrame: null, landingConflict: false, segment, revision: data.revisions?.[job.id] ?? null,
       endsOn: e.kind === 'DEAL' && typeof motion?.motion?.endsOn?.clip === 'string' && Number.isInteger(motion.motion.endsOn.frame) ? {clip: motion.motion.endsOn.clip, frame: motion.motion.endsOn.frame!} : null,
       idle: e.id === 'IDLE>IDLE' ? idleOf(job.id, motion) : null, editOf: editOf.get(job.id) ?? null, speed: Number(job.playbackSpeed) >= 0.25 && Number(job.playbackSpeed) <= 4 ? Number(job.playbackSpeed) : 1,
-      dealer, inbox: motion?.review?.inbox === true, archived: !!motion?.review?.archived, releaseHand: handWord(motion?.motion?.releaseHand), motion, receipt, media};
+      dealer, inbox: motion?.review?.inbox === true, archived: !!motion?.review?.archived, sound: motion?.source?.audio === true, releaseHand: handWord(motion?.motion?.releaseHand), motion, receipt, media};
     takes[job.id] = take; e.takes.push(take);
   });
   const all = Object.values(takes);

@@ -236,6 +236,15 @@ export type Reference =
       dealer?: string;
       from?: { film: string; path: string; sha256: string; edge: string; verdict: RefVerdict; words: string | null; frames: [number, number] | null; also: string[] };
     };
+/**
+ * A remake of a nearly good take (Jakob 2026-11-23, BESKED "Revansch på nästan bra klipp": remake it "med aningen mindre
+ * ändringar" to definitively make it good, and "Nya filmer: snabbare och bättre, inte kopior"). The predecessor's delivered
+ * film (its take's untouched source.mp4) goes with the call as the LAST reference video — after the order's own reference
+ * film where there is one (video 1), so the previous film is video 2; without one it is the only video (video 1) — and the
+ * text keeps what it did well and names the faults to fix (fixes, in the text's own words; tools/revansch-order.ts writes
+ * the draft, and swaps in a model that takes reference videos where the predecessor's does not). of: what it remakes.
+ */
+export type Revansch = { of: { order: string; take: number }; path: string; sha256: string; seconds: number; fixes: string[] };
 export type Generation = {
   provider: 'runway-app';
   tool: 'generate_image' | 'generate_video';
@@ -292,6 +301,8 @@ export type Order = {
   motion: Motion | null;
   pictures: Picture[];
   reference: Reference;
+  /** The nearly good take this order remakes, with its film as video 2. Absent on every order that is not a revansch. */
+  revansch?: Revansch | null;
   generation: Generation;
   /** style: absent on orders made before template 4 (read as Utförlig, styleOf). */
   /**
@@ -904,7 +915,13 @@ export function referenceCandidates(bank: BankFacts, want: { dealer: string; ste
 export const secondsWords = (s: number | null | undefined) => (s === null || s === undefined ? 'okänd längd' : `${String(Math.round(s * 100) / 100).replace('.', ',')} s`);
 
 // ── Policy and prices (data/order-policy.json) ──────────────────────────────
-export type Price = { model: string; resolution?: string; imageSize?: string; perSecond?: number; perImage?: number; listedPerSecond?: number; source: string };
+/**
+ * perSecond covers one second of film WITH as much input film (referensfilm) as the film is long: Runway charges per output
+ * second plus per second of "the greater of total input duration and output duration", and every measured order sent input
+ * and output of the same length. perInputSecond prices each input second BEYOND the film's length (a revansch sends the
+ * predecessor's film too); without it such an order cannot be priced.
+ */
+export type Price = { model: string; resolution?: string; imageSize?: string; perSecond?: number; perImage?: number; listedPerSecond?: number; perInputSecond?: number; listedPerInputSecond?: number; source: string };
 export type OrderMandate = {
   id: string;
   startsAt: string;
@@ -935,21 +952,30 @@ export type Policy = {
   prices: Price[];
 };
 
-/** The price of one take, and the worst case (the tool's listed price where it is higher than the ledgers'). */
-export function priceOf(generation: Pick<Generation, 'model' | 'params'>, prices: readonly Price[]): { perTake: number; worstPerTake: number; basis: string } | null {
+/**
+ * The price of one take, and the worst case (the tool's listed price where it is higher than the ledgers').
+ * inputSeconds: every second of film sent WITH the call (referensfilm, and a revansch's förra film); the seconds beyond
+ * the film's own length cost perInputSecond each, and without that rate such a take cannot be priced (null).
+ */
+export function priceOf(generation: Pick<Generation, 'model' | 'params'>, prices: readonly Price[], inputSeconds = 0): { perTake: number; worstPerTake: number; basis: string } | null {
   const { model, params } = generation;
   const p = prices.find((x) => x.model === model && (x.resolution === undefined || x.resolution === params.resolution) && (x.imageSize === undefined || x.imageSize === params.imageSize));
   if (!p) return null;
   if (p.perImage !== undefined) return { perTake: p.perImage, worstPerTake: p.perImage, basis: `${p.perImage} krediter per bild. ${p.source}` };
   const seconds = Number(params.duration);
   if (!p.perSecond || !(seconds > 0)) return null;
-  const perTake = Math.ceil(seconds * p.perSecond - 1e-9);
-  const worstPerTake = Math.ceil(seconds * Math.max(p.perSecond, p.listedPerSecond ?? 0) - 1e-9);
-  return { perTake, worstPerTake, basis: `${String(p.perSecond).replace('.', ',')} krediter per s × ${seconds} s. ${p.source}` };
+  const over = Math.round(Math.max(0, inputSeconds - seconds) * 100) / 100;
+  if (over > 0 && !p.perInputSecond) return null;
+  const extra = over > 0 ? over * p.perInputSecond! : 0;
+  const worstExtra = over > 0 ? over * Math.max(p.perInputSecond!, p.listedPerInputSecond ?? 0) : 0;
+  const perTake = Math.ceil(seconds * p.perSecond + extra - 1e-9);
+  const worstPerTake = Math.ceil(seconds * Math.max(p.perSecond, p.listedPerSecond ?? 0) + worstExtra - 1e-9);
+  const overWords = over > 0 ? ` + ${String(p.perInputSecond).replace('.', ',')} krediter per s indatafilm utöver filmens längd × ${String(over).replace('.', ',')} s` : '';
+  return { perTake, worstPerTake, basis: `${String(p.perSecond).replace('.', ',')} krediter per s × ${seconds} s${overWords}. ${p.source}` };
 }
 
-export function costOf(generation: Pick<Generation, 'model' | 'params'>, takes: number, prices: readonly Price[]): Order['cost'] | null {
-  const price = priceOf(generation, prices);
+export function costOf(generation: Pick<Generation, 'model' | 'params'>, takes: number, prices: readonly Price[], inputSeconds = 0): Order['cost'] | null {
+  const price = priceOf(generation, prices, inputSeconds);
   if (!price) return null;
   return { perTake: price.perTake, total: price.perTake * takes, worstPerTake: price.worstPerTake, worstTotal: price.worstPerTake * takes, basis: price.basis };
 }
@@ -1041,7 +1067,7 @@ export type Request = { tool: Generation['tool']; args: Record<string, unknown> 
  * The exact call for one take (1-based): the tool and its arguments, with $file:<name> where an uploaded address goes.
  * Take 2 and later carry confirmRepeat (otherwise the tool returns the earlier task for an identical request).
  */
-export function requestOf(order: Pick<Order, 'generation' | 'pictures' | 'reference' | 'prompt'>, take: number): Request {
+export function requestOf(order: Pick<Order, 'generation' | 'pictures' | 'reference' | 'revansch' | 'prompt'>, take: number): Request {
   const { tool, model, params } = order.generation;
   const args: Record<string, unknown> = { model, promptText: order.prompt.text, ...params };
   const start = order.pictures.find((p) => p.goesAs === 'startFrame');
@@ -1051,6 +1077,8 @@ export function requestOf(order: Pick<Order, 'generation' | 'pictures' | 'refere
   if (end) args.endFrame = { url: fileRef(end.name) };
   if (refs.length) args.referenceImages = refs.map((p) => (p.tag ? { url: fileRef(p.name), tag: p.tag } : { url: fileRef(p.name) }));
   if (order.reference.status === 'FINNS') args.referenceVideos = [{ url: fileRef(order.reference.path.split('/').pop()!), durationSeconds: order.reference.seconds }];
+  // A revansch sends the predecessor's film after the reference, so the reference stays video 1 and the previous film is video 2, as the text names them.
+  if (order.revansch) args.referenceVideos = [...((args.referenceVideos as { url: string; durationSeconds: number }[] | undefined) ?? []), { url: fileRef(order.revansch.path.split('/').pop()!), durationSeconds: order.revansch.seconds }];
   if (tool === 'generate_image') args.count = 1;
   if (take > 1) args.confirmRepeat = true;
   return { tool, args };
@@ -1217,6 +1245,17 @@ export function validateOrder(value: unknown): { order: Order | null; errors: st
         const r = o.reference as Extract<Reference, { status: 'FINNS' }>;
         if (typeof r.path !== 'string' || !new RegExp(`^assets/orders/${o.id}/[a-z0-9][a-z0-9-]*\\.mp4$`).test(r.path) || !SHA.test(String(r.sha256))) errors.push('reference: filmen ska ligga i assets/orders/<id>/ med sin sha256.');
         if (m.referenceSeconds && !(r.seconds >= m.referenceSeconds[0] && r.seconds <= m.referenceSeconds[1])) errors.push(`Referensfilmen ska vara ${m.referenceSeconds[0]}–${m.referenceSeconds[1]} s för ${m.label}.`);
+      }
+      if (o.revansch != null) {
+        const r = o.revansch as Partial<Revansch>, of = isObject(r.of) ? (r.of as Partial<Revansch['of']>) : null;
+        if (!isObject(r) || !of || typeof of.order !== 'string' || !ORDER_ID.test(of.order) || !Number.isInteger(of.take) || (of.take as number) < 1) errors.push('revansch: of ska säga vilken beställning och tagning den gör om.');
+        else {
+          if (o.kind !== 'FILM' || !m.videos) errors.push(`revansch: ${m.label} tar ingen referensfilm här, så förra filmen kan inte följa med.`);
+          if (!isObject(o.reference) || (o.reference as { status?: string }).status === 'SAKNAS') errors.push('revansch: välj referensfilm eller ingen först; med en är förra filmen video 2, utan är den video 1.');
+          if (typeof r.path !== 'string' || r.path !== `assets/orders/${o.id}/forra.mp4` || !SHA.test(String(r.sha256))) errors.push('revansch: förra filmen ska ligga som assets/orders/<id>/forra.mp4 med sin sha256.');
+          if (typeof r.seconds !== 'number' || !(r.seconds > 0) || (m.referenceSeconds && !(r.seconds >= m.referenceSeconds[0] && r.seconds <= m.referenceSeconds[1]))) errors.push(m.referenceSeconds ? `revansch: förra filmen ska vara ${m.referenceSeconds[0]}–${m.referenceSeconds[1]} s för ${m.label}.` : 'revansch: förra filmens längd saknas.');
+          if (!Array.isArray(r.fixes) || !r.fixes.length || !r.fixes.every((f) => typeof f === 'string' && !!f.trim())) errors.push('revansch: fixes ska säga vad som görs bättre (minst en mening).');
+        }
       }
       if (m.resolutions && o.generation.params.resolution !== undefined && !m.resolutions.includes(String(o.generation.params.resolution))) errors.push(`Upplösningen ska vara ${m.resolutions.join(', ')} för ${m.label}.`);
     }
