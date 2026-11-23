@@ -7,7 +7,7 @@
 // film the recipe's rule finds (referenceByRule), the film's length (secondsOf), and the words the production list
 // (tools/produce.ts) and Beställ show. No fs, no network. Tests: tools/order-line.test.ts, tools/order-routes.test.ts and studio/tests/line-same.test.ts.
 import { FLIP_AXES, FLIP_LABEL, MODELS, STEPS, TAKES_MAX, a3Name, lengthFor, lengthOfReference, modelFor, referenceCandidates, stepOf, stylesFor, type BankFacts, type FlipAxis, type ModelDef, type RefCandidate, type Shape, type StepDef, type StepKey, type TextStyle } from './order-model.ts';
-import { TEMPLATE_CHOICES, TEMPLATE_VERSION } from './order-prompts.ts';
+import { TEMPLATE_CHOICES, TEMPLATE_CHOICES_WORDS, TEMPLATE_VERSION } from './order-prompts.ts';
 
 export const METHOD_STATUSES = ['gäller', 'prov', 'saknas'] as const;
 export type MethodStatus = (typeof METHOD_STATUSES)[number];
@@ -151,9 +151,9 @@ export function readMethods(value: unknown): { register: MethodRegister | null; 
     if (step.kind === 'STILL' && m.resolution !== null && m.resolution !== undefined) errors.push(`${at}: en bild har ingen upplösning här (stegets storlek gäller).`);
     if (m.style !== null && m.style !== undefined && !stylesFor(step.kind, step).includes(m.style)) errors.push(`${at}: stilen ${String(m.style)} finns inte för ${step.label}.`);
     else if ((m.style === null || m.style === undefined) && whole) errors.push(`${at}: ${m.status} kräver en stil.`);
-    // A recipe is written with one of the templates a draft can choose (TEMPLATE_CHOICES: today's 12, or 13 since the review of
-    // 2026-11-21, which the return to 2.3 is tried with).
-    if (whole && !TEMPLATE_CHOICES.includes(m.template as number)) errors.push(`${at}: receptet säger mall ${String(m.template)}; texten skrivs med mall ${TEMPLATE_CHOICES.join(' eller ')}. Ett recept gäller den mall det är prövat med: pröva om eller skriv om det.`);
+    // A recipe is written with one of the templates a draft can choose (TEMPLATE_CHOICES: today's 12, 13 since the review of
+    // 2026-11-21, which the return to 2.3 is tried with, or 14 since 2026-11-23).
+    if (whole && !TEMPLATE_CHOICES.includes(m.template as number)) errors.push(`${at}: receptet säger mall ${String(m.template)}; texten skrivs med mall ${TEMPLATE_CHOICES_WORDS}. Ett recept gäller den mall det är prövat med: pröva om eller skriv om det.`);
     if (step.kind === 'FILM' && whole && !(typeof m.seconds === 'number' && m.seconds > 0)) errors.push(`${at}: en film kräver sekunder.`);
     if (step.kind === 'STILL' && m.seconds !== null && m.seconds !== undefined) errors.push(`${at}: en bild har inga sekunder.`);
     if (m.takes !== null && m.takes !== undefined && !(Number.isInteger(m.takes) && m.takes >= 1 && m.takes <= TAKES_MAX)) errors.push(`${at}: takes ska vara 1–${TAKES_MAX}.`);

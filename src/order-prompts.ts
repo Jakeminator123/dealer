@@ -13,8 +13,9 @@
 // studio's sheet and the stored draft both get it from promptFor, so the preview cannot drift from what is sent.
 //
 // A return is a film of its own: from the seat's landing picture back to an anchor. A deal "bara dit" (oneWay) ends on the
-// landing picture. A reference film adds one sentence (SAY.reference) in every style: it shows the movement only. The way
-// out (UTGANG, READY>IDLE; UTGANG-2.2, READY-B>IDLE, from the drag; UTGANG-2.3, READY-C>IDLE, both hands) and the hole card's turn from rest (HALKORT,
+// landing picture. A reference film adds one sentence (SAY.reference) in every style: it shows the movement only (template
+// 14 says it as a rough guide, in the short text: SAY.v14.reference). The way out (UTGANG, READY>IDLE; UTGANG-2.2,
+// READY-B>IDLE, from the drag; UTGANG-2.3, READY-C>IDLE, both hands) and the hole card's turn from rest (HALKORT,
 // IDLE>REVEAL(D.C2)) came after template 3 and are written Kort or Minimal only.
 //
 // A deal follows the hand chosen: the left hand all the way, the right hand all the way, or handbyte (the left hand takes
@@ -108,8 +109,20 @@ export const TEMPLATE_VERSION = 12;
  * return to rest after the right hand laid the card (open). Every other case, and a closed card or a missing mark, is
  * written as 12 writes it and named @13. Not the default: pilot 02's text (12) stays until a trial shows 13 is as good or
  * better. An order keeps its choice when its text is written again (orderPrompt).
+ * 14 (2026-11-23): 12 word for word but for two sentences of the short text (SAY.v14; fourteen chooses); every other text
+ * is 12's, named @14, and 13's shorter texts are not in it. One: the reference film is a rough guide and her natural
+ * movement comes first (SAY.v14.reference). Jakob 2026-11-23 of the films from anchor 2.3, made with the doll's films as
+ * video 1: "lite lite robotliknande och onaturliga", and "kanske man borde skicka med i instruktionerna med dessa videos
+ * med docka typ att '..filmen ska få rörelserna av vår dealer att vara naturlig primärt, så var inte extremt nitsk med
+ * dockans rörelse..'" (docs/BESKED.md). The sentence still says that video 1 shows only the movement: the doll is white and
+ * has no face. Two: the entry to anchor 2.3 says where her other hand ends in the anchor now used as last picture
+ * (paow-ankare-2-3-c), flat on the felt in front of her (SAY.v14.reach23); 12 says both hands go to the shoe and the other
+ * one waits close beside it, against that picture. Not the default, and untried as texts: a deal with it is tried beside
+ * an approved film of 12's text first.
  */
-export const TEMPLATE_CHOICES: readonly number[] = [TEMPLATE_VERSION, 13];
+export const TEMPLATE_CHOICES: readonly number[] = [TEMPLATE_VERSION, 13, 14];
+/** The choices as the words of a Swedish message: "12, 13 eller 14". */
+export const TEMPLATE_CHOICES_WORDS = new Intl.ListFormat('sv', { type: 'disjunction' }).format(TEMPLATE_CHOICES.map(String));
 /** The version of the long text (template 3, 2026-11-13); Utförlig writes it unchanged. */
 export const LONG_VERSION = 3;
 export type Dealer = { name: string; look: string };
@@ -362,6 +375,15 @@ export const SAY = {
       '1': 'Both her hands come back low over the felt, palm down, and rest flat in front of her, as in the last frame.',
     },
   },
+  // Template 14 (TEMPLATE_CHOICES; untried as texts): 12 but for these two sentences of the short text.
+  v14: {
+    // The reference film as a rough guide, her natural movement first (Jakob 2026-11-23: "naturlig primärt, så var inte
+    // extremt nitsk med dockans rörelse"). It still shows only the movement: the doll in video 1 is white and has no face.
+    reference: 'Video 1 shows only the movement, as a rough guide: her hands go the way the hands go in video 1, at about the same moments. Above all she moves naturally, like a practised dealer, with soft, relaxed arms and hands.',
+    // The entry to anchor 2.3 as its last picture shows it (paow-ankare-2-3-c): only her hand nearest the shoe goes to the
+    // shoe; her other hand lies flat on the felt in front of her, where the deal brings the card to it (SAY.meetAt).
+    reach23: 'Both her hands rise calmly: her hand nearest the shoe goes to the shoe and lays its fingertips on the yellow card in the window, ready to stroke it out, and her other hand comes to rest flat on the felt in front of her, as in the last frame.',
+  },
 } as const;
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -489,7 +511,9 @@ function stillText(input: PromptInput): Prompt {
  * after today's template, though its words were template 3's).
  */
 const templateOf = (kind: string, style: TextStyle) => (style === 'UTFÖRLIG' ? `${kind}@${LONG_VERSION}` : `${kind}-${style === 'KORT' ? 'kort' : 'minimal'}@${TEMPLATE_VERSION}`);
-const referencePart = (input: PromptInput): Part => ({ text: input.reference ? SAY.reference : '', from: ['reference'] });
+/** Template 14 (TEMPLATE_CHOICES) is 12 but for two sentences of the short text (SAY.v14): the reference film's, and the reach of the entry to anchor 2.3. */
+const fourteen = (input: PromptInput) => input.version === 14 && (input.style ?? 'KORT') === 'KORT';
+const referencePart = (input: PromptInput): Part => ({ text: input.reference ? (fourteen(input) ? SAY.v14.reference : SAY.reference) : '', from: ['reference'] });
 const extraPart = (input: PromptInput): Part => ({ text: input.extra?.trim() || '', from: ['extra'] });
 const DEFAULT_MOTION: DealMotion = { grip: 'PINCH', hand: 'LH', pass: false, turn: true, flipAxis: 'FREE', side: 'FRONT' };
 /** Template 6 alone said the card's sides by colour and by which one is up (SAY.v6); before and after, back and face. */
@@ -780,7 +804,7 @@ function entryText(input: PromptInput, to: '2.1' | '2.2' | '2.3', style: TextSty
   if (to === '2.3') {
     const parts: Part[] = style === 'MINIMAL'
       ? [{ text: SAY.cameraMinimal, from: [] }, referencePart(input), { text: SAY.reachBothMinimal, from: [] }, extraPart(input)]
-      : [{ text: SAY.camera, from: [] }, referencePart(input), { text: SAY.reach['2.3'], from: [] }, { text: fromTwelve(input) ? SAY.eyesStay : SAY.v11.eyesStay, from: [] }, extraPart(input)];
+      : [{ text: SAY.camera, from: [] }, referencePart(input), { text: fourteen(input) ? SAY.v14.reach23 : SAY.reach['2.3'], from: [] }, { text: fromTwelve(input) ? SAY.eyesStay : SAY.v11.eyesStay, from: [] }, extraPart(input)];
     const written: TextStyle = style === 'MINIMAL' ? 'MINIMAL' : 'KORT';
     return { template: templateOf('film-ingang', written), style: written, text: joined(parts), parts };
   }
@@ -983,7 +1007,7 @@ export function orderPrompt(
 ): Prompt {
   const at = (order.prompt.template ?? '').lastIndexOf('@');
   const named = at >= 0 ? Number(order.prompt.template!.slice(at + 1)) || undefined : undefined;
-  // A template chosen for the order (TEMPLATE_CHOICES: 13 beside today's 12) is kept when its text is written again; an
+  // A template chosen for the order (TEMPLATE_CHOICES: 13 or 14 beside today's 12) is kept when its text is written again; an
   // older one is not, and a draft written with it is written with today's.
   const chosen = named !== undefined && named !== TEMPLATE_VERSION && TEMPLATE_CHOICES.includes(named) ? named : undefined;
   const stored = options.asStored ? named : chosen;

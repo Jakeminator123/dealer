@@ -46,7 +46,7 @@ import {
   type Anchor, type BankFacts, type CutFrame, type Drawn, type FlipAxis, type Motion, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Policy, type PoseAnswer, type Receipt, type RefCandidate, type Reference, type RenderedReference, type SeatPlan, type Shape, type StepDef, type StepKey, type TextStyle, type Waits,
 } from '../src/order-model.ts';
 import { readMethods, recipeFor, recipeHands, referenceByRule, referenceWaits, secondsOf, type MethodRegister } from '../src/order-methods.ts';
-import { TEMPLATE_CHOICES, TEMPLATE_VERSION, handsIn, orderPrompt } from '../src/order-prompts.ts';
+import { TEMPLATE_CHOICES, TEMPLATE_CHOICES_WORDS, TEMPLATE_VERSION, handsIn, orderPrompt } from '../src/order-prompts.ts';
 import { checkCutFrame, patchShoe } from '../src/cut-frame.ts';
 import { CUT, H, LAY, TEXTURE, W, armAlone, cardTexture, cutFigure, drawCard, drawCards, markSeen, matchGreen, pictureBytes, planQuad, pngOf, poseOnShoe, readPlan, readRgb, type CardOutline, type Pt, type Texture } from './order-images.ts';
 import type { PlacementPlan } from '../src/placement-model.ts';
@@ -108,7 +108,7 @@ export type NewOrder = {
   pose?: Source | null;
   /** The text's style (default: Kort for a film; a still has one text). */
   style?: TextStyle;
-  /** The template the text is written with (src/order-prompts.ts TEMPLATE_CHOICES; absent: the recipe's, today's): 13 is a choice per order, a film in the short text. */
+  /** The template the text is written with (src/order-prompts.ts TEMPLATE_CHOICES; absent: the recipe's, today's): 13 and 14 are choices per order, a film in the short text. */
   template?: number;
   /** A deal: bara dit, ending on the seat's own end picture (the recipe), or tur och retur (an exception). */
   shape?: Shape;
@@ -683,7 +683,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     // The template: today's unless the order chooses another (TEMPLATE_CHOICES), written into the draft's prompt so that
     // the text keeps it when written again (orderPrompt).
     const mall = input.template ?? recipe?.template ?? TEMPLATE_VERSION;
-    if (!TEMPLATE_CHOICES.includes(mall)) throw new StoreError(400, `Mallen är ${TEMPLATE_CHOICES.join(' eller ')}.`);
+    if (!TEMPLATE_CHOICES.includes(mall)) throw new StoreError(400, `Mallen är ${TEMPLATE_CHOICES_WORDS}.`);
     if (mall !== TEMPLATE_VERSION && (step.kind !== 'FILM' || style !== 'KORT')) throw new StoreError(400, `Mall ${mall} skrivs bara för en film i den korta texten (KORT).`);
     const returnStart = return23 ? await frozenReturnStart(register, dealer.id, target!, input, watch) : null;
     // Other returns start on the seat's landing picture that holds, for the hand that laid the card (with handbyte the right

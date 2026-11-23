@@ -1,9 +1,10 @@
 // One draft from the command line, made the way Bordet and Beställ make one (tools/order-store.ts create): the step's
 // recipe gives everything the command does not say, and what it says against the recipe is named in the draft's notes.
 // For the main agent's orders on Jakob's mandate, as one take of the deal from 2.3 with each template (mall 12, today's,
-// and 13, the review of 2026-11-21; src/order-prompts.ts TEMPLATE_CHOICES):
+// 13, the review of 2026-11-21, and 14, the reference film as a rough guide, 2026-11-23; src/order-prompts.ts
+// TEMPLATE_CHOICES, which the store checks the number against):
 //
-//   node tools/order-new.ts <dealer> <step> [<card>] [--mall 12|13] [--takes <n>] [--title "<namn>"] [--extra "<tillägg>"]
+//   node tools/order-new.ts <dealer> <step> [<card>] [--mall 12|13|14] [--takes <n>] [--title "<namn>"] [--extra "<tillägg>"]
 //                           [--reference <id> | --no-reference] [--end <A3-kandidat> | --no-end] [--base <post>]
 //                           [--continues <order>] [--trad <träd>] [--docka <namn>] [--dry]
 //   node tools/order-new.ts paow "A2.3 - A3P4C2" --dry      (his notation, studio/lib/names.ts parseJakob: one film,
@@ -26,7 +27,7 @@ import { parseJakob } from '../studio/lib/names.ts';
 
 const VALUED = ['--mall', '--takes', '--title', '--extra', '--reference', '--end', '--base', '--continues', '--trad', '--docka'];
 const ALONE = ['--no-reference', '--no-end', '--dry'];
-const USE = 'Använd: node tools/order-new.ts <dealer> <steg> [<plats>] (eller <dealer> "A2.3 - A3P4C2") [--mall 12|13] [--takes <n>] [--title "<namn>"] [--extra "<tillägg>"] [--reference <id> | --no-reference] [--end <A3-kandidat> | --no-end] [--base <post>] [--continues <order>] [--trad <träd>] [--docka <namn>] [--dry]';
+const USE = 'Använd: node tools/order-new.ts <dealer> <steg> [<plats>] (eller <dealer> "A2.3 - A3P4C2") [--mall 12|13|14] [--takes <n>] [--title "<namn>"] [--extra "<tillägg>"] [--reference <id> | --no-reference] [--end <A3-kandidat> | --no-end] [--base <post>] [--continues <order>] [--trad <träd>] [--docka <namn>] [--dry]';
 
 /** His notation ("A2.3 - A3P4C2", "A2.3 → A1"): the step and the card of the one film it names. */
 export function stepOfNotation(text: string): { step: StepKey; target: string | null } {

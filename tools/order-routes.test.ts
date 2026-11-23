@@ -1563,10 +1563,10 @@ test('the steps a round needs: a deal to the hole card, its turn from rest and t
   assert.equal((await call('GET', '/api/production?dealer=nobody')).status, 400);
 });
 
-test('the template is a choice per order (12 or 13), kept when the draft is changed or written again; the command line chooses it too', async (t) => {
+test('the template is a choice per order (12, 13 or 14), kept when the draft is changed or written again; the command line chooses it too', async (t) => {
   const { call, request } = await lab(t);
   const input = { dealer: 'paow', step: 'GIV-2.3', target: 'P4.C1', ...TUR };
-  for (const [body, why] of [[{ ...input, template: 14 }, /Mallen är 12 eller 13/], [{ ...input, template: 13, style: 'MINIMAL' }, /bara för en film i den korta texten/], [{ dealer: 'paow', step: 'ANKARE-2.1', template: 13 }, /bara för en film/]] as const) {
+  for (const [body, why] of [[{ ...input, template: 15 }, /Mallen är 12, 13 eller 14\./], [{ ...input, template: 13, style: 'MINIMAL' }, /bara för en film i den korta texten/], [{ dealer: 'paow', step: 'ANKARE-2.1', template: 13 }, /bara för en film/]] as const) {
     const refused = await request('POST', '/api/orders/preview', { body });
     assert.equal(refused.status, 400);
     assert.match(refused.json.error, why);
@@ -1590,10 +1590,17 @@ test('the template is a choice per order (12 or 13), kept when the draft is chan
   const refreshed = await call('POST', `/api/orders/${order.id}/refresh`, { match: changed.json.revision });
   assert.equal(refreshed.status, 200, refreshed.json.error);
   assert.equal(refreshed.json.order.prompt.template, 'film-giv-kort@13');
+  // 14 (2026-11-23) is taken the same way. It changes the reference film's sentence, and this draft has no reference film:
+  // 12's words, named @14, and the draft says so.
+  const fourteen = await call('POST', '/api/orders', { body: { ...input, template: 14 } });
+  assert.equal(fourteen.status, 201, fourteen.json.error);
+  assert.deepEqual([fourteen.json.order.prompt.template, fourteen.json.order.prompt.text], ['film-giv-kort@14', twelve.json.order.prompt.text]);
+  assert.ok(fourteen.json.order.notes.some((n: string) => /Mall 14 har ingen egen text för den här filmen/.test(n)), fourteen.json.order.notes.join('\n'));
   // tools/order-new.ts: the words of the command line are the order the routes take.
   // Changed in round two (2026-11-21): the command also says the tree it holds the pictures to (--trad), null when none, and
   // the doll whose film goes with it (--docka), null when none.
   assert.deepEqual(newOrderOf(['paow', 'GIV-2.3', 'P4.C2', '--mall', '13', '--takes', '1', '--dry']), { input: { dealer: 'paow', step: 'GIV-2.3', target: 'P4.C2', template: 13, takes: 1, createdBy: 'huvudagenten, tools/order-new.ts' }, dry: true, tree: null, doll: null });
+  assert.equal(newOrderOf(['paow', 'A1 - A2.3', '--mall', '14']).input.template, 14);
   assert.equal(newOrderOf(['paow', 'RETUR-2.3', 'P4.C2', '--no-reference']).input.reference, null);
   // The step form takes the seat as he writes it too (review of PR 1, 2026-11-21): A3P4C2 and P4C2 are the plan's P4.C2.
   for (const said of ['A3P4C2', 'P4C2', 'p4.c2']) assert.equal(newOrderOf(['paow', 'GIV-2.3', said, '--dry']).input.target, 'P4.C2', said);

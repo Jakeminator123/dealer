@@ -363,6 +363,18 @@ styr tillåtna kombinationer; färsk `whoami` och verktygsschemat styr vad vår 
 underlag. P6/P7 har både godkända och underkända sjusekundersprov: lång tid är en hypotes om extrarörelser, inte en
 fastställd ensam orsak. Mät grepp, kantvändning, kontakt, släpp och skarv enligt `film-review.md`.
 
+**Mall 14: dockans film är en grov ledning (2026-11-23, oprövad som text).** Jakob om filmerna från A2.3, som är gjorda
+med dockans film som video 1: "lite lite robotliknande och onaturliga", och "filmen ska få rörelserna av vår dealer att
+vara naturlig primärt, så var inte extremt nitsk med dockans rörelse" (hela beskedet: `docs/BESKED.md`). Mall 14 är
+mall 12 ord för ord utom två meningar i Kort (`SAY.v14` i `src/order-prompts.ts`). Referensfilmens mening
+(`SAY.reference`: "she moves like the dealer in video 1, with the same timing") säger i stället att video 1 är en grov
+ledning, att händerna går samma väg vid ungefär samma ögonblick och att hon framför allt rör sig naturligt, som en van
+dealer med mjuka, avspända armar och händer; den säger fortfarande att video 1 bara visar rörelsen, eftersom dockan är
+vit och saknar ansikte. Ingången till 2.3 säger var den andra handen slutar i ankaret som nu är sista bild
+(`paow-ankare-2-3-c`): platt på filten framför henne, där mall 12 säger att båda händerna går till skon och att den
+andra väntar intill den. Mall 14 är ett val per order (`--mall 14`), inte förvalet, och mall 13:s korta texter ingår
+inte. Den prövas först på en giv bredvid en godkänd film med mall 12:s text, med samma bilder och samma dockfilm.
+
 **Kort rörelse, stilla slut.** I ett nytt tidsprov kan prompten ange att hela rörelsen inklusive returen når
 slutankaret tidigt och därefter håller samma pose. Ändra inte receptet för befintliga order. `film-after.ts` föreslår
 en kortning i `after.json.stillAnchorTail` bara om minst 0,4 s i slutet ligger inom två färgsteg per kanal från både
