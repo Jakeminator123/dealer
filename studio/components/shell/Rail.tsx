@@ -36,6 +36,8 @@ export const VIEWS: readonly View[] = [
   // Karta holds Primära too since 2026-11-17 (each step with its Primär and secondary films); /primara/ leads there. Since
   // 2026-11-21 it draws the dealer's trees, one at a time, against the 36 steps of his measure.
   { href: "/karta/", label: "Karta", hint: "Nodträden: vilka av de 36 stegen som har film, och vad ett saknat steg behöver", icon: Workflow },
+  // Docka (2026-11-23): the doll lab in a frame, a page of the studio instead of a loose one (app/docka/page.tsx).
+  { href: "/docka/", label: "Docka", hint: "Docklabbet: dockan i varje ställning och giv, med reglage och Spara som standard", icon: PersonStanding },
   // Granska holds the proofs too since 2026-11-17 (its part Prov); /prov/ leads there.
   { href: "/granska/", label: "Granska", hint: "Filmer som väntar på ditt beslut, och proven", icon: ScanEye },
   { href: "/material/", label: "Material", hint: "Per dealer: ingångsbild, keystone, ankare, filmer och referenser", icon: Images },
@@ -45,10 +47,10 @@ export const VIEWS: readonly View[] = [
 
 /**
  * The views the rail shows: the same list in the lab and in the online copy, minus what the copy lacks. The copy carries no
- * lip-sync facts, so it has no Lipsync; Bordet is there read-only (no Beställ, no saving), and Casino plays there too (the
+ * lip-sync facts and no doll lab, so it has no Lipsync and no Docka; Bordet is there read-only (no Beställ, no saving), and Casino plays there too (the
  * game page runs the engine itself).
  */
-const LAB_ONLY: readonly string[] = ["/lipsync/"];
+const LAB_ONLY: readonly string[] = ["/lipsync/", "/docka/"];
 const SHOWN: readonly View[] = isSnapshot ? VIEWS.filter((view) => !LAB_ONLY.includes(view.href)) : VIEWS;
 /** Where the mark at the top leads: the first view of the rail. */
 const HOME = "/bordet/";
@@ -135,10 +137,9 @@ function AskButton() {
   );
 }
 
-// The pages beside the studio, reached at their own addresses: the doll lab (dealer3d/page/server.ts) and the sound and
-// model pages (tools/lab-routes.ts PAGES), which become parts of a later view (Efterarbete). Quiet links in the foot.
+// The pages beside the studio, reached at their own addresses: the sound and model pages (tools/lab-routes.ts PAGES),
+// which become parts of a later view (Efterarbete). Quiet links in the foot.
 const PAGE_LINKS: readonly { href: string; label: string; icon: ComponentType<{ className?: string }> }[] = [
-  { href: "/dealer3d/docka", label: "Docka", icon: PersonStanding },
   { href: "/sound.html", label: "Ljud", icon: Volume2 },
   { href: "/props.html", label: "Modeller", icon: Box },
 ];
