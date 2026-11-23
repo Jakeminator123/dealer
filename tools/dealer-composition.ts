@@ -3,7 +3,9 @@
 // their pictures come from tools/dealer-tree.ts (treeWorld), as Karta draws them.
 //   GET    /api/compositions?dealer=<id>                    every composition drawn, and her trees to choose from (Karta)
 //   GET    /api/compositions?dealer=<id>&komposition=<id>   one composition, or one tree alone, cut for the game (?komposition=)
-//   PUT    /api/compositions?dealer=<id>                    saves one composition (the body: a CompositionDef), from the lab only
+//   PUT    /api/compositions?dealer=<id>                    saves one composition (the body: a CompositionDef), from the lab only;
+//                                                           422 with the reason when it does not hold, as when its trees have
+//                                                           different hands (src/composition.ts handsProblem, Jakob 2026-11-23)
 //   DELETE /api/compositions?dealer=<id>&komposition=<id>   removes one, from the lab only
 // node tools/dealer-composition.ts [dealer]: each composition's number and what its steps are covered by, in plain text.
 import {existsSync, readFileSync, renameSync, writeFileSync} from 'node:fs';
@@ -11,8 +13,9 @@ import type {IncomingMessage, ServerResponse} from 'node:http';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {TABLE_GEOMETRY} from '../src/card-plan.ts';
-import {COMPOSITION_ID, checkComposition, compositionView, compositionWord, soloComposition,
+import {COMPOSITION_ID, HANDS_WORD, checkComposition, compositionView, compositionWord, handsProblem, soloComposition, tempoValue, tempoWord,
   type CompositionAnswer, type CompositionCut, type CompositionDef, type CompositionRegister, type CompositionView, type ReuseRow} from '../src/composition.ts';
+import type {TreeTake, TreeView} from '../src/dealer-trees.ts';
 import {createLayout, slotLabel, type Slot} from '../src/game-table.ts';
 import {treeWorld} from './dealer-tree.ts';
 
@@ -64,10 +67,10 @@ export async function compositionAnswer(dealer: string, root = ROOT): Promise<Co
 function cutOf(dealer: string, view: CompositionView, takes: Awaited<ReturnType<typeof treeWorld>>['takes']): CompositionCut {
   const inside = new Set(view.trees.map(t => t.tree));
   return {schemaVersion: 1, dealer, id: view.def.id, name: view.def.name,
-    trees: view.trees.map(t => ({tree: t.tree, name: t.name, share: t.share, hub: t.hub, rest: t.rest, shoe: t.shoe, own: takes.filter(x => x.tree === t.tree).map(x => x.id)})),
+    trees: view.trees.map(t => ({tree: t.tree, name: t.name, share: t.share, hub: t.hub, rest: t.rest, shoe: t.shoe, own: takes.filter(x => x.tree === t.tree).map(x => x.id), ...(t.tempo !== undefined ? {tempo: t.tempo} : {})})),
     drop: takes.filter(x => x.tree !== null && !inside.has(x.tree)).map(x => x.id),
     bridges: view.def.bridges ?? [], shares: view.def.shares ?? {},
-    home: view.home ?? [...view.trees].sort((a, b) => b.share - a.share)[0]?.tree ?? null, count: view.count, looks: view.looks};
+    home: view.home ?? [...view.trees].sort((a, b) => b.share - a.share)[0]?.tree ?? null, count: view.count, looks: view.looks, ...(tempoValue(view.def.tempo) !== null ? {tempo: tempoValue(view.def.tempo)!} : {})};
 }
 
 /** GET /api/compositions?dealer=<id>&komposition=<id>: a composition of the register, else a tree of that id alone. Null: neither. */
@@ -78,28 +81,36 @@ export async function compositionCut(dealer: string, id: string, root = ROOT): P
 }
 
 /**
- * Saves one composition of a dealer (a new id is added, a known one replaced). What does not hold is returned in plain words and
- * nothing is written: an id that is a tree's, a tree she does not have, a bridge between pictures that are not the trees' own,
- * a bridge film that is not on this machine, a share for a film that is in none of the trees.
+ * A composition as a save writes it, or what does not hold, in plain words: an id that is a tree's, a tree she does not have,
+ * trees with different hands (handsProblem), a bridge between pictures that are not the trees' own, a bridge film that is not
+ * on this machine (onDisk), a share for a film that is in none of the trees. One tree alone holds: a tree with a tempo of its own.
  */
-export async function saveComposition(dealer: string, input: unknown, root = ROOT): Promise<{ok: true; id: string} | {ok: false; problems: string[]}> {
-  const {views, takes} = await treeWorld(dealer), ids = views.map(v => v.tree.id), problems = checkComposition(input, ids);
+export function compositionToSave(input: unknown, views: readonly TreeView[], takes: readonly TreeTake[], onDisk: (film: string) => boolean): {ok: true; def: CompositionDef} | {ok: false; problems: string[]} {
+  const ids = views.map(v => v.tree.id), problems = checkComposition(input, ids);
   if (problems.length) return {ok: false, problems};
   const given = input as CompositionDef;
   if (ids.includes(given.id)) problems.push(`"${given.id}" är redan ett träd: välj ett annat id.`);
-  const def: CompositionDef = {id: given.id, name: given.name.trim(), trees: given.trees.map(t => ({tree: t.tree, share: t.share})),
+  const def: CompositionDef = {id: given.id, name: given.name.trim(), trees: given.trees.map(t => ({tree: t.tree, share: t.share, ...(tempoValue(t.tempo) !== null ? {tempo: tempoValue(t.tempo)!} : {})})),
+    ...(tempoValue(given.tempo) !== null ? {tempo: tempoValue(given.tempo)!} : {}),
     ...(given.bridges?.length ? {bridges: given.bridges.map(b => ({a: b.a, b: b.b, ...(b.ab ? {ab: b.ab} : {}), ...(b.ba ? {ba: b.ba} : {}), ...(b.seconds !== undefined ? {seconds: b.seconds} : {})}))} : {}),
     ...(given.shares && Object.keys(given.shares).length ? {shares: Object.fromEntries(Object.entries(given.shares).filter(([, share]) => share > 0))} : {}),
     ...(typeof given.note === 'string' && given.note.trim() ? {note: given.note.trim().slice(0, 300)} : {})};
   const view = compositionView(def, views, takes), own = new Set(view.trees.flatMap(t => [t.rest, t.shoe]).filter(Boolean)), inside = new Set(view.trees.map(t => t.tree));
+  const hands = handsProblem(view); if (hands) problems.push(hands);
   for (const b of def.bridges ?? []) {
     if (!own.has(b.a) || !own.has(b.b)) problems.push(`Bryggan ${b.a} – ${b.b} går inte mellan trädens egna bilder (A1 eller ankaret vid skon).`);
-    for (const film of [b.ab, b.ba]) if (film && !existsSync(path.join(root, film))) problems.push(`Bryggans film ${film} finns inte på den här datorn.`);
+    for (const film of [b.ab, b.ba]) if (film && !onDisk(film)) problems.push(`Bryggans film ${film} finns inte på den här datorn.`);
   }
   const known = new Set(takes.filter(t => t.tree !== null && inside.has(t.tree)).map(t => t.id));
   for (const id of Object.keys(def.shares ?? {})) if (!known.has(id)) problems.push(`Filmen ${id} hör inte till något av kompositionens träd.`);
-  if (problems.length) return {ok: false, problems};
-  const register = readCompositions(root), list = defsOf(register, dealer), at = list.findIndex(c => c.id === def.id);
+  return problems.length ? {ok: false, problems} : {ok: true, def};
+}
+
+/** Saves one composition of a dealer (a new id is added, a known one replaced). What does not hold is returned and nothing is written (compositionToSave). */
+export async function saveComposition(dealer: string, input: unknown, root = ROOT): Promise<{ok: true; id: string} | {ok: false; problems: string[]}> {
+  const {views, takes} = await treeWorld(dealer), made = compositionToSave(input, views, takes, film => existsSync(path.join(root, film)));
+  if (!made.ok) return made;
+  const def = made.def, register = readCompositions(root), list = defsOf(register, dealer), at = list.findIndex(c => c.id === def.id);
   const next = at >= 0 ? list.map((c, i) => i === at ? def : c) : [...list, def];
   write({...register, about: register.about || ABOUT, dealers: {...register.dealers, [dealer]: {compositions: next}}}, root);
   return {ok: true, id: def.id};
@@ -155,7 +166,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const dealer = process.argv[2] ?? 'paow', answer = await compositionAnswer(dealer);
   const HOW: Record<string, string> = {eget: 'eget', aterbruk: 'återbruk', lanat: 'lånat', saknas: 'saknas'};
   for (const c of [...answer.compositions, ...answer.trees.map(t => ({def: {id: t.tree, name: `${t.name} (ensamt)`}, trees: [t], steps: [], count: {have: t.have, own: t.have, total: 36}, joins: [], home: null, looks: [], problems: []} as unknown as CompositionView))]) {
-    console.log(`\n${c.def.name} [${c.def.id}]: spelbart ${compositionWord(c.count)}, varav egna ${c.count.own}${c.looks.length > 1 ? ' · händerna skiljer mellan träden' : ''}`);
+    console.log(`\n${c.def.name} [${c.def.id}]: spelbart ${compositionWord(c.count)}, varav egna ${c.count.own}${handsProblem(c) ? ` · ${HANDS_WORD}` : ''}${tempoValue(c.def.tempo) !== null ? ` · fart ${tempoWord(tempoValue(c.def.tempo)!)}` : ''}`);
     console.log(`  träd: ${c.trees.map(t => `${t.name} ${t.percent} %`).join(', ')}${c.home ? ` · vilar i ${c.home}` : ''}`);
     for (const j of c.joins) console.log(`  ${j.a} – ${j.b}: vilan ${j.rest.how}${j.rest.film ? ' (film)' : ''}, skon ${j.shoe.how}${j.shoe.film ? ' (film)' : ''}`);
     for (const s of c.steps) console.log(`  ${s.name.padEnd(24)} ${HOW[s.state].padEnd(9)} ${s.parts.map(p => `${p.tree} ${p.percent} %${p.how === 'aterbruk' ? ` (${p.of}:s film)` : ''}${p.films.filter(f => f.percent > 0).length > 1 ? ` [${p.films.filter(f => f.percent > 0).map(f => `${f.id} ${f.percent} %`).join(', ')}]` : ''}`).join(' | ')}${s.lacking.length ? ` · ${s.lacking.join(', ')} lånar via ${s.reach}` : ''}`);

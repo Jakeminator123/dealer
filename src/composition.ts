@@ -15,25 +15,50 @@
 //     laid without a hand, as in a tree played alone;
 //   - a seat's second card plays the film of its first, the drawn card laid at its own place (återbruk, the game's own rule).
 // Where the hand rests between steps is one tree's (the home): the one with rest films, the largest share first.
+//
+// For now only trees that rest on the same picture (A1) are put together (Jakob 2026-11-23 21.10: "vi helt enkelt INTE får sätta
+// samman nodträd om de är inkompatibla såsom nu"; Casino's hands are bare and Tatuerad's tattooed, and they were mixed in one
+// round): handsProblem says it, a save is refused and the game does not play such a composition. The bridges between rest
+// pictures are kept, for the day trees with different pictures may meet again.
+// A composition, and a tree in it, may carry a tempo (1 to 2: how many times faster the round's films go; tempoOf).
 import {REVEAL_NODE} from './clip-graph.ts';
 import {GOOD, MEASURE_SIZE, cutBank, measure, nodeCode, type StepKind, type TreeState, type TreeTake, type TreeView, type Verdict} from './dealer-trees.ts';
 
 // ── The register ────────────────────────────────────────────────────────────
 /** A tree of the composition and its share (any numbers: 80 and 20, or 4 and 1). Share 0: the tree only lends what the others lack (its rest films, the dealer's cards). */
-export type CompositionTree = {tree: string; share: number};
+export type CompositionTree = {tree: string; share: number; tempo?: number};
 /**
  * A bridge between two pictures of Material (entry ids): A1 of one tree and A1 of another, or their anchors at the shoe.
  * ab, ba: the film from a to b and from b to a (a path under assets/); without one that way is a plain cut, which the bridge allows.
  */
 export type BridgeDef = {a: string; b: string; ab?: string | null; ba?: string | null; seconds?: number};
-/** shares: a film's share among the films of its own step, by take id; a step none of whose films is named plays as the bank chooses. */
-export type CompositionDef = {id: string; name: string; trees: CompositionTree[]; bridges?: BridgeDef[]; shares?: Record<string, number>; note?: string};
+/**
+ * shares: a film's share among the films of its own step, by take id; a step none of whose films is named plays as the bank chooses.
+ * tempo: how many times faster the round's films go (1 to 2; rest and speech keep their speed), on the composition and on a tree
+ * of it. The tree's goes before the composition's, which goes before the look's (the key filmTempo): tempoOf.
+ */
+export type CompositionDef = {id: string; name: string; trees: CompositionTree[]; tempo?: number; bridges?: BridgeDef[]; shares?: Record<string, number>; note?: string};
 export type CompositionRegister = {schemaVersion: 1; about: string; dealers: Record<string, {compositions: CompositionDef[]}>};
 export const COMPOSITION_ID = /^[a-z0-9-]{1,40}$/;
 export const MAX_TREES = 4, MAX_SHARE = 1000;
 /** A bridge film's frames a second, as it is handed to the scene's film queue: the bank's films are 24. */
 export const BRIDGE_FPS = 24;
 const BRIDGE_FILM = /^assets\/[A-Za-z0-9._\-/]{1,200}\.(mp4|webm)$/;
+/** A tempo: 1 (as filmed) to 2, in steps of 0.05, as the look's key filmTempo. CHOICES: what Karta offers (Jakob 2026-11-23: "1.5x eller 2x"). */
+export const TEMPO = {min: 1, max: 2, step: 0.05} as const, TEMPO_CHOICES: readonly number[] = [1, 1.25, 1.5, 2];
+/** A tempo as the register keeps it (on the step), or null for what is none: no number, or outside 1 to 2. */
+export const tempoValue = (value: unknown): number | null =>
+  typeof value === 'number' && Number.isFinite(value) && value >= TEMPO.min && value <= TEMPO.max ? Math.round(Math.round(value / TEMPO.step) * TEMPO.step * 100) / 100 : null;
+/** "1,5×". */
+export const tempoWord = (tempo: number): string => `${String(tempo).replace('.', ',')}×`;
+/**
+ * The tempo of the round's films when a tree of a composition plays them (tree null: a film of no tree, a bridge): the tree's
+ * own, else the composition's, else the look's (the key filmTempo), else 1.
+ */
+export function tempoOf(of: {tempo?: number; trees: readonly {tree: string; tempo?: number}[]} | null, tree: string | null, look: number | null | undefined): number {
+  const own = tree === null ? null : tempoValue(of?.trees.find(t => t.tree === tree)?.tempo);
+  return own ?? tempoValue(of?.tempo) ?? tempoValue(look) ?? 1;
+}
 
 /** What does not hold in a composition, in plain words; empty: it holds. trees: the dealer's tree ids. */
 export function checkComposition(def: unknown, trees: readonly string[]): string[] {
@@ -49,7 +74,9 @@ export function checkComposition(def: unknown, trees: readonly string[]): string
     if (seen.has(t.tree)) out.push(`Trädet "${t.tree}" står två gånger.`);
     seen.add(t.tree);
     if (typeof t.share !== 'number' || !Number.isFinite(t.share) || t.share < 0 || t.share > MAX_SHARE) out.push(`Andelen för "${t.tree}" ska vara ett tal från 0 till ${MAX_SHARE}.`);
+    if (t.tempo !== undefined && tempoValue(t.tempo) === null) out.push(`Farten för "${t.tree}" ska vara från 1 till 2 gånger.`);
   }
+  if (d.tempo !== undefined && tempoValue(d.tempo) === null) out.push('Kompositionens fart ska vara från 1 till 2 gånger.');
   if (list.length && !list.some(t => typeof t?.share === 'number' && t.share > 0)) out.push('Minst ett träd behöver en andel över 0.');
   for (const b of Array.isArray(d.bridges) ? d.bridges : []) {
     if (!b || typeof b.a !== 'string' || typeof b.b !== 'string' || !b.a || !b.b || b.a === b.b) { out.push('En brygga går mellan två olika bilder.'); continue; }
@@ -104,14 +131,14 @@ export type Cover = {key: string; kind: StepKind; card: string | null; name: str
 /** The composition's number: steps it can play of the measure's 36, and how many of those with a film of the step's own. */
 export type CompositionCount = {have: number; own: number; total: number};
 /** A tree in a composition: its share, the pictures the hand rests on and waits at the shoe on (Material entries), its own number. */
-export type ViewTree = {tree: string; name: string; state: TreeState; share: number; percent: number; hub: string; rest: string | null; shoe: string | null; have: number; restFilms: boolean};
+export type ViewTree = {tree: string; name: string; state: TreeState; share: number; percent: number; hub: string; rest: string | null; shoe: string | null; have: number; restFilms: boolean; tempo?: number};
 /** How two trees of a composition meet, at rest and at the shoe: samma (one picture), brygga (film: it has one), ingen. */
 export type Join = {a: string; b: string; rest: {a: string | null; b: string | null; how: 'samma' | 'brygga' | 'ingen'; film: boolean}; shoe: {a: string | null; b: string | null; how: 'samma' | 'brygga' | 'ingen'; film: boolean}};
 export type CompositionView = {
   def: CompositionDef; trees: ViewTree[]; steps: Cover[]; count: CompositionCount; joins: Join[];
   /** The tree the hand rests in between steps (null: no tree has a rest film; she stands still). */
   home: string | null;
-  /** The pictures at rest that differ between the trees: more than one means two kinds of hands in the same round. */
+  /** The pictures at rest that differ between the trees: more than one means two kinds of hands in the same round, and the composition is not played (handsProblem). */
   looks: string[];
   problems: string[];
 };
@@ -125,13 +152,13 @@ export const stepWords = (kind: StepKind, card: string | null): string => {
 };
 
 /** The trees a composition plays: each named tree's home (Ingången plays the Casino's films), once, in the order given. */
-function homes(def: CompositionDef, views: readonly TreeView[]): {view: TreeView; share: number}[] {
-  const out: {view: TreeView; share: number}[] = [];
+function homes(def: CompositionDef, views: readonly TreeView[]): {view: TreeView; share: number; tempo: number | null}[] {
+  const out: {view: TreeView; share: number; tempo: number | null}[] = [];
   for (const t of def.trees) {
     const named = views.find(v => v.tree.id === t.tree), view = named ? views.find(v => v.tree.id === named.home) ?? named : null;
     if (!view) continue;
     const had = out.find(x => x.view.tree.id === view.tree.id), share = Number.isFinite(t.share) && t.share > 0 ? t.share : 0;
-    if (had) had.share += share; else out.push({view, share});
+    if (had) { had.share += share; had.tempo ??= tempoValue(t.tempo); } else out.push({view, share, tempo: tempoValue(t.tempo)});
   }
   return out;
 }
@@ -156,8 +183,8 @@ export function compositionView(def: CompositionDef, views: readonly TreeView[],
   const verdicts = new Map(takes.map(t => [t.id, t.verdict] as const));
   const good = (ids: readonly string[]) => ids.filter(id => GOOD.includes(verdicts.get(id) ?? 'underkand'));
   const stepsOf = new Map(list.map(t => [t.view.tree.id, new Map(t.view.steps.map(s => [stepKey(s), s] as const))] as const));
-  const trees: ViewTree[] = list.map(({view, share}) => ({tree: view.tree.id, name: view.tree.name, state: view.tree.state, share, percent: round1(100 * share / total), hub: view.hub,
-    rest: picture(view, 'IDLE'), shoe: picture(view, view.hub), have: view.count.have, restFilms: view.steps.some(s => s.kind === 'vila' && s.state === 'finns')}));
+  const trees: ViewTree[] = list.map(({view, share, tempo}) => ({tree: view.tree.id, name: view.tree.name, state: view.tree.state, share, percent: round1(100 * share / total), hub: view.hub,
+    rest: picture(view, 'IDLE'), shoe: picture(view, view.hub), have: view.count.have, restFilms: view.steps.some(s => s.kind === 'vila' && s.state === 'finns'), ...(tempo !== null ? {tempo} : {})}));
   const home = homeOf(trees), byId = new Map(trees.map(t => [t.tree, t] as const));
   const met = (a: string | null, b: string | null) => !!linkOf(def.bridges, a, b);
 
@@ -191,7 +218,22 @@ export function compositionView(def: CompositionDef, views: readonly TreeView[],
   for (const t of def.trees) if (!views.some(v => v.tree.id === t.tree)) problems.push(`Trädet "${t.tree}" finns inte längre.`);
   if (!home && trees.length) problems.push('Inget träd har en vilofilm: hon står still mellan stegen.');
   const count: CompositionCount = {have: steps.filter(s => s.parts.length).length, own: steps.filter(s => s.parts.some(p => p.how === 'eget')).length, total: MEASURE_SIZE};
-  return {def, trees, steps, count, joins, home, looks: [...new Set(trees.map(t => t.rest ?? `${t.tree}:A1`))], problems};
+  return {def, trees, steps, count, joins, home, looks: [...new Set(trees.map(handsOf))], problems};
+}
+
+// ── Which trees may be put together ─────────────────────────────────────────
+/** The picture a tree's hands are known by: its rest picture (A1, a Material entry); a tree without one is like no other. */
+export const handsOf = (t: {tree: string; rest: string | null}): string => t.rest ?? `${t.tree}:A1`;
+/** The word where such a composition is listed. */
+export const HANDS_WORD = 'spelas inte: olika händer';
+/**
+ * Why a composition's trees may not be put together, in a sentence, or null when they may: they rest on different pictures (A1),
+ * so the hands differ within a round. Jakob 2026-11-23, for now. A saved composition of that kind is kept as it is and not played.
+ */
+export function handsProblem(of: {looks?: readonly string[]; trees: readonly {name: string}[]}): string | null {
+  if ((of.looks?.length ?? 0) <= 1) return null;
+  const names = of.trees.map(t => t.name), list = names.length > 1 ? `${names.slice(0, -1).join(', ')} och ${names.at(-1)}` : names[0] ?? 'Träden';
+  return `${list} har olika händer: trädens vilobild (A1) skiljer. Sådana träd sätts inte samman (Jakob 2026-11-23).`;
 }
 /** "33/36". */
 export const compositionWord = (c: CompositionCount): string => `${c.have}/${c.total}`;
@@ -214,13 +256,13 @@ export type ReuseRow = {card: string; film: string; px: number; game: number; ca
 
 // ── One composition in the game (?komposition=<id>) ─────────────────────────
 /** A tree as the game plays it in a composition: its films (own), its anchor at the shoe, and the pictures it rests and waits on. */
-export type CutTree = {tree: string; name: string; share: number; hub: string; rest: string | null; shoe: string | null; own: string[]};
+export type CutTree = {tree: string; name: string; share: number; hub: string; rest: string | null; shoe: string | null; own: string[]; tempo?: number};
 /**
  * GET /api/compositions?dealer=<id>&komposition=<id>: what the game needs (tools/dealer-composition.ts compositionCut). drop: the
  * takes placed in the dealer's trees outside the composition. looks: as CompositionView. A take placed in no tree is in none of
- * the lists and follows every tree (Borta).
+ * the lists and follows every tree (Borta). tempo: the composition's, and a tree's on the tree (tempoOf).
  */
-export type CompositionCut = {schemaVersion: 1; dealer: string; id: string; name: string; trees: CutTree[]; drop: string[]; bridges: BridgeDef[]; shares: Record<string, number>; home: string | null; count: CompositionCount; looks: string[]};
+export type CompositionCut = {schemaVersion: 1; dealer: string; id: string; name: string; trees: CutTree[]; drop: string[]; bridges: BridgeDef[]; shares: Record<string, number>; home: string | null; count: CompositionCount; looks: string[]; tempo?: number};
 
 type CutBank = Parameters<typeof cutBank>[0];
 /** The bank as one tree of the composition plays it: the other trees' films left out, its anchor at the shoe played as the shoe (cutBank). */
@@ -234,8 +276,8 @@ export function treeBank<B extends CutBank>(bank: B, cut: Pick<CompositionCut, '
 export type CompositionReply = {status: number; answer: unknown} | null;
 /**
  * The composition the game plays for ?komposition=<word>, and the page's line. Without the word: none, no line. A composition
- * with films: its cut and "Casino + Tatuerad 33/36: kort utan film läggs utan hand". Unknown, without films or unreadable:
- * none, and why in plain words; the game then plays as without the word.
+ * with films: its cut and "Casino snabb 33/36: kort utan film läggs utan hand · fart 2×". Unknown, without films, unreadable, or
+ * of trees with different hands (handsProblem): none, and why in plain words; the game then plays as without the word.
  */
 export function compositionPlay(word: string | null, reply: CompositionReply, dealerName: string): {cut: CompositionCut | null; line: string | null} {
   if (word === null) return {cut: null, line: null};
@@ -247,8 +289,10 @@ export function compositionPlay(word: string | null, reply: CompositionReply, de
     return {cut: null, line: `Kompositionen "${word}" kunde inte läsas.${usual}`};
   const name = cut.name ?? word;
   if (!(cut.count.have > 0) || !cut.trees.some(t => t.share > 0)) return {cut: null, line: `${name} har inga filmer än.${usual}`};
-  const hands = (cut.looks?.length ?? 0) > 1 ? ' · händerna skiljer mellan träden' : '';
-  return {cut: cut as CompositionCut, line: `${name} ${compositionWord(cut.count)}: kort utan film läggs utan hand${hands}`};
+  if (handsProblem({looks: cut.looks, trees: cut.trees as CutTree[]})) return {cut: null, line: `${name} spelas inte: träden har olika händer (olika A1), och sådana sätts inte samman.${usual}`};
+  const tempos = [...new Set([tempoValue(cut.tempo), ...(cut.trees as CutTree[]).map(t => tempoValue(t.tempo))].filter((t): t is number => t !== null))];
+  const fast = tempos.some(t => t !== 1) ? ` · fart ${tempos.map(tempoWord).join(' och ')}` : '';
+  return {cut: cut as CompositionCut, line: `${name} ${compositionWord(cut.count)}: kort utan film läggs utan hand${fast}`};
 }
 
 // ── The composer: which tree plays what, and how the trees are joined ───────
@@ -305,7 +349,7 @@ export type WovenBridge = {before: number; from: string; to: string; film: strin
 /** The legs of a step as one chain: the beats, the tree each is played by, the bridges between them, and seams no bridge covers. */
 export type Woven<B> = {beats: B[]; tree: string[]; bridges: WovenBridge[]; breaks: string[]};
 
-const restPic = (t: CutTree) => t.rest ?? `${t.tree}:A1`, shoePic = (t: CutTree) => t.shoe ?? `${t.tree}:${t.hub}`;
+const restPic = handsOf, shoePic = (t: CutTree) => t.shoe ?? `${t.tree}:${t.hub}`;
 /** The picture a node of a tree's own bank stands for: its rest, its anchor at the shoe, or a picture only that tree has (a card, another anchor). */
 export const pictureOf = (t: CutTree, node: string): string => node === 'IDLE' || node === REVEAL_NODE ? restPic(t) : node === 'READY' ? shoePic(t) : `${t.tree}@${node}`;
 

@@ -2,7 +2,8 @@
 
 // The films of one step in its panel on Karta (lib/primaries.ts stepFilms): the Primär large, and each secondary film as a
 // row (still, name, verdict, how the game uses it, and for the proposal the seam a Primär would give), with "Gör primär" and
-// "Arkivera" on his click only, "Jämför" and "I scenen". UseChip says the use in a word or two; its tooltip says it in a sentence.
+// "Arkivera" on his click only, "Jämför" and "I scenen", and "Fart": the film's own speed (ClipSpeed.tsx). UseChip says the use
+// in a word or two; its tooltip says it in a sentence.
 import { Archive, Ban, Columns2, MessageSquare, Play, Repeat, Shuffle, Star, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -13,6 +14,7 @@ import { ARCHIVE_ACTION } from "@/lib/archive";
 import { isSnapshot } from "@/lib/mode";
 import { edgeName, takeName } from "@/lib/names";
 import { type Film, type Seam, type Use, type UseKind } from "@/lib/primaries";
+import { ClipSpeed } from "./ClipSpeed";
 import { RowStill } from "./RowStill";
 import type { Mark } from "./useOlder";
 
@@ -100,6 +102,7 @@ export function PrimaryFilm({ film, edge, name, selected, onPick, onExpand, onAr
               I scenen
             </Link>
             <ArchiveButton onArchive={onArchive} />
+            <ClipSpeed take={film.take} name={name ?? takeName(film.take, edge.takes)} className="ml-auto" />
           </>
         }
       />
@@ -177,6 +180,7 @@ export function SecondaryFilm({
         <UseChip use={use} className="self-start" />
         <OlderMarks marks={marks} />
         {seam ? <SeamLine seam={seam} /> : null}
+        <ClipSpeed take={take} name={title} />
         <div className="mt-auto flex flex-wrap items-center gap-1 pt-0.5">
           {isSnapshot ? null : (
             <Button

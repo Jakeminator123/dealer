@@ -38,7 +38,7 @@ export type Media = {video?: string | null; first?: string | null; last?: string
 // what it was ordered with: model, duration, promptText and its first and last picture, which then stand for the take's own.
 // editOf: the take this one is a corrected copy of (tools/film-fix.ts), as an edit is.
 export type DerivedTake = {id: string; kind?: string; from: string; to: string; clip: string; frames: [number, number]; purpose?: string; dealer?: string; editOf?: string;
-  model?: string; duration?: number; promptText?: string; first?: ImageRef; last?: ImageRef};
+  model?: string; duration?: number; promptText?: string; first?: ImageRef; last?: ImageRef; playbackSpeed?: number};
 // An edit is a corrected copy of an existing clip, made with a video-to-video model: a further take of the same edge as its source.
 export type EditTake = {id: string; source?: {clip?: string; sha256?: string}; model?: string; promptText?: string; purpose?: string; dealer?: string};
 export type BankData = {jobs?: BankJob[]; derived?: DerivedTake[]; edits?: EditTake[]; budget?: {maximumCredits?: number} | null; motions?: Record<string, MotionRecord>; receipts?: Record<string, Receipt>; media?: Record<string, Media>; revisions?: Record<string, string>};
@@ -301,7 +301,7 @@ export function buildGraph(data: BankData, options: {mode?: FilmMode; holeCardDo
     if (typeof d.editOf === 'string' && d.editOf !== d.id) editOf.set(d.id, d.editOf);
     const first: ImageRef = image(d.first) ? d.first : {frame: {video, videoSha256: '', index: start!}}, last: ImageRef = image(d.last) ? d.last : {frame: {video, videoSha256: '', index: end!}};
     return [{id: d.id, kind: d.kind ?? '', target: null, from: d.from, to: d.to, model: typeof d.model === 'string' ? d.model : 'utsnitt', duration: Number.isFinite(d.duration) ? d.duration! : 0, ratio: '', audio: false,
-      promptText: typeof d.promptText === 'string' ? d.promptText : '', purpose: d.purpose ?? '', first, last}];
+      promptText: typeof d.promptText === 'string' ? d.promptText : '', purpose: d.purpose ?? '', first, last, ...(d.playbackSpeed !== undefined ? {playbackSpeed: d.playbackSpeed} : {})}];
   });
   // A corrected copy enters as its source's job under its own id, with its own model, prompt and purpose: same edge, same images.
   const jobs = list(data?.jobs), sources = new Map(jobs.filter(j => j && typeof j.id === 'string').map(j => [j.id, j]));

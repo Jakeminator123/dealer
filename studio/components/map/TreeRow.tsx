@@ -8,7 +8,7 @@
 // one: ?komposition=<id> opens CompositionKarta.
 import { Play, Plus } from "lucide-react";
 import Link from "next/link";
-import { compositionWord, type CompositionView } from "../../../src/composition.ts";
+import { HANDS_WORD, compositionWord, handsProblem, type CompositionView } from "../../../src/composition.ts";
 import { countWord, type TreeView } from "../../../src/dealer-trees.ts";
 import { casinoAddress } from "@/lib/casino";
 import { withDealer } from "@/lib/dealer";
@@ -79,19 +79,23 @@ export function TreeRow({
         {onCompose && compositions ? (
           <>
             <span aria-hidden className="mx-1 h-4 w-px shrink-0 bg-line-strong" />
-            {compositions.map((c) => (
-              <button
-                key={c.def.id}
-                type="button"
-                role="radio"
-                aria-checked={composition === c.def.id}
-                onClick={() => onCompose(c.def.id)}
-                title={`Komposition: ${c.trees.map((t) => `${t.name} ${Math.round(t.percent)} %`).join(", ")}. ${c.count.have} av ${c.count.total} steg har en film, varav ${c.count.own} egna`}
-                className={chip(composition === c.def.id)}
-              >
-                {c.def.name} {compositionWord(c.count)}
-              </button>
-            ))}
+            {compositions.map((c) => {
+              // Trees with different hands are not put together (Jakob 2026-11-23): a saved one of that kind is kept and says so.
+              const blocked = handsProblem(c);
+              return (
+                <button
+                  key={c.def.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={composition === c.def.id}
+                  onClick={() => onCompose(c.def.id)}
+                  title={blocked ?? `Komposition: ${c.trees.map((t) => `${t.name} ${Math.round(t.percent)} %`).join(", ")}. ${c.count.have} av ${c.count.total} steg har en film, varav ${c.count.own} egna`}
+                  className={cn(chip(composition === c.def.id), blocked && "opacity-60")}
+                >
+                  {c.def.name} {blocked ? <span className="text-[#ef8b8b]">· {HANDS_WORD}</span> : compositionWord(c.count)}
+                </button>
+              );
+            })}
             <button type="button" role="radio" aria-checked={composition === NEW_COMPOSITION} onClick={() => onCompose(NEW_COMPOSITION)} title="Sätt samman två eller fler träd" className={chip(composition === NEW_COMPOSITION, true)}>
               <Plus /> Komposition
             </button>

@@ -14,24 +14,24 @@ en fillista.
 - En komposition lägger ihop träd (`data/dealer-compositions.json`, `src/composition.ts`, `tools/dealer-composition.ts`
   bakom `/api/compositions`): andel per träd och per film på ett steg, lån av steg ett träd saknar, returen hem till sitt
   eget ankare och kort 2 på kort 1:s film. Den står som chips efter träden i Karta, och labbets spel spelar den med
-  `?komposition=<id>` (`?trad=` går före). Paow har `casino-tatuerad` (80/20) och `tatuerad-med-lan`, båda 36/36.
-- Träden byter i vilan, där en brygga på 0,2 s är ren. Vid skon finns ingen: A2.1 och A2.3 skiljer 75 px i handen
-  (Prov `brygga-mellan-trad-20261123`; bryggfilmerna ligger i provmappen tills de får en roll).
-- A1 finns i två bilder med samma bildpunkter utanför händerna: `paow-vila-ung-2` (Casino) och `paow-vila-tatuerad`
-  (Tatuerad; gäller i Material). Där kan träden bindas.
+  `?komposition=<id>` (`?trad=` går före).
+- Träd med olika A1 (olika händer) sätts inte samman (Jakob 2026-11-23): spara vägras och spelet spelar inte en sådan.
+  Paows tre sparade ligger kvar och visas "spelas inte: olika händer". Bryggan (0,2 s i vilan) finns kvar i koden.
+- Fart: en komposition bär `tempo` (1–2, också per träd) och ett klipp sin egen (`playbackSpeed` i
+  `data/clip-jobs.json`, `tools/clip-speed.ts`). Spelet gångrar dem, högst 2×; vila och tal går som filmat.
+- A1 finns i två bilder: `paow-vila-ung-2` (Casino) och `paow-vila-tatuerad` (Tatuerad; gäller i Material).
 - Jakob arkiverade 2026-11-23 Casinots A1 och A2.2 och den tatuerade A2.2 i Material. Casino behåller sina bilder:
   dess giv till plats 6 (hans Primär) börjar på A2.2, och givarna dit från A2.1 är underkända. Tatuerad har ingen A2.2.
-- Ett steg har en Primär och sekundära filmer (EdgeSheet; "Gör primär" är hans klick). Ett klipp arkiveras och tas
-  tillbaka i Karta.
-- Formatet har redan sätet: ett ankare kan bära `seat` 1–7 och skrivs då S2-A2.2. Ingen vy visar det.
-- Provet `fran-stol-1-20261123` är första filmen från en annan stol (given till plats 4 sedd från stol 1); receptet
-  står i [FILMMODELLER](../FILMMODELLER.md), "Vinklar, 3D och Runways lista". Den har ingen plats i Karta.
+- Ett steg har en Primär och sekundära filmer ("Gör primär" är hans klick). Ett klipp arkiveras och tas tillbaka i Karta.
+- Ett ankare kan bära `seat` 1–7 (S2-A2.2); ingen vy visar det. Provet `fran-stol-1-20261123` är första filmen från
+  en annan stol; receptet står i [FILMMODELLER](../FILMMODELLER.md), "Vinklar, 3D och Runways lista".
 
 **Nästa steg.**
 1. Vyerna hänger ihop. Gå igenom var Karta, Material, Scen & bord (Kortplan, Kön), Granska och spelet säger olika om
    samma träd, ankare eller film, och rätta orsaken. Kända fall: ett arkiverat ankare som ett träd spelar, plats 6
    via A2.2, och `SEAT_HUB` i `src/game-director.ts`.
-2. Kompositionen inför hans öga, vyn och en runda i Casino; sedan Ingången som väg in i Casino, inte ett eget träd.
+2. Kartas rad med träd och kompositioner görs om (hans ord 2026-11-23: "denna fula meny"), träden som nivåer man
+   rullar mellan i den sammanlagda vyn, och bryggorna går att klicka fram. Sedan Ingången som väg in i Casino.
 3. Varianter: en variant är en sekundär film på sitt steg och får sin andel i kompositionen; ett eget träd bara när
    bilderna är andra. De fria givarna (Prov `fria-givar-20261123`) förs in av filmbanan och ska synas så.
 4. Kameran som dimension. Karta öppnar på plats 4:s kamera; ett reglage, och musens hjul, byter till kamera 1–7 och
@@ -39,8 +39,8 @@ en fillista.
 5. Kort 3–7: spelet återbrukar bara kort 2. Förslaget är en givfilm till per plats, vid kort 5, och en egen film för
    dealerns kort 3; avstånden står i kompositionens vy.
 
-**Väntar på Jakob.** Hans ja, i Karta, på hur sammanlagda träd, varianter och kameror visas. I chatten: byte i vilan
-eller en bryggfilm vid skon, om händerna får blandas i en runda, och givfilmen vid kort 5.
+**Väntar på Jakob.** Hans ja, i Karta, på hur sammanlagda träd, varianter och kameror visas. I chatten: givfilmen vid
+kort 5, och om kompositionens tempo ska gälla alla handfilmer i rundan (som nu) eller bara given.
 
 **Var saker ligger.** Kartabanans filer: `studio/app/karta/`, `studio/components/map/`, i `studio/lib/` filerna
 `map-layout.ts`, `tree-path.ts`, `primaries.ts` och `edge-stats.ts`, `src/dealer-trees.ts`, `tools/dealer-tree.ts`,

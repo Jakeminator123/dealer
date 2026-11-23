@@ -1,5 +1,7 @@
 // src/composition.ts, the contract of a composition of node trees (Jakob 2026-11-23): the shares hold over many rounds, a film
 // never follows a picture it does not begin on, a return goes home to its own anchor, and a tree alone is today's ?trad=.
+// Trees with different hands (another A1) are not put together: not saved and not played. A composition's tempo: the tree's
+// before the composition's before the look's, and a film's own speed times it, the tempo never past 2×.
 // On made-up trees: the real ones change every time a film is judged.
 // Run from the repo root: node --test tools/composition.test.ts
 import test from 'node:test';
@@ -9,11 +11,12 @@ import {createSession, type Snapshot} from '../game/session.ts';
 import {defaultPlan} from '../src/placement-model.ts';
 import {createLayout} from '../src/game-table.ts';
 import {cardRecords} from '../src/game-director.ts';
-import {createFilm} from '../src/game-film.ts';
+import {createFilm, filmRate} from '../src/game-film.ts';
 import {cardFaces, tableCards} from '../src/game-view.ts';
 import {MEASURE_SIZE, cutBank, measure, treeView, type TreeDef, type TreeEntry, type TreeTake} from '../src/dealer-trees.ts';
-import {assign, checkComposition, compositionPlay, compositionView, createComposer, linkOf, pickFilm, seams, soloComposition, trace, treeBank, weave,
+import {assign, checkComposition, compositionPlay, compositionView, createComposer, handsProblem, linkOf, pickFilm, seams, soloComposition, tempoOf, trace, treeBank, weave,
   type BridgeDef, type CompositionCut, type CompositionDef, type CutTree, type LegBeat, type Move} from '../src/composition.ts';
+import {compositionToSave} from './dealer-composition.ts';
 
 // ── Made-up trees: Casino (A1, A2.1, everything) and Tatuerad (its own A1 and A2.3, the seats' first cards and the hole card) ──
 const SEATS = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7'];
@@ -229,11 +232,57 @@ test('registret: det som inte håller sägs', () => {
   assert.equal(linkOf(both.bridges, 'a1', 'a1'), 'same'); assert.equal(linkOf(both.bridges, 'a1', 'a23'), null);
 });
 
+// Jakob 2026-11-23 21.10: "vi helt enkelt INTE får sätta samman nodträd om de är inkompatibla såsom nu" (Casino's hands are bare,
+// Tatuerad's tattooed). Compatible: the same rest picture, A1.
+test('träd med olika händer sätts inte samman: sparas inte, och ett träd ensamt går att spara', () => {
+  const onDisk = () => true, save = (def: unknown, of = views) => compositionToSave(def, of, takes, onDisk);
+  const refused = save(both);
+  assert.equal(refused.ok, false);
+  assert.ok(!refused.ok && refused.problems.some(p => p.includes('olika händer') && p.includes('A1') && p.includes('Jakob 2026-11-23')), 'skälet sägs på vanlig svenska, med hans ord');
+  assert.match(handsProblem(compositionView(both, views, takes))!, /^Casino och Tatuerad har olika händer/);
+  // One tree alone holds, with a tempo of its own: what the tempo of a tree is saved in.
+  const alone = save({id: 'casino-snabb', name: ' Casino snabb ', trees: [{tree: 'casino', share: 100}], tempo: 2});
+  assert.deepEqual(alone, {ok: true, def: {id: 'casino-snabb', name: 'Casino snabb', trees: [{tree: 'casino', share: 100}], tempo: 2}});
+  assert.equal(handsProblem(compositionView(soloComposition(defs[0]), views, takes)), null);
+  // Two trees that rest on the same picture are put together as before.
+  const more = [...defs, {id: 'kvall', name: 'Kväll', state: 'byggs', root: 'a1', anchors: [{entry: 'a1'}, {entry: 'a21'}]} as TreeDef], same = more.map(def => treeView('paow', def, more, entries, takes));
+  const pair = {id: 'casino-kvall', name: 'Casino + Kväll', trees: [{tree: 'casino', share: 80}, {tree: 'kvall', share: 20, tempo: 1.5}]};
+  assert.deepEqual(save(pair, same), {ok: true, def: pair});
+  assert.equal(compositionView(pair, same, takes).looks.length, 1);
+  // An id that is a tree's is still refused, and so is a tempo outside 1 to 2.
+  assert.equal(save({id: 'casino', name: 'Casino', trees: [{tree: 'casino', share: 100}]}).ok, false);
+  assert.ok(checkComposition({...pair, tempo: 3}, ['casino', 'kvall']).some(p => p.includes('fart')));
+  assert.ok(checkComposition({...pair, trees: [{tree: 'casino', share: 1, tempo: 0.5}]}, ['casino', 'kvall']).some(p => p.includes('Farten')));
+});
+
+test('tempot: trädets går före kompositionens, som går före utseendets', () => {
+  const of = {tempo: 1.5, trees: [{tree: 'casino'}, {tree: 'tatuerad', tempo: 2}]};
+  assert.equal(tempoOf(of, 'tatuerad', 1.2), 2, 'trädets eget');
+  assert.equal(tempoOf(of, 'casino', 1.2), 1.5, 'kompositionens');
+  assert.equal(tempoOf(of, null, 1.2), 1.5, 'en film som inte är något träds (en brygga): kompositionens');
+  assert.equal(tempoOf({trees: of.trees}, 'casino', 1.2), 1.2, 'utan kompositionens: utseendets (filmTempo)');
+  assert.equal(tempoOf({trees: of.trees}, 'tatuerad', 1.2), 2);
+  assert.equal(tempoOf(null, null, undefined), 1); assert.equal(tempoOf({tempo: 9, trees: []}, null, 1.3), 1.3, 'ett tempo utanför 1 till 2 gäller inte');
+  // The drawn composition carries the tempos to the game's cut.
+  const view = compositionView({...both, tempo: 1.5, trees: [{tree: 'casino', share: 80}, {tree: 'tatuerad', share: 20, tempo: 2}]}, views, takes);
+  assert.deepEqual(view.trees.map(t => [t.tree, t.tempo]), [['casino', undefined], ['tatuerad', 2]]);
+});
+
+// Jakob 2026-11-23: "spela upp dealerklipp i 1.5x eller 2x ... den nya standarden för respektive klipp". A film's own speed is
+// the bank's playbackSpeed; the round's tempo is laid on it and never takes it past 2×.
+test('farten: filmens egen fart gånger rundans tempo, och tempot aldrig över 2×', () => {
+  assert.equal(filmRate(1, 1), 1); assert.equal(filmRate(1, 2), 2); assert.equal(filmRate(1.25, 1.5), 1.875);
+  assert.equal(filmRate(2, 2), 2, '2× på filmen och 2× i tempot är 2×, inte 4×'); assert.equal(filmRate(1.5, 1.5), 2);
+  assert.equal(filmRate(4, 2), 4, 'en film som själv ska gå fortare än 2× behåller sin fart'); assert.equal(filmRate(0.5, 2), 1);
+  assert.equal(filmRate(NaN, NaN), 1);
+});
+
 // ── The game's film player with a composition (src/game-film.ts compose) ────
 // A made-up bank: Casino deals seat 4 and the dealer's first card from A2.1 and has the rest film; Tatuerad deals seat 4 from
 // A2.3 and has nothing else. A fake film queue records the parts it is handed, as tools/game-view.test.ts does.
-test('spelet spelar kompositionen: trädens filmer med bryggan emellan, och vilan i hemmaträdet', async () => {
-  const job = ([id, from, to, kind]: string[]) => ({id, kind, target: kind === 'DEAL' ? to : null, from, to, model: 'wan3', duration: 4, ratio: 'auto_1080p', audio: false, promptText: 'fixture', first: {file: {path: 'assets/anchors/x/anchor.png', sha256: 'a'.repeat(64)}}, purpose: 'fixture', dealer: 'paow'});
+// speeds: a film's own speed (the bank's playbackSpeed), by take id.
+async function tableGame(speeds: Record<string, number> = {}) {
+  const job = ([id, from, to, kind]: string[]) => ({id, kind, target: kind === 'DEAL' ? to : null, from, to, model: 'wan3', duration: 4, ratio: 'auto_1080p', audio: false, promptText: 'fixture', first: {file: {path: 'assets/anchors/x/anchor.png', sha256: 'a'.repeat(64)}}, purpose: 'fixture', dealer: 'paow', ...(speeds[id] ? {playbackSpeed: speeds[id]} : {})});
   const mine = [['c-in', 'IDLE', 'READY', 'ENTRY'], ['c-giv', 'READY', 'P4.C1', 'DEAL'], ['c-retur', 'P4.C1', 'READY', 'RETURN'], ['c-hem', 'P4.C1', 'IDLE', 'RETURN'], ['c-ut', 'READY', 'IDLE', 'RETURN'], ['c-vila', 'IDLE', 'IDLE', 'IDLE'],
     ['c-dealer', 'READY', 'D.C1', 'DEAL'], ['c-dealer-retur', 'D.C1', 'READY', 'RETURN'], ['c-dealer-hem', 'D.C1', 'IDLE', 'RETURN']];
   const hers = [['t-in', 'IDLE', 'READY-C', 'ENTRY'], ['t-giv', 'READY-C', 'P4.C1', 'DEAL'], ['t-retur', 'P4.C1', 'READY-C', 'RETURN'], ['t-ut', 'READY-C', 'IDLE', 'RETURN']];
@@ -242,7 +291,7 @@ test('spelet spelar kompositionen: trädens filmer med bryggan emellan, och vila
     receipts: Object.fromEntries(jobs.map(j => [j.id, {status: 'SUCCEEDED'}])), media: Object.fromEntries(jobs.map(j => [j.id, {video: `assets/motions/${j.id}/source.mp4`}]))};
   const cut = {trees: [{...tatuerad, share: 100, own: hers.map(j => j[0])}, {...casino, share: 0, own: mine.map(j => j[0])}], drop: [], bridges: [REST_BRIDGE], shares: {}, home: 'casino'};
   const graphs = Object.fromEntries(cut.trees.map(t => [t.tree, buildGraph(treeBank(bank, cut, t.tree) as never, {dealer: 'paow'})]));
-  type Part = {path: string; rest?: boolean};
+  type Part = {path: string; rest?: boolean; rate?: number; absoluteRate?: boolean};
   const parts: Part[][] = []; let end: () => void = () => {};
   const players = {play(list: Part[], options: {onPart?(i: number): void; onEnd?(): void} = {}) { parts.push(list); end = () => options.onEnd?.(); list.forEach((_, i) => options.onPart?.(i)); }, hurry() {}, preload() {}};
   const film = createFilm(players, graphs.casino, createLayout(defaultPlan()), async () => null, () => 0);
@@ -253,22 +302,50 @@ test('spelet spelar kompositionen: trädens filmer med bryggan emellan, och vila
     return {played: parts.slice(from).flat(), gaps: result.gaps}; };
   const s = createSession({balance: 1000, shoe: {mode: 'stacked', seed: 'komposition', cards: 'K♠ 7♦ 6♥ 10♣ 5♦'.split(' ').map(text => ({r: text.slice(0, -1), s: text.slice(-1)}))}});
   const dealt = s.command({op: 'start', bets: [{seat: 4, main: 10}], requestId: 'k1', expectedVersion: s.state().ver});
-  const {played, gaps} = await step(dealt), chain = played.filter(p => !p.rest).map(p => p.path.split('/').at(-2) === 'x' ? p.path.split('/').at(-1)! : p.path.split('/')[2]);
+  /** A part's film in a word: the take's id, or a bridge film's file name. */
+  const nameOf = (p: Part) => p.path.split('/').at(-2) === 'x' ? p.path.split('/').at(-1)! : p.path.split('/')[2];
+  return {film, deal: () => step(dealt), nameOf};
+}
+
+test('spelet spelar kompositionen: trädens filmer med bryggan emellan, och vilan i hemmaträdet', async () => {
+  const {film, deal, nameOf} = await tableGame();
+  const {played, gaps} = await deal(), chain = played.filter(p => !p.rest).map(nameOf);
   // Seat 4's two cards are Tatuerad's (the second with the seat's film), the dealer's two are lent by Casino (her second with
   // the film of her first, the game's stand-in); every change of tree goes over the bridge, and the chain ends in Casino's rest.
   const tattooed = ['dit.mp4', 't-in', 't-giv', 't-retur', 't-ut', 'hem.mp4'], lent = ['c-in', 'c-dealer', 'c-dealer-hem'];
   assert.deepEqual(chain, [...tattooed, ...lent, ...tattooed, ...lent]);
   assert.ok(played.at(-1)!.rest && played.at(-1)!.path.includes('c-vila'), 'efter kedjan vilar hon i hemmaträdets vilofilm');
   assert.deepEqual(gaps.filter(g => g.startsWith('Skarv') || g.includes('börjar på')), [], 'ingen skarv utan brygga');
+  assert.ok(played.every(p => p.rate === undefined), 'utan fart på film eller träd säger ingen del en fart: kön spelar rundans tempo');
   // With no composition the same player is as before: one graph, no bridges.
   film.compose(null); assert.equal(film.composing, false);
 });
 
+test('spelet spelar farten: trädets tempo och filmens egen fart på rundans filmer, vilan som filmad', async () => {
+  // Tatuerad has a tempo of its own (2×) and its deal a speed of its own (1,5×); Casino follows the round (1,5×), and its
+  // dealer film has a speed of its own (1,25×).
+  const {film, deal, nameOf} = await tableGame({'t-giv': 1.5, 'c-dealer': 1.25, 'c-vila': 2});
+  film.tempo = {round: () => 1.5, tree: tree => tree === 'tatuerad' ? 2 : null};
+  const {played} = await deal(), rateOf = (id: string) => { const p = played.find(x => nameOf(x) === id)!; return [p.rate, p.absoluteRate]; };
+  assert.deepEqual(rateOf('t-in'), [2, true], 'trädets tempo, sagt av delen själv');
+  assert.deepEqual(rateOf('t-giv'), [2, true], '1,5× på filmen gånger 2× i trädet stannar vid 2×');
+  assert.deepEqual(rateOf('c-dealer'), [1.875, true], 'filmens 1,25× gånger rundans 1,5×');
+  assert.deepEqual(rateOf('c-in'), [undefined, undefined], 'en film som filmad i ett träd utan eget tempo: kön lägger rundans tempo');
+  assert.deepEqual(rateOf('dit.mp4'), [undefined, undefined], 'en brygga följer rundans tempo');
+  const rest = played.at(-1)!;
+  assert.ok(rest.rest && rest.rate === undefined, 'vilan går som filmad, vad dess jobb än säger');
+});
+
 test('spelets ord ?komposition=: raden på sidan, och varför när den inte kan spelas', () => {
-  const cut = {schemaVersion: 1, dealer: 'paow', id: 'bada', name: 'Båda', trees: [{...casino}, {...tatuerad}], drop: [], bridges: [], shares: {}, home: 'casino', count: {have: 33, own: 22, total: 36}, looks: ['a1', 'a1t']};
+  const cut = {schemaVersion: 1, dealer: 'paow', id: 'bada', name: 'Båda', trees: [{...casino}, {...tatuerad, rest: 'a1'}], drop: [], bridges: [], shares: {}, home: 'casino', count: {have: 33, own: 22, total: 36}, looks: ['a1']};
   assert.deepEqual(compositionPlay(null, null, 'Paow'), {cut: null, line: null});
-  assert.equal(compositionPlay('bada', {status: 200, answer: cut}, 'Paow').line, 'Båda 33/36: kort utan film läggs utan hand · händerna skiljer mellan träden');
+  assert.equal(compositionPlay('bada', {status: 200, answer: cut}, 'Paow').line, 'Båda 33/36: kort utan film läggs utan hand');
   assert.equal(compositionPlay('bada', {status: 200, answer: cut}, 'Paow').cut, cut);
+  assert.equal(compositionPlay('bada', {status: 200, answer: {...cut, tempo: 1.5}}, 'Paow').line, 'Båda 33/36: kort utan film läggs utan hand · fart 1,5×');
+  // Trees with different hands are not played: the game plays as without the word, and the page says why.
+  const mixed = compositionPlay('bada', {status: 200, answer: {...cut, trees: [{...casino}, {...tatuerad}], looks: ['a1', 'a1t']}}, 'Paow');
+  assert.equal(mixed.cut, null);
+  assert.equal(mixed.line, 'Båda spelas inte: träden har olika händer (olika A1), och sådana sätts inte samman. Spelet spelar som vanligt, med alla hennes filmer.');
   assert.match(compositionPlay('finns-inte', {status: 404, answer: {error: 'x'}}, 'Paow').line!, /Paow har ingen komposition "finns-inte"/);
   assert.match(compositionPlay('Fel Ord', null, 'Paow').line!, /är ingen komposition/);
   assert.match(compositionPlay('bada', null, 'Paow').line!, /kunde inte läsas/);

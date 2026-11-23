@@ -50,6 +50,19 @@ export type FilmPlayers = {
 };
 export type Placed = {quad: Pt[]; back: boolean; target: string; shoeDraw: number; gloss: number};
 /**
+ * The rate a film of the round plays at: its own speed (the bank's playbackSpeed, take.speed; 1 is as filmed) times the round's
+ * tempo (the look's filmTempo, or a composition's: src/composition.ts tempoOf). The tempo never takes a film past RATE_MAX
+ * (Jakob 2026-11-23 asked for "1.5x eller 2x": a film at 2× in a round at 2× plays at 2×, not 4×); a film whose own speed is
+ * higher keeps its own.
+ */
+export const RATE_MAX = 2;
+export function filmRate(speed: number, tempo: number): number {
+  const own = Number.isFinite(speed) && speed > 0 ? speed : 1, round = Number.isFinite(tempo) && tempo > 1 ? tempo : 1;
+  return Math.max(own, Math.min(RATE_MAX, own * round));
+}
+/** The round's tempo as the page has it: round() the one the scene's queue plays with, tree(id) a tree's own in a composition (null: none). */
+export type RoundTempo = {round(): number; tree(tree: string): number | null};
+/**
  * The frame from which a turned card shows its face, by its track: the first face-up frame after the last face-down one (the edge-on
  * frames between them still hide it). Null without a track, or when the track never turns the card face up.
  */
@@ -155,6 +168,7 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
   let table: TableCards = {hands: [], dealer: []}, records: CardRecord[] = [], lying: number[] = [];
   let token = 0, resting: Take | null = null, carry: Carry = CARRY, words: CardWords = {}, calmOnly = false, heldRest: number | null = null; const played: string[] = [], tracks = new Map<string, Promise<CardTrack | null>>();
   let dealTempo = 1;
+  let tempo: RoundTempo | null = null; // the round's tempo, for a film with a speed of its own and a tree with a tempo of its own (filmRate)
   let mouths: () => Mouth[] = () => []; // the mouth patches the page has read and may lay now, asked for as a step begins
   const modelOf = (take: Take | null | undefined) => { const model = filmModel(take, graph.takes); return model ? {model} : {}; };
   const trackOf = (take: Take | null) => { const path = take?.media.track; if (!path) return Promise.resolve(null); let hit = tracks.get(path); if (!hit) { hit = readJson(path).then(cardTrackOrNull, () => null); tracks.set(path, hit); } return hit; };
@@ -255,7 +269,7 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
    * that tree's own round, the runs joined with their bridges (composer.weave), a film chosen by its share where the
    * composition sets one, and each tree's films resolved on its own graph. Null: the table does not know a card (planBeats says which).
    */
-  function composed(nextTable: TableCards, signals: FilmSignal[], standIn: Readonly<Record<string, string>>): {beats: Beat[]; resolved: Segment[]; bridges: WovenBridge[]; breaks: string[]} | null {
+  function composed(nextTable: TableCards, signals: FilmSignal[], standIn: Readonly<Record<string, string>>): {beats: Beat[]; tree: string[]; resolved: Segment[]; bridges: WovenBridge[]; breaks: string[]} | null {
     const {composer, graphs} = composing!, home = composer.home!;
     const moves = signals.filter(s => (s.type === 'deal' || s.type === 'reveal') && typeof s.shoeDraw === 'number'), slots = moves.map(m => slotOf(nextTable, m.shoeDraw!));
     if (slots.some(slot => !slot)) return null;
@@ -281,7 +295,7 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
       let j = k; const tree = woven.tree[filmed[k]]; while (j < filmed.length && woven.tree[filmed[j]] === tree) j++;
       resolved.push(...resolveRound(graphs[tree], filmed.slice(k, j).map(i => beats[i].step!), {places})); k = j;
     }
-    return {beats, resolved, bridges: woven.bridges, breaks: woven.breaks};
+    return {beats, tree: woven.tree, resolved, bridges: woven.bridges, breaks: woven.breaks};
   }
   /** A talk film as a part of the queue: the whole film, at rest, with the cards lying as they lie, and with sound. */
   function talkPart(clip: string): FilmPart | null {
@@ -333,7 +347,11 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
       // the hole card's turn lands (its value and the dealer's total are shown) when its face shows in the film, not when the film ends
       const face = beat.kind === 'REVEAL' ? faceFrame(loaded[i]) : null;
       shows.push(face !== null && (s.end === null || face < s.end) ? Math.max(face, s.start) : null);
-      parts.push({path: s.video, start: s.start, end: s.end, track: loaded[i], cards, frame: frameOf(s.take), ...fpsOf(s.take), ...modelOf(s.take)}); });
+      // The film's own speed, and a tree's own tempo: the part then says its whole rate itself (the queue's tempo is not laid on
+      // top of it). A film as filmed in a tree without a tempo says nothing, and the queue plays it at the round's tempo.
+      const speed = s.take?.speed ?? 1, own = plan && tempo ? tempo.tree(plan.tree[i]) : null;
+      const pace = tempo && (speed !== 1 || own !== null) ? {rate: filmRate(speed, own ?? tempo.round()), absoluteRate: true} : !tempo && speed !== 1 ? {rate: speed} : {};
+      parts.push({path: s.video, start: s.start, end: s.end, track: loaded[i], cards, frame: frameOf(s.take), ...fpsOf(s.take), ...modelOf(s.take), ...pace}); });
     bridgesBefore(beats.length);
     let done = 0; // beats landed so far, in order
     const land = (upTo: number) => { for (; done < upTo; done++) { const beat = beats[done]; if (beat.own && beat.kind !== 'DEAL' && !lying.includes(beat.own.shoeDraw)) lying = [...lying, beat.own.shoeDraw]; landed(beat, done); } };
@@ -431,6 +449,12 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     /** A trial rate for silent deals and returns from the next step on. */
     set dealTempo(next: number) { dealTempo = Number.isFinite(next) ? Math.max(1, Math.min(1.15, next)) : 1; },
     get dealTempo() { return dealTempo; },
+    /**
+     * The round's tempo from the next step on (RoundTempo; the page's): a film with a speed of its own plays at filmRate, and so
+     * does every film of a tree with a tempo of its own. Rest and talk films are not the round's and keep their speed. Null (as
+     * before the page has said it): a film's own speed is handed to the queue as it is.
+     */
+    set tempo(next: RoundTempo | null) { tempo = next; },
     /** The mouth patches that may be laid on a step's films, asked for as each step begins (the page's, read and ready). */
     set mouths(next: () => Mouth[]) { mouths = next; },
     /** Another dealer's films from now on (she has come to the table); rest goes on with hers. */

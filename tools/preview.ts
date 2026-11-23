@@ -191,6 +191,7 @@ if(has('--restart')){
    if(await handleDollLab(req,res,url))return; // Docklabbet (dealer3d/page/server.ts): /dealer3d/docka, its modules and motions, and the saved standards in dealer3d/standard/.
    if(url.pathname==='/api/trees'){await (await import('./dealer-tree.ts')).serveTrees(req,res,url);return;} // Karta's trees: nodes, 36 steps and number per tree (tools/dealer-tree.ts)
    if(url.pathname==='/api/compositions'){await (await import('./dealer-composition.ts')).serveCompositions(req,res,url,origin);return;} // Karta's compositions: several trees put together, read, saved and removed (tools/dealer-composition.ts)
+   if(url.pathname==='/api/clip-speed'){await (await import('./clip-speed.ts')).serveClipSpeed(req,res,origin);return;} // a film's own speed, set in Karta (tools/clip-speed.ts)
    if(url.pathname==='/api/placements'){
     res.setHeader('Content-Type','application/json; charset=utf-8');
     if(req.method==='GET'){res.end(JSON.stringify(await placements.load()));return;}

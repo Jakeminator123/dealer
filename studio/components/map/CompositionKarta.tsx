@@ -8,16 +8,26 @@
 // step's own film "Beställ till <träd>" (Bordet's guide Ny film on that tree and step, lib/new-film.ts guideHref). Spara writes
 // data/dealer-compositions.json through the lab (tools/dealer-composition.ts); Prova i Casino plays the saved composition
 // (?komposition=<id>). The rules, and the words, are src/composition.ts; this file only draws them.
+// Only trees with the same hands (the same A1) are put together (Jakob 2026-11-23, for now): a tree with other hands than the
+// composition's first is shown grey with the reason, and a saved composition of that kind says "spelas inte: olika händer",
+// with Spara and Prova i Casino off. Fart (1× to 2×) is the composition's tempo, saved with it: the round's films go that
+// many times faster in the Casino, rest and speech as filmed; a tree may have one of its own.
 // The address: /karta/?komposition=<id> (ny: a new one).
-import { ArrowLeftRight, CornerDownRight, Hand, Play, Repeat, Save, Trash2 } from "lucide-react";
+import { ArrowLeftRight, CornerDownRight, Gauge, Hand, Play, Repeat, Save, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { buildGraph, type Graph } from "../../../src/clip-graph.ts";
 import {
+  HANDS_WORD,
+  TEMPO_CHOICES,
   checkComposition,
   compositionView,
   compositionWord,
+  handsOf,
+  handsProblem,
   linkOf,
+  tempoValue,
+  tempoWord,
   type BridgeDef,
   type CompositionAnswer,
   type CompositionDef,
@@ -29,7 +39,7 @@ import {
 import { nodeCode, type StepKind, type TreeAnswer } from "../../../src/dealer-trees.ts";
 import { Page } from "@/components/shell";
 import { TakeThumb } from "@/components/takes";
-import { Button, EmptyState, Select, Skeleton, Slider, Switch, buttonClasses, cn, useToast } from "@/components/ui";
+import { Button, EmptyState, SegmentedControl, Select, Skeleton, Slider, Switch, buttonClasses, cn, useToast } from "@/components/ui";
 import { useBank } from "@/lib/bank";
 import type { EntryAnswer } from "@/lib/media";
 import { guideHref } from "@/lib/new-film";
@@ -83,16 +93,16 @@ export function CompositionKarta({ answer, id, set }: { answer: TreeAnswer; id: 
 }
 
 // ── The editor ──────────────────────────────────────────────────────────────
-/** A new composition: the tree with rest films and the next one, 80 and 20, meeting where a saved composition already has a bridge film. */
-function firstDraft(got: CompositionAnswer, films: ReadonlyMap<string, BridgeDef>): CompositionDef {
-  const [first, second] = [...got.trees].sort((a, b) => Number(b.restFilms) - Number(a.restFilms));
-  const trees = [first, second].filter(Boolean).map((t, i) => ({ tree: t.tree, share: i ? 20 : 80 }));
-  const bridge = first?.rest && second?.rest ? films.get(pairKey(first.rest, second.rest)) : undefined;
-  // A name no saved composition has, so that a new one can be saved as it stands.
-  const base = [first, second].filter(Boolean).map((t) => t.name).join(" + "), names = new Set(got.compositions.map((c) => c.def.name));
+/** A new composition: the tree with rest films, and with it the next tree that has the same hands (80 and 20), else that tree alone. */
+function firstDraft(got: CompositionAnswer): CompositionDef {
+  const sorted = [...got.trees].sort((a, b) => Number(b.restFilms) - Number(a.restFilms));
+  const picked = sorted.slice(0, 1).concat(sorted.slice(1).filter((t) => handsOf(t) === handsOf(sorted[0])).slice(0, 1));
+  const trees = picked.map((t, i) => ({ tree: t.tree, share: picked.length === 1 ? 100 : i ? 20 : 80 }));
+  // A name no saved composition or tree has, so that a new one can be saved as it stands.
+  const base = picked.map((t) => t.name).join(" + "), names = new Set([...got.compositions.map((c) => c.def.name), ...got.trees.map((t) => t.name)]);
   let name = base;
   for (let n = 2; names.has(name); n++) name = `${base} ${n}`;
-  return { id: "", name, trees, ...(bridge ? { bridges: [bridge] } : {}) };
+  return { id: "", name, trees };
 }
 
 function Editor({ trees, got, saved, graph, dealer, set, reload }: { trees: TreeAnswer; got: CompositionAnswer; saved: CompositionView | null; graph: Graph | null; dealer: string; set: Set; reload: () => void }) {
@@ -100,14 +110,17 @@ function Editor({ trees, got, saved, graph, dealer, set, reload }: { trees: Tree
   const media = useMedia();
   // The bridge films the dealer's saved compositions already use, by the two pictures: what "Brygga" can choose.
   const films = useMemo(() => new Map(got.compositions.flatMap((c) => c.def.bridges ?? []).filter((b) => b.ab || b.ba).map((b) => [pairKey(b.a, b.b), b] as const)), [got]);
-  const [draft, setDraft] = useState<CompositionDef>(() => saved?.def ?? firstDraft(got, films));
+  const [draft, setDraft] = useState<CompositionDef>(() => saved?.def ?? firstDraft(got));
   const [stepKey, setStepKey] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const taken = useMemo(() => new Set([...trees.trees.map((v) => v.tree.id), ...got.compositions.map((c) => c.def.id), NEW_COMPOSITION]), [trees, got]);
   const id = saved ? saved.def.id : slug(draft.name);
   const def: CompositionDef = { ...draft, id };
   const view = useMemo(() => compositionView({ ...draft, id: id || NEW_COMPOSITION }, trees.trees, got.takes), [draft, id, trees, got]);
-  const problems = [...checkComposition(def, trees.trees.map((v) => v.tree.id)), ...(!saved && taken.has(id) ? [`"${id}" finns redan: välj ett annat namn.`] : [])];
+  // Trees with different hands are not put together (src/composition.ts handsProblem): the reason, and what the others are held against.
+  const blocked = handsProblem(view);
+  const firstTree = got.trees.find((t) => t.tree === view.trees[0]?.tree) ?? null;
+  const problems = [...checkComposition(def, trees.trees.map((v) => v.tree.id)), ...(!saved && taken.has(id) ? [`"${id}" finns redan: välj ett annat namn.`] : []), ...(blocked ? [blocked] : [])];
   const dirty = !saved || JSON.stringify(saved.def) !== JSON.stringify(def);
   const colorOf = (tree: string) => TREE_COLORS[Math.max(0, got.trees.findIndex((t) => t.tree === tree)) % TREE_COLORS.length];
   const nameOf = (tree: string) => got.trees.find((t) => t.tree === tree)?.name ?? tree;
@@ -131,6 +144,17 @@ function Editor({ trees, got, saved, graph, dealer, set, reload }: { trees: Tree
       const next: CompositionDef = { ...d, bridges };
       if (!bridges.length) delete next.bridges;
       return next;
+    });
+  // The tempo of the composition (tree null) or of one tree in it. Off (1× on the composition, "som kompositionen" on a tree): the field is left out.
+  const setTempo = (tree: string | null, tempo: number | null) =>
+    setDraft((d) => {
+      const put = <T extends { tempo?: number }>(of: T): T => {
+        const next = { ...of };
+        if (tempo === null) delete next.tempo;
+        else next.tempo = tempo;
+        return next;
+      };
+      return tree === null ? put(d) : { ...d, trees: d.trees.map((t) => (t.tree === tree ? put(t) : t)) };
     });
   // A film's share among its step's films. The first share set on a step gives the rest to the step's best film, so 20 on a variant is 80/20.
   const setFilm = (part: CoverPart, film: string, share: number) =>
@@ -190,8 +214,10 @@ function Editor({ trees, got, saved, graph, dealer, set, reload }: { trees: Tree
           {got.trees.map((t) => {
             const mine = draft.trees.find((x) => x.tree === t.tree);
             const shown = view.trees.find((x) => x.tree === t.tree);
+            // Other hands than the composition's first tree: not offered, and said (a saved one that has it can only turn it off).
+            const other = !!firstTree && firstTree.tree !== t.tree && handsOf(t) !== handsOf(firstTree);
             return (
-              <div key={t.tree} className={cn("rounded-lg border p-3 transition-opacity", mine ? "border-line-strong bg-surface" : "border-line opacity-60")}>
+              <div key={t.tree} className={cn("rounded-lg border p-3 transition-opacity", mine ? (other ? "border-underkand/60 bg-surface" : "border-line-strong bg-surface") : other ? "border-line opacity-45" : "border-line opacity-60")}>
                 <div className="flex items-center gap-2.5">
                   <Still entry={t.rest ? media.get(t.rest) : undefined} code="A1" />
                   <Still entry={t.shoe ? media.get(t.shoe) : undefined} code={nodeCode(t.hub)} />
@@ -204,8 +230,13 @@ function Editor({ trees, got, saved, graph, dealer, set, reload }: { trees: Tree
                       {t.have}/36{view.home === t.tree ? " · vilar här" : ""}
                     </div>
                   </div>
-                  <Switch size="sm" checked={!!mine} onChange={(on) => setShare(t.tree, on ? (draft.trees.length ? 20 : 100) : null)} aria-label={`${t.name} med i kompositionen`} />
+                  <Switch size="sm" checked={!!mine} disabled={other && !mine} onChange={(on) => setShare(t.tree, on ? (draft.trees.length ? 20 : 100) : null)} aria-label={`${t.name} med i kompositionen`} />
                 </div>
+                {other ? (
+                  <div className={cn("mt-2 text-xs", mine ? "text-[#ef8b8b]" : "text-dim")}>
+                    Andra händer än {firstTree!.name} (annan A1): sätts inte samman{mine ? ". Stäng av det ena trädet." : ""}
+                  </div>
+                ) : null}
                 {mine ? (
                   <Slider
                     className="mt-2.5"
@@ -216,6 +247,16 @@ function Editor({ trees, got, saved, graph, dealer, set, reload }: { trees: Tree
                     max={100}
                     step={5}
                     format={() => (shown ? percentWord(shown.percent) : "")}
+                  />
+                ) : null}
+                {mine && draft.trees.length > 1 ? (
+                  <Select
+                    size="sm"
+                    className="mt-2"
+                    aria-label={`Fart för ${t.name}`}
+                    value={tempoValue(mine.tempo) === null ? "som" : String(tempoValue(mine.tempo))}
+                    onChange={(v) => setTempo(t.tree, v === "som" ? null : Number(v))}
+                    options={[{ value: "som", label: "Fart: som kompositionen" }, ...TEMPO_CHOICES.map((c) => ({ value: String(c), label: `Fart ${tempoWord(c)}` }))]}
                   />
                 ) : null}
               </div>
@@ -233,17 +274,28 @@ function Editor({ trees, got, saved, graph, dealer, set, reload }: { trees: Tree
           </div>
         ))}
 
-        {view.looks.length > 1 ? (
-          <div className="flex items-center gap-2.5 rounded-lg border border-anmarkning/60 bg-anmarkning/10 p-3 text-sm text-ink">
-            <Hand className="size-4 shrink-0 text-anmarkning" />
-            <span className="min-w-0 flex-1">Händerna skiljer mellan träden i samma runda</span>
+        {blocked ? (
+          <div role="alert" className="flex items-start gap-2.5 rounded-lg border border-underkand/60 bg-underkand/10 p-3 text-sm text-ink">
+            <Hand className="mt-0.5 size-4 shrink-0 text-underkand" />
+            <span className="min-w-0 flex-1">
+              <span className="block font-medium first-letter:uppercase">{HANDS_WORD}</span>
+              <span className="mt-0.5 block text-xs text-dim">{blocked}</span>
+            </span>
             <span className="flex shrink-0 gap-1">
               {view.looks.map((entry) => (
-                <Still key={entry} entry={media.get(entry)} code="" />
+                <Still key={entry} entry={media.get(entry)} code="A1" />
               ))}
             </span>
           </div>
         ) : null}
+
+        <div className="flex items-center gap-2.5 rounded-lg border border-line bg-surface p-3" title="Rundans filmer går så många gånger fortare i Casinot. Vila och tal går som filmat. 1× är som utseendet säger (Givarnas tempo i Scen).">
+          <Gauge className="size-4 shrink-0 text-dim" />
+          <span className="min-w-0 flex-1 text-sm text-ink">
+            Fart <span className="text-xs text-dim">· när hon delar ut</span>
+          </span>
+          <SegmentedControl size="sm" label="Kompositionens fart" value={tempoValue(draft.tempo) ?? 1} onChange={(v) => setTempo(null, v === 1 ? null : v)} options={TEMPO_CHOICES.map((c) => ({ value: c, label: tempoWord(c) }))} />
+        </div>
 
         <div className="flex items-end gap-3">
           <div>
@@ -257,7 +309,11 @@ function Editor({ trees, got, saved, graph, dealer, set, reload }: { trees: Tree
             </Button>
           </div>
         </div>
-        {saved && !dirty ? (
+        {blocked ? (
+          <Button variant="secondary" icon={<Play />} disabled title={blocked}>
+            Prova i Casino
+          </Button>
+        ) : saved && !dirty ? (
           <Link href={compositionHref(dealer, saved.def.id)} className={buttonClasses({ variant: "secondary" })} title={`Spela ${saved.def.name} i Casinot`}>
             <Play /> Prova i Casino
           </Link>

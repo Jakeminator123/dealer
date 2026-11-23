@@ -82,7 +82,8 @@ const treeRead = treeWord === null ? null : Promise.all([fetch(`api/trees?dealer
 // Several trees put together (?komposition=<id>, Karta's Komposition; Jakob 2026-11-23): each tree plays its own films from its
 // own anchors, a share says how often each is chosen, and where two trees meet a bridge is played (src/composition.ts, from
 // GET /api/compositions?dealer=<id>&komposition=<id>, tools/dealer-composition.ts). The lab's only: the word is read when it is
-// there, ?trad= goes first, and a composition that cannot be read is said on the page while the game plays as without the word.
+// there, ?trad= goes first, and a composition that cannot be read, or whose trees have different hands (Jakob 2026-11-23: such
+// trees are not put together), is said on the page while the game plays as without the word.
 const compositionWord = treeWord === null ? query.get('komposition') : null;
 const compositionRead = compositionWord === null ? null : Promise.all([fetch(`api/compositions?dealer=${encodeURIComponent(dealer)}&komposition=${encodeURIComponent(compositionWord)}`).then(async res => ({status: res.status, answer: await res.json().catch(() => null)}), () => null),
   import('./composition.ts').catch(() => null)]);
@@ -188,6 +189,13 @@ const film = createFilm(scene.players as unknown as FilmPlayers, graph, layout, 
 // A composition: each of its trees as a graph of its own (the home tree's is the page's own), and the composer that chooses among them.
 if (composition.cut && compositionCode && homeTree) { const cut = composition.cut;
   film.compose({composer: compositionCode.createComposer(cut), graphs: Object.fromEntries(cut.trees.map(t => [t.tree, t.tree === homeTree ? graph : buildGraph(judgedBank(compositionCode.treeBank(bank, cut, t.tree)), {dealer})]))}); }
+// The round's tempo (Jakob 2026-11-23: "spela upp dealerklipp i 1.5x eller 2x ... sparas i en komposition"): the composition's
+// goes before the look's key filmTempo, and is set as that key, so the scene's queue plays the round's films with it
+// (players.tempo; rest and speech keep their speed). A tree's own tempo, and a film's own speed (the bank's playbackSpeed),
+// are laid on its films by the film player (src/game-film.ts filmRate: speed times tempo, the tempo never past 2×).
+{ const cut = composition.cut, code = compositionCode;
+  if (cut && code) scene.set({filmTempo: code.tempoOf(cut, null, scene.state.filmTempo)});
+  film.tempo = {round: () => scene.state.filmTempo, tree: id => cut && code && cut.trees.some(t => t.tree === id && t.tempo !== undefined) ? code.tempoOf(cut, id, scene.state.filmTempo) : null}; }
 // A bounded local A/B trial for silent card moves; speech and idle keep their own timing.
 if (query.has('dealTempo')) film.dealTempo = Number(query.get('dealTempo'));
 film.calm = introOn; // under the film before the game she only rests calmly: the film ends with her at rest
