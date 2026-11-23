@@ -25,7 +25,7 @@ slaskdisken.
   hennes filmer (38 cm bakom bordskanten, egna armbågar och händer); `?docka=paow`, `shoot.ts --doll paow`. Jakob
   2026-11-23 om vändningen vid platsen: "Bättre, men inte än", vänsterarmen ser fel ut mot skon. Mätt: armen ligger
   rätt, scenens sko står fel mot bildens (**Vänsterarmen vid skon**); skon rättas sist, i `src/table-lens.ts`. Hans
-  önskan om en naturligare standard (handbytet, fingrarna mot kortet, reglagen): påbörjad, **Naturlig ställning**.
+  naturligare standard: i docklabbet som valet Naturlig (Som förut kvar), ej sedd av honom; **Naturlig ställning**.
 - **Provet en giv, två stolar** (2026-11-20, Jakobs "Ja kör" i Beslut; prov `3d-prov-en-giv-tva-stolar-20261120`; hans
   "ja" på kortet samma dag, och 2026-11-21 "SAM-dockan ska in, men inte nu" i BESKED): given till plats 4 med ett 3D-kort från stol 4 och stol 1. SAM 3D Body över filmen
   `paow-giv-2-3-p4-h24-cykel-02-01` (varannan ruta) ser ut som en människa som ger från båda stolarna (underagentens
@@ -295,46 +295,45 @@ fingrar ska sitta som hennes innan dockan används.
   fingertopparna (rättas med skon), övriga platser, och fingrarnas grepp i vändningen (mätt i rörelsen: bara
   pekfingertoppen ligger på kortet, tummens topp är 21–25 mm ifrån och fingrarna håller samma form hela vägen; hon
   nyper kortets hörn mellan tumme och pekfinger).
-- **Naturlig ställning (påbörjad 2026-11-23; inte inkopplad, inte sedd av Jakob).** Hans ord i docklabbet samma dag:
+- **Naturlig ställning (inkopplad i docklabbet 2026-11-23; sedd i headless, inte av Jakob).** Hans ord samma dag:
   "vissa aningen konstiga ställningar görs lite naturligare som standard", fingrarna ska visa hur de påverkar kortet,
-  händerna är "ihoptrasslade" vid handbytet; för Paow. **Handbytet**: `Pace.leftFeed` {along, across} (var vänsterns
-  fingertoppar ligger på kortet i rullgivarna -f, där svepets `shared.along/across` inte gäller) och `Pace.leftArc`
-  (vänsterhandens båge tillbaka till skon, vektor gånger sin πu) i `src/two-hand.ts`; bara när ett recept anger dem,
-  annars samma rörelse (`page/lab.test.ts` grön). Värdena står i `NATURAL.change` i `src/natural.ts`: svep `shared`
-  along 0,035, across −0,035, arc [0,04, 0,12, −0,06]; rull (D.C1, D.C3, P6.C1, P7.C1) leftFeed {−0,026, 0}, leftArc
-  [0,04, 0,08, −0,04]. Mätt på paow: händernas minsta avstånd förut −16 till 2 mm (i varandra på 13 av 15 platser),
-  efter minst 16 mm (svep 16–22, rull 25–42). P5:s svep till P6.C1 går (16 mm, lutning 20°); till P7 når armen inte.
-  **`src/natural.ts`** (ren, inget importerar den än): `naturalPace(pace)` ger receptets flaggor med handbytet ovan;
-  `natural(lens, motion, doll, steer)` tar en rörelse som redan är lagd på dockan (`page/pose-on-doll.ts`) och ger
-  `{motion, receipt}`. `steer`: `body` [sida, vridning, framåt] grader ovanpå givens, `shoulderR`/`shoulderL` [upp,
-  fram] cm, `elbowOut` [höger, vänster] grader, `follow` och `pinch` (på om inte false). Steg: högerhanden (pekfingret
-  på kortets yta, tummen mot kanten dess bas är bortom, handen upp till 25 mm djupare över kortet och lyft där tummen
-  inte når, aldrig närmare vänsterhanden än 12 mm; ring- och lillfinger böjs efter fas); kroppen (styrningen så långt
-  båda armarna når, andelen `bodyShare` i kvittot, aldrig "Går inte"; axeln följer armen, fram högst 3 cm, upp 1,2 cm);
-  armbågen (vrids högst 0,5 rad om axel–handled till lägsta kostnad: handledens böjning, armen i bålen, under filten,
-  avstånd från hennes pol; jämnad över 3 rutor). Första rutan är A2.3; sista är givens egen när inget styrs (det som
-  läggs till av sig självt tonar ut medan kortet ligger stilla, från beat h). Också `handsApart`, `touching` (vilka
-  fingertoppar rör kortet och var), `throughCard`. Mätt med allt: händerna minst 10 mm (P1–P4 13–14, P5 och P6.C2 10);
-  högerarmen i bålen vid handbytet P5.C1 8 → 0 mm; handleden P1–P3 64–67° → 44–48°, P5 78 → 75°; ben genom kortet
-  12–18 → 10–12 per film; första och sista rutan och kortets plats lika på alla 15.
-  **Inkoppling (inte gjord)**: `page/lay.ts` får ett val som kör `naturalPace`; `page/docka.ts` ett val "Naturlig"
-  (standard) och "Som förut" (dagens väg, kvar tills Jakob säger ja): Naturlig lägger utan `steer.body`, kör
-  `poseOnDoll` och sedan `natural` med `body` = reglaget − `lab.bodyAsked`. Nya reglage under Kroppen, `touching`
-  ritat i `page/lab-stage.ts` (tydligast i Nära kortet). Hans sparade standard laddas som förut; nya fält under nytt namn.
-  **Mätskripten** i `.runtime/docka-naturlig/`: `lib.ts` (gemensamt), `alla.ts` (läget före), `svep2.ts` och `rull.ts`
-  (handbytets värden), `lan.ts` (lånat recept), `detalj.ts` (närmaste ben per ruta), `nat.ts` (före och efter, alla
-  platser och mått), `nat-fr.ts` (kvittot per ruta), `grip.ts` (fingertoppar på kortet), `kors.ts` (ben genom kortet).
-  **Gör inte om**: tummen under kortet mitt emot pekfingret (tummen är kortare, och djupare grepp flyttar målet med
-  handen); tummen runt kanten (`chainTo` böjer bara i tummens plan, så T2–T3 går genom kortet); djupare grepp utan lyft
-  (pekfingret genom kortet); armbågen med tak 1,2 rad (gick i taket: sidböjningen i slutbilden rätas inte av armbågen).
-  **Tummen 30–57 mm ifrån** (skattat, inte utrett ruta för ruta): i rutorna där greppet tonar in och ut (`held` under 1)
-  mäts mot hela målet fast tummen bara gått en del av vägen, och i rullgivarna, där kortet rullas och kanten byter sida.
-  **Kvar, i ordning**: tummen genom in- och uttoningen; inkopplingen; reglagen; markeringarna; inbäddat läge (studions
-  `/studio/docka/` ramar in `/dealer3d/docka`: storlek efter ramen, nycklar i adressen); mått mot den gemensamma källan
-  och "ihoptryckt" (dukens format i ram, Filmens kamera mot studions lins, dockans mått); kontraktstester; prov i
-  `assets/proofs/docka-paow-naturlig-20261123/`; sist skon i `src/table-lens.ts` som egen ändring (förslaget ovan),
-  med `tools/table-lens.test.ts` och `tools/placements.test.ts`. **Ramen**: ankarna och slutbilden som i dag, lagrade
-  rörelser och `dealer3d/standard/` orörda, inga filmer ändras, samma standard som allt övrigt, skon sist.
+  händerna är "ihoptrasslade" vid handbytet; för Paow. **I labbet**: valet Rörelse, **Naturlig** (förval för Paow) och
+  **Som förut** (kvar tills han säger ja; Standarddockan har bara den). Som förut orörd visar den lagrade given själv där
+  receptets fil är en giv till just den platsen (9 av 15), annars läggs den som förut. Hans sparade standard spelas som
+  han sparade den i båda valen; sparad i Naturlig får den fältet `lab.naturlig` {knobs, bodyShare}. Under Kroppen, bara
+  i Naturlig: Höger/Vänster axel upp och fram (cm), Höger/Vänster armbåge ut (°); kroppens reglage går där aldrig till
+  "Går inte", texten säger i stället "kroppen tar X % av styrningen". Med Leder på eller i Nära kortet: en ring på
+  kortet där varje fingertopp rör det (varm höger, kall vänster) och en rad i bilden om vilka fingrar och var (i hörnet,
+  vid kanten, mitt på). **Koden**: `page/docka.ts` och `docka.html`; `page/natural-lab.ts` (`layNatural`,
+  `moveNatural`, `storedFits`); `page/lay.ts` `natural: true` kör `naturalPace`; `page/lab-stage.ts` `setGrips`,
+  `touching`; `src/natural.ts` (handbytet i `NATURAL.change`, greppet, kroppen, armbågen; kvitto per ruta).
+  **Mätt på paow** (före → efter): händernas minsta avstånd −16 till 2 mm → 11–14 mm (rull 24–42); tummen mot kortet
+  medan pekfingret ligger på, svep P1–P4 39–40 → 2,7–3,4 mm (över 3 mm på 0–1 av 47 rutor, förut 40–41), P5.C1, P5.C2,
+  P6.C2 37 → 8 mm (taket är händernas 12 mm); ben genom kortet 13–19 → 12; handleden P1–P3 64–67° → 44–48°, P5 78 →
+  75°. Första och sista rutan och kortets plats lika på alla 15; alla 15 går orörda och med reglagen i ändlägena.
+  Kroppens reglage verkar åt samma håll och i samma takt som förut (in från beat b till g).
+  **Hans P5.C1** (`standard/paow-p5c1.json`, Som förut, greppets vinkel −30°, kroppen [4,6, 4,5, 5,5]): händerna −16
+  mm (i varandra), tummen 44 mm, ben genom kortet 26, handleden 57°. Naturlig orörd: 11 mm, 8 mm, 12, 75°, och
+  handleden 10 cm ifrån hans mitt i given. Naturlig med hans reglage: −13 mm, 23 mm, 14, 48°. Hans standard vinner där
+  den finns; hans −30° ger lägre handled men låter händerna mötas också i Naturlig.
+  **Mätskripten** i `.runtime/docka-naturlig/` (`lib.ts`, `nat.ts`, `grip.ts` m.fl.) och `v2/`: `tumme.ts` (tummen
+  per plats), `sidan.ts` (sidans väg och hans P5.C1), `titt.ts` (headless-titten under låset, egen port 4393).
+  **Gör inte om**: tummen under kortet mitt emot pekfingret; tummen runt kanten (`chainTo` böjer bara i tummens plan);
+  djupare grepp utan lyft (pekfingret genom kortet); armbågen med tak 1,2 rad.
+  **Kvar, i ordning**: (1) Jakob 2026-11-23: "Kan du sätta 2 sekunder som standard kanske för att spela upp en giv til
+  len spelare i stället för 3 sekunder som standard? men aknske så man kan göra detta valbart också i "Docka"." Ett val
+  2 s/3 s, 2 s förval; sparade standarder som sparade. Tempo går i dag högst till 100 % för svepen, så 2 s (150 %)
+  prövas först; filmmodellens kortaste film är 3 s, så vad en 2 s referensfilm gör med en beställning prövas innan en
+  sådan görs. (2) Ramen i studion: sidan efter ramens storlek, duken i filmens format (inte påbörjad). (3) Tummen i
+  rullgivarna (D.C1, D.C3, P6.C1, P7.C1: ringgrepp, pekfingret rör kortet av och på). (4) Vändningen: om plats 7, kort
+  1 vid 0,96 s "kortet vänds ju itne på ett naturligt sätt" (lugnt nu: mall 14 säger att dockan är en grund för
+  rörelsen, inte för kortets vändning). (5) Inbäddat läge, kontraktstester, prov i `assets/proofs/`; `NATURAL.change`
+  mäts om när fingertopparna och skon är rättade, sist skon i `src/table-lens.ts`. Labbets kamera är 1764 × 1174
+  (FILM), kortplanen och dockans stillbild 1762 × 1174. För framtiden: A2.2, "kan man inte typ för just "A2.2" skapa
+  dockans possition utifrån fotot/ankaret 2.2). Sedan utifrån denna så kanske man själv kan sttälla in röreslsen geom
+  olika val."; och dockan tar över Siluetten i Scen & Bord: "där fins ju alla val typ ändå för handvrisningar och så
+  vidare, men bara att dessa måste sättas samman med dockan på ett bra sätt." **Ramen**: ankarna och slutbilden som i
+  dag, lagrade rörelser och `dealer3d/standard/` orörda, inga filmer ändras.
 - **Kedja paow-filmer**: ingångsfilmen till A2.3 (`data/till-ankare-2-3-c.json`) är standarddockans. `doll-pose.ts`
   på den börjar i hennes vila och slutar där paow-givarna börjar (armbågar och handleder 0,0 mm isär, prövat
   2026-11-23), men ingen film är gjord av den.

@@ -16,6 +16,7 @@ import {standing} from '../src/body.ts';
 import {sideSeen} from '../src/deal.ts';
 import {REAL_DEAL, type RealCard} from '../src/real-deal.ts';
 import {TWO_HAND, contactGripFits, shoeHolds, startOnAnchor, twoHandDeal, type Limb, type Pace, type Still} from '../src/two-hand.ts';
+import {naturalPace} from '../src/natural.ts';
 
 export const FPS = 30;
 const BEATS = ['b', 'c', 'd', 'e', 'l', 'f', 'g', 'h'] as const;
@@ -71,8 +72,10 @@ const r4 = (v: number[]) => v.map(x => Math.round(x * 10000) / 10000), r1 = (x: 
  * on its last frame). Throws where two-hand.ts does: a hand out of reach, a turn with too few frames.
  * `lab`: what the lab shows beside the film: the body she has at the place when nothing steers it (degrees, [sideways,
  * the right shoulder forward, forward], as two-hand.ts works it out from the reach), and the recipe and steering themselves.
+ * `natural`: the hands hand the card over without meeting (dealer3d/src/natural.ts `naturalPace`, the doll lab's
+ * "Naturlig"); without it the recipe lays the deal it always laid.
  */
-export function layDeal(input: {plan: Plan; target: string; recipe: Recipe; pose: PoseFilm; steer?: Steer}) {
+export function layDeal(input: {plan: Plan; target: string; recipe: Recipe; pose: PoseFilm; steer?: Steer; natural?: boolean}) {
   const {plan, target, recipe, pose} = input, steer = input.steer ?? NO_STEER, lens = TABLE_LENS;
   const all = spots(plan, lens), spot = all.find(s => s.id === target); if (!spot) throw Error(`The plan has no place ${target}.`);
   const {frames: N, beats: own} = steered(recipe, steer), mode = recipe.pace.contactGrip;
@@ -81,7 +84,8 @@ export function layDeal(input: {plan: Plan; target: string; recipe: Recipe; pose
   // The film's own moments in place of the real card's; her left hand goes back to the shoe as much slower as the film is (the tool's `paced`).
   const r = realOf(target), [b, c, d, e, l, f, g, h] = own.map(x => x / FPS), slower = (h - b) / (Math.max(r.h, r.g + TWO_HAND.settle) - r.b);
   const real: RealCard = {...r, a: 0, b, c, d, e, l, f, g, h, i: h + 0.2};
-  const pace: Pace = {...recipe.pace, flowing: true, leftBack: Math.round(TWO_HAND.leftBack * slower * 1000) / 1000};
+  let pace: Pace = {...recipe.pace, flowing: true, leftBack: Math.round(TWO_HAND.leftBack * slower * 1000) / 1000};
+  if (input.natural) pace = naturalPace(pace);
   if (steer.carry !== null) pace.carry = steer.carry;
   if (steer.body) pace.body = steer.body;
   if (steer.turnNear !== null) { if (steer.turnNear > 0) pace.turnNear = steer.turnNear; else delete pace.turnNear; }
@@ -107,7 +111,7 @@ export function layDeal(input: {plan: Plan; target: string; recipe: Recipe; pose
     leavesShoe: Math.round(beats[0].c), edge: [turnsAt, turnsAt], folds: Math.round(beats[0].g), rests: Math.ceil(beats[0].h), handSize: pose.handSize, palm: pose.palm, throughShoe: through.length, elbowForced: deal.forced, hip: pose.hip,
     beats: beats.map(x => ({to: x.to, a: r1(x.a), b: r1(x.b), c: r1(x.c), d: r1(x.d), e: r1(x.e), l: r1(x.l), turned: r1(x.turned), f: r1(x.f), g: r1(x.g), h: r1(x.h), i: r1(x.i)})), turns: deal.cards.map(x => ({axis: r4(x.turn.axis), angle: Math.round(x.turn.angle * 10) / 10})),
     laid: deal.laid.map(x => ({from: x.from, c: r4(x.c), l: r4(x.l), n: r4(x.n)})), frames: frames.map(fr => ({card: {c: r4(fr.card.c), l: r4(fr.card.l), n: r4(fr.card.n), id: fr.card.id}, L: limb(fr.L), R: limb(fr.R), h: r4(fr.h), g: r4(fr.g)})),
-    lab: {recipe: recipe.from, steer, bodyAsked: asked.map(x => Math.round(x * 10) / 10) as [number, number, number], carry: pace.carry ?? TWO_HAND.heights.carry}};
+    lab: {recipe: recipe.from, steer, bodyAsked: asked.map(x => Math.round(x * 10) / 10) as [number, number, number], carry: pace.carry ?? TWO_HAND.heights.carry, ...(input.natural ? {natural: true} : {})}};
 }
 export type LaidDeal = ReturnType<typeof layDeal>;
 

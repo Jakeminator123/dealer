@@ -1,7 +1,7 @@
 // The doll lab's stage (dealer3d/page/docka.ts): the room, table, shoe, card and doll of dealer3d/src/stage.ts, drawn
 // through a camera of the lab's own that the mouse turns, with the motion exchanged while the page is open and the joints
 // marked. Nothing of the doll or the room is drawn here: that is the stage's; this file adds the camera, the marks on the
-// joints and the place that is lit.
+// joints and on the fingertips that touch the card, and the place that is lit.
 //
 // What it borrows of the stage that the stage does not hand out, all of it in createLabStage's first lines and nowhere
 // else: the scene (taken as the stage adds its first light to it), the renderer (taken at one drawing of the stage's own),
@@ -15,10 +15,12 @@ import {FILM, fovYDeg, type Eye, type Vec3} from '../src/camera.ts';
 import {dealerEdge, seatEye, spots, type Plan} from '../src/world.ts';
 import {standing} from '../src/body.ts';
 import {FINGERS} from '../src/capture.ts';
+import {touching, type Touch} from '../src/natural.ts';
 import type {Doll} from '../src/doll.ts';
 
 export type ViewName = 'film' | 'side' | 'above' | 'player' | 'card';
 type Frame = Read['frames'][number];
+export type {Touch};
 const v3 = (p: number[]) => new T.Vector3(p[0], p[1], p[2]), UP = new T.Vector3(0, 1, 0);
 const mix = (a: number[], b: number[], k: number): Vec3 => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
 // The marks: her right arm and hand warm, her left cool, the hands brighter than the arms, the trunk faint.
@@ -43,6 +45,29 @@ function marks() {
 }
 
 /**
+ * The fingertips that touch the card (dealer3d/src/natural.ts `touching`), drawn over everything: on the card a ring and
+ * a dot where each tip lies, the tip itself ringed, and a line from the tip to the card, so that it shows which finger
+ * holds the card where; her right hand's warm, her left's cool, as the joints are marked.
+ */
+function grips() {
+  const group = new T.Group(); group.visible = false; group.renderOrder = 12;
+  const paint = (colour: number, opacity = 1) => new T.MeshBasicMaterial({color: colour, depthTest: false, depthWrite: false, transparent: true, opacity, side: T.DoubleSide});
+  const ring = new T.RingGeometry(0.0042, 0.0062, 28), disc = new T.CircleGeometry(0.0022, 18), halo = new T.RingGeometry(0.0085, 0.0105, 28), rod = new T.CylinderGeometry(0.0007, 0.0007, 1, 6);
+  const Z = new T.Vector3(0, 0, 1);
+  const slots = Array.from({length: 10}, (_, n) => { const colour = n < 5 ? MARK.right.hand : MARK.left.hand, solid = paint(colour), soft = paint(colour, 0.55);
+    const meshes = {ring: new T.Mesh(ring, solid), dot: new T.Mesh(disc, solid), halo: new T.Mesh(halo, soft), rod: new T.Mesh(rod, soft)};
+    meshes.halo.onBeforeRender = (_r, _s, camera) => { meshes.halo.quaternion.copy(camera.quaternion); meshes.halo.updateMatrixWorld(); };
+    for (const m of Object.values(meshes)) { m.renderOrder = 12; m.visible = false; group.add(m); } return meshes; });
+  return {group, set(list: Touch[], card: {n: number[]}, tips: {R: number[][]; L: number[][]}) {
+    slots.forEach(s => { for (const m of Object.values(s)) m.visible = false; });
+    for (const t of list) { const s = slots[(t.hand === 'R' ? 0 : 5) + t.finger], tip = v3(tips[t.hand][FINGERS[t.finger][3]]), at = v3(t.at), n = v3(card.n).normalize();
+      const face = tip.clone().sub(at).dot(n) < 0 ? n.clone().negate() : n; // the face the finger is on
+      const q = new T.Quaternion().setFromUnitVectors(Z, face); for (const m of [s.ring, s.dot]) { m.position.copy(at).addScaledVector(face, 0.0004); m.quaternion.copy(q); m.visible = true; }
+      s.halo.position.copy(tip); s.halo.visible = true; // ringed as seen from the camera (turned to it as it is drawn)
+      const d = at.clone().sub(tip), l = d.length(); if (l > 1e-4) { s.rod.position.copy(tip).addScaledVector(d, 0.5); s.rod.quaternion.setFromUnitVectors(UP, d.multiplyScalar(1 / l)); s.rod.scale.set(1, l, 1); s.rod.visible = true; } } }};
+}
+
+/**
  * The stage for `doll`, showing `first` until another motion is set. One canvas has one stage: for another doll make a
  * new canvas and a new stage, and dispose of this one. The canvas keeps the film's shape (1764 : 1174), so that the
  * film's view is the film's picture.
@@ -60,7 +85,7 @@ export function createLabStage(canvas: HTMLCanvasElement, plan: Plan, doll: Doll
 
   const lens = stage.lens, all = spots(plan, lens), edge = dealerEdge(lens), body = standing(lens, doll), film = stage.eyeOf('film');
   const outlines = scene.children.filter(o => (o as T.LineLoop).isLineLoop) as T.LineLoop[]; // the plan's places, in the order of `all` (stage.ts, look 'room')
-  const joints = marks(); scene.add(joints.group);
+  const joints = marks(); scene.add(joints.group); const held = grips(); scene.add(held.group); let touchNow: Touch[] = [];
   const camera = new T.PerspectiveCamera(fovYDeg(film.focalPx), FILM.width / FILM.height, 0.2, 30), controls = new OrbitControls(camera, canvas);
   controls.enableDamping = false; controls.minDistance = 0.25; controls.maxDistance = 9; controls.maxPolarAngle = Math.PI * 0.52; controls.zoomSpeed = 1.2; controls.rotateSpeed = 0.9;
   let target = 'P4.C1', now = 0, dirty = true, follow: Vec3 | null = null; controls.addEventListener('change', () => { dirty = true; });
@@ -92,6 +117,10 @@ export function createLabStage(canvas: HTMLCanvasElement, plan: Plan, doll: Doll
   function setTime(t: number) {
     const last = (read.frameCount - 1) / read.fps; now = Math.max(0, Math.min(last, t)); stage.setTime(now);
     const {a, b, k} = between(); if (joints.group.visible) joints.set(a, b, k, read.hip);
+    // The fingertips on the card, as the stage draws the card between two frames (stage.ts setTime: one card or the other, never half way between two).
+    { const one = a.card.id !== b.card.id ? (k < 0.5 ? a : b).card : null, ca = one ?? a.card, cb = one ?? b.card, l = v3(mix(ca.l, cb.l, k)).normalize(), toward = v3(mix(ca.n, cb.n, k)), n = toward.addScaledVector(l, -toward.dot(l)).normalize();
+      const card = {c: mix(ca.c, cb.c, k), l: l.toArray() as Vec3, n: n.toArray() as Vec3, id: ca.id}, tips = {R: a.R.p.map((p, i) => mix(p, b.R.p[i], k)), L: a.L.p.map((p, i) => mix(p, b.L.p[i], k))};
+      touchNow = touching({card, R: {...a.R, p: tips.R}, L: {...a.L, p: tips.L}, h: a.h} as never); if (held.group.visible) held.set(touchNow, card, tips); }
     if (follow) { const c = mix(a.card.c, b.card.c, k), moved = v3(c).sub(v3(follow)); camera.position.add(moved); controls.target.add(moved); controls.update(); follow = c; }
     dirty = true;
   }
@@ -111,6 +140,10 @@ export function createLabStage(canvas: HTMLCanvasElement, plan: Plan, doll: Doll
     setTarget(id: string) { target = id; mark(); dirty = true; },
     view,
     setJoints(on: boolean) { joints.group.visible = on; setTime(now); },
+    /** The fingertips on the card marked (dealer3d/page/docka.ts: with the joints, and always close on the card). */
+    setGrips(on: boolean) { held.group.visible = on; setTime(now); },
+    /** The fingertips that touch the card now, and where on it each lies. */
+    touching: () => touchNow,
     /** Call when the canvas has got a new size in pixels. */
     resized() { dirty = true; },
     needsDraw: () => dirty, draw,

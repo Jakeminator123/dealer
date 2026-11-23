@@ -19,6 +19,8 @@
   .hint { width: min(100%, calc((100vh - 92px) * 1764 / 1174)); margin: 8px auto 0; color: var(--muted); font-size: 12px; }
   .note { position: absolute; left: 12px; bottom: 10px; right: 12px; margin: 0; font-size: 13px; text-shadow: 0 1px 3px #000; pointer-events: none; }
   .note b { font-weight: 600; } .note .warn { color: var(--warn); }
+  .grip { position: absolute; left: 10px; top: 48px; max-width: calc(100% - 20px); width: fit-content; margin: 0; padding: 3px 8px; border-radius: 6px; background: #0d0f0ecc; font-size: 12px; color: #f2dca6; pointer-events: none; }
+  .grip:empty { display: none; }
   .transport { display: flex; align-items: center; gap: 12px; width: min(100%, calc((100vh - 92px) * 1764 / 1174)); margin: 10px auto 0; }
   .transport input[type=range] { flex: 1; min-width: 80px; }
   .transport output { min-width: 58px; text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
@@ -66,6 +68,7 @@
         <button data-view="film">Filmens kamera</button><button data-view="side">Från sidan</button><button data-view="above">Uppifrån</button><button data-view="player">Från spelaren</button><button data-view="card">Nära kortet</button>
         <label class="switch"><input id="joints" type="checkbox">Leder</label>
       </div>
+      <p class="grip" id="grip"></p>
       <p class="note" id="note">Laddar …</p>
     </div>
     <div class="transport">
@@ -79,6 +82,9 @@
   </section>
   <aside>
     <div class="head"><h1>Docklabb</h1><div class="seg" id="dolls" role="group" aria-label="Docka"><button data-doll="paow">Paow</button><button data-doll="standard">Standarddockan</button></div></div>
+    <div><h2>Rörelse</h2>
+      <div class="seg" id="ways" role="group" aria-label="Rörelse"><button data-way="naturlig">Naturlig</button><button data-way="forut">Som förut</button></div>
+      <p class="small" id="wayNote"></p></div>
     <div><h2>Ställning</h2>
       <div class="seg" id="poses"><button data-pose="A1">A1</button><button data-pose="A2.1">A2.1</button><button data-pose="A2.2" disabled title="Inte byggd">A2.2</button><button data-pose="A2.3">A2.3</button></div>
       <p class="small">A2.2: inte byggd</p></div>
