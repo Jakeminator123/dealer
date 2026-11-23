@@ -1,8 +1,9 @@
 # Steg 4, mätningen: modellen mot dagens spårning och mot färgregeln, på filmer som modellen inte har sett (split = val).
-#   python -I eval.py            (GPU: kör under låset)
+#   python -I eval.py [--modell 2] [--ut matning-v2.json]      (tar själv det delade låset för grafikkortet, train.LOCK)
 # A. Skarpa rutor med pålitligt facit: modellens hörn mot etikettens (hörnfel i filmens bildpunkter, IoU).
 # B. Samma rutor med syntetisk utsmetning 12, 24 och 36 bildpunkter (facit = kortet mitt i exponeringen): modellen mot
 #    färgregeln (dagens klasser gul/blå -> största fläcken -> fyrhörning).
+# D. Samma rutor med version 2:s ritade avvikelser (train.py): märket på den blå sidan, tryck på kortet och fingrar över det.
 # C. Verkliga rutor ur filmer som har dagens spår (assets/tracking/<klipp>/card-track.json): hur väl fyrhörningen täcker
 #    filmens kort (mjuk IoU mot kortets uppmätta mask) för dagens spår, etiketteraren och modellen; alla rutor i rörelse,
 #    de utsmetade och vändningens rutor (på högkant och två rutor omkring) var för sig.
@@ -71,9 +72,14 @@ def med(v): return round(float(np.median(v)), 2) if len(v) else None
 def mean(v): return round(float(np.mean(v)), 3) if len(v) else None
 
 def main():
+    version = train.arg('--modell', 2); lock = train.take_lock(f'mäter kortmodell v{version}', 10)
+    try: measure(version)
+    finally: train.release_lock(lock)
+
+def measure(version):
     random.seed(5); np.random.seed(5)
-    ck = torch.load(os.path.join(BASE, 'modell-v1.pt'), map_location='cuda'); net = train.Net().cuda().to(memory_format=torch.channels_last); net.load_state_dict(ck['net']); net.eval()
-    res = {'modell': {'epoker': ck['epoch'], 'traningsutsnitt': ck['samples']}}
+    ck = torch.load(os.path.join(BASE, f'modell-v{version}.pt'), map_location='cuda'); net = train.Net().cuda().to(memory_format=torch.channels_last); net.load_state_dict(ck['net']); net.eval()
+    res = {'modell': {'version': version, 'epoker': ck['epoch'], 'traningsutsnitt': ck['samples']}}
     # ---- A och B
     rows = train.rows_for('val', lambda r: r['side'] != 'EDGE' and train.reliable(r)); random.shuffle(rows)
     by = collections.defaultdict(list)
@@ -83,23 +89,30 @@ def main():
     for r in rows:
         s = train.load(r)
         if s is None: continue
-        ox, oy, k = float(r['crop_x']), float(r['crop_y']), float(r['crop_k'])
-        imgs.append(s[0]); ks.append(k); sides.append(r['side']); truth.append((np.array([[float(r[f'x{i}']), float(r[f'y{i}'])] for i in range(4)]) - [ox, oy]) * k)
+        imgs.append(s[0]); ks.append(float(r['crop_k'])); sides.append(r['side']); truth.append(s[4])
     print('A/B: valideringsfilmer', len(by), 'utsnitt', len(imgs), flush=True)
     res['A_B'] = {'filmer': len(by), 'utsnitt': len(imgs)}
-    for L in (0, 12, 24, 36):
-        test = imgs if L == 0 else [smear_np(im, L * k, random.uniform(0, math.pi)) for im, k in zip(imgs, ks)]
+    def score(test, of):
+        """Modellen och färgregeln mot facit på bilderna test; of[j] är rutan som test[j] är gjord av."""
         pm, ph, pc = predict(net, test); e_m, e_c, i_m, i_c, miss_m, miss_c, side_ok = [], [], [], [], 0, 0, 0
-        for j in range(len(test)):
-            t = truth[j]; tm = fill(t); qm = quad_from(pm[j], ph[j]); qc = colour_rule_quad(test[j], sides[j])
-            side_ok += int(pc[j] == (0 if sides[j] == 'BACK' else 1))
+        for j, o in enumerate(of):
+            t = truth[o]; tm = fill(t); qm = quad_from(pm[j], ph[j]); qc = colour_rule_quad(test[j], sides[o])
+            side_ok += int(pc[j] == (0 if sides[o] == 'BACK' else 1))
             if qm is None: miss_m += 1; i_m.append(0.0)
-            else: e_m.append(corner_err(qm, t) / ks[j]); i_m.append(iou(fill(qm), tm))
+            else: e_m.append(corner_err(qm, t) / ks[o]); i_m.append(iou(fill(qm), tm))
             if qc is None: miss_c += 1; i_c.append(0.0)
-            else: e_c.append(corner_err(qc, t) / ks[j]); i_c.append(iou(fill(qc), tm))
-        res['A_B'][f'utsmetning_{L}px'] = {'modell': {'hornfel_median_px': med(e_m), 'hornfel_p90_px': round(float(np.percentile(e_m, 90)), 2) if e_m else None, 'iou_medel': mean(i_m), 'utan_fyrhorning': miss_m, 'ratt_sida': round(side_ok / max(1, len(test)), 4)},
-                                           'fargregel': {'hornfel_median_px': med(e_c), 'hornfel_p90_px': round(float(np.percentile(e_c, 90)), 2) if e_c else None, 'iou_medel': mean(i_c), 'utan_fyrhorning': miss_c}}
+            else: e_c.append(corner_err(qc, t) / ks[o]); i_c.append(iou(fill(qc), tm))
+        return {'utsnitt': len(test), 'modell': {'hornfel_median_px': med(e_m), 'hornfel_p90_px': round(float(np.percentile(e_m, 90)), 2) if e_m else None, 'iou_medel': mean(i_m), 'utan_fyrhorning': miss_m, 'ratt_sida': round(side_ok / max(1, len(test)), 4)},
+                'fargregel': {'hornfel_median_px': med(e_c), 'hornfel_p90_px': round(float(np.percentile(e_c, 90)), 2) if e_c else None, 'iou_medel': mean(i_c), 'utan_fyrhorning': miss_c}}
+    every = list(range(len(imgs)))
+    for L in (0, 12, 24, 36):
+        res['A_B'][f'utsmetning_{L}px'] = score(imgs if L == 0 else [smear_np(im, L * k, random.uniform(0, math.pi)) for im, k in zip(imgs, ks)], every)
         print(L, json.dumps(res['A_B'][f'utsmetning_{L}px']), flush=True)
+    # ---- D: det ritade (samma slump för varje modell som mäts)
+    rnd = random.Random(7); front = [j for j in every if sides[j] == 'FRONT']; res['D'] = {}
+    for name, of, draw in (('market', front, lambda j: train.draw_mark(imgs[j], truth[j], rnd)), ('tryck', every, lambda j: train.draw_print(imgs[j], truth[j], 0 if sides[j] == 'BACK' else 1, rnd)),
+                           ('fingrar', every, lambda j: train.draw_fingers(imgs[j], truth[j], rnd)), ('market_fingrar_utsmetning_24px', front, lambda j: smear_np(train.draw_fingers(train.draw_mark(imgs[j], truth[j], rnd), truth[j], rnd), 24 * ks[j], rnd.uniform(0, math.pi)))):
+        res['D'][name] = score([draw(j) for j in of], of); print(name, json.dumps(res['D'][name]), flush=True)
     # ---- C
     man = {}
     for l in open(os.path.join(BASE, 'manifest.jsonl'), encoding='utf-8'): m = json.loads(l); man[m['key']] = m
@@ -181,7 +194,7 @@ def main():
                                                              'iou_i_det_synliga_medel': {'dagens_spar': mean(a[:, 9]), 'etiketteraren': mean(a[:, 10]), 'modellen': mean(a[:, 11])},
                                                              'iou_i_det_synliga_under_0_5': {'dagens_spar': round(float((a[:, 9] < 0.5).mean()), 3), 'etiketteraren': round(float((a[:, 10] < 0.5).mean()), 3), 'modellen': round(float((a[:, 11] < 0.5).mean()), 3)},
                                                              'utan_form': {'dagens_spar': int(a[:, 3].sum()), 'etiketteraren': int(a[:, 4].sum()), 'modellen': int(a[:, 5].sum())}}
-    json.dump(res, open(os.path.join(BASE, 'matning-v1.json'), 'w', encoding='utf-8'), indent=1, ensure_ascii=False)
+    json.dump(res, open(os.path.join(BASE, train.arg('--ut', f'matning-v{version}.json')), 'w', encoding='utf-8'), indent=1, ensure_ascii=False)
     print(json.dumps(res['C'], indent=1, ensure_ascii=False))
 
 if __name__ == '__main__':
