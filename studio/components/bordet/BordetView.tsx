@@ -11,6 +11,7 @@
 //                films lies under the picture (FilmList.tsx), its cards ringed on the stage; its Förhandsvisa is the one way to
 //                a draft (the server's exact drafts, read before they are saved)
 //   Kön          the orders (OrderView): what a round lacks, the drafts to approve, an order open with "Det här skickas"
+//   Docka        the doll lab on the chosen card and the doll's films beside what was ordered with them (DollPanel.tsx)
 //   Scen, Råfilm, Efterarbete   the live picture (SceneBody: the 3D scene, the films on their green, what is laid over)
 // The plan is the draft Placering kept (useDraft): nothing is written until Jakob's click on "Spara i kortplanen", which
 // writes the whole plan. The card and the list stay when the menu changes. Old addresses still open the right thing:
@@ -46,22 +47,24 @@ import { draftActions, useDraft } from "../placement/useDraft.ts";
 import { Page } from "../shell";
 import { Badge, Button, ErrorState, IconButton, SegmentedControl, Select, Skeleton, Switch, cn, useToast } from "../ui";
 import { FilmStrip, WishRows, type Made } from "./FilmList";
+import { DollPanel, dollPartOf } from "./DollPanel";
 import type { SceneKind } from "./SceneBody";
 import { RowSends } from "./Sends";
 
 // The live picture is loaded only when it is chosen, so that Kortplan stays light.
 const SceneBody = dynamic(() => import("./SceneBody").then((m) => m.SceneBody), { ssr: false, loading: () => <Skeleton className="m-4 h-[60vh] rounded-md" /> });
 
-export type Mode = "kortplan" | "ko" | SceneKind;
+export type Mode = "kortplan" | "ko" | "docka" | SceneKind;
 export const MODES: readonly { value: Mode; label: string }[] = [
   { value: "kortplan", label: "Kortplan" },
   { value: "ko", label: "Kön" },
+  { value: "docka", label: "Docka" },
   { value: "scen", label: "Scen" },
   { value: "rafilm", label: "Råfilm" },
   { value: "efterarbete", label: "Efterarbete" },
 ];
-/** The parts the menu shows: the copy orders nothing, so it has no Kön. */
-const SHOWN_MODES = isSnapshot ? MODES.filter((m) => m.value !== "ko") : MODES;
+/** The parts the menu shows: the copy orders nothing and has no doll lab, so it has no Kön and no Docka. */
+const SHOWN_MODES = isSnapshot ? MODES.filter((m) => m.value !== "ko" && m.value !== "docka") : MODES;
 const isMode = (v: string | null): v is Mode => SHOWN_MODES.some((m) => m.value === v);
 const isScene = (m: Mode): m is SceneKind => m === "scen" || m === "rafilm" || m === "efterarbete";
 /** A dealer with no drafts made: one object, so that the reference stays the same between renders. */
@@ -148,6 +151,15 @@ export function BordetView() {
   if (askedQueue !== seenAsk) {
     setSeenAsk(askedQueue);
     if (askedQueue) setMode("ko");
+  }
+  // The rail's Docka (/bordet/?lage=docka) while the view is open opens the doll's part; a link to the view without the word
+  // while that part is open (the rail's Scen & bord) leaves it for Kortplan.
+  const askedDoll = !isSnapshot && params.get("lage") === "docka";
+  const [seenDoll, setSeenDoll] = useState(askedDoll);
+  if (askedDoll !== seenDoll) {
+    setSeenDoll(askedDoll);
+    if (askedDoll) setMode("docka");
+    else if (mode === "docka") setMode("kortplan");
   }
   const [step, setStep] = useState<StepId | null>(() => (first || params.get("lage") === "bestall" ? "order" : "place"));
   const [media, setMedia] = useState<MediaAnswer | null>(null);
@@ -283,6 +295,13 @@ export function BordetView() {
 
   // Kön: the same frame and menu over the orders (the queue, or an order open with "Det här skickas").
   if (mode === "ko") return <OrderView menu={menu} />;
+  // Docka: the same frame and menu over the doll lab and the doll's films, on the chosen card.
+  if (mode === "docka")
+    return (
+      <Page title="Scen & bord" full>
+        <DollPanel menu={menu} place={place} setPlace={setPlace} dealer={dealer} orders={orders} ordersRead={ordersRead} ledger={ledger} startPart={dollPartOf(params.get("del"))} />
+      </Page>
+    );
   return (
     <Page
       title="Scen & bord"

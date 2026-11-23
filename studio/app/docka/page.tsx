@@ -1,21 +1,28 @@
-// Docka (/docka/): the doll lab inside the studio's shell, so that it is a page of the studio and not a loose one (Jakob
-// 2026-11-23). The lab itself is dealer3d/page/docka.html, which the lab server serves at /dealer3d/docka
-// (dealer3d/page/server.ts); here it fills the view in a frame. Only in the local lab: the online copy has no doll lab,
-// shows a word instead, and its rail leaves the view out.
-import { Page } from "@/components/shell";
-import { EmptyState } from "@/components/ui";
-import { isSnapshot } from "@/lib/mode";
+"use client";
 
-export default function DollLab() {
-  if (isSnapshot)
-    return (
-      <Page title="Docka">
-        <EmptyState title="Docklabbet finns bara i labbet">Dockan ställs och spelas i Jakobs lokala labb.</EmptyState>
-      </Page>
-    );
+// /docka/: the address the doll lab had as a view of its own (2026-11-23). The doll is a part of Scen & bord now
+// (components/bordet/DollPanel.tsx), and a link here goes there with the same question: /docka/?dealer=paow opens
+// /bordet/?dealer=paow&lage=docka. In the online copy, which has no doll lab, Bordet opens on its Kortplan.
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect } from "react";
+import { Page } from "@/components/shell";
+
+export default function OldDollPage() {
   return (
-    <Page title="Docka" full>
-      <iframe src="/dealer3d/docka" title="Docklabbet" className="absolute inset-0 size-full border-0" />
-    </Page>
+    <Suspense fallback={<Page title="Scen & bord" full />}>
+      <ToBordet />
+    </Suspense>
   );
+}
+
+function ToBordet() {
+  const params = useSearchParams();
+  const router = useRouter();
+  const p = new URLSearchParams(params.toString());
+  p.set("lage", "docka");
+  const to = `/bordet/?${p.toString()}`;
+  useEffect(() => {
+    router.replace(to);
+  }, [router, to]);
+  return <Page title="Scen & bord" full />;
 }

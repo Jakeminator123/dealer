@@ -57,7 +57,22 @@
   #save:disabled { background: #1c221f; border-color: var(--line); color: #5d6862; font-weight: 400; }
   #status.warn { color: var(--warn); }
   @media (max-width: 900px) { main { grid-template-columns: 1fr; } aside { position: static; max-height: none; } }
+  /* Inbäddad i studion (Scen & bord, delen Docka; ?inbaddad=1): sidan är ramens storlek och rullar inte, bilden har filmens
+     format och får den höjd ramen ger, valen rullar i sin egen spalt, och färgerna är studions. Utan ordet i adressen gäller inget av detta. */
+  .inbaddad { --bg: #0b0f0d; --panel: #121815; }
+  .inbaddad, .inbaddad body { height: 100%; }
+  .inbaddad body { overflow: hidden; }
+  .inbaddad main { height: 100%; padding: 10px 12px; grid-template-rows: minmax(0, 1fr); align-items: stretch; }
+  .inbaddad section { min-width: 0; min-height: 0; container-type: size; }
+  .inbaddad .frame, .inbaddad .hint, .inbaddad .transport { width: min(100%, calc((100cqh - 70px) * 1764 / 1174)); }
+  .inbaddad aside { position: static; align-self: start; max-height: 100%; }
+  .inbaddad h1 { display: none; }
+  @media (max-width: 900px) {
+    .inbaddad body { overflow: auto; } .inbaddad main { height: auto; grid-template-rows: none; } .inbaddad section { container-type: normal; }
+    .inbaddad .frame, .inbaddad .hint, .inbaddad .transport { width: 100%; } .inbaddad aside { max-height: none; }
+  }
 </style>
+<script>if (new URLSearchParams(location.search).get('inbaddad') === '1') document.documentElement.classList.add('inbaddad');</script>
 </head>
 <body>
 <main>

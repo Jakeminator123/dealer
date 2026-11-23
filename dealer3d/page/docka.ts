@@ -45,6 +45,11 @@ const knobsOf = (k?: Partial<Knobs>): Knobs => ({shoulderR: [...(k?.shoulderR ??
 
 const plan = await get('/dealer3d/plan').catch(e => { $('note').textContent = 'Docklabbet kunde inte läsa kortplanen.'; throw e; }) as Plan, lens = filmLens();
 const state = {doll: 'paow', way: 'naturlig' as Way, shown: {kind: 'deal'} as Shown, place: 'P4.C1', steer: {...NO_STEER} as Steer, knobs: knobsOf(), touched: false, playing: false, speed: 1, loop: false, joints: false, view: 'film' as ViewName, t: 0};
+// The address may name the card and the doll to begin on (/dealer3d/docka?plats=p5c1&docka=standard): the studio's Scen & bord
+// opens the lab on the card chosen there. Without the words, or with a place no deal is laid to, it begins as before.
+const asked = new URLSearchParams(location.search);
+{ const m = /^(?:p([1-7])|d)c([123])$/.exec(asked.get('plats') ?? ''), id = m ? `${m[1] ? `P${m[1]}` : 'D'}.C${m[2]}` : null, r = id && Object.hasOwn(plan.targets, id) ? recipeFor(id) : null;
+  if (id && r && !('none' in r)) state.place = id; if (Object.hasOwn(DOLLS, asked.get('docka') ?? '')) state.doll = asked.get('docka')!; }
 /** The way a deal is shown now: "Naturlig" is Paow's (the standard doll is locked, and keeps "Som förut"). */
 const wayOf = (): Way => state.doll === 'standard' ? 'forut' : state.way;
 // What is on the stage now: the motion, and for a deal what it was laid from. `from`: a saved standard (laid again from what it was saved with), laid here as steered, or a pose. `fault`: why the last laying did not go (the motion is then the last that did).
@@ -249,3 +254,13 @@ requestAnimationFrame(tick);
   touching: stage?.touching().map(t => `${t.hand}${t.finger} ${t.name} ${whereOn(t)}`) ?? [],
   // Where her right wrist and the card are, in the room and in the picture now (CSS pixels of the canvas): for checking a view against the film's own.
   seen: (() => { const m = now?.motion, i = m ? Math.min(m.frameCount - 1, Math.round(state.t * m.fps)) : 0, of = (world: number[]) => ({world, at: stage!.seen(world)}); return m && stage ? {wrist: of(m.frames[i].R.w), card: of(m.frames[i].card.c)} : null; })()})};
+// Embedded in the studio (?inbaddad=1: Scen & bord's part Docka, studio/components/bordet/DollPanel.tsx): the card chosen here
+// is told to the page around the frame, and a card chosen there is chosen here; where reglagen are moved and not saved the
+// deal stays, and the page around is told which card is still shown. Only the lab's own origin is told and heard.
+if (asked.get('inbaddad') === '1' && parent !== window) {
+  const tell = () => parent.postMessage({docklabb: {place: state.place}}, location.origin);
+  $('places').addEventListener('click', e => { if ((e.target as HTMLElement).closest('button[data-place]')) tell(); });
+  addEventListener('message', e => { const place = (e.data as {docklabb?: {place?: unknown}} | null)?.docklabb?.place; if (e.source !== parent || e.origin !== location.origin || typeof place !== 'string') return;
+    const b = [...document.querySelectorAll<HTMLButtonElement>('#places button')].find(x => x.dataset.place === place);
+    if (b && !b.disabled && place !== state.place && (untouched() || now?.saved)) b.click(); else tell(); });
+}

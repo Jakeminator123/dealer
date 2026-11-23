@@ -97,8 +97,8 @@ Dokumenten länkar till dessa i stället för att föra egna statusregister. Med
     `/studio/bestall/` leder dit.
   - **Karta**: nodträdet, varje stegs Primär och dess sekundära filmer, med hur spelet använder var och en
     (`/studio/primara/` leder hit).
-  - **Docka**: Docklabbet i en ram (`/studio/docka/`): dockan i varje ankare och giv, med reglage och Spara som
-    standard (`dealer3d/page/`, [dealer3d/LASMIG.md](dealer3d/LASMIG.md)).
+  - **Docka**: en del av Scen & bord (`/studio/bordet/?lage=docka`): Ställ dockan (Docklabbet i en ram, med reglage och
+    Spara som standard) och Dockans filmer bredvid de beställda tagningarna (`dealer3d/page/`, [dealer3d/LASMIG.md](dealer3d/LASMIG.md)).
   - **Granska**: Filmer, med Jakobs domar som skrivs i `motions/`, och Prov, provmapparna under `assets/proofs/`
     (`/studio/granska/?prov=<mapp>`; `/studio/prov/` leder dit).
   - **Material** (vilka bilder som gäller), **Lipsync** (var munnen görs och vad som är inställt, skrivskyddad) och

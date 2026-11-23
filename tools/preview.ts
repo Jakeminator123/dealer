@@ -17,6 +17,7 @@ import {resolveStudio,sendFile} from './studio-files.ts';
 import {SCRIPTS as scripts,VENDOR as vendor,PAGES as pages,SCENE_FILES as sceneFiles,forBrowser,studioAddress} from './lab-routes.ts';
 import {mediaRoles} from './media-roles.ts';
 import {handleOrders} from './order-routes.ts';
+import {orderTakeFilm} from './order-take-film.ts';
 import {handleDollLab} from '../dealer3d/page/server.ts';
 import {UPLOAD_LIMIT} from '../studio/lib/media.ts';
 import {dealersOf} from '../src/clip-graph.ts';
@@ -358,7 +359,7 @@ if(has('--restart')){
     const name=decodeURIComponent(url.pathname.slice(1)),page=pages[`/${name}`];
     file=page??name;
     // media.servable: a picture or film data/media-roles.json names (keystones, anchors and frames of the view Material), inside the repo and no link out of it.
-    if(!page&&!allowed.has(file)&&!await clipFile(file)&&!await trackFile(file)&&!await proofPath(file)&&!await patchFile(file)&&!await sceneFile(file)&&!await propFile(file)&&!await media.servable(file)&&!(await library()).items.some((item:{path:string})=>item.path===file)){res.writeHead(404).end();return;}
+    if(!page&&!allowed.has(file)&&!await clipFile(file)&&!await trackFile(file)&&!await proofPath(file)&&!await patchFile(file)&&!await sceneFile(file)&&!await propFile(file)&&!await media.servable(file)&&!await orderTakeFilm(file)&&!(await library()).items.some((item:{path:string})=>item.path===file)){res.writeHead(404).end();return;}
     type=types[file.slice(file.lastIndexOf('.'))]??'application/octet-stream';
    }
    const size=await stat(file).then(s=>s.isFile()?s.size:-1,()=>-1);
