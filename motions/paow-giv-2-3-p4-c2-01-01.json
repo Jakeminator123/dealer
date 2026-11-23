@@ -23,17 +23,17 @@
     "basis": "SOURCE_FRAME_REVIEW"
   },
   "review": {
-    "decision": "ACCEPTED",
+    "decision": "REJECTED",
     "basis": "Inte granskad av Jakob: förd in från beställningen paow-giv-2-3-p4-c2-01, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
     "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
     "productionReady": false,
     "provisional": {
-      "by": "huvudagenten dealer-b0 med en oberoende granskare",
-      "at": "2026-11-21T20:47:55.374Z",
-      "mandate": "Jakob 2026-11-13: inga filmer väntar i hans kö; domen ges åt honom och ersätts av hans egen",
-      "note": "OBEROENDE GRANSKARE (inte Jakobs dom): skeptiker, given 3/5, Godkänn med anmärkningar; rutorna 70-72 (klipp till närbild) kapade. Gult till blått, kantruta 38; kortet stilla 54-69, 13 px från P4C2. Fönstret svart från ruta 6; vändningen delvis i fingrarna; kortet genomskinligt 37-40. \"Kortet krymper 14-18\" vederlagt: det vrids på filten."
+      "by": "huvudagenten dealer-b0, efter Jakobs svar i Beslut",
+      "at": "2026-11-23T06:57:27.241Z",
+      "mandate": "Jakob i Beslut 2026-11-23: \"Nej, vändningen ser fel ut\"",
+      "note": "Jakob i Beslut 2026-11-23: vändningen ser inte helt naturlig ut, kortet blir för långt från fingrarna, och den vita kantlinjen på kortet ska inte finnas. Huvudagentens godkännande från natten (3/5) dras tillbaka; given görs om."
     }
   },
   "order": {

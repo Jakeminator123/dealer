@@ -430,7 +430,20 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 - **Given till plats 4, kort 2: vändningen ser fel ut** (Beslut 2026-11-23, kl. 07.13, kortet om given från A2.3):
   "Nej, vändningen ser fel ut", med orden "vändningen ser inte helt naturlig ut heller, kortet blir lixom för långt
   från fingrarna". Om dockan med Paows mått svarade han samma minut "Måtten ser fel ut": "Ser i och för sig mycket
-  bättre ut. men osäker på om vi bygger ännu en ny dock..".
+  bättre ut. men osäker på om vi bygger ännu en ny dock..". Huvudagentens godkännande av filmen drogs tillbaka samma
+  morgon (underkänd åt honom, med hans ord som skäl); given görs om.
+- **Filmerna från A2.3 är okej men lite robotlika: hennes naturliga rörelse går före dockans** (2026-11-23):
+  "Angående de filmer som finns nu är de okej för A2.3. Dock är det som att dessa är elelr blir lite lite
+  robotliknande och onaturliga. Jag skulle gissa detta beror på att vår docka inte är narulig helt och hållet. kanske
+  blir detta bättre med vår nya docka? Oavsätt aknske man borde skicka med i instruktionernamed dessa videos med docka
+  typ att '..filmen ska få rörelserna av vår dealer att vara naturlig primärt, så var inte extremt nitsk med dockans
+  rörelse..' eeller något." Läst så (huvudagentens tolkning): beställningens text säger att dockans film är en grov
+  ledning och att hon rör sig naturligt i första hand; den nya meningen prövas på en giv bredvid en godkänd film med
+  den gamla texten innan den används för alla.
+- **Plats 6 och 7: vänster arm tar ut kortet, höger arm tar emot och vänder upp** (2026-11-23, rättar huvudagentens
+  förslag att ge de två platserna med vänster hand): "Och - nej, för de sista possitionerna så vill jag att hennes
+  vänsterarm tar ut kortet, och att hennes högerarm tar emot och vänder upp för de där två possitionerna ändpå."
+  Det är samma giv med två händer som plats 1–5 har från A2.3; dockan måste först kunna resa sig och luta sig dit.
 
 - **Dockan ska se naturlig ut och ha dealerns mått, och en vald docka ersätter Siluett i studion** (2026-11-21,
   kl. 19.55): "om docka ska användas. Kolla då om dockan kan göras bättre så dockan inte ser onaturlig ut.. typ lite

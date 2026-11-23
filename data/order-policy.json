@@ -4,11 +4,11 @@
   "enabled": true,
   "dailyCapCredits": 1000000,
   "mandate": {
-    "id": "dealer-b0-20261121",
-    "startsAt": "2026-11-21T19:30:00Z",
-    "endsAt": "2026-11-21T23:30:00Z",
+    "id": "dealer-b0-20261123",
+    "startsAt": "2026-11-23T06:57:00Z",
+    "endsAt": "2026-11-24T22:00:00Z",
     "rollingHourCredits": 800,
-    "totalCredits": 1500
+    "totalCredits": 1200
   },
   "maxPerOrder": 2000,
   "minBalance": 0,
