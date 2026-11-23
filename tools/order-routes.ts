@@ -12,7 +12,7 @@
 //   POST /api/orders/<id>/approve       Jakob's click: freezes the order with its hash, refused beyond the policy (If-Match)
 //   GET  /api/orders/pose/<step>        the pose figure a still would get (ANKARE-2.1, ANKARE-2.2), before a draft exists;
 //                                       ?anchor=<entry> brings its green to that anchor's
-//   GET  /assets/orders/<id>/<file>     a picture or film of an order, only from that folder
+//   GET  /assets/orders/<id>/<file>     a picture or film of an order, only from that folder; and a take's film (take-<n>/after.mp4)
 //   GET  /assets/references/docka/<id>/source.mp4   a reference film of the dummy's, only one data/rendered-references.json lists
 //   PUT  /api/media/<id>/state          Godkänn / Underkänn of a picture in Material (If-Match on the register); the
 //                                       dealer's drafts then follow the anchor that holds (store.follow)
@@ -26,6 +26,7 @@ import { StoreError } from './placement-store.ts';
 import { sendFile } from './studio-files.ts';
 import { mediaRoles } from './media-roles.ts';
 import { orderStore, type NewOrder, type StoreOptions } from './order-store.ts';
+import { orderTakeFilm } from './order-take-film.ts';
 import { productionList, readProduction } from './produce.ts';
 
 const BODY_LIMIT = 16384;
@@ -79,7 +80,8 @@ export function orderRoutes(options: { root: string; origin: string } & StoreOpt
       if (method !== 'GET' && method !== 'HEAD') { res.writeHead(405).end(); return true; }
       let rel: string;
       try { rel = decodeURIComponent(p.slice(1)); } catch { res.writeHead(400).end(); return true; }
-      const file = await store.servable(rel);
+      // A take's delivered film (tools/order-take-film.ts) is handed out too: Scen & bord's part Docka plays it beside the doll's film.
+      const file = await store.servable(rel) ?? (await orderTakeFilm(rel, root) ? path.join(root, rel) : null);
       if (!file) { res.writeHead(404).end(); return true; }
       try { await serve(req, res, file); } catch { if (!res.headersSent) res.writeHead(500); res.end(); }
       return true;

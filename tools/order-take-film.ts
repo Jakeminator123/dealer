@@ -4,7 +4,7 @@
 // one of the two in one folder under the take (a cut copy, kapad-3/after.mp4), and only where the file really lies inside
 // that order's folder. Nothing is written and nothing else under assets/orders/ is named here (the order's own pictures and
 // reference film are the order store's, tools/order-store.ts servable).
-// The lab server asks it in its list of what may be handed out (tools/preview.ts): … &&!await orderTakeFilm(file) …
+// The lab server asks it where it hands out an order's media (tools/order-routes.ts, GET /assets/orders/…).
 // Test: node --test tools/order-take-film.test.ts
 import {realpath, stat} from 'node:fs/promises';
 import path from 'node:path';
