@@ -25,14 +25,13 @@ som gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompt
   referensfilm kostar 91 krediter, en giv på 3 s 68; beställningen går genom API-nyckeln (Runway-MCP är inte inloggat).
 
 **Nästa steg.**
-1. Plats 6 och 7 (kort 1) ur Jakobs sparade standarder i Docklabbet, sedan kort 2; plats 1 och 2 görs om om han
-   säger det i Beslut (handen nyper kortets kant). Dockans förval och ingångar: [LASMIG](../../dealer3d/LASMIG.md).
+1. Plats 6 och 7 (kort 1) ur Jakobs sparade standarder i Docklabbet, sedan kort 2. Dockans förval och ingångar: [LASMIG](../../dealer3d/LASMIG.md).
 2. En knapp i Scen & bord, Docka, som gör dockans film ur den sparade rörelsen och ett orderutkast; i dag kommandon
    (`dealer3d/tools/docka-cykel.ts`, `tools/doll-reference-put.ts`).
 3. Spelet väljer träd: det läser inga i dag (`buildGraph` blandar alla filmer), så Tatuerad spelas inte än. Ingången
-   A1 → A2.3 klipps ur ankarets film; sedan A2.3 → A1, hålkortet och dealerns kort.
+   A1 → A2.3 klipps ur ankarets film; sedan A2.3 → A1 (en film för alla kort; ingången baklänges är provet), hålkortet och dealerns kort.
 
-**Väntar på Jakob.** Kort i Beslut: given till A3P4C2 och dockan med Paows
+**Väntar på Jakob.** Kort i Beslut: utgången baklänges, given till A3P4C2 och dockan med Paows
 mått. Frågor i chatten 2026-11-21: egen film för kort 2 (36 steg) eller kort 1:s (22), om tatuerade A2.2 är blickbilden
 eller en ny nypbild, och hur spelet väljer träd.
 
