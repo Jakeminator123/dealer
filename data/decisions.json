@@ -3,6 +3,60 @@
   "about": "What waits for Jakob: one entry per question (kind beslut) or per thing only he can do (kind gora), shown as one card each in the studio's view Beslut (/studio/beslut/, lab only). The list's order is the order of urgency, the most urgent first. An entry: id, kind, question (at most 14 words), leads (one sentence: what his answer leads to), optionally proof (a folder under assets/proofs/) with file, page (an address in the lab, e.g. game.html?table=casino), link (an address outside, shown as text to open on his phone) and cost (free text), chips (two to four {value, label} for beslut, one to four for gora), asked (date), from (the lane that asks) and answer. An agent adds an entry with answer null, changes only its own entries, reads the file right before editing it and keeps the form JSON.stringify gives with two spaces; it closes an entry by taking it out once his answer is carried out, and the commit says what he answered. Only the page writes answer ({value, note, at}, tools/decision-store.ts); no agent sets, changes or clears an answer he has given. The strict reader is tools/decision-register.ts. The repo is public: no secret, personal detail or path of this machine.",
   "decisions": [
     {
+      "id": "a3p6c1-som-bild",
+      "kind": "beslut",
+      "question": "Duger A3P6C1 som sista bild för filmen från A2.3 till plats 6?",
+      "leads": "Ja beställer filmen från A2.3 till plats 6 med bilden som sista bild; underarmen kan se lång ut och hon lutar sig knappt.",
+      "proof": "a3p6c1-20261123",
+      "file": "1-a3p6c1.png",
+      "page": "studio/granska/?prov=a3p6c1-20261123",
+      "cost": "Bilden kostade 40 krediter; filmen kostar cirka 68",
+      "chips": [
+        {
+          "value": "ja",
+          "label": "Ja, beställ filmen"
+        },
+        {
+          "value": "arm",
+          "label": "Nej, armen ser fel ut"
+        },
+        {
+          "value": "nej",
+          "label": "Nej, något annat"
+        }
+      ],
+      "asked": "2026-11-23",
+      "from": "film",
+      "answer": null
+    },
+    {
+      "id": "docka-paow-rattad",
+      "kind": "beslut",
+      "question": "Stämmer Paows rättade docka med henne, så att den får styra filmerna?",
+      "leads": "Ja låter den styra nästa givar; den ligger redan under korten i Bordet, och förut satt den för nära bordet och var en tiondel för liten.",
+      "proof": "docka-paow-ratt-20261123",
+      "file": "1-ankare-a2-3-fore-och-efter.png",
+      "page": "studio/granska/?prov=docka-paow-ratt-20261123&fil=5-hennes-film-och-dockan-sida-vid-sida.mp4",
+      "cost": "Inga krediter",
+      "chips": [
+        {
+          "value": "ja",
+          "label": "Ja, låt den styra"
+        },
+        {
+          "value": "nastan",
+          "label": "Bättre, men inte än"
+        },
+        {
+          "value": "nej",
+          "label": "Nej, ser fel ut"
+        }
+      ],
+      "asked": "2026-11-23",
+      "from": "3d",
+      "answer": null
+    },
+    {
       "id": "paow-giv-2-3-p4c2",
       "kind": "beslut",
       "question": "Håller given från A2.3 till plats 4, kort 2?",
@@ -35,37 +89,6 @@
         "value": "vandning",
         "note": "Vad är det som gör att det blir en vit kantlinje på kortet? Det sk inte finnas. men vändningen ser inte helt naturlig ut heller, kortet blir lixom för långt från fingrarna.",
         "at": "2026-11-23T06:13:41.512Z"
-      }
-    },
-    {
-      "id": "docka-paow-matt",
-      "kind": "beslut",
-      "question": "Ska dockan med Paows mått styra hennes filmer i stället för standarddockan?",
-      "leads": "Ja ger en provfilm med rakare rygg och hennes mått, mätta ur hennes bilder och resten gissat; sista bilden visar hur Siluett i Kortplan har ändrats.",
-      "proof": "docka-paow-20261121",
-      "file": "1-sida-vid-sida-a2.3.png",
-      "page": "studio/granska/?prov=docka-paow-20261121",
-      "cost": "En provfilm kostar cirka 68 krediter",
-      "chips": [
-        {
-          "value": "ja",
-          "label": "Ja, prova en film med den"
-        },
-        {
-          "value": "nej",
-          "label": "Nej, behåll standarddockan"
-        },
-        {
-          "value": "matt",
-          "label": "Måtten ser fel ut"
-        }
-      ],
-      "asked": "2026-11-21",
-      "from": "3d",
-      "answer": {
-        "value": "matt",
-        "note": "Ser i och för sig mycket bättre ut. men osäker på om vi bygger ännu en ny dock..",
-        "at": "2026-11-23T06:14:22.824Z"
       }
     },
     {
