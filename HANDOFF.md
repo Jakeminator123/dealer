@@ -45,7 +45,8 @@ Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-
 - **Jakobs egna:** planen `placements/default.json` och hans domar i `motions/` (`review`), som skrivs från Granska och
   aldrig skrivs över av ett verktyg. En dom som getts åt honom (`node tools/review-put.ts`) är aldrig hans.
 - **En ny session** arbetar i mappen `dealer` och avgränsar sina filer först. Extra arbetsträd bara vid
-  isoleringsbehov (skillen `bredvid-andra-sessioner`).
+  isoleringsbehov (skillen `bredvid-andra-sessioner`). Kortets vita kant i filmerna och `tools/film-after.ts` skrivs
+  sedan 2026-11-23 av huvudagentens underagent: fråga `dealer-b0` först.
 
 ## Väntar på Jakob
 
