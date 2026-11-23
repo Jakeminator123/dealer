@@ -31,7 +31,11 @@
       ],
       "asked": "2026-11-23",
       "from": "film",
-      "answer": null
+      "answer": {
+        "value": "utan",
+        "note": "OM detta är tänkt att vara en bild som genereras som en A2'n' så aknske detta ine behövs i och med att vi nu kommer använda dockan för PAOW ändå",
+        "at": "2026-11-23T09:02:09.347Z"
+      }
     },
     {
       "id": "docka-paow-vandning",
