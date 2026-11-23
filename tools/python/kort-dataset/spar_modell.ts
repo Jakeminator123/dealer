@@ -11,6 +11,9 @@
 //   3. Styvt kort ur skon: när kortet glider ut syns det och skons nästa kort som en gul form, längre än ett kort. Modellen är
 //      inte gjord för två kort i ett; där tas dagens fyrhörning (tät mot det gula) och av den den främre delen, så lång som
 //      kortet som sitter i skon.
+//   4. Det styva kortet (styvt_kort.ts): i en giv där kortet kommer till vila blir rutornas kort till sist ETT kort med fasta
+//      mått, flyttat och vridet i rummet och jämnat över filmen; rutan får `film` (filmens kort) och `quad` (det ritade).
+//      --utan-styvt skriver spåret som det var före det steget.
 // Rutor där kortet sitter i skon och rutorna från vilan är dagens. Hörnens ordning följer spårets egen regel: första sidan
 // från sin första ruta, senare sidor bakifrån från vilan.
 import {readFile, writeFile, mkdir, readdir} from 'node:fs/promises';
@@ -18,8 +21,9 @@ import {existsSync} from 'node:fs';
 import {gunzipSync} from 'node:zlib';
 import {alignCorners, centre, ends, signedArea, type Pt, type Side} from '../../../src/card-track.ts';
 import {plausible, type CardTrack} from '../../../src/card-overlay.ts';
+import {rigidFrames, STIFF, type Stiff} from './styvt_kort.ts';
 
-const BASE = 'D:/dealer-scratch/tmp/kort-dataset', args = process.argv.slice(2), dry = args.includes('--torr');
+const BASE = 'D:/dealer-scratch/tmp/kort-dataset', args = process.argv.slice(2), dry = args.includes('--torr'), loose = args.includes('--utan-styvt');
 const version = Number(args[args.indexOf('--modell') + 1]) || 2, OUT = `assets/proofs/kortmodell-v${version}-20261123`;
 const asked = args.filter((a, i) => !a.startsWith('--') && args[i - 1] !== '--modell');
 const clips = asked.length ? asked : (await readdir(`${BASE}/modell-v${version}`)).filter(f => f.endsWith('.json.gz')).map(f => f.slice(0, -8)).sort();
@@ -37,7 +41,7 @@ const clips = asked.length ? asked : (await readdir(`${BASE}/modell-v${version}`
 export const RULE = {sure: 0.6, same: 0.5, reach: 1.2, lost: 3, still: 12, shoePad: 0.25, long: 1.25, longer: 1.08, ahead: 15, big: 1.5, small: 0.55, apart: 0.6};
 type Measure = {side: 'BACK' | 'FRONT' | 'EDGE'; quad: number[][] | null; p: number};
 type Card = {id: number; side: Side; cx: number; cy: number; area: number; len: number; thick: number; quad?: number[][]; vis?: boolean[]; edge?: number[][]; moving?: boolean; m?: Measure};
-type TFrame = {frame: number; side: Side; quad: number[][] | null; edge: number[][] | null; area: number; confidence: number; shoeShare?: number; note?: string};
+type TFrame = {frame: number; side: Side; quad: number[][] | null; edge: number[][] | null; area: number; confidence: number; shoeShare?: number; note?: string; film?: number[][] | null};
 type From = 'modell' | 'linje' | 'styv' | null;
 type Stored = CardTrack & {frames: TFrame[]; kind?: string};
 
@@ -132,13 +136,16 @@ function measures(frames: TFrame[], from: number, to: number) {
 }
 
 const blank = () => ({stor: 0, liten: 0, utanKort: 0, behallna: 0});
-const index: unknown[] = [], total = {filmer: 0, rutor: 0, franModellen: 0, styva: 0, idag: blank(), modell: blank(), skiljer: 0, annanSida: 0};
+const index: unknown[] = [], total = {filmer: 0, rutor: 0, franModellen: 0, styva: 0, idag: blank(), modell: blank(), skiljer: 0, annanSida: 0, styvt: {filmer: 0, ryckFore: 0, ryckEfter: 0, franModellen: 0, burna: 0}};
 for (const clip of clips) {
   const file = `assets/tracking/${clip}/card-track.json`, meas = `${BASE}/modell-v${version}/${clip}.json.gz`;
   if (!existsSync(file) || !existsSync(meas)) { console.log(`${clip}: saknar spår eller mätning`); continue; }
   const track = JSON.parse(await readFile(file, 'utf8')) as Stored, m = JSON.parse(gunzipSync(await readFile(meas)).toString('utf8')) as {kalla: string; frames: {f: number; cards: Card[]}[]};
   const measured: Card[][] = track.frames.map(() => []); for (const fr of m.frames) if (fr.f < measured.length) measured[fr.f] = fr.cards;
-  const {frames, from} = modelFrames(track, measured), n = frames.length, end = Math.min(n, track.restFrom ?? n);
+  const laid = modelFrames(track, measured), from = laid.from, n = laid.frames.length, end = Math.min(n, track.restFrom ?? n);
+  // 4. the stiff card, in a deal whose card comes to rest; the measures below are of the model's own frames
+  const stiff = !loose && track.kind === 'DEAL' ? rigidFrames(track, laid.frames, from) : null, frames = laid.frames, written = (stiff?.frames ?? frames) as TFrame[], styvt: Stiff | null = stiff?.stats ?? null;
+  if (styvt) { total.styvt.filmer++; total.styvt.ryckFore += styvt.ryck[0]; total.styvt.ryckEfter += styvt.ryck[1]; total.styvt.franModellen += styvt.franModellen; total.styvt.burna += styvt.burna; }
   // the way: from the first frame where either track has the card out of the shoe to where it rests
   const has = (f: TFrame) => (f.shoeShare ?? 0) < 0.9 && (f.quad?.length === 4 || f.edge?.length === 2), first = track.frames.findIndex((f, i) => has(f) || has(frames[i]));
   const start = Math.min(end, Math.max(track.leavesShoe ?? 0, first < 0 ? end : first)), a = measures(track.frames, start, end), b = measures(frames, start, end);
@@ -146,15 +153,15 @@ for (const clip of clips) {
   for (let i = start; i < end; i++) { const t = track.frames[i], f = frames[i]; if (!from[i]) continue;
     if (flat(t) !== flat(f) || (flat(t) && flat(f) && iou(t.quad.map(pt), f.quad.map(pt)) < RULE.apart)) apart.push(i);
     if (flat(t) && flat(f) && t.side !== f.side) otherSide.push(i); }
-  const firstFront = frames.findIndex(f => f.side === 'FRONT' && flat(f)), lastBack = firstFront < 0 ? -1 : Math.max(-1, ...frames.filter(f => flat(f) && f.side === 'BACK' && f.frame < firstFront).map(f => f.frame));
-  const stiff = from.slice(start, end).filter(v => v === 'styv').length, row = {clip, kind: track.kind ?? null, kalla: m.kalla, rutor: n, vila: track.restFrom, vag: [start, end], franModellen: from.slice(start, end).filter(Boolean).length, styva: stiff, idag: a, modell: b, skiljer: apart, annanSida: otherSide};
-  index.push(row); total.filmer++; total.rutor += end - start; total.franModellen += row.franModellen; total.styva += stiff; total.skiljer += apart.length; total.annanSida += otherSide.length;
+  const firstFront = written.findIndex(f => f.side === 'FRONT' && flat(f)), lastBack = firstFront < 0 ? -1 : Math.max(-1, ...written.filter(f => flat(f) && f.side === 'BACK' && f.frame < firstFront).map(f => f.frame));
+  const cut = from.slice(start, end).filter(v => v === 'styv').length, row = {clip, kind: track.kind ?? null, kalla: m.kalla, rutor: n, vila: track.restFrom, vag: [start, end], franModellen: from.slice(start, end).filter(Boolean).length, styva: cut, idag: a, modell: b, skiljer: apart, annanSida: otherSide, styvt};
+  index.push(row); total.filmer++; total.rutor += end - start; total.franModellen += row.franModellen; total.styva += cut; total.skiljer += apart.length; total.annanSida += otherSide.length;
   for (const [k, v] of [['idag', a], ['modell', b]] as const) { total[k].stor += v.stor.length; total[k].liten += v.liten.length; total[k].utanKort += v.utanKort.length; total[k].behallna += v.behallna; }
   if (asked.length) console.log(clip, JSON.stringify({...row, kalla: undefined}));
-  else if (dry && (a.stor.length || b.stor.length || b.liten.length)) console.log(clip, 'väg', start, end, '| stor idag', a.stor.join(','), '| modell', b.stor.join(','), '| liten idag', a.liten.join(','), '| modell', b.liten.join(','), '| styva', stiff);
+  else if (dry && (a.stor.length || b.stor.length || b.liten.length)) console.log(clip, 'väg', start, end, '| stor idag', a.stor.join(','), '| modell', b.stor.join(','), '| liten idag', a.liten.join(','), '| modell', b.liten.join(','), '| styva', cut);
   if (!dry) { await mkdir(`${OUT}/spar`, {recursive: true});
     await writeFile(`${OUT}/spar/${clip}.json`, JSON.stringify({clip, edgeWindow: lastBack >= 0 && firstFront > lastBack + 1 ? [lastBack + 1, firstFront - 1] : null,
-      trial: {name: `kortmodell v${version}`, rule: 'tools/python/kort-dataset/spar_modell.ts modelFrames', measurement: `tools/python/kort-dataset/spar_modell.py (${m.kalla})`}, frames}).replace(/\{"frame"/g, '\n{"frame"') + '\n'); }
+      trial: {name: `kortmodell v${version}${styvt ? ', styvt kort' : ''}`, rule: `tools/python/kort-dataset/spar_modell.ts modelFrames${styvt ? ', styvt_kort.ts rigidFrames' : ''}`, measurement: `tools/python/kort-dataset/spar_modell.py (${m.kalla})`}, frames: written}).replace(/\{"frame"/g, '\n{"frame"') + '\n'); }
 }
-if (!dry && !asked.length) await writeFile(`${OUT}/index.json`, JSON.stringify({schemaVersion: 1, modell: version, regel: RULE, summa: total, filmer: index}).replace(/\{"clip"/g, '\n{"clip"') + '\n');
+if (!dry && !asked.length) await writeFile(`${OUT}/index.json`, JSON.stringify({schemaVersion: 1, modell: version, regel: RULE, styvt: STIFF, summa: total, filmer: index}).replace(/\{"clip"/g, '\n{"clip"') + '\n');
 console.log(JSON.stringify(total));
