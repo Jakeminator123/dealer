@@ -12,8 +12,8 @@ Läs AGENTS.md, den här sidan och EN lägesfil för din bana. Ersätt inaktuell
   Kommandot `node tools/order-new.ts` gör samma utkast; Karta visar varje dealers träd.
   Docka är en del av Bordet (`?lage=docka`): Docklabbet med Naturlig som förval, och dockans filmer bredvid tagningarna.
 - Den tatuerade uppsättningen är hans förstahandsval, och A2.3 gäller. Trädet Tatuerad fylls från A2.3 med en giv per
-  plats ([film](docs/lage/film.md)). Casinot spelar ett träd med `?trad=<id>` (Karta, "Prova i Casino"); kompositionen av
-  flera träd byggs.
+  plats ([film](docs/lage/film.md)). Casinot spelar ett träd med `?trad=<id>` (Karta, "Prova i Casino") och en
+  komposition av flera träd med `?komposition=<id>` ([karta](docs/lage/karta.md)).
 - Kopian på nätet är publicerad på `c9d006d` den 2026-11-20 på Jakobs ord, utan nya filmer. Telefonmått, fysisk
   telefon och ljud återstår ([spelet](docs/lage/spelet.md)).
 - Kontrollen före en push körs bara på datorn. Kontots tokengräns delas av alla sessioner: få underagenter.
