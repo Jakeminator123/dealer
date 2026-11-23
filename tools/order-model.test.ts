@@ -618,17 +618,18 @@ test('the studio prioritizes the rolling mandate over the ordinary daily cap and
   const p = await policy();
   assert.ok(p.mandate);
   const cost = { perTake: 80, total: 80, worstPerTake: 100, worstTotal: 100, basis: '' };
+  // Both ceilings follow the mandate in data/order-policy.json, which the main agent renews on Jakob's word: a new mandate
+  // with another hourly or total figure must not turn this red (it did on 2026-11-23, when the hour's 800 was written out here).
   const mandateBudget = {
     status: 'active' as const, mandate: p.mandate, at: p.mandate.startsAt, available: 150,
-    hourlyReserved: 650, totalReserved: 900,
+    hourlyReserved: p.mandate.rollingHourCredits - 150, totalReserved: 900,
   };
   const active = { ...p, mandateBudget };
   const budget = groupBudget(cost, 2, active, 0, 7000);
   assert.equal(budget.fitToday, 1);
-  // Changed 2026-11-21 (review finding 15): the figures say their unit, and "den här timmen" replaces the trade word.
-  assert.match(budget.words[0], /150 av 800 krediter kvar den här timmen/);
-  // The total follows the mandate in data/order-policy.json, which the main agent renews on Jakob's word.
   const grouped = (credits: number) => String(credits).replace(/\B(?=(\d{3})+$)/g, '\\s');
+  // Changed 2026-11-21 (review finding 15): the figures say their unit, and "den här timmen" replaces the trade word.
+  assert.match(budget.words[0], new RegExp(`150 av ${grouped(p.mandate.rollingHourCredits)} krediter kvar den här timmen`));
   assert.match(budget.words[0], new RegExp(`${grouped(p.mandate.totalCredits - 900)} av ${grouped(p.mandate.totalCredits)} kvar i mandatet`));
   assert.doesNotMatch(budget.words.join(' '), /Ryms i dagens tak/);
   assert.equal(checkPolicy({cost}, {...active, dailyCapCredits: 90}, 0, 7000).ok, false);
