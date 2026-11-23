@@ -97,6 +97,8 @@ Dokumenten länkar till dessa i stället för att föra egna statusregister. Med
     `/studio/bestall/` leder dit.
   - **Karta**: nodträdet, varje stegs Primär och dess sekundära filmer, med hur spelet använder var och en
     (`/studio/primara/` leder hit).
+  - **Docka**: Docklabbet i en ram (`/studio/docka/`): dockan i varje ankare och giv, med reglage och Spara som
+    standard (`dealer3d/page/`, [dealer3d/LASMIG.md](dealer3d/LASMIG.md)).
   - **Granska**: Filmer, med Jakobs domar som skrivs i `motions/`, och Prov, provmapparna under `assets/proofs/`
     (`/studio/granska/?prov=<mapp>`; `/studio/prov/` leder dit).
   - **Material** (vilka bilder som gäller), **Lipsync** (var munnen görs och vad som är inställt, skrivskyddad) och
@@ -105,7 +107,7 @@ Dokumenten länkar till dessa i stället för att föra egna statusregister. Med
     **Modeller** och Scens knapp **3D-sidan** (utvecklarens 3D-sida med samma look, [SYSTEM](docs/SYSTEM.md)).
 
   **Jämför** (två tagningar av samma steg sida vid sida) nås från en tagning i Granska och Karta. Kopian på nätet har
-  samma meny utan Lipsync, Bordet utan Beställ och utan sparning, och i stället för Beslut **Önskemål** och boten (Fråga).
+  samma meny utan Lipsync och Docka, Bordet utan Beställ och utan sparning, och i stället för Beslut **Önskemål** och boten (Fråga).
 - Filmgranskningen har steg ±1 bildruta, kapitel och hastighet 0,25×/0,5×/1×. URL-parametrarna `clip` och `frame` pekar
   ut klipp och granskningsruta.
 - `npm test` kör kärnan offline: publiceringsskyddet, spelets regler, hans domar och val, beställningarna, kortplanen
