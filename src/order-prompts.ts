@@ -120,8 +120,13 @@ export const TEMPLATE_VERSION = 12;
  * one waits close beside it, against that picture. Not today's template (TEMPLATE_VERSION), but since 2026-11-23 the one
  * the recipes of the deal from 2.3 and the entry to it are written with (data/order-methods.json, whose evidence carries
  * Jakob's verdicts of that day on one deal and one entry written with it).
+ * 15 (2026-11-23): 14 word for word but for the deal with two hands tur och retur (SAY.v15; fifteen chooses), after the
+ * trial to seat 5 (paow-giv-2-3-p5-04) and Jakob's verdict on it, "hennes högerhand inte är så vriden vid nedsläpp": the hand
+ * that lays the card is flat with a relaxed wrist, it goes back to where the first frame has it (the felt in front of her,
+ * not the shoe, which 14 says against the picture), and a yellow card shows in the shoe's window all through (the window
+ * stood empty for 42 frames). A choice per order (--mall 15) until a trial shows it holds; the recipe stays 14.
  */
-export const TEMPLATE_CHOICES: readonly number[] = [TEMPLATE_VERSION, 13, 14];
+export const TEMPLATE_CHOICES: readonly number[] = [TEMPLATE_VERSION, 13, 14, 15];
 /** The choices as the words of a Swedish message: "12, 13 eller 14". */
 export const TEMPLATE_CHOICES_WORDS = new Intl.ListFormat('sv', { type: 'disjunction' }).format(TEMPLATE_CHOICES.map(String));
 /** The version of the long text (template 3, 2026-11-13); Utförlig writes it unchanged. */
@@ -386,6 +391,12 @@ export const SAY = {
     // shoe; her other hand lies flat on the felt in front of her, where the deal brings the card to it (SAY.meetAt).
     reach23: 'Both her hands rise calmly: her hand nearest the shoe goes to the shoe and lays its fingertips on the yellow card in the window, ready to stroke it out, and her other hand comes to rest flat on the felt in front of her, as in the last frame.',
   },
+  // Template 15, the deal with two hands tur och retur (TEMPLATE_CHOICES' note).
+  v15: {
+    flatHand: 'As the card comes down her hand lies flat above it, with a straight, relaxed wrist.',
+    back: 'Then the hand that laid it glides back low over the felt, palm down, and comes to rest flat on the felt in front of her, as in the first frame.',
+    window: 'A yellow card shows in the window of the shoe all the time: as she strokes one out, the next one is already there.',
+  },
 } as const;
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -513,8 +524,10 @@ function stillText(input: PromptInput): Prompt {
  * after today's template, though its words were template 3's).
  */
 const templateOf = (kind: string, style: TextStyle) => (style === 'UTFÖRLIG' ? `${kind}@${LONG_VERSION}` : `${kind}-${style === 'KORT' ? 'kort' : 'minimal'}@${TEMPLATE_VERSION}`);
-/** Template 14 (TEMPLATE_CHOICES) is 12 but for two sentences of the short text (SAY.v14): the reference film's, and the reach of the entry to anchor 2.3. */
-const fourteen = (input: PromptInput) => input.version === 14 && (input.style ?? 'KORT') === 'KORT';
+/** Template 14 (TEMPLATE_CHOICES) is 12 but for two sentences of the short text (SAY.v14): the reference film's, and the reach of the entry to anchor 2.3. 15 keeps them. */
+const fourteen = (input: PromptInput) => (input.version === 14 || input.version === 15) && (input.style ?? 'KORT') === 'KORT';
+/** Template 15 is 14 but for the open deal with two hands tur och retur (SAY.v15). */
+const fifteen = (input: PromptInput) => input.version === 15 && (input.style ?? 'KORT') === 'KORT';
 const referencePart = (input: PromptInput): Part => ({ text: input.reference ? (fourteen(input) ? SAY.v14.reference : SAY.reference) : '', from: ['reference'] });
 const extraPart = (input: PromptInput): Part => ({ text: input.extra?.trim() || '', from: ['extra'] });
 const DEFAULT_MOTION: DealMotion = { grip: 'PINCH', hand: 'LH', pass: false, turn: true, flipAxis: 'FREE', side: 'FRONT' };
@@ -725,7 +738,7 @@ function twoHandDeal(input: PromptInput, m: DealMotion): Prompt {
   const meet = !placed ? SAY.meetAt.mid : input.place!.x >= 1180 ? SAY.meetAt.near : input.place!.x >= 760 ? SAY.meetAt.mid : SAY.meetAt.far;
   const carry = placed ? `towards its place ${whereShort(input.place!)}` : 'towards its place';
   // From template 12 the stroke and the lay leave the side that is up and the palm to the turn or the closed carry (SAY.v11 before).
-  const twelve = fromTwelve(input), one = !!input.oneWay;
+  const twelve = fromTwelve(input), one = !!input.oneWay, round15 = fifteen(input) && open && !one;
   const lay = twelve
     ? (open ? (one ? SAY.layAtPlaceOneWay : SAY.layAtPlace) : one ? SAY.layClosedOneWay : SAY.layClosed)
     : open ? (one ? SAY.v11.layPalmDown : SAY.v11.layPalmDownRound) : one ? SAY.v11.layClosedOneWay : SAY.v11.layClosed;
@@ -735,8 +748,10 @@ function twoHandDeal(input: PromptInput, m: DealMotion): Prompt {
     { text: `${SAY.handAtShoe} ${twelve ? SAY.strokeOut : SAY.v11.strokeOut} ${meet}.`, from: ['hand', ...(placed ? (['place'] as Choice[]) : [])] },
     { text: open ? SAY.raiseAndTurn(carry) : SAY.takeClosed(carry), from: [open ? 'turn' : 'side', ...(placed ? (['place'] as Choice[]) : [])] },
     { text: lay, from: input.oneWay ? ['shape'] : ['side'] },
-    { text: input.oneWay ? '' : SAY.backTwoHands, from: ['hand'] },
+    { text: round15 ? SAY.v15.flatHand : '', from: ['hand'] },
+    { text: input.oneWay ? '' : round15 ? SAY.v15.back : SAY.backTwoHands, from: ['hand'] },
     { text: open ? SAY.shoeHandBack : SAY.shoeHandBackClosed, from: ['hand'] },
+    { text: round15 ? SAY.v15.window : '', from: [] },
     { text: SAY.headToPlace, from: [] },
     { text: cardLook(input, sized ? SAY.oneCardMovesFree : SAY.oneCardMovesSized), from: [] },
     extraPart(input),

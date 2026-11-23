@@ -4,7 +4,7 @@
 // 13, the review of 2026-11-21, and 14, the reference film as a rough guide, 2026-11-23; src/order-prompts.ts
 // TEMPLATE_CHOICES, which the store checks the number against):
 //
-//   node tools/order-new.ts <dealer> <step> [<card>] [--mall 12|13|14] [--takes <n>] [--title "<namn>"] [--extra "<tillägg>"]
+//   node tools/order-new.ts <dealer> <step> [<card>] [--mall 12|13|14|15] [--takes <n>] [--title "<namn>"] [--extra "<tillägg>"]
 //                           [--reference <id> | --no-reference] [--end <A3-kandidat> | --no-end] [--tur-retur]
 //                           [--sekunder <n>] [--base <post>] [--continues <order>] [--trad <träd>] [--docka <namn>] [--dry]
 //   node tools/order-new.ts paow "A2.3 - A3P4C2" --dry      (his notation, studio/lib/names.ts parseJakob: one film,
@@ -32,7 +32,7 @@ import { parseJakob } from '../studio/lib/names.ts';
 
 const VALUED = ['--mall', '--takes', '--title', '--extra', '--reference', '--end', '--base', '--continues', '--trad', '--docka', '--sekunder'];
 const ALONE = ['--no-reference', '--no-end', '--tur-retur', '--dry'];
-const USE = 'Använd: node tools/order-new.ts <dealer> <steg> [<plats>] (eller <dealer> "A2.3 - A3P4C2") [--mall 12|13|14] [--takes <n>] [--title "<namn>"] [--extra "<tillägg>"] [--reference <id> | --no-reference] [--end <A3-kandidat> | --no-end] [--tur-retur] [--sekunder <n>] [--base <post>] [--continues <order>] [--trad <träd>] [--docka <namn>] [--dry]';
+const USE = 'Använd: node tools/order-new.ts <dealer> <steg> [<plats>] (eller <dealer> "A2.3 - A3P4C2") [--mall 12|13|14|15] [--takes <n>] [--title "<namn>"] [--extra "<tillägg>"] [--reference <id> | --no-reference] [--end <A3-kandidat> | --no-end] [--tur-retur] [--sekunder <n>] [--base <post>] [--continues <order>] [--trad <träd>] [--docka <namn>] [--dry]';
 
 /** His notation ("A2.3 - A3P4C2", "A2.3 → A1"): the step and the card of the one film it names. */
 export function stepOfNotation(text: string): { step: StepKey; target: string | null } {

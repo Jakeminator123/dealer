@@ -147,7 +147,9 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
 - **Dockan rättas mot hennes filmer innan den styr en beställning** (2026-11-23): axlar, fingrar och armbåge ska se ut
   som i de filmer som är bra; SAM-dockan byggs på de mätningarna ("Ja bygg den riktiga SAM-dockan").
 - **Dockans vändning längre ut: bättre, men inte än** (2026-11-23): vänster arm mot sko och kort, djupet och avståndet
-  till skon stämmer inte ("det syns på hennes handled och armboge"). Dockan styr inte nya givar före hans ja.
+  till skon stämmer inte; handen över skon är "fel i grunden … typ lillfingret". Givarna från A2.3 beställs ändå med dockans film.
+- **En sparad rörelse per kort och ankare** (2026-11-23): A2.1, A2.2 och A2.3 är olika in- och utgångar; dockan ska ha en
+  sparad giv per spelare och per ingång. Uppdraget: fyll A2.3 → spelarnas C1 och tillbaka, återgången sparad.
 - **Docklabbet** (2026-11-23): "Jag gillar verkligen docklabbet!" Konstiga ställningar blir naturligare som standard,
   vridning och axlar är reglage, fingrarna visar hur de verkar på kortet; allt "kompatibelt med material skapat".
 - **Dockan framåt** (2026-11-23): en giv till en spelare tar 2 s som förval, valbart i Docka. För framtiden: A2.2 ur
