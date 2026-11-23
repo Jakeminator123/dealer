@@ -11,8 +11,7 @@
 // what to do; a deal to a seat with no last picture yet goes without one, as the store makes it, a return waits for the deal
 // whose last frame it starts in, and a recipe's status and its reference film only inform (Jakob 2026-11-23, docs/BESKED.md
 // "Rensa bort regler och låsningar som blockerar"). Nothing here composes an order: the store does, as for every draft. No
-// DOM, no network; tests in studio/tests/bordet-line.test.ts (the rows and the stops), studio/tests/line-same.test.ts and
-// studio/tests/bordet-stage.test.ts (the stage).
+// DOM, no network; tests in studio/tests/bordet-line.test.ts (the rows and the stops) and studio/tests/line-same.test.ts.
 import type { Graph } from "../../src/clip-graph.ts";
 import { INTRO_FRAME, INTRO_FRAMING, focalOf } from "../../src/game-intro.ts";
 import {
