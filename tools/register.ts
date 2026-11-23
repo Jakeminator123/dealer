@@ -71,7 +71,8 @@ function main(argv: string[]) {
   const need = () => { if (!id) throw new Error(`Ange ett id: node tools/register.ts ${command} <id>`); return id; };
   if (command === 'get') {
     const post = register.get(need());
-    if (!post) { console.error(`${id} har ingen post i registret.`); process.exitCode = 1; return; }
+    // No post is an answer, not a failure: it exits clean, with a removed post's row when one is kept.
+    if (!post) { const row = register.removed().filter(r => r.id === id).pop(); say(`${id} har ingen post i registret.${row ? ` Den togs bort ${row.removedAt.slice(0, 10)} (${row.why}); domen står kvar: node tools/register.ts removed.` : ''}`); return; }
     process.stdout.write(JSON.stringify(post, null, 2) + '\n');
   } else if (command === 'list') {
     const hits = register.list().filter(e => !id || e.id.includes(id) || JSON.stringify(e.post).includes(id));
