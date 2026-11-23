@@ -1,5 +1,5 @@
 {
-  "about": "What every dealer's anchors agree on, and the order in which a new dealer's pictures are made. Cleaned from the Paow session's proposal (D:/dealer-scratch/tmp/paow/stabilt/dealer-standard-forslag.json, 2026-11-12). The table edge and the frame are the scene's and stand in data/scene-contract.json; this file points there. Measured values come from the bank's rest frame (frame 0 of pamela-idle-ready-entry-01); a value with \"estimate\" is not measured. The still texts of the view Beställ say part of it in words (src/order-prompts.ts SAY.stillStandard: the elbows hanging free, the body ending on the straight line, one even green, soft frontal light); the film texts say nothing of it. STANDARD_STILL is the old long text's wording (Utförlig), read only by the orders stored in that style.",
+  "about": "What every dealer's anchors agree on, and the order in which a new dealer's pictures are made. Cleaned from the Paow session's proposal (D:/dealer-scratch/tmp/paow/stabilt/dealer-standard-forslag.json, 2026-11-12). The table edge and the frame are the scene's and stand in data/scene-contract.json; this file points there. Measured values come from the bank's rest frame as it stood 2026-11-12 (the first dealer's, archived 2026-11-23; frame 0 of paow-vila-01-01 has the same shoe within 2 px); a value with \"estimate\" is not measured. The still texts of the view Beställ say part of it in words (src/order-prompts.ts SAY.stillStandard: the elbows hanging free, the body ending on the straight line, one even green, soft frontal light); the film texts say nothing of it. STANDARD_STILL is the old long text's wording (Utförlig), read only by the orders stored in that style.",
   "schemaVersion": 1,
   "scene": {
     "contract": "data/scene-contract.json",
@@ -32,8 +32,8 @@
     "sizeOnTable": "the plan's card (placements/default.json, the size Jakob drags in the lab); every film's landed card is drawn and measured against it"
   },
   "shoe": {
-    "perDealer": "One shoe per dealer: the 2.1 shoe (the black shoe with the card showing in the window at the front, frame 0 of paow-vila-01-01; until 2026-11-23 frame 0 of Pamela's pamela-idle-ready-entry-01, the same shoe within 2 px), in every position including 2.2.",
-    "why": "Jakob 2026-11-12: \"Ett kort ska tas som det ser ut i skon (inte den konstiga bild som har ett kort som är kort och tjockt)\"; the open-front shoe of pamela-ready-b-shoe-plate-01 is not used for new dealers.",
+    "perDealer": "One shoe per dealer: the 2.1 shoe (the black shoe with the card showing in the window at the front, frame 0 of paow-vila-01-01), in every position including 2.2.",
+    "why": "Jakob 2026-11-12: \"Ett kort ska tas som det ser ut i skon (inte den konstiga bild som har ett kort som är kort och tjockt)\"; the old open-front shoe plate is not used for new dealers.",
     "box": [1180, 630, 1700, 905],
     "cardAgainstReal": { "value": [0.9, 1.29], "estimate": "measured against the knuckle breadth; open with Jakob whether the shoe's card is made the right size" }
   },
