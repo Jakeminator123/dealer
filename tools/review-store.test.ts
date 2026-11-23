@@ -14,26 +14,26 @@ async function temp(t: {after(fn: () => Promise<void>): void}) {
   await mkdir(path.join(root, 'motions'));
   return root;
 }
-const record = () => ({schemaVersion: 1, id: 'pamela-test-01', source: {path: 'assets/motions/pamela-test-01/source.mp4', frames: 120},
+const record = () => ({schemaVersion: 1, id: 'paow-test-01', source: {path: 'assets/motions/paow-test-01/source.mp4', frames: 120},
   review: {decision: 'PENDING', basis: 'Samma vänsterhand. Plant f93.', limitations: 'En tagning.', colorDoesNotProvePhysicalSide: true, userAccepted: false, productionReady: false}, postProcessing: 'none', published: false});
-const put = async (root: string, value = record()) => { const text = JSON.stringify(value, null, 2) + '\n'; await writeFile(path.join(root, 'motions/pamela-test-01.json'), text); return text; };
+const put = async (root: string, value = record()) => { const text = JSON.stringify(value, null, 2) + '\n'; await writeFile(path.join(root, 'motions/paow-test-01.json'), text); return text; };
 const fails = (status: number) => (error: unknown) => (error as {status?: number}).status === status;
 
 test('a decision rewrites only the review block and leaves the rest of the record as it was', async t => {
   const root = await temp(t), before = await put(root), store = reviewStore(root, () => '2026-11-11');
-  const read = await store.load('pamela-test-01');
-  const saved = await store.save('pamela-test-01', {decision: 'VARIANT', note: '  bra rörelse,\n men bara ibland  '}, read.revision);
-  const text = await readFile(path.join(root, 'motions/pamela-test-01.json'), 'utf8'), after = JSON.parse(text);
+  const read = await store.load('paow-test-01');
+  const saved = await store.save('paow-test-01', {decision: 'VARIANT', note: '  bra rörelse,\n men bara ibland  '}, read.revision);
+  const text = await readFile(path.join(root, 'motions/paow-test-01.json'), 'utf8'), after = JSON.parse(text);
   assert.deepEqual(after.review, {decision: 'ACCEPTED', basis: 'Samma vänsterhand. Plant f93.', limitations: 'En tagning.', colorDoesNotProvePhysicalSide: true, userAccepted: true, productionReady: false,
     acceptedAs: 'VARIANT', userReview: 'Jakob 2026-11-11: bra rörelse, men bara ibland'});
   assert.deepEqual(saved.review, after.review);
   // Same keys in the same order, same formatting: the only difference is inside review.
   assert.deepEqual(Object.keys(after), Object.keys(JSON.parse(before)));
   assert.equal(text, JSON.stringify({...JSON.parse(before), review: after.review}, null, 2) + '\n');
-  assert.equal(saved.revision, (await store.load('pamela-test-01')).revision); assert.notEqual(saved.revision, read.revision);
+  assert.equal(saved.revision, (await store.load('paow-test-01')).revision); assert.notEqual(saved.revision, read.revision);
   // The replaced block is kept for one step back, and no temporary file is left behind.
-  assert.deepEqual(JSON.parse(await readFile(path.join(root, '.runtime/review-previous.json'), 'utf8')), {id: 'pamela-test-01', review: JSON.parse(before).review});
-  assert.deepEqual(await readdir(path.join(root, 'motions')), ['pamela-test-01.json']);
+  assert.deepEqual(JSON.parse(await readFile(path.join(root, '.runtime/review-previous.json'), 'utf8')), {id: 'paow-test-01', review: JSON.parse(before).review});
+  assert.deepEqual(await readdir(path.join(root, 'motions')), ['paow-test-01.json']);
 });
 
 test('each decision sets decision, acceptedAs, userAccepted and a dated note', () => {
@@ -69,21 +69,21 @@ test('a lab-only verdict stays out of the game until Jakob approves the take', (
 });
 
 test('nothing is written without the revision that was read, for an unknown clip or a bad request', async t => {
-  const root = await temp(t), before = await put(root), store = reviewStore(root, () => '2026-11-11'), file = path.join(root, 'motions/pamela-test-01.json');
-  const {revision} = await store.load('pamela-test-01');
-  await assert.rejects(store.save('pamela-test-01', {decision: 'ACCEPTED'}, undefined), fails(428));
-  await assert.rejects(store.save('pamela-test-01', {decision: 'ACCEPTED'}, '"stale"'), fails(409));
-  await assert.rejects(store.save('pamela-none-01', {decision: 'ACCEPTED'}, revision), fails(404));
+  const root = await temp(t), before = await put(root), store = reviewStore(root, () => '2026-11-11'), file = path.join(root, 'motions/paow-test-01.json');
+  const {revision} = await store.load('paow-test-01');
+  await assert.rejects(store.save('paow-test-01', {decision: 'ACCEPTED'}, undefined), fails(428));
+  await assert.rejects(store.save('paow-test-01', {decision: 'ACCEPTED'}, '"stale"'), fails(409));
+  await assert.rejects(store.save('paow-none-01', {decision: 'ACCEPTED'}, revision), fails(404));
   await assert.rejects(async () => store.save('../placements/default', {decision: 'ACCEPTED'}, revision), fails(400));
-  await assert.rejects(async () => store.save('pamela-test-01', {decision: 'DELETE'}, revision), fails(400));
+  await assert.rejects(async () => store.save('paow-test-01', {decision: 'DELETE'}, revision), fails(400));
   assert.equal(await readFile(file, 'utf8'), before); assert.equal(existsSync(path.join(root, '.runtime')), false);
   // Two writers holding the same revision: the first is saved, the second is told to read again.
-  const [first, second] = await Promise.allSettled([store.save('pamela-test-01', {decision: 'ACCEPTED'}, revision), store.save('pamela-test-01', {decision: 'REJECTED'}, revision)]);
+  const [first, second] = await Promise.allSettled([store.save('paow-test-01', {decision: 'ACCEPTED'}, revision), store.save('paow-test-01', {decision: 'REJECTED'}, revision)]);
   assert.equal(first.status, 'fulfilled'); assert.equal(second.status, 'rejected'); assert.ok(fails(409)((second as PromiseRejectedResult).reason));
   assert.equal(JSON.parse(await readFile(file, 'utf8')).review.decision, 'ACCEPTED');
   // A record that is not an object is refused rather than repaired.
   await writeFile(file, '[]\n');
-  await assert.rejects(store.save('pamela-test-01', {decision: 'ACCEPTED'}, store.revisionOf('[]\n')), fails(422));
+  await assert.rejects(store.save('paow-test-01', {decision: 'ACCEPTED'}, store.revisionOf('[]\n')), fails(422));
   assert.equal(await readFile(file, 'utf8'), '[]\n');
 });
 
@@ -132,45 +132,45 @@ test('a provisional verdict (judged for him) plays like a decision but is never 
   }
   // Through the store: the revision guard and an untouched rest of the record, as for his decisions.
   const root = await temp(t), before = await put(root, {...record(), review: {...record().review, inbox: true}} as ReturnType<typeof record>), store = reviewStore(root, () => '2026-11-13', () => at);
-  const read = await store.load('pamela-test-01');
-  await assert.rejects(store.saveProvisional('pamela-test-01', change('ACCEPTED'), '"stale"'), fails(409));
-  const saved = await store.saveProvisional('pamela-test-01', change('ACCEPTED'), read.revision);
-  const text = await readFile(path.join(root, 'motions/pamela-test-01.json'), 'utf8');
+  const read = await store.load('paow-test-01');
+  await assert.rejects(store.saveProvisional('paow-test-01', change('ACCEPTED'), '"stale"'), fails(409));
+  const saved = await store.saveProvisional('paow-test-01', change('ACCEPTED'), read.revision);
+  const text = await readFile(path.join(root, 'motions/paow-test-01.json'), 'utf8');
   assert.equal(text, JSON.stringify({...JSON.parse(before), review: saved.review}, null, 2) + '\n');
   assert.equal(saved.review.inbox, undefined); assert.equal((saved.review.provisional as {at: string}).at, at);
-  const his = await store.save('pamela-test-01', {decision: 'REJECTED', note: 'nej'}, saved.revision);
+  const his = await store.save('paow-test-01', {decision: 'REJECTED', note: 'nej'}, saved.revision);
   assert.equal(his.review.provisional, undefined); assert.equal(his.review.userReview, 'Jakob 2026-11-13: nej');
-  await assert.rejects(store.saveProvisional('pamela-test-01', change('ACCEPTED'), his.revision), fails(409));
+  await assert.rejects(store.saveProvisional('paow-test-01', change('ACCEPTED'), his.revision), fails(409));
 });
 
 test('archiving a take sets review.archived with who, when and where and nothing else; his verdict stays, and taking it back removes only the field', async t => {
   const root = await temp(t), verdict = {decision: 'ACCEPTED', acceptedAs: 'MAIN', userAccepted: true, userReview: 'Jakob 2026-11-12: bäst'};
-  const before = await put(root, {...record(), review: verdict} as never), file = path.join(root, 'motions/pamela-test-01.json');
+  const before = await put(root, {...record(), review: verdict} as never), file = path.join(root, 'motions/paow-test-01.json');
   const store = reviewStore(root, () => '2026-11-18', () => '2026-11-18T01:00:00.000Z');
-  const read = await store.load('pamela-test-01');
-  const archived = await store.saveArchive('pamela-test-01', {archived: true}, read.revision, 'Jakob', 'Karta');
+  const read = await store.load('paow-test-01');
+  const archived = await store.saveArchive('paow-test-01', {archived: true}, read.revision, 'Jakob', 'Karta');
   assert.deepEqual(archived.review, {...verdict, archived: {by: 'Jakob', at: '2026-11-18T01:00:00.000Z', where: 'Karta'}});
   // Only the review block differs in the file, and the block before is kept for one step back, as with a verdict.
   assert.equal(await readFile(file, 'utf8'), JSON.stringify({...JSON.parse(before), review: archived.review}, null, 2) + '\n');
-  assert.deepEqual(JSON.parse(await readFile(path.join(root, '.runtime/review-previous.json'), 'utf8')), {id: 'pamela-test-01', review: verdict});
+  assert.deepEqual(JSON.parse(await readFile(path.join(root, '.runtime/review-previous.json'), 'utf8')), {id: 'paow-test-01', review: verdict});
   assert.notEqual(archived.revision, read.revision);
   // The same guards as a verdict: the revision that was read, and no second archiving.
-  await assert.rejects(store.saveArchive('pamela-test-01', {archived: true}, archived.revision, 'Jakob', 'Karta'), fails(409), 'already archived');
-  await assert.rejects(store.saveArchive('pamela-test-01', {archived: false}, read.revision, 'Jakob', 'Karta'), fails(409), 'a revision read before the change is refused');
-  await assert.rejects(store.saveArchive('pamela-test-01', {archived: false}, undefined, 'Jakob', 'Karta'), fails(428));
+  await assert.rejects(store.saveArchive('paow-test-01', {archived: true}, archived.revision, 'Jakob', 'Karta'), fails(409), 'already archived');
+  await assert.rejects(store.saveArchive('paow-test-01', {archived: false}, read.revision, 'Jakob', 'Karta'), fails(409), 'a revision read before the change is refused');
+  await assert.rejects(store.saveArchive('paow-test-01', {archived: false}, undefined, 'Jakob', 'Karta'), fails(428));
   await assert.rejects(store.saveArchive('okand-tagning', {archived: true}, archived.revision, 'Jakob', 'Karta'), fails(404));
   // A request names nothing but archived: who and where come from the caller (the lab's route: Jakob, Karta), never from the body.
   for (const bad of [{archived: 'yes'}, {archived: true, by: 'agent'}, {archived: true, where: 'chatten'}, {}, null, true]) assert.throws(() => validateArchive(bad), fails(400));
   for (const [by, where] of [['', 'Karta'], ['Jakob', ' '], ['x'.repeat(201), 'Karta']]) assert.throws(() => applyArchive({}, true, 'now', by, where), fails(400), 'who and where are required');
   assert.equal(await readFile(file, 'utf8'), JSON.stringify({...JSON.parse(before), review: archived.review}, null, 2) + '\n', 'nothing was written by a refused request');
   // His decisions and a verdict given for him leave the field as it is: the take stays archived until it is taken back.
-  const said = await store.save('pamela-test-01', {decision: 'ACCEPTED', note: 'inte primär längre'}, archived.revision);
+  const said = await store.save('paow-test-01', {decision: 'ACCEPTED', note: 'inte primär längre'}, archived.revision);
   assert.deepEqual(said.review, {decision: 'ACCEPTED', userAccepted: true, userReview: 'Jakob 2026-11-18: inte primär längre', archived: archived.review.archived});
   assert.deepEqual(applyProvisional({decision: 'PENDING', archived: {by: 'Jakob', at: 'x', where: 'Karta'}}, validateProvisional({decision: 'ACCEPTED', by: 'huvudagenten', mandate: 'm', note: 'n'}), 'now').archived, {by: 'Jakob', at: 'x', where: 'Karta'});
   // Taking it back removes the field and nothing else.
-  const back = await store.saveArchive('pamela-test-01', {archived: false}, said.revision, 'Jakob', 'Karta');
+  const back = await store.saveArchive('paow-test-01', {archived: false}, said.revision, 'Jakob', 'Karta');
   assert.deepEqual(back.review, {decision: 'ACCEPTED', userAccepted: true, userReview: 'Jakob 2026-11-18: inte primär längre'});
-  await assert.rejects(store.saveArchive('pamela-test-01', {archived: false}, back.revision, 'Jakob', 'Karta'), fails(409), 'not archived');
+  await assert.rejects(store.saveArchive('paow-test-01', {archived: false}, back.revision, 'Jakob', 'Karta'), fails(409), 'not archived');
   assert.deepEqual(applyArchive({decision: 'ACCEPTED', archived: true}, false, 'now', 'Jakob', 'Karta'), {decision: 'ACCEPTED'}, 'whatever the readers take for archived can be taken back');
   assert.deepEqual(applyArchive(undefined, true, 'now', ' Jakob ', 'Karta'), {archived: {by: 'Jakob', at: 'now', where: 'Karta'}}, 'a record without a review block can be archived');
 });

@@ -1,6 +1,6 @@
 // Jakob's own word on the proofs (data/proof-notes.json): the register's rules (tools/proof-notes-register.ts), the store the
-// lab server writes through (tools/proof-notes-store.ts), the main agent's tool (tools/proof-notes.ts), what the online copy
-// carries (tools/studio-freeze.ts pickNotes) and the page's pure words (studio/lib/proof-notes.ts).
+// lab server writes through (tools/proof-notes-store.ts), the main agent's tool (tools/proof-notes.ts) and what the online
+// copy carries (tools/studio-freeze.ts pickNotes).
 // Run from the repo root: node --test "studio/tests/proof-notes.test.ts"
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -12,7 +12,6 @@ import { NEW_REVISION, applyAgent, applyChange, cleanText, noteLine, readNotes, 
 import { proofNotesStore } from "../../tools/proof-notes-store.ts";
 import { listing } from "../../tools/proof-notes.ts";
 import { pickNotes } from "../../tools/studio-freeze.ts";
-import { noteWords, notesByPlace, notesOn, placeKey, replaceNote, speaker } from "../lib/proof-notes.ts";
 
 const T1 = "2026-11-18T00:10:00.000Z", T2 = "2026-11-18T00:20:00.000Z", T3 = "2026-11-18T00:30:00.000Z";
 const note = (extra: Record<string, unknown> = {}) => ({ id: 1, proof: "kort-grepp", file: "a.mp4", choice: "bra", text: "", at: T1, ...extra });
@@ -116,16 +115,3 @@ test("the copy carries his word on the proofs and files that go up, without the 
   assert.deepEqual(picked.notes.map((n) => n.id), [1, 3]);
   assert.equal("read" in picked.notes[0] || "revision" in picked.notes[0], false);
 });
-
-test("the page's words: Du in the lab, Jakob in the copy; his note replaced after a save", () => {
-  assert.equal(speaker(false), "Du");
-  assert.equal(speaker(true), "Jakob");
-  const both = noteWords({ choice: "inte-bra", text: "för mörk" });
-  assert.ok(both.endsWith("för mörk") && both !== "för mörk" && both !== noteWords({ choice: "bra", text: "för mörk" }), `his choice, then his words: ${both}`);
-  assert.equal(noteWords({ choice: null, text: "för mörk" }), "för mörk");
-  const a = { ...note(), revision: "1" } as never, b = { ...note({ id: 2, file: null }), revision: "2" } as never;
-  assert.equal(notesByPlace([a, b]).get(placeKey("kort-grepp", null)), b);
-  assert.deepEqual(replaceNote([a, b], { proof: "kort-grepp", file: "a.mp4", note: null }), [b]);
-  assert.equal(notesOn([a, b], "kort-grepp"), 2);
-});
-

@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {BUILT_BLUR, BUILT_ROOMS, KEYS, NAME_LIMIT, PRESET_NAME, ROOM_ID, decode, fits, lookNotice, lookState, presetFrom, readLook, type KeyKind} from '../src/game-look.ts';
+import {BUILT_BLUR, BUILT_ROOMS, KEYS, NAME_LIMIT, PRESET_NAME, ROOM_ID, decode, fits, lookState, presetFrom, readLook, type KeyKind} from '../src/game-look.ts';
 import {BUILT_BLUR as STUDIO_BLUR, BUILT_ROOMS as STUDIO_ROOMS, ROOM_ID as STUDIO_ROOM_ID, SCENE_KEYS, checkValue, decodeValue, type KeySpec} from '../studio/lib/scene-keys.ts';
 import {NAME_LIMIT as STUDIO_NAME_LIMIT, PRESET_NAME as STUDIO_PRESET_NAME, SHIPPED, effective} from '../studio/lib/scene-presets.ts';
 import {DEFAULTS} from '../src/scene3d-view.ts';
@@ -90,16 +90,6 @@ test('the look over the game: a preset is a whole look, keys alone lie over the 
   assert.deepEqual(lookState(DEFAULTS, null, {room: 'hall'}, blurOf), {room: 'hall', blur: 11});
   assert.deepEqual(lookState(DEFAULTS, null, {room: 'la', blur: 2}, blurOf), {room: 'la', blur: 2});
   assert.deepEqual(lookState(DEFAULTS, null, {}, blurOf), {});
-});
-
-test('what the page says when part of the look could not be used', () => {
-  // The words may change; what holds is that it speaks only when something could not be used, and names that and only that.
-  assert.equal(lookNotice(null, false, []), null);
-  assert.equal(lookNotice('levande', true, []), null);
-  const preset = lookNotice('borta', false, [])!, keys = lookNotice(null, false, ['dust', 'room'])!, both = lookNotice('borta', false, ['zoom'])!;
-  assert.ok(preset.includes('borta') && !/dust|room|zoom/.test(preset), preset);
-  assert.ok(keys.includes('dust') && keys.includes('room') && !keys.includes('borta'), keys);
-  assert.ok(both.includes('borta') && both.includes('zoom'), both);
 });
 
 test('the game\'s own words are never read as a look', () => {

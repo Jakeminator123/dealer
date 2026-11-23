@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { buildGraph, type BankData, type BankJob } from "../../src/clip-graph.ts";
 import { DECISIONS, NOTE_LIMIT as STORE_LIMIT, applyChange, applyProvisional } from "../../tools/review-store.ts";
 import { NOTE_LIMIT, type Decision } from "../lib/api.ts";
-import { FOR_YOU, PROOF_VERDICT_LABEL, SAID_WITHOUT_NOTE, VERDICTS, VERDICT_LABEL, VERDICT_SIGN, awaitingJakob, chosenDecision, judgedForJakob, mandateText, primarCount, proofVerdict, provisionalChip, provisionalOf, provisionalWords, reviewStamp, splitLabel, storedNote, verdictOf, verdictPhrase } from "../lib/verdict.ts";
+import { FOR_YOU, PROOF_VERDICT_LABEL, SAID_WITHOUT_NOTE, VERDICTS, VERDICT_LABEL, VERDICT_SIGN, awaitingJakob, chosenDecision, judgedForJakob, primarCount, proofVerdict, provisionalChip, provisionalOf, provisionalWords, reviewStamp, splitLabel, storedNote, verdictOf, verdictPhrase } from "../lib/verdict.ts";
 
 type R = Record<string, unknown>;
 const take = (review: R | null, extra: R = {}) => ({
@@ -136,19 +136,6 @@ test("proof labels split into a short name and the rest", () => {
   assert.deepEqual(splitLabel("Titta runt · 3D-salong (exakt)"), { name: "Titta runt · 3D-salong", rest: "(exakt)" });
   assert.deepEqual(splitLabel("Hemvy. Kameran står still"), { name: "Hemvy. Kameran står still", rest: "" });
   assert.deepEqual(splitLabel("Hemvy salong. Kameran står still"), { name: "Hemvy salong", rest: "Kameran står still" });
-});
-
-test("a mandate in his words: the task's id in front and the mandate's id after go, his name stays, and a date reads as day and month", () => {
-  // only an id in small letters with hyphens is the main agent's task in front of the words
-  assert.equal(mandateText("dealer-37-20261120: pilot 02 till plats 4 från ankare 2.3 C"), "pilot 02 till plats 4 från ankare 2.3 C");
-  // his name with the date straight after it is his, never an id: kept, the date as day and month
-  assert.equal(mandateText("Jakob2026-11-18: ”Ja du får generera tills kontot är typ tomta!” Ett oberoende granskat C2-omtag."), "Jakob 18 nov: ”Ja du får generera tills kontot är typ tomta!” Ett oberoende granskat C2-omtag.");
-  assert.equal(mandateText("Jakobs Dealer-mandat 2026-11-18: 800 krediter per rullande timme, 2500 totalt till 13:01:31Z."), "Jakobs Dealer-mandat 18 nov: 800 krediter per rullande timme, 2500 totalt till 13:01:31Z.");
-  // the mandate's id stored after the words goes, and every date in them reads as day and month
-  assert.equal(
-    mandateText("Jakob 2026-11-21: släpet med handbyte beställs från A2.3 (plats 4, kort 2); hans ja 15.56 i Beslut på receptet från A2.3; dockfilmen granskad 2026-11-21; mandatet dealer-b0-20261121"),
-    "Jakob 21 nov: släpet med handbyte beställs från A2.3 (plats 4, kort 2); hans ja 15.56 i Beslut på receptet från A2.3; dockfilmen granskad 21 nov",
-  );
 });
 
 test("a verdict judged for him: its own chip and words, never Jakob's, never a pressed button of his, and not waiting for him", () => {

@@ -107,13 +107,13 @@ test('a provisional approval is not his: never "rakt godkänd", so never a refer
   assert.deepEqual(verdictOf(review as never), {verdict: 'GODKÄND', straight: false, words: null});
   assert.equal(verdictOf(applyChange(review, {decision: 'ACCEPTED', note: ''}, '2026-11-13') as never).straight, true);
   const bank = bankWith(review);
-  const candidates = referenceCandidates(bank as never, {dealer: 'pamela', step: stepOf('GIV-2.1')!, target: 'P4.C1'});
+  const candidates = referenceCandidates(bank as never, {dealer: 'paow', step: stepOf('GIV-2.1')!, target: 'P4.C1'});
   assert.equal(candidates.find(c => c.take === 'p4-new-01')?.approvedStraight, false);
   // Not in his queue (Jakob 2026-11-13: "Med andra ord vill jag inte se en sån här lista när jag är tillbaka!").
   const graph = buildGraph(bank);
   assert.ok(!awaitingJakob(graph).some(t => t.id === 'p4-new-01'));
   // The production list: klar, in words that say it was judged for him, and counted as provisional.
-  const list = productionList({graph, entries: [], dealer: {id: 'pamela', name: 'Pamela'}, orders: [], methods: {schemaVersion: 1, methods: []}, bank: bank as never} as never);
+  const list = productionList({graph, entries: [], dealer: {id: 'paow', name: 'Paow'}, orders: [], methods: {schemaVersion: 1, methods: []}, bank: bank as never} as never);
   const row = list.rows.find(r => r.edge === 'READY>P4.C1')!;
   assert.deepEqual([row.state, row.provisional, row.byJakob, row.words], ['KLAR', true, false, 'klar · godkänd åt dig']);
   assert.equal(list.counts.provisional, 1);

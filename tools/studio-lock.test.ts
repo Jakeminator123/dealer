@@ -150,7 +150,7 @@ test('cookies are read by name and the login page never carries the password', (
 });
 
 // ── The gate as the middleware runs it ──────────────────────────────────────
-const film = '/assets/motions/pamela-p4-c1-deal-01/source.mp4';
+const film = '/assets/motions/paow-p4-c1-deal-01/source.mp4';
 const media: MediaMap = {[film]: {url: 'https://store.public.blob.vercel-storage.com/studio/' + 'a'.repeat(64) + '.mp4', type: 'video/mp4', bytes: 10, sha256: 'a'.repeat(64)}};
 const context = (over: Partial<GateContext> = {}): GateContext => ({env, media, limiter: new TryLimit(), now: () => now * 1000, ...over});
 const ask = (path: string, init: RequestInit = {}) => new Request('https://kopia.example' + path, init);

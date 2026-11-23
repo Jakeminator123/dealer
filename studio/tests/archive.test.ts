@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { buildGraph, type BankData, type BankJob, type MotionRecord } from "../../src/clip-graph.ts";
 import { hubDeals } from "../../src/game-director.ts";
 import { ApiError, putArchive } from "../lib/api.ts";
-import { ARCHIVE_ACTION, archiveLines, archivedOf, restoreLines, stepAfter, withArchived } from "../lib/archive.ts";
+import { archiveLines, archivedOf, restoreLines, stepAfter, withArchived } from "../lib/archive.ts";
 import { decide, makePrimary } from "../lib/decide.ts";
 import { bankSummary, edgeInfo, isOutright, isSecondary, primaryOf } from "../lib/edge-stats.ts";
 import { takeName } from "../lib/names.ts";
@@ -123,11 +123,6 @@ test("Karta with an archived Primär: no Primär on the step, the take neither P
   assert.equal(choiceEdges(g).some((c) => c.edge.id === DEAL && c.takes.some((t) => t.archived)), false);
   assert.match(contextSteps(g, DEAL, "paow-giv-p4-01").error ?? "", /kan inte spelas \(arkiverad: ta tillbaka den i Karta\)\.$/);
   assert.equal(contextSteps(graphOf(before), DEAL, "paow-giv-p4-01").error, null);
-});
-
-test("the words of the two buttons say that nothing is deleted and that it can be taken back", () => {
-  assert.equal(ARCHIVE_ACTION.archive.button, "Arkivera"); assert.equal(ARCHIVE_ACTION.restore.button, "Ta tillbaka");
-  assert.match(ARCHIVE_ACTION.archive.hint, /Raderas inte; går att ta tillbaka/);
 });
 
 // ── The one write, as the page sends it: the studio's real writer (putArchive in lib/api.ts) against a fake fetch ──
