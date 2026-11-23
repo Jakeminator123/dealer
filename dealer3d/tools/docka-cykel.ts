@@ -1,8 +1,8 @@
 // A doll's deal and its return in one film (Jakob 2026-11-23: "giv och återgång i en film"), for any place of the plan, laid
 // as the doll lab lays it (dealer3d/page/docka.ts, "Giv och återgång"): from A2.3 "Naturlig" by default, and the standard
 // Jakob saved for the doll, entry and place (dealer3d/standard/, lay.ts standardName) where there is one, laid again from
-// its recipe and sliders in the way he saved it in ("hans standard vinner där den finns"); from A2.1 the deal read off
-// Pamela's film to the place (lay.ts readDeal), the only deals from there. The deal is laid with the standard doll, given
+// its recipe and sliders in the way he saved it in ("hans standard vinner där den finns"); from A2.1 the read one-hand
+// deal to the place (lay.ts readDeal), the only deals from there. The deal is laid with the standard doll, given
 // its return, posed on the doll and, in "Naturlig", moved as a person moves: page/natural-lab.ts withReturn, as the lab
 // does. Writes the motion to a new file only, and prints what to read beside it and the render command.
 //   node dealer3d/tools/docka-cykel.ts --to P5.C1 --out dealer3d/data/<new>.json [--from A2.3|A2.1] [--doll paow]
@@ -91,7 +91,7 @@ const done = withReturn(laid, {way, body: steer.body, knobs, lens, doll, source:
 const landingSaid = way === 'naturlig' ? landing : null, turnSaid = way === 'naturlig' ? turn : null;
 const cycle = done.cycle, motion = done.motion as typeof done.motion & {frames: {card: {c: number[]}; L: Limb; R: Limb}[]}, flatDeg = done.receipt?.frames.map(f => f.flatDeg ?? 0) ?? [];
 
-const words = place.replace(/^P(\d)\.C(\d)$/, 'plats $1 kort $2').replace(/^D\.C(\d)$/, 'dealerns kort $1'), WAY = {naturlig: 'Naturlig', forut: 'Som förut', read: 'som given är läst ur Pamelas film'};
+const words = place.replace(/^P(\d)\.C(\d)$/, 'plats $1 kort $2').replace(/^D\.C(\d)$/, 'dealerns kort $1'), WAY = {naturlig: 'Naturlig', forut: 'Som förut', read: 'som given är avläst'};
 const how = standard ? `hans sparade standard ${standard} (${way === 'read' ? WAY.read : `i ${WAY[way]}`})` : way === 'read' ? WAY.read : `${WAY[way]}, inget reglage rört`;
 const about = `${doll.name === 'paow' ? 'Paow' : 'Standarddockan'}, ${entry} till ${words} och tillbaka till ${entry} i samma film, lagd som docklabbet lägger den: ${how}${values['flat-hand'] ? ', högerhanden plan vid nedsläppet (natural.ts flatHand)' : ''}${before.samHand ? ', vänsterhanden vid skon som SAM läste den' : ''}${before.recipeGripYaw ? ', handens vinkel på kortet receptets' : ''}${landingSaid && !asBefore(landingSaid) ? `, landningen: ${landingWords(landingSaid).toLowerCase()}` : ''}${done.turn?.laid ? ', kortet vänt i högerhanden av handleden (turn-in-hand.ts)' : ''}. Skriven av dealer3d/tools/docka-cykel.ts; filmas med render-reference.ts --seconds ${cycle.frameCount / cycle.fps} --fps 24.`;
 const made = {tool: 'dealer3d/tools/docka-cykel.ts', place, from: entry, doll: doll.name, way, standard, recipe: recipe?.from ?? null, read: 'read' in found ? found.read : null, poseFilm: recipe ? recipe.poseFilm ?? 'till-ankare-2-3' : null, steer, knobs,

@@ -5,7 +5,7 @@
 // they are moved, and "Spara som standard", which writes what is shown as a motion file for that doll, entry and place
 // (dealer3d/standard/, lay.ts standardName; the routes are dealer3d/page/server.ts). The room and the doll are
 // dealer3d/src/stage.ts's (page/lab-stage.ts), a deal from A2.3 is laid by dealer3d/src/two-hand.ts from the recipe of a
-// stored deal (page/lay.ts), one from A2.1 is read off Pamela's film (lay.ts readDeal), and either is posed on the doll
+// stored deal (page/lay.ts), one from A2.1 is a read one-hand deal (lay.ts readDeal), and either is posed on the doll
 // paow as dealer3d/tools/doll-pose.ts poses it (page/pose-on-doll.ts): nothing is drawn or posed here that those do not make.
 // Two ways of dealing from A2.3 (page/natural-lab.ts): "Naturlig", the standard for Paow (the hands hand the card over
 // without meeting, thumb and forefinger hold its corner, her left hand at the shoe as her picture has it, the body,
@@ -45,13 +45,13 @@ const sums = new Map<string, Promise<{path: string; sha256: string}>>(), sourceO
 const comma = (n: number, digits = 0) => n.toFixed(digits).replace('.', ',').replace('-', '−');
 const DOLLS: Record<string, string> = {paow: 'Paow', standard: 'Standarddockan'}, LENT = {'seat 5': 'receptet lånat av plats 5', 'her first card': 'receptet lånat av kort 1'};
 const WHY = {reach: 'når inte', closed: 'stängt kort', unread: 'ingen giv från A2.1 är läst dit', unbuilt: 'A2.2 är inte byggd'};
-const WAYS: Record<How, string> = {naturlig: 'Naturlig', forut: 'Som förut', read: 'Pamelas avlästa giv'};
+const WAYS: Record<How, string> = {naturlig: 'Naturlig', forut: 'Som förut', read: 'Avläst giv'};
 // The pose films: A1 is the first frame of the film to A2.3 and A2.3 its last (dealer3d/tools/doll-still.ts); A2.1, the
-// pinch at the shoe, is the first frame of the deals read off Pamela's film, in the films' shoe as a deal from A2.1 begins
-// (lay.ts readDeal). A2.2 has no pose in the code.
+// pinch at the shoe, is the first frame of the read deals (lay.ts READ_DEALS), in the films' shoe as a deal from A2.1
+// begins (lay.ts readDeal). A2.2 has no pose in the code.
 const POSES: Record<Pose, {film: string; end: boolean; read?: boolean; said?: string}> = {
   'A1': {film: 'till-ankare-2-3-c', end: false}, 'A2.3': {film: 'till-ankare-2-3-c', end: true},
-  'A2.1': {film: 'giv-pamela-p4', end: false, read: true, said: 'Pamelas avlästa nyp'}};
+  'A2.1': {film: 'giv-pamela-p4', end: false, read: true, said: 'Avläst nyp'}};
 const placeWords = (id: string) => { const m = /^(?:P([1-7])|D)\.C([123])$/.exec(id)!; return m[1] ? `plats ${m[1]}, kort ${m[2]}` : `dealern, kort ${m[2]}`; };
 const knobsOf = (k?: Partial<Knobs>): Knobs => ({shoulderR: [...(k?.shoulderR ?? NO_KNOBS.shoulderR)] as [number, number], shoulderL: [...(k?.shoulderL ?? NO_KNOBS.shoulderL)] as [number, number], elbowOut: [...(k?.elbowOut ?? NO_KNOBS.elbowOut)] as [number, number]});
 
@@ -79,7 +79,7 @@ const plain = (e: unknown) => { const s = String((e as Error)?.message ?? e); re
 
 /** A recipe by the name of its stored deal, and the pose film it begins on. */
 const recipeNamed = async (name: string) => { const recipe = recipeOf(name, await stored<Stored & Motion>(name)); return {recipe, pose: await stored<PoseFilm>(recipe.poseFilm ?? 'till-ankare-2-3')}; };
-/** Where the deal from the entry to the place comes from: a recipe (A2.3) or a deal read off Pamela's film (A2.1). */
+/** Where the deal from the entry to the place comes from: a recipe (A2.3) or a read deal (A2.1). */
 async function dealOfPlace(entry: Entry, place: string) {
   const r = placeFrom(entry, place); if (!r || 'none' in r) return null;
   if ('read' in r) return {read: r.read, lent: null};
@@ -102,7 +102,7 @@ async function showDeal(keepTime = false) {
     if (saved) { lab = ((await get(`/dealer3d/standard/${saved.name}.json`) as Motion).lab ?? {}) as SavedLab; if (stale()) return; }
     let way: How, savedWay: How | null = null, recipe: Recipe | null = null, shown: Laid;
     if ('read' in found) {
-      // From A2.1: the deal read off Pamela's film, as read (a standard saved from there is the same deal).
+      // From A2.1: the read deal, as read (a standard saved from there is the same deal).
       const deal = readDeal(found.read, await stored<ReadStored>(found.read), place), source = back ? await sourceOf(found.read) : null; if (stale()) return;
       way = 'read'; savedWay = saved ? 'read' : null;
       const r = source ? withReturn(deal as never, {way, body: null, knobs: NO_KNOBS, lens, doll: D, source}) : posedOn(deal, D, {hands: 'motion'});
@@ -203,7 +203,7 @@ function paint() {
   const deal = state.shown.kind === 'deal', saved = standards.find(s => s.name === standardName(state.doll, state.entry, state.place)), way = wayOf(), read = state.entry === 'A2.1';
   for (const b of document.querySelectorAll<HTMLButtonElement>('#dolls button')) b.setAttribute('aria-pressed', String(b.dataset.doll === state.doll));
   for (const b of document.querySelectorAll<HTMLButtonElement>('#ways button')) { const off = (state.doll === 'standard' && b.dataset.way === 'naturlig') || (read && deal); b.setAttribute('aria-pressed', String(!(read && deal) && b.dataset.way === way)); b.disabled = off; b.title = !off ? '' : read && deal ? 'Från A2.1 finns ett sätt: given som den är läst' : 'Bara för Paow'; }
-  $('wayNote').textContent = read && deal ? 'Från A2.1: givet med vänsterhanden som det är läst ur Pamelas film, inga reglage.' : state.doll === 'standard' ? 'Naturlig finns bara för Paow.' : way === 'naturlig' ? 'Händerna möts inte vid handbytet, tummen och pekfingret håller kortets hörn, vänsterhanden ligger på skon som i hennes bild, och kroppen följer reglagen så långt armarna når.' : 'Given som labbet lade den före 23 november, med filmens sko.';
+  $('wayNote').textContent = read && deal ? 'Från A2.1: given med vänsterhanden som den är avläst, inga reglage.' : state.doll === 'standard' ? 'Naturlig finns bara för Paow.' : way === 'naturlig' ? 'Händerna möts inte vid handbytet, tummen och pekfingret håller kortets hörn, vänsterhanden ligger på skon som i hennes bild, och kroppen följer reglagen så långt armarna når.' : 'Given som labbet lade den före 23 november, med filmens sko.';
   for (const b of document.querySelectorAll<HTMLButtonElement>('#poses button')) b.setAttribute('aria-pressed', String(!deal && b.dataset.pose === (state.shown as {pose?: string}).pose));
   for (const b of document.querySelectorAll<HTMLButtonElement>('#entries button')) b.setAttribute('aria-pressed', String(b.dataset.entry === state.entry));
   for (const b of document.querySelectorAll<HTMLButtonElement>('#backs button')) b.setAttribute('aria-pressed', String((b.dataset.back === '1') === state.back));
@@ -212,7 +212,7 @@ function paint() {
   for (const b of document.querySelectorAll<HTMLButtonElement>('#places button')) { const id = b.dataset.place!, r = placeFrom(state.entry, id), open = !!r && !('none' in r);
     b.disabled = !open; b.textContent = open ? '●' : '–'; b.title = open || !r ? placeWords(id) : `${placeWords(id)}: ${WHY[(r as {none: keyof typeof WHY}).none]}`; if (!open && r) closed.push(b.title);
     b.setAttribute('aria-pressed', String(deal && id === state.place)); b.classList.toggle('saved', standards.some(s => s.name === standardName(state.doll, state.entry, id))); }
-  $('closed').textContent = read ? 'Från A2.1 finns bara givarna som är lästa ur Pamelas film: plats 1, 3, 4 och 5, kort 1.' : closed.map(c => c[0].toUpperCase() + c.slice(1)).join('. ') + (closed.length ? '.' : '');
+  $('closed').textContent = read ? 'Från A2.1 finns bara de avlästa givarna: plats 1, 3, 4 och 5, kort 1.' : closed.map(c => c[0].toUpperCase() + c.slice(1)).join('. ') + (closed.length ? '.' : '');
   for (const b of document.querySelectorAll<HTMLButtonElement>('#views button')) b.setAttribute('aria-pressed', String(b.dataset.view === state.view));
   for (const b of document.querySelectorAll<HTMLButtonElement>('#speed button')) b.setAttribute('aria-pressed', String(Number(b.dataset.speed) === state.speed));
   for (const {k, label, out, input} of knobs) { const on = deal && k.on(); input.disabled = !on; label.classList.toggle('off', !on); label.title = !on && deal ? (read ? 'Från A2.1 är given som den är läst' : k.only ?? '') : ''; input.min = String(k.min()); input.max = String(k.max());
@@ -237,7 +237,7 @@ function paint() {
     : now?.from === 'saved' && !now.saved ? `Din sparade standard (${when}) är sparad ${withBack(now.savedBack)}; här visas den ${withBack(now.back)}. Spara som standard sparar den så här.`
     : now?.saved ? `Din sparade standard (${when}, ${now.savedWay === 'read' ? 'från A2.1' : `gjord i ${WAYS[now.savedWay ?? 'forut']}`}, ${withBack(now.savedBack)}), lagd ${now.savedWay === 'read' ? 'som den är läst' : 'med dina värden'} och filmens sko.${now.savedWay !== 'read' && now.savedWay !== way ? ` Dra i ett reglage för ${WAYS[way]} med dina värden.` : ''}`
     : saved ? `Inte den sparade (${when}). Klicka på platsen för den.` : steered ? 'Ändrad, inte sparad.'
-    : read ? 'Pamelas avlästa giv från A2.1. Ingen standard sparad.' : way === 'naturlig' ? 'Naturlig grundrörelse. Ingen standard sparad.' : 'Grundrörelsen som förut. Ingen standard sparad.';
+    : read ? 'Avläst giv från A2.1. Ingen standard sparad.' : way === 'naturlig' ? 'Naturlig grundrörelse. Ingen standard sparad.' : 'Grundrörelsen som förut. Ingen standard sparad.';
   // The line in the picture: what is shown, and what is not as it should be.
   const what = deal ? `${state.entry} → ${placeWords(state.place)}${state.back ? ` → ${state.entry}` : ''}` : (state.shown as {pose: string}).pose, notes: string[] = [], warns: string[] = [];
   if (deal && now) notes.push(now.saved ? 'sparad standard' : WAYS[now.way]);

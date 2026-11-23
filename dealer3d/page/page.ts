@@ -2,7 +2,7 @@
 //   ?eyes=1,4      which views, from the left: a seat 1-7, "film" for the bank's camera (seat 4 is the same eye), or "runt-59" for the
 //                  bank's camera carried 59 degrees round the dealer toward seat 1's side ("runt59": toward seat 7's)
 //   ?to=P4.C1      the card place dealt to
-//   ?motion=giv-pamela-p4   a deal read off a film (dealer3d/data/<name>.json) instead of the one drawn by hand; ?to= is then the film's own place
+//   ?motion=giv-fran-2-3-p4-f   a stored motion (dealer3d/data/<name>.json) instead of the deal drawn by hand; ?to= is then its own place
 //   ?look=room     room (felt table), plain (white figure on grey, for a reference film) or bare (the figure alone on a transparent page)
 //   ?docka=paow    which doll (dealer3d/src/doll.ts); without it the one a read motion names, else the standard
 //   ?model=1       a rigged model (/model.glb, served by the recorder's --model) in the white figure's place, posed from the same joints

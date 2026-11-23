@@ -12,11 +12,11 @@
 // players, 90 toward the picture's right): here where Paow's hand lay in the first take of anchor 2.3 C. --head-turn <degrees>:
 // she does not look down at the card (in that take her eyes fell); her head turns that far toward the shoe, her chin as at rest.
 // The move is done at 1.5 s. A deal laid from this film with deal-film.ts --pose-film begins on its last frame, to the digit.)
-// Reads dealer3d/data/giv-pamela-p4.json (the resting hand as read off the film, the card standing in the shoe, the hip)
+// Reads dealer3d/data/giv-pamela-p4.json (the read deal from A2.1: the resting hand, the card standing in the shoe, the hip)
 // and writes one file. Prints what the pose asks of the body.
 //
-// Read: the shape of a flat hand (her right hand resting in Pamela's film; her left is its mirror, so the two are the
-// same size) and where it rests. A MODEL, all of it: where the hands end, the way there, how the body leans and turns,
+// Read: the shape of a flat hand (the right hand resting through the read deal; the left is its mirror, so the two are
+// the same size) and where it rests. A MODEL, all of it: where the hands end, the way there, how the body leans and turns,
 // and where she looks. Pose 2.3 is the real dealer's stance just before the draw, as the session MODEL read it off a
 // film of one (2026-11-18): her left hand on the card standing in the shoe's window, come in from her own side across
 // the shoe's mouth, the tips of fore and middle finger on the middle of the card, the thumb spread up and away from it,

@@ -15,7 +15,7 @@ export type ReturnCycleOptions = {
   readyFrom?: number;
   durationSeconds?: number;
   liftMeters?: number;
-  /** The hand that laid the card and is lifted off it: the right (two-hand deals from A2.3, the default) or the left (the one-hand deals read from Pamela's film, A2.1). */
+  /** The hand that laid the card and is lifted off it: the right (two-hand deals from A2.3, the default) or the left (the read one-hand deals from A2.1). */
   liftHand?: 'L' | 'R';
 };
 

@@ -4,7 +4,7 @@
 //        --look bare             the figure alone: PNGs with a transparent background (the page's and the browser's own made clear)
 //        --times 0,0.92,1.9      stills at those seconds, named <prefix>-<seconds>.png
 //        --film 24 0 4           every frame at 24 a second from 0 to 4 s, named <prefix>-0001.png ... (ffmpeg makes the film)
-//        [--motion giv-pamela-p4]   a deal read off a film (dealer3d/data/<name>.json) instead of the one drawn by hand
+//        [--motion giv-fran-2-3-p4-f]   a stored motion (dealer3d/data/<name>.json) instead of the deal drawn by hand
 //        [--doll paow]              a doll other than the standard, or than the one the motion names (dealer3d/src/doll.ts)
 //        [--model <file.glb>]       a rigged model in the white figure's place (dealer3d/src/figure-model.ts); the file stays where it is
 //        [--motion-file <file.json>] [--plan <file.json>]   serve these frozen inputs for the named motion and plan

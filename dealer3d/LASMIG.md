@@ -21,6 +21,8 @@ slaskdisken.
   närbild, slutruta och `KLAR-f.txt` (där står vad som håller och inte). Plats 1 ser inte ut som en människa som delar:
   armen ligger längs filten, för dockan sitter med axeln lågt över bordet.
 - Äldre versioner -b till -e: i sina `KLAR-*.txt`. Den avlästa given (A2.1, `src/capture.ts`) är orörd; inget betalt lagt.
+- **A2.1 är dockans egna data:** "Avläst giv" i docklabbet spelar `data/giv-pamela-*.json`; namnen står kvar (tre prov
+  namnger filerna). Inget i mappen läser den arkiverade dealerns filmer, kortspår eller vilobild.
 - **Dockorna** (se **Dockorna**): `src/doll.ts` har `standard` (som förut, låst) och `paow`, rättad 2026-11-23 efter
   hennes filmer (38 cm bakom bordskanten, egna armbågar och händer); `?docka=paow`, `shoot.ts --doll paow`. Jakob
   2026-11-23 om vändningen vid platsen: "Bättre, men inte än", vänsterarmen ser fel ut mot skon. Scenens sko är rättad
@@ -92,7 +94,7 @@ använder repots låsta `three` och `sharp`.
 | `src/camera.ts` | Passningen: linsfamiljen `lensForFocal` (alla linser som ger kortet vid plats 4 dess storlek och form i filmen) och vad en lins gör av en sträcka i bilden. Lämnar vidare allt ur `src/table-lens.ts`. Ren räkning. |
 | `src/world.ts` | Det filmen visar (`MEASURED`) och det som antas (`ASSUMED`); `filmLens()`, passningen som väljer den lins som ritar dealerns kropp i verklig storlek (ett test håller den lika med `TABLE_LENS`); planens kortplatser på filten; stolarnas ögon (`seatEye`: varje stols öga står till stolens eget första kort som bankens kamera står till plats 4:s, lika högt, lika brant och lika långt bakom, så det egna kortet landar på samma bildpunkt från varje stol; buret runt dealerkantens mitt, som först, hamnade plats 1:s kort under bildkanten). Ren räkning. |
 | `src/capture.ts` | **En verklig giv lagd i rummet:** händernas 21 punkter och kroppens leder, avlästa ur en film, sätts under linsen punkt för punkt (varje punkt på siktlinjen genom sin egen bildpunkt), kortet följer filmens eget kortspår med sin hållna ände vid fingrarna, och `joints` och `LIMITS` säger vad en arm och en hand kan göra. Ren räkning. |
-| `data/giv-pamela-p4.json`, `-p1`, `-p3`, `-p5` | Given lagd i rummet som tal: `pamela-p4-c1-plan-deal-02`, 120 rutor, per ruta kortet, båda armarna och händernas punkter i meter; och samma giv flyttad till plats 1, 3 och 5 (`--to P3.C1`). Skrivna av `tools/lift.ts`; sidan och testerna läser dem. Plats 6 och 7 finns inte: där går handen genom skon. `giv-pamela-p4-los.json` och `-p1-los.json` är samma två med högerhanden släppt fri (`--loose 1`, en modell). |
+| `data/giv-pamela-p4.json`, `-p1`, `-p3`, `-p5` | Den avlästa enhandsgiven från A2.1 som tal, dockans egna data (filmen den lästes ur är arkiverad; namnet står bara i filens `film`): 120 rutor, per ruta kortet, båda armarna och händernas punkter i meter; och samma giv flyttad till plats 1, 3 och 5 (`--to P3.C1`). Skrivna av `tools/lift.ts`; docklabbets A2.1 och `tools/pose-film.ts` läser dem. Namnen står kvar: tre prov namnger filerna. Plats 6 och 7 finns inte: där går handen genom skon. `giv-pamela-p4-los.json` och `-p1-los.json` är samma två med högerhanden släppt fri (`--loose 1`, en modell). |
 | `src/real-deal.ts` | **En riktig dealers tvåhandsgiv som tal:** åtta kort (sju platser och hennes eget), för varje kort tio ögonblick i sekunder och de två punkter på filten där händerna byter, avlästa av sessionen MODEL ur en film av ett riktigt bord. Bara tal lämnar den filmen. |
 | `src/two-hand.ts` | **Tvåhandsgiven från pose 2.3**, lagd för hand i den riktiga dealerns takt: kortet ut ur skon som en stege från en vägg, fört på filten till höger hand, rest på kortsidan av båda händerna, fällt framåt i luften (ände över ände), sänkt, skjutet de sista 4 cm; händerna omlott, huvudet följer platsen, kroppen lutar sig dit armen inte når. `startOnAnchor` lägger höger hand där en ankarbild har den. Huvudet på filen säger vad som är avläst och vad som är modell. Ren räkning. |
 | `src/hand-pose.ts` | En hand som stel form i sina egna axlar, och hur en modellerad film rör den: ställd någonstans, vriden i en enda vridning, fingrarna böjda i sina egna leder (varje ben behåller sin längd), tummen förd mot en punkt, och `track` (ett värde genom givna nycklar utan översläng). Ren räkning. |
@@ -107,7 +109,7 @@ använder repots låsta `three` och `sharp`.
 | `src/doll.ts`, `tools/doll-pose.ts`, `tools/doll-still.ts`, `tools/docka-sam.py`, `tools/docka-mat.ts`, `tools/docka-jamfor.ts`, `tests/doll.test.ts` | Dockorna, deras mått och verktygen som gör dem: se **Dockorna**. |
 | `src/stage.ts` | Ritningen i three.js: bord, sko, ett kort med två sidor och provdockan, sedda genom flera ögon samtidigt. Tre utseenden: `room` (filtbord), `plain` (vit docka på grått, för en förlagefilm) och `bare` (bara dockan på genomskinligt; bord, sko och kort skymmer utan att ritas). Två källor för rörelsen: en avläst giv (handen ritas av sina 21 punkter) eller den handritade. |
 | `src/figure-model.ts` | En riggad modell (GLB med skelett, som Meshy riggar) på dockans plats, ställd ur samma leder; hämtas bara när sidan ber om den. Se "Kvar". |
-| `page/` | Sidan. `?motion=giv-pamela-p4` väljer en avläst giv; `?model=1` sätter den riggade modellen (`/model.glb`, som inspelaren serverar med `--model`) på dockans plats; `?eyes=1,4` ögon (en stol 1–7, `film` för bankens kamera, eller `runt35` för bankens kamera buren 35° runt dealern åt hennes vänster, `runt-35` åt hennes höger), `?to=P4.C1` kortplatsen för den handritade given, `?look=plain` eller `bare`, `?tags=0`, `?t=1.9`, `?play=1`, `?docka=paow` dockan (annars den rörelsen bär, eller standard). |
+| `page/` | Sidan. `?motion=<namn>` spelar en lagrad rörelse ur `data/`; `?model=1` sätter den riggade modellen (`/model.glb`, som inspelaren serverar med `--model`) på dockans plats; `?eyes=1,4` ögon (en stol 1–7, `film` för bankens kamera, eller `runt35` för bankens kamera buren 35° runt dealern åt hennes vänster, `runt-35` åt hennes höger), `?to=P4.C1` kortplatsen för den handritade given, `?look=plain` eller `bare`, `?tags=0`, `?t=1.9`, `?play=1`, `?docka=paow` dockan (annars den rörelsen bär, eller standard). |
 | `tools/prov-sam.py`, `tools/prov-lay.ts`, `tools/prov-shoot.ts`, `src/prov-card.ts`, `page/prov.html`, `page/prov.ts` | **Provet en giv, två stolar** (2026-11-20). `prov-sam.py` läser en film med SAM 3D Body (en kroppsyta och 70 leder per ruta under bordets lins; Python eftersom SAM är det, körs i SAM-appens egen miljö och under GPU-låset). `prov-lay.ts` lägger en rörelsekälla i rummet (`--source sam` eller `pack`, det köpta klippet) och skriver `.runtime/3d-prov/scene/<källa>.json` med kortet per ruta och måtten. `prov-card.ts` ger kortet per ruta: ur filmens kortspår lagt där fingrarna är (läsningen är `capture.ts` egen, upprepad; går provet vidare ska den delade delen exporteras därifrån), eller hållet i en riggad hand. `page/prov.*` visar det, och `prov-shoot.ts` spelar in sidan huvudlöst under låset (Chrome-hanteringen är `shoot.ts` egen, upprepad). Paketets filer och SAM:s utdata ligger bara i `.runtime/3d-prov/`, utanför Git. |
 | `../tools/python/landmarks.py` (repots Python-mapp) | Läser en film ruta för ruta med MediaPipe och skriver händernas och kroppens punkter som JSON. Resultatet är mellanlager utanför Git. |
 | `tools/lift.ts` | Lägger en films punkter i rummet (`capture.ts`) med filmens kortspår, skriver `data/<namn>.json` och skriver ut vad som mättes: handens storlek, varje leds omfång, och hur kortet stämmer med filmens. |
@@ -177,7 +179,7 @@ använder repots låsta `three` och `sharp`.
   som "en konstig halvrotation" runt ruta 55–59. Nu vrids kortet kring en enda axel i jämn takt från sista rutan där
   baksidan syns väl (51) till första där framsidan gör det (59): 18° per ruta kring långsidan och 14° kring kortsidan,
   0° i sitt plan, den hållna änden kvar vid fingrarna. Filmens kort byter också riktning i vändningen (långsidan längs
-  bildens linje före, 105 bildpunkter, och kortsidan efter, 82), så riktningsbytet är Pamelas; ryckigheten var dockans.
+  bildens linje före, 105 bildpunkter, och kortsidan efter, 82), så riktningsbytet är filmens; ryckigheten var dockans.
   Det som INTE stämmer med filmen: dockans kort står på kant mot kameran ruta 52–53 (filmen 53–55) och visar sedan
   framsidan brett ruta 54–58, där filmens kort är en smal strimma. En stel kropp kan inte göra båda; filmens kort är
   inte stelt där. Hur Kling tar den nya vändningen är oprövat (förlagan "-4").
@@ -363,7 +365,7 @@ fingrar ska sitta som hennes innan dockan används.
   dag, lagrade rörelser och `dealer3d/standard/` orörda, inga filmer ändras.
 - **Ingång och återgång i docklabbet** (2026-11-23; sedd i headless, inte av Jakob). **Giv från** A2.3 (förval, som
   förut) eller A2.1; A2.2 är avstängd (bara ankarbilden finns, ingen ställning är läst ur den). Från A2.1 finns bara
-  Pamelas avlästa enhandsgivar (`giv-pamela-p1/p3/p4/p5`, plats 1, 3, 4 och 5, kort 1), lagda med filmens sko
+  de avlästa enhandsgivarna ("Avläst giv", `giv-pamela-p1/p3/p4/p5`, plats 1, 3, 4 och 5, kort 1), lagda med filmens sko
   (`lay.ts readDeal`: kortet och vänsterhanden flyttas stelt till skon medan kortet är där, armbågen löses om); inga
   reglage, ett sätt. **Giv / Giv och återgång** (förval Giv): återgången är `natural-lab.ts withReturn`, samma som
   `tools/docka-cykel.ts` (`src/return-cycle.ts`; från A2.1 lyfts vänsterhanden). **Standardernas namn**:
@@ -433,7 +435,7 @@ fingrar ska sitta som hennes innan dockan används.
 node --test dealer3d/tests/capture.test.ts dealer3d/tests/world.test.ts tools/table-lens.test.ts
 tools/python/.venv/Scripts/python.exe -I tools/python/landmarks.py <film.mp4> <punkter.json>
 node dealer3d/tools/lift.ts --marks <punkter.json> --track assets/tracking/<klipp>/card-track.json --out dealer3d/data/<namn>.json
-node dealer3d/tools/shoot.ts --out <mapp> --motion giv-pamela-p4 --eyes 1,4 --film 30 0 3.9667 --size 1920x640
+node dealer3d/tools/shoot.ts --out <mapp> --motion giv-fran-2-3-p4-f --eyes 1,4 --film 30 0 2.9667 --size 1920x640
 node dealer3d/tools/measure.ts
 node dealer3d/tools/camera-proof.ts --frame <ruta 120, png> --pinch <ruta 0, png> --out <mapp>
 node dealer3d/tools/shoot.ts --out <mapp> --eyes 1,4 --times 1.25,1.9,3.5 --size 1920x640
@@ -468,8 +470,8 @@ node dealer3d/tools/render-reference.ts --motion <ny-cykel.json> --out <ny-mapp>
 
 En dockfilm med giv och återgång till valfri plats, lagd som Docklabbet lägger den med Giv och återgång (Naturlig,
 eller Jakobs sparade standard för docka, ingång och plats där en finns, i det val han sparade den i), görs i ett steg.
-Det skriver en ny datafil och renderkommandot; `--from` är ingången (A2.3 om den utelämnas, A2.1 för Pamelas avlästa
-givar), `--no-standard` lägger platsen som om ingen standard fanns, `--flat-hand` lägger högerhanden plan vid
+Det skriver en ny datafil och renderkommandot; `--from` är ingången (A2.3 om den utelämnas, A2.1 för de avlästa
+enhandsgivarna), `--no-standard` lägger platsen som om ingen standard fanns, `--flat-hand` lägger högerhanden plan vid
 nedsläppet (bara Naturlig), `--sam-hand --recipe-grip-yaw --fingrar-som-forut` lägger Naturlig som före 2026-11-23
 (den sista: de fria fingrarna utan `src/hand-rule.ts`, för en film gjord före regeln), och cykelns flaggor är
 `return-cycle.ts`:s. Det styrda i en Naturlig standard går ut under återgången, så att sista rutan är den första.
@@ -519,14 +521,6 @@ reproducerbar returbana, inte en återställning av den äldre H24-svansen. Gran
   skon (plats 7 i 25 rutor, plats 6 i en), eftersom skon står mellan henne och de platserna och den avlästa handen går
   lågt över filten. `lift.ts` säger det (`throughShoe` i `capture.ts`), och testet kräver att en sparad giv går fri.
   De platserna behöver en egen avläst film (en giv som går över eller framför skon).
-- **Släpet** (ankare 2.2: platt hand på kortet vid skons mynning, kortet dras på filten, lyfts och vänds, läggs).
-  Påbörjat 2026-11-18, inget incheckat. Filmen `pamela-p4-c1-drawn-deal-01` är avläst (punkterna i
-  `D:/dealer-scratch/tmp/dealer-3d/rorelse/`, 120 av 120 rutor), och `lift.ts` som den är ger händer och leder inom
-  gränserna (armbåge 79–117°, handled 4–37°). Kortet håller inte: under draget (ruta 0 till cirka 34) täcker handen
-  kortets bortre del, så spårets fyrhörn är bara den synliga biten (56 × 55 mm lagd på filten) och läses som ett lutat
-  kort; och kortet börjar som "stående i skon", vilket det inte gör i ett släp. Det som behövs: ett eget läge i
-  `perform` där kortet ligger plant på filten med verklig storlek, lagt efter sin bara närkant, tills det lyfts (cirka
-  ruta 36–55), och sedan spåras som i en buren giv. Mått och ark: `slap-matt.ts` och `rorelse/slap-ark.png` på slasket.
 - **En annan vinkel** (2026-11-18, prov `dealer-3d-vinkel-stol-1`, inget betalt). Paows registrerade keystonebilder
   och ankare är alla tagna framifrån (bankens kamera). Ett prov från sidan finns sedan 2026-11-13
   (`assets/proofs/paow-fran-sidan/`, ett öga 40° åt vänster): nyckelbilden gjordes ur frontankaret, omprojicerat med

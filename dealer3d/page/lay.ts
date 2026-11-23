@@ -155,14 +155,14 @@ export function recipeFor(target: string): PlaceRecipe | null {
 
 /**
  * The pose a deal begins in and, with its return, ends in (Jakob 2026-11-23: "A2.1, A2.2 och A2.3 är olika in- och
- * utgångar", a saved deal per player and per entry). A2.3: every deal laid above. A2.1, the pinch at the shoe: the deals
- * read off Pamela's film (READ_DEALS), the only deals from it there are; nothing in them is steered. A2.2: not built, only
- * its anchor picture is; no pose is read off it and no deal begins in it.
+ * utgångar", a saved deal per player and per entry). A2.3: every deal laid above. A2.1, the pinch at the shoe: the read
+ * one-hand deals (READ_DEALS), the only deals from it there are; nothing in them is steered. A2.2: not built, only its
+ * anchor picture is; no pose is read off it and no deal begins in it.
  */
 export type Entry = 'A2.1' | 'A2.2' | 'A2.3';
 /** A saved standard's name (dealer3d/standard/<name>.json): <doll>-<place> from A2.3, as every standard saved before the entries were, and <doll>-a2-1-<place> (a2-2-) from the others. */
 export const standardName = (doll: string, entry: Entry, place: string) => `${doll}-${entry === 'A2.3' ? '' : `${entry.toLowerCase().replace('.', '-')}-`}${place.toLowerCase().replace('.', '')}`;
-/** The one-hand deals from A2.1 (dealer3d/data/, laid into the room by dealer3d/tools/lift.ts from her hand and the card in Pamela's film): her left hand takes the card out of the shoe and lays it; all four begin on the same frame, the pose A2.1. */
+/** The one-hand deals from A2.1 (dealer3d/data/, laid into the room once by dealer3d/tools/lift.ts from the hand and the card of a filmed deal; the names stay, proofs name the files): her left hand takes the card out of the shoe and lays it; all four begin on the same frame, the pose A2.1. */
 export const READ_DEALS: Record<string, string> = {'P1.C1': 'giv-pamela-p1', 'P3.C1': 'giv-pamela-p3', 'P4.C1': 'giv-pamela-p4', 'P5.C1': 'giv-pamela-p5'};
 export type EntryPlace = PlaceRecipe | {read: string} | {none: 'unread' | 'unbuilt'};
 /** Where a deal from `entry` to a place of the plan comes from, or why there is none; null for a place the lab does not know. */
