@@ -22,7 +22,8 @@ slaskdisken.
   armen ligger längs filten, för dockan sitter med axeln lågt över bordet.
 - Äldre versioner -b till -e: i sina `KLAR-*.txt`. Den avlästa given (A2.1, `src/capture.ts`) är orörd; inget betalt lagt.
 - **Dockorna** (se **Dockorna**): `src/doll.ts` har `standard` (som förut, låst) och `paow`, rättad 2026-11-23 efter
-  hennes filmer (38 cm bakom bordskanten, egna armbågar och händer; inte dömd av Jakob); `?docka=paow`, `shoot.ts --doll paow`.
+  hennes filmer (38 cm bakom bordskanten, egna armbågar och händer); `?docka=paow`, `shoot.ts --doll paow`. Jakob
+  2026-11-23: "Bättre!", men armen vrids "väldigt ihoptryckt": ett prov med vändningen vid platsen väntar på honom.
 - **Provet en giv, två stolar** (2026-11-20, Jakobs "Ja kör" i Beslut; prov `3d-prov-en-giv-tva-stolar-20261120`; hans
   "ja" på kortet samma dag, och 2026-11-21 "SAM-dockan ska in, men inte nu" i BESKED): given till plats 4 med ett 3D-kort från stol 4 och stol 1. SAM 3D Body över filmen
   `paow-giv-2-3-p4-h24-cykel-02-01` (varannan ruta) ser ut som en människa som ger från båda stolarna (underagentens
@@ -242,6 +243,25 @@ fingrar ska sitta som hennes innan dockan används.
   `data/giv-fran-2-3-p4c2-grepp-svep-d-paow.json`; kvittot i filmens mapp under `assets/references/docka/`) och studions
   bild `docka-paow`. De visar den gamla dockan tills de görs om (`doll-pose.ts` på givens rörelse och en ny film
   med nytt namn; `node tools/placement-backdrop.ts` för bilden).
+- **Vändningen vid platsen** (prov 2026-11-23, `assets/proofs/docka-paow-vandning-20261123/`; inte dömt av Jakob).
+  Hans ord om den rättade dockan: armen måste "vridas väldigt ihoptryckt" och "skulle se naturligare om hon sträkte ut
+  armen mer". Mätt med SAM över hennes godkända givar till plats 3 (`paow-giv-2-3-p3-02-01`, `-03-01`): när hon vänder
+  kortet har hon armbågen i 107–126° (rak arm 180°) och handen 81–89 % av armens längd från axeln; dockfilmen hon följde
+  (standard, 18 cm bakom kanten) har 99–113° och 76–84 %. Djupet är inte orsaken: axlarna står 38 ± 4 cm bakom kanten
+  också mitt i vändningen. Orsaken är var vändningen ligger och hur handen sitter på kortet: kortet vänds hela vägen
+  från handbytet och står på kant halvvägs, 8 cm framför bordskanten, framför magen, och greppet lägger handen 40° snett
+  mot underarmen (handleden böjd upp till 62°).
+  Ny giv för paow: `deal-film.ts` med svep24d:s val (står i datafilens `pace`) och tre till: `--turn-near 0.7` (kortet
+  förs plant 70 % av vägen innan det vänds), `wait=14` i `--shared` (vändningen börjar 14 rutor efter att vänster hand
+  släppt) och `--grip-yaw -20` (handen i underarmens förlängning, så att handleden vrider kortet som en nyckel); sedan
+  `doll-pose.ts --doll paow`. Till plats 3 under vändningen: armbågen 142–153° (förut 126–153), handen 94–97 % av armens
+  längd från axeln, handleden böjd högst 17° (förut 62), kortet på kant 15 cm framför kanten. Till plats 4: armen rak
+  (153°) hela vändningen, handleden högst 25° (förut 66). Rörelserna: `data/giv-fran-2-3-p3-vid-plats.json` och `-p4-`
+  (lagda på standarddockan, bara underlag för `doll-pose.ts`) och `…-vid-plats-paow.json` (det som filmas); filmerna
+  ligger i `D:/dealer-scratch/tmp/dealer-3d/ut/docka-vandning-ny-p3` och `-p4`. Standarddockans givar är oförändrade:
+  utan de nya valen lägger koden samma rörelse byte för byte. Inte gjort: plats 1, 2, 5 och P4.C2 med den nya
+  vändningen, och en kropp som lutar sig mot säte 6 och 7. Vändningen går fortare (13° per ruta som mest, förut 11) och
+  kortet förs fortare fram (24 mm per ruta som mest till plats 3).
 - **Kedja paow-filmer**: ingångsfilmen till A2.3 (`data/till-ankare-2-3-c.json`) är standarddockans. `doll-pose.ts`
   på den börjar i hennes vila och slutar där paow-givarna börjar (armbågar och handleder 0,0 mm isär, prövat
   2026-11-23), men ingen film är gjord av den.
