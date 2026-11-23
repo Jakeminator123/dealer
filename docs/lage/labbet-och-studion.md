@@ -6,7 +6,7 @@ Beslut, labbservern och rutinverktygen. Här står bara det som gäller nu; det 
 **Läget.**
 - Scen & bord (adressen `/bordet/`) är labbvyn: Kortplan (tre steg: Var kortet landar, Hur det kommer dit, Beställ),
   Kön, Scen, Råfilm och Efterarbete. `/`, `/scen/`, `/placering/`, `/bestall/` och `/lab.html` leder dit; gamla labbet
-  är borttaget. Menyn: Scen & bord, Karta, Docka (en del av Scen & bord: Ställ dockan och Dockans filmer), Granska, Material, Lipsync, Casino; i foten Beslut, Ordlista, Ljud och Modeller.
+  är borttaget. Menyn: Scen & bord, Karta, Docka (i Scen & bord: dockan och dess filmer), Granska, Material, Lipsync, Casino; i foten Beslut, Ordlista, Ljud och Modeller.
 - Basgrund behåller bordskorten. Överlägg i handen är av i Scen och Casino; Karta skiljer primära från spelbara steg. Scen har labbprovet bordet BORD-02 (Bord → Bordsmodell, `tableModel=bord-02`, 2026-11-20): avslaget som förval, och spelet slår inte på det före Jakobs ja.
 - Lokal klickdiagnostik sparar högst 200 långsamma händelser; läs med `node tools/interaction-diagnostics.ts` (rutin: `tools/local-work.md`). Vercels rapporterade 17-minutersvärde är ännu inte återskapat.
 - En beställning är en rak linje i Kortplan: plats och kort, hur kortet kommer dit, och i steg 3 "Det här skickas" med serverns text, bilder, pris och värden före sparning; slutbild och referensfilm ändras under Undantag. Saknas platsens slutbild går given utan som förval, och A3 görs ur filmens sista ruta; returen väntar på den. Dockans film spelas vid valet. Knappen Spelet visar filmen i spelets storlek. Utkastet godkänns i Kön. Under korten ligger den valda dealerns docka (en annan väljs i listan, `?bakgrund=docka-standard`; måtten i `dealer3d/LASMIG.md`).
