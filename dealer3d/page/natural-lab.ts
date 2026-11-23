@@ -4,7 +4,8 @@
 //   body, posed on the doll as "Naturlig" has her (doll.ts naturalDoll: her left hand at the shoe as her picture has it)
 //   and moved as a person moves (dealer3d/src/natural.ts), with the body's sliders, the shoulders and the elbows laid on
 //   the doll herself as far as her arms reach: a slider there never makes the deal fail. Where nothing steers the hand's
-//   angle on the card in a contact grip, it is NATURAL_GRIP_YAW.
+//   angle on the card in a contact grip, it is NATURAL_GRIP_YAW_TAKE as her right hand takes the card and NATURAL_GRIP_YAW
+//   once it is turned (gripYawsOf).
 // - "Som förut": the deal as the lab laid it before (lay.ts without `natural`), posed on the doll as she is.
 // - withReturn: either deal, or one read off a film (from A2.1), with its return to the pose it began in, in one motion.
 // In "Naturlig" her right hand ends at the laid card as `landing` says (dealer3d/src/landing.ts); without one, or with the
@@ -26,18 +27,23 @@ export type Way = 'naturlig' | 'forut';
 export type Knobs = {shoulderR: [number, number]; shoulderL: [number, number]; elbowOut: [number, number]};
 export const NO_KNOBS: Knobs = {shoulderR: [0, 0], shoulderL: [0, 0], elbowOut: [0, 0]};
 /**
- * The hand's angle on the card in "Naturlig" where nothing steers it, degrees (Steer.gripYaw; the contact grips only): Jakob
- * 2026-11-23, after saving seats 4 and 5 with the slider at −30, "Jag vill ha denna vridning som standard-återställningens
- * satta normala.. ser naturligare ut". "Som förut" keeps the recipe's own (15 in the sweep).
+ * The hand's angle on the card in "Naturlig" where nothing steers it, degrees (the contact grips only), once the card is
+ * turned and to the end (Steer.gripYawEnd): Jakob 2026-11-23, after saving seats 4 and 5 with the slider at −30, "Jag vill
+ * ha denna vridning som standard-återställningens satta normala.. ser naturligare ut". As her right hand takes the card it
+ * is NATURAL_GRIP_YAW_TAKE (Steer.gripYaw; Jakob the same evening, "Förinställt är -30 men rimligare är typ 17 grader för
+ * när dealerns högerhand som tar emot kortet görs. Men sedan vid själva slutet när kortet är vänt och så vidare är det
+ * snarare -30"), the hand going from the one to the other over the turn. "Som förut" keeps the recipe's own (15 in the sweep).
  */
-export const NATURAL_GRIP_YAW = -30;
+export const NATURAL_GRIP_YAW = -30, NATURAL_GRIP_YAW_TAKE = 17;
 /**
  * What "Naturlig" lays differently from what it laid before 2026-11-23, each to be had as before to make a film made then
- * again (dealer3d/tools/docka-cykel.ts --sam-hand, --recipe-grip-yaw, --fingrar-som-forut): `samHand`, her left hand at
- * the shoe as SAM read it (doll.ts `hand.left`); `recipeGripYaw`, the recipe's own angle of the hand on the card where
- * nothing steers it; `fingers`, her free fingers as her grip and the moving left them, without dealer3d/src/hand-rule.ts.
+ * again (dealer3d/tools/docka-cykel.ts --sam-hand, --recipe-grip-yaw, --fingrar-som-forut, --en-vinkel): `samHand`, her
+ * left hand at the shoe as SAM read it (doll.ts `hand.left`); `recipeGripYaw`, the recipe's own angle of the hand on the
+ * card where nothing steers it; `fingers`, her free fingers as her grip and the moving left them, without
+ * dealer3d/src/hand-rule.ts; `oneGripYaw`, one angle of the hand on the card from the hand change to the end,
+ * NATURAL_GRIP_YAW where nothing steers it (as the lab laid "Naturlig" on the day, before the evening).
  */
-export type AsBefore = {samHand?: boolean; recipeGripYaw?: boolean; fingers?: boolean};
+export type AsBefore = {samHand?: boolean; recipeGripYaw?: boolean; fingers?: boolean; oneGripYaw?: boolean};
 /** The motion with her free fingers kept to what a hand can do, unless as before. */
 const humaneUnless = <M extends {frames: unknown[]}>(motion: M, before: AsBefore = {}): M => before.fingers ? motion : humaneMotion(motion);
 type Posed = {motion: {frames: unknown[]; frameCount: number}; receipt: {frames: {shortMm: [number, number]}[]}};
@@ -50,17 +56,25 @@ export function onDoll<M extends object>(lens: Lens, motion: M, doll: Doll, opti
 }
 /** The doll as a way has her: in "Naturlig" with her left hand at the shoe as her picture has it, unless as before. */
 export const dollFor = (way: Way, doll: Doll, before: AsBefore = {}): Doll => way === 'naturlig' && !before.samHand ? naturalDoll(doll) : doll;
-/** The hand's angle on the card a recipe is laid with in a way, as steered: what the lab's slider shows (null: no contact grip, no angle). */
-export function gripYawOf(recipe: Recipe, steer: Steer, way: Way, before: AsBefore = {}): number | null {
+/**
+ * The hand's angle on the card a recipe is laid with in a way, as steered, degrees: [as her right hand takes the card, once
+ * it is turned], what the lab's two sliders show (null: no contact grip, no angle). A steering saved with one angle (gripYaw
+ * and no gripYawEnd, as every standard saved before the two) keeps that angle all the way, as it was laid when saved.
+ */
+export function gripYawsOf(recipe: Recipe, steer: Steer, way: Way, before: AsBefore = {}): [number, number] | null {
   if (!recipe.pace.contactGrip) return null;
-  return steer.gripYaw ?? (way === 'naturlig' && !before.recipeGripYaw ? NATURAL_GRIP_YAW : recipe.pace.gripYaw ?? 15);
+  if (way !== 'naturlig' || before.recipeGripYaw) { const g = steer.gripYaw ?? recipe.pace.gripYaw ?? 15; return [g, steer.gripYawEnd ?? recipe.pace.gripYawEnd ?? g]; }
+  if (before.oneGripYaw || (steer.gripYaw !== null && steer.gripYawEnd == null)) { const g = steer.gripYaw ?? NATURAL_GRIP_YAW; return [g, steer.gripYawEnd ?? g]; }
+  return [steer.gripYaw ?? NATURAL_GRIP_YAW_TAKE, steer.gripYawEnd ?? NATURAL_GRIP_YAW];
 }
 
 /** "Naturlig", first half: the deal to `target` with the natural hand change, steered by everything but the body, on the doll as "Naturlig" has her (`doll`, returned). Throws where layDeal does. */
 export function layNatural(input: {plan: Plan; target: string; recipe: Recipe; pose: PoseFilm; steer: Steer; lens: Lens; doll: Doll; before?: AsBefore}) {
   const {plan, target, recipe, pose, steer, lens} = input, before = input.before ?? {}, doll = dollFor('naturlig', input.doll, before);
-  const gripYaw = steer.gripYaw ?? (recipe.pace.contactGrip && !before.recipeGripYaw ? NATURAL_GRIP_YAW : null);
-  const deal = layDeal({plan, target, recipe, pose, steer: {...steer, gripYaw, body: null}, natural: true}), posed = onDoll(lens, deal, doll);
+  // (the recipe's own angle is left to the recipe, and a second angle is given only where it differs from the first: the deal as it was laid before there were two)
+  const yaws = gripYawsOf(recipe, steer, 'naturlig', before), {gripYawEnd: _end, ...rest} = steer;
+  const gripYaw = yaws && !(before.recipeGripYaw && steer.gripYaw === null) ? yaws[0] : steer.gripYaw, end = yaws && yaws[1] !== yaws[0] ? {gripYawEnd: yaws[1]} : {};
+  const deal = layDeal({plan, target, recipe, pose, steer: {...rest, gripYaw, ...end, body: null}, natural: true}), posed = onDoll(lens, deal, doll);
   return {deal, motion: posed.motion, shortMm: posed.shortMm, doll, before};
 }
 export type LaidNatural = ReturnType<typeof layNatural>;

@@ -373,8 +373,10 @@ fingrar ska sitta som hennes innan dockan används.
   (`a2-2` hålls för A2.2); filen bär `lab.from`, och med återgången `lab.back` (cykelns uppgifter). **Vänsterhanden
   vid skon i Naturlig** (bara paow; `doll.ts hand.natural`, `naturalDoll`): grundfelet var att SAM:s hand låg 25 mm
   för långt ut och 26° fel vriden, med handryggen 53° fel mot kameran; passad mot MediaPipe på ankare 2.3 (3,3 px
-  medel mot 12,5): raka fingrar, lillfingret lyft som hennes, handleden böjd 42°. **Handens vinkel på kortet** i Naturlig: −30°
-  som förval (`NATURAL_GRIP_YAW`, Jakob samma dag), också för hans sparade standarder där värdet är tomt (`null`).
+  medel mot 12,5): raka fingrar, lillfingret lyft som hennes, handleden böjd 42°. **Handens vinkel på kortet** i Naturlig (Jakob
+  2026-11-23): 17° när högerhanden tar kortet och −30° när det är vänt och läggs (`NATURAL_GRIP_YAW_TAKE`,
+  `NATURAL_GRIP_YAW`), mjukt över vändningen (`two-hand.ts gripYawEnd`); två reglage i labbet. Gäller där värdet är
+  tomt (`null`, hans P1–P3); ett sparat värde är en vinkel hela vägen som förut. `docka-cykel.ts --en-vinkel`: −30° hela vägen.
   Som förut och standarddockan ger samma rutor som före (avtryck på 34 lägen); Naturlig som förut fås med
   `docka-cykel.ts --sam-hand --recipe-grip-yaw`. Passningen: `tools/docka-hand.ts`.
 - **Landningen** (2026-11-23, Jakob: "det är alltid hennes mellanfinger som pekar ned kortet"; sedd i headless, inte
@@ -472,7 +474,7 @@ En dockfilm med giv och återgång till valfri plats, lagd som Docklabbet lägge
 eller Jakobs sparade standard för docka, ingång och plats där en finns, i det val han sparade den i), görs i ett steg.
 Det skriver en ny datafil och renderkommandot; `--from` är ingången (A2.3 om den utelämnas, A2.1 för de avlästa
 enhandsgivarna), `--no-standard` lägger platsen som om ingen standard fanns, `--flat-hand` lägger högerhanden plan vid
-nedsläppet (bara Naturlig), `--sam-hand --recipe-grip-yaw --fingrar-som-forut` lägger Naturlig som före 2026-11-23
+nedsläppet (bara Naturlig), `--sam-hand --recipe-grip-yaw --fingrar-som-forut --en-vinkel` lägger Naturlig som före 2026-11-23
 (den sista: de fria fingrarna utan `src/hand-rule.ts`, för en film gjord före regeln), och cykelns flaggor är
 `return-cycle.ts`:s. Det styrda i en Naturlig standard går ut under återgången, så att sista rutan är den första.
 Landningen är standardens `lab.landing` (utan den `lang`); `--landning <id>` tar ett förval i stället (bara Naturlig).

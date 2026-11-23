@@ -157,8 +157,10 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   till skon stämmer inte; handen över skon är "fel i grunden … typ lillfingret". Givarna från A2.3 beställs ändå med dockans film.
 - **En sparad rörelse per kort och ankare** (2026-11-23): A2.1, A2.2 och A2.3 är olika in- och utgångar; dockan ska ha en
   sparad giv per spelare och per ingång. Uppdraget: fyll A2.3 → spelarnas C1 och tillbaka, återgången sparad.
-- **Handens vinkel −30 är det normala** (2026-11-23): han satte −30 för plats 4 och 5; Återställ ska ge den vridningen
-  ("ser naturligare ut"). Återgången ska gå att välja i Docklabbet.
+- **Handens vinkel: 17° när kortet tas, −30° när det är vänt** (2026-11-23): "rimligare är typ 17 grader för när dealerns
+  högerhand som tar emot kortet görs … vid själva slutet … snarare -30", främst P4. Återgången väljs i Docklabbet.
+- **Ett kort vänds av händer och fingrar** (2026-11-23, sagt förut): "ett kort måste vändas av händer och fingrar och ska
+  inte kunna vändas av tom luft".
 - **Handens landning ska gå att välja** (2026-11-23): läget vid det lagda kortet "är bra", men långfingret pekar alltid
   ned kortet. Dockan ska ha förval eller egna landningar, så att slutposen inte är samma för alla platser.
 - **Händerna fria i givarna** (2026-11-23): överlämningen vid skon är "ihopkrånglat med dealerns överdrivna vridningar

@@ -73,6 +73,10 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   i flykten, och filmmodellen kopierar det (kortet halvgenomskinligt i 4–6 rutor); hans regel är att handleden vänder
   kortet (BESKED, "Handleden vrider kortet"). Stänger: en omgjord dockfilm med vriden handled och vändningen nära
   platsen, prövad på en plats först.
+- **Dockans kort vrids utan riktigt grepp** (Naturlig på Paow, mätt 2026-11-23): i handbytet lyfts kortet och vrids 4–8°
+  per ruta under bara vänsterhandens fingertoppar (6–7 rutor per svepplats, P4 ruta 17–23), och rulldelarna P6.C1, P7.C1,
+  D.C1 och D.C3 vänder kortet i luften 10–28 mm från handen (BESKED, "Ett kort vänds av händer och fingrar"). De två
+  vinklarna gav P1 och P2 fler handregelfel (1 till 5–7 rutor). Stänger: kortet lyfts först när högerhanden har det.
 - **Rosen på högra handryggen blir en mandala** i A3P4C1 och i given till A3P3C1 från ruta 46; en retur därifrån byter
   tillbaka (`paow-retur-2-3-p4-01`). Stänger: A3-bilden rättas mot handen i A2.3 innan fler returer beställs, och
   granskaren jämför handryggen i slutrutan med ankaret.

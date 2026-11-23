@@ -6,7 +6,7 @@
 // its return, posed on the doll and, in "Naturlig", moved as a person moves: page/natural-lab.ts withReturn, as the lab
 // does. Writes the motion to a new file only, and prints what to read beside it and the render command.
 //   node dealer3d/tools/docka-cykel.ts --to P5.C1 --out dealer3d/data/<new>.json [--from A2.3|A2.1] [--doll paow]
-//     [--way naturlig|forut] [--no-standard] [--flat-hand] [--sam-hand] [--recipe-grip-yaw] [--fingrar-som-forut] [--hold 76] [--ready 116]
+//     [--way naturlig|forut] [--no-standard] [--flat-hand] [--sam-hand] [--recipe-grip-yaw] [--fingrar-som-forut] [--en-vinkel] [--hold 76] [--ready 116]
 //     [--duration 4] [--lift 0.022]
 // --from: the pose the deal begins and ends in (A2.3 if left out; A2.2 is not built). --way: the way where no standard is
 // used (the standard doll has only "forut"; from A2.1 there is one way, as read). --no-standard: lay the place as if no
@@ -14,7 +14,9 @@
 // --sam-hand and --recipe-grip-yaw: "Naturlig" as it was before 2026-11-23 (natural-lab.ts AsBefore), her left hand at
 // the shoe as SAM read it, and the recipe's own angle of the hand on the card where nothing steers it (the lab's is −30):
 // to make a film made then again. --fingrar-som-forut: her free fingers as they were before the hand rule of 2026-11-23
-// (dealer3d/src/hand-rule.ts; "Naturlig" only), to make a film made before it again. The cycle's flags are
+// (dealer3d/src/hand-rule.ts; "Naturlig" only), to make a film made before it again. --en-vinkel: one angle of the hand on
+// the card from the hand change to the end, −30 where nothing steers it, as "Naturlig" was on 2026-11-23 before the two
+// angles (natural-lab.ts gripYawsOf; "Naturlig" only), to make a film made then again. The cycle's flags are
 // dealer3d/tools/return-cycle.ts's, and left out they are its own defaults.
 // The landing (her right hand's end pose at the laid card, dealer3d/src/landing.ts; "Naturlig" only) is the standard's
 // (`lab.landing`), the default where it has none; --landning <id> lays that landing instead, without his own shaping. It
@@ -31,14 +33,14 @@ import {parseArgs} from 'node:util';
 import {filmLens} from '../src/world.ts';
 import {dollNamed} from '../src/doll.ts';
 import {NO_STEER, layDeal, placeFrom, readDeal, recipeOf, standardName, type Entry, type ReadStored, type Recipe, type Steer, type Stored} from '../page/lay.ts';
-import {NO_KNOBS, gripYawOf, layNatural, withReturn, type AsBefore, type Knobs, type Way} from '../page/natural-lab.ts';
+import {NO_KNOBS, gripYawsOf, layNatural, withReturn, type AsBefore, type Knobs, type Way} from '../page/natural-lab.ts';
 import {LANDINGS, asBefore, landingOf, landingWords, shaped, type Landing} from '../src/landing.ts';
 import {TURNS, TURN_DEFAULT, turnOf, type TurnId} from '../src/turn-in-hand.ts';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
-const USAGE = 'node dealer3d/tools/docka-cykel.ts --to <place, e.g. P5.C1> --out dealer3d/data/<new>.json [--from A2.3|A2.1] [--doll paow|standard] [--way naturlig|forut] [--no-standard] [--flat-hand] [--sam-hand] [--recipe-grip-yaw] [--fingrar-som-forut] [--landning <id>] [--vandning forut|i-handen] [--hold <frame>] [--ready <frame>] [--duration <seconds>] [--lift <metres>]';
+const USAGE = 'node dealer3d/tools/docka-cykel.ts --to <place, e.g. P5.C1> --out dealer3d/data/<new>.json [--from A2.3|A2.1] [--doll paow|standard] [--way naturlig|forut] [--no-standard] [--flat-hand] [--sam-hand] [--recipe-grip-yaw] [--fingrar-som-forut] [--en-vinkel] [--landning <id>] [--vandning forut|i-handen] [--hold <frame>] [--ready <frame>] [--duration <seconds>] [--lift <metres>]';
 const {values} = parseArgs({options: {to: {type: 'string'}, out: {type: 'string'}, from: {type: 'string'}, doll: {type: 'string'}, way: {type: 'string'}, 'no-standard': {type: 'boolean'}, 'flat-hand': {type: 'boolean'},
-  'sam-hand': {type: 'boolean'}, 'recipe-grip-yaw': {type: 'boolean'}, 'fingrar-som-forut': {type: 'boolean'}, landning: {type: 'string'}, vandning: {type: 'string'}, hold: {type: 'string'}, ready: {type: 'string'}, duration: {type: 'string'}, lift: {type: 'string'}, help: {type: 'boolean', short: 'h'}}});
+  'sam-hand': {type: 'boolean'}, 'recipe-grip-yaw': {type: 'boolean'}, 'fingrar-som-forut': {type: 'boolean'}, 'en-vinkel': {type: 'boolean'}, landning: {type: 'string'}, vandning: {type: 'string'}, hold: {type: 'string'}, ready: {type: 'string'}, duration: {type: 'string'}, lift: {type: 'string'}, help: {type: 'boolean', short: 'h'}}});
 if (values.help) { console.log(USAGE); process.exit(0); }
 function fail(why: string): never { console.error(why); process.exit(1); }
 const place = values.to, out = values.out, dollName = values.doll ?? 'paow', entry = (values.from ?? 'A2.3') as Entry;
@@ -46,7 +48,7 @@ if (!place || !out) fail(USAGE);
 if (!['A2.1', 'A2.2', 'A2.3'].includes(entry)) fail('--from ska vara A2.3 eller A2.1.');
 if (values.way && values.way !== 'naturlig' && values.way !== 'forut') fail('--way ska vara naturlig eller forut.');
 const number = (v: string | undefined, flag: string) => { if (v === undefined) return undefined; const n = Number(v); if (!v.trim() || !Number.isFinite(n)) fail(`${flag} ska vara ett tal.`); return n; };
-const before: AsBefore = {...(values['sam-hand'] ? {samHand: true} : {}), ...(values['recipe-grip-yaw'] ? {recipeGripYaw: true} : {}), ...(values['fingrar-som-forut'] ? {fingers: true} : {})};
+const before: AsBefore = {...(values['sam-hand'] ? {samHand: true} : {}), ...(values['recipe-grip-yaw'] ? {recipeGripYaw: true} : {}), ...(values['fingrar-som-forut'] ? {fingers: true} : {}), ...(values['en-vinkel'] ? {oneGripYaw: true} : {})};
 if (values.landning !== undefined && !LANDINGS.some(l => l.id === values.landning)) fail(`--landning ska vara en av ${LANDINGS.map(l => l.id).join(', ')}.`);
 if (values.vandning !== undefined && !TURNS.some(t => t.id === values.vandning)) fail(`--vandning ska vara en av ${TURNS.map(t => t.id).join(', ')}.`);
 
@@ -65,7 +67,7 @@ const standardPath = `dealer3d/standard/${standardName(dollName, entry, place)}.
 let steer: Steer = {...NO_STEER}, knobs: Knobs = structuredClone(NO_KNOBS), standard: string | null = null, savedLab: {recipe?: string; steer?: Partial<Steer>; naturlig?: {knobs?: Partial<Knobs>}; landing?: unknown; turn?: unknown} = {};
 if (saved) { const b = await bytesOf(standardPath); savedLab = json(b).lab ?? {}; used[standardPath] = sha(b); standard = standardPath; }
 const read = 'read' in found;
-if (read && (values['flat-hand'] || values.way || values['sam-hand'] || values['recipe-grip-yaw'] || values['fingrar-som-forut'] || values.landning || values.vandning)) fail('Från A2.1 finns ett sätt, som given är läst: --way, --flat-hand, --sam-hand, --recipe-grip-yaw, --fingrar-som-forut, --landning och --vandning gäller given från A2.3.');
+if (read && (values['flat-hand'] || values.way || values['sam-hand'] || values['recipe-grip-yaw'] || values['fingrar-som-forut'] || values['en-vinkel'] || values.landning || values.vandning)) fail('Från A2.1 finns ett sätt, som given är läst: --way, --flat-hand, --sam-hand, --recipe-grip-yaw, --fingrar-som-forut, --en-vinkel, --landning och --vandning gäller given från A2.3.');
 // The landing: the flag's, else the standard's, else the default (the hand as before). The turn likewise.
 const landing: Landing = values.landning ? {id: values.landning as Landing['id']} : landingOf(savedLab.landing);
 const turn: TurnId = values.vandning ? values.vandning as TurnId : turnOf(savedLab.turn);
@@ -93,9 +95,9 @@ const cycle = done.cycle, motion = done.motion as typeof done.motion & {frames: 
 
 const words = place.replace(/^P(\d)\.C(\d)$/, 'plats $1 kort $2').replace(/^D\.C(\d)$/, 'dealerns kort $1'), WAY = {naturlig: 'Naturlig', forut: 'Som förut', read: 'som given är avläst'};
 const how = standard ? `hans sparade standard ${standard} (${way === 'read' ? WAY.read : `i ${WAY[way]}`})` : way === 'read' ? WAY.read : `${WAY[way]}, inget reglage rört`;
-const about = `${doll.name === 'paow' ? 'Paow' : 'Standarddockan'}, ${entry} till ${words} och tillbaka till ${entry} i samma film, lagd som docklabbet lägger den: ${how}${values['flat-hand'] ? ', högerhanden plan vid nedsläppet (natural.ts flatHand)' : ''}${before.samHand ? ', vänsterhanden vid skon som SAM läste den' : ''}${before.recipeGripYaw ? ', handens vinkel på kortet receptets' : ''}${landingSaid && !asBefore(landingSaid) ? `, landningen: ${landingWords(landingSaid).toLowerCase()}` : ''}${done.turn?.laid ? ', kortet vänt i högerhanden av handleden (turn-in-hand.ts)' : ''}. Skriven av dealer3d/tools/docka-cykel.ts; filmas med render-reference.ts --seconds ${cycle.frameCount / cycle.fps} --fps 24.`;
+const about = `${doll.name === 'paow' ? 'Paow' : 'Standarddockan'}, ${entry} till ${words} och tillbaka till ${entry} i samma film, lagd som docklabbet lägger den: ${how}${values['flat-hand'] ? ', högerhanden plan vid nedsläppet (natural.ts flatHand)' : ''}${before.samHand ? ', vänsterhanden vid skon som SAM läste den' : ''}${before.recipeGripYaw ? ', handens vinkel på kortet receptets' : ''}${before.oneGripYaw && !before.recipeGripYaw ? ', en vinkel för handen på kortet hela vägen' : ''}${landingSaid && !asBefore(landingSaid) ? `, landningen: ${landingWords(landingSaid).toLowerCase()}` : ''}${done.turn?.laid ? ', kortet vänt i högerhanden av handleden (turn-in-hand.ts)' : ''}. Skriven av dealer3d/tools/docka-cykel.ts; filmas med render-reference.ts --seconds ${cycle.frameCount / cycle.fps} --fps 24.`;
 const made = {tool: 'dealer3d/tools/docka-cykel.ts', place, from: entry, doll: doll.name, way, standard, recipe: recipe?.from ?? null, read: 'read' in found ? found.read : null, poseFilm: recipe ? recipe.poseFilm ?? 'till-ankare-2-3' : null, steer, knobs,
-  gripYaw: recipe && way !== 'read' ? gripYawOf(recipe, steer, way, before) : null, flatHand: !!values['flat-hand'], before, landing: landingSaid, landed: done.landing, ...(turnSaid && turnSaid !== TURN_DEFAULT ? {turn: turnSaid, turned: done.turn} : {}), cycle: options, sources: used};
+  gripYaw: recipe && way !== 'read' ? gripYawsOf(recipe, steer, way, before) : null, flatHand: !!values['flat-hand'], before, landing: landingSaid, landed: done.landing, ...(turnSaid && turnSaid !== TURN_DEFAULT ? {turn: turnSaid, turned: done.turn} : {}), cycle: options, sources: used};
 await writeFile(out, JSON.stringify({...motion, about, made}) + '\n', {flag: 'wx'});
 
 type Limb = {s: number[]; e: number[]; w: number[]; p: number[][]};

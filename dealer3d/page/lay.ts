@@ -33,10 +33,12 @@ export type Recipe = {from: string; frames: number; beats: number[]; poseFilm: s
  * later than the recipe has it: where both hands have the card through the change (sweep with sharedChange) that is
  * `wait` of --shared, else the beat l, when her left hand lets go. `carry`: metres the held corner is over the felt half
  * way through the turn. `gripYaw`: degrees her hand lies off the card's long side (Pace.gripYaw; the contact grips only).
+ * `gripYawEnd`: the same once the card is turned, to the end, `gripYaw` then being the angle as her right hand takes the
+ * card (Pace.gripYawEnd; Jakob 2026-11-23). Left out (as in every steering saved before it) or null: `gripYaw` all the way.
  * `body`: degrees [leaning sideways, the right shoulder forward, leaning forward] she has at the place, in place of what
  * the reach asks. `tempo`: how many times faster the deal is laid (every beat that much sooner; the still end keeps its length).
  */
-export type Steer = {turnNear: number | null; turnLater: number; carry: number | null; gripYaw: number | null; body: [number, number, number] | null; tempo: number};
+export type Steer = {turnNear: number | null; turnLater: number; carry: number | null; gripYaw: number | null; gripYawEnd?: number | null; body: [number, number, number] | null; tempo: number};
 export const NO_STEER: Steer = {turnNear: null, turnLater: 0, carry: null, gripYaw: null, body: null, tempo: 1};
 /** The turn at the place, as the trial of 2026-11-23 has it for the doll paow (dealer3d/LASMIG.md, "Vändningen vid platsen"): --turn-near 0.7, wait=14 and --grip-yaw -20, on a sweep recipe. */
 export const TURN_AT_PLACE = {turnNear: 0.7, wait: 14, gripYaw: -20};
@@ -91,6 +93,7 @@ export function layDeal(input: {plan: Plan; target: string; recipe: Recipe; pose
   if (steer.body) pace.body = steer.body;
   if (steer.turnNear !== null) { if (steer.turnNear > 0) pace.turnNear = steer.turnNear; else delete pace.turnNear; }
   if (steer.gripYaw !== null && pace.contactGrip) pace.gripYaw = steer.gripYaw;
+  if (steer.gripYawEnd != null && pace.contactGrip) pace.gripYawEnd = steer.gripYawEnd;
   if (steer.turnLater && shares(recipe)) pace.shared = {...pace.shared, wait: Math.max(0, (pace.shared?.wait ?? 1) + steer.turnLater)};
   if (recipe.poseFilm && pose.body) pace.base = [pose.body.lean, pose.body.twist];
   const last = pose.frames[pose.frameCount - 1], posed: Still = {L: last.L, R: last.R, h: last.h, ...(recipe.poseFilm ? {g: last.g} : {})};

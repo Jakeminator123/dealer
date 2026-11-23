@@ -17,7 +17,7 @@
 // window.docklabb is for a test that looks at the page: ready, and facts() of what is shown.
 import {createLabStage, type LabStage, type Touch, type ViewName} from './lab-stage.ts';
 import {NO_STEER, TURN_AT_PLACE, cardInFilmsShoe, layDeal, placeFrom, readDeal, recipeOf, shares, standardName, type Entry, type LaidDeal, type PoseFilm, type ReadDeal, type ReadStored, type Recipe, type Steer, type Stored} from './lay.ts';
-import {NO_KNOBS, dollFor, gripYawOf, layNatural, moveNatural, onDoll, withReturn, type Knobs, type LaidNatural, type Way} from './natural-lab.ts';
+import {NO_KNOBS, dollFor, gripYawsOf, layNatural, moveNatural, onDoll, withReturn, type Knobs, type LaidNatural, type Way} from './natural-lab.ts';
 import {LANDINGS, LANDING_DEFAULT, SHAPING_KNOBS, asBefore, landingOf, landingWords, type Landing, type LandingReceipt} from '../src/landing.ts';
 import {TURNS, TURN_DEFAULT, turnOf, type TurnId, type TurnReceipt} from '../src/turn-in-hand.ts';
 import type {PoseOptions} from './pose-on-doll.ts';
@@ -152,11 +152,14 @@ function size(canvas = $<HTMLCanvasElement>('stage')) { const box = $('frame').g
 /** The fingertips on the card are marked with the joints, and always close on the card. */
 const gripsShown = () => state.joints || state.view === 'card';
 
-// The sliders: each shows the recipe's own value until it is moved (the hand's angle on the card: in "Naturlig" −30, natural-lab.ts NATURAL_GRIP_YAW), and lays the deal again when it is. From A2.1 none: the deal is as read.
+// The sliders: each shows the recipe's own value until it is moved (the hand's angle on the card: in "Naturlig" 17° as her right hand takes it and −30° once it is turned, natural-lab.ts gripYawsOf), and lays the deal again when it is. From A2.1 none: the deal is as read.
 type Knob = {name: string; group?: string; min: () => number; max: () => number; step: number; on: () => boolean; value: () => number; set: (v: number) => void; text: (v: number) => string; only?: string};
 const R = () => now?.recipe ?? null, bodyNow = (): [number, number, number] => state.steer.body ?? ((now?.deal?.lab as {bodyAsked?: [number, number, number]} | undefined)?.bodyAsked ?? ((now?.motion.lab as {bodyAsked?: [number, number, number]} | undefined)?.bodyAsked) ?? [0, 0, 0]);
 /** The way the deal on the stage was laid in (a saved standard is laid in its own), or the chosen one. */
 const wayShown = (): Way => now && now.way !== 'read' && state.shown.kind === 'deal' ? now.way : wayOf();
+/** The hand's two angles on the card, as her right hand takes it and once it is turned; moving either slider sets both, the other as it shows (both at −30: "Naturlig" as it was before the two). */
+const yawsNow = (): [number, number] => (R() && gripYawsOf(R()!, state.steer, wayShown())) ?? [15, 15];
+const yawKnob = (j: 0 | 1, name: string): Knob => ({name, min: () => -45, max: () => 40, step: 1, on: () => !!R()?.pace.contactGrip, value: () => yawsNow()[j], set: v => { const y = yawsNow(); y[j] = v; state.steer.gripYaw = y[0]; state.steer.gripYawEnd = y[1]; }, text: v => `${comma(v)}°`});
 const body = (i: number, name: string, min: number, max: number, text: (v: number) => string, group?: string): Knob => ({name, group, min: () => min, max: () => max, step: 0.5, on: () => !!R(), value: () => bodyNow()[i], set: v => { const b = [...bodyNow()] as [number, number, number]; b[i] = v; state.steer.body = b; }, text});
 /** A slider of "Naturlig" only: a shoulder or an elbow, laid on the doll by dealer3d/src/natural.ts. */
 const natural = (key: keyof Knobs, j: 0 | 1, name: string, min: number, max: number, step: number, text: (v: number) => string): Knob => ({name, min: () => min, max: () => max, step, on: () => !!R() && wayOf() === 'naturlig', value: () => state.knobs[key][j],
@@ -166,7 +169,8 @@ const KNOBS: Knob[] = [
   {name: 'Var kortet vänds', group: 'Kortet', min: () => 0, max: () => 90, step: 5, on: () => !!R()?.pace.single, value: () => Math.round((state.steer.turnNear ?? R()?.pace.turnNear ?? 0) * 100), set: v => { state.steer.turnNear = v / 100; }, text: v => v ? `${v} % av vägen` : 'från handbytet'},
   {name: 'Vändningen börjar', min: () => R() && shares(R()!) ? -(R()!.pace.shared?.wait ?? 1) : -6, max: () => R() && shares(R()!) ? 20 : 10, step: 1, on: () => !!R(), value: () => state.steer.turnLater, set: v => { state.steer.turnLater = v; }, text: v => v ? `${v > 0 ? '+' : ''}${comma(v / 30, 2)} s` : 'som receptet'},
   {name: 'Handens höjd', min: () => 1, max: () => 12, step: 0.5, on: () => !!R()?.pace.single, value: () => (state.steer.carry ?? R()?.pace.carry ?? TWO_HAND.heights.carry) * 100, set: v => { state.steer.carry = v / 100; }, text: v => `${comma(v, 1)} cm`},
-  {name: 'Handens vinkel på kortet', min: () => -30, max: () => 40, step: 1, on: () => !!R()?.pace.contactGrip, value: () => (R() && gripYawOf(R()!, state.steer, wayShown())) ?? 15, set: v => { state.steer.gripYaw = v; }, text: v => `${comma(v)}°`},
+  yawKnob(0, 'Handens vinkel när högerhanden tar kortet'),
+  yawKnob(1, 'Handens vinkel när kortet är vänt och läggs'),
   body(2, 'Lutning framåt', -5, 30, v => `${comma(v, 1)}°`, 'Kroppen'),
   body(0, 'Lutning åt sidan', -25, 25, v => v ? `${comma(Math.abs(v), 1)}° mot plats ${v > 0 ? 7 : 1}` : '0°'),
   body(1, 'Vridning', -15, 30, v => v ? `${comma(Math.abs(v), 1)}° ${v > 0 ? 'höger' : 'vänster'} axel fram` : '0°'),
@@ -293,7 +297,7 @@ $('play').addEventListener('click', play);
 addEventListener('keydown', e => { if (e.code === 'Space' && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLButtonElement)) { e.preventDefault(); play(); } });
 $<HTMLInputElement>('scrub').addEventListener('input', e => { state.playing = false; state.t = Number((e.target as HTMLInputElement).value) / 1000 * stage!.duration(); stage!.setTime(state.t); transport(); grip(); });
 $('reset').addEventListener('click', () => { state.steer = {...NO_STEER}; state.knobs = knobsOf(); state.landing = {id: LANDING_DEFAULT}; state.turn = TURN_DEFAULT; state.touched = true; showDeal(true); });
-$('atplace').addEventListener('click', () => { const r = R(); if (!r) return; state.steer = {...state.steer, turnNear: TURN_AT_PLACE.turnNear, turnLater: TURN_AT_PLACE.wait - (r.pace.shared?.wait ?? 1), gripYaw: TURN_AT_PLACE.gripYaw}; state.touched = true; showDeal(true); });
+$('atplace').addEventListener('click', () => { const r = R(); if (!r) return; const {gripYawEnd: _end, ...steer} = state.steer; state.steer = {...steer, turnNear: TURN_AT_PLACE.turnNear, turnLater: TURN_AT_PLACE.wait - (r.pace.shared?.wait ?? 1), gripYaw: TURN_AT_PLACE.gripYaw}; state.touched = true; showDeal(true); });
 $('save').addEventListener('click', async () => {
   if (!now?.deal || state.shown.kind !== 'deal' || fault) return; const name = standardName(state.doll, state.entry, state.place), button = $<HTMLButtonElement>('save'); button.disabled = true;
   // Exactly the frames on the stage, for this doll, with what they were laid from: the entry, for "Naturlig" also the shoulders and elbows and how much of the body's steering she took and the landing and the turn where they are not the default, and with the return the return (`back`, return-cycle.ts's `cycle`).
@@ -320,7 +324,7 @@ try { await setDoll(state.doll); } catch (e) { $('note').textContent = `Docklabb
 requestAnimationFrame(tick);
 (window as unknown as {docklabb: unknown}).docklabb = {ready: true, facts: () => ({doll: state.doll, way: wayOf(), entry: state.entry, back: state.back, shown: state.shown, place: state.place, steer: state.steer, knobs: state.knobs, playing: state.playing, t: state.t, duration: stage?.duration(), fault, saved: now?.saved ?? false, from: now?.from ?? null, savedWay: now?.savedWay ?? null, shortMm: now?.shortMm ?? 0,
   frames: now?.motion.frameCount, forced: (now?.deal as LaidDeal | null)?.elbowForced ?? null, throughShoe: now?.deal?.throughShoe ?? null, note: $('note').textContent, status: $('status').textContent, grip: $('grip').textContent, standards: standards.map(s => s.name), camera: stage?.camera(), bodyShare: now?.bodyShare ?? null,
-  gripYaw: R() ? gripYawOf(R()!, state.steer, wayShown()) : null, cycle: (now?.motion.cycle as {readyFrom?: number} | undefined) ?? null, landing: state.landing, landed: now?.landed ?? null, landingNote: $('landingNote').textContent, turn: state.turn, turned: now?.turned ?? null, turnNote: $('turnNote').textContent,
+  gripYaw: R() ? gripYawsOf(R()!, state.steer, wayShown()) : null, cycle: (now?.motion.cycle as {readyFrom?: number} | undefined) ?? null, landing: state.landing, landed: now?.landed ?? null, landingNote: $('landingNote').textContent, turn: state.turn, turned: now?.turned ?? null, turnNote: $('turnNote').textContent,
   // What "Naturlig" did, over the whole deal: the hands' least gap, the wrists' most bend, the thumb's most gap from the card while the forefinger is on it (to the beat the card lies), and the fingertips on the card now.
   natural: now?.receipt ? (() => { const f = now.receipt!.frames, h = Math.ceil(((now.motion as {beats?: {h: number}[]}).beats?.[0]?.h) ?? f.length), held = f.filter(x => x.i <= h && x.touching.includes('R1'));
     return {apartMm: Math.min(...f.map(x => x.apartMm)), wristDeg: Math.max(...f.map(x => Math.max(...x.wristDeg))), thumbCardMm: held.length ? Math.max(...held.map(x => x.thumbCardMm[1])) : null, throughCard: f.reduce((s, x) => s + x.throughCard[1], 0)}; })() : null,

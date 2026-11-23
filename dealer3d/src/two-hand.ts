@@ -127,8 +127,13 @@ export type OneTurn = {single?: boolean; realTake?: boolean; reach?: number; car
  * card's normal; without it 15 in the landing and sweep grips and 30 in the plain one. -20 for the doll paow, who sits
  * 0.38 m behind the edge: her forearm then comes to the card along its long side, and the wrist turns it like a key
  * instead of standing bent 60 degrees.
+ * `gripYawEnd` (with contactGrip; Jakob 2026-11-23, "typ 17 grader för när dealerns högerhand som tar emot kortet görs.
+ * Men sedan vid själva slutet när kortet är vänt och så vidare är det snarare -30"): degrees the hand lies off the card's
+ * long side once the card is turned, to the end; `gripYaw` is then the angle as her right hand takes the card, and the
+ * hand goes from the one to the other over the turn, the card turning in the pinch about the line through thumb and
+ * forefinger. Left out, or equal to `gripYaw`, the hand keeps `gripYaw` all the way, as it did before.
  */
-export type Rolled = {roll?: boolean; contactGrip?: boolean | 'landing' | 'sweep'; sharedChange?: boolean; gripBend?: number; gripYaw?: number; handOverYaw?: number; body?: [number, number, number]; tuck?: number};
+export type Rolled = {roll?: boolean; contactGrip?: boolean | 'landing' | 'sweep'; sharedChange?: boolean; gripBend?: number; gripYaw?: number; gripYawEnd?: number; handOverYaw?: number; body?: [number, number, number]; tuck?: number};
 
 export const TWO_HAND = {
   // Where her right hand has the card, metres from the short side it turns about (`up`) and in from its long side on her right (`in`):
@@ -347,8 +352,14 @@ export function twoHandDeal(lens: Lens, start: Still, places: Place[], lead: num
   // the pinch while the wrist goes on and no finger changes side. The index is on its point of the face, the thumb as near
   // its point under it as it comes; `thumbOut`: the thumb that share of the way out from under the short edge, not below the felt.
   const padGrip = sweeps ? contactGripOf(flatR, true, M.sweepIndex, pace.gripYaw) : null, tipHigh = lying + jointRadius(8);
-  const gripOf = (pose: CardPose, m: number, thumbOut = 0) => {
-    const A = pinched!.at(pose), B = padGrip!.at(pose), blend = shapeBetween(A.shape, B.shape, m), axes = m <= 0 ? A.axes : m >= 1 ? B.axes : between(A.axes, B.axes, m);
+  // (gripYawEnd: the two grips at another angle of the hand on the card, made once for each angle a frame asks; at gripYaw they are the grips above)
+  type Grips = {pinched: NonNullable<typeof pinched>; padGrip: typeof padGrip};
+  const yaw0 = pace.gripYaw ?? (supportsLanding ? 15 : 30), yawEnd = pace.contactGrip && pace.gripYawEnd !== undefined && pace.gripYawEnd !== yaw0 ? pace.gripYawEnd : null, made = new Map<number, Grips>();
+  const base: Grips = {pinched: pinched!, padGrip}, gripsAt = (yaw: number): Grips => { if (yaw === yaw0 || !pinched) return base; let g = made.get(yaw);
+    if (!g) { g = {pinched: contactGripOf(flatR, supportsLanding, null, yaw), padGrip: sweeps ? contactGripOf(flatR, true, M.sweepIndex, yaw) : null}; made.set(yaw, g); } return g; };
+  const ending = gripsAt(yawEnd ?? yaw0);
+  const gripOf = (pose: CardPose, m: number, thumbOut = 0, G: Grips = base) => {
+    const A = G.pinched.at(pose), B = G.padGrip!.at(pose), blend = shapeBetween(A.shape, B.shape, m), axes = m <= 0 ? A.axes : m >= 1 ? B.axes : between(A.axes, B.axes, m);
     const wrist = sub(pinched!.surface(pose, H / 2 - pinchInset, tipHigh), outOf(blend[8], axes));
     // Leaving, the thumb swings out sideways from under the card, along its underside and past its long edge, and lies on the felt beside it.
     const under = add(pinched!.surface(pose, H / 2 - pinchInset, -tipHigh), mul(cross(pose.normal, pose.long), -M.sweepThumb * smooth(thumbOut)));
@@ -357,10 +368,10 @@ export function twoHandDeal(lens: Lens, start: Still, places: Place[], lead: num
     const shape = thumbToward(blend, [dot(target, axes.forward), dot(target, axes.palm), dot(target, axes.across)], 60);
     return {wrist, points: placed(shape, axes, wrist), axes, shape};
   };
-  const sweepNeeds = (axes: CardAxes, m: number) => Math.max(...gripOf({centre: [0, 0, 0], long: axes.long, normal: axes.normal}, m).points.map((p, i) => jointRadius(i) - p[1])) + 0.0005;
+  const sweepNeeds = (axes: CardAxes, m: number, G?: Grips) => Math.max(...gripOf({centre: [0, 0, 0], long: axes.long, normal: axes.normal}, m, 0, G).points.map((p, i) => jointRadius(i) - p[1])) + 0.0005;
   // The least the lying card is tipped (its near edge up, its far edge on the felt) for the laying hand, thumb under that edge, to clear the felt.
   const sweepTilt = sweeps ? (() => { for (let t = 6; t <= 40; t += 0.5) { const a = cardAxes(0, 0, true), long = turned(a.long, a.across, -rad(t)), normal = turned(a.normal, a.across, -rad(t));
-    if (lying + H / 2 * Math.abs(long[1]) - lying * (1 - Math.abs(normal[1])) >= sweepNeeds({long, normal, across: a.across}, 1)) return t; } throw Error('The sweep grip finds no tilt at which the laying hand clears the felt.'); })() : 0;
+    if (lying + H / 2 * Math.abs(long[1]) - lying * (1 - Math.abs(normal[1])) >= sweepNeeds({long, normal, across: a.across}, 1, ending)) return t; } throw Error('The sweep grip finds no tilt at which the laying hand clears the felt.'); })() : 0;
   const cards = places.map((place, k) => { const b = beats[k], r = place.real, step = (s: [number, number]): Vec3 => [shoe.front[0] + s[0], lying, shoe.front[2] + s[1]];
     // The first card is taken where her right hand waits (or, realTake, where the real dealer's hands change); every other where the real dealer's hands change, counted from the shoe's mouth.
     // (takeAt: the first card is taken at that point of the felt, her right hand going there from where it lay)
@@ -416,6 +427,8 @@ export function twoHandDeal(lens: Lens, start: Still, places: Place[], lead: num
     const roomBy = soft ? graspAt - 3 : graspAt, liftFrom = shares ? roomBy - 9 : b.l - 4, gripHeight = pinched?.needsHeight(rollFlat) ?? 0;
     // (sweep: the hand goes from the turning grip to the laying one over the turn's second half, done a frame before the turn is)
     const laysFrom = turnBegins + (b.turned - turnBegins) * 0.45, laying = (i: number) => smooth((i - laysFrom) / (b.turned - 1 - laysFrom));
+    // (gripYawEnd: the hand's angle on the card goes from gripYaw, as her right hand takes it, to gripYawEnd over the turn: its grips at each moment)
+    const G = (i: number): Grips => yawEnd === null ? base : gripsAt(yaw0 + (yawEnd - yaw0) * smooth((i - turnBegins) / (b.turned - turnBegins)));
     const makeRoom = (i: number) => gripHeight * smooth((i - liftFrom) / (roomBy - liftFrom));
     /** The card at a moment: standing in the shoe, leaving it, slid along the felt, stood up, falling forward in the air, lowered, pushed, lying on its place. */
     const card = (i: number): CardPose => {
@@ -443,7 +456,7 @@ export function twoHandDeal(lens: Lens, start: Still, places: Place[], lead: num
       let floor = lying + H / 2 * Math.abs(axes.long[1]) + W / 2 * Math.abs(axes.across[1]);
       if (pinched) {
         floor -= lying * (1 - Math.abs(axes.normal[1]));
-        if (i <= b.g) floor = Math.max(floor, i < graspAt ? makeRoom(i) : sweeps ? sweepNeeds(axes, laying(i)) : pinched.needsHeight(axes));
+        if (i <= b.g) floor = Math.max(floor, i < graspAt ? makeRoom(i) : sweeps ? sweepNeeds(axes, laying(i), G(i)) : G(i).pinched.needsHeight(axes));
       }
       return {centre: centre[1] < floor ? [centre[0], floor, centre[2]] : centre, long: axes.long, normal: axes.normal}; };
     // Her right hand on this card: how it comes to it (a little closed, the back of the hand up; the first card: as it lay), and its angles while it has it.
@@ -464,7 +477,7 @@ export function twoHandDeal(lens: Lens, start: Still, places: Place[], lead: num
     const handAt = (yawNow: number, dipNow: number, rollNow: number, bendNow: number, grip: Vec3) => { const shape = shapeBetween(flatR, gripR, bendNow), axes = axesAt(yawNow, dipNow, rollNow), at = sub(grip, outOf(padOf(shape), axes)), low = Math.min(...placed(shape, axes, at).map(q => q[1]));
       const wrist: Vec3 = low < M.floor ? [at[0], at[1] + M.floor - low, at[2]] : at; return {wrist, points: placed(shape, axes, wrist), axes, shape}; }; // a hand turned on its side beside the card is lifted clear of the felt, its fingers then a little higher up the card's side
     const right = (i: number) => i <= b.d ? handAt(came.yaw, rest.dip, rest.roll, bend(i), take) : handAt(handYaw(i) + swing(i), dip(i), roll(i), bend(i), held(i)), comes = handAt(came.yaw, rest.dip, rest.roll, came.bend, take);
-    const startGrip = pinched?.at(card(graspAt)), endGrip = pinched?.at(card(b.g));
+    const startGrip = pinched?.at(card(graspAt)), endGrip = pinched && ending.pinched.at(card(b.g));
     const loosen = endGrip && add(endGrip.wrist, mul(card(b.g).long, 0.025));
     const transition = (from: typeof comes, to: typeof comes, t: number, rise: number, aside: Vec3 = [0, 0, 0]) => {
       const shape = shapeBetween(from.shape, to.shape, t), axes = between(from.axes, to.axes, t);
@@ -509,9 +522,9 @@ export function twoHandDeal(lens: Lens, start: Still, places: Place[], lead: num
       if (i < graspAt) return transition({wrist: start.R.w, points: start.R.p, axes: axR0, shape: flatR}, startGrip,
         smooth((i - b.b) / (graspAt - b.b)), supportsLanding ? 0.158 : 0.115);
       // sweep: the grip stays to the film's end. Only the thumb leaves, out from under the short edge while the card closes onto the felt.
-      if (sweeps) return gripOf(card(i), laying(i), clamp((i - b.g) / 3.5));
-      if (i <= b.g) return pinched.at(card(i));
-      if (supportsLanding) return keepIndex(i, pinched);
+      if (sweeps) return gripOf(card(i), laying(i), clamp((i - b.g) / 3.5), G(i));
+      if (i <= b.g) return G(i).pinched.at(card(i));
+      if (supportsLanding) return keepIndex(i, ending.pinched);
       if (i <= releaseAt) {
         const wrist = lerp(endGrip.wrist, loosen, smooth((i - b.g) / (releaseAt - b.g)));
         return {...endGrip, wrist, points: placed(endGrip.shape, endGrip.axes, wrist)};
