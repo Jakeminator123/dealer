@@ -17,10 +17,7 @@ if (bare) document.body.classList.add('noui');
 const fail = (message: string) => { panel.append(el('p', {className: 'error', textContent: message})); hudBox.replaceChildren(el('span', {className: 'chip warn', textContent: message})); throw Error(message); };
 const read = async (url: string, what: string) => { const res = await fetch(url).catch(() => null); if (!res?.ok) fail(`${what} kunde inte läsas (${url}). Sidan gissar inga värden.`); return res!.json(); };
 
-// ?plan=<name>: a proposal for the placement plan (placements/proposals/<name>.json) instead of Jakob's draft, to be seen beside it;
-// ?kort=<factor> with it: the card size the proposal is drawn for. The game never reads a proposal.
-const proposal = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(query.get('plan') ?? '') ? query.get('plan') : null;
-const [contract, placements, bank, register] = await Promise.all([read('data/scene-contract.json', 'Scenkontraktet'), read(proposal ? `api/placements?plan=${encodeURIComponent(proposal)}` : 'api/placements', proposal ? `Förslaget "${proposal}"` : 'Placeringsplanen'), read('api/clip-bank', 'Klippbanken'), read('data/scene-rooms.json', 'Rumsregistret')]);
+const [contract, placements, bank, register] = await Promise.all([read('data/scene-contract.json', 'Scenkontraktet'), read('api/placements', 'Placeringsplanen'), read('api/clip-bank', 'Klippbanken'), read('data/scene-rooms.json', 'Rumsregistret')]);
 // The 360-degree rooms: every room of the register, the ones not yet in the game among them.
 const {rooms: panoramas, problems: roomProblems} = readRegister(register);
 type Clip = {id: string; video: string};
@@ -44,7 +41,6 @@ const scene = createScene(canvas, stage, {contract, plan: placements.plan ?? pla
 const state = scene.state;
 for (const [key, value] of query) if (key in DEFAULTS) { const k = key as keyof SceneState, base = DEFAULTS[k]; (state as Record<string, unknown>)[k] = typeof base === 'number' ? Number(value) : typeof base === 'boolean' ? value === '1' : value; }
 if (bare) state.format = 'fill';
-if (proposal && query.get('kort')) state.cardScale = Math.max(0.8, Math.min(2, Number(query.get('kort')) || state.cardScale));
 
 // ---- card track of the clip on screen: focus can follow the card ---------------------------------
 // gripTracks: a trial of another way to place the card. A clip that has a second track beside its own (card-track-grip.json, the
@@ -169,7 +165,6 @@ function build() {
   group('Kort', check('Renderade kort i stället för filmens färgyta', 'cards'), el('label', {className: 'check'}, grip, el('span', {textContent: 'Kortspår ur handens grepp (prov, där det finns)'})), choice('cardMethod', [['scene', 'I scenen (3D)'], ['film', 'I filmrutan (2D)'], ['matte', 'Filmens matt (prov)']]),
     el('label', {className: 'check'}, printBox, el('span', {textContent: 'Matt: trycket efter provets linjepassade spår (card-track-matt.json, där det finns)'})),
     el('label', {className: 'row two'}, el('span', {textContent: 'Kortet i handen'}), choice('cardHand', [['film', 'Filmens storlek (förut)'], ['standard', 'Standard hela vägen']])),
-    note(proposal ? `Planen som visas är förslaget <b>${proposal}</b>, inte ditt utkast. <a href="scene3d.html">Visa ditt utkast</a>` : 'Planen som visas är ditt utkast. <a href="scene3d.html?plan=forslag&kort=1.65">Visa förslaget med större kort (1,65)</a> · <a href="scene3d.html?plan=forslag-slump&kort=1.65">samma med lite slump</a>'),
     slider(tableGeometry() === 'lens' ? 'Kortens storlek (1,2 = ett verkligt kort, det Kortplan ritar)' : 'Kortens storlek (1 = kontraktets kort, förval 1,2)', 'cardScale', 0.8, 2, 0.05, '×', live), el('div', {className: 'seg'}, pick('cardRank', ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'].map(r => [r, r])), pick('cardSuit', [['spades', 'Spader'], ['hearts', 'Hjärter'], ['diamonds', 'Ruter'], ['clubs', 'Klöver']])),
     note('<b>I scenen</b>: kortet är ett föremål på bordet under filmen. Filmens eget kort (och kortet i skons fönster) nycklas bort, så filmens fingrar ligger över det renderade kortet och deras skuggor faller på det. Ljuset tas från filmens kort i varje ruta, glansen från rummet; i rörelse blir kortet oskarpt som handen. <b>I filmrutan</b>: den tidigare vägen, där labbets kortritare ritar kortet in i filmrutan. Var kortet är och vilken sida som syns kommer i båda fallen ur spårningen och placeringsplanen. <b>Filmens matt</b> (prov): filmens eget kort är matten. Varje gul eller blå bildpunkt byts, inget annat, så kanten är filmens och fingrarna ligger framför utan handmask. Baksidan är filmens kort omfärgat till baksidans färg med filmens skuggning, utan tryck; framsidan får trycket lagt efter spårets fyrhörning. Kortet ligger där filmen lägger det och har filmens storlek; liggande kort från tidigare filmer ritas som i scenen. Valören här är bara för provet: i spelet bestämmer Scout den.'));
   // The felt's marks: one box per kind, all held by the state's one word (scene3d-table.ts feltMarks).

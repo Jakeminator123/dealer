@@ -110,8 +110,8 @@ test('plans saved before grip, turnAt and flipAxis load with their defaults, and
  // A plan that fails is not half filled in.
  const broken=legacyPlan();broken.targets['D.C2'].geometry.native.u=NaN;assert.throws(()=>validatePlan(broken));assert.equal(Object.hasOwn(broken.targets['P1.C1'].intent,'grip'),false);
 });
-test('the tracked plan files load with the new keys filled in: the saved draft, the proposals and a frozen reference',async()=>{
- for(const file of ['placements/default.json','placements/proposals/forslag.json','placements/proposals/forslag-slump.json','placements/references/p7-direct-pilot-01.json']){
+test('the tracked plan loads with the new keys filled in: the saved draft',async()=>{
+ for(const file of ['placements/default.json']){
   const plan=JSON.parse(await readFile(file,'utf8'));validatePlan(plan);
   for(const id of TARGETS)assert.deepEqual(Object.keys(plan.targets[id].intent).slice(-3),['grip','turnAt','flipAxis'],`${file} ${id}`);
  }

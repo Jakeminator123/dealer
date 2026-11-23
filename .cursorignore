@@ -20,11 +20,9 @@ assets/**
 !assets/**/*.md
 
 # Machine data under assets/ that no index should carry (7 of its 11.5 MB of text, 2026-11-18): the card tracks per
-# frame, the speech lane's receipts per line, the sequence dumps and the timeline. The same lines stand in .ignore.
+# frame and the speech lane's receipts per line. The same lines stand in .ignore.
 assets/tracking/
 assets/speech/
-assets/sequences/
-assets/timeline.json
 
 # Receipts of studies that are over; nothing reads them by name (see .ignore). Hidden until Jakob has said whether the
 # folder is to be taken out of Git.

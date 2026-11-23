@@ -193,10 +193,6 @@ if(has('--restart')){
    if(url.pathname==='/api/trees'){await (await import('./dealer-tree.ts')).serveTrees(req,res,url);return;} // Karta's trees: nodes, 36 steps and number per tree (tools/dealer-tree.ts)
    if(url.pathname==='/api/placements'){
     res.setHeader('Content-Type','application/json; charset=utf-8');
-    // A proposal beside Jakob's draft (placements/proposals/<name>.json): read-only, for a lab page that is asked for it by name. His draft is the plan without a name, and the only one that can be saved.
-    const proposal=url.searchParams.get('plan');
-    if(proposal!==null){if(req.method!=='GET'||!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(proposal)){res.writeHead(405).end(JSON.stringify({error:'Ett förslag kan bara läsas.'}));return;}
-     try{res.end(JSON.stringify({plan:JSON.parse(await readFile(path.join('placements/proposals',proposal+'.json'),'utf8')),proposal}));}catch{res.writeHead(404).end(JSON.stringify({error:'Det finns inget förslag med det namnet.'}));}return;}
     if(req.method==='GET'){res.end(JSON.stringify(await placements.load()));return;}
     if(req.method!=='PUT'){res.writeHead(405).end();return;}
     if(req.headers.origin!==origin){res.writeHead(403).end(JSON.stringify({error:'Spara från det lokala labbet.'}));return;}

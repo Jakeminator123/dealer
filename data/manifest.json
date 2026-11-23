@@ -3557,14 +3557,16 @@
       "sha256": "69b65eeea7ef72cf4b3bb12e4e0c3cf9bb35259b79932e9e83c0752549b27912",
       "bytes": 6128,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-021.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-021.png",
       "sha256": "a992d7c1cf86643259f87f809f93b0575746d1eb93aaca4027735bcacb470747",
       "bytes": 6744,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-021.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-022.png",
@@ -3579,14 +3581,16 @@
       "sha256": "69b65eeea7ef72cf4b3bb12e4e0c3cf9bb35259b79932e9e83c0752549b27912",
       "bytes": 6128,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-022.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-022.png",
       "sha256": "946c751deb24d519de6faeca5f6792ee5b434d6b4f75460be5a7d89c87f970e6",
       "bytes": 6739,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-022.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-023.png",
@@ -3601,14 +3605,16 @@
       "sha256": "69b65eeea7ef72cf4b3bb12e4e0c3cf9bb35259b79932e9e83c0752549b27912",
       "bytes": 6128,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-023.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-023.png",
       "sha256": "5d8de820ae0a121cdb8eacefe331c35ee96c2198679c149787f82ee1699eb612",
       "bytes": 6760,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-023.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-024.png",
@@ -3623,14 +3629,16 @@
       "sha256": "69b65eeea7ef72cf4b3bb12e4e0c3cf9bb35259b79932e9e83c0752549b27912",
       "bytes": 6128,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-024.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-024.png",
       "sha256": "4964fb6f33f437315a4b7e66009671fa36968ccb45189baaf20e9ba6a07ab816",
       "bytes": 6751,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-024.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-025.png",
@@ -3645,14 +3653,16 @@
       "sha256": "69b65eeea7ef72cf4b3bb12e4e0c3cf9bb35259b79932e9e83c0752549b27912",
       "bytes": 6128,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-025.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-025.png",
       "sha256": "c56c790ffa846595ff12baf46374f1bba5f7340a97e142c91f97827a502007f6",
       "bytes": 6760,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-025.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-026.png",
@@ -3667,14 +3677,16 @@
       "sha256": "69b65eeea7ef72cf4b3bb12e4e0c3cf9bb35259b79932e9e83c0752549b27912",
       "bytes": 6128,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-026.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-026.png",
       "sha256": "bf33d55793a125fb938db6ded1cc733d209269f2f5865086a7eb47688ac64bbf",
       "bytes": 6759,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-026.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-027.png",
@@ -3689,14 +3701,16 @@
       "sha256": "69b65eeea7ef72cf4b3bb12e4e0c3cf9bb35259b79932e9e83c0752549b27912",
       "bytes": 6128,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-027.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-027.png",
       "sha256": "22020ffcd3dcbd000e2639a29954df95d076fbf0b630df4b61f5e58b59d05fc6",
       "bytes": 6774,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-027.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-028.png",
@@ -3711,14 +3725,16 @@
       "sha256": "69b65eeea7ef72cf4b3bb12e4e0c3cf9bb35259b79932e9e83c0752549b27912",
       "bytes": 6128,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-028.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-028.png",
       "sha256": "f1ea5e20ef26ca3b473e52242c05f6b4897741fb8ae1be0fb79769215ca67e54",
       "bytes": 6767,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-028.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-029.png",
@@ -3733,14 +3749,16 @@
       "sha256": "69b65eeea7ef72cf4b3bb12e4e0c3cf9bb35259b79932e9e83c0752549b27912",
       "bytes": 6128,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-029.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-029.png",
       "sha256": "cf7146dbd3a42f1ae3145ac221b353b7dc30ee2db6cd4e30c428a3cc3a661212",
       "bytes": 6775,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-029.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-030.png",
@@ -3755,14 +3773,16 @@
       "sha256": "69b65eeea7ef72cf4b3bb12e4e0c3cf9bb35259b79932e9e83c0752549b27912",
       "bytes": 6128,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-030.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-030.png",
       "sha256": "02d92eb651652f5fc30de3904824ce1605dbf893e1065a3841bd5652a133c580",
       "bytes": 6777,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-030.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-031.png",
@@ -3777,14 +3797,16 @@
       "sha256": "69b65eeea7ef72cf4b3bb12e4e0c3cf9bb35259b79932e9e83c0752549b27912",
       "bytes": 6128,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-031.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-031.png",
       "sha256": "3cef743cf5f9526f897d52b7d0532884f4a0495f7773bae6fb113b150b4b5b50",
       "bytes": 6791,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-031.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-032.png",
@@ -3799,14 +3821,16 @@
       "sha256": "69b65eeea7ef72cf4b3bb12e4e0c3cf9bb35259b79932e9e83c0752549b27912",
       "bytes": 6128,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-032.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-032.png",
       "sha256": "cf5dafe443e87541afc0ba7f93cb3077df27b96c0a630600837678701dac6230",
       "bytes": 6783,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-032.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-033.png",
@@ -3821,14 +3845,16 @@
       "sha256": "69b65eeea7ef72cf4b3bb12e4e0c3cf9bb35259b79932e9e83c0752549b27912",
       "bytes": 6128,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-033.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-033.png",
       "sha256": "9fc9c92eacef155cc89ea08b4d384a5a67e07553c7bf4d9b9b8834a8b86f326a",
       "bytes": 6777,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-033.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-034.png",
@@ -3843,14 +3869,16 @@
       "sha256": "69b65eeea7ef72cf4b3bb12e4e0c3cf9bb35259b79932e9e83c0752549b27912",
       "bytes": 6128,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-034.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-034.png",
       "sha256": "d1dd863a7cb021099062db9beae9a9526f83f37e944b2fbfa7ddc70b226cd804",
       "bytes": 6732,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-034.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-035.png",
@@ -3865,14 +3893,16 @@
       "sha256": "69b65eeea7ef72cf4b3bb12e4e0c3cf9bb35259b79932e9e83c0752549b27912",
       "bytes": 6128,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-035.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-035.png",
       "sha256": "9dfc775765637ec2aa876ac51474dfa49712405b53a89f3a758510905d75e065",
       "bytes": 6726,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-035.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-036.png",
@@ -3887,14 +3917,16 @@
       "sha256": "69b65eeea7ef72cf4b3bb12e4e0c3cf9bb35259b79932e9e83c0752549b27912",
       "bytes": 6128,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-036.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-036.png",
       "sha256": "78dbf7f267d872106f46fa54a9d6d557af432f2dbb5a39ef3740bf8c541bf842",
       "bytes": 6722,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-036.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-037.png",
@@ -3909,14 +3941,16 @@
       "sha256": "b84d12e8347ef591874ba9575bdd51afbd0221c2da34a6d7b6138e0a868d381d",
       "bytes": 6330,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-037.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-037.png",
       "sha256": "160c8e2f5d888548be4bc805336b75f2b43e4ba31f584cb25554342375678c78",
       "bytes": 6721,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-037.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-038.png",
@@ -3931,14 +3965,16 @@
       "sha256": "ce7fc57aa81fe36a4bdd05d8bb6231ac21b193e003ed22db5985d13de0cc5383",
       "bytes": 6424,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-038.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-038.png",
       "sha256": "4a55a21855b77ba6dbee428304c3cb62e9b5916fbf5a867baca0607ab98767a5",
       "bytes": 6725,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-038.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-039.png",
@@ -3953,14 +3989,16 @@
       "sha256": "b30c1e71e3263e539b2f628ea0e2ad9adb62a58aa16ea257d9e67b249e0b0898",
       "bytes": 6473,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-039.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-039.png",
       "sha256": "7f132845d6c46369de096abf0fc9f9504aa15051487ef9941789c599869bfa89",
       "bytes": 6698,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-039.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-040.png",
@@ -3975,14 +4013,16 @@
       "sha256": "4bd68c08d3bc35c2178730ad7d3fe412cc7fc103de816857705753ba91f467ca",
       "bytes": 6955,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-040.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-040.png",
       "sha256": "207d89e96e2f100bd563984f14b90144fd1ced675b22c2e82726760f2938e470",
       "bytes": 6706,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-040.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-041.png",
@@ -3997,14 +4037,16 @@
       "sha256": "7a04df792341c52ffd34562dfb82105eb0300833050645de23c645d817091520",
       "bytes": 6948,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-041.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-041.png",
       "sha256": "a65693cb1154afa61d8efc73d3927ab6cd6b7018809debacd0c9da945401b507",
       "bytes": 6728,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-041.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-042.png",
@@ -4019,14 +4061,16 @@
       "sha256": "e0f91e8bd56cbddcf8eb622b85a9250924111b4e0ad0954f0a7e7b924da129d9",
       "bytes": 6983,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-042.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-042.png",
       "sha256": "f083da9220e58f92bedaeda3fbead7f7ae69c5862b4a90d03a0cba621259f375",
       "bytes": 6738,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-042.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-043.png",
@@ -4041,14 +4085,16 @@
       "sha256": "b85bdd1b4fb4cdec9fb668bbf49a54457cd42b44e51cb3190fa1a67063772f78",
       "bytes": 7014,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-043.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-043.png",
       "sha256": "fd42fb7aa984bafab89f6c82466f0647934d117d28aa4ed0b9a9674bdf6b01a6",
       "bytes": 6967,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-043.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-044.png",
@@ -4063,14 +4109,16 @@
       "sha256": "b81d527203fc99e185fdb8a14e0493d32000f87b3bc2e41a8c0c0ecdbb96584d",
       "bytes": 7161,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-044.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-044.png",
       "sha256": "2125aa23c17edd3679ca969c704667186d298d679d81da2c0864533c264fb94a",
       "bytes": 7055,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-044.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-045.png",
@@ -4085,14 +4133,16 @@
       "sha256": "1b77968e2891fd496a1b93fc5f590cab7835db119d773c8a5ca0dd2379e0d0d9",
       "bytes": 7250,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-045.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-045.png",
       "sha256": "de224315124e9d4ec09032c3d9dce7f400ce3e46686fa4b8e1a1e879c07da690",
       "bytes": 7243,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-045.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-046.png",
@@ -4107,14 +4157,16 @@
       "sha256": "4e9fe686a49d6fce9d599b935e8698f0ef3252b57aff9e9178960303d6998c62",
       "bytes": 7407,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-046.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-046.png",
       "sha256": "f7ecd27f144c1accc43be18658d6c7fcf28c8cee5932dbde5d9ea948a1338c10",
       "bytes": 7416,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-046.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-047.png",
@@ -4129,14 +4181,16 @@
       "sha256": "893640965fab099bc2eab23f358996f6d3eb12194c813be855de5cc73864e1e3",
       "bytes": 7327,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-047.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-047.png",
       "sha256": "d7d95c9fbdb69fc90fa5a54c85d57ddc0fc19e9e7baca0c5ea4c035aa5b79afd",
       "bytes": 7497,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-047.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-048.png",
@@ -4151,14 +4205,16 @@
       "sha256": "f539d05b024fed5dc9db15a5e3d0eb6ec82953f4b55279d5057a5a12e83b65a0",
       "bytes": 7416,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-048.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-048.png",
       "sha256": "eaa31a42940ed04bb65317475e7d886bc070089fb147acc48806e1eda69b9a30",
       "bytes": 7537,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-048.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-049.png",
@@ -4173,14 +4229,16 @@
       "sha256": "6fe376b82630701265dd4e39b950952ce0e1f21323168381d02261448c357f21",
       "bytes": 7602,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-049.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-049.png",
       "sha256": "77cb80d847c2e7a600fa1bdce9f10812da62da740c350314b1db34fdee7f7bd6",
       "bytes": 7127,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-049.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-050.png",
@@ -4195,14 +4253,16 @@
       "sha256": "f6b3512f50d32499efd5a803c104278be3e536138f6eb60b55eaa17e4ba4f76c",
       "bytes": 7625,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-050.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-050.png",
       "sha256": "3857be9e3f31b53a2d44c48aafcc2f9a3cbe4840129fdc0e564249578f572c6c",
       "bytes": 6665,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-050.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-051.png",
@@ -4217,14 +4277,16 @@
       "sha256": "53cccd1745cebc8e618e624e946cd0901328edd8a9c2a442091220f778064035",
       "bytes": 7750,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-051.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-051.png",
       "sha256": "4527b205da7398b1f7e6fc9595e092036946233b4c6e20e00585771c931f622a",
       "bytes": 6648,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-051.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-052.png",
@@ -4239,14 +4301,16 @@
       "sha256": "68fcfc8b8ce924ffa81f73b5b3b9669e9a4cfade88a20201e4507f35063362b2",
       "bytes": 7632,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-052.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-052.png",
       "sha256": "9c7df853dd54c4c3f048ef3716b2e768df587e5b3d44f8f7e05727b7833b43e1",
       "bytes": 6650,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-052.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-053.png",
@@ -4261,14 +4325,16 @@
       "sha256": "8d827846ef8f39efb25565f1b649b551d99c824f78f1a882b0c57471684a2379",
       "bytes": 7603,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-053.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-053.png",
       "sha256": "7c7552c3041021cacf975c943882b33e545b88022c105ec13550ae8eede7b887",
       "bytes": 6665,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-053.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-054.png",
@@ -4283,14 +4349,16 @@
       "sha256": "cb037ba6f4b65fd8016b4e907ad0875dadf3bca5b942bcbeec977653cde2167b",
       "bytes": 7432,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-054.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-054.png",
       "sha256": "232ba868eb123a31eb000121bd035d07a0ebee6abd76156cd9699d2bb221be56",
       "bytes": 6667,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-054.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-055.png",
@@ -4305,14 +4373,16 @@
       "sha256": "33a175cd57d91421294a435d9480c0a0f54f82f10a692aa21578281aab56da33",
       "bytes": 7233,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-055.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-055.png",
       "sha256": "35ccac9e1f88fd5d5d21dc9363a9f4a3474f88e84cefd99ffd964aca3b56ba3d",
       "bytes": 6667,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-055.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-056.png",
@@ -4327,14 +4397,16 @@
       "sha256": "1e88deefa2ea8ffd624a4b6b8e5817cc3ec84d4d98cd7536de7feb879e6e5b22",
       "bytes": 6989,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-056.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-056.png",
       "sha256": "eb71eb283301afd8c066c38bc20aec4b499cbbb181ea7fa65946ad68468f7487",
       "bytes": 6672,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-056.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-057.png",
@@ -4349,14 +4421,16 @@
       "sha256": "b2ad41525b89ea01d50e7253289fc4b16f6e4be23023aa1a0b5e208ba270f52c",
       "bytes": 6822,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-057.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-057.png",
       "sha256": "c4e14ab146a3973c9898a1587f9bb01c95b0169a33a3afa903ec5274edaef773",
       "bytes": 6666,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-057.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-058.png",
@@ -4371,14 +4445,16 @@
       "sha256": "a084f5a83e47d1467e92d45ea44c6f808ac50c75680287b3cb87e60b09f31d8c",
       "bytes": 6711,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-058.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-058.png",
       "sha256": "da4e6971e13fb9bdaa2c6ecae765f1a53345ec13490d582c69b4e2b150281dbf",
       "bytes": 6669,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-058.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-059.png",
@@ -4393,14 +4469,16 @@
       "sha256": "e77b33f92180a7c65206827f25597f5887a0eb009f99ddb5a569a91fada92b9d",
       "bytes": 6709,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-059.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-059.png",
       "sha256": "ea9dfa159cee1a3765822d99bb5830ce072129131f544e36769d48990af56a50",
       "bytes": 6669,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-059.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-060.png",
@@ -4415,14 +4493,16 @@
       "sha256": "f078e05eadf53b671d586a0cf5f894afc6b711308dc0edbb728c521ae4563bf8",
       "bytes": 6635,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-060.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-060.png",
       "sha256": "fb9983a89cffcf32022c4b69058c9c906c8e496eaaf837faf097870903519168",
       "bytes": 6668,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-060.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-061.png",
@@ -4437,14 +4517,16 @@
       "sha256": "afd00c6f749d45eedf55f44966870bf8e9950662ec5eaa222995ecdd62b1ac72",
       "bytes": 6637,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-061.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-061.png",
       "sha256": "da2b8917263e29b83d6ddc6745af6f559c1b2857b5022a77126de6da298c4f63",
       "bytes": 6669,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-061.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-062.png",
@@ -4459,14 +4541,16 @@
       "sha256": "82aa06a93154f1191e55afb6aed4d7f59868897907efe3bd6442a12b1e912645",
       "bytes": 6571,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-062.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-062.png",
       "sha256": "c2e725f8078ed099e97c947b89be8ad0011a7da7bf1886c0a83932659b47c116",
       "bytes": 6659,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-062.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-063.png",
@@ -4481,14 +4565,16 @@
       "sha256": "f06c3f4cd34548436230cb2c935b65f645599d87dacb5244b0d7121ad6ac57fb",
       "bytes": 6461,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-063.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-063.png",
       "sha256": "bfca247fe96f328ac4d30a20422e19c4432acb50b69c87c1118ca08f6e12e967",
       "bytes": 6669,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-063.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-064.png",
@@ -4503,14 +4589,16 @@
       "sha256": "8525fdadb45bf729110914c30a72d255770e12b484dee1731916703631a95b6b",
       "bytes": 6492,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-064.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-064.png",
       "sha256": "8cc52b04d7158076532ab8fc73e3e5f3eae0beb768666bfe41188b17c05cba0b",
       "bytes": 6665,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-064.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-065.png",
@@ -4525,14 +4613,16 @@
       "sha256": "3f721d4e1462db683b84af7d030294018621c815fc1ff8252a9568418266014c",
       "bytes": 6470,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-065.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-065.png",
       "sha256": "2b4278217838a60885970adf51fb964d1906caf16f36a35ca1584fef243f781d",
       "bytes": 6655,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-065.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-066.png",
@@ -4547,14 +4637,16 @@
       "sha256": "71e45d761574aa415608c2fbd2046b4834efd5d11a4ce5bb9f5a72512ed4b75d",
       "bytes": 6379,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-066.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-066.png",
       "sha256": "7f77b911e8b4620f41a55500886e204da0ff8f9fe6d3998ead8d4518b4f326a1",
       "bytes": 6681,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-066.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-067.png",
@@ -4569,14 +4661,16 @@
       "sha256": "bfc29fc0ede949f6600c14a30828006f0a2fd1dbb8915b319a5e4d5075928449",
       "bytes": 6310,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-067.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-067.png",
       "sha256": "fbaf6139480ae5c34453a3172faa797f5e5dd85d47a4a1e34ec4e782b62b6df5",
       "bytes": 6688,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-067.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-068.png",
@@ -4591,14 +4685,16 @@
       "sha256": "7f0621315c4b7f66a909d94b0b06c6393c58d106ff807d5fcea5def34d1bd70d",
       "bytes": 6267,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-068.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-068.png",
       "sha256": "15186f4a305d87b6f74e432b7d206ce9e63f1c7e6e6f878dc0059b98f65c0856",
       "bytes": 6675,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-068.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-069.png",
@@ -4613,14 +4709,16 @@
       "sha256": "fab9df265893fa698a15226e40c00e0d65644941644419b8d3b886eba4e4b63b",
       "bytes": 6244,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-069.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-069.png",
       "sha256": "1b1f282f88ef152b6312f78b4c3470aa6af0ccd1a9a964b6cda54c7a62dbc1fe",
       "bytes": 6682,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-069.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-070.png",
@@ -4635,14 +4733,16 @@
       "sha256": "7bf17dbfabdcf43ba5165dce4d70173034df2f8509c0303b3a4fd694238d7cf8",
       "bytes": 6233,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-070.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-070.png",
       "sha256": "984f79394f53bba680b836b1385c8df34b4a5f486451f6394f3e270f95b6a420",
       "bytes": 6684,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-070.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-071.png",
@@ -4657,14 +4757,16 @@
       "sha256": "0ab631f1ae00f29590036ab1d24734ce0a59fd4460beb988984236906b08b8a2",
       "bytes": 6259,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-071.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-071.png",
       "sha256": "0cb3a2c92f7f171cf909dc3f2bc4096da373999e16c36897330f4795ebb8d0f2",
       "bytes": 6681,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-071.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-072.png",
@@ -4679,14 +4781,16 @@
       "sha256": "2a6800d4102bc26018289038582499f5bb23c44e3edf7452fe96427d2ec543e5",
       "bytes": 6418,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-072.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-072.png",
       "sha256": "dbc160632155976980633915258bb385d9e8e563ae75e4464e8ce9364b436d1c",
       "bytes": 6676,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-072.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-073.png",
@@ -4701,14 +4805,16 @@
       "sha256": "ab87ac713d918330e68de3237f6fdb7514d5bf6c3f0887304b101e6b2f88bac4",
       "bytes": 7700,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-073.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-073.png",
       "sha256": "d3997fe5834f5a81418e3c2728bfe7116c1e75750fc8899a9d9fb5a178b8c1a2",
       "bytes": 6676,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-073.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-074.png",
@@ -4723,14 +4829,16 @@
       "sha256": "ecc3f87235ea80950c18b5ebd27d6624340a818dfe591ab3c8f2e2a4118d0f2b",
       "bytes": 7564,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-074.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-074.png",
       "sha256": "dc8b2ecde9dd81b87ae7693f7b0277d938e43f5c7622664d217e1e4a1c06ed7a",
       "bytes": 6670,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-074.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-075.png",
@@ -4745,14 +4853,16 @@
       "sha256": "8158f930fcf0746d2c31d8eb8a4012dbe2055ae10ea575b576c7d4a591f18c0a",
       "bytes": 7286,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-075.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-075.png",
       "sha256": "646a1c7251eace1de29d364d08aa0c7d4ed33c67ed5f2febfeccfacc9a3a29df",
       "bytes": 6673,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-075.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-076.png",
@@ -4767,14 +4877,16 @@
       "sha256": "37d90ab636dfe3201da2c473992dba28ab80b4ed249287317f7e6fcca944604c",
       "bytes": 7700,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-076.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-076.png",
       "sha256": "a9452a86b7ddf693c39cce6b4dca728c644fee71b48e288f764361c722766a12",
       "bytes": 6655,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-076.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-077.png",
@@ -4789,14 +4901,16 @@
       "sha256": "bed676f9664f55f4c2ef5a13698cbebd11461a2da69fc7ff1892b048ea6cb846",
       "bytes": 9823,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-077.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-077.png",
       "sha256": "6cea6d9ab836205eac3454cbfffc007b3b7def068c6039375357762fa4f6ed32",
       "bytes": 6653,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-077.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-078.png",
@@ -4811,14 +4925,16 @@
       "sha256": "0bf7988e784de73e00947f3c28f2c00f4ee6251ee1520bb0613cf1eb7d932046",
       "bytes": 8682,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-078.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-078.png",
       "sha256": "ddabb2d622be165a528a0f0356fb6df3a81b4e94e60648b08968cdb39d0b842a",
       "bytes": 6659,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-078.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-079.png",
@@ -4833,14 +4949,16 @@
       "sha256": "6307cbdb169a1f84466d3bc7dee983de6e2c69091ebc567796bc74a1deca8e8f",
       "bytes": 8032,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-079.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-079.png",
       "sha256": "e1e45a6b96712a04c117422bc001436d6ece1d342aa5b6b4b749cb3dafdc45bc",
       "bytes": 6658,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-079.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-080.png",
@@ -4855,14 +4973,16 @@
       "sha256": "b095d610a0106d801568d149ccd8a10ed8135a1ee0249dca37f50727e7ce252c",
       "bytes": 6990,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-080.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-080.png",
       "sha256": "e66e1740f2234b4990882ba811e7ff945842145db2c25dc9e453fa502751af47",
       "bytes": 6667,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-080.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-081.png",
@@ -4877,14 +4997,16 @@
       "sha256": "c43027acfee6eb1542daa180f6a2fb6465744399979af09b88706823fb80f8d1",
       "bytes": 7310,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-081.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-081.png",
       "sha256": "d74f93202455e05cf00045f1fdae9a8b500e93333bc7e386e5869eac0ca88cd3",
       "bytes": 6666,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-081.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-082.png",
@@ -4899,14 +5021,16 @@
       "sha256": "e7df2d16cfc0fbd300650168a2a16ce15270c829fd8256d9999ef6caf44d4bd1",
       "bytes": 7224,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-082.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-082.png",
       "sha256": "1df7cdc2282ae4915b3be8e50a9b525c1c069e1e41d970baa39e41a0f7e8107a",
       "bytes": 6666,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-082.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-083.png",
@@ -4921,14 +5045,16 @@
       "sha256": "6dde76cb68338529e016227ac889eef4a3b4295c3b435fcb8c089231435aa518",
       "bytes": 7466,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-083.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-083.png",
       "sha256": "ee314f7b10f02f0541275c9187205c63968d4163c72024c4e1efd0f9b89451e1",
       "bytes": 6664,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-083.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-084.png",
@@ -4943,14 +5069,16 @@
       "sha256": "ea88c041389b02911ad315744f3a0742d888be9f71fe61ba439eb281acb629f4",
       "bytes": 7479,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-084.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-084.png",
       "sha256": "3c848ffac3288218ffdceea4248d3af03b41fc2c835ec33388e7d24545d25e84",
       "bytes": 6666,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-084.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-085.png",
@@ -4965,14 +5093,16 @@
       "sha256": "edc7c49fefa2803e230ef3979c049ce6db00e948fa5f338c0fc896baf284f2f6",
       "bytes": 7381,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-085.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-085.png",
       "sha256": "2c0a41845e5d577c4b197e1aadc86bb298dc46476c0b52abb1763f6b65831a77",
       "bytes": 6659,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-085.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-086.png",
@@ -4987,14 +5117,16 @@
       "sha256": "4f11eb61de9c04f98f295b32e8d5abbdc13960a3fc867a2600cda4d218a690d4",
       "bytes": 7485,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-086.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-086.png",
       "sha256": "ae67df20d896b570190cfcff7fcac580ba87be891dfa5b6e9c63f3606dbd5cc2",
       "bytes": 6657,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-086.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-087.png",
@@ -5009,14 +5141,16 @@
       "sha256": "61987f6752998e88ed57639024983c6486c72631ac17056e0e642316dc3a139d",
       "bytes": 7534,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-087.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-087.png",
       "sha256": "b19cc027a12566433004b1034b6900e370dbacec33d267a5841cd4227d7a8fde",
       "bytes": 6654,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-087.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-088.png",
@@ -5031,14 +5165,16 @@
       "sha256": "cc887496df2fb08ed0b9adf436133c662b6338724ceac6a630e064f6e9236b28",
       "bytes": 7584,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-088.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-088.png",
       "sha256": "c5bee5cc2e903fc6254316f5d725a047a545ab25a28d1a37f8047fb1f0818b08",
       "bytes": 6660,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-088.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-089.png",
@@ -5053,14 +5189,16 @@
       "sha256": "bf513da6b037f9c07f236a88b2c0352af72d60fda436101a7ad761f919bcbe36",
       "bytes": 7362,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-089.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-089.png",
       "sha256": "9b9420bc8df2561b34cdf83416bae9e9c479dbe8e33e589a20342d99f5ca8424",
       "bytes": 6667,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-089.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-090.png",
@@ -5075,14 +5213,16 @@
       "sha256": "547fd96edbbb1a23734ab41defb27edab28f1358e963ae8c133e7ab7511e4f98",
       "bytes": 7525,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-090.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-090.png",
       "sha256": "73e3f35afc6b20931a4333e20a8b2ac1b831c037a77c96691e6818ea30ed4ad5",
       "bytes": 6668,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-090.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-091.png",
@@ -5097,14 +5237,16 @@
       "sha256": "e8d0c69d4ae7e383eb09a828fbf83de5449cd4c3a2a0224c6889df79e339d933",
       "bytes": 7586,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-091.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-091.png",
       "sha256": "1386583acda620141b985a4d887050b9fcaa32d5e57468c2b5454883c4e2d1d2",
       "bytes": 6663,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-091.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-092.png",
@@ -5119,14 +5261,16 @@
       "sha256": "390a59be8419c286d8757998009962fda25abf2473e3925a7a1c4674585e7da3",
       "bytes": 7592,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-092.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-092.png",
       "sha256": "db5b4733ebdc731b93994e6f2169a4295c9ed5715c6b071dda583ca6636b27cb",
       "bytes": 6664,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-092.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-093.png",
@@ -5141,14 +5285,16 @@
       "sha256": "89e032e32aa8d849322fdd0ad1d9a3cc0db9b7e27d8d645a05b1e01ce30c3342",
       "bytes": 7624,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-093.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-093.png",
       "sha256": "8aabc5d788f6be0e84883b99b4b0ad1ef9fe9dbcef9e0e959a45df52188ca3eb",
       "bytes": 6662,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-093.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-094.png",
@@ -5163,14 +5309,16 @@
       "sha256": "581e91a099699367a70e38d76bc7683873e9517564397e8a9b6c7fe91c86ada3",
       "bytes": 7681,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-094.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-094.png",
       "sha256": "4b5d95121c3b9895cc54527318b8f8e74f5cc3c490365cf57b5230560eea4326",
       "bytes": 6659,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-094.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-095.png",
@@ -5185,14 +5333,16 @@
       "sha256": "709d7ed9c5859db53009c355debf102d30f345bf387e3ab5872b4dfece46d4ef",
       "bytes": 7419,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-095.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-095.png",
       "sha256": "e4a87f0d0d94540c9b1c1cb03c5290ac36aa8b194ceb7341a1210cc5a5d3a143",
       "bytes": 6650,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-095.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-096.png",
@@ -5207,14 +5357,16 @@
       "sha256": "46581057698baec4ad7b4a03861af0508ced09884bec9d0d9326043b18a8016d",
       "bytes": 7421,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-096.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-096.png",
       "sha256": "ce64d6fec8798c1b1bf9268e8455b7456c03a97aae40d8f6a638f6b3b091c9a2",
       "bytes": 6665,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-096.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-097.png",
@@ -5229,14 +5381,16 @@
       "sha256": "020dcb311eb3d55a57c996b50d648c0b00503d2c4a18796091a024c36f4feb5a",
       "bytes": 7304,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-097.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-097.png",
       "sha256": "897c010589573f4734d03ad5ea5cb49eb75dacc7813cd70cba5a87fdf30ffd1c",
       "bytes": 6665,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-097.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-098.png",
@@ -5251,14 +5405,16 @@
       "sha256": "9c034748df44cca57077e14ec49f28d6b62623af1169e6cf6d74d86364d4ac46",
       "bytes": 7131,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-098.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-098.png",
       "sha256": "4aa596ae0e86da123b9c1f40a8d6398e5f1064762064306547c824854f076589",
       "bytes": 6671,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-098.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-099.png",
@@ -5273,14 +5429,16 @@
       "sha256": "824013bb4bc4f549c4c323a0f2b3028aafe79f7873d023cc7afff7ca814e6829",
       "bytes": 7120,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-099.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-099.png",
       "sha256": "6b35aac685fb0992c19ca10d95f23b7fe9edd69e235e82dea67f08e809eadd02",
       "bytes": 6675,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-099.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-100.png",
@@ -5295,14 +5453,16 @@
       "sha256": "301e47a03662a67f7daaa7f0389464d8873128da7f9fc55fb54c084ab76f2711",
       "bytes": 7086,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-100.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-100.png",
       "sha256": "1d57e155c68d01b1f010a2c36db5f4a68d1514f81597e167947b35afdaa0803b",
       "bytes": 6664,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-100.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-101.png",
@@ -5317,14 +5477,16 @@
       "sha256": "e47b29b6be53e31660593c5686145c6ddc06503a4c1df63cecb70d6674f29864",
       "bytes": 7054,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-101.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-101.png",
       "sha256": "8bb1a54c9735bb4700e930174a90571067fd49470f75ad81b89139d35adf12a1",
       "bytes": 6666,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-101.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-102.png",
@@ -5339,14 +5501,16 @@
       "sha256": "3d96621db3ea844e75600906c7ceb31f9fc22e02dc7256da0a21bdf89df61db2",
       "bytes": 7185,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-102.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-102.png",
       "sha256": "821990b79e18713de0e652fdb8fd77dfd5f7f8f85cf107cd989092109dbf78b0",
       "bytes": 6671,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-102.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-103.png",
@@ -5361,14 +5525,16 @@
       "sha256": "316130ac24dad72a7a686073d99f2ed14098f241f457384bcc5344f267914fcc",
       "bytes": 7101,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-103.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-103.png",
       "sha256": "442f3cfcc5dca733f28ad88d95ad2fa92e1e0720e41b2a7c375c36f5849e267b",
       "bytes": 6672,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-103.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-104.png",
@@ -5383,14 +5549,16 @@
       "sha256": "031610d859c3b8bb271e53b234c3e6c342020a1da9639e2a433afbb6c725126d",
       "bytes": 7227,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-104.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-104.png",
       "sha256": "6313ec868bdf4f47123384364db5769765fd464c4742525d3bbf15b3a223aaf3",
       "bytes": 6676,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-104.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-105.png",
@@ -5405,14 +5573,16 @@
       "sha256": "25387b78a1f010bd6b9d5c96ed6062339bf47736e41c2f3730e6b2f41a060a83",
       "bytes": 6935,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-105.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-105.png",
       "sha256": "e71aaf2ce5ac827518ad14ee47daa9cae78bcdfd0adafc364b0fc4f925e2a299",
       "bytes": 6659,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-105.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-106.png",
@@ -5427,14 +5597,16 @@
       "sha256": "1f5a94339cfc7b0949b4500f8ac5a22cc0122bda650968e1353131d3bd19a7d9",
       "bytes": 7048,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-106.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-106.png",
       "sha256": "cc6d070487ad4a05dc3eb8c049b1a51de268da49c5463176f0408339963821a5",
       "bytes": 6665,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-106.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-107.png",
@@ -5449,14 +5621,16 @@
       "sha256": "843c289d7ef3b494ec16258604a2cc58596fe5202e62bbbba999729faf232df4",
       "bytes": 7211,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-107.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-107.png",
       "sha256": "4f0bf46c3901e9c524c80a343d7a96336d15fe64cd66632c55f65d96e0f3b019",
       "bytes": 6665,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-107.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-108.png",
@@ -5471,14 +5645,16 @@
       "sha256": "e96469050b853aa79d5579b010272f89ebe1a35ca2db6905ab21fd606578eac8",
       "bytes": 7055,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-108.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-108.png",
       "sha256": "bf70992d99e3794425a232cdca9ab84c787c261492f553958ecfc55731c03931",
       "bytes": 6665,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-108.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-109.png",
@@ -5493,14 +5669,16 @@
       "sha256": "803ccbe85f6e25c78c8e2924c85f996e228bc04302a55486e0ff51808af3d5b2",
       "bytes": 7046,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-109.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-109.png",
       "sha256": "69fc0fed0d1e9efd421b360d1ab9b779def479e0cbf3a6e254c0dcd03649a970",
       "bytes": 6666,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-109.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-110.png",
@@ -5515,14 +5693,16 @@
       "sha256": "836b79ee80f2248575eb8e2a025d12d4b94f68243957af210b87b99a7a1f6094",
       "bytes": 7077,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-110.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-110.png",
       "sha256": "5aba24021fd9e02af8e8be40c770dd65cc32e93f380da2c05955632523d476c9",
       "bytes": 6663,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-110.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-111.png",
@@ -5537,14 +5717,16 @@
       "sha256": "2d8fb67ac876fbc2c6f814b6c368ca4793c2874e8f4b3700bb988ac5c89836bb",
       "bytes": 7050,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-111.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-111.png",
       "sha256": "198adcb7d6a6e52b1d348edb4906c73cdfcdeedebdf7e6cda6e9b86be29b7190",
       "bytes": 6666,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-111.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-112.png",
@@ -5559,14 +5741,16 @@
       "sha256": "323a120a99007c6c019ef7fd24cda04a8f0fdf440615f84ef66688e2978b2a82",
       "bytes": 7056,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-112.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-112.png",
       "sha256": "7e4ec0e67f94cea6b27d1c52de4738b5ca364d58bc93f69f2eae852085b3737f",
       "bytes": 6671,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-112.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-113.png",
@@ -5581,14 +5765,16 @@
       "sha256": "7db16db6517d17d69673040abff01c7627bca8f848018bcac9ce64c615e85e6b",
       "bytes": 7066,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-113.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-113.png",
       "sha256": "6fae7cec14713e60302255ed2cf66f12cf8bc5292c965335e4d5b69089fc42ec",
       "bytes": 6681,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-113.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-114.png",
@@ -5603,14 +5789,16 @@
       "sha256": "4a058d1fcee84e05a404e9ef9fcb64053b51170f050c1b227267cfba94906bd8",
       "bytes": 7053,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-114.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-114.png",
       "sha256": "a0bd5efeb2c94efa87e140fcac51bfa800fcc1093b2dd79c5b0f939bc4434bf3",
       "bytes": 6683,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-114.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-115.png",
@@ -5625,14 +5813,16 @@
       "sha256": "c8a4def8ea8be9124d50a79b7788ea06e6bdc55ec685ba86cf0e2a06dfdd444a",
       "bytes": 7073,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-115.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-115.png",
       "sha256": "da2b35ee513351206f0228f788c7bbe8aa831e557b3a47c1bb6a140846e49af7",
       "bytes": 6706,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-115.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-116.png",
@@ -5647,14 +5837,16 @@
       "sha256": "40b3289ecc2c294fce8bfaf7efcb389bbbabf2ec9d3d26dffb7020bb5a9f6161",
       "bytes": 7069,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-116.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-116.png",
       "sha256": "38190d5d45701262e58b5e81ef608dedf03f8a9d6052d3fcd0de3ba508b6696b",
       "bytes": 6700,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-116.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-117.png",
@@ -5669,14 +5861,16 @@
       "sha256": "35d191cf90a0714a7f7a38360e223bdc4caa39b8c89fe11bc0599193c297719e",
       "bytes": 7104,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-117.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-117.png",
       "sha256": "c8c08e46c9649488fc59b0d77db02693ca88df55c32e9625eab7f27bb804b103",
       "bytes": 6704,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-117.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-118.png",
@@ -5691,14 +5885,16 @@
       "sha256": "a284f3b687a5c1657c73b7cbd569faab162414720a3dd233e85f76b4830a4c9a",
       "bytes": 7188,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-118.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-118.png",
       "sha256": "bf86eb355eed3b6dbe78b8d668c4b5b84dd5e50bd9f28b4053eec92ebd7b01ca",
       "bytes": 6696,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-118.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-119.png",
@@ -5713,14 +5909,16 @@
       "sha256": "e1560a8b71be60210ad87ad2830a78e6887a7f335983e0d59778f30036da8f75",
       "bytes": 7106,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-119.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-119.png",
       "sha256": "55af6321c50cd3f6ae22f8485602fc535f8e787d25b0f6b825f4943b9361a0f4",
       "bytes": 6705,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-119.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-120.png",
@@ -5735,14 +5933,16 @@
       "sha256": "9909dcb1a5f8de3cf974477fd633e3745abbb444f7476165fd62c12b5bd7862f",
       "bytes": 7053,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-120.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-120.png",
       "sha256": "9bb17be3ebb70302ba70bf6cde4016446a0cd485079f5c9519a2b53057106e48",
       "bytes": 6701,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-120.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-121.png",
@@ -5757,14 +5957,16 @@
       "sha256": "430fd794cc06885038827eae0a59f6a0b245bddb5409f5d1df29770d2799eece",
       "bytes": 6919,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-121.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-121.png",
       "sha256": "c9409a0d42fac766b0046268cc985b5d8fa9d75b6f14f04b2fb54295d39e224a",
       "bytes": 6703,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-121.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-122.png",
@@ -5779,14 +5981,16 @@
       "sha256": "f165e33700a36c96321635fbec0d1841df30687783320e9d035072879748c0e6",
       "bytes": 6901,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-122.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-122.png",
       "sha256": "34d6b4f9044aa4dcb8f8acd70cf830745e38508a2145e94650c799547b7be340",
       "bytes": 6697,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-122.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-123.png",
@@ -5801,14 +6005,16 @@
       "sha256": "19406cae3cb9ba2e17214bf270a919ba308ab56579478dc1810cbedef7a6c077",
       "bytes": 6881,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-123.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-123.png",
       "sha256": "d87370527375b629a765fd6e96a91a87aa5a86dbcebad5c1db5a004cccdb8ab9",
       "bytes": 6698,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-123.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-124.png",
@@ -5823,14 +6029,16 @@
       "sha256": "8efaafa9b27d9a8b3943a3f0e8f69d6bc552821b58ad2055bb3ce935c30abf90",
       "bytes": 6891,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-124.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-124.png",
       "sha256": "a8a642aed942a738e17fe3679f64069b92ee2973b1478a6cc6f5d372f3f2f83e",
       "bytes": 6698,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-124.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-125.png",
@@ -5845,14 +6053,16 @@
       "sha256": "fe453614b688a1f4a8be40648dabdcfa3977a51fe8a79aa63c23dc13b76c898e",
       "bytes": 6843,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-125.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-125.png",
       "sha256": "efcd6dd5eb2e62b72aca4d66515a275248a8b2bf59a66d425cfabe4903923124",
       "bytes": 6691,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-125.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-126.png",
@@ -5867,14 +6077,16 @@
       "sha256": "a1cc0feac6a4bfc9f04c09df5286bb16407545e0a2921ef7b320d9bbff5a221f",
       "bytes": 6860,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-126.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-126.png",
       "sha256": "c75ef34851002b5f422018d4ca8b4b24d8cd9d1434bbddccfe5afc4d253c2639",
       "bytes": 6695,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-126.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-127.png",
@@ -5889,14 +6101,16 @@
       "sha256": "826146dcbf17bf4c1fc07eab9f9ad05807972c4b12062ae14932898d1f8a4f3d",
       "bytes": 6883,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-127.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-127.png",
       "sha256": "4d3a07f3d449484de03f88245e5a9f9c2b3d2c90860d84cc07f34ca212849b2d",
       "bytes": 6690,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-127.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-128.png",
@@ -5911,14 +6125,16 @@
       "sha256": "aae216780cc31d545154925258aa5e124ed7e9997b5c4f6a0881050774679bba",
       "bytes": 6858,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-128.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-128.png",
       "sha256": "afb544f95a51b9e6a51a64acc96a9a33f49625a1c895ca22771056588acf2983",
       "bytes": 6695,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-128.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-129.png",
@@ -5933,14 +6149,16 @@
       "sha256": "ac70e9d554fc2fbd5a22e3357eb8b5bd35d49b1a50fae2d553b391c02e78789d",
       "bytes": 6873,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-129.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-129.png",
       "sha256": "6771259ec68a62b1cd9cad4ecaa0a2388c29f67b19c84d834b369d8c88ff69c0",
       "bytes": 6695,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-129.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-130.png",
@@ -5955,14 +6173,16 @@
       "sha256": "ac4f7749369aa07cadb1fcaed74692433b82201ee9f111487c9687a1bb01f176",
       "bytes": 6885,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-130.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-130.png",
       "sha256": "63fdc5be3bfd1923dd264930f69a153360a4aea5368b2947745f197b8b817777",
       "bytes": 6674,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-130.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-131.png",
@@ -5977,14 +6197,16 @@
       "sha256": "37c7723548b8d5df93faf2cec92f8386224f5e1218a25bc4e3f48852de723406",
       "bytes": 6870,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-131.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-131.png",
       "sha256": "a2ae7919a8d3424feccea2cb5b3c238745a5809d53e5daf5138a93494f37f32e",
       "bytes": 6679,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-131.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-132.png",
@@ -5999,14 +6221,16 @@
       "sha256": "6718fbc32992218c2403d4362ba0cc6f25a0ba6e9feb523a1a5ac254a0ede6d0",
       "bytes": 6855,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-132.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-132.png",
       "sha256": "732a8af6ce767b904300c93b94cfa7b35154946ce0b4673e2d1e9c66e4a1846d",
       "bytes": 6668,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-132.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-133.png",
@@ -6021,14 +6245,16 @@
       "sha256": "658c1c4704ca159644dd3ed3820575b53b571aca93ed5993de9a2d84e3972c1e",
       "bytes": 6871,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-133.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-133.png",
       "sha256": "79b61aaa92a652900b558aa91be09860b0a14d16d8e62e0795de07cde4104f44",
       "bytes": 6675,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-133.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-134.png",
@@ -6043,14 +6269,16 @@
       "sha256": "bff3b8b10844c2dc8f717cb627e30261087da51a89f90c726022e1ccc9271d28",
       "bytes": 6873,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-134.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-134.png",
       "sha256": "3bae21114f2f130fc8ffd08cac27f50a39257368f509c5f317659dc9ca746c11",
       "bytes": 6670,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-134.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-135.png",
@@ -6065,14 +6293,16 @@
       "sha256": "203c8d72ecc59ee94b04f83a3c0999388e54f2d6f65057140d760f76d5858a44",
       "bytes": 6877,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-135.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-135.png",
       "sha256": "7233f6347993fd4de546dbff07a159b3d81ca718d956298e7edbc5a387e00340",
       "bytes": 6683,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-135.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-136.png",
@@ -6087,14 +6317,16 @@
       "sha256": "6e86b0c8aa17de59af11dcc832d5fb76b876af819c66c71e2895772811eab2d0",
       "bytes": 6855,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-136.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-136.png",
       "sha256": "69c75b2f578d0d90573cfcb3e7ec3874e70b34adf0cbfc95108f25977f46f99c",
       "bytes": 6680,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-136.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-137.png",
@@ -6109,14 +6341,16 @@
       "sha256": "d3e37f7dd558f8cedc1a5271d493dd0678db29bc5f72ddbe5c6221879661a88f",
       "bytes": 6870,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-137.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-137.png",
       "sha256": "61258a90d9a20eca58d146e52f14494a8843cc2e2845914c40124ee6b14cf8f8",
       "bytes": 6673,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-137.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-138.png",
@@ -6131,14 +6365,16 @@
       "sha256": "f5c84ec41e74a0130aad1c900ce5c2ba0eb0c781b28a983dc014e2c27805fc1a",
       "bytes": 6871,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-138.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-138.png",
       "sha256": "289f94fca949e5b0237c88ed61a6f46d816227ed1a0ebad20459ed65c76b7f57",
       "bytes": 6682,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-138.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-139.png",
@@ -6153,14 +6389,16 @@
       "sha256": "e1addf0fa7308b186fea616c6ba7cc61179a35b7df2a2724413385412816ee1d",
       "bytes": 6868,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-139.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-139.png",
       "sha256": "97d1bcf3b3086e9b947f978077ce263e922504be965705bae6ec13f12e5b2746",
       "bytes": 6681,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-139.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-140.png",
@@ -6175,14 +6413,16 @@
       "sha256": "3f7b52460fb7d948c1ad2d3e35bac4dcfa31a1ec95dc085e5a492592cd20a7bc",
       "bytes": 6872,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-140.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-140.png",
       "sha256": "4a51b5be69e541f9c4dde1724d76c77c8190cba1d8b7495c37fff4683c4f166c",
       "bytes": 6678,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-140.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-141.png",
@@ -6197,14 +6437,16 @@
       "sha256": "f62943d7a038dba0e487ba84755c119bc7937e8b0cfbf5eb0b7b6d4b69183f1b",
       "bytes": 6845,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-141.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-141.png",
       "sha256": "0ecbdeb9e7134cb93a6a99e026a4067b9648b1de2a786038c804ad0df4475bc0",
       "bytes": 6679,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-141.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-142.png",
@@ -6219,14 +6461,16 @@
       "sha256": "4f960825bab838f3f3400377e962629e82ad7397079e8852087d1c4e8dfed52d",
       "bytes": 6860,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-142.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-142.png",
       "sha256": "1728c6b1c07b0c45b85595e81f848bb2d99658ed9074566c0f8bac992aea509a",
       "bytes": 6672,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-142.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-143.png",
@@ -6241,14 +6485,16 @@
       "sha256": "e1fa0f8c8fe8e0557757c7b9e26e81d497983d9502560420435fb978c2deb85a",
       "bytes": 6840,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-143.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-143.png",
       "sha256": "175ce721201687739354dc89945ee7483fae22b98e0a8037375ce3bd59da0bee",
       "bytes": 6731,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-143.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-144.png",
@@ -6263,14 +6509,16 @@
       "sha256": "d243baa376e295a7125332ca5ff39fa5b8bb1c3efbc67494ff386fb9e5e84b7d",
       "bytes": 6849,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-144.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-144.png",
       "sha256": "49aa98ad7fe32b67be9eb038c548eab1ec68cd2a7eb4b377c442f89e6978501d",
       "bytes": 6746,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-144.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-145.png",
@@ -6285,14 +6533,16 @@
       "sha256": "d5d8e69a045e0fe0fd06876a48c6f36bde6d00ca8776b82a62a794028f5848fd",
       "bytes": 6881,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-145.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-145.png",
       "sha256": "19722c1e4bcd53fe193f86dbfc5ca087872871086192034950480be526f3df7d",
       "bytes": 6793,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-145.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-146.png",
@@ -6307,14 +6557,16 @@
       "sha256": "914bc07b1566f9d853d2474b838c55526f92e4561e34396bfd181568808a4fcf",
       "bytes": 6873,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-146.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-146.png",
       "sha256": "7646b62ead12a65a839a941b5280232e9a33acf1892d7656273678405a9fdd31",
       "bytes": 6822,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-146.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-147.png",
@@ -6329,14 +6581,16 @@
       "sha256": "bdeb4bfbb9ee33c2120500215483368f55acdb71a72499140a89b21566191261",
       "bytes": 6893,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-147.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-147.png",
       "sha256": "8f857fac252da34df5bf206cc9b507483e867c289d59e931446909ecca12be2c",
       "bytes": 6805,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-147.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-148.png",
@@ -6351,14 +6605,16 @@
       "sha256": "1db1627638a5d4c1ee9dde45086cb378f9ae88b11fcb6c430bec10d49041aee2",
       "bytes": 6890,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-148.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-148.png",
       "sha256": "47c5e07f8945a3c6b6921bcc4b1483e400aa1b63332af9ae8f43efe7cc844f2a",
       "bytes": 6805,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-148.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-149.png",
@@ -6373,14 +6629,16 @@
       "sha256": "709de8f271e32c8af38de35b2b95cd7722f2f26171774d6d0f0240a622dacee8",
       "bytes": 6925,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-149.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-149.png",
       "sha256": "3d6924608a3a1cba6cd6f1de55b81b5540d6b9d886c6a3cac6d45556f27e9b2a",
       "bytes": 6799,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-149.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-150.png",
@@ -6395,14 +6653,16 @@
       "sha256": "ba5d6ce16441a967e19972f72db302fe3475030356e25515bbdc1b846d05f1c2",
       "bytes": 6916,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-150.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-150.png",
       "sha256": "465045d5a330084853e529fb2da32dfa2f0a11baa77287575cf9b7f13c393f00",
       "bytes": 6795,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-150.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-151.png",
@@ -6417,14 +6677,16 @@
       "sha256": "c11b430760d8792062ebfc5956ab506f85425f2cb1bae83e7c2a1eaf1bdde3a2",
       "bytes": 6887,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-151.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-151.png",
       "sha256": "1be039fb51ace23adff9dd963af57786fb6e9cbd2b8d661272e1737472f691dc",
       "bytes": 6845,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-151.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-152.png",
@@ -6439,14 +6701,16 @@
       "sha256": "ac306f49f7e1edd7ac2262671bf62136b024692b4adb5df90403e64c767f5088",
       "bytes": 6864,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-152.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-152.png",
       "sha256": "ac174ec7f5d88b986e961b2cbd4701fb125ab149a384509dcdd4b32d699d01dc",
       "bytes": 6806,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-152.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-153.png",
@@ -6461,14 +6725,16 @@
       "sha256": "0e930fe4ea6835aa896be2760d2ddf546ead826c936bd2f5359c441c59439ce0",
       "bytes": 6876,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-153.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-153.png",
       "sha256": "c51bef6ffcb3297ac762a5ae06810b5b4e74bb3b72901a9be516aedc93ec4aee",
       "bytes": 6800,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-153.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-154.png",
@@ -6483,14 +6749,16 @@
       "sha256": "bfbd776adf6ccc2e149ce388980a4e33d408c1294c4331451126347285842662",
       "bytes": 6873,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-154.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-154.png",
       "sha256": "0bbebfb0ea08c23908d91b49d849a1c8081a06c30ce03c6055f36dc5678b0516",
       "bytes": 6776,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-154.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-155.png",
@@ -6505,14 +6773,16 @@
       "sha256": "0a507552a2842a371ad4743d95e30386db6916bb1b72597b8062dd506a195d73",
       "bytes": 6912,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-155.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-155.png",
       "sha256": "8a7c5b7706f3b21dcd1610f0fd4b05e47f48a0600bcbdf5f4134214b8ca8ef05",
       "bytes": 6799,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-155.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-156.png",
@@ -6527,14 +6797,16 @@
       "sha256": "96e6718d5740c9d530c71da8e8831834eae38eb1af853c1a285fd97c6fe4064a",
       "bytes": 6904,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-156.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-156.png",
       "sha256": "8e120397704f8db29ae568183d6c2130c26c79770ffa4c6cf901396201ba83aa",
       "bytes": 6814,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-156.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-157.png",
@@ -6549,14 +6821,16 @@
       "sha256": "1c1e3cf25a147ffe68ffa63a166743c726a3a5bc536d3e94e5a2de0f57840327",
       "bytes": 6925,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-157.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-157.png",
       "sha256": "3ae5bb56824bfe5c93aa922050b20b5eb73df3192f911643102c29d9ec242aa2",
       "bytes": 6796,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-157.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-158.png",
@@ -6571,14 +6845,16 @@
       "sha256": "5b2321e24cc9c92d5e2ba2a3203a29e65f5a2ff78334c9fb72d0dd37c1f0d739",
       "bytes": 6938,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-158.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-158.png",
       "sha256": "91f41ca09f93acaf8349eddc031cb10ec12f200d0e68fd85abf85f85ffc67e0c",
       "bytes": 6780,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-158.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-159.png",
@@ -6593,14 +6869,16 @@
       "sha256": "de842289b60795255e8059c32c4b6c78eb7c263797f90023f98aac1e66bf147c",
       "bytes": 6879,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-159.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-159.png",
       "sha256": "27590df8421eaa2b5f5bcd87b9259f7a107c1124618a9eb1db52bdff7d049d49",
       "bytes": 6781,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-159.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-160.png",
@@ -6615,14 +6893,16 @@
       "sha256": "7d0c42bd681154d5a133131f90c744c6a703f9334da2f02c23bf189738b9d2db",
       "bytes": 6883,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-160.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-160.png",
       "sha256": "add2d501229ddbe9c95f24978c99bfad57d671d07e2690fe2be6cbb39755ff3c",
       "bytes": 6771,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-160.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-161.png",
@@ -6637,14 +6917,16 @@
       "sha256": "31061f179e0a44178deae96100f0549f3d99ccd7c653d5e6eadc6044e25a998a",
       "bytes": 6890,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-161.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-161.png",
       "sha256": "b1d83dc50ae36db4e47625485ee01d4c53b79806835ff716cbd864ac19d59d39",
       "bytes": 6780,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-161.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-162.png",
@@ -6659,14 +6941,16 @@
       "sha256": "f766c0da15aae51f9df9561c9ed8a29bf58fad6f7a8f155324ce003456aaad9e",
       "bytes": 6895,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-162.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-162.png",
       "sha256": "a1e071c968499d2dd5f388b604e9161ce2e6f18106a0822eaa8e81fc997f8c56",
       "bytes": 6768,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-162.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-163.png",
@@ -6681,14 +6965,16 @@
       "sha256": "f13d85fa66bd019dbc87e3ed1f9f04efe71a557384d64bca30dc4d987ec286cc",
       "bytes": 6893,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-163.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-163.png",
       "sha256": "bd0ec635859a0226d455572600f5d0495c386a7f824039fb6083d00711946aa7",
       "bytes": 6774,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-163.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-164.png",
@@ -6703,14 +6989,16 @@
       "sha256": "32800b4c08b26093dab582c931a1a4e2a2ff8659f075d9961219e71d83f6de82",
       "bytes": 6902,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-164.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-164.png",
       "sha256": "1c588124ecf43fe2893c51f3141e00c9ab81a205a8e35934af328dea9be593fe",
       "bytes": 6767,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-164.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-165.png",
@@ -6725,14 +7013,16 @@
       "sha256": "92795651843d09ebf7079ca96dddd7a0fdb9caee46e78f39937b55135479c153",
       "bytes": 6907,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-165.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-165.png",
       "sha256": "c16a06be6f5325173c0de4c63b8414f882b4ca908b065b050a1f59515ecaaa10",
       "bytes": 6751,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-165.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-166.png",
@@ -6747,14 +7037,16 @@
       "sha256": "c7c08c719257bdba107290e853bd28ec7d5952b29d019745b4879888a363b58e",
       "bytes": 6907,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-166.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-166.png",
       "sha256": "03f75e861793db8ebf3994febd3c1d77c7eb6d58c645de5156daecd6b9815623",
       "bytes": 6761,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-166.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-167.png",
@@ -6769,14 +7061,16 @@
       "sha256": "9aa959a64be9d7d8f88991d4d9d57a3133800c7b8e3212e48a0951e5f1c08d7b",
       "bytes": 6919,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-167.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-167.png",
       "sha256": "7e43eb650c5bae1fae23193fb6ac51d59c32535c92532ff9fc71fa3290918688",
       "bytes": 6772,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-167.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-168.png",
@@ -6791,14 +7085,16 @@
       "sha256": "426d8bb75b950818c31d9316c75767ac1ee4a6b94df156f52bcb9cfc8bf11a27",
       "bytes": 6935,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-168.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-168.png",
       "sha256": "5d88a605cb5b9b10601e6160fe8854b212a45fa4c9f33ce97d25b519f85e46da",
       "bytes": 6763,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-168.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-169.png",
@@ -6813,14 +7109,16 @@
       "sha256": "9115fe838ffe995bf33bef99c436ea4336ed8fa5df83a49e3f577061e8bb0a1a",
       "bytes": 6914,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-169.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-169.png",
       "sha256": "e91dbab5d1cea67f887985ec1b14f459b1cd42495e52d47c2e2a8c91064b87de",
       "bytes": 6747,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-169.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-170.png",
@@ -6835,14 +7133,16 @@
       "sha256": "f788e34160675070eb62dfe13fbe4ae558c089fab05fa24bac07d1f1cb3593a2",
       "bytes": 6922,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-170.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-170.png",
       "sha256": "e100bfd765679cb12ed91be3c83009858fdf7470640cb1b1cf0b88456cea3424",
       "bytes": 6741,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-170.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-171.png",
@@ -6857,14 +7157,16 @@
       "sha256": "f4f37d880ed12b4e52fba79a01b9659b1909a207dfc8b3947aead0978d9e2577",
       "bytes": 6880,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-171.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-171.png",
       "sha256": "803e0e7cea5b8d814c3e739129e32a81a73b1187ac34f6104f59fa2c0dcf47dc",
       "bytes": 6734,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-171.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-172.png",
@@ -6879,14 +7181,16 @@
       "sha256": "f5703edf7388bd5750fa9dc35f16c7ae1d272e2c9914d6203e8670a0501f6e75",
       "bytes": 6941,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-172.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-172.png",
       "sha256": "f60b81c498b086a50291c55a72445435c77d98b0e516d73803bf14a89eaa8058",
       "bytes": 6745,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-172.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-173.png",
@@ -6901,14 +7205,16 @@
       "sha256": "b062c9f0867ba10897c71dbecf0ca3921b40553fdf9dfcfe754156ff207d7ee7",
       "bytes": 6924,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-173.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-173.png",
       "sha256": "cc6dc7e2ed1f7f660708191c7ecfedc264c4491a987d4855b19d06e96baa740c",
       "bytes": 6752,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-173.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-174.png",
@@ -6923,14 +7229,16 @@
       "sha256": "5c43083301e32ee8fbe5f666fbcaf0ee9e0e60171fea9d587485f823981abe58",
       "bytes": 6897,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-174.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-174.png",
       "sha256": "114803b70567886ad94d69f648c5fc9918983c9b26942deae131ee5249be6df4",
       "bytes": 6760,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-174.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-175.png",
@@ -6945,14 +7253,16 @@
       "sha256": "e278479fab2591c29f463c0e485b52033ae15c181f8a64889a390ced49adf055",
       "bytes": 6917,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-175.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-175.png",
       "sha256": "7f04e2127c6a21c24278f28d6f946b6b6b06fa45e2543886717e09255b6fef16",
       "bytes": 6765,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-175.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-176.png",
@@ -6967,14 +7277,16 @@
       "sha256": "15ac1fc3c7a3dd33eaba40180c789cb13c9b85ea3126ff80d0a5de382609b559",
       "bytes": 6926,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-176.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-176.png",
       "sha256": "a577c7867d0070682b5aba4e49fd7929cbc07eb8239c2948f8611d97d5a9ca91",
       "bytes": 6765,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-176.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-177.png",
@@ -6989,14 +7301,16 @@
       "sha256": "5f72ecbb5ac9b8ead89b338a42fc87e429b9a987a8df64c5eb0b33a211915479",
       "bytes": 6932,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-177.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-177.png",
       "sha256": "e2f991626892a69836d636bd2b48e14d9f579adbf9d047c1385c26ad28af5278",
       "bytes": 6763,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-177.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-178.png",
@@ -7011,14 +7325,16 @@
       "sha256": "d9df24605456d4ef7e945982152d2cc04a1d00c469bce7116014b0acdea9cce4",
       "bytes": 6914,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-178.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-178.png",
       "sha256": "4f8fed3fa4f47f58ce3d0ed21210a3c31a9b8b1ab374661206968fd95de01227",
       "bytes": 6766,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-178.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-179.png",
@@ -7033,14 +7349,16 @@
       "sha256": "cfad9d79a375a9821185f038e8204cf3a13719134ead7dccbe86706d51554c34",
       "bytes": 6906,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-179.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-179.png",
       "sha256": "647e59f6080ec331c1fde3b31741382fe39ae074cc188af9bde9a7dc893abc5d",
       "bytes": 6776,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-179.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-180.png",
@@ -7055,14 +7373,16 @@
       "sha256": "90cf8d10ce6f011ca7b38e8a543a159fdd5a2637af6b03344aa90ea55f970fe9",
       "bytes": 6897,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-180.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-180.png",
       "sha256": "d7252a8bd50588ae323b384fdba7d2bdb2fcd9e63185d5df60e3c3e572706c58",
       "bytes": 6756,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-180.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-016.png",
@@ -7077,14 +7397,16 @@
       "sha256": "69b65eeea7ef72cf4b3bb12e4e0c3cf9bb35259b79932e9e83c0752549b27912",
       "bytes": 6128,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-016.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-016.png",
       "sha256": "590cf6bd3ae221c423c9cc5d03929fc4ed14c5a61b2a337fa374a738ab51104b",
       "bytes": 6796,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-016.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-017.png",
@@ -7099,14 +7421,16 @@
       "sha256": "69b65eeea7ef72cf4b3bb12e4e0c3cf9bb35259b79932e9e83c0752549b27912",
       "bytes": 6128,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-017.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-017.png",
       "sha256": "e82d364f81a7875b7b6aa4e7f15311150d99332efa452162727eb6e53f489c08",
       "bytes": 6776,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-017.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-018.png",
@@ -7121,14 +7445,16 @@
       "sha256": "69b65eeea7ef72cf4b3bb12e4e0c3cf9bb35259b79932e9e83c0752549b27912",
       "bytes": 6128,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-018.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-018.png",
       "sha256": "51abd54766267b270358fa9fb2c77b7ddb434ef9c6fdc945c7187363b4ad7441",
       "bytes": 6778,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-018.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-019.png",
@@ -7143,14 +7469,16 @@
       "sha256": "69b65eeea7ef72cf4b3bb12e4e0c3cf9bb35259b79932e9e83c0752549b27912",
       "bytes": 6128,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-019.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-019.png",
       "sha256": "56501c905c8cd0f1e66629a218aace5750efd626ccff191987a5dee5b4615f40",
       "bytes": 6776,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-019.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/deal/frame-020.png",
@@ -7165,14 +7493,16 @@
       "sha256": "69b65eeea7ef72cf4b3bb12e4e0c3cf9bb35259b79932e9e83c0752549b27912",
       "bytes": 6128,
       "source": "runs/20261109-pamela-central-composite/tracking/moving-mask/frame-020.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/shoe-mask/frame-020.png",
       "sha256": "0b244b2cdb2f7a6fe22433d78aeda44f1bbb87fe60db1b15b346071844323548",
       "bytes": 6773,
       "source": "runs/20261109-pamela-central-composite/tracking/shoe-mask/frame-020.png",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/frames/retreat/frame-002.png",
@@ -7909,28 +8239,32 @@
       "sha256": "0609340167d5bd1ac289dc1c4dc0e9393e2bd1059afc29f84bbf988e60d907e6",
       "bytes": 1355720,
       "source": "runs/20261109-pamela-v6-sequence/take-01/snapshot/runs/20261109-pamela-central-composite/tracking/card-tracks.json",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/card-mesh.json",
       "sha256": "e23d938dd9d5702df31a94c406553b827170b2ce94d767f86752eb8c6219d9f6",
       "bytes": 250220,
       "source": "runs/20261109-pamela-v6-sequence/take-01/snapshot/runs/20261109-pamela-shoe-v6-audit/card-mesh.json",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/nail-guards.json",
       "sha256": "abe2caa21cc8c07a8e6d16a95d85f34268f4ecd5f5b2f2bb1408f993d408d4f0",
       "bytes": 5120,
       "source": "runs/20261109-pamela-v6-sequence/take-01/snapshot/runs/20261109-pamela-shoe-v6-audit/nail-guards.json",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/tracking/hand-occlusion.json",
       "sha256": "0b43e0d4ad49a9209a8b7e08f5c39c235f85875bfc821234c7105649a4f03f18",
       "bytes": 17155,
       "source": "runs/20261109-pamela-v6-sequence/take-01/snapshot/runs/20261109-pamela-release-forensics/hand-occlusion.json",
-      "role": "render-input"
+      "role": "render-input",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/scene/room.png",
@@ -8011,14 +8345,16 @@
       "sha256": "67319ed86cde67cc7a7566553d451a89f8aac11384a55f8f8b460d1403d30167",
       "bytes": 31746670,
       "source": "runs/20261109-pamela-seat-bank/c2/bank-v2-stage-2/original/pamela-seat-4-wan3-c2-bank-v2.mp4",
-      "role": "left-hand-candidate"
+      "role": "left-hand-candidate",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/candidates/contact-sheet.jpg",
       "sha256": "026641acee0cc5540ea1561cfa4b0e491acb1f5204766c063b1e69ac5bf75890",
       "bytes": 135955,
       "source": "runs/20261110-tillbaka-1-review/take-01/p4-kontakt.jpg",
-      "role": "left-hand-sampled-evidence"
+      "role": "left-hand-sampled-evidence",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/reference/native-0000.png",
@@ -8235,7 +8571,8 @@
       "sha256": "8e736cb2d1b462321bf87d55fbd46798cf03463842cf0c2e96ce2bff1a8021a6",
       "bytes": 229577,
       "role": "relocated-timeline",
-      "source": "frozen V6 timeline with registered local paths"
+      "source": "frozen V6 timeline with registered local paths",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "output/v6/take-01/render/idle-deal-idle-native.mp4",
@@ -8416,14 +8753,16 @@
       "sha256": "56eec07608af6519951f7fcc22781a427ed6153ceaec060efe9b6991c0b91a19",
       "bytes": 2074,
       "source": "D:/dealer-archive/snyggare-dealer/references/pamela-goal-film-review.json",
-      "role": "historical-sequence-review-manifest"
+      "role": "historical-sequence-review-manifest",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/sequences/pamela-r2/timeline.json",
       "sha256": "b9500e990de4a0e021042efbb5ae4dc123513b94fb96c30aef39c982406281fa",
       "bytes": 321701,
       "source": "D:/dealer-archive/snyggare-dealer/runs/20261110-pamela-goal-scene/take-09/timeline-89d0a44801ef.json",
-      "role": "historical-sequence-timeline"
+      "role": "historical-sequence-timeline",
+      "archived": "D:/dealer-archive/v6-2026-11-23"
     },
     {
       "path": "assets/motions/pamela-sequence-17-native-r2/source.mp4",

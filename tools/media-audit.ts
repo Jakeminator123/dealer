@@ -39,8 +39,8 @@ export type Item = Unit & {use: Use; why: string[]; what: string; judged?: strin
 
 // The depth (in path segments after assets/ or output/) at which a folder is one thing.
 export const UNIT_DEPTH: Record<string, number> = {
-  anchors: 2, keystones: 2, motions: 2, orders: 2, proofs: 2, sources: 2, sequences: 2, tracking: 2, lab: 2, candidates: 2, originals: 2, reference: 2,
-  films: 3, speech: 3, scene: 3, 'scene-work': 3, frames: 2, props: 2, v6: 2, verification: 1,
+  anchors: 2, keystones: 2, motions: 2, orders: 2, proofs: 2, sources: 2, tracking: 2, lab: 2, originals: 2, reference: 2,
+  films: 3, speech: 3, scene: 3, 'scene-work': 3, props: 2,
 };
 // speech/<dealer>/patches/<id> is one patch, one level further down.
 const deeper = (parts: string[]) => parts[0] === 'speech' && parts[2] === 'patches' ? 4 : parts[0] === 'props' && parts[1] === 'source' ? 3 : null;
@@ -93,16 +93,14 @@ export function whatOf(u: Unit): string {
     case 'keystones': return `${w}keystone, grundbilden av dealern (${id})`;
     case 'orders': return `en beställning hos Runway: kvitto, bilder och det som kom tillbaka (${id})`;
     case 'proofs': return `ett prov att titta på i Granska (${id})`;
-    case 'tracking': return parts.length > 2 && !id.includes('.') ? `kortspåret för filmen ${id}` : `kortdata för V6 (${id})`;
+    case 'tracking': return parts.length > 2 && !id.includes('.') ? `kortspåret för filmen ${id}` : `kortdata (${id})`;
     case 'speech': return parts[3] === 'patches' ? `munlapp till en talfilm (${id})` : `${w}talfilmens arbetsmapp: ljud, röst och kvitto (${id})`;
     case 'scene': return `3D-scenens ${({rooms: 'rum', thumbs: 'rumsbild i menyn', materials: 'bordsmaterial', source: 'källmaterial'} as Record<string, string>)[parts[2]] ?? 'material'} (${id})`;
     case 'scene-work': return `arbetsmaterial för scenen (${id})`;
     case 'sources': return `${w}källbilder till ankare (${id})`;
-    case 'sequences': return `${w}en hel runda i rutor (${id})`;
     case 'lab': return `labbets bakgrundsbild (${id})`;
     case 'props': return `3D-föremål på bordet (${id})`;
     case 'reference': return `referensbild (${id})`;
-    case 'verification': return 'kontrollrutor från V6:s återskapning, som är arkiverad';
     default: return id;
   }
 }

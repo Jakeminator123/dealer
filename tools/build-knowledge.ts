@@ -25,9 +25,8 @@ const DEALER_FILES: {kalla: keyof typeof DEALER_DOCS; file: string; optional?: b
   {kalla: 'DRIFT', file: 'docs/DRIFT.md'},
 ];
 // Core order: HANDOFF first, then the bank now, the views, the bank's table, the proofs, README, the commits, SYSTEM.
-// What does not fit in the core's budget is still searched. (The old checklist, CHECKLISTA.md, is no source since
-// 2026-11-17: nobody wrote it after 2026-11-13, and the bot answered from it. Scoutgaming's documents are no source since
-// 2026-11-23: the project stands free of Scoutgaming for now, on Jakob's word.)
+// What does not fit in the core's budget is still searched. (Scoutgaming's documents are no source since 2026-11-23:
+// the project stands free of Scoutgaming for now, on Jakob's word.)
 const BASE: Record<string, number> = {HANDOFF: 0, README: 6, SYSTEM: 16, DRIFT: 20};
 
 /** The cloud/studio files that make up the bot's function (as <published name>: <source>); bot-knowledge.js is written. */

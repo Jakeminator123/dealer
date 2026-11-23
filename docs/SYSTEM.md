@@ -321,8 +321,6 @@ ingen kalibrerad projektion.
   (`TECHNIQUES`), och steg 1 har Kortstorlek för alla kort (`scaleCards`, 0,50–2,50 kring varje korts mitt). Kortens
   böjning och glans ändras i Bordets Efterarbete (grundmaterialet böjning 0,14, glans 0,35). Allt går genom Ångra och
   når disken med Spara. Kortet i skons fönster målas gult på scenen (`SHOE_CARD`).
-- Förslag bredvid utkastet ligger i `placements/proposals/<namn>.json`: servern läser dem (`api/placements?plan=<namn>`)
-  och skriver aldrig dit, och bara 3D-scenen visar dem (`scene3d.html?plan=forslag&kort=1.65`).
 - **Kortplan: bakgrunden** (BESKED, "Dockan per dealer"): under korten ligger 3D-scenens bord i hemvyn med filmen dold,
   den valda dealerns vita docka i vila (`dealer3d/src/doll.ts`; standarddockan för en dealer utan egen) och bankens sko.
   Listan Under korten har hennes docka först, sedan de andra dockorna och hennes egna filmer; ett annat val står i

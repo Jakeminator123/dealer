@@ -59,7 +59,7 @@ export function report(repo: string, files: StoredFile[], items: Item[], previou
   lines.push('## Vad utrymmet används till', '', '| Kategori | Storlek per sökväg | |', '| --- | ---: | --- |');
   for (const root of ['assets', 'output', '.runtime']) {
     const total = storageSummary(files.filter(f => f.file.startsWith(`${root}/`)));
-    lines.push(`| ${root} | ${size(total.logicalBytes)} | ${root === 'assets' ? 'Bibliotek: filmer, bilder, prov, ljud och original' : root === 'output' ? 'Exporter; innehåller också bevarade V6-referenser' : 'Tillfälligt arbete, testkvitton och serverdata'} |`);
+    lines.push(`| ${root} | ${size(total.logicalBytes)} | ${root === 'assets' ? 'Bibliotek: filmer, bilder, prov, ljud och original' : root === 'output' ? 'Exporter' : 'Tillfälligt arbete, testkvitton och serverdata'} |`);
   }
   const categories = storageCategories(files);
   lines.push('', '## Fördelning utan dubbelräkning', '',
@@ -76,7 +76,7 @@ export function report(repo: string, files: StoredFile[], items: Item[], previou
   lines.push('', '## Största tillfälliga mapparna', '', '| Mapp | Storlek | Senast ändrat |', '| --- | ---: | --- |');
   for (const [folder, entries] of [...work].sort((a, b) => storageSummary(b[1]).logicalBytes - storageSummary(a[1]).logicalBytes).slice(0, 20)) lines.push(`| ${folder} | ${size(storageSummary(entries).logicalBytes)} | ${entries.map(f => f.changed).sort().at(-1)!.slice(0, 10)} |`);
   lines.push('', '## Rutin', '',
-    '- Arbeta i projektmappen på C:. Använd vanliga kortlivade grenar; ett extra arbetsträd behövs bara vid parallellt eller isolerat arbete.',
+    '- Arbeta i projektmappen på C:, på main. En gren eller ett eget arbetsträd bara när ett arbete uttryckligen behöver isoleras (AGENTS.md).',
     '- Ge tillfälliga uppgifter en tydlig mapp under .runtime/ och en kort README med syfte och vad som ska sparas.',
     '- Behåll ett original och den valda leveransen. Små kontaktark och kvitton beskriver versionerna; skapa inte en ny full kopia per granskning.',
     '- Efter en lyckad 3D-referensrendering rensas mellanrutorna. --keep-frames behåller dem för felsökning.',
