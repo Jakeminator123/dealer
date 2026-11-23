@@ -22,16 +22,14 @@ Läs AGENTS.md, den här sidan och EN lägesfil för din bana. Ersätt inaktuell
 
 Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-18), med EN trovärdig giv först ([film](docs/lage/film.md)).
 
-1. Provet på A3P5C1 (oberoende granskare): giv och återgång med slutbild, `paow-giv-2-3-p5-04`, håller (3/5 och
-   4/5, delas vid ruta 63); bara dit, `-p5-03`, föll (2/5). Visa honom; sedan nästa omgång ([film](docs/lage/film.md)).
+1. A3P5C1: giv och återgång i en film (`paow-giv-2-3-p5-04`) håller, delas vid ruta 63 ([film](docs/lage/film.md)).
 2. Dockan kopplas till Bordet: dockans film direkt in i beställningen, dockan i stället för Siluetten
    ([LASMIG](dealer3d/LASMIG.md), "Naturlig ställning", Kvar).
 3. Jakobs plan, domar och orderutkast skrivs aldrig över; läs hans anteckningar med `node tools/proof-notes.ts`.
 4. P4.C2 Cykel01 är vald. Ordinarie spel återbrukar spelarnas C1 för C2/C3. Rundans 22 filmbehov täcks.
    Rundbyggarens P6 går via A2.2; D.C3 är redigerbart och valfritt ([kort](docs/lage/kort.md)).
 5. Den neutrala munnen gäller alla Paows repliker utom blackjack, som väntar på hans ja; ingen har hört ljudet ([spelet](docs/lage/spelet.md)).
-6. Hålkort, native split och READY-C:s tvåkortsprov är kontrollerade. Grepp, tempo, mask och hela rörelsen
-   återstår ([film](docs/lage/film.md)).
+6. Grepp, tempo, mask och hela rörelsen återstår ([film](docs/lage/film.md)).
 
 ## Vem äger vad
 

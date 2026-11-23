@@ -15,7 +15,7 @@ som gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompt
 - Trädet Tatuerad (vyn Karta, `/studio/karta/?dealer=paow&trad=tatuerad`) fylls från A2.3 och har 5 av 36 steg. I
   banken: given till A3P4C1 (piloten, Jakobs ja), A3P4C2 (släpet med handbyte, kortad till 70 rutor, 3/5), A3P1C1
   (4/5), A3P2C1 (4/5) och A3P3C1 (3/5). Alla utom piloten är dömda åt honom; A3P4C2 har ett kort i Beslut. Till A3P5C1
-  (2026-11-23): giv och återgång i en film håller (3/5, 4/5); bara dit föll (2/5). Nästa: dockfilm i 24/s, ny returtext.
+  håller giv och återgång i en film (3/5, 4/5); bara dit föll.
 - A3-bilder: A3P4C1 och A3P4C2 är kandidater (A3P4C2 ur ruta 68, oberoende 4/5). För plats 1 och 2 stoppar
   landningsverktyget, och rosen på högra handryggen är en mandala i A3P4C1 ([BRISTER](../BRISTER.md)).
 - Returprovet A3P4C1 → A2.3 föll (2/5): ändarna och kortet höll, men handen strök över filten. Nästa prov byter bara
