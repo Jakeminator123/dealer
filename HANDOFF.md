@@ -32,7 +32,7 @@ Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-
 
 ## Vem äger vad
 
-- **Huvudagentens adress: `dealer-b0`.** Claude-sessionen `dealer-b0` äger commits, push, taggar, studion,
+- **Huvudagentens adress: `dealer-aa`.** Claude-sessionen `dealer-aa` äger commits, push, taggar, studion,
   labbservern, spelet, 3D-scenens filmlager, `src/clip-graph.ts`, registren och styrdokumenten. Allt arbete görs på
   `main` i mappen `dealer`; en gren bara när ett arbete uttryckligen behöver isoleras (AGENTS, "Git och samarbete").
 - **Avgränsade uppdrag** anger sina filer före skrivning och lämnar över till huvudagenten med en fillista.
@@ -46,7 +46,7 @@ Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-
   aldrig skrivs över av ett verktyg. En dom som getts åt honom (`node tools/review-put.ts`) är aldrig hans.
 - **En ny session** arbetar i mappen `dealer` och avgränsar sina filer först. Extra arbetsträd bara vid
   isoleringsbehov (skillen `bredvid-andra-sessioner`). Kortets vita kant i filmerna och `tools/film-after.ts` skrivs
-  sedan 2026-11-23 av huvudagentens underagent: fråga `dealer-b0` först.
+  sedan 2026-11-23 av huvudagentens underagent: fråga `dealer-aa` först.
 
 ## Väntar på Jakob
 
