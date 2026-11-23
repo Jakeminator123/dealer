@@ -7,17 +7,24 @@
 //                   Naturlig and Som förut, the sliders and Spara som standard, all as on its own page), opened on the chosen
 //                   card and the chosen dealer's doll. A card chosen in the lab becomes Bordet's card.
 //   Dockans filmer  the doll's films for the chosen card, each beside the films ordered with it (DollFilms.tsx)
+// Beställ given (beside the parts, for a player's card): the doll's SAVED movement to the card becomes its film and a draft
+// in Kön (lib/orders.ts orderDoll, tools/doll-order.ts), about a minute; sliders moved and not saved are not in it, and
+// nothing is approved or paid by it.
 // The frame stays loaded while the films are looked at, so that sliders moved and not saved are still there on the way back;
 // a card chosen among the films is then chosen in the lab too, unless sliders are moved and not saved there: the lab says
 // which card it still shows, and that card is Bordet's. Only in the local lab (the copy has no doll lab).
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { OrdersAnswer } from "../../../src/order-model.ts";
 import { SHOE, type Place } from "../../../src/placement-model.ts";
+import { asApiError } from "../../lib/api.ts";
 import { dollFilms, takesOf } from "../../lib/doll-films.ts";
 import type { Ledger } from "../../lib/ledger.ts";
+import { orderDoll, type DollOrdered } from "../../lib/orders.ts";
 import { dollFor, placeCode, placeFromCode } from "../../lib/placement.ts";
-import { ErrorState, SegmentedControl, Skeleton, cn } from "../ui";
+import { Button, ErrorState, SegmentedControl, Skeleton, cn } from "../ui";
 import { DollFilms } from "./DollFilms";
+import { queueHref } from "./FilmList";
 
 export type DollPart = "stall" | "filmer";
 /** The address's word for the part ("del=filmer"); the lab itself needs none. */
@@ -35,8 +42,10 @@ function writePart(part: DollPart | null) {
 }
 
 export function DollPanel({
-  menu, place, setPlace, dealer, orders, ordersRead, ledger, startPart,
+  menu, place, setPlace, dealer, orders, ordersRead, ledger, startPart, onOrdered,
 }: {
+  /** A draft was made from the doll's movement: the orders are read again. */
+  onOrdered: () => void;
   /** Bordet's menu, first in the toolbar as in its other parts. */
   menu: ReactNode;
   place: Place;
@@ -52,6 +61,16 @@ export function DollPanel({
   const [lab, setLab] = useState<string | null>(() => (startPart === "stall" ? labAddress(place, dealer) : null));
   const [entry, setEntry] = useState(false);
   const frame = useRef<HTMLIFrameElement>(null);
+  // The order of the chosen card: being made, made (the draft) or refused (why). A card's answer is shown on that card only.
+  const [ordering, setOrdering] = useState<{ place: Place; busy: boolean; made?: DollOrdered; error?: string } | null>(null);
+  const order = () => {
+    setOrdering({ place, busy: true });
+    orderDoll(dealer, placeCode(place)).then(
+      (made) => (setOrdering({ place, busy: false, made }), onOrdered()),
+      (cause) => setOrdering({ place, busy: false, error: asApiError(cause, "Dockans beställning").message }),
+    );
+  };
+  const said = ordering?.place === place ? ordering : null;
 
   useEffect(() => writePart(part), [part]);
   useEffect(() => () => writePart(null), []);
@@ -99,6 +118,28 @@ export function DollPanel({
             { value: "filmer", label: count ? `Dockans filmer · ${count}` : "Dockans filmer" },
           ]}
         />
+        {/^P\dC\d$/.test(placeCode(place)) ? (
+          <>
+            <Button
+              size="sm"
+              loading={!!ordering?.busy}
+              disabled={!!ordering?.busy}
+              onClick={order}
+              title={`Gör dockans film av den sparade rörelsen till ${placeCode(place)} (giv och återgång) och ett utkast i Kön. Tar ungefär en minut. Inget godkänns eller betalas.`}
+            >
+              {ordering?.busy ? `Gör dockans film till ${placeCode(ordering.place)} …` : `Beställ given till ${placeCode(place)}`}
+            </Button>
+            {said?.made ? (
+              <Link href={queueHref(said.made.id)} className="text-xs text-brass-hi hover:underline" title={said.made.standard ? `Från din sparade standard ${said.made.standard}` : "Ingen sparad standard för kortet: Naturlig som förval"}>
+                Utkast i Kön · {said.made.cost.total} krediter
+              </Link>
+            ) : said?.error ? (
+              <span className="min-w-0 truncate text-xs text-[#ef8b8b]" title={said.error}>
+                {said.error}
+              </span>
+            ) : null}
+          </>
+        ) : null}
         {part === "filmer" && groups.length ? (
           <div className="min-w-0 overflow-x-auto">
             <SegmentedControl

@@ -205,6 +205,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
 - **Fria händer med beställningstexterna** (2026-11-17): huvudagenten skriver om dem efter vad proven visar.
 - **Giv och återgång i samma film** (2026-11-23): provet till plats 5 fick "Rätt … i övrigt - perfekt". Återgången
   klipps ut och sparas i banken automatiskt: "dessa är faktist nästa alltid bra".
+- **Sista given går direkt till vila** (2026-11-23): från läget där kortet är lagt ska hon "återgå till A1-vila direkt";
+  är given den sista av flera ska hon "inte passera A2.'n' över huvud taget". Plats 6 och 7 beställs när dockan är klar.
 - **Högerhanden vid nedsläppet** (2026-11-23): den ska inte vara "så vriden vid nedsläpp". Given till plats 5 gjordes
   om så, och givarna till plats 1–5, kort 1, med återgång fick hans "Ja, alla håller" i Beslut.
 - **V6 är arkiverad** (2026-11-20): råmaterialet och renderaren ligger i arkivet på D:, filmen och 18 rutor står kvar

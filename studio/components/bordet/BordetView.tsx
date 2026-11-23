@@ -159,7 +159,7 @@ export function BordetView() {
   if (askedDoll !== seenDoll) {
     setSeenDoll(askedDoll);
     if (askedDoll) setMode("docka");
-    else if (mode === "docka") setMode("kortplan");
+    else if (mode === "docka" && !askedQueue) setMode("kortplan");
   }
   const [step, setStep] = useState<StepId | null>(() => (first || params.get("lage") === "bestall" ? "order" : "place"));
   const [media, setMedia] = useState<MediaAnswer | null>(null);
@@ -299,7 +299,7 @@ export function BordetView() {
   if (mode === "docka")
     return (
       <Page title="Scen & bord" full>
-        <DollPanel menu={menu} place={place} setPlace={setPlace} dealer={dealer} orders={orders} ordersRead={ordersRead} ledger={ledger} startPart={dollPartOf(params.get("del"))} />
+        <DollPanel menu={menu} place={place} setPlace={setPlace} dealer={dealer} orders={orders} ordersRead={ordersRead} ledger={ledger} startPart={dollPartOf(params.get("del"))} onOrdered={() => void readOrders()} />
       </Page>
     );
   return (

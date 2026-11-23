@@ -99,6 +99,7 @@ Dokumenten länkar till dessa i stället för att föra egna statusregister. Med
     (`/studio/primara/` leder hit).
   - **Docka**: en del av Scen & bord (`/studio/bordet/?lage=docka`): Ställ dockan (Docklabbet i en ram, med reglage och
     Spara som standard) och Dockans filmer bredvid de beställda tagningarna (`dealer3d/page/`, [dealer3d/LASMIG.md](dealer3d/LASMIG.md)).
+    Knappen Beställ given gör dockans film ur den sparade rörelsen och ett utkast i Kön (`node tools/doll-order.ts paow P6.C1`).
   - **Granska**: Filmer, med Jakobs domar som skrivs i `motions/`, och Prov, provmapparna under `assets/proofs/`
     (`/studio/granska/?prov=<mapp>`; `/studio/prov/` leder dit).
   - **Material** (vilka bilder som gäller), **Lipsync** (var munnen görs och vad som är inställt, skrivskyddad) och

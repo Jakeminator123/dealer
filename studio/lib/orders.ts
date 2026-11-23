@@ -89,7 +89,10 @@ export function orderSaveFailure(cause: unknown): { message: string; retrySave: 
 export type OrderChange = { title?: string; takes?: number; extra?: string | null; duration?: number; hand?: "LH" | "RH"; pass?: boolean; side?: "FRONT" | "BACK" };
 export const changeOrder = (id: string, change: OrderChange, revision: string) => call<OrderAnswer>(`api/orders/${id}`, "Ändringen", send("PUT", change, revision));
 export const approveOrder = (id: string, revision: string) => call<OrderAnswer>(`api/orders/${id}/approve`, "Godkännandet", send("POST", undefined, revision));
-export const refreshOrder = (id: string, revision: string) => call<OrderAnswer>(`api/orders/${id}/refresh`, "Bilderna", send("POST", undefined, revision));
+/** The draft made from the doll's saved movement to a card (POST /api/orders/docka, tools/doll-order.ts): about a minute. */
+export type DollOrdered = { id: string; title: string; place: string; film: string; standard: string | null; cost: { total: number } };
+export const orderDoll = (dealer: string, place: string) => call<DollOrdered>("api/orders/docka", "Dockans beställning", send("POST", { dealer, place }));
+export const refreshOrder =(id: string, revision: string) => call<OrderAnswer>(`api/orders/${id}/refresh`, "Bilderna", send("POST", undefined, revision));
 
 // ── The production list (tools/produce.ts, GET /api/production) ──
 export type { Production, ProductionRow, RowState, Anchor as ProductionAnchor } from "../../tools/produce.ts";
