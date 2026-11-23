@@ -12,8 +12,6 @@
 //   POST /api/orders/docka              {dealer, place}: the doll's saved movement to that card becomes its film and a draft
 //                                       (tools/doll-order.ts; about a minute, one at a time), from Scen & bord, Docka
 //   POST /api/orders/<id>/approve      Jakob's click: freezes the order with its hash, refused beyond the policy (If-Match)
-//   GET  /api/orders/pose/<step>        the pose figure a still would get (ANKARE-2.1, ANKARE-2.2), before a draft exists;
-//                                       ?anchor=<entry> brings its green to that anchor's
 //   GET  /assets/orders/<id>/<file>     a picture or film of an order, only from that folder; and a take's film (take-<n>/after.mp4)
 //   GET  /assets/references/docka/<id>/source.mp4   a reference film of the dummy's, only one data/rendered-references.json lists
 //   PUT  /api/media/<id>/state          Godkänn / Underkänn of a picture in Material (If-Match on the register); the
@@ -37,7 +35,7 @@ const NEW_KEYS = ['dealer', 'step', 'target', 'hand', 'pass', 'side', 'seats', '
 
 export function orderRoutes(options: { root: string; origin: string } & StoreOptions) {
   const { root, origin } = options;
-  const store = orderStore(root, { now: options.now, poses: options.poses, frame: options.frame });
+  const store = orderStore(root, { now: options.now, frame: options.frame });
   const media = mediaRoles(root);
   // Material and the order store have separate queues. Hold this queue across Material's write and follow as one operation.
   let mutations: Promise<unknown> = Promise.resolve();
@@ -90,16 +88,6 @@ export function orderRoutes(options: { root: string; origin: string } & StoreOpt
       const file = await store.servable(rel) ?? (await orderTakeFilm(rel, root) ? path.join(root, rel) : null);
       if (!file) { res.writeHead(404).end(); return true; }
       try { await serve(req, res, file); } catch { if (!res.headersSent) res.writeHead(500); res.end(); }
-      return true;
-    }
-    const pose = /^\/api\/orders\/pose\/(ANKARE-2\.[12])$/.exec(p);
-    if (pose) {
-      if (method !== 'GET' && method !== 'HEAD') { res.writeHead(405).end(); return true; }
-      try {
-        const bytes = await store.posePicture(pose[1], url.searchParams.get('anchor'));
-        res.writeHead(200, { 'Content-Type': 'image/png', 'Content-Length': bytes.length, 'Cache-Control': 'no-store' });
-        res.end(method === 'HEAD' ? undefined : bytes);
-      } catch (error) { fail(res, error); }
       return true;
     }
     const previewFile = /^\/api\/orders\/preview\/([a-f0-9]{64})\/(\d+)\/([a-z0-9-]+\.(?:png|mp4))$/.exec(p);

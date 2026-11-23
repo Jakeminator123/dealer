@@ -9,7 +9,7 @@ import { existsSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import sharp from 'sharp';
-import { ARM_AT_SHOE, POSE_WHAT, orderStore } from './order-store.ts';
+import { orderStore } from './order-store.ts';
 import { committedText } from './committed.ts';
 import { placedFromCommand, receiptMatchesOrder, receipts, reviewFromCommand } from './order-put.ts';
 import { placedThrough } from './register-order.ts';
@@ -20,7 +20,7 @@ const base = existsSync('D:/dealer-scratch/tmp') ? 'D:/dealer-scratch/tmp' : os.
 async function approved(t: { after(fn: () => Promise<void>): void }) {
   const root = await mkdtemp(path.join(base, 'order-put-'));
   t.after(() => rm(root, { recursive: true, force: true }));
-  for (const dir of ['data', 'placements', 'assets/anchors/a', 'assets/anchors/b']) await mkdir(path.join(root, dir), { recursive: true });
+  for (const dir of ['data', 'placements', 'assets/anchors/a']) await mkdir(path.join(root, dir), { recursive: true });
   for (const file of ['data/order-policy.json', 'data/dealers.json', 'data/order-methods.json']) await copyFile(file, path.join(root, file));
   const policyFile = path.join(root, 'data/order-policy.json');
   const policy = JSON.parse(await readFile(policyFile, 'utf8'));
@@ -33,14 +33,12 @@ async function approved(t: { after(fn: () => Promise<void>): void }) {
   await writeFile(path.join(root, 'placements/default.json'), committedText('placements/default.json')); // his plan as committed, not as he last saved it (tools/committed.ts)
   const png = await sharp({ create: { width: 1764, height: 1174, channels: 3, background: { r: 0, g: 237, b: 44 } } }).png().toBuffer();
   await writeFile(path.join(root, 'assets/anchors/a/anchor.png'), png);
-  await writeFile(path.join(root, 'assets/anchors/b/anchor.png'), png);
   await writeFile(path.join(root, 'data/clip-jobs.json'), '{"jobs": []}');
   await writeFile(path.join(root, 'data/media-roles.json'), JSON.stringify({ schemaVersion: 1, measures: [], dealers: {
-    pamela: { name: 'Pamela', entries: [{ id: 'pamela-nyp', role: 'ankare-2.1', name: 'Nyp', path: 'assets/anchors/b/anchor.png', node: 'READY', state: 'gäller' }] },
     paow: { name: 'Paow', entries: [{ id: 'paow-vila', role: 'ankare-1', name: 'Vila', path: 'assets/anchors/a/anchor.png', node: 'IDLE', state: 'gäller' }] },
   } }));
   const store = orderStore(root, { now });
-  const draft = await store.create({ dealer: 'paow', step: 'ANKARE-2.1', takes: 2, id: 'prov-ett', pose: { entry: 'pamela-nyp', keep: ARM_AT_SHOE, what: POSE_WHAT } });
+  const draft = await store.create({ dealer: 'paow', step: 'ANKARE-2.1', takes: 2, id: 'prov-ett' });
   const r = receipts(root, { now });
   await assert.rejects(r.begin('prov-ett', 1), /inte godkänd/);
   await store.approve('prov-ett', draft.revision);
@@ -141,7 +139,7 @@ async function beginProcesses(root: string, ids: string[]): Promise<BeginResult[
 test('requestedAt before, task id after, and a begun take is never begun again', async (t) => {
   const { root, r } = await approved(t);
   const check = await r.check('prov-ett');
-  assert.deepEqual(check.files.map((f) => [f.name, f.mimeType, f.tag, f.goesAs]), [['anchor.png', 'image/png', 'anchor', 'referenceImage'], ['pose-figure.png', 'image/png', 'pose', 'referenceImage']]);
+  assert.deepEqual(check.files.map((f) => [f.name, f.mimeType, f.tag, f.goesAs]), [['anchor.png', 'image/png', 'anchor', 'referenceImage']]);
   const begun = await r.begin('prov-ett', 1);
   assert.equal(begun.take.status, 'OSÄKER');
   assert.equal(begun.take.requestedAt, '2026-11-12T22:00:00.000Z');
@@ -331,14 +329,14 @@ test('nothing is placed for an order that changed after approval or whose pictur
   await writeFile(file, JSON.stringify({ ...order, takes: 1 }, null, 2));
   await assert.rejects(r.begin('prov-ett', 1), /ändrats efter godkännandet/);
   await writeFile(file, JSON.stringify(order, null, 2));
-  await writeFile(path.join(root, 'assets/orders/prov-ett/pose-figure.png'), 'other');
+  await writeFile(path.join(root, 'assets/orders/prov-ett/anchor.png'), 'other');
   await assert.rejects(r.begin('prov-ett', 1), /inte den godkända filen/);
 });
 
 test('the main agent approves on Jakob\'s mandate with the same checks; check takes it only with the mandate; a draft can be set aside', async (t) => {
   const { root, store } = await approved(t);
   const { approveCommand } = await import('./order-approve.ts');
-  const draft = await store.create({ dealer: 'paow', step: 'ANKARE-2.1', takes: 2, id: 'prov-tva', pose: { entry: 'pamela-nyp', keep: ARM_AT_SHOE, what: POSE_WHAT } });
+  const draft = await store.create({ dealer: 'paow', step: 'ANKARE-2.1', takes: 2, id: 'prov-tva' });
   await assert.rejects(approveCommand(root, ['prov-tva', '--mandate', ' ']), /Använd/);
   const out = await approveCommand(root, ['prov-tva', '--mandate', 'Jakob 2026-11-13: beställ lämpliga filmer automatiskt utan mitt godkännande'], { now: () => new Date('2026-11-12T22:00:00Z') });
   const approval = out.approval as { by: string; mandate: string; orderSha256: string };
@@ -357,7 +355,7 @@ test('the main agent approves on Jakob\'s mandate with the same checks; check ta
   await assert.rejects(r.check('prov-tva'), /uppdrag/);
   await assert.rejects(r.begin('prov-tva', 1), /uppdrag/);
   // Set aside with why: AVBRUTEN, the reason kept; an approved order cannot be set aside.
-  await store.create({ dealer: 'paow', step: 'ANKARE-2.1', takes: 2, id: 'prov-tre', pose: { entry: 'pamela-nyp', keep: ARM_AT_SHOE, what: POSE_WHAT } });
+  await store.create({ dealer: 'paow', step: 'ANKARE-2.1', takes: 2, id: 'prov-tre' });
   const aside = await approveCommand(root, ['prov-tre', '--set-aside', 'Långa textens metodprov körs inte (huvudagenten 2026-11-13).']);
   assert.equal(aside.status, 'AVBRUTEN');
   assert.match(String((aside.setAside as { why: string }).why), /körs inte/);
@@ -366,8 +364,7 @@ test('the main agent approves on Jakob\'s mandate with the same checks; check ta
 
 test('the rolling hour is shared across Node processes and uncertain calls keep their reservation', async t => {
   const {root, r, store, setTime, writeMandate} = await approved(t);
-  const draft = await store.create({ dealer: 'paow', step: 'ANKARE-2.1', takes: 1, id: 'prov-andra',
-    pose: { entry: 'pamela-nyp', keep: ARM_AT_SHOE, what: POSE_WHAT } });
+  const draft = await store.create({ dealer: 'paow', step: 'ANKARE-2.1', takes: 1, id: 'prov-andra' });
   await store.approve(draft.order.id, draft.revision);
   const credits = (await store.load('prov-ett')).order.cost.worstPerTake;
   const hourlyLimit = Math.floor(credits * 1.5), totalLimit = credits * 2;

@@ -23,7 +23,7 @@ export type Kind = 'STILL' | 'FILM';
  * upp, lägg: brought forward back up and low along the felt, then rolled up onto its long edge and over at the place);
  * on the way by a turn of the wrist, the hand turned until the card lies (FREE; from template 9, Jakob 2026-11-17: "måste
  * hon vrida över handleden"; before, any turn a human hand can make, no fixed edge, Jakob 2026-11-12); or turned about the
- * long side on the way like a key, as Pamela's films do, the hand turned until the card lies too (LONG_EDGE). Both turns on
+ * long side on the way like a key, as the bank's older films do, the hand turned until the card lies too (LONG_EDGE). Both turns on
  * the way are valid (Jakob 2026-11-17: "Båda dessa två sätt är giltiga … både vrida som en nyckel samt den andra.
  * Huvudsaken är att rätt sida kommer upp mot spelaren och att korten har symetriskt samma storlek som de rimligen borde
  * ha, och/eller som väljs i labbet och att det är gult till blått som görs."). Folding it over the short edge was an idea
@@ -148,7 +148,8 @@ export type Drawn = {
   side: 'FRONT' | 'BACK';
   as: string;
   plan: { path: string; sha256: string; updatedAt: string | null };
-  texture: { video: string; frame: number; sha256: string; quadFrom: string };
+  /** The card texture drawn with (tools/order-images.ts TEXTURE): the frozen picture, or on a card drawn before 2026-11-23 the film's frame and the receipt its outline came from. */
+  texture: { image: string; sha256: string } | { video: string; frame: number; sha256: string; quadFrom: string };
   quad: [number, number][];
   centre: [number, number];
   measured: { centre: [number, number]; area: number; box: [number, number]; changedElsewhere: number } | null;
@@ -160,15 +161,16 @@ export type Drawn = {
 };
 export type GoesAs = 'startFrame' | 'endFrame' | 'referenceImage';
 /**
- * A pose figure: of the person in the source picture only the part inside `keep` (a polygon in bank pixels) is kept; the
- * rest of the person is filled with the picture's own green (a smooth model of it plus its own grain). Everything needed
- * to cut it again is here: the source (picture.from and its hash), the polygon and the settings.
+ * The pose figure of an older still (made until 2026-11-23; a still now goes out with its anchor and text only, and an old
+ * order keeps its figure as it was): of the person in the source picture only the part inside `keep` (a polygon in bank
+ * pixels) was kept; the rest of the person was filled with the picture's own green (a smooth model of it plus its own
+ * grain). What it was cut from and with is here: the source (picture.from and its hash), the polygon and the settings.
  */
 export type Cut = {
   keep: [number, number][];
   what: string;
   source: { sha256: string };
-  /** tools/order-images.ts CUT at the time of cutting. */
+  /** The cut's settings at the time of cutting. */
   settings: Record<string, number>;
   filledPx: number;
   keptPx: number;
@@ -180,7 +182,7 @@ export type Cut = {
    */
   matched?: { anchorSha256: string; anchor: [number, number, number]; before: [number, number, number]; after: [number, number, number] } | null;
   /**
-   * A figure laid on the dealer's own shoe (tools/order-images.ts poseOnShoe; from 2026-11-13): of the source only the
+   * A figure laid on the dealer's own shoe (from 2026-11-13 until 2026-11-23): of the source only the
    * forearm and hand (keep, and `sleeve` where black is her sleeve), laid on the anchor cut down to the dealer's shoe and
    * card (`shoe`), moved `by` px so that the middle of the source card's top side meets the middle of her window card's
    * (both cards' corners and top sides). filledPx and green are then of the anchor's cut, keptPx the arm's. by and cards
@@ -195,7 +197,7 @@ export type Cut = {
 };
 /**
  * One picture that goes out. name: the file in assets/orders/<id>/ ("first.png"); path and sha256 are null while it waits.
- * from: where it was copied or built from (a register entry, a frame of a film). cut: how a pose figure was cut.
+ * from: where it was copied or built from (a register entry, a frame of a film). cut: how an older still's pose figure was cut.
  */
 export type Picture = {
   name: string;
@@ -1239,7 +1241,7 @@ export function validateOrder(value: unknown): { order: Order | null; errors: st
 
 // ── What GET /api/orders answers (tools/order-store.ts list) ────────────────
 /** Each order as the view gets it: its revision (If-Match), hash, shown status, what keeps it, what it waits for. */
-/** Whose a picture is: the dealer it shows, and whether all of her or only her arm at the shoe (a pose figure). */
+/** Whose a picture is: the dealer it shows, and whether all of her or only her arm at the shoe (an older still's pose figure). */
 export type Owner = { dealer: string; name: string; part: 'whole' | 'arm' };
 export type OrderAnswer = {
   order: Order;
@@ -1258,8 +1260,6 @@ export type OrderAnswer = {
 };
 /** A dealer as the texts know her (data/dealers.json). */
 export type DealerLook = { id: string; name: string; look: string; paused?: string | null };
-/** The pose figure a still is made with: the other dealer's arm at the shoe, served at /api/orders/pose/<step>. */
-export type PoseAnswer = { step: StepKey; label: string; owner: Owner; served: string };
 export type OrdersAnswer = {
   schemaVersion: 1;
   orders: OrderAnswer[];
@@ -1267,10 +1267,9 @@ export type OrdersAnswer = {
   day: { date: string; spent: number; cap: number };
   balance: { credits: number; at: string; source: string } | null;
   problems: string[];
-  /** For a new order: the dealers' looks, the plan's cards and the pose figures (older servers lack them). */
+  /** For a new order: the dealers' looks and the plan's cards (older servers lack them). */
   dealers?: DealerLook[];
   plan?: PlanAnswer | null;
-  poses?: PoseAnswer[];
   /** The dummy's rendered reference films (data/rendered-references.json), which the lab's clip bank does not list. */
   rendered?: RenderedReference[];
   methods?: import('./order-methods.ts').MethodRegister | null;

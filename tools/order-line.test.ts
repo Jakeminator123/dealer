@@ -6,7 +6,7 @@
 // handbyte, a closed card, each turn, tur och retur, the minimal text, no reference film, a trial card size, the marks on
 // the blue side), and every other recipe of the register: the films without a card and the stills. It fails when a topic is
 // written twice (the camera, the reference film, the grip, the path, the turn, the lay, the way back, the resting hand, where
-// she looks, the card's look, what is taken from @pose), when a state is said in two clauses (which side is up, the palm,
+// she looks, the card's look), when a state is said in two clauses (which side is up, the palm,
 // "as in the last frame"), when five words or more stand twice in one text, when two sentences say opposite things, or when
 // the same sentence stands twice.
 // The plan is a fixture written here, so that the test does not move with what Jakob has saved in placements/default.json.
@@ -23,8 +23,7 @@ const PLACES: Record<string, { x: number; y: number }> = {
   'P4.C2': { x: 907, y: 1090 }, 'D.C1': { x: 850, y: 900 }, 'D.C2': { x: 912, y: 900 },
 };
 const dealer = { name: 'Paow', look: 'a woman in a black jacket' };
-// A still's sentence about the pose picture begins with its tag, "@pose is …".
-const sentences = (text: string) => text.split(/(?<=[.!?])\s+(?=[A-Z@])/).filter(Boolean);
+const sentences = (text: string) => text.split(/(?<=[.!?])\s+(?=[A-Z])/).filter(Boolean);
 
 /**
  * The topics of a text, each with the words that say it. A topic may be said at most `max` times in one text (once,
@@ -41,8 +40,6 @@ const TOPICS: { name: string; says: RegExp; max: number }[] = [
   { name: 'den vilande handen', says: /^The other hand rests on the felt\.$|\bsettles back at the shoe\b|\bstays at the shoe\b|^Both hands rest on the felt\.$/i, max: 1 },
   { name: 'blicken', says: /\beyes\b|\bHer head\b/i, max: 1 },
   { name: 'kortets utseende', says: /\bsolid (?:yellow|blue)\b|\bblank\b|\bplain\b|back is yellow/i, max: 1 },
-  // A still: what its hand takes from the pose picture.
-  { name: 'vad som tas ur posebilden', says: /\bas the hand in @pose\b|\btake from (?:it|@pose)\b/i, max: 1 },
 ];
 /**
  * A state said in a clause, which may stand once in a whole text: the sentence-by-sentence topics above do not see it when

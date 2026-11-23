@@ -105,7 +105,7 @@ test("Bordet's row and the store agree for every standard step and card, and the
   const server = http.createServer(async (req, res) => { if (!(await handle.fn!(req, res, new URL(req.url ?? "/", origin)))) res.writeHead(404).end(); });
   await new Promise<void>((done) => server.listen(0, "127.0.0.1", done));
   origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
-  handle.fn = orderRoutes({ root, origin, now: () => new Date("2026-11-18T02:00:00Z"), poses: {} as never });
+  handle.fn = orderRoutes({ root, origin, now: () => new Date("2026-11-18T02:00:00Z") });
   t.after(() => new Promise<void>((done) => server.close(() => done())));
   const call = async (method: string, address: string, body?: unknown, match?: string) => {
     const response = await fetch(origin + address, { method, headers: { origin, ...(match ? { "if-match": match } : {}), ...(body === undefined ? {} : { "content-type": "application/json" }) }, body: body === undefined ? undefined : JSON.stringify(body) });

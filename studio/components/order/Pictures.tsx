@@ -1,6 +1,6 @@
 "use client";
 
-// The pictures of an order, large: which picture it is (Första bild, Sista bild, the dealer's picture, the pose), whose it is,
+// The pictures of an order, large: which picture it is (Första bild, Sista bild, the dealer's picture; an older still's pose), whose it is,
 // where it comes from, and on a picture with a drawn card a magnified inset of the card with the plan's outline over it and "1,1 px från
 // planen". A picture that waits shows what it waits for (never another dealer's picture in its place). A click opens the
 // picture over the whole window (Z: full size, Esc closes).

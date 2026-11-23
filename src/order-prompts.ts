@@ -25,10 +25,9 @@
 // stays turned until the card lies (from template 9, Jakob 2026-11-17; before, any turn a human hand can make, with a card
 // that keeps its size, Jakob 2026-11-12), or rolled about the long side on the way as the bank's films do, the hand still
 // turned until the card lies too (from template 9). A drag stays a drag: from template 9 an open card from the drag goes
-// along the felt under the fingertips and is taken between thumb and fingers on the way. The pose picture of a still is a
-// cut-out: only the dealing forearm and hand of another dealer at the window shoe, the rest of her filled with green
-// (tools/order-images.ts cutFigure; for 2.2 laid on the dealer's own shoe and card, poseOnShoe), so that only the hand's
-// place and grip can be taken from it. Tests: tools/order-line.test.ts (every text the line allows) and tools/order-routes.test.ts.
+// along the felt under the fingertips and is taken between thumb and fingers on the way. A still is an edit of the
+// dealer's own anchor and goes out with it alone (2026-11-23); the words about a pose picture (@pose), which the stills
+// stored before were sent with, stay for those. Tests: tools/order-line.test.ts (every text the line allows) and tools/order-routes.test.ts.
 import type { FlipAxis, Grip, StepKey, TextStyle } from './order-model.ts';
 
 /**
@@ -60,7 +59,7 @@ import type { FlipAxis, Grip, StepKey, TextStyle } from './order-model.ts';
  * on both sides, the next card in the window too, in the words of round 14's addition (SAY.colours, SAY.oneCardMoves).
  * The words of templates 4 to 8 that 9 replaced stay in SAY.v8.
  * 10 (2026-11-17): the deal of the reference-film trials (tools/film-prompting.md §5, "Giv bara dit"; Prov giv-experiment
- * and giv-forlagefilm-2): with Pamela's approved deal to the same seat as reference film, Kling 4 turned the card through
+ * and giv-forlagefilm-2): with an older dealer's approved deal to the same seat as reference film, Kling 4 turned the card through
  * its edge in 4 of 4 takes with text C of the first trial and laid it on the plan (the reviewer passed 3 of 4), and the
  * drag from anchor 2.2 to seat 4 held in 2 of 2 with the same words written for the drag. In an open deal of the short
  * text: the pinch holds the card by its short end with its broad yellow side to the camera (SAY.pinchHold); the drag keeps
@@ -95,7 +94,8 @@ import type { FlipAxis, Grip, StepKey, TextStyle } from './order-model.ts';
  * SAY.layClosedOneWay; a closed drag stops on SAY.stopFlat and SAY.stopFlatOneWay, as the slid card always did), and the
  * deal with two hands says yellow side up, blue side up and palm down once each, in the turn or the carry (SAY.strokeOut,
  * SAY.layAtPlace, SAY.layAtPlaceOneWay). "As in the last frame" stands once in the entry to anchor 2.3 (SAY.eyesStay), a
- * still says once what is taken from @pose (SAY.stillChange leaves it to SAY.stillPose), and the return to anchor 2.3 names
+ * still says once what is taken from @pose (SAY.stillChange leaves it to SAY.v11.stillPose; from 2026-11-23 a still of 12
+ * or later has no pose picture and says nothing of one), and the return to anchor 2.3 names
  * the hand at the shoe once (SAY.glideBeside; its sentences were written outside SAY before). The open deal by the hand at
  * the shoe is unchanged, word for word, and so is every text not named here. The words of 11 stay in SAY.v11; fromTwelve
  * chooses. Untried as texts.
@@ -233,6 +233,9 @@ export const SAY = {
       'ANKARE-2.1': "Change only her hand nearest the shoe: it holds the yellow card between thumb and forefinger, the fingertips resting on the card's own upper edge, and has drawn the card a little way up out of the window, placed and shaped as the hand in @pose.",
       'ANKARE-2.2': 'Change only her hand nearest the shoe: it lies over the yellow card in the window, the tips of her index, middle and ring fingers resting flat on the card itself and her little finger on the shoe beside the window, ready to slide the card out along the felt, placed and shaped as the hand in @pose.',
     },
+    // The pose picture's sentence, which every still had until a still went out with its anchor alone (2026-11-23); the
+    // stills stored with it are all of template 11 or older.
+    stillPose: '@pose is a cut-out on plain green that shows only a forearm and hand at the same window shoe; take from it only where the hand is and how the wrist and fingers hold the card. Her own sleeve, skin and hand stay as in @anchor, and her forearm continues up to her own elbow and shoulder.',
   },
   // A deal: take and carry.
   pinchOut: 'draws the yellow card out of the window',
@@ -359,15 +362,14 @@ export const SAY = {
   // A rest: the fixed part; Jakob's addition says what happens.
   rest: 'She starts and ends exactly as in the first frame, and holds still for the last half second.',
   restMinimal: 'She starts and ends as in the first frame.',
-  // A still (an edit of @anchor with @pose), said positively: what is there, no list of bans.
+  // A still (an edit of @anchor), said positively: what is there, no list of bans.
   stillEdit: 'This is an edit of the picture @anchor.',
   stillKeep: "Keep everything in @anchor exactly as it is: the framing and camera, the flat chroma-green background and table, the black card shoe at the right with the yellow card in its window, and the woman's face, hair, clothes, build and her hand at the left of the picture, lying flat on the felt.",
-  // What the hand does; what is taken from @pose is said once, by stillPose (from template 12; SAY.v11.stillChange said it here too).
+  // What the hand does (from template 12; SAY.v11.stillChange also said what was taken from @pose).
   stillChange: {
     'ANKARE-2.1': "Change only her hand nearest the shoe: it holds the yellow card between thumb and forefinger, the fingertips resting on the card's own upper edge, and has drawn the card a little way up out of the window.",
     'ANKARE-2.2': 'Change only her hand nearest the shoe: it lies over the yellow card in the window, the tips of her index, middle and ring fingers resting flat on the card itself and her little finger on the shoe beside the window, ready to slide the card out along the felt.',
   },
-  stillPose: '@pose is a cut-out on plain green that shows only a forearm and hand at the same window shoe; take from it only where the hand is and how the wrist and fingers hold the card. Her own sleeve, skin and hand stay as in @anchor, and her forearm continues up to her own elbow and shoulder.',
   stillStandard: 'Her elbows hang free at her sides and her forearms come down to the felt. Her jacket continues down to the straight horizontal line where her body is cut off in @anchor. The green is one even colour right up to her outline, her hands, the card and the shoe. Soft, even frontal studio light; natural skin with fine texture, sharp eyes, matte black cloth with soft folds.',
   stillCard: 'There is one card, the one in the window, with the size and shape it has in @anchor.',
   // Template 13 (TEMPLATE_CHOICES), word for word as the review of the method wrote it (2026-11-21, its section 4).
@@ -494,16 +496,18 @@ function stillText(input: PromptInput): Prompt {
       { text: SAY.stillEdit, from: [] },
       { text: SAY.stillKeep, from: [] },
       { text: (fromTwelve(input) ? SAY.stillChange : SAY.v11.stillChange)[input.step === 'ANKARE-2.2' ? 'ANKARE-2.2' : 'ANKARE-2.1'], from: [] },
-      { text: SAY.stillPose, from: [] },
+      // No pose picture goes out (2026-11-23); a still stored before said what to take from it.
+      ...(fromTwelve(input) ? [] : [{ text: SAY.v11.stillPose, from: [] }]),
       { text: SAY.stillStandard, from: [] },
       { text: SAY.stillCard, from: [] },
       extraPart(input),
     ];
     return { template: templateOf('bild-ankare', 'KORT'), style: 'KORT', text: joined(parts), parts };
   }
+  // The long still: only the stills stored with it (a new still is KORT), word for word, with the pose picture they were sent with.
   const look = input.dealer.look;
   // 2.2: the pose's hand is wider than the window card, so its little finger rests on the shoe beside the window, as it
-  // rests beside the card in the bank's own 2.2 (tools/order-store.ts POSE).
+  // rested beside the card in the bank's older 2.2 that those stills were sent with as their pose.
   const pose =
     input.step === 'ANKARE-2.1'
       ? "she reaches to the shoe and holds the yellow card itself between thumb and forefinger at its upper edge: the fingertips are on the card, not on the shoe's rim, and she has drawn the card a little out of the window so that her grip on it is plain to see; the card may bend slightly in the pinch. Her hand is placed and shaped as the hand in @pose."

@@ -181,10 +181,10 @@ test("Bordet's rows for a card with handbyte and one without say what the store'
   await writeFile(path.join(root, "data/rendered-references.json"), JSON.stringify({ schemaVersion: 1, about: "test", films: rendered }));
   // The bank's real card, which the store draws on a return's last picture (TEXTURE in tools/order-images.ts), copied into
   // the lab where this checkout has media: a return's preview is compared there, and only its row where it has none.
-  const textured = [TEXTURE.video, TEXTURE.quadFrom].every((file) => existsSync(path.join(repo, file)));
-  if (textured) for (const file of [TEXTURE.video, TEXTURE.quadFrom]) {
-    await mkdir(path.join(root, path.dirname(file)), { recursive: true });
-    await copyFile(path.join(repo, file), path.join(root, file));
+  const textured = existsSync(path.join(repo, TEXTURE.image));
+  if (textured) {
+    await mkdir(path.join(root, path.dirname(TEXTURE.image)), { recursive: true });
+    await copyFile(path.join(repo, TEXTURE.image), path.join(root, TEXTURE.image));
   }
 
   let origin = "";
@@ -192,7 +192,7 @@ test("Bordet's rows for a card with handbyte and one without say what the store'
   const server = http.createServer(async (req, res) => { if (!(await handle.fn!(req, res, new URL(req.url ?? "/", origin)))) res.writeHead(404).end(); });
   await new Promise<void>((done) => server.listen(0, "127.0.0.1", done));
   origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
-  handle.fn = orderRoutes({ root, origin, now: () => new Date("2026-11-18T02:00:00Z"), poses: {} as never });
+  handle.fn = orderRoutes({ root, origin, now: () => new Date("2026-11-18T02:00:00Z") });
   t.after(() => new Promise<void>((done) => server.close(() => done())));
   const call = async (method: string, address: string, body?: unknown) => {
     const response = await fetch(origin + address, { method, headers: { origin, ...(body === undefined ? {} : { "content-type": "application/json" }) }, body: body === undefined ? undefined : JSON.stringify(body) });

@@ -2,7 +2,7 @@
 
 // "Det här skickas" in Kön: one order exactly as it would go out. One line on what it makes and its choices in words (hand,
 // closed or open, the turn), the group it belongs to with its other seats, the pictures large at the top (first,
-// in-between, last; or the dealer's picture and the pose), each with whose it is and, when a draft followed a newer anchor
+// in-between, last; or the dealer's picture), each with whose it is and, when a draft followed a newer anchor
 // in Material, what it was before; then the exact text in full (selectable; the parts a choice made, Jakob's addition and
 // the bans marked, from the same function the text was written with), the model with its length and what it is known and
 // not known to do, the takes and the cost, and whether anything can be approved now (orderingState). A draft can change its

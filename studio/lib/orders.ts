@@ -170,9 +170,9 @@ export function costWords(order: Pick<Order, "takes" | "cost">): string {
   return `${n} ${n === 1 ? "tagning" : "tagningar"} × ${credits(order.cost.perTake)} = ${credits(order.cost.total)} krediter`;
 }
 
-/** The pictures in the order they matter: first, in-between, last; or the dealer's picture, then the pose. */
+/** The pictures in the order they matter: first, in-between, last; or the dealer's picture first (an older still's pose after it). */
 export function picturesInOrder(pictures: readonly Picture[]): Picture[] {
-  const rank = (p: Picture) => (p.goesAs === "startFrame" ? 0 : p.goesAs === "endFrame" ? 2 : p.tag === "anchor" ? 0 : p.tag === "pose" ? 1 : 1);
+  const rank = (p: Picture) => (p.goesAs === "startFrame" ? 0 : p.goesAs === "endFrame" ? 2 : p.tag === "anchor" ? 0 : 1);
   return [...pictures].sort((a, b) => rank(a) - rank(b));
 }
 
@@ -314,7 +314,7 @@ export function recipeOf(order: Order): Recipe {
 }
 
 // ── Whose a picture is ──────────────────────────────────────────────────────
-/** "Paow", "Pamela · bara armen", or a warning when a whole picture of another dealer would go out. */
+/** "Paow", "Ada · bara armen" (another dealer's arm in an older still's pose), or a warning when a whole picture of another dealer would go out. */
 export function ownerWords(owner: Owner | null | undefined, dealer: string): { text: string; tone: Tone } {
   if (!owner) return { text: "okänd källa", tone: "remark" };
   if (owner.dealer === dealer) return { text: owner.name, tone: "ok" };

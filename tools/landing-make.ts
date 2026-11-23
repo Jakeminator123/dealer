@@ -1,7 +1,7 @@
 // Makes an A3 candidate (ankare 3: a seat's landing picture for one hand, src/order-model.ts landingOf) from a source picture of
 // her with the hand at the seat (a film's frame or an image model's picture, 1764 × 1174, the bank's frame), the way the last
 // picture of the deal from anchor 2.3 to seat 5 was made (giv-fran-2-3-p5, take 4, which held):
-//   1. the green brought to the anchor's level (tools/order-images.ts matchGreen, as a pose figure's is);
+//   1. the green brought to the anchor's level (tools/order-images.ts matchGreen);
 //   2. the bank's shoe and the yellow card in its window put back from the anchor (SHOE_AT_ANCHOR), so that the window is never
 //      white or redrawn, and with it her whole hand at the shoe to the cuff, the shoe's shadow and what else still differs round
 //      them (takeHandAtShoe): the seam lies where both pictures are black sleeve or green, never across her skin (round three,
