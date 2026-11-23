@@ -12,9 +12,10 @@
 // Every post of the register of films and takes (tools/register-store.ts) lands in one group, read from the registers and never from a file name:
 //   kopplad      its edge's anchors are the tree's: the pictures its order started and ended on (data/orders/<id>.json
 //                pictures[].from), the first and last pictures of its job (data/clip-jobs.json), the deal it starts on
-//                (startsOn), the clip it is cut from, or the rest film a talk film is laid on (speech.restFilm). Where a
-//                node has no picture at all and only one tree of the dealer has that level, the tree follows from the node
-//                (marked "härledd ur noden").
+//                (startsOn), the clip it is cut from, the film it was made from on this machine (localDerivation.sourceClip,
+//                only while its job names no first and last picture of its own), or the rest film a talk film is laid on
+//                (speech.restFilm). Where a node has no picture at all and only one tree of the dealer has that level, the
+//                tree follows from the node (marked "härledd ur noden").
 //   halvkopplad  an anchor that is no tree's (an older attempt, a replaced or archived picture), an experiment's node, no
 //                picture where two trees share the level, or a record without a take in the bank; with the likely step as a
 //                proposal.
@@ -224,11 +225,15 @@ async function readWorld(only: string | null) {
     const rec = records.get(id), job = jobs.get(id), t = takes.get(id)?.take;
     const order = orders.get(rec?.order?.id ?? '');
     if (order) { add(picture(order, 'startFrame'), `beställningen ${order.id}`); add(picture(order, 'endFrame'), `beställningen ${order.id}`); }
-    add(refEntry(job?.first), 'första bilden'); add(refEntry(job?.last), 'sista bilden');
+    const first = refEntry(job?.first), last = refEntry(job?.last);
+    add(first, 'första bilden'); add(last, 'sista bilden');
     if (t?.anchorStart) add(byPath.get(t.anchorStart) ?? null, 'ankarstarten');
     if (t?.startsOn?.clip && t.startsOn.clip !== id) take(t.startsOn.clip, `börjar i ${t.startsOn.clip}`);
     for (const clip of [job?.clip, job?.source?.clip, t?.segment?.clip, rec?.cutFrom?.clip, t?.editOf]) if (clip && clip !== id) take(clip, `skuren ur ${clip}`);
-    for (const clip of [rec?.localDerivation?.sourceClip, rec?.motion?.reversedFrom]) if (clip && clip !== id) take(clip, `gjord ur ${clip}`);
+    // A film made from another on this machine (a trim, a reversal, another set's hands laid over it) stands on its source's
+    // pictures only while its job names none of its own: with a first and a last picture of its own it says itself where it
+    // starts and ends (tools/register-derived.ts: a rest of the Casino's with Tatuerad's hands is Tatuerad's, not both trees').
+    if (!(first && last)) for (const clip of [rec?.localDerivation?.sourceClip, rec?.motion?.reversedFrom]) if (clip && clip !== id) take(clip, `gjord ur ${clip}`);
     if (rec?.speech?.restFilm && rec.speech.restFilm !== id) take(rec.speech.restFilm, `talet ligger på ${rec.speech.restFilm}`);
     return out;
   }

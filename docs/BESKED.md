@@ -182,6 +182,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   med händerna"; han har sagt det två gånger och själv ställt om och sparat. Händerna ska frigöras mer.
 - **Docklabbet** (2026-11-23): "Jag gillar verkligen docklabbet!" Konstiga ställningar blir naturligare som standard,
   vridning och axlar är reglage, fingrarna visar hur de verkar på kortet; allt "kompatibelt med material skapat".
+- **Ett ställe för dockan** (2026-11-23, i dealer-19:s chatt): Kortplan och Docka "känns som typ samma sak"; "EN väg
+  och ETT ställe man använder dockan".
 - **Dockan framåt** (2026-11-23): en giv till en spelare tar 2 s som förval, valbart i Docka. För framtiden: A2.2 ur
   fotot, och dockan tar över Siluetten i Scen & Bord med valen som finns där.
 - **Skon** (2026-11-23): "Se över och fixa så allt blir rätt bara": den ritade skon i 3D-scenen flyttas till filmens
@@ -225,6 +227,10 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
 - **En giv är tre sekunder** (2026-11-18, 2026-11-21): "Ja, tre sekunder är lagom".
 - **Takten** (2026-11-18): en giv är en sammanhängande rörelse utan stopp med kortet rest, och en film slutar när
   rörelsen är klar. Bordets gröna är densamma genom filmen, och kortet är slätt, utan vitt eller mönster.
+- **Snabbare: bara händerna med kortet** (2026-11-23, i dealer-19:s chatt): "det är hennes rörelser med kortet som ska
+  gå snabbare"; andra armen och huvudets vridningar "behöver inte skyndas upp". Han vill ha det som en standard.
+- **Revansch på nästan bra klipp** (2026-11-23, i dealer-19:s chatt): de ska kunna användas "för att skapa om dem men
+  med aningen mindre ändringar", som en standard, "utöver att jag i princip alltid vill gå via vår docka".
 - **Flera kameravinklar ur samma film** (2026-11-18): en sidovinkel görs av bankens egen film i Runways videoredigerare
   (35 % och 70 % åt sidan, också speglat), inte av en ny tagning. Först ett labbprov där två vinklar binds ihop.
 - **Givens sex steg från A2.1** (2026-11-13): Nyp, Dra, För fram, Vrid, Vänd upp, Lägg. Det är valet Vänd vid platsen

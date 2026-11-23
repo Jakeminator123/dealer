@@ -8,7 +8,8 @@ Fem skript som det löpande bandet ([dealer-line.md](../dealer-line.md), [order-
 [handboken](../film-prompting.md)) fortfarande kör i Python. Fyra hittar händer, ögon, axlar eller ansikten med
 MediaPipe eller OpenCV:s ansiktsmodeller, som repots TypeScript inte har; det femte (`forlang-plagg.py`) är inte
 porterat. Resten av efterarbetet är porterat till `tools/film-after.ts` och `tools/still-after.ts`. Ett sjätte,
-`landmarks.py`, hör till 3D-banan och ligger här för att det kör i samma MediaPipe-miljö.
+`landmarks.py`, hör till 3D-banan och ligger här för att det kör i samma MediaPipe-miljö. Ett sjunde,
+`hands-from-anchor.py`, gör en vila i en annan uppsättning och har ett eget avsnitt nedan.
 
 Skripten flyttades hit 2026-11-13 från D:-slasket (`D:/dealer-scratch/tmp/bestall/paow-ankare-2-1/` och
 `D:/dealer-scratch/tmp/paow/skript/`). Bara sökvägarna till modellerna och repot är ändrade (`forlang-plagg.py` är
@@ -23,11 +24,25 @@ oförändrat); allt annat är byte för byte som de skript som gjorde Paows anka
 | `forlang-plagg.py` | Förlänger ett ljust plagg nedåt i en passad stillbild så att kroppen slutar vid bordets bakkant, bakom armar och händer. Behöver ingen modell. | Kroppen kapad i en stillbild med ljust plagg (handboken, felistan) |
 | `identitet.py` | Ansiktslikhet per ruta mot stillbilder av den nya och den gamla dealern, och hur mycket tatueringsbläck handryggarna bär. Kräver `filmmatt.py`:s mått för samma film. | Likhet för en ny dealer (dealer-line.md, station 3) |
 | `landmarks.py` | Läser en film ruta för ruta och skriver allt MediaPipe ser av händerna (21 punkter var, i bankens bildpunkter och som en hand i meter) och kroppen (33 punkter) till en JSON-fil. Talen är MediaPipes egna, ojämnade. Tillkom 2026-11-17 (3D-banan), inte flyttad från slasket. | En verklig giv lagd i rummet (`dealer3d/tools/lift.ts`, `dealer3d/LASMIG.md`) |
+| `hands-from-anchor.py` | Lägger händerna ur en ankarbild över händerna i en film, ruta för ruta, och låter varje hand följa sin egen lilla rörelse i filmen. Behöver ingen modell, bara OpenCV och `ffmpeg` på sökvägen. Tillkom 2026-11-23. | En vila i en annan uppsättning (nedan) |
 
 Användning står överst i varje skript. Kör alltid med `-I` (isolerat läge), från repots rot:
 
 ```
 tools/python/.venv/Scripts/python.exe -I tools/python/filmmatt.py <film.mp4> <namn> <utmapp> --start first.png --end last.png
+```
+
+## En vila i en annan uppsättning (`hands-from-anchor.py`)
+
+En godkänd vila i en uppsättning blir en vila i en annan utan beställning och utan kostnad: filmens egen rörelse, med
+händerna ur den andra uppsättningens ankare 1. Så blev Casinots vilor Tatuerads 2026-11-23. Det håller för en film där
+händerna ligger stilla på filten och där ankarbilden utanför händerna är filmens första ruta. Samma indata ger samma
+fil (SHA-256 lika). Två steg, från repots rot; det andra för in filmen i banken som lokalt härledd, i inkorgen, med
+ankaret som första och sista bild (`tools/register-derived.ts`, `--dry` säger vad som skulle skrivas):
+
+```
+tools/python/.venv/Scripts/python.exe -I tools/python/hands-from-anchor.py assets/anchors/<ankare>/anchor.png assets/motions/<källklipp>/source.mp4 .runtime/<uppgift>/<ut>.mp4 --sheet .runtime/<uppgift>/<ark>.png
+node tools/register-derived.ts .runtime/<uppgift>/<ut>.mp4 --id <nytt klipp-id> --source <källklipp> --anchor <ankarets post i Material> --script tools/python/hands-from-anchor.py --operation "<vad som är gjort>"
 ```
 
 ## Kortdatasetet (`kort-dataset/`)

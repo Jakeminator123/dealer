@@ -44,8 +44,9 @@ Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-
   ord) och börjar från [dealer3d/LASMIG.md](dealer3d/LASMIG.md). Mätningen är stängd; givarna från A2.3 är filmbanans.
 - **Kartabanan** (vyn Karta och dealerns träd) är en egen session sedan 2026-11-23 och börjar från
   [docs/lage/karta.md](docs/lage/karta.md).
-- **Andra sessioner 2026-11-23:** `dealer-a4` (dockan) och `dealer-e7` (kortet) är stängda; `dealer-19` provade given i
-  3 s (`paow-giv-2-3-p4-c2-02`: variant 3/5, inte i banken, Jakob dömer i Prov). Filmregistret är `data/motions.jsonl`, läst genom en SQLite-databas under
+- **Andra sessioner 2026-11-23:** `dealer-a4` (dockan) och `dealer-e7` (kortet) är stängda; `dealer-19` bygger på hans ord ett ställe
+  för dockan, fart bara på korthänderna och revansch (BESKED) och äger Bordets filer, `src/order-*.ts`,
+  `data/order-methods.json` och `dealer3d/`. Filmregistret är `data/motions.jsonl`, läst genom en SQLite-databas under
   `.runtime/register/` (`node tools/register.ts`; BESKED, "Registren i en databas").
 - **Jakobs egna:** planen `placements/default.json` och hans domar i `data/motions.jsonl` (`review`), som skrivs från Granska och
   aldrig skrivs över av ett verktyg. En dom som getts åt honom (`node tools/review-put.ts`) är aldrig hans.

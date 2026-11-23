@@ -6981,6 +6981,296 @@
         "id": "paow-ingang-2-1-tatuerad-01",
         "take": 1
       }
+    },
+    {
+      "id": "paow-vila-tat-01-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-tat-01-01",
+      "frames": [
+        0,
+        117
+      ],
+      "purpose": "Lokalt härledd ur paow-vila-01-01 på ankaret paow-vila-tatuerad (tools/python/hands-from-anchor.py): lugn vila.",
+      "dealer": "paow",
+      "model": "wan3 + hands-from-anchor",
+      "duration": 3.933,
+      "first": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      },
+      "last": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      }
+    },
+    {
+      "id": "paow-vila-tat-02-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-tat-02-01",
+      "frames": [
+        0,
+        147
+      ],
+      "purpose": "Lokalt härledd ur paow-vila-02-01 på ankaret paow-vila-tatuerad (tools/python/hands-from-anchor.py): ser över bordet.",
+      "dealer": "paow",
+      "model": "wan3 + hands-from-anchor",
+      "duration": 4.933,
+      "first": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      },
+      "last": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      }
+    },
+    {
+      "id": "paow-vila-tat-03-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-tat-03-01",
+      "frames": [
+        0,
+        117
+      ],
+      "purpose": "Lokalt härledd ur paow-vila-03-01 på ankaret paow-vila-tatuerad (tools/python/hands-from-anchor.py): ler.",
+      "dealer": "paow",
+      "model": "wan3 + hands-from-anchor",
+      "duration": 3.933,
+      "first": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      },
+      "last": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      }
+    },
+    {
+      "id": "paow-vila-tat-04-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-tat-04-01",
+      "frames": [
+        0,
+        117
+      ],
+      "purpose": "Lokalt härledd ur paow-vila-04-01 på ankaret paow-vila-tatuerad (tools/python/hands-from-anchor.py): nickar.",
+      "dealer": "paow",
+      "model": "wan3 + hands-from-anchor",
+      "duration": 3.933,
+      "first": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      },
+      "last": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      }
+    },
+    {
+      "id": "paow-vila-tat-07-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-tat-07-01",
+      "frames": [
+        0,
+        117
+      ],
+      "purpose": "Lokalt härledd ur paow-vila-07-01 på ankaret paow-vila-tatuerad (tools/python/hands-from-anchor.py): ler lite.",
+      "dealer": "paow",
+      "model": "wan3 + hands-from-anchor",
+      "duration": 3.933,
+      "first": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      },
+      "last": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      }
+    },
+    {
+      "id": "paow-vila-tat-08-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-tat-08-01",
+      "frames": [
+        0,
+        117
+      ],
+      "purpose": "Lokalt härledd ur paow-vila-08-01 på ankaret paow-vila-tatuerad (tools/python/hands-from-anchor.py): nickar med lite ironi.",
+      "dealer": "paow",
+      "model": "wan3 + hands-from-anchor",
+      "duration": 3.933,
+      "first": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      },
+      "last": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      }
+    },
+    {
+      "id": "paow-vila-tat-09-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-tat-09-01",
+      "frames": [
+        0,
+        147
+      ],
+      "purpose": "Lokalt härledd ur paow-vila-09-01 på ankaret paow-vila-tatuerad (tools/python/hands-from-anchor.py): blicken runt bordet.",
+      "dealer": "paow",
+      "model": "wan3 + hands-from-anchor",
+      "duration": 4.933,
+      "first": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      },
+      "last": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      }
+    },
+    {
+      "id": "paow-vila-tat-09-02",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-tat-09-02",
+      "frames": [
+        0,
+        147
+      ],
+      "purpose": "Lokalt härledd ur paow-vila-09-02 på ankaret paow-vila-tatuerad (tools/python/hands-from-anchor.py): blicken runt bordet, tagning 2.",
+      "dealer": "paow",
+      "model": "wan3 + hands-from-anchor",
+      "duration": 4.933,
+      "first": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      },
+      "last": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      }
+    },
+    {
+      "id": "paow-vila-tat-10-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-tat-10-01",
+      "frames": [
+        0,
+        147
+      ],
+      "purpose": "Lokalt härledd ur paow-vila-10-01 på ankaret paow-vila-tatuerad (tools/python/hands-from-anchor.py): ser ned och ler, huvudet vickar.",
+      "dealer": "paow",
+      "model": "wan3 + hands-from-anchor",
+      "duration": 4.933,
+      "first": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      },
+      "last": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      }
+    },
+    {
+      "id": "paow-vila-tat-10-02",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-tat-10-02",
+      "frames": [
+        0,
+        147
+      ],
+      "purpose": "Lokalt härledd ur paow-vila-10-02 på ankaret paow-vila-tatuerad (tools/python/hands-from-anchor.py): ser ned och ler.",
+      "dealer": "paow",
+      "model": "wan3 + hands-from-anchor",
+      "duration": 4.933,
+      "first": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      },
+      "last": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      }
     }
   ],
   "edits": []

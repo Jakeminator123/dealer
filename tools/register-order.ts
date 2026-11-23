@@ -43,7 +43,11 @@ export function placedThrough(entry: {via?: 'api' | 'mcp'; outside?: boolean} | 
 }
 export type OrderRef = {id: string; take: number; fix?: number};
 export type Entry = DerivedTake & {order: OrderRef};
-export type Plan = {clip: string; takes: Entry[]; records: Record<string, Record<string, unknown>>; files: {copy: [string, string] | null; generation: [string, Record<string, unknown>]}; notes: string[]};
+/** What a registration writes. The takes of an order carry it (Entry); a film made on this machine has none (tools/register-derived.ts). */
+export type Plan<T extends DerivedTake = Entry> = {clip: string; takes: T[]; records: Record<string, Record<string, unknown>>; files: {copy: [string, string] | null; generation: [string, Record<string, unknown>]}; notes: string[]};
+/** The review a take enters the bank with: not judged, in the inbox until Jakob decides. basis: where it came from, in words. */
+export const inboxReview = (basis: string) => ({decision: 'PENDING', inbox: true, basis: `Inte granskad av Jakob: ${basis}. Oberoende rutgranskning: tools/film-review.md.`,
+  limitations: 'I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.', colorDoesNotProvePhysicalSide: true, userAccepted: false, productionReady: false});
 
 const json = async (file: string) => JSON.parse(await readFile(file, 'utf8'));
 const posix = (root: string, file: string) => path.relative(root, file).split(path.sep).join('/');
@@ -162,8 +166,7 @@ export async function planRegistration(root: string, id: string, take: number, o
   const sourceRel = posix(root, source), bytes = (await stat(film)).size, model = order.generation?.model ?? 'okänd', through = placedThrough(entry as Parameters<typeof placedThrough>[0]);
   const facts2 = {path: sourceRel, sha256: filmSha, bytes, width: facts.width, height: facts.height, fps: facts.rate, frames, provider: ref.fix ? 'tools/film-fix.ts' : through.provider, model: ref.fix ? `${model} + film-fix` : model};
   const orderRef = {id, take, path: `data/orders/${id}.json`, orderSha256: order.approval.orderSha256 ?? null, receipt: `assets/orders/${id}/receipt.json`, taskId: entry.taskId, delivered: {path: posix(root, delivered), sha256: deliveredSha}};
-  const review = {decision: 'PENDING', inbox: true, basis: `Inte granskad av Jakob: förd in från beställningen ${id}, tagning ${take}${ref.fix ? `, rättad kopia ${ref.fix}` : ''} (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.`,
-    limitations: 'I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.', colorDoesNotProvePhysicalSide: true, userAccepted: false, productionReady: false};
+  const review = inboxReview(`förd in från beställningen ${id}, tagning ${take}${ref.fix ? `, rättad kopia ${ref.fix}` : ''} (tools/register-order.ts)`);
   // The hands of a card's film, from the order: the hand at the shoe takes the card; with a hand switch (pass) the other hand lays
   // it. A return cut from a round trip carries its deal's releasing hand, as the hand that comes back (resolveRound matches them).
   const hand = order.motion?.hand === 'LH' || order.motion?.hand === 'RH' ? order.motion.hand as 'LH' | 'RH' : null;
@@ -187,7 +190,7 @@ export async function planRegistration(root: string, id: string, take: number, o
 }
 
 /** Writes a plan: the film, its receipt, the records and the entries in data/clip-jobs.json, the job file last. */
-export async function register(root: string, plan: Plan): Promise<void> {
+export async function register(root: string, plan: Plan<DerivedTake>): Promise<void> {
   if (plan.files.copy) { const [from, to] = plan.files.copy, temporary = `${to}.${randomUUID()}.part`; await mkdir(path.dirname(to), {recursive: true}); await copyFile(from, temporary); await rename(temporary, to); }
   await writeAtomic(plan.files.generation[0], JSON.stringify(plan.files.generation[1], null, 2) + '\n');
   motionRegister(root).putAll(Object.values(plan.records));

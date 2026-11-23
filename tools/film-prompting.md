@@ -313,6 +313,11 @@ tagningar vänder kortet en gång vid platsen så som en hand kan, med kortet in
   för munnen: "her lips stay together as the corners of her mouth lift a little"; prövad i omgång 12 (`paow-vila-10`):
   leendet kom med stängda läppar i båda tagningarna, men andetaget i `paow-vila-11` togs ändå med öppen mun (§5, V).
 - Jakob om ordet: "Det är fortfarande oklart vad som ska vara en variant och vad som är godkänt." (`paow-vila-08`, V).
+- En ny uppsättning med samma kropp och kläder (andra händer) får sina vilor lokalt ur den gamlas, utan beställning:
+  `tools/python/hands-from-anchor.py` lägger den nya A1-bildens händer över filmens och flyttar dem med varje hands
+  egen rörelse. Håller där händerna ligger still: tio av Casinots vilor för Tatuerad (Jakobs ja 2026-11-23;
+  `tools/film-prov.md`, Det som håller). En vila ur text beställs bara för en ny rörelse, och texten nämner då bara
+  ansiktet: ord om bordet, spelarna eller händerna lägger WAN 3 in i bilden.
 
 ### 3.7 Stillbilder: ankare 2.1, 2.2, landningsbild
 Nano Banana Pro, 4K, 4:3, `referenceImages` `@anchor` (dealerns egen bild) och texten; ingen posebild går med, och

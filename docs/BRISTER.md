@@ -164,6 +164,10 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   varandra (0 bildpunkter i 98 % av 3 474 byten). Kvar: vila efter en retur (83 ms), och returerna slutar 2–3
   bildpunkter från vilan och 4–9 nivåer ljusare. Förslag, inte infört: en retur spelar till sin sista ruta (`IDLE_RULE`,
   `resolveRound` i `src/clip-graph.ts`); verktygen i `D:/dealer-scratch/tmp/levande-objekt/ljus/`.
+- **Spelet utan träd blandar trädens filmer** (2026-11-23): utan `?trad=` spelar spelet alla hennes dömda filmer, också
+  i ett träd som byggs. Tatuerads vila `paow-vila-20-01` väljs i 5 % av vilorna bland Casinots bara händer; ingången
+  till Tatuerads A2.1 och de tio vilorna ur Casinots står därför som `review.labOnly`. Stänger: spelet utan trädord
+  hoppar över filmer i träd som inte har läget spelas (`data/dealer-trees.json`), och gränsen hävs.
 - **Rummets film** `monaco-liv-2.mp4` har ett litet steg var 8,3 s (0,57 nivåer av 255), skattat osynligt. Stänger:
   filmen kodas om utan nyckelrutor, under ett nytt namn, om någon ser steget.
 - **Filmen före spelet** (`/trailer`): startbilden står still cirka 0,7–0,8 s medan filmen hämtas, sidan slutar rita i
