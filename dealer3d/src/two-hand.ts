@@ -82,7 +82,7 @@ export const contactGripFits = (target: string, grip: NonNullable<Rolled['contac
  * (else it leaves at its fastest). `wait`: frames from her left hand letting go until
  * the card begins to turn (else 1), so that her left hand is clear of the edge that comes up.
  */
-export type Pace = {flowing?: boolean; leftBack?: number; elbows?: {L: Vec3; R: Vec3}; meeting?: boolean; push?: number; swing?: number; base?: [number, number]; takeAt?: [number, number]; leanFrom?: number; seenForearm?: number; clearTrunk?: number; steady?: number; shared?: Partial<typeof TWO_HAND.shared> & {soft?: boolean; wait?: number}} & OneTurn;
+export type Pace = {flowing?: boolean; leftBack?: number; elbows?: {L: Vec3; R: Vec3}; meeting?: boolean; push?: number; swing?: number; base?: [number, number]; takeAt?: [number, number]; leanFrom?: number; seenForearm?: number; clearTrunk?: number; steady?: number; leftFeed?: {along: number; across: number}; leftArc?: Vec3; shared?: Partial<typeof TWO_HAND.shared> & {soft?: boolean; wait?: number}} & OneTurn;
 /**
  * `single` (with flowing and meeting; version -e, on Jakob's word of 2026-11-18 that the other hand "tips the card over in
  * the middle"): her left hand only strokes the card out and slides it FLAT to her right hand, rides on it until `l` (a few
@@ -530,7 +530,8 @@ export function twoHandDeal(lens: Lens, start: Still, places: Place[], lead: num
   const feeding = (pose: CardPose): CardPose => pinched ? {...pose, long: mul(pose.long, -1)} : pose;
   const about = (a: Axes, axis: Vec3, angle: number): Axes => ({forward: turned(a.forward, axis, angle), palm: turned(a.palm, axis, angle), across: turned(a.across, axis, angle)});
   const lefts = cards.map(c => { const swing = shares ? -rad(S.swing) : pinched ? -rad(15) : -rad(M.leftYaw) * clamp(length(sub(c.take, mouth)) / 0.3), at = feeding(c.card(c.b.d));
-    const feed = shares ? {along: S.along, across: S.across} : pinched ? {along: 0.018, across: -0.028} : {along: -M.behind, across: -M.leftIn};
+    // (leftFeed, when a recipe gives it, moves the feeding fingertips where the right hand will not meet them)
+    const feed = shares ? {along: S.along, across: S.across} : pinched ? {along: 0.018, across: -0.028} : pace.leftFeed ?? {along: -M.behind, across: -M.leftIn};
     const on = (card: CardPose, u: number, tilt: number, v = 0) => { const across = cross(card.normal, card.long), along = onCard[0] + (feed.along - onCard[0]) * u, target = add(card.centre, add(add(mul(card.long, along + (-(H / 2 - M.topIn) - along) * v), mul(card.normal, onCard[1])), mul(across, onCard[2] + (feed.across - onCard[2]) * u)));
       const shape = shapeBetween(shapeL, closedL, shares ? u * S.close : u), swung = about(axL0, UP, swing), far = shares ? about(swung, swung.across, rad(S.pitch)) : swung, axes = between(axL0, about(far, far.forward, tilt), u), wrist = sub(target, outOf(tips(shape), axes)); return {wrist, points: placed(shape, axes, wrist), axes, shape}; };
     let tilt = 0; for (const t of Array.from({length: 81}, (_, i) => rad((i % 2 ? 1 : -1) * Math.ceil(i / 2)))) if (Math.min(...on(at, 1, t).points.map(q => q[1])) >= 0.009) { tilt = t; break; }
@@ -541,7 +542,7 @@ export function twoHandDeal(lens: Lens, start: Still, places: Place[], lead: num
       return pinched && i >= b.c ? aboveFelt(hand) : hand;
     }
     if (i > lets && i < back) { const from = l.on(feeding(c.card(lets)), 1, l.tilt, single ? 0 : 1), t = (i - lets) / (back - lets), u = soft ? smooth(t) : single ? 1 - Math.pow(1 - t, 2) : smooth(t), shape = shapeBetween(shares ? from.shape : closedL, shapeL, u), axes = between(from.axes, axL0, shares && S.home ? smooth(clamp((t - S.home) / (1 - S.home))) : u);
-      const arc: Vec3 = shares ? S.arc : pinched ? [0.04, 0.075, 0] : [0, single ? 0.035 : M.arc.left, 0];
+      const arc: Vec3 = shares ? S.arc : pinched ? [0.04, 0.075, 0] : pace.leftArc ?? [0, single ? 0.035 : M.arc.left, 0];
       // (soft: it goes on with the card at the card's speed, ever less, while it is lifted: the lift is the arc's, begun at once)
       const goesOn: Vec3 = soft ? add(mul(sub(from.wrist, l.on(feeding(c.card(lets - 1)), 1, l.tilt, 0).wrist), (back - lets) * t * (1 - t) * (1 - t)), mul(arc, Math.sin(Math.PI * eased(t, 1.2, 0)) - Math.sin(Math.PI * u))) : [0, 0, 0];
       const wrist = add(add(lerp(from.wrist, start.L.w, u), mul(arc, Math.sin(Math.PI * u))), goesOn);
