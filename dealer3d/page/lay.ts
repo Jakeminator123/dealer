@@ -10,7 +10,7 @@
 // where the hands do not share the card), --carry, --grip-yaw, --body, and all of --beats for the tempo. (The tool is a
 // script that runs on import, so the page cannot call it. When its body moves into dealer3d/src/ as a function, this
 // file's layDeal goes and both call that.)
-import {TABLE_LENS, cross, filmEye, type Vec3} from '../../src/table-lens.ts';
+import {SHOE, SHOE_LAID_BEFORE_20261123, TABLE_LENS, cross, filmEye, shoeCard, shoePose, type Shoe, type Vec3} from '../../src/table-lens.ts';
 import {spots, type Plan} from '../src/world.ts';
 import {standing} from '../src/body.ts';
 import {sideSeen} from '../src/deal.ts';
@@ -73,10 +73,11 @@ const r4 = (v: number[]) => v.map(x => Math.round(x * 10000) / 10000), r1 = (x: 
  * `lab`: what the lab shows beside the film: the body she has at the place when nothing steers it (degrees, [sideways,
  * the right shoulder forward, forward], as two-hand.ts works it out from the reach), and the recipe and steering themselves.
  * `natural`: the hands hand the card over without meeting (dealer3d/src/natural.ts `naturalPace`, the doll lab's
- * "Naturlig"); without it the recipe lays the deal it always laid.
+ * "Naturlig"); without it the recipe lays the deal it always laid. `shoe`: the shoe it is laid with, the films' (SHOE)
+ * by default; a stored deal is laid again with the one it was laid with (SHOE_LAID_BEFORE_20261123 before 2026-11-23).
  */
-export function layDeal(input: {plan: Plan; target: string; recipe: Recipe; pose: PoseFilm; steer?: Steer; natural?: boolean}) {
-  const {plan, target, recipe, pose} = input, steer = input.steer ?? NO_STEER, lens = TABLE_LENS;
+export function layDeal(input: {plan: Plan; target: string; recipe: Recipe; pose: PoseFilm; steer?: Steer; natural?: boolean; shoe?: Shoe}) {
+  const {plan, target, recipe, pose} = input, steer = input.steer ?? NO_STEER, lens = TABLE_LENS, shoe = input.shoe ?? SHOE;
   const all = spots(plan, lens), spot = all.find(s => s.id === target); if (!spot) throw Error(`The plan has no place ${target}.`);
   const {frames: N, beats: own} = steered(recipe, steer), mode = recipe.pace.contactGrip;
   if (mode && !contactGripFits(target, mode)) throw Error(`${target}: the ${mode === true ? 'contact' : mode} grip does not lay a card there.`);
@@ -93,12 +94,12 @@ export function layDeal(input: {plan: Plan; target: string; recipe: Recipe; pose
   if (steer.turnLater && shares(recipe)) pace.shared = {...pace.shared, wait: Math.max(0, (pace.shared?.wait ?? 1) + steer.turnLater)};
   if (recipe.poseFilm && pose.body) pace.base = [pose.body.lean, pose.body.twist];
   const last = pose.frames[pose.frameCount - 1], posed: Still = {L: last.L, R: last.R, h: last.h, ...(recipe.poseFilm ? {g: last.g} : {})};
-  const start = recipe.rightAt ? startOnAnchor(lens, posed, {x: recipe.rightAt.x, y: recipe.rightAt.y}, recipe.rightAt.yaw) : posed;
+  const start = recipe.rightAt ? startOnAnchor(lens, posed, {x: recipe.rightAt.x, y: recipe.rightAt.y}, recipe.rightAt.yaw, shoe) : posed;
   // A film in its own tempo ends on the picture the film in the real tempo ends on: that film is laid first, for its elbows.
-  if (recipe.endElbows) { const end = twoHandDeal(lens, start, [{id: target, at: spot.at, real: r}], 2, FPS, N, {...(pace.base ? {base: pace.base} : {}), ...(pace.takeAt ? {takeAt: pace.takeAt} : {}), ...(pace.seenForearm ? {seenForearm: pace.seenForearm} : {}), ...(pace.clearTrunk ? {clearTrunk: pace.clearTrunk} : {}), ...(pace.steady ? {steady: pace.steady} : {})}).frames[N - 1]; pace.elbows = {L: end.L.e, R: end.R.e}; }
-  const deal = twoHandDeal(lens, start, [{id: target, at: spot.at, real}], 0, FPS, N, pace), {frames, beats} = deal;
+  if (recipe.endElbows) { const end = twoHandDeal(lens, start, [{id: target, at: spot.at, real: r}], 2, FPS, N, {shoe, ...(pace.base ? {base: pace.base} : {}), ...(pace.takeAt ? {takeAt: pace.takeAt} : {}), ...(pace.seenForearm ? {seenForearm: pace.seenForearm} : {}), ...(pace.clearTrunk ? {clearTrunk: pace.clearTrunk} : {}), ...(pace.steady ? {steady: pace.steady} : {})}).frames[N - 1]; pace.elbows = {L: end.L.e, R: end.R.e}; }
+  const deal = twoHandDeal(lens, start, [{id: target, at: spot.at, real}], 0, FPS, N, {...pace, shoe}), {frames, beats} = deal;
 
-  const eye = filmEye(lens), inside = shoeHolds(lens), mixed = (p: Vec3, q: Vec3, t: number): Vec3 => [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t, p[2] + (q[2] - p[2]) * t];
+  const eye = filmEye(lens), inside = shoeHolds(lens, 0.005, shoe), mixed = (p: Vec3, q: Vec3, t: number): Vec3 => [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t, p[2] + (q[2] - p[2]) * t];
   const through = frames.map((fr, i) => fr.R.p.some(inside) || [0.2, 0.4, 0.6, 0.8].some(t => inside(mixed(fr.R.e, fr.R.w, t))) ? i : -1).filter(i => i >= 0);
   const sides = frames.map(fr => sideSeen({centre: fr.card.c, long: fr.card.l, normal: fr.card.n, across: cross(fr.card.n, fr.card.l)}, eye.position, 0));
   const turnsAt = (() => { const i = frames.findIndex((_, j) => j > 0 && sides[j] !== sides[j - 1]); return i < 0 ? Math.round(beats[0].turned) : i; })();
@@ -114,6 +115,19 @@ export function layDeal(input: {plan: Plan; target: string; recipe: Recipe; pose
     lab: {recipe: recipe.from, steer, bodyAsked: asked.map(x => Math.round(x * 10) / 10) as [number, number, number], carry: pace.carry ?? TWO_HAND.heights.carry, ...(input.natural ? {natural: true} : {})}};
 }
 export type LaidDeal = ReturnType<typeof layDeal>;
+
+/**
+ * A stored motion (a pose film) as the lab shows it with the films' shoe: in the frames where its card stands in the shoe
+ * of before 2026-11-23 (within a millimetre of that shoe's card), the card stands as much moved into the films' shoe; the
+ * hands are as they are (on paow, pose-on-doll has them where her picture has them). The file is not changed.
+ */
+export function cardInFilmsShoe<M extends {frames: {card: {c: number[]; l: number[]; n: number[]}}[]}>(motion: M): M {
+  const lens = TABLE_LENS, basis = (s: Shoe) => { const k = shoeCard(shoePose(lens, s), s); return {o: k.centre, b: [k.up, k.across, cross(k.up, k.across)]}; };
+  const from = basis(SHOE_LAID_BEFORE_20261123), to = basis(SHOE), dot = (a: number[], b: number[]) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  const turn = (v: number[]) => { const q = from.b.map(e => dot(v, e)); return [0, 1, 2].map(i => to.b[0][i] * q[0] + to.b[1][i] * q[1] + to.b[2][i] * q[2]); };
+  const near = (c: number[]) => Math.hypot(c[0] - from.o[0], c[1] - from.o[1], c[2] - from.o[2]) < 0.001;
+  return {...motion, frames: motion.frames.map(f => near(f.card.c) ? {...f, card: {...f.card, c: turn(f.card.c.map((x, i) => x - from.o[i])).map((x, i) => x + to.o[i]), l: turn(f.card.l), n: turn(f.card.n)}} : f)};
+}
 
 /**
  * Where a place of the plan takes its recipe from (a deal of dealer3d/data/), or why the lab lays no deal to it. Each

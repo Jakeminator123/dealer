@@ -20,7 +20,7 @@
 // Prints the beats, what each card asks of the body, and what to look for before a film is made of it.
 import {readFile, writeFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
-import {CARD, TABLE_LENS, filmEye, length, onPlane, see, sub, cross, type Vec3} from '../../src/table-lens.ts';
+import {CARD, SHOE, SHOE_LAID_BEFORE_20261123, TABLE_LENS, filmEye, length, onPlane, see, sub, cross, type Vec3} from '../../src/table-lens.ts';
 import {spots} from '../src/world.ts';
 import {LIMITS, joints, type ArmPose} from '../src/capture.ts';
 import {sideSeen} from '../src/deal.ts';
@@ -34,6 +34,9 @@ const FPS = 30, N = Math.round(Number(arg('--seconds', '3')) * FPS), own = arg('
 if (own && (own.length !== 8 || to === 'all' || to.includes(','))) throw Error('--beats takes eight frames (b,c,d,e,l,f,g,h) and one place');
 const planPath = arg('--plan');
 if (process.argv.includes('--plan') && (!planPath || planPath.startsWith('--'))) throw Error('--plan needs a placement JSON file.');
+// --shoe laid-before-20261123: laid with the shoe of before 2026-11-23 (src/table-lens.ts), to lay a stored deal again as it was laid; else the films' shoe.
+const shoeName = arg('--shoe'); if (shoeName !== undefined && shoeName !== 'laid-before-20261123') throw Error('--shoe takes laid-before-20261123, or is left out for the films\' shoe.');
+const shoe = shoeName ? SHOE_LAID_BEFORE_20261123 : SHOE;
 const poseFilm = arg('--pose-film') ?? null; if (poseFilm !== null && !/^[a-z0-9-]+$/.test(poseFilm)) throw Error('--pose-film takes the name of a film in dealer3d/data, without .json.');
 const pose = JSON.parse(await readFile(new URL(`../data/${poseFilm ?? 'till-ankare-2-3'}.json`, import.meta.url), 'utf8'));
 const planBytes = await readFile(planPath ?? new URL('../../placements/default.json', import.meta.url));
@@ -81,11 +84,11 @@ if (secondCardPilot) {
   pace.body ??= [0, 0, 2];
 }
 // --right-at: her right hand as the approved anchor picture has it, where that differs from the pose film (the middle fingertip's pixel in the bank's picture, and the way the hand points).
-const rightAt = arg('--right-at')?.split(',').map(Number) ?? null, posed: Still = {L: last.L, R: last.R, h: last.h, ...(poseFilm ? {g: last.g} : {})}, start = rightAt ? startOnAnchor(lens, posed, {x: rightAt[0], y: rightAt[1]}, rightAt[2]) : posed;
+const rightAt = arg('--right-at')?.split(',').map(Number) ?? null, posed: Still = {L: last.L, R: last.R, h: last.h, ...(poseFilm ? {g: last.g} : {})}, start = rightAt ? startOnAnchor(lens, posed, {x: rightAt[0], y: rightAt[1]}, rightAt[2], shoe) : posed;
 // A film in its own tempo ends on the picture the film in the real tempo ends on: that film is laid first, for its elbows.
 // --end-elbows 0: the elbows are not brought to those of the film in the real tempo at the end (that film's elbow can stand out from her side, as for D.C1).
-if (own && arg('--end-elbows', secondCardPilot ? '0' : '1') !== '0') { const real = twoHandDeal(lens, start, ids.map(id => ({id, at: spot(id), real: realOf(id)})), 2, FPS, N, {...(pace.base ? {base: pace.base} : {}), ...(pace.takeAt ? {takeAt: pace.takeAt} : {}), ...(pace.seenForearm ? {seenForearm: pace.seenForearm} : {}), ...(pace.clearTrunk ? {clearTrunk: pace.clearTrunk} : {}), ...(pace.steady ? {steady: pace.steady} : {})}).frames[N - 1]; pace.elbows = {L: real.L.e, R: real.R.e}; }
-const deal = twoHandDeal(lens, start, places, lead, FPS, N, pace), {frames, beats} = deal;
+if (own && arg('--end-elbows', secondCardPilot ? '0' : '1') !== '0') { const real = twoHandDeal(lens, start, ids.map(id => ({id, at: spot(id), real: realOf(id)})), 2, FPS, N, {shoe, ...(pace.base ? {base: pace.base} : {}), ...(pace.takeAt ? {takeAt: pace.takeAt} : {}), ...(pace.seenForearm ? {seenForearm: pace.seenForearm} : {}), ...(pace.clearTrunk ? {clearTrunk: pace.clearTrunk} : {}), ...(pace.steady ? {steady: pace.steady} : {})}).frames[N - 1]; pace.elbows = {L: real.L.e, R: real.R.e}; }
+const deal = twoHandDeal(lens, start, places, lead, FPS, N, {...pace, shoe}), {frames, beats} = deal;
 
 // ---- what it asks, and what to look for --------------------------------------------------------------------------
 const f3 = (v: number[]) => '(' + v.map(n => n.toFixed(3)).join(', ') + ')', s2 = (frame: number) => `${frame.toFixed(1)} (${(frame / FPS).toFixed(2)} s)`, armOf = (a: Limb): ArmPose => ({shoulder: a.s, elbow: a.e, wrist: a.w, stretch: a.k, points: a.p});
@@ -99,7 +102,7 @@ for (const [side, sign] of [['L', -1], ['R', 1]] as const) { const j = frames.ma
   asked[side] = {wrist: Math.max(...j.map(x => x.wrist)), elbow: [Math.min(...j.map(x => x.elbow)), Math.max(...j.map(x => x.elbow))], twist: Math.max(...twist) - Math.min(...twist), fingers: [Math.min(...bends), Math.max(...bends)], far: Math.max(...frames.map(f => length(sub(f[side].w, f[side].s))))}; }
 if (secondCardPilot && Math.max(asked.L.wrist, asked.R.wrist) > LIMITS.wrist) throw Error(`P4.C2: the wrist exceeds ${LIMITS.wrist}° (left ${asked.L.wrist.toFixed(2)}°, right ${asked.R.wrist.toFixed(2)}°).`);
 for (const [side, name] of [['L', 'Vänster'], ['R', 'Höger']] as const) { const a = asked[side]; lines.push(`${name} arm: handled högst ${a.wrist.toFixed(0)}° (gräns ${LIMITS.wrist}), armbåge ${a.elbow.map(n => n.toFixed(0)).join('–')}° (gräns ${LIMITS.elbow}), underarmens vridning ${a.twist.toFixed(0)}° (gräns ${LIMITS.twistSpan}), fingerleder ${a.fingers.map(n => n.toFixed(0)).join(' till ')}° (gräns −${LIMITS.fingerBack} till ${LIMITS.fingerBend}), som längst ${(a.far * 100).toFixed(0)} cm från axeln (armen 55).`); }
-const inside = shoeHolds(lens), mixed = (a: Vec3, b: Vec3, t: number): Vec3 => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+const inside = shoeHolds(lens, 0.005, shoe), mixed = (a: Vec3, b: Vec3, t: number): Vec3 => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
 const through = frames.map((f, i) => f.R.p.some(inside) || [0.2, 0.4, 0.6, 0.8].some(t => inside(mixed(f.R.e, f.R.w, t))) ? i : -1).filter(i => i >= 0);
 const nearest = frames.map((f, i) => ({i, d: Math.min(...f.R.p.flatMap(p => f.L.p.map(q => length(sub(p, q)))))})).reduce((m, x) => x.d < m.d ? x : m);
 const cardOf = (f: typeof frames[number]) => ({centre: f.card.c, long: f.card.l, normal: f.card.n, across: cross(f.card.n, f.card.l)}), lowest = Math.min(...frames.map(f => { const c = cardOf(f); return c.centre[1] - CARD.height / 2 * Math.abs(c.long[1]) - CARD.width / 2 * Math.abs(c.across[1]); }));

@@ -58,7 +58,7 @@ test('a real card keeps its size in the world: 63 by 88 mm wherever it lies', ()
 test('the shoe: its foot is a real shoe\'s length, and the card in its window is the film\'s card to within a twentieth', () => {
   const foot = shoePose().footLength; assert.ok(foot > 0.38 && foot < 0.47, `shoe foot ${foot} m`);
   const q = shoeCardQuad(), real = sides(q), film = sides(SHOE_WINDOW_CARD);
-  near(real.short, 49.2, 0.5, 'short side'); near(real.long, 98.2, 0.5, 'long side'); near(film.long, 92.2, 0.1, 'the film\'s card, long side'); near(film.long / real.long, 0.94, 0.01, 'the film\'s card against a real one');
+  near(real.short, 50.9, 0.5, 'short side'); near(real.long, 99.1, 0.5, 'long side'); near(film.long, 92.2, 0.1, 'the film\'s card, long side'); near(film.long / real.long, 0.94, 0.01, 'the film\'s card against a real one');
   assert.ok(q[0].y < q[3].y && q[0].x < q[1].x, 'the upper short side first, from the left'); assert.ok(q.reduce((s, p, i) => { const n = q[(i + 1) % 4]; return s + p.x * n.y - n.x * p.y; }, 0) > 0, 'clockwise on screen');
   const middle = {x: (q[0].x + q[1].x + q[2].x + q[3].x) / 4, y: (q[0].y + q[1].y + q[2].y + q[3].y) / 4}, want = {x: SHOE_WINDOW_CARD.reduce((s, p) => s + p.x, 0) / 4, y: SHOE_WINDOW_CARD.reduce((s, p) => s + p.y, 0) / 4};
   near(middle.x, want.x, 1.5, 'on the film\'s card, x'); near(middle.y, want.y, 1.5, 'on the film\'s card, y');

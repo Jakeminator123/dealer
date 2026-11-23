@@ -11,8 +11,8 @@
 // size of a person, which is the contract's own k = 2. This lens is the one of the family that gives the card at seat 4
 // its film size and shape (dealer3d/src/camera.ts, lensForFocal) which draws her knuckles, shoulders and pupils nearest
 // their real sizes (dealer3d/src/world.ts, filmLens; a test holds the numbers below to that fit). Two things that took
-// no part in the fit agree with it: the shoe's foot comes out 0.45 m long, and the card standing in the shoe's window is
-// 0.94 of a real card's length (0.95 where the shoe model itself puts the card).
+// no part in the fit agree with it: the shoe drawn on the film's comes out 0.44 m long, and the card standing in the
+// shoe's window is 0.93 of a real card's length.
 export const FILM = {width: 1764, height: 1174};
 /** The card of data/scene-contract.json (cardMillimetres, 63 x 88), in metres; thickness and corner radius for a drawn card. */
 export const CARD = {width: 0.063, height: 0.088, thickness: 0.0003, corner: 0.0035};
@@ -115,18 +115,35 @@ export const planPixel = (place: {u: number; v: number}): Pixel => ({x: place.u 
 export const realCardQuadAt = (place: {u: number; v: number}, heading = 0, grow = 1, lens: Lens = TABLE_LENS): Pixel[] | null => realCardQuad(planPixel(place), heading, grow, lens);
 
 // ---- the shoe -------------------------------------------------------------------------------------------------
-// The dealing shoe as a real object standing on the felt, and the next card in it. Measured: the foot of the shoe's near
-// wall, read by eye on frame 36 of paow-giv-2-1-p4-11-01 (within 10 px), and the yellow card standing in the window on
-// frame 120 (the track's colour rule; corners top left, top right, bottom right, bottom left; 51.0 x 92.2 px). Assumed:
-// the shoe's measures, that its front plate leans 58 degrees back from the felt, and that the card's lower edge is 12 mm
-// over the felt. A plate that leans 50 or 65 degrees changes the card's length on screen by under 3 px.
-export const SHOE_FOOT = {front: {x: 1262, y: 890}, back: {x: 1688, y: 800}};
+// The dealing shoe as a real object standing on the felt, and the next card in it, drawn where the films have theirs.
+// The truth is the film's picture: the yellow card standing in the window on frame 120 of paow-giv-2-1-p4-11-01 (the
+// track's colour rule; corners top left, top right, bottom right, bottom left; 51.0 x 92.2 px), and the shoe on the
+// anchor paow-ankare-2-3-d, read by eye at 8x on a 10 px grid: near wall's foot at the front (1262, 890) and back
+// (1689, 827.5), the back's near and far top (1685, 670) and (1599, 639), the plate's near and far top (1352.5, 773) and
+// (1299, 738). The film's shoe is not a rigid box under this lens (its plate and card head some 28 degrees, its walls'
+// foot 15), so the wedge below is the one that fits best in this order: the card in the window (weight 30), the front
+// foot and the plate (4), the back (1); fitted 2026-11-23. Left on the picture with the numbers as rounded here: card
+// corners 5.4, 1.2, 7.1 and 0.3 px (its middle 0.5; the film's card is 7 % shorter than a real one, so some 3 px stay
+// whatever the shoe), front foot 8.5, plate top 6.0 near and 4.5 far, back's near top 3.4, back's foot 38, back's far
+// top 29. SHOE.foot is the wedge's own near foot, front and back, in the film's pixels; the card stays in the plate,
+// across the middle of the shoe, as dealer3d/src/two-hand.ts takes it out. shoePose, shoeCard and shoeCardQuad take the
+// shoe as their last argument, SHOE by default.
+/** A dealing shoe on the felt: the foot of its near wall, front and back, in the bank's pixels, and its measures in metres (the plate's lean from the felt in radians; windowLift is how high over the felt the card's lower edge stands). */
+export type Shoe = {foot: {front: Pixel; back: Pixel}; length: number; width: number; backHeight: number; frontHeight: number; plateLean: number; windowLift: number};
+/** The shoe as the films have it (above): the default for all that is laid and drawn from 2026-11-23. */
+export const SHOE: Shoe = {foot: {front: {x: 1268.1, y: 895.9}, back: {x: 1666.5, y: 796.8}}, length: 0.436, width: 0.082, backHeight: 0.131, frontHeight: 0.1, plateLean: 51.6 * Math.PI / 180, windowLift: 0.022};
+/**
+ * The shoe as it stood until 2026-11-23: its foot read by eye on frame 36 of paow-giv-2-1-p4-11-01, its measures assumed;
+ * its card stood 3 cm from the films' (28 px on screen). Kept only so that the motions laid before then (dealer3d/data, the
+ * saved standards in dealer3d/standard) can be laid again and tried with the shoe they were laid with; nothing new uses it.
+ */
+export const SHOE_LAID_BEFORE_20261123: Shoe = {foot: {front: {x: 1262, y: 890}, back: {x: 1688, y: 800}}, length: 0.42, width: 0.118, backHeight: 0.19, frontHeight: 0.105, plateLean: 58 * Math.PI / 180, windowLift: 0.012};
+export const SHOE_FOOT = SHOE.foot;
 export const SHOE_WINDOW_CARD: Pixel[] = [{x: 1298, y: 756}, {x: 1340, y: 785}, {x: 1285, y: 859}, {x: 1243, y: 830}];
-export const SHOE = {length: 0.42, width: 0.118, backHeight: 0.19, frontHeight: 0.105, plateLean: 58 * Math.PI / 180, windowLift: 0.012};
 /** Where the shoe stands: the front end of its near wall on the felt, the direction from front to back, across the shoe away from the camera, and the length of the foot read off the film. */
 export type ShoePose = {front: Vec3; back: Vec3; far: Vec3; footLength: number};
-export function shoePose(lens: Lens = TABLE_LENS): ShoePose {
-  const eye = filmEye(lens), f = onPlane(eye, SHOE_FOOT.front.x, SHOE_FOOT.front.y)!, b = onPlane(eye, SHOE_FOOT.back.x, SHOE_FOOT.back.y)!;
+export function shoePose(lens: Lens = TABLE_LENS, shoe: Shoe = SHOE): ShoePose {
+  const eye = filmEye(lens), f = onPlane(eye, shoe.foot.front.x, shoe.foot.front.y)!, b = onPlane(eye, shoe.foot.back.x, shoe.foot.back.y)!;
   const footLength = Math.hypot(b[0] - f[0], b[2] - f[2]), back: Vec3 = [(b[0] - f[0]) / footLength, 0, (b[2] - f[2]) / footLength];
   const side: Vec3 = [-back[2], 0, back[0]]; // across the shoe; the wall read off the film is the near one, so the body lies away from the camera (-z)
   return {front: f, back, far: side[2] <= 0 ? side : [-side[0], 0, -side[2]], footLength};
@@ -136,7 +153,7 @@ export function shoePose(lens: Lens = TABLE_LENS): ShoePose {
  * plate, its lower short side `windowLift` over the felt. Its centre, the direction of its long side (up the plate, leaning
  * back by `plateLean` from the felt) and of its short side.
  */
-export function shoeCard(pose: ShoePose, shoe = SHOE): {centre: Vec3; up: Vec3; across: Vec3} {
+export function shoeCard(pose: ShoePose, shoe: Shoe = SHOE): {centre: Vec3; up: Vec3; across: Vec3} {
   const c = Math.cos(shoe.plateLean), s = Math.sin(shoe.plateLean), up: Vec3 = [pose.back[0] * c, s, pose.back[2] * c];
   // The plate rises from the shoe's front bottom edge; the card's lower edge is where the plate is `windowLift` over the felt,
   // and the card lies a millimetre outside the plate so that it is the plate's face one sees.
@@ -151,10 +168,11 @@ export function cardInSpace(centre: Vec3, up: Vec3, across: Vec3, grow = 1): Vec
 /**
  * A real card standing in the shoe's window, as the film camera draws it: four corners in the bank's pixels, clockwise on
  * screen from the upper left one (the upper short side first). The card leans on the shoe's front plate; `centre` is
- * the pixel of its middle (by default the middle of the card the film has in the window), `grow` as in realCardQuad.
+ * the pixel of its middle (by default the middle of the card the film has in the window), `grow` as in realCardQuad,
+ * `shoe` the shoe it stands in.
  */
-export function shoeCardQuad(centre: Pixel | null = null, grow = 1, lens: Lens = TABLE_LENS): Pixel[] {
-  const eye = filmEye(lens), card = shoeCard(shoePose(lens)), normal = unit(cross(card.up, card.across));
+export function shoeCardQuad(centre: Pixel | null = null, grow = 1, lens: Lens = TABLE_LENS, shoe: Shoe = SHOE): Pixel[] {
+  const eye = filmEye(lens), card = shoeCard(shoePose(lens, shoe), shoe), normal = unit(cross(card.up, card.across));
   const want = centre ?? {x: SHOE_WINDOW_CARD.reduce((s, p) => s + p.x, 0) / 4, y: SHOE_WINDOW_CARD.reduce((s, p) => s + p.y, 0) / 4};
   const d = ray(eye, want.x, want.y), t = dot(sub(card.centre, eye.position), normal) / dot(d, normal), at = add(eye.position, mul(d, t)); // where that pixel's ray meets the plate
   const q = cardInSpace(at, card.up, card.across, grow).map(p => see(eye, p)!), area = q.reduce((s, p, i) => { const n = q[(i + 1) % 4]; return s + p.x * n.y - n.x * p.y; }, 0);

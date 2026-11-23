@@ -11,7 +11,7 @@ import {mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {CARD, TABLE_LENS, add, filmEye, length, mul, see, sub, type Vec3} from '../../src/table-lens.ts';
+import {CARD, SHOE_LAID_BEFORE_20261123, TABLE_LENS, add, filmEye, length, mul, see, sub, type Vec3} from '../../src/table-lens.ts';
 import {FINGERS, LIMITS, joints, type ArmPose} from '../src/capture.ts';
 import type {CardPose} from '../src/deal.ts';
 import {REAL_DEAL, type RealCard} from '../src/real-deal.ts';
@@ -147,7 +147,7 @@ for (const [name, film, to] of [['P4 U', uprightPilot, 'P4.C1'], ['P4 V', lowPil
   assert.deepEqual([first.L, first.R, first.h], [uprightStart.L, uprightStart.R, uprightStart.h]);
   assert.ok(length(sub(first.g, uprightStart.g)) < 1e-9, 'her eyes are where the pose film left them');
   assert.deepEqual(film.frames[1].R, first.R, 'her right hand lies still until the card moves');
-  const place = placeOf(film, to), laid = twoHandDeal(TABLE_LENS, {L: uprightStart.L, R: uprightStart.R, h: uprightStart.h, g: uprightStart.g}, [{id: to, at: place.at, real: pace.real}], film.beats[0].a, film.fps, film.frameCount, pace);
+  const place = placeOf(film, to), laid = twoHandDeal(TABLE_LENS, {L: uprightStart.L, R: uprightStart.R, h: uprightStart.h, g: uprightStart.g}, [{id: to, at: place.at, real: pace.real}], film.beats[0].a, film.fps, film.frameCount, {...pace, shoe: SHOE_LAID_BEFORE_20261123});
   assert.deepEqual(laid.forced, []);
   assert.equal(film.frames.length, laid.frames.length);
   const points = (f: typeof first) => [f.card.c, f.card.l, f.card.n, f.h, f.g, f.L.s, f.L.e, f.L.w, ...f.L.p, f.R.s, f.R.e, f.R.w, ...f.R.p];
@@ -237,7 +237,7 @@ test('the H timing can lay its own P4.C2 card with independent IK and a frozen p
   const cli = fileURLToPath(new URL('../tools/deal-film.ts', import.meta.url));
   const args = [cli, '--to', 'P4.C2', '--plan', plan, '--seconds', '4', '--beats', '4,15,20,36,22,45,58,70',
     '--right-at', '1180,887,83', '--meet', '1', '--push', '0.004', '--single', '1', '--carry', '0.045', '--turned-at', '0.01',
-    '--roll', '1', '--tuck', '300', '--out', out];
+    '--roll', '1', '--tuck', '300', '--shoe', 'laid-before-20261123', '--out', out]; // laid against the stored pilot, with the shoe it was laid with
   execFileSync(process.execPath, [...args, '--contact-grip', 'landing']);
   const result = JSON.parse(await readFile(out, 'utf8')) as typeof pilot & {trial: {
     timingTarget: string; placementTarget: string; planIntent: typeof second.intent;
@@ -283,7 +283,7 @@ test('the H timing can lay its own P4.C2 card with independent IK and a frozen p
 });
 
 for (const [name, film] of [['P4 G', pilot], ['P4 H', landingPilot], ['P4 S', sweepPilot], ['P4 T', sharedPilot], ['P4 U', uprightPilot], ['P4 V', lowPilot], ...seatPilots, ['P4 C2', secondSeatPilot]] as const) test(`${name} keeps hand sizes, arm limits and clearances`, () => {
-  const rightInsideShoe = shoeHolds(TABLE_LENS);
+  const rightInsideShoe = shoeHolds(TABLE_LENS, 0.005, SHOE_LAID_BEFORE_20261123); // the stored films, laid with the shoe of before 2026-11-23
   for (const [side, sign] of [['L', -1], ['R', 1]] as const) {
     const sizes = bones(start[side].p), twists: number[] = [];
     for (const [i, f] of film.frames.entries()) {

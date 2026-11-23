@@ -26,7 +26,7 @@
 // swings the rest of the way while it falls. In the air the card makes ONE turn about one axis: the turn that carries
 // the standing card into the lying one.
 // The card is one stiff real card all the way.
-import {CARD, SHOE, add, cross, dot, filmEye, length, mul, onPlane, shoeCard, shoePose, sub, unit, type Lens, type Vec3} from './camera.ts';
+import {CARD, SHOE, add, cross, dot, filmEye, length, mul, onPlane, shoeCard, shoePose, sub, unit, type Lens, type Shoe, type Vec3} from './camera.ts';
 import {BODY, arm, standing, turned} from './body.ts';
 import {dealerEdge} from './world.ts';
 import {joints, type ArmPose} from './capture.ts';
@@ -81,8 +81,10 @@ export const contactGripFits = (target: string, grip: NonNullable<Rolled['contac
  * and her left hand leaves the card at the card's own speed and is slowed, lifted and brought back to the shoe from there
  * (else it leaves at its fastest). `wait`: frames from her left hand letting go until
  * the card begins to turn (else 1), so that her left hand is clear of the edge that comes up.
+ * `shoe` (2026-11-23): the shoe the card is taken out of and the hands keep out of, SHOE by default; a deal laid before
+ * then is laid again with SHOE_LAID_BEFORE_20261123 (src/table-lens.ts). It is not written into a motion's `pace`.
  */
-export type Pace = {flowing?: boolean; leftBack?: number; elbows?: {L: Vec3; R: Vec3}; meeting?: boolean; push?: number; swing?: number; base?: [number, number]; takeAt?: [number, number]; leanFrom?: number; seenForearm?: number; clearTrunk?: number; steady?: number; leftFeed?: {along: number; across: number}; leftArc?: Vec3; shared?: Partial<typeof TWO_HAND.shared> & {soft?: boolean; wait?: number}} & OneTurn;
+export type Pace = {shoe?: Shoe; flowing?: boolean; leftBack?: number; elbows?: {L: Vec3; R: Vec3}; meeting?: boolean; push?: number; swing?: number; base?: [number, number]; takeAt?: [number, number]; leanFrom?: number; seenForearm?: number; clearTrunk?: number; steady?: number; leftFeed?: {along: number; across: number}; leftArc?: Vec3; shared?: Partial<typeof TWO_HAND.shared> & {soft?: boolean; wait?: number}} & OneTurn;
 /**
  * `single` (with flowing and meeting; version -e, on Jakob's word of 2026-11-18 that the other hand "tips the card over in
  * the middle"): her left hand only strokes the card out and slides it FLAT to her right hand, rides on it until `l` (a few
@@ -235,11 +237,11 @@ function turnOf(a: CardAxes, b: CardAxes): {axis: Vec3; angle: number} {
   if (length(anti) < 1e-6) throw Error('The two card poses are half a turn apart: the turn between them has no single short way.');
   return {axis: unit(anti), angle};
 }
-/** Whether a point is inside the shoe (the model wedge where the film has it), `margin` metres from its walls. */
-export function shoeHolds(lens: Lens, margin = 0.005): (q: Vec3) => boolean {
-  const pose = shoePose(lens), run = SHOE.frontHeight / Math.tan(SHOE.plateLean);
+/** Whether a point is inside the shoe (the model wedge where the film has it, or `shoe`), `margin` metres from its walls. */
+export function shoeHolds(lens: Lens, margin = 0.005, shoe: Shoe = SHOE): (q: Vec3) => boolean {
+  const pose = shoePose(lens, shoe), run = shoe.frontHeight / Math.tan(shoe.plateLean);
   return q => { const d = sub(q, pose.front), s = dot(d, pose.back), f = dot(d, pose.far);
-    return s > margin && s < SHOE.length && f > margin && f < SHOE.width - margin && q[1] < (s < run ? s * Math.tan(SHOE.plateLean) : SHOE.frontHeight + (SHOE.backHeight - SHOE.frontHeight) * (s - run) / (SHOE.length - run)) - margin; };
+    return s > margin && s < shoe.length && f > margin && f < shoe.width - margin && q[1] < (s < run ? s * Math.tan(shoe.plateLean) : shoe.frontHeight + (shoe.backHeight - shoe.frontHeight) * (s - run) / (shoe.length - run)) - margin; };
 }
 
 const BASE = {lean: rad(10), twist: rad(8)}; // pose 2.3 (tools/pose-film.ts without --body)
@@ -258,8 +260,8 @@ type ElbowChoice = {elbow: Vec3; cost: number; fits: boolean};
  * `seen`: weight against a LEFT forearm that points at the bank's camera (nearer its line of sight than SEEN_FOREARM degrees).
  * `clear`: weight against a forearm that goes through her trunk as it is drawn, where the picture shows an arm cut off by her body.
  * `list`: filled with every place the elbow was weighed at (Pace `steady`). */
-function reachOf(lens: Lens, tuck = 0, contactGrip: Rolled['contactGrip'] = false, seen = 0, clear = 0) { const hip = standing(lens).hip, edgeZ = dealerEdge(lens)[2], eyeAt = filmEye(lens).position, endOn = Math.cos(rad(SEEN_FOREARM));
-  const inside = shoeHolds(lens), torso = (e: Vec3, neck: Vec3) => { const d = sub(neck, hip), t = clamp(dot(sub(e, hip), d) / dot(d, d)); return length(sub(e, add(hip, mul(d, t)))); };
+function reachOf(lens: Lens, tuck = 0, contactGrip: Rolled['contactGrip'] = false, seen = 0, clear = 0, shoe: Shoe = SHOE) { const hip = standing(lens).hip, edgeZ = dealerEdge(lens)[2], eyeAt = filmEye(lens).position, endOn = Math.cos(rad(SEEN_FOREARM));
+  const inside = shoeHolds(lens, 0.005, shoe), torso = (e: Vec3, neck: Vec3) => { const d = sub(neck, hip), t = clamp(dot(sub(e, hip), d) / dot(d, d)); return length(sub(e, add(hip, mul(d, t)))); };
   // Her trunk as the stage draws it (dealer3d/src/stage.ts: an egg from the hip to the shoulders): how far out a point is, 1 at its surface.
   const egg = (shoulders: [Vec3, Vec3]) => { const mid = mul(add(shoulders[0], shoulders[1]), 0.5), across = sub(shoulders[1], shoulders[0]), wide = length(across), x = unit(across), up = sub(mid, hip), tall = length(up), z = unit(cross(x, unit(up))), y = cross(z, x), c = lerp(hip, mid, 0.52);
     return (p: Vec3) => { const d = sub(p, c); return Math.hypot(dot(d, x) / (wide * 0.47), dot(d, y) / (tall * 0.56), dot(d, z) / 0.095); }; };
@@ -285,9 +287,9 @@ function reachOf(lens: Lens, tuck = 0, contactGrip: Rolled['contactGrip'] = fals
  * finger is drawn on the pixel `tip` of the bank's picture; the arm bent anew. A film made from a pose and the anchor
  * picture a film model made of that pose do not have the hand in the same place; the next film begins on the picture.
  */
-export function startOnAnchor(lens: Lens, start: Still, tip: {x: number; y: number}, yawDeg: number): Still {
+export function startOnAnchor(lens: Lens, start: Still, tip: {x: number; y: number}, yawDeg: number, shoe: Shoe = SHOE): Still {
   const was = start.R.p, f = sub(was[9], was[0]), by = rad(yawDeg) - Math.atan2(f[0], f[2]), to = onPlane(filmEye(lens), tip.x, tip.y, was[12][1]); if (!to) throw Error('The pixel is not on the felt.');
-  const points = was.map(q => add(to, turned(sub(q, was[12]), UP, by))), a = reachOf(lens)(start.R.s, bodyOf(lens)([0, 0, 0]).neck, {wrist: points[0], points}, 1, start.R.e, 0);
+  const points = was.map(q => add(to, turned(sub(q, was[12]), UP, by))), a = reachOf(lens, 0, false, 0, 0, shoe)(start.R.s, bodyOf(lens)([0, 0, 0]).neck, {wrist: points[0], points}, 1, start.R.e, 0);
   return {...start, R: {s: a.shoulder, e: a.elbow, w: a.wrist, k: 1, p: a.points}};
 }
 /**
@@ -299,7 +301,7 @@ export function startOnAnchor(lens: Lens, start: Still, tip: {x: number; y: numb
  */
 export function twoHandDeal(lens: Lens, start: Still, places: Place[], lead: number, fps: number, frameCount: number, pace: Pace = {}) {
   const M = TWO_HAND, N = frameCount, beats = beatsOf(places, lead, fps), hip = standing(lens).hip, edgeZ = dealerEdge(lens)[2];
-  const shoe = shoePose(lens), inShoe = shoeCard(shoe), outward = mul(shoe.back, -1), mouth = add(shoe.front, mul(shoe.far, SHOE.width / 2)), lean0 = Math.cos(SHOE.plateLean);
+  const kind = pace.shoe ?? SHOE, shoe = shoePose(lens, kind), inShoe = shoeCard(shoe, kind), outward = mul(shoe.back, -1), mouth = add(shoe.front, mul(shoe.far, kind.width / 2)), lean0 = Math.cos(kind.plateLean);
   const H = CARD.height, W = CARD.width, lying = CARD.thickness / 2, yawHand = rad(pace.handOverYaw ?? M.handOverYaw);
   /** A card's middle from the point of it her right hand has, `at.up` from the short side it turns about and `at.in` from the long side on her right. */
   const centreOf = (grip: Vec3, axes: CardAxes, at: {up: number; in: number}): Vec3 => sub(sub(grip, mul(axes.long, H / 2 - at.up)), mul(axes.across, W / 2 - at.in));
@@ -317,7 +319,7 @@ export function twoHandDeal(lens: Lens, start: Still, places: Place[], lead: num
   // ---- the card out of the shoe ---------------------------------------------------------------------------------
   // It stands on the plate with its lower end a little up it. Stroked out, it slides down the plate to the foot, then its
   // lower end goes out along the felt while its upper end comes down the plate, then it lies flat before the mouth.
-  const first = SHOE.windowLift / Math.sin(SHOE.plateLean), out = first + H;
+  const first = kind.windowLift / Math.sin(kind.plateLean), out = first + H;
   const faceIn = (long: Vec3): Vec3 => { const n = unit(cross(shoe.far, long)); return n[1] > 0 ? mul(n, -1) : n; };
   const leaving = (a: number): {centre: Vec3; long: Vec3; normal: Vec3} => {
     let low: Vec3, high: Vec3, lift = 0.001;
@@ -561,7 +563,7 @@ export function twoHandDeal(lens: Lens, start: Still, places: Place[], lead: num
   const bodyKeys: [number, Vec3][] = [[pace.leanFrom ?? cards[0].b.b, [0, 0, 0]]]; for (const c of cards) { bodyKeys.push([c.b.g, c.seat.more]); if (c.b.i !== null) bodyKeys.push([c.b.i, c.seat.more]); }
   const more = [0, 1, 2].map(j => through(bodyKeys.map(([t, v]) => [t, v[j]] as [number, number])));
 
-  const reach = reachOf(lens, pace.tuck ?? 0, pace.contactGrip, pace.seenForearm ?? 0, pace.clearTrunk ?? 0); // (tuck: an elbow away from her side or high is the more costly)
+  const reach = reachOf(lens, pace.tuck ?? 0, pace.contactGrip, pace.seenForearm ?? 0, pace.clearTrunk ?? 0, kind); // (tuck: an elbow away from her side or high is the more costly)
   const frames: DealFrame[] = [], limb = (a: ArmPose): Limb => ({s: a.shoulder, e: a.elbow, w: a.wrist, k: 1, p: a.points}); let wasL = start.L.e, wasR = start.R.e; const forced: string[] = [], choices: ElbowChoice[][] = [];
   for (let i = 0; i < N; i++) { const k = active(i), c = cards[k].card(i), r = rightAt(i), l = left(i), add3: Vec3 = [more[0](i), more[1](i), more[2](i)], still = length(add3) < 1e-9, body = bodyAt(add3);
     const solved = (shoulder: Vec3, hand: {wrist: Vec3; points: Vec3[]}, sign: number, was: Vec3) => { const list = pace.steady && sign > 0 ? choices[i] = [] : undefined, a = reach(shoulder, body.neck, hand, sign, was, i, body.shoulders, list); if (a.forced) forced.push(`${sign > 0 ? 'R' : 'L'}${i}`); return limb(a); };

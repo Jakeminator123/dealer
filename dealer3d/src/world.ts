@@ -2,7 +2,7 @@
 // the lens (its numbers stand frozen in src/table-lens.ts, and a test holds the two together), the card places of Jakob's
 // plan laid on the felt, and an eye for every seat. Pure: no I/O and no three.js.
 import {FILM, SEAT_FOUR_CARD, SHOE_FOOT, SHOE_WINDOW_CARD, filmEye, lensForFocal, onPlane, onUpright, orbit, planPixel, readSpan, see, cardCorners, quadMeasure, type Anchors, type Eye, type Lens, type Pixel, type Vec3} from './camera.ts';
-export {SHOE, cardInSpace, realCardQuad, realCardQuadAt, shoeCard, shoeCardQuad, shoePose, sides, type ShoePose} from '../../src/table-lens.ts';
+export {SHOE, SHOE_LAID_BEFORE_20261123, cardInSpace, realCardQuad, realCardQuadAt, shoeCard, shoeCardQuad, shoePose, sides, type Shoe, type ShoePose} from '../../src/table-lens.ts';
 
 // What the film shows, read on frames of paow-giv-2-1-p4-11-01 (1764 x 1174) and in data/dealer-standard.json.
 export const MEASURED = {
@@ -18,7 +18,7 @@ export const MEASURED = {
   dealerEdgeRow: 831.5, // data/scene-contract.json, keyFigures.dealerEdgeImageRow
   // Paow's anchor paow-nyp-ung-1, read by eye, +-10 px: the jacket's shoulder points, the pupils, the chin and the top of the hair.
   shoulders: {a: {x: 655, y: 405}, b: {x: 1075, y: 405}}, pupils: {a: {x: 836, y: 211}, b: {x: 909, y: 211}}, chinRow: 337, crownRow: 58,
-  shoeFoot: SHOE_FOOT, // the shoe's near bottom edge, read by eye on frame 36; +-10 px (src/table-lens.ts)
+  shoeFoot: SHOE_FOOT, // the drawn shoe's near bottom edge, fitted to the film's card and shoe on anchor 2.3 (src/table-lens.ts)
 };
 // What is assumed, each in one place: the real sizes of what the film shows of her (a woman's knuckle breadth, index to
 // little finger, is 70 to 80 mm; a jacket's shoulders about 400 mm; pupils 62 mm apart), that her knuckles lie 20 mm over

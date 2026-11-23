@@ -12,7 +12,7 @@ import {mkdtemp, readFile, rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {filmLens} from '../src/world.ts';
+import {SHOE_LAID_BEFORE_20261123, filmLens} from '../src/world.ts';
 import {dollNamed} from '../src/doll.ts';
 import {NO_STEER, layDeal, recipeFor, recipeOf, steered} from './lay.ts';
 import {poseOnDoll} from './pose-on-doll.ts';
@@ -33,7 +33,7 @@ test('a stored deal laid again from its own recipe is the stored deal', async ()
   assert.ok(names.size >= 8);
   for (const name of names) { const stored = await read(name), recipe = recipeOf(name, stored), pose = await read(recipe.poseFilm ?? 'till-ankare-2-3');
     assert.deepEqual(steered(recipe, NO_STEER), {frames: stored.frameCount, beats: recipe.beats}, name);
-    const deal = layDeal({plan, target: stored.to[0], recipe, pose});
+    const deal = layDeal({plan, target: stored.to[0], recipe, pose, shoe: SHOE_LAID_BEFORE_20261123}); // with the shoe it was laid with
     assert.equal(JSON.stringify(deal.frames), JSON.stringify(stored.frames), `${name}: the frames`);
     for (const key of ['beats', 'laid', 'turns', 'leavesShoe', 'edge', 'folds', 'rests', 'hip', 'elbowForced', 'throughShoe'] as const) assert.deepEqual(JSON.parse(JSON.stringify(deal[key])), stored[key], `${name}: ${key}`); }
 });
