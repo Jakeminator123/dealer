@@ -12,8 +12,8 @@ skript.
 
 ## Det viktigaste
 
-1. **Två modeller gör nästan allt.** WAN 3 har gjort nästan hela Pamelas bank och Paows ingång, vilor, utgång och tidiga
-   givar; Kling 4 gör Paows givar och helfigursfilmerna (M, `data/order-methods.json`).
+1. **Två modeller gör nästan allt.** WAN 3 har gjort Paows ingång, vilor, utgång och tidiga givar; Kling 4 gör Paows
+   givar och helfigursfilmerna (M, `data/order-methods.json`).
 2. **De lagrar färgerna olika.** Kling 4 skriver för BT.709 och märker filen så; WAN 3 märker inget, och dess värden
    ligger närmast första bilden lästa som BT.601. Efterarbetet tar bort märkningen och behåller värdena, så banken har
    två familjer i omärkta filer (M). Skärmens gröna är lika i båda, eftersom efterarbetet sätter det på ankarets nivå
@@ -36,8 +36,8 @@ Pris ur `data/order-policy.json` om inget annat sägs. Tid = från LAGD till KLA
 
 | Modell (id) | Används i dag till | Pris | Tid, median (spann, antal) | Filmer i banken |
 |---|---|---|---|---|
-| WAN 3 (`wan3`) | Ingång 1 → 2.1 (`gäller`); vila, utgång och hålkortets vändning (`prov`) | 20 per s i 1080p, 5 i 480p | 3,9 min (2,1–11,9; 43) via Beställ; 2,6 min (1,4–8,8; 78) via API | Pamela 111, Paow 22 |
-| Kling 4 (`kling-4`) | Paows givar från A2.3 med dockans film som referens, returerna till vila, fria givar; helfigur | se Vinklar, 3D och Runways lista; 2026-11-13 kostade 7 s 149, med referensfilm 149–189 | 5,9 min (4,0–13,9; 41) | Paow 26, Pamela 2 |
+| WAN 3 (`wan3`) | Ingång 1 → 2.1 (`gäller`); vila, utgång och hålkortets vändning (`prov`) | 20 per s i 1080p, 5 i 480p | 3,9 min (2,1–11,9; 43) via Beställ; 2,6 min (1,4–8,8; 78) via API | Paow 22 |
+| Kling 4 (`kling-4`) | Paows givar från A2.3 med dockans film som referens, returerna till vila, fria givar; helfigur | se Vinklar, 3D och Runways lista; 2026-11-13 kostade 7 s 149, med referensfilm 149–189 | 5,9 min (4,0–13,9; 41) | Paow 26 |
 | MuseTalk på en WAN 3-vila | Talfilmerna ([TAL](TAL.md)) | ElevenLabs per tecken; renderingen lokal | – | Paow 50 |
 | Nano Banana Pro | Stillbilder: keystone, ankare 1 och 2.1 | 40 per 4K-bild, 20 per 2K | 1,8 min (0,8–3,7; 8) | – |
 
@@ -48,14 +48,12 @@ Prövade och inte att göra om:
   baklänges kopia är Paows nödlösning för utgången.
 - **Kling 3.0 Pro**: kontrollprovet 2026-11-10, underkänt för vändningen.
 - **Kling 3.0 Motion Control** (handboken §3.8): tar ingen sista bild; kortet genomskinligt grönt, skons fönster tomt.
-- **Aleph 2 som rättare** (handboken §5): Pamelas ansikte kom tillbaka och skons fönster tömdes; den rättade kopian är
-  underkänd. Som vinkelbytare, se Vinklar, 3D och Runways lista.
+- **Aleph 2 som rättare** (handboken §5): ansiktet byttes och skons fönster tömdes; den rättade kopian är underkänd.
+  Som vinkelbytare, se Vinklar, 3D och Runways lista.
 - **Seedance 2.5**: inget i banken; uppgiftens svar ger en förhandsfil, den fulla filen kommer ur listan över senaste
   genereringar (handboken §4). `wan3_prime` och `seedance2` är övervägda men aldrig beställda.
 
 API-vägen drar developer-projektets krediter, Beställ (Runways MCP-server) appkontots (DRIFT, "Anslutningar och miljö").
-Pamelas filmer, också de fyra utan post från omgång 15, ligger sedan 2026-11-23 i arkivet
-`D:/dealer-archive/pamela-2026-11-23/` (DRIFT).
 
 ## Vinklar, 3D och Runways lista
 
@@ -106,7 +104,7 @@ Leveransen ur `fetched.json`, banken ur ffprobe på varje `source.mp4`, efterarb
 | Kortet landat, medel (M) | 1,4 px från planen (10) | 0,6 px (14) | – |
 
 - **WAN 3** (M): de två sista rutorna mörknar i varje film, och utan efterarbete glider det gröna (cirka 11 nivåer på
-  6 s; i Pamelas filmer, som inte har efterarbetet, 10 nivåer under bilden i sista rutan). Koden spelar därför vila,
+  6 s). Koden spelar därför vila,
   vändning och helfigur från ruta 3 till tre rutor före slutet (`IDLE_RULE` i `src/clip-graph.ts`).
 - **Kling 4** (M): den enda modellen i vårt verktyg som tar första och sista bild tillsammans med en referensfilm, och
   den kopierar referensens rörelse nästan bildpunkt för bildpunkt (handboken §1). En mellanbild läses som referensbild,
@@ -191,17 +189,14 @@ gränserna utom där det står.
 | Hopp och scenbyte | granskaren ruta för ruta | Kling 4 i 30 s hoppar mellan scener |
 | Posten mot filmen | byte, SHA-256, storlek, takt och rutor mot `source` i posten | `source.model` kan vara fel (nästa avsnitt) |
 
-## Var modellen står, och felen där
+## Var modellen står
 
 | Ställe | Fält | Vem skriver | Vem läser |
 |---|---|---|---|
 | Ordern `data/orders/<id>.json` | `generation.model` | Beställ | `tools/film-after.ts` (väljer efterarbetet), `tools/register-order.ts`, Protokoll, `tools/verdicts-per-method.ts` |
 | Posten `motions/<klipp>.json` | `source.model` | `tools/register-order.ts` ur ordern; äldre poster för hand | Spelet: `filmModel` i `src/game-film.ts` skickar det med varje filmdel till 3D-scenen; en talfilm får sin vilas |
-| Kvittot `assets/motions/<klipp>/generation.json` | `model`, `orderedAs` | `tools/register-order.ts`; äldre av arkivet | labbservern läser läget, krediterna och filmens mått (`clipBank` i `tools/preview.ts`), inte modellen; läs `orderedAs` för Pamelas MCP-filmer |
+| Kvittot `assets/motions/<klipp>/generation.json` | `model`, `orderedAs` | `tools/register-order.ts`; äldre av arkivet | labbservern läser läget, krediterna och filmens mått (`clipBank` i `tools/preview.ts`), inte modellen |
 | Jobbfilen `data/clip-jobs.json` | `model` på jobb och utsnitt | `tools/register-order.ts`, `tools/speech.ts` | `buildGraph` bär det i tagningens `job.model`; ett utsnitt utan modell heter `utsnitt` |
-
-Känt fel (M), i arkivet: kvittona för `pamela-table-arrive-wide-kling-01`, `pamela-table-leave-wide-kling-01` och
-`pamela-p6-c1-plan-deal-03` säger `wan3`, fast filmerna är Kling 4 (24 rutor i sekunden, `orderedAs: "kling-4, …"`).
 
 ## Före en ny modell
 
@@ -220,10 +215,10 @@ Känt fel (M), i arkivet: kvittona för `pamela-table-arrive-wide-kling-01`, `pa
 - Om efterarbetet ska läsa Kling 4 med BT.709 för nya filmer, och om bankens filer ska märkas (Ljuset vid en skarv).
 - Varför WAN 3 ljusnar under en film. Efterarbetet lyfter henne bara efter första rutan.
 - Hur bytet mellan 30 och 24 bilder i sekunden ser ut för ögat i en runda: sett av granskaren, inte mätt.
-- Talfilmernas färg mot vilan: inte mätt (scenbanan: som WAN 3). Pamelas skarvar: inte mätta (ändarna har olika pose).
+- Talfilmernas färg mot vilan: inte mätt (scenbanan: som WAN 3).
 - Seedance 2.5 och Kling 4 i 720p är inte prövade i bankens format.
 - Mätrutorna ligger fast i bilden; under filmen rör hon sig, så spannet i Y är inte bara ljus. Metodens fel är cirka 2
-  nivåer; skillnaden mellan familjerna är större. Tiderna är övre gränser; kvittona för Pamelas MCP-filmer saknar tider.
+  nivåer; skillnaden mellan familjerna är större. Tiderna är övre gränser.
 
 ## Källor och skript
 
@@ -233,6 +228,6 @@ Känt fel (M), i arkivet: kvittona för `pamela-table-arrive-wide-kling-01`, `pa
 - Jakobs domar per metod: `node tools/verdicts-per-method.ts paow`; protokollet: `node tools/order-ledger.ts`.
 - Skripten som mätte talen ligger utanför repot (bara läsning, högst fyra FFmpeg åt gången):
   `D:/dealer-scratch/tmp/huvudagent11/modeller/` (`integrity.mjs`, `count-films.mjs`, `orders.mjs`, `ends.mjs`,
-  `steps.mjs`, `pamela-ends.mjs`, `notes.mjs`, `verdicts.mjs`), huvudagentens `D:/dealer-scratch/tmp/huvudagent11/ljus/`
+  `steps.mjs`, `notes.mjs`, `verdicts.mjs`), huvudagentens `D:/dealer-scratch/tmp/huvudagent11/ljus/`
   (`LASMIG.md`, `skarv.mjs`, `steg.mjs`), scenbanans `D:/dealer-scratch/tmp/levande-objekt/ljus/` (`familjer.mjs`,
   `mot-ankare.mjs`) och filmgranskarens `D:/dealer-scratch/tmp/huvudagent11/chefsfilm/granskning-1/`.

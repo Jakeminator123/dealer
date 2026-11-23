@@ -72,7 +72,7 @@ Gallringen (Jakob 2026-11-21: "kan du inte bara fixa upp något bra ang detta?")
 och antalet hårda länkar. `npm run gallra -- --kor` utför nivån **säkert** och inget annat: hans egna Inte bra som
 inget pekar på, det som bevisligen går att göra igen, och byteidentiska filer som blir en fil. `--kor --grupp <namn>`
 utför EN grupp ur **förslag**, och bara på hans ord om den gruppen. Nivån **blob** är bara förberedd: det som kan
-ligga enbart på den nya Blobben när den finns. Spärren (Primär, Godkänd, Variant, det spelet har, roller, V6,
+ligga enbart på den nya Blobben när den finns. Spärren (Primär, Godkänd, Variant, det spelet har, roller,
 original, referenser, noir-samlingen, filmen före spelet, det Beslut eller en öppen order nämner, och allt yngre än
 tre dygn) kontrolleras för varje fil precis innan den rörs. Det som går flyttas först till
 `D:/dealer-scratch/papperskorg/<datum>/` och ligger där i 14 dygn (`--tom-korgen` tömmer det äldre); planen gäller
@@ -91,15 +91,15 @@ kvar. Bygget av v4 läser ljud och typsnitt ur slaskdiskens `tmp/trailer-2/`: de
 
 `media-audit.ts` visar användning men är inte ensam ett raderingstillstånd: exempelvis en gammal Prov-mapp
 kan fortfarande visas och ha anteckningar. Kontrollera spelbank, scen, Material, Prov/Beslut, användardomar,
-beställningar, referenser och pågående arbete. Det som står kvar av V6 (filmen och 18 rutor i `assets/reference/`,
-duken och plåten; resten är arkiverat, DRIFT "D: och städning") och nu använda original skyddas. Spara skälet och exakta sökvägar.
+beställningar, referenser och pågående arbete. Referenserna (`data/manifest.json`), duken och plåten i
+`assets/scene/` och nu använda original skyddas; det arkiverade står i DRIFT, "D: och städning". Spara skälet och exakta sökvägar.
 Unikt material som verifierats oanvänt får raderas enligt Jakobs besked 2026-11-19; arkivera inte allt för att det
 en gång kostade krediter. Registren ska samtidigt beskriva att materialet tagits bort, så inga aktiva länkar bryts.
 
 Byteidentiska mediefiler i `assets/` kan dela en och samma fil på disken genom hårda länkar (Jakob 2026-11-20:
 "radera" om dubbletterna; båda sökvägarna finns kvar, så inget register ändras). Skriv därför aldrig om en färdig
 mediefil på plats: en ny version får ett nytt namn, eller skrivs till en tillfällig fil som sedan byter namn, annars
-ändras tvillingen med. Talets filer (`assets/speech/`), V6, originalen och referenserna delar inte fil med något.
+ändras tvillingen med. Talets filer (`assets/speech/`), originalen och referenserna delar inte fil med något.
 En förkastad tagning vars film är raderad har en `RADERAD.txt` i sin mapp; registret i `motions/` står kvar.
 
 För gamla dubbla arbetskopior finns `node tools/media-dedupe.ts --source <absolut slaskmapp>`.

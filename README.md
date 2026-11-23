@@ -3,8 +3,8 @@
 Självständig arbetsyta för en filmad dealer till Jakobs blackjackspel, frikopplad från Scoutgaming i nuläget (Jakob
 2026-11-23): två kort till sju spelare och en dealer, med trovärdig
 utdelning. Rörelserna är korta filmklipp mellan fasta ankare (vila, redo, kortets plats) i en klippbank; en runda är en
-väg genom klippen, och samma rundor spelas i labbet, i 3D-scenen och i spelet. V6, Pamelas referensfilm, är arkiverad på
-Jakobs ord (2026-11-20); filmen och 18 rutor står kvar. Scoutgaming äger regler, slump och kortvärden.
+väg genom klippen, och samma rundor spelas i labbet, i 3D-scenen och i spelet. Scoutgaming äger regler, slump och
+kortvärden.
 
 Mapparna:
 
@@ -114,21 +114,13 @@ Dokumenten länkar till dessa i stället för att föra egna statusregister. Med
   `npm run hooks:install` aktiverar lokal pre-push; `npm run check` kontrollerar commitintervallet före push/PR. Se
   [rutinen](docs/DRIFT.md#git-och-kontroller).
 - `npm run verify` kontrollerar de registrerade lokala filerna mot sin hash i `data/manifest.json`; det som är
-  arkiverat (V6:s råmaterial och renderare) hoppas över.
+  arkiverat hoppas över.
 
-## Verifierad bas och gräns
-
-Enligt reproduktionskvittot återrenderades hela V6 lokalt: 926 rutor, 30 fps, 1762×1174 och 1080×1920. Båda
-MP4-filerna var byteidentiska med originalen; 18 kontrollrutor var pixelidentiska enligt bildrutekvittot, också efter
-renderinläsningsrättningarna (kvittona ligger i V6-arkivet under `evidence/` sedan 2026-11-23). Det verifierade V6,
-inte utdelning till alla åtta platser. På Jakobs
-ja (Beslut `v6-arkiv`, 2026-11-20) ligger råmaterialet, renderaren och återskapningen sedan 2026-11-23 i
-`D:/dealer-archive/v6-2026-11-23`, med hashlista och en README om hur V6 återskapas därifrån; filmen och 18
-rutor i `assets/reference/`, duken och plåten står kvar. Kända begränsningar för fingermask, rörelsekanter och källskarvar kvarstår.
+## Gräns
 
 `src/` och `tools/` kör utan det förra projektet (snyggare-dealer, arkivet på D:). `materials/` är separata kort- och
 markerprov; TS-materialkällorna har inte återbyggts till de frysta JS-bundlarna. Labbet och 3D-scenen läser
-kortmaterialets TS-källa direkt; det ändrar inte V6-filmen eller de historiska bundlarna.
+kortmaterialets TS-källa direkt; det ändrar inte de historiska bundlarna.
 
 Publikt källrepo: [Jakeminator123/dealer](https://github.com/Jakeminator123/dealer), utan media och hemligheter. Vad som
 kräver Jakobs uttryckliga ord står i [AGENTS](AGENTS.md), "Det som skyddar Jakob". Den äldre publika sidan
@@ -138,8 +130,7 @@ kräver Jakobs uttryckliga ord står i [AGENTS](AGENTS.md), "Det som skyddar Jak
 ## Historiskt underlag
 
 Kvittona som gäller i dag ligger i `evidence/`, ett per fråga, och det som följer av dem står i SYSTEM, "Återbruk och
-införande"; beslut per film står i `motions/`. Kvittona om Pamelas bank och V6 togs ur projektet med henne 2026-11-23
-(Git-historiken har dem, V6:s i V6-arkivet). Runway-underlaget från 10 november (promptar, start- och slutbilder,
+införande"; beslut per film står i `motions/`. Runway-underlaget från 10 november (promptar, start- och slutbilder,
 resultat) är Prov-mappen `runway-underlaget-10-nov`. Kvitton som inget annat dokument pekar på: placeringslabbets
 grundkontroller ([placement-lab](evidence/placement-lab.json)), vy- och nodkontroller
 ([plane-and-nodemap](evidence/plane-and-nodemap.json)), den externa granskningen

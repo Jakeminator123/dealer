@@ -38,8 +38,7 @@ behöver veta och namnger högst tre filer eller avsnitt att läsa.
 
 ## Var kunskap står
 
-- Startsidan `HANDOFF.md` (läget, nästa steg, ägare, pekare) är högst 120 rader och 900 ord; `tools/handoff.test.ts`
-  håller taket. Ersätt det som inte längre gäller; ingen dagbok per körning.
+- Startsidan `HANDOFF.md` är högst 120 rader och 900 ord. Ersätt det som inte längre gäller; ingen dagbok per körning.
 - Läget per bana: `docs/lage/<bana>.md` i fast form, högst 60 rader och 800 ord. Jakobs gällande besked, högst två rader per besked:
   `docs/BESKED.md` (ett ändrat besked skrivs om; Git har det gamla). Kända brister: `docs/BRISTER.md`.
 - Ett prov (film, bild) som väntar på Jakobs dom är ett kort i Beslut (`data/decisions.json`). Andra frågor ställs i
@@ -68,8 +67,8 @@ behöver veta och namnger högst tre filer eller avsnitt att läsa.
   huvudagenten och en oberoende granskare döma i hans ställe (`node tools/review-put.ts`): domen ser aldrig ut som
   hans, den väntar inte i hans kö (Jakob 2026-11-13: "Med andra ord vill jag inte se en sån här lista när jag är
   tillbaka!"), den går att hitta i Granska under Dömda åt dig, och hans eget beslut ersätter den.
-- Bevara original och referenser (V6 är arkiverad, 2026-11-20); ändra aldrig en referenshash för att dölja en
-  avvikelse.
+- Bevara original och referenser: de arkiveras med hash och raderas aldrig (V6 2026-11-20 och Pamela 2026-11-23
+  ligger i `D:/dealer-archive/`); ändra aldrig en referenshash för att dölja en avvikelse.
 - Det tidigare projektet (arkivet snyggare-dealer) och Scoutgaming är bara läsreferenser: inga länkar, junctions eller
   beroenden dit, och en fil som hämtas därifrån registreras i `data/manifest.json`.
 - Spelregler, slump och kortvärden flyttas inte från Scoutgaming. Undantaget är den fristående spelmotorn i `game/`

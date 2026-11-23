@@ -32,8 +32,7 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   `geometri=kontrakt` och dess grenar finns kvar för historiska jämförelser. Sett 2026-11-18 och inte omprövat: på
   telefon ringen (25 px), insatsbrickan över markerna och tom nedre tredjedel (`FRAMING`); kortsättet `film` står på
   kontraktets kort. Stänger: de sakerna, och borttagningen som SYSTEM räknar upp under "Ritade kort", om vägen tillbaka
-  inte behövs. Med flit kvar på den gamla regeln: `tools/build-anchor.ts`, `tools/card-coverage.ts` och
-  `tools/placement-backdrop.ts`.
+  inte behövs. Med flit kvar på den gamla regeln: `tools/card-coverage.ts` och `tools/placement-backdrop.ts`.
 - **Dealerns två kort överlappar i kortplanen** med 13 px (D.C1 och D.C2 ligger 62 px isär, ett kort är 75 px brett).
   Platserna är Jakobs. Stänger: hans val i Kortplan.
 - **Kortet i nypet (ankare 2.1) är 8–13 % för långt;** i skons fönster stämmer det (0,94, 3D-banans mätning i
@@ -111,7 +110,7 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   returen görs om från den nya bilden.
 - **Skuggan under armarna** sitter i grundbilden och syns i varje film av Paow; keystonebilderna med tatuerade händer
   saknar den. Stänger: nya ankare och filmer ur dem.
-- **Paow ser lite smal ut** (Pamelas kroppsbredd under ett 8,7 % högre huvud). Stänger: ingen väg vald.
+- **Paow ser lite smal ut** (huvudet är 8,7 % högre, men kroppen är inte bredare). Stänger: ingen väg vald.
 - **Banken räcker inte till en hel runda med egna filmer:** spelet använder nödlösningar (ersättare, utgången baklänges;
   `src/game-director.ts`), och nio returer från en plats till vila saknas (`node tools/produce.ts paow`). Stänger:
   filmerna beställs.
@@ -222,5 +221,5 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   ytterplatserna, och Material kallar ankare som inte publiceras för saknade. Äldre kontrollskript i
   `huvudagent11/look/` använder ett ersatt lösenord och ska inte köras. Stänger: telefonprov, och en tydlig skillnad
   mellan opublicerat och saknat material.
-- **Paows ankare 1 visas som "avviker" i Material:** `paow-vila-tatuerad` mäts mot Pamelas händer i
-  `data/dealer-standard.json`. Stänger: ett mått per dealer.
+- **Paows ankare 1 visas som "avviker" i Material:** `paow-vila-tatuerad` mäts mot händerna i
+  `data/dealer-standard.json`, som inte är mätta på henne. Stänger: ett mått per dealer.

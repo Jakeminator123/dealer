@@ -119,8 +119,6 @@ Sökvägarna gäller under `D:/dealer-scratch/tmp/`. Bilder och filmer som anvä
 - `.env.local` laddas inte automatiskt: kör verktyget med `node --env-file=.env.local <verktyg.ts>`.
   `DEALER_SCRATCH_ROOT` och `DEALER_REMOTE_GENERATION_ENABLED` läses inte av någon kod; spärren är `enabled` i
   `data/order-policy.json`.
-- Pamela är arkiverad (2026-11-23): hennes filmer och bilder ligger i `D:/dealer-archive/pamela-2026-11-23/` (README,
-  liggare och SHA256SUMS), hennes register, kvitton och äldre banker i Git-historiken.
 - Sökning i Codex på Windows: lägg mappen för det `rg.exe` som matchar `*\OpenAI\Codex\bin\*\rg.exe` först i
   processens PATH, annars `Select-String`; ändra inte bestående PATH.
 
@@ -152,8 +150,8 @@ Det som gäller själva beställningen står i handboken och beställningsagente
   målas i bakgrundens grönt efteråt; en verklig stående ruta som slutbild låser hennes storlek, och helkroppsfilmen har
   egen ruta (`motion.frame`, SYSTEM).
 - **Ansiktsuttryck** går inte med text, men med grundrutan där bara ansiktet bytts, spelad dit och baklänges tillbaka.
-- **Båda händerna** går att få om slutbilden inte låser vilken hand som lade kortet (`pamela-p2-c1-handover-01`); i
-  givfilmerna har texten hittills sagt att den andra handen vilar.
+- **Båda händerna** går att få om slutbilden inte låser vilken hand som lade kortet; i givfilmerna har texten hittills
+  sagt att den andra handen vilar.
 - **Föremål** som inte finns i första bilden växer fram ur filten; en mugg måste finnas i bilden från början.
 - **Kostnad för en hel dealer:** skattat cirka 5 000 krediter för en uppsättning med ett utdelningssätt (16 kort och
   omtagningar); Paow hade 2026-11-13 kostat cirka 5 400 utan att vara färdig (räknat ur kvittona).
@@ -271,11 +269,13 @@ delade tjänster. Rutinen och radering av verifierat oanvänt material: [lokal a
   `planCardQuad` och ett viloankare mot `data/dealer-standard.json`; `--write` sparar svaret i `data/media-fit.json`,
   som Material visar. Kör om när planen, linsen eller ett ankare ändras. Hans tillstånd ändras aldrig av mätningen.
 - **Arkiven:** det oanvända 2026-11-17 i `D:/dealer-archive/dealer-ej-anvant-2026-11-17/` (skriptet som tar tillbaka
-  allt, `aterstall.mjs`, i `D:/dealer-scratch/tmp/stadning/inventering-2026-11-17/`); V6 i
-  `D:/dealer-archive/v6-2026-11-23/` (`SHA256SUMS`, `arkiv.json` och en README om hur V6 återskapas; en post i
-  `data/manifest.json` med `archived` pekar dit, och `npm run verify` hoppar över den); det tidigare projektet i
+  allt, `aterstall.mjs`, i `D:/dealer-scratch/tmp/stadning/inventering-2026-11-17/`); det tidigare projektet i
   `D:/dealer-archive/snyggare-dealer` ([arkivkvittot](../evidence/archive-move.json); inventeringar och
   raderingskvitton under `D:/dealer-archive/receipts/20261110-snyggare-dealer`), utan länkar från dealer.
+  Pamela är arkiverad (2026-11-23): `D:/dealer-archive/pamela-2026-11-23/` (README, liggare och SHA256SUMS); hennes
+  register och kvitton finns i Git-historiken. Bredvid ligger V6 i `D:/dealer-archive/v6-2026-11-23/` (`SHA256SUMS`,
+  liggarna `arkiv*.json` och en README om hur V6 återskapas). Poster i `data/manifest.json` med `archived` pekar till
+  arkiven, och `npm run verify` hoppar över dem.
 - **Före en arkivflytt:** registrera käll- och målrot, ägare, arbetsträd, ospårade filer, länkmål och processer; stoppa
   bara verifierat ägda tjänster via kontrollkanal; kopiera till ett nytt mål utan att följa junctions; jämför antal,
   byte och SHA-256 och läs tillbaka. Källan raderas först efter ett separat godkännande, och ett befintligt delarkiv

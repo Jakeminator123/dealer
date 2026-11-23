@@ -139,7 +139,7 @@ Märk varje påstående **[M]** mätt eller **[S]** sett med ögat.
    - **Handen stannar vriden:** är handen kvar vriden tills kortet ligger, eller vrids den tillbaka innan kortet är
      lagt? Ange rutan där den vrids tillbaka; det fäller vändningen.
    - **Kanten:** vilken kant kortet vänds kring (`tools/flip-axis.ts`: KORTSIDAN, LÅNGSIDAN eller OKLART, med rutorna).
-     Båda sätten att vrida är giltiga: Pamelas nyckelvridning, där hand och kort vrids tillsammans kring långsidan
+     Båda sätten att vrida är giltiga: nyckelvridningen, där hand och kort vrids tillsammans kring långsidan
      (handboken 3.3, vändning B), och vridningen där handflatan går från nedåt till uppåt; säg vilket filmen gör. Har
      beställningen `flipAxis` LONG_EDGE eller AT_PLACE, säg om filmen följer det.
    - **Gult till blått, rätt sida upp:** kortet vänds en gång genom kantläget (minst en kantruta), från gult till blått,
