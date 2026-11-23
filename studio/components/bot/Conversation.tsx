@@ -16,7 +16,7 @@ import { contextLine } from "./describe";
 import { citedNumbers, parseAnswer, plainAnswer } from "./markdown";
 import type { BotLine, DuLine, InfoLine, Line } from "./thread";
 
-export const SUGGESTIONS = ["Vad är läget i banken?", "Vad väntar på Jakob?", "Hur hänger det här ihop med Scoutgaming?", "Vad är ankare 2.1?"];
+export const SUGGESTIONS = ["Vad är läget i banken?", "Vad väntar på Jakob?", "Vilka vyer finns i studion?", "Vad är ankare 2.1?"];
 
 function Empty({ onAsk }: { onAsk: (q: string) => void }) {
   return (

@@ -1,5 +1,5 @@
-// Builds the bot's knowledge: the dealer's documents, the clip bank as it is now (buildGraph), the proofs, the studio's views,
-// the last thirty commit subjects and Scoutgaming's named documents (read only), cleaned and split by tools/knowledge.ts.
+// Builds the bot's knowledge: the dealer's documents, the clip bank as it is now (buildGraph), the proofs, the studio's views
+// and the last thirty commit subjects, cleaned and split by tools/knowledge.ts. Everything it reads lies in this repo.
 // tools/build-studio-snapshot.ts calls buildKnowledge with the frozen bank and writes the result beside the bot's function
 // only (functions/api/bot.func/bot-knowledge.js), never as a static file. On its own it reads the bank from the repo's files
 // as the lab server does, and writes .runtime/bot-knowledge/knowledge.json to look at:
@@ -15,32 +15,20 @@ import path from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import {buildGraph, type BankData, type Graph} from '../src/clip-graph.ts';
 import {readRelease, type Proof, type Release} from './studio-freeze.ts';
-import {DEALER_DOCS, OWN_VIEWS, SCOUT_CORE, SCOUT_DROP, assemble, bankSections, cleanDoc, commitSection, prioFrom, proofSections, scanLeaks, slug, viewSection, wordSections, type Built, type Doc, type Removed, type ViewText} from './knowledge.ts';
+import {DEALER_DOCS, OWN_VIEWS, assemble, bankSections, cleanDoc, commitSection, prioFrom, proofSections, scanLeaks, viewSection, wordSections, type Built, type Doc, type Removed, type ViewText} from './knowledge.ts';
 import {Index, type Knowledge} from '../cloud/studio/bot-search.ts';
 
 const here = path.resolve(fileURLToPath(new URL('../', import.meta.url)));
 
-/** Scoutgaming's documents the bot reads, by their real names (and only these: no environment, operations or incidents). */
-export const SCOUT_FILES: {kalla: string; file: string}[] = [
-  {kalla: 'Scoutgaming › README', file: 'README.md'},
-  {kalla: 'Scoutgaming › Dokument', file: 'docs/README.md'},
-  {kalla: 'Scoutgaming › Ordlista', file: 'docs/TERMINOLOGI.md'},
-  {kalla: 'Scoutgaming › Blackjack', file: 'docs/games/blackjack/README.md'},
-  {kalla: 'Scoutgaming › Dealerbank', file: 'docs/games/blackjack/DEALERBANK.md'},
-  {kalla: 'Scoutgaming › Signaler', file: 'docs/games/SIGNALER.md'},
-  {kalla: 'Scoutgaming › Nästa agent', file: 'docs/NEXT-AGENT.md'},
-];
 const DEALER_FILES: {kalla: keyof typeof DEALER_DOCS; file: string; optional?: boolean}[] = [
   {kalla: 'HANDOFF', file: 'HANDOFF.md'}, {kalla: 'README', file: 'README.md'}, {kalla: 'SYSTEM', file: 'docs/SYSTEM.md'},
   {kalla: 'DRIFT', file: 'docs/DRIFT.md'},
 ];
-// Core order: HANDOFF first, then the bank now, the views, the bank's table, the proofs, README, the commits,
-// Scoutgaming, SYSTEM. What does not fit in the core's budget is still searched. (The old checklist, CHECKLISTA.md, is no
-// source since 2026-11-17: nobody wrote it after 2026-11-13, and the bot answered from it.)
+// Core order: HANDOFF first, then the bank now, the views, the bank's table, the proofs, README, the commits, SYSTEM.
+// What does not fit in the core's budget is still searched. (The old checklist, CHECKLISTA.md, is no source since
+// 2026-11-17: nobody wrote it after 2026-11-13, and the bot answered from it. Scoutgaming's documents are no source since
+// 2026-11-23: the project stands free of Scoutgaming for now, on Jakob's word.)
 const BASE: Record<string, number> = {HANDOFF: 0, README: 6, SYSTEM: 16, DRIFT: 20};
-
-/** Scoutgaming's checkout: beside this project's parent folder, or DEALER_SCOUT_ROOT. */
-export const scoutRoot = (root: string) => process.env.DEALER_SCOUT_ROOT || path.resolve(root, '..', '..', 'scoutgaming');
 
 /** The cloud/studio files that make up the bot's function (as <published name>: <source>); bot-knowledge.js is written. */
 export const BOT_FUNCTION_FILES: Record<string, string> = Object.fromEntries([
@@ -83,7 +71,7 @@ export async function buildKnowledge(input: {root: string; release: Release; gra
     const file = path.join(root, d.file);
     if (!existsSync(file)) { if (d.optional) { saknas.push(d.file); continue; } throw Error(`Källan saknas: ${d.file}`); }
     const rules = DEALER_DOCS[d.kalla];
-    add({kalla: d.kalla, id: d.kalla.toLowerCase(), text: await readFile(file, 'utf8'), scout: false, dropHeadings: rules.drop ?? undefined, prio: prioFrom(rules.core, BASE[d.kalla])});
+    add({kalla: d.kalla, id: d.kalla.toLowerCase(), text: await readFile(file, 'utf8'), dropHeadings: rules.drop ?? undefined, prio: prioFrom(rules.core, BASE[d.kalla])});
   }
 
   const bank = bankSections(input.graph, release, removed);
@@ -94,15 +82,6 @@ export async function buildKnowledge(input: {root: string; release: Release; gra
   const subjects = execFileSync('git', ['log', '-30', '--format=%s'], {cwd: root, encoding: 'utf8'}).split('\n').map(s => s.trim()).filter(Boolean);
   sections.push(commitSection(subjects, release, removed));
   kallor.push({kalla: 'Banken (buildGraph)', tecken: bank.reduce((n, s) => n + s.text.length, 0)}, {kalla: 'Prov', tecken: 0}, {kalla: 'Studions vyer', tecken: 0}, {kalla: 'Git', tecken: subjects.join('\n').length});
-
-  const scout = scoutRoot(root);
-  if (!existsSync(path.join(scout, 'docs'))) throw Error(`Scoutgaming finns inte på ${scout}: sätt DEALER_SCOUT_ROOT.`);
-  for (const [i, s] of SCOUT_FILES.entries()) {
-    const file = path.join(scout, ...s.file.split('/'));
-    if (!existsSync(file)) { saknas.push(`scoutgaming/${s.file}`); continue; }
-    add({kalla: s.kalla, id: `scout-${slug(s.kalla.split('›').at(-1)!)}`, text: await readFile(file, 'utf8'), scout: true,
-      dropHeadings: SCOUT_DROP, dropIntro: s.file === 'docs/NEXT-AGENT.md', prio: prioFrom(SCOUT_CORE[s.kalla] ?? [], 8 + i)});
-  }
 
   const assembled = assemble(sections, kallor.filter(k => k.tecken > 0 || /Prov|vyer/.test(k.kalla)).map(k => k.kalla), input.byggd ?? new Date().toISOString());
   const {karnaTokens, avsnittTokens, ...knowledge} = assembled;

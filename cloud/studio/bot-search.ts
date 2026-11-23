@@ -6,7 +6,7 @@ export type Section = {id: string; titel: string; text: string};
 export type Knowledge = {
   schemaVersion: 1;
   byggd: string;
-  /** The sources it was made from, by name ("HANDOFF", "Scoutgaming › Ordlista"), for the rules. */
+  /** The sources it was made from, by name ("HANDOFF", "SYSTEM"), for the rules. */
   kallor: string[];
   /** Goes with every question, in this order, so the provider can cache it. */
   karna: Section[];

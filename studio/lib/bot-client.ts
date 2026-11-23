@@ -202,8 +202,6 @@ const K = {
   lage: { id: "handoff-lage", titel: "HANDOFF › Läget" },
   bank: { id: "bank-steg", titel: "Klippbanken › Tagningarna per steg" },
   primara: { id: "guide-karta", titel: "Studion › Karta" },
-  scout: { id: "readme-mal", titel: "README › Slutmålet Scoutgaming" },
-  drift: { id: "drift-regler", titel: "DRIFT › Vad som inte flyttas från Scout" },
   ord: { id: "guide-ord", titel: "Studion › Jakobs ord för ankarna" },
   vy: { id: "guide-vy", titel: "Studion › Vyerna" },
 };
@@ -236,13 +234,15 @@ function fakeText(question: string, vy: Vy | null): FakeAnswer {
         "2. **Nya tagningar i Granska.** De som inte har något omdöme ligger i kön där.\n" +
         "3. **Dealerns andra kort.** Filmen dit saknas och behöver göras om [1].",
     };
-  if (/scout/.test(q))
+  if (/vy|studion/.test(q))
     return {
-      kallor: [K.scout, K.drift],
+      kallor: [K.vy, K.primara],
       text:
-        "Scoutgaming är slutmålet: dealern ska spelas upp där, som film eller i 3D-scenen [1].\n\n" +
-        "Studion och labbet är verkstaden. Spelreglerna, slumpen och kortens värden stannar i Scout och flyttas aldrig hit [2]. " +
-        "Det som byggs här är filmerna och hur de sätts ihop till en runda; när de håller måttet förs de över i ett eget, uttryckligt steg.",
+        "Studion har fyra vyer [1]:\n\n" +
+        "- **Bordet:** kortplanen, scenen, råfilmen och efterarbetet.\n" +
+        "- **Karta:** rundans steg och filmen som spelas i varje [2].\n" +
+        "- **Granska:** nya tagningar och prov som väntar på ett omdöme.\n" +
+        "- **Jämför:** två tagningar bredvid varandra.",
     };
   if (/ankare|2\.1|a2/.test(q))
     return {

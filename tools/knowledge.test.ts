@@ -53,7 +53,7 @@ const DOC = [
 ].join('\n');
 
 test('the cleaning keeps the facts and removes costs, blocked names, trailers, passwords, ids, keys, addresses and paths', () => {
-  const {sections, removed} = cleanDoc({kalla: 'HANDOFF', id: 'handoff', text: DOC, scout: false, dropHeadings: /^Före avslut av en session$/, prio: prioFrom(['Läget i banken'], 0)}, release);
+  const {sections, removed} = cleanDoc({kalla: 'HANDOFF', id: 'handoff', text: DOC, dropHeadings: /^Före avslut av en session$/, prio: prioFrom(['Läget i banken'], 0)}, release);
   const all = sections.map(s => `${s.titel}\n${s.text}`).join('\n');
   for (const kept of ['Pamela är dealern.', '33 huvudfilmer.', 'Tjugo är godkända rakt av.', 'Svaren är korta.', 'Pamela är kvar.', 'Studion visar filmerna.', '| P1 | Godkänd |', 'Scout finns på https://www.scoutgaming.tech/', 'nodkartan (/studio/karta/?kant=READY%3EP4.C1) visar linjerna']) assert.ok(all.includes(kept), `kept: ${kept}`);
   for (const gone of ['someone', 'dealer-scratch', 'Krediter', 'intecknat', 'saldo', '18 173', '0,2 kr', 'kostar', 'Göran', 'Reklamfilm', 'ordet" står', 'Lösenord', 'prj_', 'store_', '67037521', 'OPENAI_API_KEY', 'vercel.app', '127.0.0.1', 'Kevin', 'credits', 'node tools/secret.ts', 'Astrid', 'spärrad person', 'Rutiner för agenter']) assert.ok(!all.includes(gone), `gone: ${gone}`);
@@ -81,21 +81,21 @@ test('every form of a path of this machine becomes the token, and the words arou
   ];
   for (const [given, wanted] of cases) {
     const removed: Removed = {};
-    assert.equal(cleanLine(given, release, false, removed), wanted, given);
+    assert.equal(cleanLine(given, release, removed), wanted, given);
     // A link's target goes with the link's own rule; every other path is counted.
     if (!given.includes('](')) assert.ok((removed['sökväg ersatt'] ?? 0) > 0, `counted: ${given}`);
   }
   // What only looks like a path stays as it was.
   const plain = 'Se /studio/karta/ och A/B, kl. 21:40, 1/2 och https://www.scoutgaming.tech/x i Spela.';
-  assert.equal(cleanLine(plain, release, false, {}), plain);
+  assert.equal(cleanLine(plain, release, {}), plain);
   // A heading that names a path keeps its section, with the token in its title.
-  const {sections} = cleanDoc({kalla: 'DRIFT', id: 'drift', text: '# D\n\n## Kopian på D:/dealer-archive/V2-backup-studio/\n\nSäkerhetskopian görs före varje flytt av gamla labbets flikar.', scout: false}, release);
+  const {sections} = cleanDoc({kalla: 'DRIFT', id: 'drift', text: '# D\n\n## Kopian på D:/dealer-archive/V2-backup-studio/\n\nSäkerhetskopian görs före varje flytt av gamla labbets flikar.'}, release);
   assert.equal(sections.at(-1)!.titel, `DRIFT › Kopian på ${LOCAL}`);
   for (const leak of ['/c/Users/x/y', 'C:\\Users\\x', '\\\\?\\c:\\x', '~/.claude/x', '`D:/dealer-archive/V2-backup-studio/`']) assert.ok(hasLocalPath(leak), leak);
 });
 
 test('the snapshot\'s check reads the knowledge decoded: "mål:" at the end of a line is no drive, a real path is found', () => {
-  const k = (text: string): Knowledge => ({schemaVersion: 1, byggd: '2026-11-12T00:00:00Z', kallor: ['HANDOFF'], karna: [{id: 'scout-x/y', titel: 'T', text}], avsnitt: []});
+  const k = (text: string): Knowledge => ({schemaVersion: 1, byggd: '2026-11-12T00:00:00Z', kallor: ['HANDOFF'], karna: [{id: 'handoff/y', titel: 'T', text}], avsnitt: []});
   const textLeaks = (t: string) => findTextLeaks(t, release);
   const fine = k('Forge-standardens mål:\n\n| Plats | Läge |');
   assert.ok(findTextLeaks(JSON.stringify(fine), release).length, 'read as JSON text, the escape looks like a path');
@@ -105,15 +105,13 @@ test('the snapshot\'s check reads the knowledge decoded: "mål:" at the end of a
   assert.ok(knowledgeLeaks({...fine, kallor: ['D:/dealer-archive/x']}, release, textLeaks).length, 'the sources are checked too');
 });
 
-test('a game balance is no cost in Scoutgaming, but a credit balance is in the dealer documents', () => {
+test('a balance and a cost go with their sentence; a parenthesis that breaks a rule goes and its sentence stays', () => {
   const removed: Removed = {};
-  assert.equal(cleanLine('- Servern äger regler, kort, sko och saldo.', release, true, removed), '- Servern äger regler, kort, sko och saldo.');
-  assert.equal(cleanLine('- Servern äger regler, kort, sko och saldo.', release, false, removed), null);
-  assert.equal(cleanLine('- Planen visar kostnaden innan något betalt skickas.', release, true, removed), null);
-  assert.equal(breaks('Det kostar 5 USD', release, true), 'kostnad');
-  assert.equal(breaks('git@github.com:someone/repo.git', release, true), 'adress');
-  // Parentheses that break a rule go, the sentence stays.
-  assert.equal(cleanLine('Filmen är godkänd (Kevin sade nej) och spelas.', release, false, removed), 'Filmen är godkänd och spelas.');
+  assert.equal(cleanLine('- Servern äger regler, kort, sko och saldo.', release, removed), null);
+  assert.equal(cleanLine('- Planen visar kostnaden innan något betalt skickas.', release, removed), null);
+  assert.equal(breaks('Det kostar 5 USD', release), 'kostnad');
+  assert.equal(breaks('git@github.com:someone/repo.git', release), 'adress');
+  assert.equal(cleanLine('Filmen är godkänd (Kevin sade nej) och spelas.', release, removed), 'Filmen är godkänd och spelas.');
 });
 
 test('hard-wrapped paragraphs are joined before sentences are judged, and code blocks never pass', () => {
@@ -124,7 +122,7 @@ test('hard-wrapped paragraphs are joined before sentences are judged, and code b
 
 test('long sections are cut at paragraphs into numbered parts with unique ids', () => {
   const text = `# T\n\n## Lång\n\n${Array.from({length: 12}, (_, i) => `Stycke ${i} ${'ord '.repeat(80)}`).join('\n\n')}\n\n## Lång\n\nEtt annat avsnitt med samma rubrik och tillräckligt mycket text.`;
-  const {sections} = cleanDoc({kalla: 'SYSTEM', id: 'system', text, scout: false}, release);
+  const {sections} = cleanDoc({kalla: 'SYSTEM', id: 'system', text}, release);
   const parts = sections.filter(s => s.titel.startsWith('SYSTEM › Lång (del'));
   assert.ok(parts.length >= 2);
   assert.ok(parts.every(s => s.text.length <= PART_CHARS));
@@ -190,7 +188,6 @@ test('the last scan finds what the cleaning would have removed, and a token patt
     assert.ok(scanLeaks(k(leak), release).length, leak);
   const token = 'sk-' + 'Q'.repeat(40);
   assert.ok(scanLeaks(k(`nyckel ${token}`), release).some(f => f.includes('hemlighet')));
-  assert.deepEqual(scanLeaks(k('Spelaren har ett saldo.', 'scout-ordlista/x'), release), [], 'a game balance passes in Scoutgaming');
 });
 
 test('the search: Swedish stems, the bank\'s short names for the words people use, and BM25 order', () => {
@@ -202,13 +199,13 @@ test('the search: Swedish stems, the bank\'s short names for the words people us
   const sections = [
     {id: 'banken/ready-p6-c1', titel: 'Banken › A2.1 → P6C1', text: 'Film A2.1 → P6C1 (kanten READY>P6.C1): från A2.1 (nyp) till plats 6, kort 1. Spelas nu: Giv arkiv 01, variant.'},
     {id: 'banken/ready-p4-c1', titel: 'Banken › A2.1 → P4C1', text: 'Film A2.1 → P4C1 (kanten READY>P4.C1): från A2.1 (nyp) till plats 4, kort 1. Godkänd av Jakob.'},
-    {id: 'scout/regler', titel: 'Scoutgaming › Blackjack › Regler', text: 'Dealern står på 17. Split är tillåtet en gång per hand; dubbling efter split är tillåten.'},
+    {id: 'spelet/regler', titel: 'Spelet › Regler', text: 'Dealern står på 17. Split är tillåtet en gång per hand; dubbling efter split är tillåten.'},
     {id: 'prov/x', titel: 'Prov › Skimmer', text: 'Ett draperi av guldpaljetter. Väntar på Jakob. Väntar fortfarande.'},
   ];
   const index = new Index(sections);
   assert.equal(index.search('Vad väntar på Jakob för plats 6?')[0].section.id, 'banken/ready-p6-c1');
   assert.deepEqual(index.search('Vem vann matchen igår?'), [], 'no word in common: nothing found rather than noise');
-  assert.equal(index.search('Vilka regler gäller för split?')[0].section.id, 'scout/regler');
+  assert.equal(index.search('Vilka regler gäller för split?')[0].section.id, 'spelet/regler');
   assert.deepEqual(index.search(''), []);
   assert.ok(index.search('plats', 2).length <= 2);
   assert.match(coreText({schemaVersion: 1, byggd: '', kallor: [], karna: sections.slice(0, 2), avsnitt: []}), /^### \[Banken › A2.1 → P6C1\]\n/);

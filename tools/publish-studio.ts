@@ -120,9 +120,7 @@ if (run) {
 
 // ── Its own lab server, the builds, the upload ──────────────────────────────
 const scratchEnv = existsSync('D:/dealer-scratch/tmp') ? {TEMP: 'D:/dealer-scratch/tmp', TMP: 'D:/dealer-scratch/tmp'} : {};
-// The bot's knowledge reads Scoutgaming's documents beside the checkout (tools/build-knowledge.ts scoutRoot): the worktree on
-// D: has no such neighbour, so the home checkout's is named.
-const env = {...process.env, ...scratchEnv, DEALER_SCOUT_ROOT: process.env.DEALER_SCOUT_ROOT || path.resolve(home, '..', '..', 'scoutgaming')};
+const env = {...process.env, ...scratchEnv};
 delete env.BLOB_READ_WRITE_TOKEN;
 const LAB = `http://127.0.0.1:${LAB_PORT}`;
 let server: ChildProcess | null = null;

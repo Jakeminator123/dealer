@@ -6,8 +6,8 @@
 // The site's password is weak on purpose (Jakob 2026-11-12), so the knowledge is treated as half public. Cleaning: paths of
 // this machine become "‹lokal mapp›"; ids of projects, teams, stores, deployments and workspaces go; every sentence or
 // table row about credits, balance, budget, price or cost goes, and so does anything on the release register's block list
-// (data/studio-release.json), the trailers, passwords, environment variables and addresses of services. Of Scoutgaming only
-// the named documents are read; its environment variables, operations and incidents are not read at all.
+// (data/studio-release.json), the trailers, passwords, environment variables and addresses of services. Only this project's
+// own documents and registers are read (Jakob 2026-11-23: the project stands free of Scoutgaming for now).
 import type {Graph, Take} from '../src/clip-graph.ts';
 import {edgeName, takeNames} from '../studio/lib/names.ts';
 import {verdictOf, storedNote, awaitingJakob, judgedForJakob, proofVerdict, PROOF_VERDICT_LABEL, type ProofVerdict} from '../studio/lib/verdict.ts';
@@ -23,10 +23,10 @@ export const LOCAL = '‹lokal mapp›';
 
 // ── The rules of the cleaning ───────────────────────────────────────────────
 type Blocked = Pick<Release, 'blocked'>;
-/** A document as read: its name in the sources ("HANDOFF", "Scoutgaming › Ordlista"), its id, its text and its rules. */
-export type Doc = {kalla: string; id: string; text: string; scout: boolean; dropHeadings?: RegExp; dropIntro?: boolean; prio?: (heading: string) => number | null};
+/** A document as read: its name in the sources ("HANDOFF", "SYSTEM"), its id, its text and its rules. */
+export type Doc = {kalla: string; id: string; text: string; dropHeadings?: RegExp; prio?: (heading: string) => number | null};
 
-// Balance in the dealer's documents is the film service's credit balance; in Scoutgaming's it is the player's game balance.
+// Balance in the dealer's documents is the film service's credit balance.
 const BALANCE = /(?<![\p{L}])(?:saldo\w*|balans\w*|balance\w*)(?![\p{L}])/iu;
 const MONEY = /(?<![\p{L}])(?:faktur\w*|avgift\w*|spend\w*|usage)(?![\p{L}])/iu;
 const TRAILER = /trailer|reklamfilm/i;
@@ -60,9 +60,9 @@ export function replacePaths(text: string, onEach: () => void = () => {}): strin
 }
 
 export type Rule = 'kostnad' | 'spärrat namn' | 'reklamfilm' | 'lösenord' | 'id' | 'miljövariabel' | 'adress' | 'lokal sökväg';
-/** The rule a piece of text breaks, or null. scout: Scoutgaming's own words (a game balance is no cost there). */
-export function breaks(text: string, release: Blocked, scout: boolean): Rule | null {
-  if (COST.test(text) || MONEY.test(text) || (!scout && BALANCE.test(text))) return 'kostnad';
+/** The rule a piece of text breaks, or null. */
+export function breaks(text: string, release: Blocked): Rule | null {
+  if (COST.test(text) || MONEY.test(text) || BALANCE.test(text)) return 'kostnad';
   if (blockedName(text, release)) return 'spärrat namn';
   if (TRAILER.test(text)) return 'reklamfilm';
   if (PASSWORD.test(text)) return 'lösenord';
@@ -88,19 +88,19 @@ export function rewrite(text: string, removed: Removed = {}): string {
 }
 
 /** One line (a paragraph, a list item or a table row) with every bad sentence, parenthesis or row taken out; null if nothing is left. */
-export function cleanLine(line: string, release: Blocked, scout: boolean, removed: Removed): string | null {
+export function cleanLine(line: string, release: Blocked, removed: Removed): string | null {
   if (/^\s*\|/.test(line)) {
     if (/^\s*\|[\s:|-]+\|\s*$/.test(line)) return line;
-    const row = rewrite(line, removed), rule = breaks(row, release, scout);
+    const row = rewrite(line, removed), rule = breaks(row, release);
     if (rule) { count(removed, rule); return null; }
     return row;
   }
   const prefix = /^(\s*(?:[-*+]|\d+[.)])\s+|\s*>\s?)?/.exec(line)?.[0] ?? '';
   let rest = rewrite(line.slice(prefix.length), removed);
-  rest = rest.replace(/\s*\([^()]*\)/g, group => { const rule = breaks(group, release, scout); if (rule) { count(removed, rule); return ''; } return group; });
+  rest = rest.replace(/\s*\([^()]*\)/g, group => { const rule = breaks(group, release); if (rule) { count(removed, rule); return ''; } return group; });
   const kept: string[] = [];
   for (const sentence of rest.split(/(?<=[.!?])\s+/)) {
-    const rule = breaks(sentence, release, scout);
+    const rule = breaks(sentence, release);
     if (rule) count(removed, rule); else if (sentence.trim()) kept.push(sentence);
   }
   const text = kept.join(' ').trim();
@@ -166,10 +166,10 @@ export function cleanDoc(doc: Doc, release: Blocked): {sections: Built[]; remove
     const name = rewrite(part.heading, removed).trim();
     if (part.level === 1 || part.level === 2) h2 = part.level === 2 ? name : '';
     const heading = part.level === 0 || part.level === 1 ? 'Inledning' : part.level === 3 && h2 ? `${h2} › ${name}` : name;
-    if ((part.level <= 1 && doc.dropIntro) || (doc.dropHeadings && doc.dropHeadings.test(part.level === 3 ? h2 : name)) || (part.level === 3 && doc.dropHeadings?.test(name))) { count(removed, 'avsnitt'); return; }
+    if ((doc.dropHeadings && doc.dropHeadings.test(part.level === 3 ? h2 : name)) || (part.level === 3 && doc.dropHeadings?.test(name))) { count(removed, 'avsnitt'); return; }
     // The heading as the title shows it, the parent's included: a section under a heading that breaks a rule goes with it.
-    if (breaks(heading, release, doc.scout) || breaks(name, release, doc.scout)) { count(removed, 'avsnitt'); return; }
-    const lines = part.lines.map(l => l.trim() ? cleanLine(l, release, doc.scout, removed) : '').filter((l): l is string => l !== null);
+    if (breaks(heading, release) || breaks(name, release)) { count(removed, 'avsnitt'); return; }
+    const lines = part.lines.map(l => l.trim() ? cleanLine(l, release, removed) : '').filter((l): l is string => l !== null);
     const text = lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
     if (text.length < 40 && i > 0) return;
     if (!text) return;
@@ -187,7 +187,7 @@ export function cleanDoc(doc: Doc, release: Blocked): {sections: Built[]; remove
 
 /** Any generated text through the same sentence rules (the bank's notes, proof descriptions, commit subjects). */
 export function cleanPlain(text: string, release: Blocked, removed: Removed): string {
-  return text.split('\n').map(l => l.trim() ? cleanLine(l, release, false, removed) : '').filter((l): l is string => l !== null).join('\n').trim();
+  return text.split('\n').map(l => l.trim() ? cleanLine(l, release, removed) : '').filter((l): l is string => l !== null).join('\n').trim();
 }
 
 // ── The clip bank as text ───────────────────────────────────────────────────
@@ -347,9 +347,8 @@ export function assemble(sections: Built[], kallor: string[], byggd: string, bud
 export function scanLeaks(knowledge: Knowledge, release: Blocked): string[] {
   const out: string[] = [];
   for (const s of [...knowledge.karna, ...knowledge.avsnitt]) {
-    const scout = s.id.startsWith('scout');
     for (const line of `${s.titel}\n${s.text}`.split('\n')) {
-      const rule = breaks(line, release, scout);
+      const rule = breaks(line, release);
       if (rule) out.push(`${s.id}: ${rule}: ${line.slice(0, 80)}`);
     }
   }
@@ -378,16 +377,6 @@ export const DEALER_DOCS = {
   README: {drop: /^(?:Kör lokalt)$/, core: ['Inledning']},
   SYSTEM: {drop: null as RegExp | null, core: ['Ordlista och gräns mot Scout', 'Klippbank och nodnotation', 'Återbruk och införande']},
   DRIFT: {drop: /^(?:Identitet och ansvar|Anslutningar och miljö|Molnmiljö|D: och städning|Headless Chrome och verktyg på D:)$/, core: [] as string[]},
-};
-export const SCOUT_DROP = /drift|infrastruktur|miljö|environment|incident|getting started|repository map|deploy|hemlig|secret|^struktur$|^underhåll$|regel- och undantagsfiler|^fynd$|^kretslopp$|^mergat|^öppna pr|studio-workern/i;
-export const SCOUT_CORE: Record<string, string[]> = {
-  'Scoutgaming › README': ['Inledning', 'Surfaces'],
-  'Scoutgaming › Dokument': ['Översikt per yta', 'Läge och arbete'],
-  'Scoutgaming › Blackjack': ['Regler'],
-  'Scoutgaming › Dealerbank': ['*'],
-  'Scoutgaming › Signaler': ['Var signalen finns', 'Vad som skickas'],
-  'Scoutgaming › Ordlista': ['Ytor', '4. Dealer'],
-  'Scoutgaming › Nästa agent': ['Väntar på Jakob', 'Dealers i produktion 7 november'],
 };
 /** A priority function from a list of core headings ("*": every heading), starting at base. */
 export const prioFrom = (core: string[], base: number) => (heading: string): number | null => {
