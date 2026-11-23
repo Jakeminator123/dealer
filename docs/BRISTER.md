@@ -62,7 +62,7 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 - **Kanten och spåret, att veta när överlägget görs om** (mätt 2026-11-23 på `paow-giv-2-3-p3-01`): spåraren följer
   kortets färg, så en film efterarbetad med `--rim card` ger 6227 px² i vila mot 4460 med vita kanten kvar och behöver
   ett eget spår. Det överlagda kortet i vila är kortplanens (5235 px² vid P3.C1) och följer inte filmens kort, som
-  sticker ut 3–13 px. Stänger: överlägget görs om (BESKED, "Överlägget görs om senare").
+  sticker ut 3–13 px. Stänger: överlägget görs om (BESKED, "Grafiken på kortet").
 - **Kvittots `planArea` är 19 % för stor:** `tools/python/filmmatt.py` räknar planens raka rektangel (6235 px²), inte
   det sidan ritar, så anmärkningen "lagt-storlek" jämför mot fel yta. Stänger: måttet räknas ur samma fyrhörning som sidan.
 

@@ -46,16 +46,19 @@ delade låset. Användning står överst i varje skript.
 | Datasetet, i ordning | `inventory.py` (alla filmer), `probe.py` (snabbprov), `valj.py` (kortfilmerna), `dela.py` (listor för två etiketterare), `label.py` (kortets kontur per ruta), `export.py` (manifest och tabell). `sheet.py` ritar etiketten på filmrutor för ögat. |
 | Mätningar mot dagens spår | `storlek.py`, `spar_noter.py`, `spar_storlek.py`, `vandning.py`, `ljus_check.py` |
 | Modellen (v1 och v2; `--version 2` ritar märke, tryck och fingrar som störning) | `train.py`, `eval.py` (`--modell`, `--ut`) |
+| Modellens spår på alla filmer (Prov `kortmodell-v2-20261123`, sidan `/kortlandning.html`) | `spar_modell.py` (modellens hörn och sida per ruta, på grafikkortet under låset), `spar_modell.ts` (spåret per film och `index.json` med måtten mot dagens spår; regeln står överst i skriptet) |
 | Labbprovet | `spar_b.ts` (provets spår ur etiketterna, regeln `refineFrames` i `src/card-track.ts`), `spela_in.ts` (spelar in Scen ruta för ruta, headless under låset), `ljus_serie.py` (ljusets steg ur en inspelning), `titta_val.py` (spåren ritade på filmrutor), `prov_bygg.py` (provets filmer och stillbilder) |
 
 ```
 tools/python/.venv/Scripts/python.exe -I tools/python/kort-dataset/label.py D:/dealer-scratch/tmp/kort-dataset/lista-a.jsonl --workers 2
 tools/python/.venv/Scripts/python.exe -I tools/python/kort-dataset/export.py
 node tools/python/kort-dataset/spar_b.ts --alla
+D:/dealer-scratch/tmp/kort-dataset/venv/Scripts/python.exe -I tools/python/kort-dataset/spar_modell.py
+node tools/python/kort-dataset/spar_modell.ts
 node tools/python/kort-dataset/spela_in.ts <bankklipp> 10 80 <utmapp> fore=mat@1764x1174/640 efter=1@1764x1174/640
 ```
 
-De två TypeScript-skripten ligger här för att verktygen ska hålla ihop.
+TypeScript-skripten ligger här för att verktygen ska hålla ihop.
 
 ## Miljön
 

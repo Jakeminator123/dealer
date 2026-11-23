@@ -64,8 +64,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   (`data/order-methods.json`), och texten som skickas säger varje sak en gång.
 - **Efterarbetet för sig, efter filmerna** (2026-11-17): "filmerna är det vi först måste få rätt". Kortens och
   markernas utseende ändras bara i Bordets läge Efterarbete; valören ritas när rundan spelas.
-- **Överlägget görs om senare** (2026-11-23): det som läggs över filmens gul-blå kort görs "senare utifrån hur videos
-  ser ut och efter jag bestämmt hur allt ska vara". Undantag samma dag, till sessionen dealer-e7: "Okej vi provar en v2 då" (kortmodellen).
+- **Grafiken på kortet** (2026-11-23, till dealer-e7): "grafiken" är det som läggs på kortets baksida och framsida, på
+  kortmodellens spår. Han vill se den "på och mot" alla filmer som finns (`/kortlandning.html`) och "ett bra system med grafiken".
 - **Kortets efterarbete görs i förväg per film** (2026-11-17): spelet målar inte kortet medan filmen spelas; det ritade
   kortet är "något procent större än kortet".
 - **Kortbanan följer filmerna** (2026-11-17, "VIKTIGT"): labbets ritade bana och vändning stämmer med hur dealern
@@ -201,8 +201,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   från fingrarna". Det gäller dockan som förlaga också.
 - **Handen vänds en gång, i luften, aldrig i slutet** (2026-11-18); ordningen per ankare står i
   `tools/film-prompting.md` §5.
-- **Ingen vit kant på kortet** (2026-11-17, 2026-11-23): "Det sk inte finnas." Ingen order ber om den. Linjen i skons
-  fönster i A2.3 står kvar; kanten tas bort i efterarbetet.
+- **Ingen vit kant på kortet** (2026-11-17, 2026-11-23): "Det sk inte finnas." Ingen order ber om den; kanten tas
+  bort i efterarbetet. Det vita runt kortet i skons fönster "vill eller funderar" han på att ta bort (till dealer-e7).
 - **Kanten bort: rätt håll, men inte förval än** (2026-11-23): i en A3-bild fylls kantlinjen med det blå; i en färdig
   film kan kortet ersättas av kortöverlägget: "kortet är ju ändå bara referens för hur ett kort ska ersättas".
 - **En giv är tre sekunder** (2026-11-18, 2026-11-21): "Ja, tre sekunder är lagom".
@@ -237,6 +237,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   kort); utan vit kant, "bara … blåa, med rundade kanter".
 - **Märket på blå sidan** (2026-11-20): ett litet rosa kryss och en liten röd cirkel i ett hörn, så att filmen inte kan
   "fuska med vilken sida av kortet som syns".
+- **Märke på gula sidan, som prov** (2026-11-23, till dealer-e7): en cirkel i "den gula sidans mittpunkt" och kanske ett X
+  i hörnet, blå sidans färger "men motsatta symboler": "Om du tycker om detta så gör vi så." Prövas på en film först.
 - **Kortens färger** (2026-11-20) står på ett ställe, `CARD_RGB` (`src/placement-model.ts`): gul 241, 216, 0 · blå
   0, 130, 218 · kryss 255, 120, 200 · cirkel 225, 30, 35.
 - **Rent tills efterarbetet** (2026-11-18): "Du kan behålla SG-ryggen. men so msagt vill jag allt ska vara rent tills

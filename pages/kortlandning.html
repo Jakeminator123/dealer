@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dealer · Kortets landning (prov)</title>
+<title>Dealer · Grafiken på filmerna (prov)</title>
 <style>
 :root{--bg:#0d0f0e;--panel:#151917;--line:#27302b;--ink:#e8ece9;--dim:#93a098;--acc:#d9b96a;--ok:#7fd39a;--warn:#e8a653}
 *{box-sizing:border-box}
@@ -21,6 +21,19 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font:13px/1
 #marks{position:relative;height:20px;margin:2px 8px 0}
 #marks span{position:absolute;top:0;transform:translateX(-50%);color:var(--dim);font-size:11px;white-space:nowrap;padding-top:7px}
 #marks span::before{content:"";position:absolute;left:50%;top:0;width:1px;height:6px;background:var(--acc)}
+#marks i{position:absolute;top:0;width:2px;height:6px;margin-left:-1px;background:var(--warn)}
+#alla{position:absolute;inset:0;z-index:2;overflow:auto;background:rgba(8,10,9,.97);padding:14px 18px 30px}
+#alla .head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+#alla h2{font-size:15px;margin:0}
+#alla table{border-collapse:collapse;width:100%;margin-top:10px;font-variant-numeric:tabular-nums}
+#alla th,#alla td{text-align:right;padding:3px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+#alla th:first-child,#alla td:first-child{text-align:left}
+#alla thead th{color:var(--dim);font-weight:500;font-size:12px;position:sticky;top:-14px;background:#0a0c0b}
+#alla tr.group th,#alla tr.group td{color:var(--acc);padding-top:14px;font-weight:600}
+#alla td button{border:0;background:none;padding:2px 0;min-height:0;color:var(--ink);text-align:left}
+#alla td button:hover{color:var(--acc)}
+#alla td.ok{color:var(--ok)}
+#alla td.warn{color:var(--warn)}
 #panel{background:var(--panel);border-left:1px solid var(--line);overflow:auto;padding:14px 14px 40px}
 h1{font-size:15px;margin:0 0 2px}
 .sub{color:var(--dim);margin:0 0 12px;font-size:12px}
@@ -48,7 +61,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 <body>
 <div id="app">
   <div id="stage">
-    <div id="frame"><div id="film"><video id="video" muted playsinline preload="auto"></video><canvas id="view"></canvas></div><div id="hud"><span class="chip" id="rad">Läser …</span></div></div>
+    <div id="frame"><div id="film"><video id="video" muted playsinline preload="auto"></video><canvas id="view"></canvas></div><div id="hud"><span class="chip" id="rad">Läser …</span></div><div id="alla" hidden></div></div>
     <div id="bar"><input id="tid" type="range" min="0" max="1" step="1" value="0" aria-label="Ruta"><div id="marks"></div></div>
   </div>
   <aside id="panel"></aside>

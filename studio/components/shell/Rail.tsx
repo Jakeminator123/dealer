@@ -167,7 +167,7 @@ function AskButton() {
 const PAGE_LINKS: readonly { href: string; label: string; icon: ComponentType<{ className?: string }> }[] = [
   { href: "/sound.html", label: "Ljud", icon: Volume2 },
   { href: "/props.html", label: "Modeller", icon: Box },
-  { href: "/kortlandning.html", label: "Kortlandning (prov)", icon: Spade },
+  { href: "/kortlandning.html", label: "Grafik (prov)", icon: Spade },
 ];
 
 export function Rail() {

@@ -33,9 +33,9 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
 1. C1 ligger kvar genom P4.C2. `paow-c2-paper-rim-20261118` och `paow-c2-contact-20261118` visar mindre blåspill
    med P1/P7 intakta. Rundans behov täcks 22/22; 9 egna givar och 14 återbruk ger 23/24 kortlägen. DC3 är nästa steg.
 2. `data/media-fit.json` är ommätt. Kör `node tools/media-audit.ts --fit --write` igen när plan, lins eller ankare ändras.
-3. Kortets sidor i efterarbetet, efter filmerna: gul rygg (SG får stå kvar) och blå framsida, lika i labbet och spelet.
+3. Grafiken på kortet ([BESKED](../BESKED.md), "Grafiken på kortet"): gul rygg (SG får stå kvar) och blå framsida, lika i labbet och spelet, på kortmodellens spår. Spåren för 118 filmer ses på `/kortlandning.html` (sessionen dealer-e7,
+   `tools/python/kort-dataset/`); `kortprov` står avstängt. Härnäst: A2.3 utan det vita i skons fönster, och ett märke på gula sidan som prov på en film.
 4. Ta bort kravet på två vyer i planfilen (`validatePlan` kräver ännu båda), utan att planfilen skrivs av en agent.
-5. Överlägget görs om senare, ur hur filmerna ser ut och efter Jakobs beslut ([BESKED](../BESKED.md), "Överlägget görs om senare"); `kortprov` står avstängt och visas inte för honom. Kortmodellen v2 tränas av sessionen dealer-e7 (`tools/python/kort-dataset/`).
 
 **Väntar på Jakob.** Inget utanför Beslut.
 
