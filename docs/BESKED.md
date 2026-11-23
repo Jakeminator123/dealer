@@ -65,7 +65,7 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
 - **Efterarbetet för sig, efter filmerna** (2026-11-17): "filmerna är det vi först måste få rätt". Kortens och
   markernas utseende ändras bara i Bordets läge Efterarbete; valören ritas när rundan spelas.
 - **Överlägget görs om senare** (2026-11-23): det som läggs över filmens gul-blå kort görs "senare utifrån hur videos
-  ser ut och efter jag bestämmt hur allt ska vara". Inget nytt byggs på överlägget före det.
+  ser ut och efter jag bestämmt hur allt ska vara". Undantag samma dag, till sessionen dealer-e7: "Okej vi provar en v2 då" (kortmodellen).
 - **Kortets efterarbete görs i förväg per film** (2026-11-17): spelet målar inte kortet medan filmen spelas; det ritade
   kortet är "något procent större än kortet".
 - **Kortbanan följer filmerna** (2026-11-17, "VIKTIGT"): labbets ritade bana och vändning stämmer med hur dealern

@@ -6,35 +6,35 @@ som gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompt
 **Läget.**
 - En film beställs i Bordets Kortplan (plats och kort, hur kortet kommer dit; receptet i `data/order-methods.json` ger
   resten) eller med kommandot `node tools/order-new.ts paow "A2.3 - A3P4C2"`, som gör samma utkast. Huvudagenten
-  godkänner (`tools/order-approve.ts`) och en beställare lägger kön (`tools/order-clerk.md`). Texterna är mall 12.
-- Metoden som håller: en giv bara dit på Kling 4, 3 s, med första bild och 3D-banans dockfilm som referensfilm, i
-  UTDRAGEN takt (given över drygt 2 s, en obruten rörelse). Finns platsens A3 inte än går given utan sista bild, som
-  förval; efterarbetet mäter då kortet mot kortplanen.
+  godkänner (`tools/order-approve.ts`) och en beställare lägger kön (`tools/order-clerk.md`). Texterna är mall 12;
+  given från A2.3 mall 14, giv och återgång mall 15.
+- Metoden som håller (Jakob 2026-11-23): giv och återgång i EN film på Kling 4, 4 s, första bild A2.3, sista bild
+  samma med kortet på platsen, dockans film med plan hand i 24 rutor/s som referensfilm. `node tools/order-bring.ts`
+  delar den där handen börjar gå tillbaka och sparar given och returen i banken.
 - Ett ankare heter alltid A och numret (A1, A2.3, A3P4C1), aldrig med en bokstav efter (Jakob 2026-11-21); bokstäverna
   i id:n är arbetsnamn: A2.3 är `paow-ankare-2-3-d` (blicken på kortet; givarna hittills börjar på `-c`), A2.2 `paow-ankare-2-2-blick-a`.
-- Trädet Tatuerad (vyn Karta, `/studio/karta/?dealer=paow&trad=tatuerad`) fylls från A2.3 och har 5 av 36 steg. I
-  banken: given till A3P4C1 (piloten, Jakobs ja), A3P4C2 (släpet med handbyte, kortad till 70 rutor, 3/5), A3P1C1
-  (4/5), A3P2C1 (4/5) och A3P3C1 (3/5). Alla utom piloten är dömda åt honom; A3P4C2 har ett kort i Beslut. Till A3P5C1
-  håller giv och återgång i en film (3/5, 4/5); bara dit föll.
+- Trädet Tatuerad (vyn Karta, `/studio/karta/?dealer=paow&trad=tatuerad`) fylls från A2.3. I banken: giv och återgång
+  till plats 1–5, kort 1 (mall 15, dömda åt honom: plats 4 och 5 4/5, plats 3 4/5 och 3/5, plats 1 och 2 varianter, 3/5),
+  och sedan förut given till A3P4C1 (piloten, Jakobs ja), A3P4C2 (kort i Beslut), A3P1C1, A3P2C1 och A3P3C1 bara dit.
 - A3-bilder: A3P4C1 och A3P4C2 är kandidater (A3P4C2 ur ruta 68, oberoende 4/5). För plats 1 och 2 stoppar
   landningsverktyget, och rosen på högra handryggen är en mandala i A3P4C1 ([BRISTER](../BRISTER.md)).
-- Returprovet A3P4C1 → A2.3 föll (2/5): ändarna och kortet höll, men handen strök över filten. Nästa prov byter bara
-  meningen om vägen (protokollet, [tools/film-prov.md](../../tools/film-prov.md)).
+- En retur beställs inte för sig: den klipps ur filmen med giv och återgång. `paow-giv-2-3-p5-04-01` ligger i banken
+  som 1764 × 1172 (originalet, inte den efterarbetade).
 - P4.C2 Cykel01 är vald framför Cykel02. En sidovinkel görs av en färdig film i Runways videoredigerare (Prov `sidovinkel-ur-film`).
-- Pengar: gränser, mandat och senast lästa saldo står i `data/order-policy.json`. En giv på 3 s med referensfilm
-  kostar 68 krediter, en retur utan 57; beställningen går genom API-nyckeln (Runway-MCP är inte inloggat).
+- Pengar: gränser, mandat och senast lästa saldo står i `data/order-policy.json`. En giv med återgång på 4 s med
+  referensfilm kostar 91 krediter, en giv på 3 s 68; beställningen går genom API-nyckeln (Runway-MCP är inte inloggat).
 
 **Nästa steg.**
-1. Dockans filmer görs om under nya namn när Naturlig och skon är inne ([LASMIG](../../dealer3d/LASMIG.md)); en plats
-   som prov, sedan resten. Nästa mall säger att kortets vändning är hennes ([BESKED](../BESKED.md)).
-2. Per plats: given, platsens A3 ur filmens sista ruta (`tools/landing-make.ts`), sedan returen. Kommandot beställer
-   en retur först när en godkänd giv har platsens A3 som sista bild: A3P4C2 är redo för en sådan giv.
-   P6 och P7 går inte med höger hand: den måste korsa kroppen.
+1. Plats 6 och 7 (kort 1) ur Jakobs sparade standarder i Docklabbet, sedan kort 2; plats 1 och 2 görs om om han
+   säger det i Beslut (handen nyper kortets kant). Dockans förval och ingångar: [LASMIG](../../dealer3d/LASMIG.md).
+2. En knapp i Scen & bord, Docka, som gör dockans film ur den sparade rörelsen och ett orderutkast; i dag kommandon
+   (`dealer3d/tools/docka-cykel.ts`, `tools/doll-reference-put.ts`).
 3. Spelet väljer träd: det läser inga i dag (`buildGraph` blandar alla filmer), så Tatuerad spelas inte än. Ingången
    A1 → A2.3 klipps ur ankarets film; sedan A2.3 → A1, hålkortet och dealerns kort.
 
-**Väntar på Jakob.** Kort i Beslut: given till A3P4C2 och dockan med Paows mått. Frågor i chatten 2026-11-21: egen film
-för kort 2 (36 steg) eller kort 1:s (22), om tatuerade A2.2 är blickbilden eller en ny nypbild, och hur spelet väljer träd.
+**Väntar på Jakob.** Kort i Beslut: givarna till plats 1–5 (kort 1) med återgång, given till A3P4C2 och dockan med Paows
+mått. Frågor i chatten 2026-11-21: egen film för kort 2 (36 steg) eller kort 1:s (22), om tatuerade A2.2 är blickbilden
+eller en ny nypbild, och hur spelet väljer träd.
 
 **Var saker ligger.** Vägen för en ny dealer i [tools/dealer-line.md](../../tools/dealer-line.md), handboken i
 [tools/film-prompting.md](../../tools/film-prompting.md), granskningen i `tools/film-review.md`, läget per dealer med

@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-giv-2-3-p1-03-01-return-ready-c",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-giv-2-3-p1-03-01/source.mp4",
+    "sha256": "f57abbee34fff7afcdee1d2f2078f92a0aede1c20b8b35026a1b482099000225",
+    "bytes": 4427690,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 97,
+    "provider": "Runway developer API",
+    "model": "kling-4"
+  },
+  "motion": {
+    "kind": "RETURN",
+    "from": "P1.C1",
+    "to": "READY-C",
+    "takeHand": "LH",
+    "releaseHand": "RH",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "segment": {
+      "clip": "paow-giv-2-3-p1-03-01",
+      "frames": [
+        62,
+        96
+      ]
+    },
+    "startsOn": {
+      "clip": "paow-giv-2-3-p1-03-01-deal",
+      "frame": 62
+    }
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob: förd in från beställningen paow-giv-2-3-p1-03, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
+    "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten dealer-c2 och en oberoende granskare",
+      "at": "2026-11-23T13:28:09.960Z",
+      "mandate": "Jakob 2026-11-13: \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"; 2026-11-23: fyll givarna från A2.3 till spelarnas C1 och tillbaka",
+      "note": "Returen 3/5: löst knuten hand lågt över filten 75–80, plan från ruta 84; sista rutorna sätter sig ännu."
+    }
+  },
+  "order": {
+    "id": "paow-giv-2-3-p1-03",
+    "take": 1,
+    "path": "data/orders/paow-giv-2-3-p1-03.json",
+    "orderSha256": "5c28796f93f34c6bbcac10076a6e5661164c1faf103a3fccb16e016a169d7c86",
+    "receipt": "assets/orders/paow-giv-2-3-p1-03/receipt.json",
+    "taskId": "81ab27e2-3ebf-457a-97af-3ed469834151",
+    "delivered": {
+      "path": "assets/orders/paow-giv-2-3-p1-03/take-1/after.mp4",
+      "sha256": "f57abbee34fff7afcdee1d2f2078f92a0aede1c20b8b35026a1b482099000225"
+    }
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/paow-giv-2-3-p1-03-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

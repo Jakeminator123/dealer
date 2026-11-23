@@ -35,7 +35,7 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
 2. `data/media-fit.json` är ommätt. Kör `node tools/media-audit.ts --fit --write` igen när plan, lins eller ankare ändras.
 3. Kortets sidor i efterarbetet, efter filmerna: gul rygg (SG får stå kvar) och blå framsida, lika i labbet och spelet.
 4. Ta bort kravet på två vyer i planfilen (`validatePlan` kräver ännu båda), utan att planfilen skrivs av en agent.
-5. Överlägget görs om senare, ur hur filmerna ser ut och efter Jakobs beslut ([BESKED](../BESKED.md), "Överlägget görs om senare"); `kortprov` står avstängt och visas inte för honom.
+5. Överlägget görs om senare, ur hur filmerna ser ut och efter Jakobs beslut ([BESKED](../BESKED.md), "Överlägget görs om senare"); `kortprov` står avstängt och visas inte för honom. Kortmodellen v2 tränas av sessionen dealer-e7 (`tools/python/kort-dataset/`).
 
 **Väntar på Jakob.** Inget utanför Beslut.
 

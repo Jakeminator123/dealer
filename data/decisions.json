@@ -3,35 +3,31 @@
   "about": "What waits for Jakob: one entry per question (kind beslut) or per thing only he can do (kind gora), shown as one card each in the studio's view Beslut (/studio/beslut/, lab only). The list's order is the order of urgency, the most urgent first. An entry: id, kind, question (at most 14 words), leads (one sentence: what his answer leads to), optionally proof (a folder under assets/proofs/) with file, page (an address in the lab, e.g. game.html?table=casino), link (an address outside, shown as text to open on his phone) and cost (free text), chips (two to four {value, label} for beslut, one to four for gora), asked (date), from (the lane that asks) and answer. An agent adds an entry with answer null, changes only its own entries, reads the file right before editing it and keeps the form JSON.stringify gives with two spaces; it closes an entry by taking it out once his answer is carried out, and the commit says what he answered. Only the page writes answer ({value, note, at}, tools/decision-store.ts); no agent sets, changes or clears an answer he has given. The strict reader is tools/decision-register.ts. The repo is public: no secret, personal detail or path of this machine.",
   "decisions": [
     {
-      "id": "paow-giv-2-3-p5c1",
+      "id": "paow-givar-2-3-c1",
       "kind": "beslut",
-      "question": "Håller giv och återgång i samma film till plats 5, kort 1?",
-      "leads": "Ja gör giv och återgång i en film till sättet för nästa platser, delad vid ruta 63; granskaren ger given 3/5 och returen 4/5.",
-      "proof": "a3p5c1-20261123",
-      "file": "1b-giv-och-atergang-kortet-lagt.png",
-      "page": "studio/granska/?prov=a3p5c1-20261123&fil=1-giv-och-atergang.mp4",
-      "cost": "Filmen kostade 91 krediter; en ny kostar lika mycket",
+      "question": "Håller givarna från A2.3 till plats 1–5, kort 1, med återgång?",
+      "leads": "Plats 5 är omgjord med plan hand vid nedsläppet; granskaren ger plats 4 och 5 4/5, plats 3 nästan det, och plats 1 och 2 3/5 eftersom handen nyper kortets kant.",
+      "proof": "givar-2-3-c1-20261123",
+      "file": "plats-5-kortet-lagt.png",
+      "page": "studio/granska/?prov=givar-2-3-c1-20261123&fil=plats-5-spelets-storlek.mp4",
+      "cost": "Fem filmer à 91 krediter; en omgjord kostar lika mycket",
       "chips": [
         {
           "value": "ja",
-          "label": "Ja, den håller"
+          "label": "Ja, alla håller"
         },
         {
           "value": "nastan",
-          "label": "Rätt sätt, men gör om filmen"
+          "label": "Gör om plats 1 och 2"
         },
         {
           "value": "nej",
-          "label": "Nej, ser fel ut"
+          "label": "Nej, skriv vad som är fel"
         }
       ],
       "asked": "2026-11-23",
       "from": "film",
-      "answer": {
-        "value": "nastan",
-        "note": "Rätt. men prova bara röra om filmen så hennes högerhand inte är så vriden vid nedsläpp. men i övrigt - perfekt",
-        "at": "2026-11-23T12:15:21.885Z"
-      }
+      "answer": null
     },
     {
       "id": "docka-paow-vandning",

@@ -4303,6 +4303,62 @@
           }
         },
         {
+          "id": "paow-film-giv-2-3-p4-02-t1",
+          "role": "film",
+          "name": "Paow · A3P4C1 · giv och återgång, plan hand, tagning 1",
+          "path": "assets/films/paow/giv-2-3-p4-02-t1/source.mp4",
+          "still": 53,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Oberoende granskare 2026-11-23, full upplösning: given 4/5, returen 4/5, förslag Godkänn. Rak handled, handryggen upp, handen rakt över kortet med ett finger på krysset (47–62); vändningen nästan vid platsen; kortet 0,2 px från sista bilden; gult kort i skons fönster i alla rutor. Delningsruta 62 stämmer.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-23"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-3-p3-04-t1",
+          "role": "film",
+          "name": "Paow · A3P3C1 · giv och återgång, plan hand, tagning 1",
+          "path": "assets/films/paow/giv-2-3-p3-04-t1/source.mp4",
+          "still": 53,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Oberoende granskare 2026-11-23, full upplösning: given 4/5, returen 3/5, förslag Godkänn. Rak handled, handen rakt över kortet men halvknuten med ett pekande finger på krysset (48–62); kortet 0,4 px från sista bilden; gult kort i fönstret i alla rutor. Returen: löst knuten hand lågt över filten 76–80, plan från 86. Delningsruta 62 stämmer.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-23"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-3-p2-02-t1",
+          "role": "film",
+          "name": "Paow · A3P2C1 · giv och återgång, plan hand, tagning 1",
+          "path": "assets/films/paow/giv-2-3-p2-02-t1/source.mp4",
+          "still": 53,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Oberoende granskare 2026-11-23, full upplösning: given 3/5, returen 4/5, förslag Godkänn med anmärkning, annars Variant. Rak handled, inte vriden, men handen kupad: långfingret på kortet, pekfinger och tumme nyper bortre kanten (47–62); kortet 0,6 px från sista bilden; gult kort i fönstret i alla rutor. Delningsruta 63 stämmer.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-23"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-3-p1-03-t1",
+          "role": "film",
+          "name": "Paow · A3P1C1 · giv och återgång, plan hand, tagning 1",
+          "path": "assets/films/paow/giv-2-3-p1-03-t1/source.mp4",
+          "still": 53,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Oberoende granskare 2026-11-23, full upplösning: given 3/5, returen 3/5, förslag Variant, svagast av de fyra. Rak handled men handen står kupad bakom kortet och nyper bortre kanten (51–64); kortet bärs öppet cirka 490 px och skjuts cirka 130 px på filten; armen ser mänsklig ut; kortet 0,3 px från sista bilden; gult kort i fönstret i alla rutor. Delningsruta 62 stämmer inom en ruta.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-23"
+          }
+        },
+        {
           "id": "paow-film-intro-noir-3-startruta",
           "role": "arbetsmaterial",
           "name": "Startrutan till filmen före spelet",
