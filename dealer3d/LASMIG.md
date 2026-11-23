@@ -23,7 +23,8 @@ slaskdisken.
 - Äldre versioner -b till -e: i sina `KLAR-*.txt`. Den avlästa given (A2.1, `src/capture.ts`) är orörd; inget betalt lagt.
 - **Dockorna** (se **Dockorna**): `src/doll.ts` har `standard` (som förut, låst) och `paow`, rättad 2026-11-23 efter
   hennes filmer (38 cm bakom bordskanten, egna armbågar och händer); `?docka=paow`, `shoot.ts --doll paow`. Jakob
-  2026-11-23: "Bättre!", men armen vrids "väldigt ihoptryckt": ett prov med vändningen vid platsen väntar på honom.
+  2026-11-23 om vändningen vid platsen: "Bättre, men inte än", vänsterarmen ser fel ut mot skon. Mätt: armen ligger
+  rätt, scenens sko står fel mot bildens (**Vänsterarmen vid skon**); skon är inte rättad, det väntar på beslut.
 - **Provet en giv, två stolar** (2026-11-20, Jakobs "Ja kör" i Beslut; prov `3d-prov-en-giv-tva-stolar-20261120`; hans
   "ja" på kortet samma dag, och 2026-11-21 "SAM-dockan ska in, men inte nu" i BESKED): given till plats 4 med ett 3D-kort från stol 4 och stol 1. SAM 3D Body över filmen
   `paow-giv-2-3-p4-h24-cykel-02-01` (varannan ruta) ser ut som en människa som ger från båda stolarna (underagentens
@@ -57,7 +58,7 @@ parametrarna för äldre filmer står i deras `KLAR-f.txt` på slaskdisken:
 - Headless Chrome bara under låset, en körning i taget. Banan skriver bara i `dealer3d/` och på slaskdisken.
 - Titta på arket och närbilden i full storlek innan ett tal skickas vidare: "inom gränserna" har inte räckt.
 - Kling tar efter dockans fel: grepp, stopp, glidning och kortets storlek.
-- Första bilden i en beställning är ankaret (A2.3, `assets/anchors/paow-ankare-2-3-c/anchor.png`), aldrig dockans ruta.
+- Första bilden i en beställning är ankaret (A2.3, `assets/anchors/paow-ankare-2-3-d/anchor.png`), aldrig dockans ruta.
 - Verktyget räknar rutor från 0, arken och filnamnen från 1. En levererad film görs inte om under samma namn.
 - Datafilerna bär sina platser (`places`), så `tests/two-hand.test.ts` läser inte `placements/default.json`;
   `world.test.ts` och `deal-film.ts` gör det (en ny datafil tar alltså Jakobs sparade plan i det träd den läggs i).
@@ -262,6 +263,37 @@ fingrar ska sitta som hennes innan dockan används.
   utan de nya valen lägger koden samma rörelse byte för byte. Inte gjort: plats 1, 2, 5 och P4.C2 med den nya
   vändningen, och en kropp som lutar sig mot säte 6 och 7. Vändningen går fortare (13° per ruta som mest, förut 11) och
   kortet förs fortare fram (24 mm per ruta som mest till plats 3).
+- **Vänsterarmen vid skon** (prov 2026-11-23, `assets/proofs/docka-paow-vansterarm-20261123/`; inte dömt av Jakob).
+  Hans ord om vändningen vid platsen: "Bättre, men inte än"; vänsterarmen är "inte naturlig i förhållande till sko och
+  kort(en)", "ngt fel i djupet och kanske i distansen till skon", "det syns på hennes handled och armboge".
+  **Armen är inte orsaken.** I ankare 2.3 (`paow-ankare-2-3-c`; `-d` är samma bild kring arm och sko, största skillnad 3
+  av 255) ligger paow-dockans vänstra handled 0 px från hennes (SAM), armbågen (3, −6) px, och fingertopparna 7–13 px
+  för långt ut mot hennes fingrar lästa för ögat (SAM:s kända överskott, som följde med in i `PAOW.hand.at.left`).
+  Armbågens vinkel (dockan 75°, hon 83°) och djupet är skattningar: SAM:s storlek skiljer 2 % mellan bilderna, 5 cm.
+  **Orsaken är scenens sko** (`SHOE`, `SHOE_FOOT`, `shoePose` och `shoeCard` i `src/table-lens.ts`, ritad av
+  `src/stage.ts`). Kortet i fönstret ritas 28 px (2,4 cm) närmare henne än filmens kort (`SHOE_WINDOW_CARD`, som stämmer
+  med bilden), vridet 7,5° och lutat 58° där bildens lutar 48°. Kilens bakkant ritas 47–67 px för högt (0,19 m mot
+  cirka 0,163), bakre foten 36 px fel (långsidan i 20,3° mot bildens 14,6°); främre foten stämmer. Hennes pekfingertopp
+  ligger 24 px vänster om kortets mitt, dockans 10 px höger om scenens kort: handen täcker kortet, och handleden ligger
+  mot skons platta när kortet dras. Studions kortplan har inte felet (`shoeCardQuad` flyttar kortet till filmens
+  pixel); 3D-scenen och varje lagd rörelse börjar i `shoeCard(shoePose())` och har det.
+  **Inte rättat**: skon delas av båda dockorna och av alla lagrade rörelser i `data/`, som koden inte längre skulle
+  lägga med en ny sko. Förslag, bara ritat (provets första bild): kortets mitt på filmens pixel på samma avstånd från
+  kameran (2,4 cm åt bildens höger, 0,6 cm mot spelarna), vridet −7,5° om lodlinjen och lutat 48°, vilket ger 3,6 px
+  från filmens hörn; kilens bakre fot i (1689, 827,5) och bakkant 0,163 m. Bildens sko är inte ritad med linsen
+  (bakkanten lutar −4 px där linsen ger +30) och har en nos framför fönstret, så ingen låda passar alla kanter.
+  **Handbytet, ändrat för paow och bara i receptet**: vänsterhanden vreds 60° om lodlinjen medan underarmen ligger
+  still (`TWO_HAND.shared.swing`), så handleden var böjd 43–57°, varav 38–42° i sidled (standarddockan 58–72°). Med
+  `swing=40` i `--shared`: 28–34°, handleden fri från skons platta och högerhanden synlig (`swing=25` gav 11–24° men
+  vänsterarmen skymde högerhanden). Rörelserna: `data/giv-fran-2-3-p3-vid-plats-b.json` (underlag) och
+  `…-b-paow.json` (det som filmas; `deal-check.ts` håller); filmen i
+  `D:/dealer-scratch/tmp/dealer-3d/ut/docka-vansterarm-ny-p3`. Det går ifrån hennes godkända filmer, som följde den
+  gamla dockan och har samma vikta handled: dockans handled ligger nu 20–45 px längre in än hennes vid handbytet (förut
+  0–11). SAM-läsningar av givens första sekund: `…/ut/docka-vansterarm-sam-p3`. SAM läser hennes vänsterhand fel i
+  flera rutor (handflatan uppåt); att lita på är ankaret, p3-02 ruta 04–12 och p3-03 ruta 08. Inte gjort:
+  fingertopparna (rättas med skon), övriga platser, och fingrarnas grepp i vändningen (mätt i rörelsen: bara
+  pekfingertoppen ligger på kortet, tummens topp är 21–25 mm ifrån och fingrarna håller samma form hela vägen; hon
+  nyper kortets hörn mellan tumme och pekfinger).
 - **Kedja paow-filmer**: ingångsfilmen till A2.3 (`data/till-ankare-2-3-c.json`) är standarddockans. `doll-pose.ts`
   på den börjar i hennes vila och slutar där paow-givarna börjar (armbågar och handleder 0,0 mm isär, prövat
   2026-11-23), men ingen film är gjord av den.

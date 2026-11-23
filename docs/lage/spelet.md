@@ -3,8 +3,8 @@
 Huvudagentens bana: spelet, scenens filmlager, nätkopian och stängda banor. Kontrakt: `docs/SYSTEM.md`, "Spelet".
 
 **Läget.**
-- Spelet i studion är ett mellansteg mot Scoutgaming, som äger regler, slump och kortvärden; den fristående spelmotorn
-  ligger i `game/`. Paow är dealern och Pamela är pausad. Spelets nödlösningar (en ersättare där en film saknas,
+- Spelet i studion står på egna ben i nuläget (Jakob 2026-11-23), med den fristående spelmotorn i `game/`; inget
+  flyttas från Scoutgaming. Paow är dealern och Pamela är pausad. Spelets nödlösningar (en ersättare där en film saknas,
   utgången baklänges) ger vika när banken har egna filmer (`src/game-director.ts`). Kärnans gräns mot sidan är prövad
   (`docs/SYSTEM.md`, "Gränsen mellan kärnan och presentationen"; `de1883c`) och sedd i en webbläsare 2026-11-18.
 - Realtidsmunnen har Jakobs ja (`paow-realtid-mun-6`, F). Koden och profilhashen finns i `tools/python/mouth-runner`.
