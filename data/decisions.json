@@ -27,7 +27,11 @@
       ],
       "asked": "2026-11-23",
       "from": "film",
-      "answer": null
+      "answer": {
+        "value": "nastan",
+        "note": "Rätt. men prova bara röra om filmen så hennes högerhand inte är så vriden vid nedsläpp. men i övrigt - perfekt",
+        "at": "2026-11-23T12:15:21.885Z"
+      }
     },
     {
       "id": "docka-paow-vandning",

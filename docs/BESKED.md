@@ -198,10 +198,10 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
 - **Nypet** (2026-11-13): i A2.1 håller tumme och pekfinger i själva det gula kortet, inte i skons kant.
 - **Kortet ur skon** (2026-11-12): "Ett kort ska tas som det ser ut i skon … Sedan ska handen vrida kortet." För Paow
   används skon med kortet i en öppning snett framtill.
-- **Fria händer med beställningstexterna** (2026-11-17): huvudagenten skriver om dem efter vad proven visar. En giv
-  beställs bara dit; returen är en egen film.
-- **Giv och återgång i samma film** (2026-11-23): "kanske ska samtidigt skapa en video som får henne att återkomma till
-  samma possition", klippt i två som standard. Prövas på en plats mot given bara dit innan det blir receptet.
+- **Fria händer med beställningstexterna** (2026-11-17): huvudagenten skriver om dem efter vad proven visar.
+- **Giv och återgång i samma film** (2026-11-23): provet till plats 5 fick "Rätt … i övrigt - perfekt". Återgången
+  klipps ut och sparas i banken automatiskt: "dessa är faktist nästa alltid bra".
+- **Högerhanden vid nedsläppet** (2026-11-23): den ska inte vara "så vriden vid nedsläpp"; given till plats 5 görs om så.
 - **V6 är arkiverad** (2026-11-20): råmaterialet och renderaren ligger i arkivet på D:, filmen och 18 rutor står kvar
   att titta på. V6 är ingen referens "att dö för"; dess kortstorlek kallade han "väldigt bra" (2026-11-12).
 - **Trailern är pausad** (2026-11-17): rollblad 4 med tatuerade händer har hans ja, men inget beställs och inget byts i
