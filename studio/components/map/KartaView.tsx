@@ -6,7 +6,8 @@
 // has and lacks (StepOrder). A click on a picture opens it large (StillViewer). Väg: he clicks pictures in order (A1, A2.3,
 // A3P4C1, A2.3; PathBar) and Spela plays the films of those steps back to back (PathPlayer, lib/tree-path.ts). What is chosen
 // lives in the address (?trad=…&steg=…&kant=…&tagning=…&vag=A1-A2.3-…), so a link opens a tree, a step, a take or a path;
-// /primara/ leads here.
+// /primara/ leads here. Several trees put together are a composition (?komposition=<id>, CompositionKarta): its chips stand
+// after the trees in the row.
 // Where the lab has no trees to give (the online copy; an older lab server until it is restarted) Karta draws the bank's own
 // map instead (BankKarta): every step of the bank with what the game plays on it, one film per seat.
 import { ReactFlowProvider, useReactFlow } from "@xyflow/react";
@@ -38,7 +39,9 @@ import { REST_EDGE } from "./rest.ts";
 import { StepOrder } from "./StepOrder";
 import { StillViewer } from "./StillViewer";
 import { TreeCanvas, TreeLegend, type PathMarks } from "./TreeCanvas";
+import { CompositionKarta } from "./CompositionKarta";
 import { TreeRow } from "./TreeRow";
+import { useCompositions } from "./useCompositions";
 import { useMedia } from "./useOlder";
 import { firstTree, useTrees } from "./useTrees";
 
@@ -102,7 +105,9 @@ export function KartaView() {
 function Karta() {
   const { dealer, readAt } = useBank();
   const trees = useTrees(dealer, readAt);
-  if (trees.answer?.trees.length) return <TreeKarta answer={trees.answer} />;
+  const { params, set } = useParams();
+  const composition = params.get("komposition");
+  if (trees.answer?.trees.length) return composition ? <CompositionKarta answer={trees.answer} id={composition} set={set} /> : <TreeKarta answer={trees.answer} />;
   if (trees.state === "loading")
     return (
       <Page title="Karta" full status={<BankStatus />}>
@@ -119,9 +124,10 @@ function Karta() {
 const SHOE_WORD: Record<string, string> = { READY: "nyp vid skon", "READY-B": "släp", "READY-C": "två händer" };
 
 function TreeKarta({ answer }: { answer: TreeAnswer }) {
-  const { bank, dealer } = useBank();
+  const { bank, dealer, readAt } = useBank();
   const { params, set } = useParams();
   const media = useMedia();
+  const compositions = useCompositions(dealer, readAt).answer?.compositions;
   const points = usePlanPoints();
   const [hover, setHover] = useState<string | null>(null);
   const view = answer.trees.find((v) => v.tree.id === params.get("trad")) ?? firstTree(answer) ?? answer.trees[0];
@@ -238,7 +244,7 @@ function TreeKarta({ answer }: { answer: TreeAnswer }) {
   );
 
   return (
-    <Page title="Karta" full status={<TreeRow trees={answer.trees} chosen={view.tree.id} onChoose={choose} />} actions={actions}>
+    <Page title="Karta" full status={<TreeRow trees={answer.trees} chosen={view.tree.id} onChoose={choose} compositions={compositions} onCompose={(id) => set({ komposition: id })} />} actions={actions}>
       <div className="absolute inset-0">
         <TreeCanvas view={view} layout={layout} media={media} active={step?.id ?? null} hover={hover} sheetOpen={sheetOpen} path={marks} onPick={pick} onHover={setHover} onOpen={open} />
       </div>

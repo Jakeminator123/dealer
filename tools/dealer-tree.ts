@@ -583,6 +583,16 @@ export async function treeCut(dealer: string, id: string): Promise<TreeCut | nul
     own: takes.filter(t => t.tree === view.home).map(t => t.id), drop: takes.filter(t => t.tree !== null && t.tree !== view.home).map(t => t.id)};
 }
 
+/**
+ * What a composition of trees is drawn from (tools/dealer-composition.ts): the dealer's trees drawn, her takes placed in them,
+ * and Material's pictures by entry id (the file and the name).
+ */
+export async function treeWorld(dealer: string): Promise<{views: TreeView[]; takes: TreeTake[]; pictures: Map<string, {path: string | null; name: string | null}>}> {
+  const w = await readWorld(dealer), pictures = new Map<string, {path: string | null; name: string | null}>();
+  for (const e of w.entries.values()) if (e.dealer === dealer) pictures.set(e.id, {path: e.path ?? null, name: e.name ?? null});
+  return {views: viewsOf(w, dealer), takes: placedTakes(w, dealer), pictures};
+}
+
 export async function serveTrees(req: IncomingMessage, res: ServerResponse, url: URL): Promise<void> {
   const send = (status: number, body: unknown) => { res.writeHead(status, {'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store'}); res.end(JSON.stringify(body)); };
   if (req.method !== 'GET') return send(405, {error: 'Bara GET.'});
@@ -644,7 +654,7 @@ export function lasmig(r: Report): string {
   L.push('', 'Raderna är posterna i `motions/` (tagningar och källfilmer) och filmmappar i `assets/motions/` utan post. En tagning som är skuren ur en källfilm har ingen egen mapp (0 MB); källfilmen bär storleken.', '');
 
   L.push('## Halvkopplat, per skäl', '', '| Dealer | Skäl | St | MB | Exempel | Troligt steg (förslag) |', '|---|---|---|---|---|---|');
-  const reasonKey = (s: string) => s.replace(/(paow|pamela)-[a-z0-9-]+/g, '…').replace(/\s+\([^)]*\)/g, '').slice(0, 90);
+  const reasonKey = (s: string) => s.replace(/paow-[a-z0-9-]+/g, '…').replace(/\s+\([^)]*\)/g, '').slice(0, 90);
   for (const dealer of r.dealers) {
     const half = r.rows.filter(x => x.dealer === dealer && x.group === 'halvkopplad'), by = new Map<string, typeof half>();
     for (const x of half) { const k = x.reason!.startsWith('äldre försök till') ? x.reason!.slice(0, x.reason!.indexOf(':')) : reasonKey(x.reason!); by.set(k, [...(by.get(k) ?? []), x]); }

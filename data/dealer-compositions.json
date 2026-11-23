@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "about": "Each dealer's compositions (Jakob 2026-11-23): two or more of her node trees (data/dealer-trees.json, by id) put together into one larger tree that the lab's game plays with ?komposition=<id>. trees: each tree and its share (80 and 20; share 0: the tree only lends what the others lack). bridges: where two trees may meet although their pictures differ, by the two pictures' entry ids in data/media-roles.json (A1 of one tree and A1 of another, or their anchors at the shoe); ab and ba are the bridge films each way (a path under assets/), and without one that way is a plain cut. shares: a film's share among the films of its own step, by take id. Rules and words: src/composition.ts. Written by Karta (studio/components/map/CompositionKarta.tsx) through tools/dealer-composition.ts.",
+  "dealers": {
+    "paow": {
+      "compositions": [
+        {
+          "id": "casino-tatuerad",
+          "name": "Casino + Tatuerad",
+          "trees": [
+            { "tree": "casino", "share": 80 },
+            { "tree": "tatuerad", "share": 20 }
+          ],
+          "bridges": [
+            {
+              "a": "paow-vila-ung-2",
+              "b": "paow-vila-tatuerad",
+              "ab": "assets/proofs/brygga-mellan-trad-20261123/bryggor/a1-till-a1-tatuerad-ton-020.mp4",
+              "ba": "assets/proofs/brygga-mellan-trad-20261123/bryggor/a1-tatuerad-till-a1-ton-020.mp4",
+              "seconds": 0.2
+            }
+          ],
+          "note": "Prov: träden möts i vilan över en övertoning på 0,2 s. Bryggfilmerna ligger i provmappen tills han har sagt ja."
+        },
+        {
+          "id": "tatuerad-med-lan",
+          "name": "Tatuerad, lånar av Casino",
+          "trees": [
+            { "tree": "tatuerad", "share": 100 },
+            { "tree": "casino", "share": 0 }
+          ],
+          "bridges": [
+            {
+              "a": "paow-vila-ung-2",
+              "b": "paow-vila-tatuerad",
+              "ab": "assets/proofs/brygga-mellan-trad-20261123/bryggor/a1-till-a1-tatuerad-ton-020.mp4",
+              "ba": "assets/proofs/brygga-mellan-trad-20261123/bryggor/a1-tatuerad-till-a1-ton-020.mp4",
+              "seconds": 0.2
+            }
+          ],
+          "note": "Prov: Tatuerad spelar allt den har; vilan, talet och dealerns kort lånas av Casino."
+        }
+      ]
+    }
+  }
+}

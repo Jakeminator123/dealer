@@ -46,7 +46,7 @@ export type BankData = {jobs?: BankJob[]; derived?: DerivedTake[]; edits?: EditT
 // ── Dealers ─────────────────────────────────────────────────────────────────
 // The bank holds the takes of several dealers; a graph is always one dealer's. DEALER is the bank's first dealer: whose a take
 // without a dealer field is, and the one a visitor meets when nothing chooses for them (no word in the address, nothing
-// remembered in the browser). Paow since Pamela left main (Jakob 2026-11-23; her archive: docs/DRIFT.md).
+// remembered in the browser). Paow (Jakob 2026-11-23).
 export const DEALER = 'paow';
 const dealerWord = (value: unknown): string | null => typeof value === 'string' && /^[a-z0-9]+$/.test(value) ? value : null;
 // Whose each take is, by id. Its own dealer field first; without one, a derived take is the dealer's whose film it is cut from (or

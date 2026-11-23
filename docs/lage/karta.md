@@ -9,8 +9,14 @@ en fillista.
   `tools/dealer-tree.ts` hittar varje film vars första och sista bild är trädets ankare och svarar Karta genom
   `GET /api/trees`. Måttet är 36 steg, en giv per kort (`src/dealer-trees.ts`).
 - Paow har tre träd i Karta: Casino 22/36 (det spelet spelar, händer utan tatueringar), Ingången 22/36 och Tatuerad
-  15/36 (byggs, från A2.3). Ingången ÄR Casino: den har bara A1, `shares: casino` och filmen före spelet som väg in,
+  19/36 (byggs, från A2.3). Ingången ÄR Casino: den har bara A1, `shares: casino` och filmen före spelet som väg in,
   men visas som ett eget träd.
+- En komposition lägger ihop träd (`data/dealer-compositions.json`, `src/composition.ts`, `tools/dealer-composition.ts`
+  bakom `/api/compositions`): andel per träd och per film på ett steg, lån av steg ett träd saknar, returen hem till sitt
+  eget ankare och kort 2 på kort 1:s film. Den står som chips efter träden i Karta, och labbets spel spelar den med
+  `?komposition=<id>` (`?trad=` går före). Paow har `casino-tatuerad` (80/20) och `tatuerad-med-lan`, båda 36/36.
+- Träden byter i vilan, där en brygga på 0,2 s är ren. Vid skon finns ingen: A2.1 och A2.3 skiljer 75 px i handen
+  (Prov `brygga-mellan-trad-20261123`; bryggfilmerna ligger i provmappen tills de får en roll).
 - A1 finns i två bilder med samma bildpunkter utanför händerna: `paow-vila-ung-2` (Casino) och `paow-vila-tatuerad`
   (Tatuerad; gäller i Material). Där kan träden bindas.
 - Jakob arkiverade 2026-11-23 Casinots A1 och A2.2 och den tatuerade A2.2 i Material. Casino behåller sina bilder:
@@ -25,19 +31,16 @@ en fillista.
 1. Vyerna hänger ihop. Gå igenom var Karta, Material, Scen & bord (Kortplan, Kön), Granska och spelet säger olika om
    samma träd, ankare eller film, och rätta orsaken. Kända fall: ett arkiverat ankare som ett träd spelar, plats 6
    via A2.2, och `SEAT_HUB` i `src/game-director.ts`.
-2. Träd som läggs ihop. Ingången blir en väg in i Casino, inte ett eget träd. Ett träd kan bygga på ett annat
-   (Tatuerad på Casino i A1) och låna steg det saknar; Karta visar vad som är eget och vad som är lånat. Skarven
-   mellan tatuerade och otatuerade händer avgör han med ögat.
-3. Varianter (huvudagentens förslag, hans ja väntar): en variant är en sekundär film på sitt steg, med samma första
-   och sista bild som stegets Primär, och han slår på och av den där. Ett eget träd bara när bilderna är andra. De
-   fria givarna (Prov `fria-givar-20261123`) förs in av filmbanan och ska synas så.
+2. Kompositionen inför hans öga, vyn och en runda i Casino; sedan Ingången som väg in i Casino, inte ett eget träd.
+3. Varianter: en variant är en sekundär film på sitt steg och får sin andel i kompositionen; ett eget träd bara när
+   bilderna är andra. De fria givarna (Prov `fria-givar-20261123`) förs in av filmbanan och ska synas så.
 4. Kameran som dimension. Karta öppnar på plats 4:s kamera; ett reglage, och musens hjul, byter till kamera 1–7 och
    visar samma träd med de ankare och filmer som finns från den stolen. Tomt där inget är gjort.
-5. Spelet väljer inte träd än (`buildGraph` blandar alla filmer). Föreslå hur ett valt träd med påslagna varianter
-   blir det spelet spelar; ändringen i spelet gör huvudagenten.
+5. Kort 3–7: spelet återbrukar bara kort 2. Förslaget är en givfilm till per plats, vid kort 5, och en egen film för
+   dealerns kort 3; avstånden står i kompositionens vy.
 
-**Väntar på Jakob.** Hans ja, i Karta, på hur sammanlagda träd, varianter och kameror visas, innan någon annan vy
-eller spelet läser ett nytt format.
+**Väntar på Jakob.** Hans ja, i Karta, på hur sammanlagda träd, varianter och kameror visas. I chatten: byte i vilan
+eller en bryggfilm vid skon, om händerna får blandas i en runda, och givfilmen vid kort 5.
 
 **Var saker ligger.** Kartabanans filer: `studio/app/karta/`, `studio/components/map/`, i `studio/lib/` filerna
 `map-layout.ts`, `tree-path.ts`, `primaries.ts` och `edge-stats.ts`, `src/dealer-trees.ts`, `tools/dealer-tree.ts`,

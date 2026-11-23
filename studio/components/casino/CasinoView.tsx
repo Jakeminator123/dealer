@@ -53,9 +53,11 @@ function Casino() {
   // The look the address asks for. A choice here writes the address, and the look and the frame follow it.
   const look = useMemo(() => readCasino(new URLSearchParams(query)), [query]);
   const [dropped] = useState(() => readCasino(new URLSearchParams(query)).ignored);
-  const go = (next: CasinoLook) => write(casinoSearch({ ...next, geometri: look.geometri, playback: look.playback, trad: look.trad })); // geometry, playback and the tree survive a look or table choice
+  const go = (next: CasinoLook) => write(casinoSearch({ ...next, geometri: look.geometri, playback: look.playback, trad: look.trad, komposition: look.komposition })); // geometry, playback and the tree or composition survive a look or table choice
   // The one tree the game plays (?trad=, Karta's Prova i Casino). The online copy has no trees and plays all her films.
   const trad = isSnapshot ? null : (look.trad ?? null);
+  // Several trees put together (?komposition=, Karta's Komposition); the lab's only, and a tree goes first.
+  const komposition = isSnapshot || trad ? null : (look.komposition ?? null);
   // The address says it all (preset, keys, table) from the start, so that it can be sent as it stands.
   useEffect(() => {
     const want = casinoSearch(look);
@@ -86,12 +88,12 @@ function Casino() {
 
   // ── the game in the frame: a new address loads it anew (a new element, so the studio's back button is not the frame's) ──
   // The dealer is the rail's: the game page reads it as its own word (?dealer=), so another dealer is another game in the frame.
-  const src = `${gameSrc({ ...look, trad })}&${new URLSearchParams({ [DEALER_PARAM]: dealer })}`;
+  const src = `${gameSrc({ ...look, trad, komposition })}&${new URLSearchParams({ [DEALER_PARAM]: dealer })}`;
   const frame = useRef<HTMLIFrameElement | null>(null);
   const [loaded, setLoaded] = useState<string | null>(null);
 
   const changed = Object.keys(look.patch).length;
-  useViewContext({ vy: "Casino", val: { forval: look.forval, bord: look.table, dealer: name, ...(trad ? { trad } : {}) } });
+  useViewContext({ vy: "Casino", val: { forval: look.forval, bord: look.table, dealer: name, ...(trad ? { trad } : {}), ...(komposition ? { komposition } : {}) } });
 
   return (
     <Page
@@ -107,6 +109,14 @@ function Casino() {
               <span>·</span>
               <span className="text-brass-hi" title="Spelet spelar bara det här trädets filmer; ett kort utan film läggs utan hand. Spelet säger på sin rad hur långt trädet är.">
                 träd {trad}
+              </span>
+            </>
+          ) : null}
+          {komposition ? (
+            <>
+              <span>·</span>
+              <span className="text-brass-hi" title="Spelet spelar kompositionens träd, vart och ett från sina egna ankare, med bryggan där två träd möts. Spelet säger på sin rad hur långt kompositionen är.">
+                komposition {komposition}
               </span>
             </>
           ) : null}

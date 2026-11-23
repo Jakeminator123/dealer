@@ -7,11 +7,12 @@
 //
 // What she says: a talk film (a rest take on request, with sound) is played whole at rest, before a step's chain of cards or after
 // it (speakMoments), or between rounds (say). A line without a film is said at the same moment, in the chat only.
-import {ARRIVE_EDGE, LEAVE_EDGE, dealHub, resolveRound, pickIdle, idleRange, idleExit, effectOf, IDLE_RULE, type FilmEffect, type Graph, type Take, type Segment} from './clip-graph.ts';
+import {ARRIVE_EDGE, LEAVE_EDGE, REVEAL_NODE, dealHub, formatEdge, parseEdge, playable, resolveRound, pickIdle, idleRange, idleExit, effectOf, IDLE_RULE, type FilmEffect, type Graph, type Step, type Take, type Segment} from './clip-graph.ts';
 import {CARRY, plausible, restFade, restOf, type CardRecord, type CardTrack} from './card-overlay.ts';
 import type {OverlayOptions} from './card-overlay-view.ts';
 import {slotOf, slotLabel, slotFilm, type Layout, type Pt, type TableCards} from './game-table.ts';
-import {hubChain, planBeats, SEAT_HUB, STAND_IN_FILM, type Beat, type FilmSignal} from './game-director.ts';
+import {hubChain, lyingAfter, planBeats, SEAT_HUB, STAND_IN_FILM, type Beat, type FilmSignal} from './game-director.ts';
+import type {Composer, Move, WovenBridge} from './composition.ts';
 import {placeLines, type MouthPatch} from './speech-patch.ts';
 
 // What this file uses of the scene's film queue.
@@ -240,6 +241,48 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     }
     return hubs;
   }
+  // ── a composition of trees (src/composition.ts, the lab's ?komposition=<id>): which tree plays each card, and the bridges ──
+  // Each tree has its own graph (its films only, its anchor at the shoe played as the shoe); `graph` is the tree the hand rests
+  // in, whose rest and talk films play between steps. Null: one graph, and everything below is as it was.
+  let composing: {composer: Composer; graphs: Readonly<Record<string, Graph>>} | null = null;
+  /** Runs fn with a tree's graph as the one the planning reads (filmless, toRest, seatHubs, fromHub). */
+  const within = <T>(of: Graph, fn: () => T): T => { const was = graph; graph = of; try { return fn(); } finally { graph = was; } };
+  /** The films a step may choose among in a tree's graph: its edge's from its pose, and the seat's where the card plays the seat's film. */
+  const stepFilms = (of: Graph, step: Step): string[] => { const ref = parseEdge(formatEdge(step.from, step.to)), e = ref ? of.edge[ref.base] : null; if (!ref || !e) return [];
+    return [...e.takes, ...(e.shares ? of.edge[e.shares]?.takes ?? [] : [])].filter(t => t.hub === ref.hub && playable(t) && !!t.media.video).map(t => t.id); };
+  /**
+   * One step of the game planned by the composition: each card given to a tree (composer.assign), each run of cards planned as
+   * that tree's own round, the runs joined with their bridges (composer.weave), a film chosen by its share where the
+   * composition sets one, and each tree's films resolved on its own graph. Null: the table does not know a card (planBeats says which).
+   */
+  function composed(nextTable: TableCards, signals: FilmSignal[], standIn: Readonly<Record<string, string>>): {beats: Beat[]; resolved: Segment[]; bridges: WovenBridge[]; breaks: string[]} | null {
+    const {composer, graphs} = composing!, home = composer.home!;
+    const moves = signals.filter(s => (s.type === 'deal' || s.type === 'reveal') && typeof s.shoeDraw === 'number'), slots = moves.map(m => slotOf(nextTable, m.shoeDraw!));
+    if (slots.some(slot => !slot)) return null;
+    const asked: Move[] = moves.map((m, i) => m.type === 'reveal' ? {reveal: true} : {deal: slotFilm(slots[i]!)});
+    // Whether the tree whose graph is read deals a card by hand: as planBeats decides it (its pose's four films, its own film, its stand-in).
+    const hubsOf = new Map<Graph, Record<string, string>>(), hubs = () => { let h = hubsOf.get(graph); if (!h) { h = seatHubs(); hubsOf.set(graph, h); } return h; }; // per tree, read once a step
+    const dealable = (film: string) => { const hub = dealHub(film, hubs()), other = standIn[film]; return (hub !== 'READY' && fromHub(hub, film)) || !filmless(film) || (!!other && !filmless(other)); };
+    const can = (tree: string, move: Move) => { const of = graphs[tree]; return !!of && within(of, () => 'reveal' in move ? !!resolveRound(of, [{from: 'IDLE', to: REVEAL_NODE}], {places})[0]?.video : dealable(move.deal)); };
+    const trees = composer.assign(asked, can), legs: {tree: string; beats: Beat[]}[] = [];
+    let lies = [...lying];
+    for (let i = 0; i < moves.length;) {
+      let j = i; while (j < moves.length && trees[j] === trees[i]) j++;
+      const tree = trees[i], of = tree ? graphs[tree] : undefined, run = moves.slice(i, j);
+      // Cards no tree can play from where the hand is are laid without a hand, as in a tree alone.
+      const beats = of ? within(of, () => planBeats(nextTable, lies, run, filmless, toRest, standIn, hubs(), fromHub)) : planBeats(nextTable, lies, run, () => true);
+      legs.push({tree: of ? tree! : home, beats}); lies = lyingAfter(lies, beats); i = j;
+    }
+    const woven = composer.weave(legs, (tree, card) => !!graphs[tree] && !!resolveRound(graphs[tree], [{from: card, to: 'READY'}], {places})[0]?.video);
+    // A film's share among its step's films; a return follows its deal, as always.
+    const beats = woven.beats.map((b, i) => { if (!b.step || b.kind === 'RETURN') return b; const pick = composer.film(stepFilms(graphs[woven.tree[i]], b.step)); return pick ? {...b, step: {...b.step, take: pick}} : b; });
+    const filmed = beats.map((b, i) => b.step ? i : -1).filter(i => i >= 0), resolved: Segment[] = [];
+    for (let k = 0; k < filmed.length;) {
+      let j = k; const tree = woven.tree[filmed[k]]; while (j < filmed.length && woven.tree[filmed[j]] === tree) j++;
+      resolved.push(...resolveRound(graphs[tree], filmed.slice(k, j).map(i => beats[i].step!), {places})); k = j;
+    }
+    return {beats, resolved, bridges: woven.bridges, breaks: woven.breaks};
+  }
   /** A talk film as a part of the queue: the whole film, at rest, with the cards lying as they lie, and with sound. */
   function talkPart(clip: string): FilmPart | null {
     const take = graph.takes[clip];
@@ -253,10 +296,11 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
    */
   async function play(signals: FilmSignal[], next: {table: TableCards; records: CardRecord[]}, landed: (beat: Beat, index: number) => void = () => {}, said: {before?: Said[]; after?: Said[]} = {}): Promise<{gaps: string[]; beats: Beat[]}> {
     const mine = ++token, leaving = resting, rate = dealTempo; resting = null;
-    const standIn = STAND_IN_FILM[graph.dealer] ?? {}, beats = planBeats(next.table, lying, signals, filmless, toRest, standIn, seatHubs(), fromHub);
+    const standIn = STAND_IN_FILM[graph.dealer] ?? {}, plan = composing ? composed(next.table, signals, standIn) : null;
+    const beats = plan?.beats ?? planBeats(next.table, lying, signals, filmless, toRest, standIn, seatHubs(), fromHub);
     table = next.table; records = next.records;
     // PLACE beats have no edge; the others are resolved as one chain, so each deal is cut where its return begins.
-    const filmed = beats.map((b, i) => b.step ? i : -1).filter(i => i >= 0), resolved: Segment[] = resolveRound(graph, filmed.map(i => beats[i].step!), {places});
+    const filmed = beats.map((b, i) => b.step ? i : -1).filter(i => i >= 0), resolved: Segment[] = plan?.resolved ?? resolveRound(graph, filmed.map(i => beats[i].step!), {places});
     const segments: (Segment | null)[] = beats.map(() => null); filmed.forEach((i, k) => { segments[i] = resolved[k]; });
     // What the step could not play as the bank has it, beat by beat: a card laid without a hand, a film missing, a stand-in; and what
     // the clip bank says of a film it does play (a seam, the other hand coming back, the other side of the card, a landing frame it
@@ -264,13 +308,20 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     const named = (s: Segment | null) => (s?.notes ?? []).filter(note => !note.startsWith('Kortets flytt')).map(note => `${s!.id}: ${note}`);
     const gaps = beats.flatMap((b, i) => [...(b.kind === 'PLACE' ? [`${b.own!.label}: ingen spelbar film, kortet läggs utan hand`] : !segments[i]?.video ? [`${segments[i]?.id}: ${segments[i]?.gap ?? 'ingen film'}`]
       : b.kind === 'DEAL' && b.own && b.step!.to !== slotFilm(b.own.slot) && standIn[slotFilm(b.own.slot)] === b.step!.to ? [`${b.own.label}: nödlösning, given med ${b.step!.to}s film, kortet ritat på sin egen plats`] : []), ...named(segments[i])]);
+    gaps.push(...(plan?.breaks ?? [])); // a composition's seams no bridge covers
     const loaded = await Promise.all(segments.map(s => trackOf(s?.video ? s.take : null)));
     if (mine !== token) return {gaps, beats};
     // A hole card that is turned later in this chain stays closed and without a value until that beat.
     const turn = beats.findIndex(b => b.kind === 'REVEAL'), hole = turn >= 0 ? beats[turn].own!.shoeDraw : null;
     const closed = hole === null ? records : records.map(r => r.shoeDraw === hole ? {...r, r: null, s: null, faceDown: true} : r);
-    const parts: FilmPart[] = [], beatOf: number[] = [], shows: (number | null)[] = [];
-    segments.forEach((s, i) => { if (!s?.video) return; beatOf.push(i);
+    const parts: FilmPart[] = [], beatOf: number[] = [], shows: (number | null)[] = [], bridged: boolean[] = [];
+    // A composition's bridge films, each before the beat it leads to (after the last: home to rest): no card is carried, and the
+    // cards lie as they do before that beat (a hole card about to be turned still lies closed).
+    const bridgesBefore = (i: number) => { for (const b of plan?.bridges ?? []) { if (b.before !== i || !b.film) continue;
+      const beat = beats[i], lies = !beat ? lyingAfter(lying, beats) : beat.kind === 'REVEAL' && beat.own ? [...beat.lying, beat.own.shoeDraw] : beat.lying;
+      bridged[parts.length] = true; beatOf.push(i); shows.push(null);
+      parts.push({path: b.film, start: 0, end: null, track: null, fps: b.fps, cards: cardOptions({own: null, lying: lies}, table, i <= turn ? closed : records, layout, carry, words)}); } };
+    segments.forEach((s, i) => { bridgesBefore(i); if (!s?.video) return; beatOf.push(i);
       const beat = beats[i], prev = beats[i - 1], deal = segments[i - 1], target = s.film?.target;
       // Respect the chosen hand mode for borrowed films too. Their final card still uses the game's own landing quad.
       const partCarry = carry;
@@ -283,6 +334,7 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
       const face = beat.kind === 'REVEAL' ? faceFrame(loaded[i]) : null;
       shows.push(face !== null && (s.end === null || face < s.end) ? Math.max(face, s.start) : null);
       parts.push({path: s.video, start: s.start, end: s.end, track: loaded[i], cards, frame: frameOf(s.take), ...fpsOf(s.take), ...modelOf(s.take)}); });
+    bridgesBefore(beats.length);
     let done = 0; // beats landed so far, in order
     const land = (upTo: number) => { for (; done < upTo; done++) { const beat = beats[done]; if (beat.own && beat.kind !== 'DEAL' && !lying.includes(beat.own.shoeDraw)) lying = [...lying, beat.own.shoeDraw]; landed(beat, done); } };
     // What she says before the cards and after them: the talk films around the chain, each line begun as its film begins.
@@ -290,12 +342,12 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     // A line due before the chain is said over the first of its films that has a mouth patch for it (placeLines in src/speech-patch.ts:
     // the patch lies inside the part's cut, its sound begins at most 8 s after the line's own part, one line a part). Its talk film is then not
     // played, and its chat line is written as its sound begins. The others are said as before.
-    const ready = mouths(), over = new Set<Said>(), chain = parts.map((p, k) => ({path: p.path, start: p.start, end: p.end, fps: p.fps ?? 30, frames: segments[beatOf[k]]?.take?.frames ?? null}));
-    const due = (t: Said) => ({key: t.key ?? '', from: t.beat ? Math.max(0, beatOf.findIndex(b => beats[b].kind === t.beat)) : 0});
+    const ready = mouths(), over = new Set<Said>(), chain = parts.map((p, k) => ({path: p.path, start: p.start, end: p.end, fps: p.fps ?? 30, frames: bridged[k] ? null : segments[beatOf[k]]?.take?.frames ?? null}));
+    const due = (t: Said) => ({key: t.key ?? '', from: t.beat ? Math.max(0, beatOf.findIndex((b, k) => !bridged[k] && beats[b].kind === t.beat)) : 0});
     if (ready.length) placeLines(before.map(due), chain, ready.map(m => m.patch)).forEach((at, k) => { if (!at) return; const t = before[k], m = ready.find(x => x.patch === at.patch)!;
       parts[at.part] = {...parts[at.part], mouth: {...m, begin: () => t.begin()}}; over.add(t); });
     if (rate > 1) parts.forEach((part, i) => {
-      const kind = beats[beatOf[i]].kind;
+      const kind = bridged[i] ? null : beats[beatOf[i]].kind;
       if ((kind === 'DEAL' || kind === 'RETURN') && !part.mouth && !part.sound && !part.rest) {
         part.rate = rate;
         part.absoluteRate = true;
@@ -349,7 +401,7 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     players.preload?.([...leave, ...arrive].map(p => p.path));
     await run(leave, cut); if (mine !== token) return {played: true, gaps};
     if (leave.length) { await away(arrive); if (mine !== token) return {played: true, gaps}; } // without a film she leaves no empty table to wait at
-    if (next) { graph = next; played.length = 0; }
+    if (next) { graph = next; played.length = 0; composing = null; }
     await run(arrive, true); if (mine === token) rest();
     return {played: true, gaps};
   }
@@ -382,7 +434,14 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     /** The mouth patches that may be laid on a step's films, asked for as each step begins (the page's, read and ready). */
     set mouths(next: () => Mouth[]) { mouths = next; },
     /** Another dealer's films from now on (she has come to the table); rest goes on with hers. */
-    use(next: Graph) { graph = next; tracks.clear(); played.length = 0; },
+    use(next: Graph) { graph = next; tracks.clear(); played.length = 0; composing = null; },
+    /**
+     * A composition of trees from the next step on (src/composition.ts): its composer and each tree's graph. The hand rests in
+     * the graph the film already plays (the composition's home tree). Null, or a composer without a home among the graphs: one
+     * graph, as before. Another dealer at the table ends it.
+     */
+    compose(next: {composer: Composer; graphs: Readonly<Record<string, Graph>>} | null) { composing = next?.composer.home && next.graphs[next.composer.home] ? next : null; },
+    get composing() { return composing !== null; },
     get graph() { return graph; },
     set(next: {table: TableCards; records: CardRecord[]; lying: number[]}) { table = next.table; records = next.records; lying = [...next.lying]; rest(); },
     get lying() { return [...lying]; },

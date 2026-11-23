@@ -10,7 +10,8 @@
 //
 // The game plays only takes with a verdict (judgedBank in src/game-director.ts): Jakob's, or a provisional one given in his place.
 // The one exception is a talk film, a rest take on request, which is played only when the dealer says its line (src/speech-lines.ts).
-// ?trad=<id> (Karta's Prova i Casino) narrows them to one tree's films (below, treeCut).
+// ?trad=<id> (Karta's Prova i Casino) narrows them to one tree's films (below, treeCut); ?komposition=<id> plays several trees
+// put together (below, composition).
 import {DEALER, buildGraph, effectOf, type Graph} from './clip-graph.ts';
 import {createScene, DEFAULTS, type SceneState} from './scene3d-view.ts';
 import {readRegister} from './scene3d-room.ts';
@@ -78,9 +79,16 @@ const nameOf = (id: string) => DEALERS.find(d => d.id === id)?.label ?? id;
 const treeWord = query.get('trad');
 const treeRead = treeWord === null ? null : Promise.all([fetch(`api/trees?dealer=${encodeURIComponent(dealer)}&trad=${encodeURIComponent(treeWord)}`).then(async res => ({status: res.status, answer: await res.json().catch(() => null)}), () => null),
   import('./dealer-trees.ts').catch(() => null)]);
+// Several trees put together (?komposition=<id>, Karta's Komposition; Jakob 2026-11-23): each tree plays its own films from its
+// own anchors, a share says how often each is chosen, and where two trees meet a bridge is played (src/composition.ts, from
+// GET /api/compositions?dealer=<id>&komposition=<id>, tools/dealer-composition.ts). The lab's only: the word is read when it is
+// there, ?trad= goes first, and a composition that cannot be read is said on the page while the game plays as without the word.
+const compositionWord = treeWord === null ? query.get('komposition') : null;
+const compositionRead = compositionWord === null ? null : Promise.all([fetch(`api/compositions?dealer=${encodeURIComponent(dealer)}&komposition=${encodeURIComponent(compositionWord)}`).then(async res => ({status: res.status, answer: await res.json().catch(() => null)}), () => null),
+  import('./composition.ts').catch(() => null)]);
 
-const [contract, placements, bank, first, register, lookCode, presetAnswer, treeAnswer] = await Promise.all([read('data/scene-contract.json', 'Scenkontraktet'), read('api/placements', 'Placeringsplanen'), read('api/clip-bank', 'Klippbanken'), read(`api/game${table}`, 'Spelet'), read('data/scene-rooms.json', 'Rumsregistret'),
-  lookAsked ? import('./game-look.ts').catch(() => null) : null, forval ? fetch(`api/scene-presets/${encodeURIComponent(forval)}`).then(res => res.ok ? res.json() : null, () => null) : null, treeRead]);
+const [contract, placements, bank, first, register, lookCode, presetAnswer, treeAnswer, compositionAnswer] = await Promise.all([read('data/scene-contract.json', 'Scenkontraktet'), read('api/placements', 'Placeringsplanen'), read('api/clip-bank', 'Klippbanken'), read(`api/game${table}`, 'Spelet'), read('data/scene-rooms.json', 'Rumsregistret'),
+  lookAsked ? import('./game-look.ts').catch(() => null) : null, forval ? fetch(`api/scene-presets/${encodeURIComponent(forval)}`).then(res => res.ok ? res.json() : null, () => null) : null, treeRead, compositionRead]);
 const registered = readRegister(register).rooms, roomIds = lookCode ? [...lookCode.BUILT_ROOMS, ...registered.map(r => r.id)] : [];
 // The look over the game's own settings: with a preset its whole look, else the address's keys; {} when none is asked for.
 // What could not be used is said in one line on the page, and the game plays with its own look in its place.
@@ -98,7 +106,14 @@ const fanWord = query.get('fan'), fanStep = fanWord !== null && Number.isFinite(
 // The tree's cut (treeRead above, src/dealer-trees.ts treePlay), or in plain words why the game plays as without it.
 const treeCut = treeWord === null ? {bank, line: null as string | null}
   : treeAnswer![1]?.treePlay(bank, treeWord, treeAnswer![0], nameOf(dealer)) ?? {bank, line: `Trädet "${treeWord.slice(0, 40)}" kunde inte läsas. Spelet spelar som vanligt, med alla hennes filmer.`};
-const plan = placements.plan ?? placements, judged = judgedBank(treeCut.bank), graphs = new Map<string, Graph>(), layout = createLayout(plan, {fan: fanStep, geometry});
+// The composition's cut (compositionRead above, src/composition.ts compositionPlay), or in plain words why the game plays as
+// without it. With one, the bank the page plays from is its home tree's: the tree the hand rests in, with the rest and talk films.
+const compositionCode = compositionAnswer?.[1] ?? null;
+const composition = compositionWord === null ? {cut: null, line: null as string | null}
+  : compositionCode?.compositionPlay(compositionWord, compositionAnswer![0], nameOf(dealer)) ?? {cut: null, line: `Kompositionen "${compositionWord.slice(0, 40)}" kunde inte läsas. Spelet spelar som vanligt, med alla hennes filmer.`};
+const homeTree = composition.cut ? composition.cut.home ?? composition.cut.trees[0]?.tree ?? null : null;
+const playedBank = composition.cut && compositionCode && homeTree ? compositionCode.treeBank(bank, composition.cut, homeTree) : treeCut.bank;
+const plan = placements.plan ?? placements, judged = judgedBank(playedBank), graphs = new Map<string, Graph>(), layout = createLayout(plan, {fan: fanStep, geometry});
 const graphOf = (id: string) => { let g = graphs.get(id); if (!g) { g = buildGraph(judged, {dealer: id}); graphs.set(id, g); } return g; };
 const graph = graphOf(dealer);
 // A rest film can ask the scene to show another room for a moment (FilmEffect in src/clip-graph.ts: the champagne film's flash turns
@@ -152,7 +167,7 @@ scene.set({format: GAME_OWN.format, room: room as never, blur: ROOMS.find(r => r
 if (Object.keys(asked).length) { scene.set({...asked, roomShift: 'cut'}); if (asked.roomShift) scene.set({roomShift: asked.roomShift}); room = asked.room ?? room; }
 scene.set({cards: cardsNow.cards}); // over the look: see cardsNow
 // The page's one line: which tree it plays (or why none), and what of the look could not be used.
-const pageNote = [treeCut.line, lookNote].filter(Boolean).join(' · ');
+const pageNote = [treeCut.line, composition.line, lookNote].filter(Boolean).join(' · ');
 if (pageNote) { const note = Object.assign(document.createElement('p'), {textContent: pageNote}); note.setAttribute('role', 'status');
   note.style.cssText = 'position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:30;margin:0;max-width:min(92%,680px);padding:6px 14px;border:1px solid rgba(226,191,109,.32);border-radius:999px;background:rgba(8,7,6,.84);color:#f6eedc;font-size:13px;pointer-events:none'; stage.append(note); }
 // Under a film before the game the room's own film waits (roomLife off until the lead, roomLifeBack): it was read and played for
@@ -170,6 +185,9 @@ const swayIn = () => { if (swayAsked > 0 && swayFrom === null && scene.state.dea
 scene.rebuild(); scene.start();
 new ResizeObserver(frame).observe(stage); frame();
 const film = createFilm(scene.players as unknown as FilmPlayers, graph, layout, path => fetch(path).then(res => res.ok ? res.json() : null));
+// A composition: each of its trees as a graph of its own (the home tree's is the page's own), and the composer that chooses among them.
+if (composition.cut && compositionCode && homeTree) { const cut = composition.cut;
+  film.compose({composer: compositionCode.createComposer(cut), graphs: Object.fromEntries(cut.trees.map(t => [t.tree, t.tree === homeTree ? graph : buildGraph(judgedBank(compositionCode.treeBank(bank, cut, t.tree)), {dealer})]))}); }
 // A bounded local A/B trial for silent card moves; speech and idle keep their own timing.
 if (query.has('dealTempo')) film.dealTempo = Number(query.get('dealTempo'));
 film.calm = introOn; // under the film before the game she only rests calmly: the film ends with her at rest
