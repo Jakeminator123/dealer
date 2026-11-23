@@ -27,7 +27,11 @@
       ],
       "asked": "2026-11-23",
       "from": "3d",
-      "answer": null
+      "answer": {
+        "value": "nastan",
+        "note": "Nja, ser inte exakt hur hennes fingrar beter sig vfid kortvändningen, men kanske. Dock är det som att henens framförallt vänsterarm inte är naturlig i förhållande till sko och kort(en), det är återigen som ngt fel i djupoet och aknske i distansen till skon och dess kort, det syns på hennes handled och armboge",
+        "at": "2026-11-23T08:48:55.841Z"
+      }
     },
     {
       "id": "vita-kanten-bort",
@@ -54,7 +58,11 @@
       ],
       "asked": "2026-11-23",
       "from": "film",
-      "answer": null
+      "answer": {
+        "value": "nastan",
+        "note": "saken nu är bara att hon nu greppar i \"luft\"/grönt. kanske okej, men beroende på vad som faktist är tanken.. Så att om vi säger såhär; om vi ska använda detta som A3'n' kanske vi i så fall ska fylla kantlinjen med det blåa. Ska detta göras för varje frame av en befintlig video så kan man ju kanske ta bort /ersätta det i alla fall med det överlägg av kort som ska komma på och in.. eller jag menar kortet är ju ändå bara referens för hur ett kort ska ersättas av det sätt som vi faktistska använda",
+        "at": "2026-11-23T08:51:55.279Z"
+      }
     },
     {
       "id": "a3p6c1-som-bild",
