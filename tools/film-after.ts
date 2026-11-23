@@ -139,7 +139,8 @@ export async function afterWork(id: string, take: number, options: Options = {},
   const pics = (order as {pictures?: {name: string; path: string | null; from?: {path?: string}}[]}).pictures ?? [];
   const firstEntry = pics.find(p => p.name === 'first.png'), firstFile = path.join(folder, 'first.png'), lastFile = path.join(folder, 'last.png');
   if (!existsSync(firstFile)) throw new Refused(`${id}: first.png saknas (${posix(firstFile)}); utan den finns varken grönt eller ton att gå efter.`);
-  const anchorFile = options.anchor ? path.resolve(options.anchor) : firstEntry?.from?.path && existsSync(path.join(root, firstEntry.from.path)) ? path.join(root, firstEntry.from.path) : firstFile;
+  // A first picture cut out of a film (a return that continues a give) names that film as its source: the picture as sent is then the anchor.
+  const anchorFile = options.anchor ? path.resolve(options.anchor) : firstEntry?.from?.path && /\.(png|jpe?g|webp)$/i.test(firstEntry.from.path) && existsSync(path.join(root, firstEntry.from.path)) ? path.join(root, firstEntry.from.path) : firstFile;
   const outDir = options.out ? path.resolve(options.out) : takeDir, film = path.join(outDir, 'after.mp4'), receipt = path.join(outDir, 'after.json'), part = path.join(outDir, 'after.part.mp4');
   for (const f of [film, receipt]) if (existsSync(f)) throw new Refused(`${posix(f)} finns redan; efterarbetet skriver aldrig över (det som ligger där kan vara det som banken gjordes av).`);
   if (path.resolve(film) === path.resolve(source)) throw new Refused('Utfilen får inte vara originalet.');

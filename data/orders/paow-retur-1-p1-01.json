@@ -165,8 +165,13 @@
     "Recept retur-1: inte prövat än."
   ],
   "createdBy": "huvudagenten, tools/order-new.ts",
-  "approval": null,
-  "status": "UTKAST",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-23T14:43:09.055Z",
+    "orderSha256": "5de40a55ada881f70253dd589855e6b78d284b5c30c40666eba27729f4814a21",
+    "mandate": "Jakob 2026-11-23: från det lagda kortet ska hon \"återgå till A1-vila direkt\"; provet för plats 5: \"Jättebra\"; inom mandatet dealer-b0-20261123"
+  },
+  "status": "GODKÄND",
   "id": "paow-retur-1-p1-01",
   "created": "2026-11-23T14:37:28.599Z"
 }

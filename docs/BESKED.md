@@ -179,6 +179,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   samma tvåhandsgiv som plats 1–5 har från A2.3.
 - **Naturlig rörelse går före dockans** (2026-11-23): dockans film är en grov ledning ("var inte extremt nitsk med
   dockans rörelse"); kortets vändning och hennes rörelser får filmen skapa fritt, "då dockan mest är en grund".
+- **Kortet vänds av hennes händer** (2026-11-23): filmen följer dockan "nitiskt"; dockan ska ha "mycket bra fog" för hur
+  kortet vänds och filmmodellen lite mer frihet där, inte "osynligt stoff". Given till plats 6: "Bra"; plats 7: "Inte bra".
 - **Kortplanen i Bordet gäller** (2026-11-23): har han ställt in korten där "så är det ju det som gäller såklart".
   Receptet för en A3-bild är ett och samma för varje dealer och plats, inte handarbete per dealer.
 - **Handleden vrider kortet** (2026-11-17): "Oavsett om hon nyper eller släpar ut kortet … måste hon vrida över
@@ -208,7 +210,7 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
 - **Giv och återgång i samma film** (2026-11-23): provet till plats 5 fick "Rätt … i övrigt - perfekt". Återgången
   klipps ut och sparas i banken automatiskt: "dessa är faktist nästa alltid bra".
 - **Sista given går direkt till vila** (2026-11-23): från det lagda kortet ska hon "återgå till A1-vila direkt" och "inte
-  passera A2.'n' över huvud taget"; ingången baklänges fick nej. Provet från kortet till vila (plats 5): "Jättebra".
+  passera A2.'n' över huvud taget"; ingången baklänges fick nej. Provet från kortet till vila (plats 5): "Jättebra", i Beslut "Ja, gör alla platser".
 - **Varianter på lek** (2026-11-23): till t.ex. plats 3 får hon göra "något helt annat": kasta upp kortet, låta det
   landa och rätta till det leende. Det som godkänns byggs in så att det hänger ihop med Scen & bord.
 - **Högerhanden vid nedsläppet** (2026-11-23): den ska inte vara "så vriden vid nedsläpp". Given till plats 5 gjordes

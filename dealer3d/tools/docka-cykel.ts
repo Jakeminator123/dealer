@@ -14,6 +14,9 @@
 // --sam-hand and --recipe-grip-yaw: "Naturlig" as it was before 2026-11-23 (natural-lab.ts AsBefore), her left hand at
 // the shoe as SAM read it, and the recipe's own angle of the hand on the card where nothing steers it (the lab's is −30):
 // to make a film made then again. The cycle's flags are dealer3d/tools/return-cycle.ts's, and left out they are its own defaults.
+// The landing (her right hand's end pose at the laid card, dealer3d/src/landing.ts; "Naturlig" only) is the standard's
+// (`lab.landing`), the default where it has none; --landning <id> lays that landing instead, without his own shaping. It
+// prints one line `landning <id>` ("landning ingen" where the way has no landing: Som förut, and from A2.1).
 import {createHash} from 'node:crypto';
 import {existsSync} from 'node:fs';
 import {readFile, writeFile} from 'node:fs/promises';
@@ -24,11 +27,12 @@ import {filmLens} from '../src/world.ts';
 import {dollNamed} from '../src/doll.ts';
 import {NO_STEER, layDeal, placeFrom, readDeal, recipeOf, standardName, type Entry, type ReadStored, type Recipe, type Steer, type Stored} from '../page/lay.ts';
 import {NO_KNOBS, gripYawOf, layNatural, withReturn, type AsBefore, type Knobs, type Way} from '../page/natural-lab.ts';
+import {LANDINGS, asBefore, landingOf, landingWords, shaped, type Landing} from '../src/landing.ts';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
-const USAGE = 'node dealer3d/tools/docka-cykel.ts --to <place, e.g. P5.C1> --out dealer3d/data/<new>.json [--from A2.3|A2.1] [--doll paow|standard] [--way naturlig|forut] [--no-standard] [--flat-hand] [--sam-hand] [--recipe-grip-yaw] [--hold <frame>] [--ready <frame>] [--duration <seconds>] [--lift <metres>]';
+const USAGE = 'node dealer3d/tools/docka-cykel.ts --to <place, e.g. P5.C1> --out dealer3d/data/<new>.json [--from A2.3|A2.1] [--doll paow|standard] [--way naturlig|forut] [--no-standard] [--flat-hand] [--sam-hand] [--recipe-grip-yaw] [--landning <id>] [--hold <frame>] [--ready <frame>] [--duration <seconds>] [--lift <metres>]';
 const {values} = parseArgs({options: {to: {type: 'string'}, out: {type: 'string'}, from: {type: 'string'}, doll: {type: 'string'}, way: {type: 'string'}, 'no-standard': {type: 'boolean'}, 'flat-hand': {type: 'boolean'},
-  'sam-hand': {type: 'boolean'}, 'recipe-grip-yaw': {type: 'boolean'}, hold: {type: 'string'}, ready: {type: 'string'}, duration: {type: 'string'}, lift: {type: 'string'}, help: {type: 'boolean', short: 'h'}}});
+  'sam-hand': {type: 'boolean'}, 'recipe-grip-yaw': {type: 'boolean'}, landning: {type: 'string'}, hold: {type: 'string'}, ready: {type: 'string'}, duration: {type: 'string'}, lift: {type: 'string'}, help: {type: 'boolean', short: 'h'}}});
 if (values.help) { console.log(USAGE); process.exit(0); }
 function fail(why: string): never { console.error(why); process.exit(1); }
 const place = values.to, out = values.out, dollName = values.doll ?? 'paow', entry = (values.from ?? 'A2.3') as Entry;
@@ -37,6 +41,7 @@ if (!['A2.1', 'A2.2', 'A2.3'].includes(entry)) fail('--from ska vara A2.3 eller 
 if (values.way && values.way !== 'naturlig' && values.way !== 'forut') fail('--way ska vara naturlig eller forut.');
 const number = (v: string | undefined, flag: string) => { if (v === undefined) return undefined; const n = Number(v); if (!v.trim() || !Number.isFinite(n)) fail(`${flag} ska vara ett tal.`); return n; };
 const before: AsBefore = {...(values['sam-hand'] ? {samHand: true} : {}), ...(values['recipe-grip-yaw'] ? {recipeGripYaw: true} : {})};
+if (values.landning !== undefined && !LANDINGS.some(l => l.id === values.landning)) fail(`--landning ska vara en av ${LANDINGS.map(l => l.id).join(', ')}.`);
 
 const file = (rel: string) => path.join(ROOT, rel), rel = (p: string) => path.relative(ROOT, path.resolve(p)).split(path.sep).join('/');
 const bytesOf = (rel: string) => readFile(file(rel)), sha = (b: Buffer | string) => createHash('sha256').update(b).digest('hex');
@@ -50,10 +55,12 @@ const recipeNamed = async (name: string) => { const recipe: Recipe = recipeOf(na
 const found = placeFrom(entry, place!); if (!found) fail(`${place} är ingen plats som docklabbet känner.`);
 if ('none' in found) fail(found.none === 'unbuilt' ? 'A2.2 är inte byggd: bara ankarbilden finns, ingen ställning är läst ur den och ingen giv börjar där.' : `${place}: docklabbet lägger ingen giv dit från ${entry} (${found.none === 'unread' ? 'ingen giv från A2.1 är läst dit; de lästa går till plats 1, 3, 4 och 5, kort 1' : found.none}).`);
 const standardPath = `dealer3d/standard/${standardName(dollName, entry, place)}.json`, saved = !values['no-standard'] && existsSync(file(standardPath));
-let steer: Steer = {...NO_STEER}, knobs: Knobs = structuredClone(NO_KNOBS), standard: string | null = null, savedLab: {recipe?: string; steer?: Partial<Steer>; naturlig?: {knobs?: Partial<Knobs>}} = {};
+let steer: Steer = {...NO_STEER}, knobs: Knobs = structuredClone(NO_KNOBS), standard: string | null = null, savedLab: {recipe?: string; steer?: Partial<Steer>; naturlig?: {knobs?: Partial<Knobs>}; landing?: unknown} = {};
 if (saved) { const b = await bytesOf(standardPath); savedLab = json(b).lab ?? {}; used[standardPath] = sha(b); standard = standardPath; }
 const read = 'read' in found;
-if (read && (values['flat-hand'] || values.way || values['sam-hand'] || values['recipe-grip-yaw'])) fail('Från A2.1 finns ett sätt, som given är läst: --way, --flat-hand, --sam-hand och --recipe-grip-yaw gäller given från A2.3.');
+if (read && (values['flat-hand'] || values.way || values['sam-hand'] || values['recipe-grip-yaw'] || values.landning)) fail('Från A2.1 finns ett sätt, som given är läst: --way, --flat-hand, --sam-hand, --recipe-grip-yaw och --landning gäller given från A2.3.');
+// The landing: the flag's, else the standard's, else the default (the hand as before).
+const landing: Landing = values.landning ? {id: values.landning as Landing['id']} : landingOf(savedLab.landing);
 
 // The deal with the standard doll, as the lab lays it the chosen way, and the file it is laid from.
 let way: Way | 'read', laid: Parameters<typeof withReturn>[0], recipe: Recipe | null = null, source: string;
@@ -65,25 +72,28 @@ else {
     way = dollName === 'standard' ? 'forut' : savedLab.naturlig ? 'naturlig' : 'forut';
     if (savedLab.recipe && savedLab.recipe !== recipe.from) ({recipe, pose} = await recipeNamed(savedLab.recipe)); }
   if (values['flat-hand'] && way !== 'naturlig') fail(`--flat-hand finns bara i Naturlig; ${place} läggs ${standard ? `som hans sparade standard (${standard}), ` : ''}i Som förut.`);
+  if (values.landning && way !== 'naturlig') fail(`--landning finns bara i Naturlig; ${place} läggs ${standard ? `som hans sparade standard (${standard}), ` : ''}i Som förut.`);
   laid = (way === 'naturlig' ? layNatural({plan, target: place, recipe: recipe!, pose, steer, lens, doll, before}).deal : layDeal({plan, target: place, recipe: recipe!, pose, steer})) as never;
   source = `dealer3d/data/${recipe!.from}.json`;
 }
 // Its return (return-cycle.ts checks the standard's arms), on the doll, moved as a person moves.
 const options = {holdThrough: number(values.hold, '--hold'), readyFrom: number(values.ready, '--ready'), durationSeconds: number(values.duration, '--duration'), liftMeters: number(values.lift, '--lift')};
-const done = withReturn(laid, {way, body: steer.body, knobs, lens, doll, source: {path: source, sha256: used[source]}, cycle: options, flatHand: !!values['flat-hand'], before});
+const done = withReturn(laid, {way, body: steer.body, knobs, lens, doll, source: {path: source, sha256: used[source]}, cycle: options, flatHand: !!values['flat-hand'], before, landing});
+const landingSaid = way === 'naturlig' ? landing : null;
 const cycle = done.cycle, motion = done.motion as typeof done.motion & {frames: {card: {c: number[]}; L: Limb; R: Limb}[]}, flatDeg = done.receipt?.frames.map(f => f.flatDeg ?? 0) ?? [];
 
 const words = place.replace(/^P(\d)\.C(\d)$/, 'plats $1 kort $2').replace(/^D\.C(\d)$/, 'dealerns kort $1'), WAY = {naturlig: 'Naturlig', forut: 'Som förut', read: 'som given är läst ur Pamelas film'};
 const how = standard ? `hans sparade standard ${standard} (${way === 'read' ? WAY.read : `i ${WAY[way]}`})` : way === 'read' ? WAY.read : `${WAY[way]}, inget reglage rört`;
-const about = `${doll.name === 'paow' ? 'Paow' : 'Standarddockan'}, ${entry} till ${words} och tillbaka till ${entry} i samma film, lagd som docklabbet lägger den: ${how}${values['flat-hand'] ? ', högerhanden plan vid nedsläppet (natural.ts flatHand)' : ''}${before.samHand ? ', vänsterhanden vid skon som SAM läste den' : ''}${before.recipeGripYaw ? ', handens vinkel på kortet receptets' : ''}. Skriven av dealer3d/tools/docka-cykel.ts; filmas med render-reference.ts --seconds ${cycle.frameCount / cycle.fps} --fps 24.`;
+const about = `${doll.name === 'paow' ? 'Paow' : 'Standarddockan'}, ${entry} till ${words} och tillbaka till ${entry} i samma film, lagd som docklabbet lägger den: ${how}${values['flat-hand'] ? ', högerhanden plan vid nedsläppet (natural.ts flatHand)' : ''}${before.samHand ? ', vänsterhanden vid skon som SAM läste den' : ''}${before.recipeGripYaw ? ', handens vinkel på kortet receptets' : ''}${landingSaid && !asBefore(landingSaid) ? `, landningen: ${landingWords(landingSaid).toLowerCase()}` : ''}. Skriven av dealer3d/tools/docka-cykel.ts; filmas med render-reference.ts --seconds ${cycle.frameCount / cycle.fps} --fps 24.`;
 const made = {tool: 'dealer3d/tools/docka-cykel.ts', place, from: entry, doll: doll.name, way, standard, recipe: recipe?.from ?? null, read: 'read' in found ? found.read : null, poseFilm: recipe ? recipe.poseFilm ?? 'till-ankare-2-3' : null, steer, knobs,
-  gripYaw: recipe && way !== 'read' ? gripYawOf(recipe, steer, way, before) : null, flatHand: !!values['flat-hand'], before, cycle: options, sources: used};
+  gripYaw: recipe && way !== 'read' ? gripYawOf(recipe, steer, way, before) : null, flatHand: !!values['flat-hand'], before, landing: landingSaid, landed: done.landing, cycle: options, sources: used};
 await writeFile(out, JSON.stringify({...motion, about, made}) + '\n', {flag: 'wx'});
 
 type Limb = {s: number[]; e: number[]; w: number[]; p: number[][]};
 const far = (a: Limb, b: Limb) => Math.max(...[a.s, a.e, a.w, ...a.p].map((q, i) => Math.hypot(...q.map((x, k) => (x - [b.s, b.e, b.w, ...b.p][i][k]) * 1000))));
 const first = motion.frames[0], last = motion.frames.at(-1)!, c = cycle.cycle;
 console.log(`skrev ${rel(out)}: ${motion.frames.length} rutor à ${cycle.fps}/s (${cycle.frameCount / cycle.fps} s); ${standard ? `hans standard ${standard}, ` : ''}${way === 'read' ? `från A2.1, ${'read' in found ? found.read : ''}` : `${WAY[way]}, receptet ${recipe!.from}${'lent' in found && found.lent && !standard ? ` (lånat: ${found.lent})` : ''}`}`);
+console.log(`landning ${landingSaid ? `${landingSaid.id}${shaped(landingSaid) ? ` (egen: ${landingWords(landingSaid).split(', egen: ')[1]})` : ''}` : 'ingen'}`);
 console.log(`kortet ligger från ruta ${cycle.rests}, given hålls t.o.m. ruta ${c.holdThrough}, lyftet ${c.liftStarts}-${c.liftEnds}, åter i ${entry} från ruta ${c.readyFrom}; armen för kort ${done.shortMm} mm${done.bodyShare === null ? '' : `; kroppen tar ${Math.round(done.bodyShare * 100)} % av styrningen`}`);
 const closes = [far(last.R, first.R), far(last.L, first.L)];
 console.log(`sista rutan mot första: höger hand och arm ${closes[0].toFixed(2)} mm, vänster ${closes[1].toFixed(2)} mm${Math.max(...closes) > 1 ? '  OBS: cykeln sluter inte' : ''}`);

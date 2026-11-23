@@ -25,7 +25,8 @@ slaskdisken.
   hennes filmer (38 cm bakom bordskanten, egna armbågar och händer); `?docka=paow`, `shoot.ts --doll paow`. Jakob
   2026-11-23 om vändningen vid platsen: "Bättre, men inte än", vänsterarmen ser fel ut mot skon. Scenens sko är rättad
   efter filmens samma dag, och vänsterhandens fingrar böjer mot handflatan (**Vänsterarmen vid skon**). Docklabbet:
-  Naturlig (Som förut kvar), giv från A2.1 eller A2.3, Giv och återgång; **Naturlig ställning**, **Ingång och återgång**.
+  Naturlig (Som förut kvar), giv från A2.1 eller A2.3, Giv och återgång, Landning (fem förval och egen, inte sedd av
+  Jakob); **Naturlig ställning**, **Ingång och återgång**, **Landningen**.
 - **Provet en giv, två stolar** (2026-11-20, Jakobs "Ja kör" i Beslut; prov `3d-prov-en-giv-tva-stolar-20261120`; hans
   "ja" på kortet samma dag, och 2026-11-21 "SAM-dockan ska in, men inte nu" i BESKED): given till plats 4 med ett 3D-kort från stol 4 och stol 1. SAM 3D Body över filmen
   `paow-giv-2-3-p4-h24-cykel-02-01` (varannan ruta) ser ut som en människa som ger från båda stolarna (underagentens
@@ -358,6 +359,17 @@ fingrar ska sitta som hennes innan dockan används.
   som förval (`NATURAL_GRIP_YAW`, Jakob samma dag), också för hans sparade standarder där värdet är tomt (`null`).
   Som förut och standarddockan ger samma rutor som före (avtryck på 34 lägen); Naturlig som förut fås med
   `docka-cykel.ts --sam-hand --recipe-grip-yaw`. Passningen: `tools/docka-hand.ts`.
+- **Landningen** (2026-11-23, Jakob: "det är alltid hennes mellanfinger som pekar ned kortet"; sedd i headless, inte
+  av honom). Valet Landning i docklabbet, bara i Naturlig: högerhandens slutpose vid det lagda kortet. Förvalen i
+  `src/landing.ts` (`LANDINGS`: id, svensk etikett och en engelsk mening för beställningen): `lang` (förval, handen
+  som förut), `pek`, `pek-lang`, `toppar` (topparna mot kortets mitt, så långt armen når), `platt`. Egen: fem reglage ovanpå ett förval
+  (hur långt in, rullad, handleden, spretar, fria fingrar böjda). Sparas som `lab.landing` {id och det han ändrat};
+  utan fältet är det `lang`, och `lang` utan reglage ändrar ingen siffra (`tests/landing.test.ts`; P3.C1, P6.C1 och
+  P5.C1 gav samma rutor före och efter). Handen kommer in från två rutor före beat g till rutan kortet ligger, står
+  still (också när kroppen rör sig vidare i en giv utan återgång) och går ut under lyftet; armbågen löses om med hennes ben, och en led som skulle gå ned i kortet lyfts
+  (kvittot `liftedMm`, labbet varnar). Struket: tummen och pekfingret som släpper vid kanten (i filmens storlek som
+  `pek`, tummen skymd). `platt` på P3 och P6: pekfingrets topp ligger strax utanför kortets sida. Mätskript och bilder:
+  `.runtime/docka-landning/`.
 - **Kedja paow-filmer**: ingångsfilmen till A2.3 (`data/till-ankare-2-3-c.json`) är standarddockans. `doll-pose.ts`
   på den börjar i hennes vila och slutar där paow-givarna börjar (armbågar och handleder 0,0 mm isär, prövat
   2026-11-23), men ingen film är gjord av den.
@@ -430,9 +442,12 @@ Det skriver en ny datafil och renderkommandot; `--from` är ingången (A2.3 om d
 givar), `--no-standard` lägger platsen som om ingen standard fanns, `--flat-hand` lägger högerhanden plan vid
 nedsläppet (bara Naturlig), `--sam-hand --recipe-grip-yaw` lägger Naturlig som före 2026-11-23, och cykelns flaggor är
 `return-cycle.ts`:s. Det styrda i en Naturlig standard går ut under återgången, så att sista rutan är den första.
+Landningen är standardens `lab.landing` (utan den `lang`); `--landning <id>` tar ett förval i stället (bara Naturlig).
+Verktyget skriver raden `landning <id>` (`ingen` utanför Naturlig, ` (egen: …)` med hans reglage), och kvittot i
+`made.landed`.
 
 ```powershell
-node dealer3d/tools/docka-cykel.ts --to P5.C1 --out dealer3d/data/<ny>.json [--from A2.1] [--doll paow] [--no-standard] [--flat-hand]
+node dealer3d/tools/docka-cykel.ts --to P5.C1 --out dealer3d/data/<ny>.json [--from A2.1] [--doll paow] [--no-standard] [--flat-hand] [--landning pek]
 ```
 
 Cykelverktyget bevarar given till och med ruta 76, lyfter handen 22 mm och återgår till exakt startruta från 116.

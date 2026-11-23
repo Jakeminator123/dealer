@@ -30,17 +30,17 @@
     }
   },
   "review": {
-    "decision": "ACCEPTED",
+    "decision": "REJECTED",
     "basis": "Inte granskad av Jakob: förd in från beställningen paow-giv-2-3-p7-01, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
     "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
     "productionReady": false,
     "provisional": {
-      "by": "huvudagenten dealer-c2 och en oberoende granskare",
-      "at": "2026-11-23T14:21:35.439Z",
-      "mandate": "Jakob 2026-11-13: \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"; 2026-11-23: fyll givarna från A2.3 till spelarnas C1 och tillbaka",
-      "note": "Giv till plats 7, kort 1: 4/5 (oberoende granskare). Kortet 0,2 px från planen. Anmärkning: kortet glider fritt cirka 12 px efter draget innan högerhanden tar det, och hon lutar sig långt."
+      "by": "huvudagenten dealer-c2, efter Jakobs anteckning i Prov",
+      "at": "2026-11-23T15:08:44.864Z",
+      "mandate": "Jakob 2026-11-23 i Prov om filmen till plats 7: \"Inte bra\"; i Beslut: \"Nästan\"",
+      "note": "Hans ord: kortet går från baksida till framsida utan att hennes händer vänder det (\"inte bara osynligt stoff\"). Dockans vändning behöver bättre grund och filmmodellen mer frihet i vändningen; given görs om."
     }
   },
   "order": {

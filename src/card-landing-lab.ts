@@ -1,0 +1,176 @@
+// Page code of kortlandning.html, a trial (Jakob 2026-11-23: "en provisorisk testyta … se över lite hur korten ser ut på
+// bordet vid och när de just är släppta"). One deal's landing plays in a loop over the raw film, and the drawn card is laid by
+// the game's own rules, unchanged (src/card-overlay.ts, src/card-overlay-view.ts, src/game-table.ts). Three ways to see it: the
+// film alone, the drawn card as it is today (one and the same quad from the frame it rests), and the trial of
+// src/card-settle.ts, where the card sets itself as it lands and comes back to its place as her hand leaves. The trial only
+// gives the overlay another place to land on for each frame. Nothing is saved, and neither the game nor the scene is changed.
+// The film is the raw one on its green table: the page is about the card's motion, not its light.
+//
+// The address's words: klipp (the film's clip id), lage (film, idag, prov), ruta (the film stands still on that frame),
+// zoom (1, 3 or 6), styrka (the trial's measures times this, to see which way the card goes).
+import {TABLE_GEOMETRY, PLAN_CARD_SIZE} from './card-plan.ts';
+import {createCardOverlay, type OverlayOptions} from './card-overlay-view.ts';
+import {sceneOf, planScene, restOf, restFade, restShare, restingQuad, type CardTrack} from './card-overlay.ts';
+import {centre, signedArea, type Pt} from './card-track.ts';
+import {createLayout, type Slot} from './game-table.ts';
+import type {PlacementPlan} from './placement-model.ts';
+import {SETTLE, STILL, releaseOf, settledLand, millimetres, type Settle} from './card-settle.ts';
+
+const el = <K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLElementTagNameMap[K]> = {}, ...kids: (Node | string)[]) => { const n = Object.assign(document.createElement(tag), props); n.append(...kids); return n; };
+const $ = (id: string) => document.getElementById(id)!;
+const panel = $('panel'), hud = $('hud'), frameBox = $('frame'), filmBox = $('film'), marks = $('marks');
+const video = $('video') as HTMLVideoElement, view = $('view') as HTMLCanvasElement, slider = $('tid') as HTMLInputElement, ctx = view.getContext('2d')!;
+const fail = (message: string) => { panel.append(el('p', {className: 'error', textContent: message})); hud.replaceChildren(el('span', {className: 'chip warn', textContent: message})); throw Error(message); };
+const read = async (url: string, what: string) => { const res = await fetch(url).catch(() => null); if (!res?.ok) fail(`${what} kunde inte läsas (${url}).`); return res!.json(); };
+const decimal = (v: number, digits = 0) => v.toFixed(digits).replace('.', ',');
+const query = new URLSearchParams(location.search);
+
+type Motion = {source?: {path?: string; fps?: number}; motion?: {kind?: string; to?: string; segment?: {clip?: string}}; review?: {decision?: string}};
+type Film = {clip: string; path: string; fps: number; to: string; slot: Slot};
+const [contract, placements, bank] = await Promise.all([read('data/scene-contract.json', 'Scenkontraktet'), read('api/placements', 'Placeringsplanen'), read('api/clip-bank', 'Klippbanken')]);
+const plan = (placements.plan ?? placements) as PlacementPlan;
+// The resting card by the card plan's rule, as the scene has it (src/scene3d-deal.ts): a real card through the table's lens.
+const scene = TABLE_GEOMETRY === 'lens' && plan.targets?.['P4.C1'] ? planScene(sceneOf(contract), plan) : sceneOf(contract);
+const layout = createLayout(plan, {geometry: TABLE_GEOMETRY});
+
+// The deals the bank plays (not the rejected ones), each one film; the newest anchor's first.
+const films: Film[] = [];
+for (const item of Object.values((bank.motions ?? {}) as Record<string, Motion>)) {
+  const to = item.motion?.to ?? '', clip = item.motion?.segment?.clip, at = /^(D|P([1-7]))\.C([1-3])$/.exec(to);
+  if (item.motion?.kind !== 'DEAL' || !clip || !at || !item.source?.path || item.review?.decision === 'REJECTED' || films.some(f => f.clip === clip)) continue;
+  films.push({clip, path: item.source.path, fps: item.source.fps ?? 30, to, slot: {owner: at[1] === 'D' ? 'D' : 'P', seat: Number(at[2] ?? 0), hand: 0, hands: 1, index: Number(at[3]) - 1}});
+}
+const newest = (f: Film) => f.clip.includes('-2-3-') ? 0 : 1;
+films.sort((a, b) => newest(a) - newest(b) || a.to.localeCompare(b.to) || b.clip.localeCompare(a.clip));
+if (!films.length) fail('Banken har inga givar att visa.');
+
+// ---- what he sets ----------------------------------------------------------------------------------------------------
+type Mode = 'film' | 'idag' | 'prov';
+const strength = Math.max(0, Number(query.get('styrka')) || 1);
+const look = {
+  mode: (['film', 'idag', 'prov'] as const).find(m => m === query.get('lage')) ?? 'prov' as Mode,
+  hand: 'film' as 'film' | 'object', // the card in her hand: the film's own, as the game has it, or the drawn one
+  rate: 0.5, zoom: [1, 3, 6].find(z => z === Number(query.get('zoom'))) ?? 1, scale: PLAN_CARD_SIZE, lines: false,
+  settle: {...SETTLE, bump: SETTLE.bump * strength, slide: SETTLE.slide * strength, turn: SETTLE.turn * strength} as Settle,
+};
+const still = query.get('ruta') !== null && Number.isFinite(Number(query.get('ruta'))) ? Math.round(Number(query.get('ruta'))) : null;
+
+// ---- the film on screen ----------------------------------------------------------------------------------------------
+const layer = document.createElement('canvas'), overlay = createCardOverlay(layer);
+let film = films.find(f => f.clip === query.get('klipp')) ?? films.find(f => f.clip === 'paow-giv-2-3-p4-02-01') ?? films[0];
+let track: CardTrack | null = null, land: Pt[] = [], loop = {from: 0, to: 0}, shown = 0, playing = still === null, loads = 0;
+const frames = () => track?.frames.length ?? 0;
+const timeOf = (frame: number) => (frame + 0.5) / film.fps, frameOf = (time: number) => Math.max(0, Math.min(frames() - 1, Math.floor(time * film.fps + 0.25)));
+const size = (q: Pt[]) => Math.sqrt(Math.abs(signedArea(q)));
+
+async function open(next: Film) {
+  const load = ++loads; film = next; track = null; video.pause(); hud.replaceChildren(el('span', {className: 'chip', textContent: 'Läser …'}));
+  const res = await fetch(`assets/tracking/${film.clip}/card-track.json`).catch(() => null), data = res?.ok ? await res.json() as CardTrack : null;
+  if (load !== loads) return;
+  if (!data || !restOf(data)) { hud.replaceChildren(el('span', {className: 'chip warn', textContent: data ? 'Kortet kommer aldrig till vila i den här filmen.' : 'Filmen har inget kortspår.'})); ctx.clearRect(0, 0, view.width, view.height); return; }
+  track = data; land = layout.quad(film.slot);
+  const rest = restOf(track)!.from, release = releaseOf(track)!, last = frames() - 1;
+  loop = {from: Math.max(0, rest - 30), to: Math.min(last, Math.max(rest, release.free) + 30)};
+  slider.min = String(loop.from); slider.max = String(loop.to);
+  const mark = (frame: number, text: string) => el('span', {textContent: text, style: `left:${(frame - loop.from) / Math.max(1, loop.to - loop.from) * 100}%`} as Partial<HTMLSpanElement>);
+  marks.replaceChildren(mark(rest, 'landar'), ...(release.held && release.leaves ? [mark(release.from, 'släpper'), mark(release.free, 'fri')] : []));
+  video.src = '/' + film.path.replace(/^\/+/, '');
+  await new Promise<void>(done => video.addEventListener('loadeddata', () => done(), {once: true}));
+  if (load !== loads) return;
+  view.width = video.videoWidth; view.height = video.videoHeight; fit();
+  video.playbackRate = look.rate; video.currentTime = timeOf(still ?? loop.from);
+  if (playing) void video.play().catch(() => { playing = false; controls.sync(); });
+}
+
+// The film fills the frame at one size for all, and a close view carries the card's place to the middle of the frame.
+function fit() {
+  const w = video.videoWidth || 1764, h = video.videoHeight || 1174, k = Math.min(frameBox.clientWidth / w, frameBox.clientHeight / h), bw = w * k, bh = h * k;
+  const left = (frameBox.clientWidth - bw) / 2, top = (frameBox.clientHeight - bh) / 2, c = land.length === 4 ? centre(land) : {x: w / 2, y: h / 2}, z = look.zoom;
+  const tx = z === 1 ? left : frameBox.clientWidth / 2 - c.x * k * z, ty = z === 1 ? top : frameBox.clientHeight / 2 - c.y * k * z;
+  Object.assign(filmBox.style, {width: `${bw}px`, height: `${bh}px`, transform: `translate(${tx}px,${ty}px) scale(${z})`});
+}
+new ResizeObserver(fit).observe(frameBox);
+
+// One frame: the film's own picture, and over it the card layer as the game's overlay draws it for this frame.
+function paint(frame: number) {
+  if (!track || !video.videoWidth) return;
+  shown = frame; slider.value = String(frame);
+  ctx.globalAlpha = 1; ctx.drawImage(video, 0, 0, view.width, view.height);
+  const trial = look.mode === 'prov', place = trial ? settledLand(land, track, frame, look.settle) : land;
+  if (look.mode !== 'film') {
+    // Under the game's line the card in her hand is the film's own, and the drawn card comes up under it over the frames of the
+    // hand-over (restFade, restShare): here the film's card gives way to the layer by the same share.
+    const fade = look.hand === 'film' ? restFade(track) : null, drawn = look.hand === 'object' || (fade !== null && frame >= fade.from);
+    const options: OverlayOptions = {scale: look.scale, split: false, card: {rank: 'A', suit: 'spades'} as OverlayOptions['card'], side: 'TRACK', bend: layout.material(film.slot)?.bend ?? 0.07, gloss: layout.material(film.slot)?.gloss ?? 0.35,
+      inFront: false, land: place, target: film.to, carry: drawn ? 'object' : 'film', placed: [], cards: null};
+    overlay.draw(video, frame, track, scene, options);
+    ctx.globalAlpha = fade && frame >= fade.from && frame < fade.to ? restShare(fade, frame).key : 1; ctx.drawImage(layer, 0, 0); ctx.globalAlpha = 1;
+  }
+  if (look.lines) { const line = (q: Pt[], colour: string, dash: number[]) => { ctx.strokeStyle = colour; ctx.lineWidth = 1; ctx.setLineDash(dash); ctx.beginPath(); q.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.closePath(); ctx.stroke(); ctx.setLineDash([]); };
+    line(land, '#ffffff', []); line(restOf(track)!.quad, '#ffe14d', [4, 3]); if (trial) line(place, '#ff7ac8', [2, 2]); }
+  facts(frame);
+}
+
+// What the film and the track say about this landing, as short chips over the film.
+function facts(frame: number) {
+  if (!track) return;
+  const rest = restOf(track)!, release = releaseOf(track)!, on = restingQuad(scene, land, look.scale).quad, more = (size(rest.quad) / (size(on) || 1) - 1) * 100;
+  const a = centre(rest.quad), b = centre(land), off = millimetres(land, {x: a.x - b.x, y: a.y - b.y});
+  const hand = !release.held ? 'Ingen hand på kortet efter landningen' : release.leaves ? `Handen lämnar ${release.from}–${release.free}` : 'Handen ligger kvar filmen ut';
+  hud.replaceChildren(...[`Ruta ${frame} av ${frames() - 1}`, `Landar ${rest.from}`, hand, `Filmens kort ${more >= 0 ? '+' : '−'}${decimal(Math.abs(more))} % mot det ritade`, `Filmen landar ${decimal(off)} mm från planens plats`]
+    .map(text => el('span', {className: 'chip', textContent: text})));
+}
+
+// The film tells when it shows a new frame; the loop turns back at its end.
+const next = () => { const v = video as HTMLVideoElement & {requestVideoFrameCallback?: (fn: (now: number, meta: {mediaTime: number}) => void) => number};
+  if (v.requestVideoFrameCallback) v.requestVideoFrameCallback((_now, meta) => tick(meta.mediaTime)); else requestAnimationFrame(() => tick(video.currentTime)); };
+function tick(time: number) {
+  const frame = frameOf(time); paint(frame);
+  if (playing && track && (frame >= loop.to || frame < loop.from)) video.currentTime = timeOf(loop.from);
+  next();
+}
+video.addEventListener('ended', () => { if (playing) { video.currentTime = timeOf(loop.from); void video.play(); } });
+next();
+video.addEventListener('seeked', () => paint(frameOf(video.currentTime))); // a film standing still on a frame shows it at once
+const go = (frame: number) => { playing = false; video.pause(); video.currentTime = timeOf(Math.max(0, Math.min(frames() - 1, frame))); controls.sync(); };
+const toggle = () => { playing = !playing; if (playing) void video.play(); else video.pause(); controls.sync(); };
+slider.addEventListener('input', () => go(Number(slider.value)));
+addEventListener('keydown', event => { if ((event.target as HTMLElement)?.tagName === 'SELECT') return;
+  if (event.key === ' ') { event.preventDefault(); toggle(); } else if (event.key === 'ArrowLeft') { event.preventDefault(); go(shown - 1); } else if (event.key === 'ArrowRight') { event.preventDefault(); go(shown + 1); } });
+
+// ---- the panel -------------------------------------------------------------------------------------------------------
+const controls = (() => {
+  const syncs: (() => void)[] = [], again = () => { for (const s of syncs) s(); fit(); paint(shown); };
+  const choice = <T,>(get: () => T, set: (value: T) => void, options: [T, string][]) => { const buttons = options.map(([value, text]) => { const b = el('button', {type: 'button', textContent: text}); b.addEventListener('click', () => { set(value); again(); }); syncs.push(() => b.setAttribute('aria-pressed', String(get() === value))); return b; });
+    return el('div', {className: 'btns seg'}, ...buttons); };
+  const range = (text: string, get: () => number, set: (value: number) => void, min: number, max: number, step: number, unit: string, digits: number) => { const input = el('input', {type: 'range', min: String(min), max: String(max), step: String(step)}), out = el('output');
+    input.addEventListener('input', () => { set(Number(input.value)); again(); }); syncs.push(() => { input.value = String(get()); out.textContent = `${decimal(get(), digits)} ${unit}`; });
+    return el('label', {className: 'row'}, text, input, out); };
+  const button = (text: string, act: () => void) => { const b = el('button', {type: 'button', textContent: text}); b.addEventListener('click', () => { act(); again(); }); return b; };
+  const group = (title: string, ...kids: Node[]) => el('fieldset', {}, el('legend', {textContent: title}), ...kids);
+  const s = look.settle, pick = el('select', {ariaLabel: 'Film'}, ...films.map(f => el('option', {value: f.clip, textContent: `${f.to} · ${f.clip}`})));
+  pick.value = film.clip; pick.addEventListener('change', () => void open(films.find(f => f.clip === pick.value)!));
+  const play = button('', toggle); syncs.push(() => { play.textContent = playing ? 'Paus' : 'Spela'; });
+  const lines = el('input', {type: 'checkbox'}); lines.addEventListener('change', () => { look.lines = lines.checked; again(); });
+  panel.append(
+    el('h1', {textContent: 'Kortets landning'}), el('p', {className: 'sub', textContent: 'Prov. Rå film på grön duk: här provas kortets rörelse, inte ljuset. Inget sparas.'}),
+    group('Film', pick),
+    group('Visa', choice(() => look.mode, v => { look.mode = v; }, [['film', 'Filmen'], ['idag', 'I dag'], ['prov', 'Prov']]),
+      el('p', {className: 'name', textContent: 'Kortet i handen'}), choice(() => look.hand, v => { look.hand = v; }, [['film', 'Filmens'], ['object', 'Ritat']])),
+    group('Fart', choice(() => look.rate, v => { look.rate = v; video.playbackRate = v; }, [[1, '1×'], [0.5, '½'], [0.25, '¼']]),
+      el('div', {className: 'btns seg'}, button('◀ ruta', () => go(shown - 1)), play, button('ruta ▶', () => go(shown + 1)))),
+    group('Storlek', choice(() => look.zoom, v => { look.zoom = v; }, [[1, 'Hela'], [3, 'Närbild'], [6, 'Nära']])),
+    group('Prov: kortet rör sig',
+      range('Sätter sig', () => s.bump, v => { s.bump = v; }, 0, 4, 0.1, 'mm', 1), range('Under fingrarna', () => s.slide, v => { s.slide = v; }, 0, 6, 0.1, 'mm', 1),
+      range('Vridet', () => s.turn, v => { s.turn = v; }, 0, 4, 0.1, '°', 1), range('Vägen tillbaka', () => s.frames, v => { s.frames = v; }, 2, 12, 1, 'rutor', 0),
+      range('Tidigare, senare', () => s.shift, v => { s.shift = v; }, -8, 8, 1, 'rutor', 0),
+      el('div', {className: 'btns'}, button('Förval', () => { Object.assign(s, SETTLE); }), button('Dubbelt', () => { Object.assign(s, {bump: SETTLE.bump * 2, slide: SETTLE.slide * 2, turn: SETTLE.turn * 2}); }), button('Stilla', () => { Object.assign(s, STILL); })),
+      el('p', {className: 'note', textContent: 'Kortet ligger en aning förbi sin plats och lite vridet under fingrarna, sätter sig när det landar och går tillbaka till planens plats när handen lämnar det.'})),
+    group('Det ritade kortet', range('Kortens storlek', () => look.scale, v => { look.scale = v; }, 0.8, 2, 0.05, '×', 2),
+      el('label', {className: 'check'}, lines, 'Visa planens plats (vit) och filmens kort (gul)')));
+  const sync = () => { for (const s of syncs) s(); };
+  sync();
+  return {sync};
+})();
+
+await open(film);

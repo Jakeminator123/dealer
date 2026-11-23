@@ -9767,6 +9767,114 @@
         "id": "paow-giv-2-3-p6-01",
         "take": 1
       }
+    },
+    {
+      "id": "paow-retur-1-p4-01-01",
+      "kind": "RETURN",
+      "from": "P4.C1",
+      "to": "IDLE",
+      "clip": "paow-retur-1-p4-01-01",
+      "frames": [
+        1,
+        72
+      ],
+      "purpose": "Beställning paow-retur-1-p4-01, tagning 1: Paow · Tillbaka till vila · A3P4C1.",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 3,
+      "promptText": "Locked camera, one continuous shot. Her hand on the blue card lifts off it, and the card stays where it lies. Both her hands come back low over the felt, palm down, and rest flat in front of her, as in the last frame. She moves naturally, like a practised dealer, with soft, relaxed arms and hands, and lifts her eyes to the camera as she comes to rest. The yellow card stays in the window of the shoe all the time.",
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-retur-1-p4-01/last.png",
+          "sha256": "27ea48dd3988bde492684a9533e4a5e18dafc9231bdeb93b3f514d00da1c9870"
+        },
+        "note": "Sista bilden i beställningen paow-retur-1-p4-01."
+      },
+      "order": {
+        "id": "paow-retur-1-p4-01",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-retur-1-p2-01-01",
+      "kind": "RETURN",
+      "from": "P2.C1",
+      "to": "IDLE",
+      "clip": "paow-retur-1-p2-01-01",
+      "frames": [
+        1,
+        72
+      ],
+      "purpose": "Beställning paow-retur-1-p2-01, tagning 1: Paow · Tillbaka till vila · A3P2C1.",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 3,
+      "promptText": "Locked camera, one continuous shot. Her hand on the blue card lifts off it, and the card stays where it lies. Both her hands come back low over the felt, palm down, and rest flat in front of her, as in the last frame. She moves naturally, like a practised dealer, with soft, relaxed arms and hands, and lifts her eyes to the camera as she comes to rest. The yellow card stays in the window of the shoe all the time.",
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-retur-1-p2-01/last.png",
+          "sha256": "ae3a0415a6e1935a23ed65a9554299d8047b20cd733e8763948e09c370a90740"
+        },
+        "note": "Sista bilden i beställningen paow-retur-1-p2-01."
+      },
+      "order": {
+        "id": "paow-retur-1-p2-01",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-retur-1-p1-01-01",
+      "kind": "RETURN",
+      "from": "P1.C1",
+      "to": "IDLE",
+      "clip": "paow-retur-1-p1-01-01",
+      "frames": [
+        1,
+        72
+      ],
+      "purpose": "Beställning paow-retur-1-p1-01, tagning 1: Paow · Tillbaka till vila · A3P1C1.",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 3,
+      "promptText": "Locked camera, one continuous shot. Her hand on the blue card lifts off it, and the card stays where it lies. Both her hands come back low over the felt, palm down, and rest flat in front of her, as in the last frame. She moves naturally, like a practised dealer, with soft, relaxed arms and hands, and lifts her eyes to the camera as she comes to rest. The yellow card stays in the window of the shoe all the time.",
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-retur-1-p1-01/last.png",
+          "sha256": "03a9b8c3cd8a045aca551ef55deaa82b519bdfd6cdee4cb469947d8fdad1715c"
+        },
+        "note": "Sista bilden i beställningen paow-retur-1-p1-01."
+      },
+      "order": {
+        "id": "paow-retur-1-p1-01",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-retur-1-p5-01-01",
+      "kind": "RETURN",
+      "from": "P5.C1",
+      "to": "IDLE",
+      "clip": "paow-retur-1-p5-01-01",
+      "frames": [
+        1,
+        72
+      ],
+      "purpose": "Beställning paow-retur-1-p5-01, tagning 1: Paow · Tillbaka till vila · A3P5C1.",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 3,
+      "promptText": "Locked camera, one continuous shot. Her hand on the blue card lifts off it, and the card stays where it lies. Both her hands come back low over the felt, palm down, and rest flat in front of her, as in the last frame. She moves naturally, like a practised dealer, with soft, relaxed arms and hands, and lifts her eyes to the camera as she comes to rest. The yellow card stays in the window of the shoe all the time.",
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-retur-1-p5-01/last.png",
+          "sha256": "5ebc5c0ff3236e58eb9df9c5d0777fd5cada5e46fde87e6da73d4daa999236bb"
+        },
+        "note": "Sista bilden i beställningen paow-retur-1-p5-01."
+      },
+      "order": {
+        "id": "paow-retur-1-p5-01",
+        "take": 1
+      }
     }
   ],
   "edits": [

@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-retur-1-p4-01-01",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-retur-1-p4-01-01/source.mp4",
+    "sha256": "e562e15a767c70068a467a02bcf4fbbfcb0fa508a406ca880d9f0fac4e708b73",
+    "bytes": 3121039,
+    "width": 1764,
+    "height": 1174,
+    "fps": 24,
+    "frames": 73,
+    "provider": "Runway developer API",
+    "model": "kling-4"
+  },
+  "motion": {
+    "kind": "RETURN",
+    "from": "P4.C1",
+    "to": "IDLE",
+    "takeHand": "RH",
+    "releaseHand": "RH",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "startsOn": {
+      "clip": "paow-giv-2-3-p4-02-01-deal",
+      "frame": 62
+    }
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob: förd in från beställningen paow-retur-1-p4-01, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
+    "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": false,
+    "productionReady": false,
+    "provisional": {
+      "by": "huvudagenten dealer-c2 och en oberoende granskare",
+      "at": "2026-11-23T15:11:18.001Z",
+      "mandate": "Jakob 2026-11-13: \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"; 2026-11-23: från kortet direkt till vila, i Beslut \"Ja, gör alla platser\"",
+      "note": "4/5: rak och låg väg till vila, handflatan ner, tatueringarna kvar; skarvarna håller och kortet ligger kvar. Blicken lyfts sent."
+    }
+  },
+  "order": {
+    "id": "paow-retur-1-p4-01",
+    "take": 1,
+    "path": "data/orders/paow-retur-1-p4-01.json",
+    "orderSha256": "54e0fb31a2b556068315433a06e8c188d8ab4d0b648705388912495b72390af8",
+    "receipt": "assets/orders/paow-retur-1-p4-01/receipt.json",
+    "taskId": "2be981a1-2b76-4491-a010-670fc5529a7b",
+    "delivered": {
+      "path": "assets/orders/paow-retur-1-p4-01/take-1/after.mp4",
+      "sha256": "e562e15a767c70068a467a02bcf4fbbfcb0fa508a406ca880d9f0fac4e708b73"
+    }
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/paow-retur-1-p4-01-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

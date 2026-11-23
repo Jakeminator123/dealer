@@ -162,10 +162,12 @@ function AskButton() {
 }
 
 // The pages beside the studio, reached at their own addresses: the sound and model pages (tools/lab-routes.ts PAGES),
-// which become parts of a later view (Efterarbete). Quiet links in the foot.
+// which become parts of a later view (Efterarbete), and the provisional trial of how a card comes to rest
+// (pages/kortlandning.html). Quiet links in the foot.
 const PAGE_LINKS: readonly { href: string; label: string; icon: ComponentType<{ className?: string }> }[] = [
   { href: "/sound.html", label: "Ljud", icon: Volume2 },
   { href: "/props.html", label: "Modeller", icon: Box },
+  { href: "/kortlandning.html", label: "Kortlandning (prov)", icon: Spade },
 ];
 
 export function Rail() {

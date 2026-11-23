@@ -4387,6 +4387,62 @@
           }
         },
         {
+          "id": "paow-film-retur-1-p4-01-t1",
+          "role": "film",
+          "name": "Paow · Tillbaka till vila · A3P4C1, tagning 1",
+          "path": "assets/films/paow/retur-1-p4-01-t1/source.mp4",
+          "still": 40,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Oberoende granskare 2026-11-23 (full upplösning, rutor och mått; belägg i .runtime/granskning-retur/). 4/5, förslag ACCEPTED: rak och låg väg, handflatan ner, tatueringarna kvar; nära vila redan ruta 30–36. Blicken lyfts sent (ruta 40–44); skohanden suddig ruta 13–21. Skarvarna håller, kortet ligger kvar.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-23"
+          }
+        },
+        {
+          "id": "paow-film-retur-1-p2-01-t1",
+          "role": "film",
+          "name": "Paow · Tillbaka till vila · A3P2C1, tagning 1",
+          "path": "assets/films/paow/retur-1-p2-01-t1/source.mp4",
+          "still": 40,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Oberoende granskare 2026-11-23 (full upplösning, rutor och mått; belägg i .runtime/granskning-retur/). 3,5/5, förslag ACCEPTED med anmärkning: låg väg, men kortets hand går först 108 px utåt och är suddig ruta 8–16; händerna läggs om sent (ruta 60–70). Skarvarna håller, kortet ligger kvar, skons kort står kvar.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-23"
+          }
+        },
+        {
+          "id": "paow-film-retur-1-p1-01-t1",
+          "role": "film",
+          "name": "Paow · Tillbaka till vila · A3P1C1, tagning 1",
+          "path": "assets/films/paow/retur-1-p1-01-t1/source.mp4",
+          "still": 40,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Oberoende granskare 2026-11-23 (full upplösning, rutor och mått; belägg i .runtime/granskning-retur/). 2/5, förslag VARIANT: båda händerna lyfter från filten och visar öppna handflator mot kameran (ruta 20–40), tillbaka i vilans form från ruta 54. En naturlig dealergest, men inte den låga raka vägen. Skarvarna in och ut håller (högst 0,9 px), kortet ligger kvar i alla rutor, skons kort står kvar.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-23"
+          }
+        },
+        {
+          "id": "paow-film-retur-1-p5-01-t1",
+          "role": "film",
+          "name": "Paow · Tillbaka till vila · A3P5C1, tagning 1",
+          "path": "assets/films/paow/retur-1-p5-01-t1/source.mp4",
+          "still": 40,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Oberoende granskare 2026-11-23 (full upplösning, rutor och mått; belägg i .runtime/granskning-retur/). 3/5, förslag VARIANT: lågt och helt, men kortets hand sveper en omväg över filten (220 px förbi viloläget, ruta 23–33) och läggs om sent (ruta 52–70). Skarvarna håller, kortet ligger kvar.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-23"
+          }
+        },
+        {
           "id": "paow-film-intro-noir-3-startruta",
           "role": "arbetsmaterial",
           "name": "Startrutan till filmen före spelet",
