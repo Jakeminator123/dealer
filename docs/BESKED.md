@@ -444,6 +444,14 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   förslag att ge de två platserna med vänster hand): "Och - nej, för de sista possitionerna så vill jag att hennes
   vänsterarm tar ut kortet, och att hennes högerarm tar emot och vänder upp för de där två possitionerna ändpå."
   Det är samma giv med två händer som plats 1–5 har från A2.3; dockan måste först kunna resa sig och luta sig dit.
+- **En A3-bild gjord som bild, prov på A3P6C1; kortplanen i Bordet gäller** (2026-11-23): "kanske ska du utifrån typ
+  inställningar ta och prova skapa en ankarbild för A3P6C1 då förslagsvis. Om jag dock ställt in att korten ska vara
+  p åett specefikt sätt i 'http://127.0.0.1:4319/studio/bordet/' så är det ju det som gäller såklart. Sedan om jag
+  gillar ankarbilden, så kan vi prova att generera en vide som alts är A2.3 till A3P6C1 eller så." Ordningen är
+  alltså: bilden, hans ja på bilden, sedan filmen med bilden som sista bild. Samma dag undrade han om A3-bilderna kan
+  göras "mer generiskt så man inte behöver skapa/återskapqa dessa för nya dealers som jag potentiellt sätt vill ha
+  in": receptet ska alltså vara ett och samma för varje dealer och plats (kortplanen, dealerns A2.3 och en pose per
+  plats), inte handarbete per dealer.
 
 - **Dockan ska se naturlig ut och ha dealerns mått, och en vald docka ersätter Siluett i studion** (2026-11-21,
   kl. 19.55): "om docka ska användas. Kolla då om dockan kan göras bättre så dockan inte ser onaturlig ut.. typ lite
