@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-ingang-2-1-tatuerad-01",
+  "title": "Från vila till nypet · beställd utanför Beställ (paow-ingang-2-1-tatuerad-pilot-4)",
+  "summary": "Gör en film av Paow: från vila till nypet. Beställd utanför Beställ genom Runways API (utvecklarprojektets krediter) och införd i efterhand ur liggaren.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "INGANG-2.1",
+    "label": "Från vila till nypet",
+    "edge": "IDLE>READY",
+    "shape": "ONE_WAY",
+    "cutInto": [],
+    "makes": null
+  },
+  "motion": null,
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · anchor.png",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-ingang-2-1-tatuerad-01/first.png",
+      "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0",
+      "from": {
+        "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+        "note": "ur liggaren ledger.json (assets/anchors/paow-vila-tatuerad/anchor.png)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Sista bild · a21-mal-2.png",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-ingang-2-1-tatuerad-01/last.png",
+      "sha256": "cd363c18da72e4d475e3afed17dad32088ee985aa15fcfd868782489b74893ff",
+      "from": {
+        "path": ".runtime/a21/a21-mal-2.png",
+        "note": "ur liggaren ledger.json (.runtime/a21/a21-mal-2.png)"
+      },
+      "waits": null
+    }
+  ],
+  "reference": {
+    "status": "INGEN",
+    "why": "Ingen referensfilm skickades (liggaren)."
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "kling-4",
+    "params": {
+      "resolution": "1080p",
+      "duration": 4
+    }
+  },
+  "prompt": {
+    "template": null,
+    "text": "Locked camera, one continuous shot. She moves naturally, like a practised dealer, with soft, relaxed arms and hands. Her hand nearest the shoe rises calmly from the felt, goes to the shoe unhurried and takes the top corner of the yellow card in the window between her thumb and fingertips, exactly as in the last frame, and holds it there, completely still, for the last second. Her other hand stays flat on the felt in front of her and does not move. Her eyes stay on the camera, with her calm, soft expression. The tattoos on the backs of her hands, on her fingers and on her throat keep their pattern all the way, sharp and clear. A yellow card shows in the window of the shoe all the time. The plain green background stays as it is.",
+    "sha256": "e4c3eebde0ddbd17b6bffc7e628fd2a2c833635ae9329b66962e8ceef89d46cc",
+    "extra": null,
+    "middle": false
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 76,
+    "total": 76,
+    "worstPerTake": 76,
+    "worstTotal": 76,
+    "basis": "liggaren: saldot före minus saldot efter"
+  },
+  "limits": {
+    "maxCredits": 76,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Beställd utanför Beställ: huvudagenten dealer-ac lade anropet genom Runways API (utvecklarprojektets krediter) (generate_video, kling-4) 2026-11-23T21:12:52.430Z, task a28e3354-5721-4cd4-a86c-9b63aae37fdc, 76 krediter (saldot 10073 före, 9902 efter).",
+    "Texten är den som skickades, ord för ord (liggarens body.promptText), inte promptFor:s."
+  ],
+  "created": "2026-11-23T21:12:52.430Z",
+  "createdBy": "huvudagenten dealer-ac",
+  "outside": {
+    "ledger": "c:/Users/jakem/dev/super-feature-sg/dealer/.runtime/natt-1121/api/ledger.json",
+    "ledgerSha256": "701a43883bba56ba25fc1c20e2b1bff24b2dba0cc447e1e42bddeb5d511a7bbf",
+    "entry": "paow-ingang-2-1-tatuerad-pilot-4",
+    "placedBy": "huvudagenten dealer-ac",
+    "approvedBy": "Prov utanför Beställ, inom mandatet dealer-ac-20261123 och på Jakobs ord 2026-11-23 kl. 21.10: \"Jag skulle vilja att vi ordnar så att A2.1 också blir me hennes aningen mindre händer och såklart tatueringarna\"; kl. 21.35 \"Kör på i övrigt\". Kling 4, 4 s, 1080p, utan referensfilm: första bild trädet Tatuerads A1 (paow-vila-tatuerad), sista bild pilot 2:s sista riktiga ruta med nyphanden förminskad 10 % kring fingertoppen på kortet (.runtime/a21/a21-mal-2.png, gjord av .runtime/a21/mal-2.py). Den oberoende granskaren fann att pilot 2 (målbild) höll bläcket men bar målbildens för stora hand, och att pilot 3 (ingen målbild) höll storleken men tappade rosen på handryggen. Här får modellen pilot 2:s bläck i hennes storlek. Filmens sista riktiga ruta är kandidaten till ett tatuerat A2.1.",
+    "mandate": null,
+    "importedAt": "2026-11-23T21:35:11.920Z",
+    "importedBy": "tools/order-import.ts",
+    "note": "Godkänd av huvudagenten före anropet, med orden i approvedBy; approval nedan är det godkännandet, skrivet när ordern fördes in, med hashen av ordern som den står här."
+  },
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-23T21:12:52.430Z",
+    "orderSha256": "e1b24280dbac96b370decd924bc53d2d32b770458c89042790839eca81a091fe",
+    "mandate": "Prov utanför Beställ, inom mandatet dealer-ac-20261123 och på Jakobs ord 2026-11-23 kl. 21.10: \"Jag skulle vilja att vi ordnar så att A2.1 också blir me hennes aningen mindre händer och såklart tatueringarna\"; kl. 21.35 \"Kör på i övrigt\". Kling 4, 4 s, 1080p, utan referensfilm: första bild trädet Ta"
+  },
+  "status": "GODKÄND"
+}
