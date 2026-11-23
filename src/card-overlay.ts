@@ -560,18 +560,21 @@ export const cardInFront = (overrides: Override[], frame: number) => overrides.s
 // light, the sharpness against the hand comes after.)
 // ?kortprov=mat changes nothing and only writes what each frame read (document.documentElement.dataset.kortprov), to measure the
 // page as it is.
+// ?kortprov=styvt is a trial of its own (Prov styvt-kort-20261123, Jakob 2026-11-23: a card has one size): the card's track is the
+// stiff card's (tools/python/kort-dataset/styvt_kort.ts), read from TRIAL.stiff the way spar reads its own; a film without such a
+// file keeps its stored track. Asked for by its own word only: ?kortprov=1 is as it was.
 // slew: how far the card's brightness (against the same card lying flat) may change per frame: the film's own card changes by at
 // most 0.116 per frame through a turn (13 of 255 on the face, paow-giv-2-3-p4-h24-cykel-02-01 frames 34-56), the jumps it removes
 // were about twice that. slope, decay: the same for the light's fall across the card (per film pixel) and for letting go of a fall
 // that is no longer read. smear: the mean, over all directions, of travel over edge band (smearOf).
-export const TRIAL = {word: 'kortprov', folder: 'assets/proofs/kort-fram-bak-20261120/spar', parts: ['spar', 'skarpa', 'ljus'] as const, slew: 0.12, slope: 0.0008, decay: 0.0002, smear: Math.PI / 2};
-export type TrialPart = typeof TRIAL.parts[number] | 'mat';
+export const TRIAL = {word: 'kortprov', folder: 'assets/proofs/kort-fram-bak-20261120/spar', stiff: 'assets/proofs/kortmodell-v2-20261123/spar', parts: ['spar', 'skarpa', 'ljus'] as const, slew: 0.12, slope: 0.0008, decay: 0.0002, smear: Math.PI / 2};
+export type TrialPart = typeof TRIAL.parts[number] | 'mat' | 'styvt';
 /** The trial's parts asked for by a page's address, or null: only Scen, only by its word. */
 export function trialParts(path: string, search: string): Set<TrialPart> | null {
   if (!/(^|\/)scene3d\.html$/.test(path)) return null;
   const word = new URLSearchParams(search).get(TRIAL.word); if (!word) return null;
   if (word === '1') return new Set<TrialPart>(TRIAL.parts);
-  const asked = word.split(',').filter(w => w === 'mat' || (TRIAL.parts as readonly string[]).includes(w)) as TrialPart[];
+  const asked = word.split(',').filter(w => w === 'mat' || w === 'styvt' || (TRIAL.parts as readonly string[]).includes(w)) as TrialPart[];
   return asked.length ? new Set(asked) : null;
 }
 /** The stored track with the trial's frames; the stored track itself when the trial's file is of another film (its clip, its number of frames). */

@@ -46,9 +46,9 @@ const BEND = 0.07, GLOSS = 0.35; // the lab's defaults for a target without its 
 const REACH = 0.25;        // the contact shadow reaches this share of the card beyond its edges
 const CONTACT = 0.45;      // its darkness right at the edge of a card lying on the felt
 const PAPER = [0.93, 0.91, 0.86]; // light on the paper of a card lying flat: a little warm, white print about as bright as the film's whites
-// The card seated in the shoe window, which every film shows (the shoe is part of the plate): film pixels, texture order. From
-// the first frame of pamela-p4-c1-plan-deal-02, where the card about to be dealt is the seated one; the P1, P7 and dealer deals
-// agree within half a pixel. A track that starts with its card in the shoe gives its own.
+// The card seated in the shoe window, which every film shows (the shoe is part of the plate): film pixels, texture order.
+// Measured from the first frame of a deal, where the card about to be dealt is the seated one; deals to P1, P7 and the
+// dealer agree within half a pixel. A track that starts with its card in the shoe gives its own.
 const SEATED = [[1292.9, 752.7], [1343.2, 777.8], [1283.2, 858.6], [1239.5, 831.4]];
 
 const VERTEX = `uniform mat3 cardH; uniform vec4 lens; uniform vec3 eye; uniform float edgeRow, edgeZ, lift, bend, tilt, shadeOn, localOn, lying, shadow, depthOnly;
@@ -369,12 +369,13 @@ export function createDealLayer(o: Options) {
   // ---- the lab trial "kortprov" (card-overlay.ts TRIAL): null unless Scen is opened with its word, and then nothing of it runs ----
   const trial = typeof location === 'undefined' ? null : trialParts(location.pathname, location.search);
   // spar: the trial's track in place of the film's own, fetched once per film by the clip's name; the stored track until it has come,
-  // and for good where there is none
+  // and for good where there is none. styvt: the same with the stiff card's track, from its own folder.
   const fetched = new Map<string, Pick<CardTrack, 'clip' | 'frames' | 'edgeWindow'> | null>(), swapped = new WeakMap<object, CardTrack>();
+  const folder = trial?.has('styvt') ? TRIAL.stiff : trial?.has('spar') ? TRIAL.folder : null;
   const trialOf = (stored: CardTrack | null): CardTrack | null => {
-    if (!trial?.has('spar') || !stored?.clip || !stored.frames) return stored;
+    if (!folder || !stored?.clip || !stored.frames) return stored;
     const done = swapped.get(stored); if (done) return done;
-    const clip = stored.clip; if (!fetched.has(clip)) { fetched.set(clip, null); fetch(`${TRIAL.folder}/${encodeURIComponent(clip)}.json`).then(r => r.ok ? r.json() : null).then(t => { if (t) fetched.set(clip, t); }).catch(() => {}); }
+    const clip = stored.clip; if (!fetched.has(clip)) { fetched.set(clip, null); fetch(`${folder}/${encodeURIComponent(clip)}.json`).then(r => r.ok ? r.json() : null).then(t => { if (t) fetched.set(clip, t); }).catch(() => {}); }
     const own = trialTrack(stored, fetched.get(clip) ?? null); if (own !== stored) swapped.set(stored, own); return own;
   };
   // ljus: the film's light on its card in this frame, read back from three pixels (READ_FRAGMENT) ...
