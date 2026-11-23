@@ -24,8 +24,8 @@ Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-
 
 1. Giv och återgång i en film är sättet (Jakob 2026-11-23): plats 1–5, kort 1, ligger i banken med kort i Beslut;
    plats 6 och 7 och kort 2 återstår ([film](docs/lage/film.md)).
-2. Dockan: en beställningsknapp i Scen & bord, Docka; −30 som handens förval, ingångarna A2.1–A2.3, återgång i
-   labbet och handen över skon ([LASMIG](dealer3d/LASMIG.md), "Naturlig ställning", Kvar).
+2. Dockan: en beställningsknapp i Scen & bord, Docka; −30 som handens förval, ingångarna A2.1–A2.3, återgång
+   och handen över skon ([LASMIG](dealer3d/LASMIG.md), "Naturlig ställning", Kvar).
 3. Jakobs plan, domar och orderutkast skrivs aldrig över; läs hans anteckningar med `node tools/proof-notes.ts`.
 4. P4.C2 Cykel01 är vald. Ordinarie spel återbrukar spelarnas C1 för C2/C3. Rundans 22 filmbehov täcks.
    Rundbyggarens P6 går via A2.2; D.C3 är redigerbart och valfritt ([kort](docs/lage/kort.md)).
