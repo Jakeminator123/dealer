@@ -269,6 +269,27 @@
       "lays": "RH",
       "check": null,
       "doll": "paow"
+    },
+    {
+      "id": "docka-paow-2-3-p5c1-naturlig-a",
+      "edge": "READY-C>P5.C1",
+      "path": "assets/references/docka/docka-paow-2-3-p5c1-naturlig-a/source.mp4",
+      "sha256": "5f2641b099ece116621b80b97f62245324897f3f8a723b3eb83f16096191524d",
+      "seconds": 3,
+      "lays": "RH",
+      "check": null,
+      "doll": "paow"
+    },
+    {
+      "id": "docka-paow-2-3-p5c1-naturlig-cykel-a",
+      "edge": "READY-C>P5.C1",
+      "path": "assets/references/docka/docka-paow-2-3-p5c1-naturlig-cykel-a/source.mp4",
+      "sha256": "33851bf64069fd1cabc5d4fd1a7e8653ac972a7984841ad2d753827351031370",
+      "seconds": 4,
+      "lays": "RH",
+      "shape": "ROUND_TRIP",
+      "check": null,
+      "doll": "paow"
     }
   ]
 }

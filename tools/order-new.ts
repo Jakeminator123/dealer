@@ -5,8 +5,8 @@
 // TEMPLATE_CHOICES, which the store checks the number against):
 //
 //   node tools/order-new.ts <dealer> <step> [<card>] [--mall 12|13|14] [--takes <n>] [--title "<namn>"] [--extra "<tillägg>"]
-//                           [--reference <id> | --no-reference] [--end <A3-kandidat> | --no-end] [--base <post>]
-//                           [--continues <order>] [--trad <träd>] [--docka <namn>] [--dry]
+//                           [--reference <id> | --no-reference] [--end <A3-kandidat> | --no-end] [--tur-retur]
+//                           [--sekunder <n>] [--base <post>] [--continues <order>] [--trad <träd>] [--docka <namn>] [--dry]
 //   node tools/order-new.ts paow "A2.3 - A3P4C2" --dry      (his notation, studio/lib/names.ts parseJakob: one film,
 //                                                           its step chosen by the anchor, GIV-2.3 here; "A2.3 - A1" is UTGANG-2.3)
 //
@@ -14,7 +14,9 @@
 // refuses a draft whose A1 or A2 picture is not one of that tree's anchors; without it the output names the trees each
 // picture belongs to. A deal to a seat with no end picture yet is made without a last picture, with no flag (the A3 is then
 // made from the delivered film's last frame with tools/landing-make.ts); --no-end asks for the same where the seat has
-// one. The reference film is a choice, as in Bordet: without a flag the
+// one. --tur-retur makes the deal a round trip (Jakob 2026-11-23: the deal and the way back to the first picture in one
+// film, cut where the card is let go; the last picture is then the first one with the card drawn where the plan says),
+// and --sekunder its length where it is not the recipe's. The reference film is a choice, as in Bordet: without a flag the
 // recipe's rule chooses it, and where the rule finds none the draft is made without one (its notes say what was not there);
 // --reference <id> names one, --no-reference takes none. --docka <namn>: the reference film is that dealer's own doll's
 // film for the edge (data/rendered-references.json, an entry with "doll"), which is never the default. --dry shows the draft (model, length, price, pictures, reference film, text) without writing it.
@@ -28,9 +30,9 @@ import { orderStore, type NewOrder, type StoreOptions } from './order-store.ts';
 import { STEPS, edgeOf, stepOfEdge, type Order, type RenderedReference, type StepKey } from '../src/order-model.ts';
 import { parseJakob } from '../studio/lib/names.ts';
 
-const VALUED = ['--mall', '--takes', '--title', '--extra', '--reference', '--end', '--base', '--continues', '--trad', '--docka'];
-const ALONE = ['--no-reference', '--no-end', '--dry'];
-const USE = 'Använd: node tools/order-new.ts <dealer> <steg> [<plats>] (eller <dealer> "A2.3 - A3P4C2") [--mall 12|13|14] [--takes <n>] [--title "<namn>"] [--extra "<tillägg>"] [--reference <id> | --no-reference] [--end <A3-kandidat> | --no-end] [--base <post>] [--continues <order>] [--trad <träd>] [--docka <namn>] [--dry]';
+const VALUED = ['--mall', '--takes', '--title', '--extra', '--reference', '--end', '--base', '--continues', '--trad', '--docka', '--sekunder'];
+const ALONE = ['--no-reference', '--no-end', '--tur-retur', '--dry'];
+const USE = 'Använd: node tools/order-new.ts <dealer> <steg> [<plats>] (eller <dealer> "A2.3 - A3P4C2") [--mall 12|13|14] [--takes <n>] [--title "<namn>"] [--extra "<tillägg>"] [--reference <id> | --no-reference] [--end <A3-kandidat> | --no-end] [--tur-retur] [--sekunder <n>] [--base <post>] [--continues <order>] [--trad <träd>] [--docka <namn>] [--dry]';
 
 /** His notation ("A2.3 - A3P4C2", "A2.3 → A1"): the step and the card of the one film it names. */
 export function stepOfNotation(text: string): { step: StepKey; target: string | null } {
@@ -67,6 +69,7 @@ export function newOrderOf(args: readonly string[]): { input: NewOrder; dry: boo
     dealer, step, target,
     template: number('--mall'), takes: number('--takes'), title: flags.get('--title'), extra: flags.get('--extra'),
     reference: alone.has('--no-reference') ? null : flags.get('--reference'), end: alone.has('--no-end') ? null : flags.get('--end'), base: flags.get('--base'), continues: flags.get('--continues'),
+    shape: alone.has('--tur-retur') ? 'ROUND_TRIP' : undefined, duration: number('--sekunder'),
     createdBy: 'huvudagenten, tools/order-new.ts',
   };
   for (const key of Object.keys(input) as (keyof NewOrder)[]) if (input[key] === undefined) delete input[key];
