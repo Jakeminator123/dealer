@@ -52,8 +52,7 @@ visar Perspektiv), `kortbanan-efter-filmerna`, `kort-bojning-glans`, `kortets-ba
 - Inget ankare krymps för skons skull: kortet i skons fönster är i stort sett rätt, och det Jakob såg som ett dubbelt
   så stort kort kom ur den äldre planens krympning nära dealern.
 - Sparade beställningar behåller sitt ritade kort, och planfilen `placements/default.json` skrivs bara från Bordet.
-- Tre verktyg står kvar på den gamla regeln med flit: `tools/build-anchor.ts` (frysta hashar),
-  `tools/card-coverage.ts` och `tools/placement-backdrop.ts`.
+- Två verktyg står kvar på den gamla regeln med flit: `tools/card-coverage.ts` och `tools/placement-backdrop.ts`.
 - Kortvärdet äger Scoutgaming: framsidan ska vara en ren yta, och valören ritas när rundan spelas.
 - Jakob vill inte välja bland kortvarianter: huvudagenten bestämmer linjen och visar resultatet i labbet först
   ([BESKED](../BESKED.md), "Kortet").

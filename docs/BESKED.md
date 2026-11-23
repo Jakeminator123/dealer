@@ -109,8 +109,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
 
 ## Dealern och ankarna
 
-- **Paow är dealern; Pamela är arkiverad ur main** (2026-11-23): hennes filmer och bilder ligger i
-  `D:/dealer-archive/pamela-2026-11-23/`, register och kvitton i Git-historiken. Om hennes filmer på sajten gäller "Jag vill ha kvar dem" (2026-11-12): fråga före nästa publicering.
+- **Paow är dealern; Pamela är arkiverad** (2026-11-23): "ingenting ska behöva ha dennes referenser. Vi har en docka som
+  används". Hon, V6 och originalen ligger i `D:/dealer-archive/`. Hennes filmer på sajten: fråga före publicering (2026-11-12).
 - **Namnet är Paow** (2026-11-18), inte Paulina; hennes utseende är "de yngre och nättare bilderna" (2026-11-12).
 - **Ingångsbild och keystone** (2026-11-12): ingångsbilden är det en ny dealer börjar från, "vilken bild som helst"; av
   den görs keystone, förlagan i hög upplösning, som aldrig spelas upp.
@@ -226,8 +226,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   plats 7 "Svinbra variant!"; Kortet bakom ryggen "hon ser inte ut som PAOW riktigt när hon tittar mot oss". Andra handen ska arbeta.
 - **Högerhanden vid nedsläppet** (2026-11-23): den ska inte vara "så vriden vid nedsläpp". Given till plats 5 gjordes
   om så, och givarna till plats 1–5, kort 1, med återgång fick hans "Ja, alla håller" i Beslut.
-- **V6 är arkiverad** (2026-11-20): råmaterialet och renderaren ligger i arkivet på D:, filmen och 18 rutor står kvar
-  att titta på. V6 är ingen referens "att dö för"; dess kortstorlek kallade han "väldigt bra" (2026-11-12).
+- **V6 är arkiverad** (2026-11-20; filmen och rutorna följde 2026-11-23): allt ligger i `D:/dealer-archive/v6-2026-11-23/`.
+  V6 är ingen referens "att dö för"; dess kortstorlek kallade han "väldigt bra" (2026-11-12).
 - **Trailern är pausad** (2026-11-17): rollblad 4 med tatuerade händer har hans ja, men inget beställs och inget byts i
   trailern tills han säger till.
 

@@ -6,8 +6,8 @@ Läs AGENTS.md, den här sidan och EN lägesfil för din bana. Ersätt inaktuell
 ## Läget
 
 - Målet är en trovärdig utdelning i spelet i studion: två kort till plats 1–7 och två eller tre till dealern, med
-  returer till redo och vila. Paow är dealern; Pamela är arkiverad ur main (BESKED; namnet bär kvar dockans rörelser `giv-pamela-*` och en scenfilm: skriv
-  vilken du menar). Projektet är tills vidare frikopplat från Scoutgaming (Jakob 2026-11-23).
+  returer till redo och vila. Paow är dealern; Pamela är arkiverad (BESKED). Projektet är tills vidare frikopplat från
+  Scoutgaming (Jakob 2026-11-23).
 - Labbet är en vy, Bordet, där en film beställs längs en rak linje: kortets plats och steget, receptet ger resten.
   Kommandot `node tools/order-new.ts` gör samma utkast; Karta visar varje dealers träd.
   Docka är en del av Bordet (`?lage=docka`): Docklabbet med Naturlig som förval, och dockans filmer bredvid tagningarna.
