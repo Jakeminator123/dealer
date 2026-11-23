@@ -16,7 +16,7 @@
 // no card object is drawn while a film shows its card; the passes that make the matte run here, on targets of the film's size.
 // The cards lying since earlier films are drawn as objects either way: a film lays one card, and later films do not show it.
 import * as T from 'three';
-import {poseAt, restOf, restFade, restShare, restingQuad, restingFilmPaperZone, returnCardAt, returnAfterFilmLanding, filmMarkerAt, sceneOf, planScene, cardRecord, cardFace, overridesOf, cardInFront, plausible, skirtSound, firstDrawn, turnOf, BACK, CARRY, FACE, UNDER, RIM, MARGIN, PLAUSIBLE, EASE, HOLD, TRIAL, trialParts, trialTrack, smearOf, lightStep, type CardTrack, type CardRecord, type Light, type LightRead} from './card-overlay.ts';
+import {poseAt, restOf, restFade, restShare, restingQuad, restingFilmPaperZone, returnCardAt, returnAfterFilmLanding, filmMarkerAt, sceneOf, planScene, cardRecord, cardFace, overridesOf, cardInFront, plausible, skirtSound, firstDrawn, turnOf, BACK, CARRY, FACE, UNDER, RIM, MARGIN, PLAUSIBLE, EASE, HOLD, TRIAL, trialParts, trialTrack, trackFolder, smearOf, lightStep, type CardTrack, type CardRecord, type Light, type LightRead} from './card-overlay.ts';
 import {centre, clockwise, grown, signedArea, sound, type Pt} from './card-track.ts';
 import {FILM, edgeQuad, heldScale, solveCamera, squareToQuad, type FilmCamera} from './scene3d-geometry.ts';
 import type {TableGeometry} from './card-plan.ts';
@@ -368,15 +368,17 @@ export function createDealLayer(o: Options) {
     return !!v && v.z > v.x && v.x <= SHOE_BOX[0] && v.y <= SHOE_BOX[1] && v.z >= SHOE_BOX[2] && v.w >= SHOE_BOX[3]; };
   // ---- the lab trial "kortprov" (card-overlay.ts TRIAL): null unless Scen is opened with its word, and then nothing of it runs ----
   const trial = typeof location === 'undefined' ? null : trialParts(location.pathname, location.search);
-  // spar: the trial's track in place of the film's own, fetched once per film by the clip's name; the stored track until it has come,
-  // and for good where there is none. styvt: the same with the stiff card's track, from its own folder.
+  // The card's track in place of the film's stored one, fetched once per film by the clip's name; the stored track until it has
+  // come, and for good where there is none. In Scen it is the stiff card's (card-overlay.ts trackFolder; only a film that has a
+  // stiff card, the file's `stiff`), with the word spar the trial's own. kant: the trial of the film card's white rim (`whole`).
+  // The file is asked for from the server's root, since the studio mounts this scene on its own pages.
   const fetched = new Map<string, Pick<CardTrack, 'clip' | 'frames' | 'edgeWindow'> | null>(), swapped = new WeakMap<object, CardTrack>();
-  const folder = trial?.has('styvt') ? TRIAL.stiff : trial?.has('spar') ? TRIAL.folder : null;
+  const folder = typeof location === 'undefined' ? null : trackFolder(location.pathname, location.search), rim = !!trial?.has('kant');
   const trialOf = (stored: CardTrack | null): CardTrack | null => {
     if (!folder || !stored?.clip || !stored.frames) return stored;
     const done = swapped.get(stored); if (done) return done;
-    const clip = stored.clip; if (!fetched.has(clip)) { fetched.set(clip, null); fetch(`${folder}/${encodeURIComponent(clip)}.json`).then(r => r.ok ? r.json() : null).then(t => { if (t) fetched.set(clip, t); }).catch(() => {}); }
-    const own = trialTrack(stored, fetched.get(clip) ?? null); if (own !== stored) swapped.set(stored, own); return own;
+    const clip = stored.clip; if (!fetched.has(clip)) { fetched.set(clip, null); fetch(`/${folder}/${encodeURIComponent(clip)}.json`).then(r => r.ok ? r.json() : null).then(t => { if (t && (folder !== TRIAL.stiff || t.stiff)) fetched.set(clip, t); }).catch(() => {}); }
+    const own = trialTrack(stored, fetched.get(clip) ?? null, rim); if (own !== stored) swapped.set(stored, own); return own;
   };
   // ljus: the film's light on its card in this frame, read back from three pixels (READ_FRAGMENT) ...
   let reader: {target: T.WebGLRenderTarget; material: T.ShaderMaterial; scene: T.Scene; camera: T.Camera; bytes: Uint8Array} | null = null;
@@ -538,7 +540,8 @@ export function createDealLayer(o: Options) {
         // The shoe's card has its own key. At rest the dealing key uses only the visible side, to avoid catching skin.
         const sides = pose.resting >= 0.5 ? (side === 'BACK' ? 0 : 1) : 2;
         key = {...key, zone, core: clockwise(own.map(([x, y]) => ({x, y}))).map(p => [p.x, p.y]), colour: COLOUR[side], sides, tint: edge ? 2 : side === 'FRONT' ? 1 : 0,
-          trust: edge ? 0 : Math.max(0, Math.min(1, ((marker?.confidence ?? shown?.confidence ?? 1) - 0.3) / 0.4)), rim: edge ? 7 : RIM, drawn: edge ? null : q, held: inHand, strength: share.key, over: cardInFront(overridesOf(track), pose.frame) && !edge ? q : null};
+          trust: edge ? 0 : Math.max(0, Math.min(1, ((marker?.confidence ?? shown?.confidence ?? 1) - 0.3) / 0.4)), rim: edge ? 7 : RIM, drawn: edge ? null : q, held: inHand, strength: share.key, over: cardInFront(overridesOf(track), pose.frame) && !edge ? q : null,
+          whole: !edge && shown?.whole?.length === 4 ? clockwise(shown.whole.map(([x, y]) => ({x, y}))).map(p => [p.x, p.y]) : null};
       }
     } else { hide(dealt); depth.visible = false; }
     o.film.setCards(key);

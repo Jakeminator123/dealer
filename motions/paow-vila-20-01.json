@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-vila-20-01",
+  "dealer": "paow",
+  "source": {
+    "path": "assets/motions/paow-vila-20-01/source.mp4",
+    "sha256": "bcc187352f6cb37395d710e7e2afa2a35c2a215116e7efcc76adcf02db237999",
+    "bytes": 7242304,
+    "width": 1764,
+    "height": 1174,
+    "fps": 30,
+    "frames": 118,
+    "provider": "Runway developer API",
+    "model": "wan3"
+  },
+  "motion": {
+    "kind": "IDLE",
+    "from": "IDLE",
+    "to": "IDLE",
+    "pass": false,
+    "basis": "SOURCE_FRAME_REVIEW",
+    "idle": {
+      "weight": 8,
+      "calm": true,
+      "label": "lugn vila",
+      "onRequest": false
+    }
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "basis": "Inte granskad av Jakob: förd in från beställningen paow-vila-20, tagning 1 (tools/register-order.ts). Oberoende rutgranskning: tools/film-review.md.",
+    "limitations": "I inkorgen: spelas bara där steget inte har någon annan film, tills Jakob dömer den.",
+    "colorDoesNotProvePhysicalSide": true,
+    "userAccepted": true,
+    "productionReady": false,
+    "userReview": "Jakob 2026-11-23: godkänd i labbet."
+  },
+  "order": {
+    "id": "paow-vila-20",
+    "take": 1,
+    "path": "data/orders/paow-vila-20.json",
+    "orderSha256": "31b8c37a06af54ac56cac269ddfe00cb7b9b59d4afa8b33dbac642413d8ee1ca",
+    "receipt": "assets/orders/paow-vila-20/receipt.json",
+    "taskId": "a835f55c-3ffd-4e56-be39-835a5cd6484f",
+    "delivered": {
+      "path": "assets/orders/paow-vila-20/take-1/after.mp4",
+      "sha256": "bcc187352f6cb37395d710e7e2afa2a35c2a215116e7efcc76adcf02db237999"
+    }
+  },
+  "postProcessing": "none",
+  "generationRef": "assets/motions/paow-vila-20-01/generation.json",
+  "jobRef": "data/clip-jobs.json",
+  "scoutIntegrated": false,
+  "published": false
+}

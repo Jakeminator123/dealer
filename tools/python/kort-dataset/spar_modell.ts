@@ -13,7 +13,8 @@
 //      kortet som sitter i skon.
 //   4. Det styva kortet (styvt_kort.ts): i en giv där kortet kommer till vila blir rutornas kort till sist ETT kort med fasta
 //      mått, flyttat och vridet i rummet och jämnat över filmen; rutan får `film` (filmens kort) och `quad` (det ritade).
-//      --utan-styvt skriver spåret som det var före det steget.
+//      --utan-styvt skriver spåret som det var före det steget. Har filmens liggande kort en vit kant kring färgen (läst i
+//      filmens egen bild, whiteRim; kräver ffmpeg) får rutan också `whole`, kortet med kanten.
 // Rutor där kortet sitter i skon och rutorna från vilan är dagens. Hörnens ordning följer spårets egen regel: första sidan
 // från sin första ruta, senare sidor bakifrån från vilan.
 import {readFile, writeFile, mkdir, readdir} from 'node:fs/promises';
@@ -22,6 +23,7 @@ import {gunzipSync} from 'node:zlib';
 import {alignCorners, centre, ends, signedArea, type Pt, type Side} from '../../../src/card-track.ts';
 import {plausible, type CardTrack} from '../../../src/card-overlay.ts';
 import {rigidFrames, STIFF, type Stiff} from './styvt_kort.ts';
+import {decodeFrame, W, H} from '../../order-images.ts';
 
 const BASE = 'D:/dealer-scratch/tmp/kort-dataset', args = process.argv.slice(2), dry = args.includes('--torr'), loose = args.includes('--utan-styvt');
 const version = Number(args[args.indexOf('--modell') + 1]) || 2, OUT = `assets/proofs/kortmodell-v${version}-20261123`;
@@ -46,6 +48,31 @@ type From = 'modell' | 'linje' | 'styv' | null;
 type Stored = CardTrack & {frames: TFrame[]; kind?: string};
 
 const pt = (p: number[]): Pt => ({x: p[0], y: p[1]}), r1 = (v: number) => Math.round(v * 10) / 10, arr = (q: Pt[]) => q.map(p => [r1(p.x), r1(p.y)]);
+// Whether the film's lying card has a white rim round its colour: the share of the ring 2 to 8 pixels outside the lying card that
+// is light and neutral in the film's own picture, where the card lies and in the film's last frame (the larger of the two: a hand
+// may lie over the card in one of them). A card without a rim has the screen's green there (0.00 in the four small-card films
+// without one); the five rimmed films have 0.30 to 0.53 (the thinnest rim is 2-4 pixels wide). And how wide the rim is (`width`):
+// out from each side of the lying card the white is followed at seven places, as far as it goes (RIM.reach at most; a gap of two
+// pixels ends it); the middle one of the seven is that side's, and the widest side's is the rim's, as a share of the card's mean side.
+const RIM = {from: 2, to: 8, light: 190, neutral: 40, share: 0.15, reach: 40};
+function whiteRim(clip: string, track: Stored): {ring: number; width: number} {
+  const q = track.restQuad?.length === 4 ? track.restQuad.map(pt) : null, none = {ring: 0, width: 0}; if (!q || track.restFrom == null) return none;
+  const file = (track as {source?: {path?: string}}).source?.path ?? `assets/motions/${clip}/source.mp4`; if (!existsSync(file)) return none;
+  const wind = Math.sign(signedArea(q)) || 1, out = (x: number, y: number) => Math.max(...q.map((a, i) => { const b = q[(i + 1) % 4], l = Math.hypot(b.x - a.x, b.y - a.y) || 1; return -wind * ((b.x - a.x) * (y - a.y) - (b.y - a.y) * (x - a.x)) / l; }));
+  const x0 = Math.max(0, Math.floor(Math.min(...q.map(p => p.x)) - RIM.to)), x1 = Math.min(W - 1, Math.ceil(Math.max(...q.map(p => p.x)) + RIM.to)), y0 = Math.max(0, Math.floor(Math.min(...q.map(p => p.y)) - RIM.to)), y1 = Math.min(H - 1, Math.ceil(Math.max(...q.map(p => p.y)) + RIM.to));
+  const side = q.reduce((t, a, i) => t + dist(a, q[(i + 1) % 4]), 0) / 4;
+  const read = (frame: number) => { const rgb = decodeFrame(file, frame); let ring = 0, light = 0, widest = 0;
+    const white = (x: number, y: number) => { if (x < 0 || y < 0 || x >= W || y >= H) return false; const i = (y * W + x) * 3, r = rgb[i], g = rgb[i + 1], b = rgb[i + 2]; return Math.min(r, g, b) > RIM.light && Math.max(r, g, b) - Math.min(r, g, b) < RIM.neutral; };
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) { const d = out(x + 0.5, y + 0.5); if (d < RIM.from || d > RIM.to) continue; ring++; if (white(x, y)) light++; }
+    for (let k = 0; k < 4; k++) { const a = q[k], b = q[(k + 1) % 4], l = dist(a, b) || 1, nx = wind * (b.y - a.y) / l, ny = -wind * (b.x - a.x) / l, runs: number[] = []; // (nx, ny): out of the card
+      for (let t = 0.2; t < 0.81; t += 0.1) { const px = a.x + (b.x - a.x) * t, py = a.y + (b.y - a.y) * t; let last = 0, gap = 0, begun = false;
+        for (let d = -3; d <= RIM.reach; d++) { if (white(Math.round(px + nx * d), Math.round(py + ny * d))) { begun = true; last = Math.max(0, d); gap = 0; } else if (begun ? ++gap > 2 : d > 6) break; }
+        runs.push(last); }
+      widest = Math.max(widest, median(runs)); }
+    return {ring: ring ? light / ring : 0, width: widest / side}; };
+  const a = read(Math.min(track.frames.length - 1, track.restFrom + 2)), b = read(track.frames.length - 1), two = (v: number) => Math.round(v * 100) / 100;
+  return {ring: two(Math.max(a.ring, b.ring)), width: two(Math.max(a.width, b.width))};
+}
 const dist = (a: Pt, b: Pt) => Math.hypot(a.x - b.x, a.y - b.y), mid = (a: Pt, b: Pt): Pt => ({x: (a.x + b.x) / 2, y: (a.y + b.y) / 2});
 const median = (v: number[]) => { const s = [...v].sort((a, b) => a - b); return s.length ? s[s.length >> 1] : 0; };
 const flat = (f: TFrame | undefined): f is TFrame & {quad: number[][]} => !!f && (f.side === 'BACK' || f.side === 'FRONT') && f.quad?.length === 4;
@@ -144,7 +171,8 @@ for (const clip of clips) {
   const measured: Card[][] = track.frames.map(() => []); for (const fr of m.frames) if (fr.f < measured.length) measured[fr.f] = fr.cards;
   const laid = modelFrames(track, measured), from = laid.from, n = laid.frames.length, end = Math.min(n, track.restFrom ?? n);
   // 4. the stiff card, in a deal whose card comes to rest; the measures below are of the model's own frames
-  const stiff = !loose && track.kind === 'DEAL' ? rigidFrames(track, laid.frames, from) : null, frames = laid.frames, written = (stiff?.frames ?? frames) as TFrame[], styvt: Stiff | null = stiff?.stats ?? null;
+  let ring: number | null = null; // the white share round the lying card, where it was asked for (a film with a small card)
+  const stiff = !loose && track.kind === 'DEAL' ? rigidFrames(track, laid.frames, from, () => { const white = whiteRim(clip, track); ring = white.ring; return white.ring >= RIM.share && white.width > 0 ? white.width : null; }) : null, frames = laid.frames, written = (stiff?.frames ?? frames) as TFrame[], styvt: Stiff | null = stiff?.stats ?? null;
   if (styvt) { total.styvt.filmer++; total.styvt.ryckFore += styvt.ryck[0]; total.styvt.ryckEfter += styvt.ryck[1]; total.styvt.franModellen += styvt.franModellen; total.styvt.burna += styvt.burna; }
   // the way: from the first frame where either track has the card out of the shoe to where it rests
   const has = (f: TFrame) => (f.shoeShare ?? 0) < 0.9 && (f.quad?.length === 4 || f.edge?.length === 2), first = track.frames.findIndex((f, i) => has(f) || has(frames[i]));
@@ -154,13 +182,14 @@ for (const clip of clips) {
     if (flat(t) !== flat(f) || (flat(t) && flat(f) && iou(t.quad.map(pt), f.quad.map(pt)) < RULE.apart)) apart.push(i);
     if (flat(t) && flat(f) && t.side !== f.side) otherSide.push(i); }
   const firstFront = written.findIndex(f => f.side === 'FRONT' && flat(f)), lastBack = firstFront < 0 ? -1 : Math.max(-1, ...written.filter(f => flat(f) && f.side === 'BACK' && f.frame < firstFront).map(f => f.frame));
-  const cut = from.slice(start, end).filter(v => v === 'styv').length, row = {clip, kind: track.kind ?? null, kalla: m.kalla, rutor: n, vila: track.restFrom, vag: [start, end], franModellen: from.slice(start, end).filter(Boolean).length, styva: cut, idag: a, modell: b, skiljer: apart, annanSida: otherSide, styvt};
+  const cut = from.slice(start, end).filter(v => v === 'styv').length, row = {clip, kind: track.kind ?? null, kalla: m.kalla, rutor: n, vila: track.restFrom, vag: [start, end], franModellen: from.slice(start, end).filter(Boolean).length, styva: cut, idag: a, modell: b, skiljer: apart, annanSida: otherSide, styvt, ...(ring == null ? {} : {vitRing: ring})};
   index.push(row); total.filmer++; total.rutor += end - start; total.franModellen += row.franModellen; total.styva += cut; total.skiljer += apart.length; total.annanSida += otherSide.length;
   for (const [k, v] of [['idag', a], ['modell', b]] as const) { total[k].stor += v.stor.length; total[k].liten += v.liten.length; total[k].utanKort += v.utanKort.length; total[k].behallna += v.behallna; }
   if (asked.length) console.log(clip, JSON.stringify({...row, kalla: undefined}));
   else if (dry && (a.stor.length || b.stor.length || b.liten.length)) console.log(clip, 'väg', start, end, '| stor idag', a.stor.join(','), '| modell', b.stor.join(','), '| liten idag', a.liten.join(','), '| modell', b.liten.join(','), '| styva', cut);
   if (!dry) { await mkdir(`${OUT}/spar`, {recursive: true});
-    await writeFile(`${OUT}/spar/${clip}.json`, JSON.stringify({clip, edgeWindow: lastBack >= 0 && firstFront > lastBack + 1 ? [lastBack + 1, firstFront - 1] : null,
+    // stiff: whether the frames are the stiff card's (what Scen reads by default, src/card-overlay.ts trackFolder) or only the model's own
+    await writeFile(`${OUT}/spar/${clip}.json`, JSON.stringify({clip, stiff: !!styvt, edgeWindow:lastBack >= 0 && firstFront > lastBack + 1 ? [lastBack + 1, firstFront - 1] : null,
       trial: {name: `kortmodell v${version}${styvt ? ', styvt kort' : ''}`, rule: `tools/python/kort-dataset/spar_modell.ts modelFrames${styvt ? ', styvt_kort.ts rigidFrames' : ''}`, measurement: `tools/python/kort-dataset/spar_modell.py (${m.kalla})`}, frames: written}).replace(/\{"frame"/g, '\n{"frame"') + '\n'); }
 }
 if (!dry && !asked.length) await writeFile(`${OUT}/index.json`, JSON.stringify({schemaVersion: 1, modell: version, regel: RULE, styvt: STIFF, summa: total, filmer: index}).replace(/\{"clip"/g, '\n{"clip"') + '\n');

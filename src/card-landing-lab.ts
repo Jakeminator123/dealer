@@ -112,7 +112,7 @@ async function open(next: Film) {
   const [stored, trial] = await Promise.all([maybe(`assets/tracking/${film.clip}/card-track.json`), film.row ? maybe(`${MODEL}/spar/${film.clip}.json`) : null]) as [(CardTrack & {fps?: string | number; source?: {path?: string}}) | null, CardTrack | null];
   if (load !== loads) return;
   if (!stored) { hud.replaceChildren(el('span', {className: 'chip warn', textContent: 'Filmen har inget kortspår.'})); ctx.clearRect(0, 0, view.width, view.height); return; }
-  today = stored; const laid = trial ? trialTrack(stored, trial) : stored; model = laid === stored ? null : laid;
+  today = stored; const laid = trial ? trialTrack(stored, trial, query.get('kant') === '1') : stored; model = laid === stored ? null : laid; // kant=1: the trial of the film card's white rim
   const [count, per = '1'] = String(stored.fps ?? '').split('/'), rate = Number(count) / Number(per); // the track writes the film's rate as "24/1"
   if (Number.isFinite(rate) && rate > 0) film.fps = rate;
   film.path = stored.source?.path ?? film.path; land = film.slot ? layout.quad(film.slot) : null;

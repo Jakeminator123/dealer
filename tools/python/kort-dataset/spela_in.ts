@@ -1,7 +1,8 @@
 // Spelar in Scen ruta för ruta, headless under det delade låset (samma lås, port och stängning som tools/lab-look.ts):
 // en bild per ruta, och det labbprovet "kortprov" läste i rutan (ljuset, oskärpan) i en json per variant.
 //   node tools/python/kort-dataset/spela_in.ts <klipp> <från> <till> <utmapp> <namn>=<kortprov-ord>@<bredd>x<höjd>[/<bildbredd>] ...   (spelets storlek: 1764x1174/640)
-//   ordet "mat" ändrar inget på sidan (dagens bild), "1" är hela provet; rutorna stegas framåt en i taget från fyra rutor före <från>.
+//   ordet "mat" ändrar inget på sidan (Scens förval: det styva kortet), "idag,mat" är filmens lagrade spår, "kant" provet med den vita
+//   kanten och "1" hela det äldre provet; rutorna stegas framåt en i taget från fyra rutor före <från>.
 import {spawn, execFileSync} from 'node:child_process';
 import {mkdirSync, writeFileSync, rmSync} from 'node:fs';
 import path from 'node:path';

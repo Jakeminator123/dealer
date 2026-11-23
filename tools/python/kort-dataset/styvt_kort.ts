@@ -18,6 +18,10 @@
 // kortet, delat med överläggets marginal, så att det ritade kortet har planens storlek hela vägen och inte krymper när det
 // landar). En film där det styva kortet hamnar mer än STIFF.fits bildpunkter från modellens hörn (kortet bärs högt i luften, som
 // i de äldre filmerna) behåller modellens rutor.
+// I några filmer har kortets färg en bred vit kant, som modellen inte räknar till kortet: filmens liggande kort mäter då under
+// STIFF.rimmed av ett riktigt kort. Där får rutan också `whole`: filmens kort i rutan med sin kant, alla sidor flyttade utåt så
+// långt som kanten är bred där kortet ligger (mätt i filmens egen bild) och lite till i handen (kanten är ojämnt bred och
+// flyttar sig från ruta till ruta). Det som är ljust och inte hud innanför den ytan är filmens kort och tas bort med det.
 import {TABLE_LENS, CARD, filmEye, see, onPlane, add, sub, mul, dot, cross, length, type Vec3} from '../../../src/table-lens.ts';
 import {centre, signedArea, type Pt, type Side} from '../../../src/card-track.ts';
 import {MARGIN, plausible, type CardTrack} from '../../../src/card-overlay.ts';
@@ -30,11 +34,16 @@ import {MARGIN, plausible, type CardTrack} from '../../../src/card-overlay.ts';
 // frame to the next costs (per squared pixel at the card's edge), the most the lean changes in a frame, and the most the card
 // leans about its other side, degrees. face: what a frame costs, in pixels, when the card shows another side than the model saw.
 // fits: the most the stiff card may lie from the model's corners (the median over the film, pixels) for the film to get it.
-// weights: how much a frame's card counts by where it came from.
-export const STIFF = {reach: 3, lambda: 1, huber: 2, lift: 0.05, liftPace: 4, still: 0.6, small: 0.6, pace: 0.03, swing: 45, most: 80, face: 12, fits: 8, weights: {modell: 1, styv: 0.5, idag: 0.5, kept: 0.15, linje: 0.3, bit: 0.1}};
-export type Frame = {frame: number; side: Side; quad: number[][] | null; edge: number[][] | null; area?: number; confidence?: number; shoeShare?: number; note?: string; film?: number[][] | null};
+// rimmed: a film whose lying card measures under this share of a real card may have a white rim round its colour (the five such
+// films from anchor 2.3 measure 0.84-0.92, the others 0.97-1.00; older films have smaller cards without a rim, so the film's own
+// picture is asked: whiteRim). rimSlack: how many times wider than measured the rim is taken to be while the card is carried (the
+// film's card is larger in the hand, leans, is smeared, and its measured colour lies a few pixels off) and where it lies. weights: how much a frame's card
+// counts by where it came from.
+export const STIFF = {reach: 3, lambda: 1, huber: 2, lift: 0.05, liftPace: 4, still: 0.6, small: 0.6, pace: 0.03, swing: 45, most: 80, face: 12, fits: 8, rimmed: 0.95, rimSlack: {carried: 1.8, lying: 1.25}, weights: {modell: 1, styv: 0.5, idag: 0.5, kept: 0.15, linje: 0.3, bit: 0.1}};
+export type Frame = {frame: number; side: Side; quad: number[][] | null; edge: number[][] | null; area?: number; confidence?: number; shoeShare?: number; note?: string; film?: number[][] | null; whole?: number[][] | null};
 export type Source = 'modell' | 'linje' | 'styv' | null;
-export type Stiff = {fran: number; filmkort: [number, number]; ryck: [number, number]; franModellen: number; burna: number; hojd: number; kant: number; lutar: [number, number][]; kring: string};
+// vitKant: in a film with a white rim, the rim's width where the card lies, as a share of the card's mean side
+export type Stiff = {fran: number; filmkort: [number, number]; ryck: [number, number]; franModellen: number; burna: number; hojd: number; kant: number; lutar: [number, number][]; kring: string; vitKant?: number};
 type Pose = {c: Vec3; a: Vec3; u: Vec3}; // the card's middle (metres), its short and its long direction
 type Obs = {quad: Pt[] | null; at: Pt; w: number; side: 'BACK' | 'FRONT' | null; run: number};
 
@@ -97,7 +106,7 @@ export function even(values: (number | null)[], weights: number[], end: number, 
  * The frames with the card as one stiff card (see the head of this file), and what came of it; null for a film whose card never
  * comes to rest on the felt, or where the fit does not hold: such a film keeps the frames it had.
  */
-export function rigidFrames(track: CardTrack, frames: Frame[], from: Source[]): {frames: Frame[]; stats: Stiff} | null {
+export function rigidFrames(track: CardTrack, frames: Frame[], from: Source[], whiteRim?: () => number | null): {frames: Frame[]; stats: Stiff} | null {
   const end = track.restFrom, rq = track.restQuad?.length === 4 ? track.restQuad.map(pt) : null; if (end == null || !rq || end > frames.length) return null;
   const flat = (f: Frame | undefined): f is Frame & {quad: number[][]; side: 'BACK' | 'FRONT'} => !!f && (f.side === 'BACK' || f.side === 'FRONT') && f.quad?.length === 4;
   let first = -1; for (let i = Math.max(0, track.leavesShoe ?? 0); i < end && first < 0; i++) if ((from[i] === 'modell' || from[i] === 'styv') && flat(frames[i])) first = i;
@@ -172,15 +181,24 @@ export function rigidFrames(track: CardTrack, frames: Frame[], from: Source[]): 
   const wind = Math.sign(signedArea(rq)) || 1, order: number[][] = new Array(n); { let next: Pt[] = rq;
     for (let i = n - 1; i >= 0; i--) { const all = corners(final[i], REAL), way = Math.sign(signedArea(all)) || 1, fits = DIHEDRAL.filter(m => ((m[1] - m[0] + 4) % 4 === 1) === (way === wind) && ((m[0] + m[1]) % 4 === 1) !== lying.first);
       order[i] = fits.map(m => ({m, d: m.reduce((t, k, j) => t + far(all[k], next[j]), 0)})).sort((p, q) => p.d - q.d)[0].m; next = order[i].map(k => all[k]); } }
-  const out = frames.map(f => ({...f})), size = Math.sqrt(share[0] * share[1]), fit: number[] = []; let held: {own: Pt[]; real: Pt[]; side: string} | null = null, carried = 0, thin = 0;
-  for (let i = Math.max(0, track.leavesShoe ?? 0); i < first; i++) { const f = frames[i]; if (flat(f) && (f.shoeShare ?? 0) < 0.9) out[i] = {...f, film: f.quad, quad: arr(about(f.quad.map(pt), 1 / (size * MARGIN)))}; }
+  const out: Frame[] = frames.map(f => ({...f, whole: undefined})), size = Math.sqrt(share[0] * share[1]), fit: number[] = []; let held: {own: Pt[]; real: Pt[]; side: string} | null = null, carried = 0, thin = 0;
+  // the card with its white rim (see the head of this file): the film's card in the frame, every side moved out by the rim's width.
+  // The width is the one the film's own picture shows where the card lies (whiteRim: a share of the card's mean side), and
+  // STIFF.rimSlack times it. Only in a film whose picture shows a rim: an older film's card is small without one.
+  const rim = size < STIFF.rimmed ? whiteRim?.() ?? null : null;
+  const withRim = (q: number[][] | null | undefined, slack = STIFF.rimSlack.carried): number[][] | undefined => { if (!rim || q?.length !== 4) return undefined;
+    const p = q.map(pt), w = rim * slack * (far(p[0], p[1]) + far(p[1], p[2]) + far(p[2], p[3]) + far(p[3], p[0])) / 4, unit = (a: Pt, b: Pt) => { const l = far(a, b) || 1; return {x: (a.x - b.x) / l, y: (a.y - b.y) / l}; };
+    const all = p.map((c, k) => { const u = unit(c, p[(k + 1) % 4]), v = unit(c, p[(k + 3) % 4]); return {x: c.x + (u.x + v.x) * w, y: c.y + (u.y + v.y) * w}; });
+    return plausible(all) ? arr(all) : undefined; };
+  for (let i = Math.max(0, track.leavesShoe ?? 0); i < first; i++) { const f = frames[i]; if (flat(f) && (f.shoeShare ?? 0) < 0.9) out[i] = {...f, film: f.quad, whole: withRim(f.quad), quad: arr(about(f.quad.map(pt), 1 / (size * MARGIN)))}; }
+  for (let i = end; i < out.length; i++) out[i].whole = withRim(track.restQuad, STIFF.rimSlack.lying); // where it lies: the lying card with its rim
   for (let i = 0; i < n; i++) { const pose = final[i], f = frames[first + i], side = facing(pose), map = order[i], o = obs[i], sure = !!o?.quad && from[first + i] === 'modell';
     let own = corners(pose, film, map), real = corners(pose, REAL, map);
     if (sure) fit.push(miss(pose, o!.quad!));
     if (held && held.side === side && real.every((p, k) => far(p, held!.real[k]) < STIFF.still)) { own = held.own; real = held.real; } else held = {own, real, side};
     if (!o?.quad) carried++;
-    const drawn = about(real, 1 / MARGIN), note = `stiff card: ${o?.quad ? sure ? 'the model\'s card' : 'the track\'s card' : 'carried by the frames around it'}`;
-    if (plausible(drawn) && plausible(own)) out[first + i] = {...f, side, quad: arr(drawn), film: sure && plausible(o!.quad!) ? f.quad : arr(own), edge: null, confidence: o?.quad ? f.confidence : 0.5, note};
+    const drawn = about(real, 1 / MARGIN), note = `stiff card: ${o?.quad ? sure ? 'the model\'s card' : 'the track\'s card' : 'carried by the frames around it'}`, seen = sure && plausible(o!.quad!) ? f.quad : arr(own);
+    if (plausible(drawn) && plausible(own)) out[first + i] = {...f, side, quad: arr(drawn), film: seen, whole: withRim(seen), edge: null, confidence: o?.quad ? f.confidence : 0.5, note};
     else { thin++; const ends = (v: Vec3, l: number) => [P(add(pose.c, mul(v, l / 2))), P(sub(pose.c, mul(v, l / 2)))], lu = ends(pose.u, REAL[1]), la = ends(pose.a, REAL[0]), line = far(lu[0], lu[1]) >= far(la[0], la[1]) ? lu : la;
       out[first + i] = far(line[0], line[1]) > 2 && far(line[0], line[1]) < 1e4 ? {...f, side: 'EDGE', quad: null, film: null, edge: arr(line), confidence: 0.5, note: 'stiff card: on its edge'} : {...f}; } }
   // a line runs the way the card's length ran in the frame before it
@@ -194,5 +212,5 @@ export function rigidFrames(track: CardTrack, frames: Frame[], from: Source[]): 
   const two = (v: number) => Math.round(v * 100) / 100, stands: [number, number][] = []; // the frames where the card stands more than twenty degrees off the felt
   final.forEach((p, i) => { if (Math.abs(cross(p.a, p.u)[1]) > Math.cos(20 * RAD)) return; const last = stands[stands.length - 1]; if (last && last[1] === first + i - 1) last[1] = first + i; else stands.push([first + i, first + i]); });
   return {frames: out, stats: {fran: first, filmkort: [two(share[0]), two(share[1])], ryck: [jerk(frames), two(jerk(out) * MARGIN)], franModellen: two(median(fit)), burna: carried, hojd: Math.round(Math.max(...lift) * 1000) / 10, kant: thin,
-    lutar: stands, kring}};
+    lutar: stands, kring, ...(rim ? {vitKant: two(rim)} : {})}};
 }
