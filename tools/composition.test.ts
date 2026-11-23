@@ -209,7 +209,10 @@ test('ett ensamt träd är dagens trad: samma bank, samma träd för varje kort,
   const cut: CompositionCut = {schemaVersion: 1, dealer: 'paow', id: 'tatuerad', name: 'Tatuerad', trees: [{...tatuerad, share: 100, own}], drop, bridges: [], shares: {}, home: 'tatuerad', count: solo.count, looks: solo.looks};
   const bank = {jobs: takes.map(t => ({id: t.id, from: t.from, to: t.to})), derived: [{id: 'borta', from: 'READY', to: 'P5.C1'}]};
   assert.deepEqual(treeBank(bank, cut, 'tatuerad'), cutBank(bank, {hub: 'READY-C', own, drop}));
-  const s = {trees: cut.trees, bridges: [], shares: {}, home: 'tatuerad'}, moves: Move[] = [{deal: 'P1.C1'}, {deal: 'P3.C1'}];
+  // An own take that really stands on READY (Tatuerad's way to A2.1) takes the hub's name in exchange: the game enters on the pose it deals from.
+  assert.deepEqual(cutBank({jobs: [{id: 'in-21', from: 'IDLE', to: 'READY'}, {id: 'in-23', from: 'IDLE', to: 'READY-C'}]}, {hub: 'READY-C', own: ['in-21', 'in-23'], drop: []}).jobs,
+    [{id: 'in-21', from: 'IDLE', to: 'READY-C'}, {id: 'in-23', from: 'IDLE', to: 'READY'}]);
+  const s ={trees: cut.trees, bridges: [], shares: {}, home: 'tatuerad'}, moves: Move[] = [{deal: 'P1.C1'}, {deal: 'P3.C1'}];
   assert.deepEqual(assign(s, moves, () => true, seeded(5)), ['tatuerad', 'tatuerad']);
   const beats = leg(moves), woven = weave(s, [{tree: 'tatuerad', beats}]);
   assert.deepEqual(woven.beats, beats); assert.deepEqual(woven.bridges, []); assert.deepEqual(woven.breaks, []);

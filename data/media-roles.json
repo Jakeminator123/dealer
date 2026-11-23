@@ -537,13 +537,13 @@
           "name": "Nyp, yngre, tagning 1",
           "path": "assets/anchors/paow-nyp-ung-1/anchor.png",
           "node": "READY",
-          "state": "gäller",
+          "state": "ersatt",
           "note": "A2.1 lagd till i studion 2026-11-13.",
           "source": {
             "from": "uppladdad: after.png",
             "when": "2026-11-13"
           },
-          "stateBy": "Jakob 2026-11-13 01:29: kandidat → gäller (Material)"
+          "stateBy": "Jakob 2026-11-23 23:11: gäller → ersatt (Nyp, tatuerade händer godkändes i Material)"
         },
         {
           "id": "paow-nyp-ung-1-lagad",
@@ -551,12 +551,13 @@
           "name": "Nyp, yngre, tagning 1, lagad",
           "path": "assets/anchors/paow-nyp-ung-1-lagad/anchor.png",
           "node": "READY",
-          "state": "kandidat",
+          "state": "ersatt",
           "note": "A2.1 lagd till i studion 2026-11-13.",
           "source": {
             "from": "uppladdad: fixed-2.png",
             "when": "2026-11-13"
-          }
+          },
+          "stateBy": "Jakob 2026-11-23 23:11: kandidat → ersatt (Nyp, tatuerade händer godkändes i Material)"
         },
         {
           "id": "paow-tal-blackjack-sv-01",
@@ -3372,6 +3373,20 @@
           }
         },
         {
+          "id": "paow-film-ingang-2-1-tatuerad",
+          "role": "film",
+          "name": "Från vila till nypet, tatuerad",
+          "path": "assets/films/paow/ingang-2-1-tatuerad/source.mp4",
+          "still": 53,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Oberoende granskare 2026-11-23: godkänd, 4/5, som film från vila till A2.1 och som ankare (sista rutan). Lagad kopia fixed-1.mp4 (bara strimman i det gröna, ruta 75-96) granskad för sig: godkänd 4/5, inget av hand eller manschett rört, en prick på 2x2 px kvar i ruta 94-96 (högst 25 nivåer, grön för nyckeln). Sista rutan hålls inte: verktyget vägrade (rörelse), och ankaret är kopians sista ruta. J…",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-23"
+          }
+        },
+        {
           "id": "paow-film-intro-noir-3-startruta",
           "role": "arbetsmaterial",
           "name": "Startrutan till filmen före spelet",
@@ -3890,6 +3905,23 @@
             "from": "sista bilden av en äldre retur till vila från P4 (arkiverad 2026-11-23)",
             "when": "2026-11-23"
           }
+        },
+        {
+          "id": "paow-nyp-tatuerad",
+          "role": "ankare-2.1",
+          "name": "Nyp, tatuerade händer",
+          "path": "assets/anchors/paow-nyp-tatuerad/anchor.png",
+          "node": "READY",
+          "state": "gäller",
+          "builtOn": [
+            "paow-vila-tatuerad"
+          ],
+          "note": "Tatuerads A2.1: hennes mindre händer med tatueringarna, nypet om kortet i skon. Jakobs ja i Beslut 2026-11-23 kl. 22.46 (tatuerat-a21-kandidat) gäller rutan; här den lagade kopians sista ruta (en svag strimma i det gröna borta, inget annat ändrat). Oberoende granskad 4/5: kortet inom 2 px och 2 grader från Casinots A2.1. Godkänn i Material gör den till bilden Bordet beställer från.",
+          "source": {
+            "from": "sista rutan (96) i beställningen paow-ingang-2-1-tatuerad-01, tagning 1, lagad kopia fixed-1.mp4 (Kling 4 från Tatuerads A1; receipt.json bredvid bilden)",
+            "when": "2026-11-23"
+          },
+          "stateBy": "Jakob 2026-11-23 23:11: kandidat → gäller (Material)"
         }
       ]
     },

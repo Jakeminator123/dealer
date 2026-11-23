@@ -6947,6 +6947,40 @@
         "id": "paow-vila-20",
         "take": 1
       }
+    },
+    {
+      "id": "paow-ingang-2-1-tatuerad-01-01",
+      "kind": "ENTRY",
+      "from": "IDLE",
+      "to": "READY",
+      "clip": "paow-ingang-2-1-tatuerad-01-01",
+      "frames": [
+        0,
+        96
+      ],
+      "purpose": "Beställning paow-ingang-2-1-tatuerad-01, tagning 1: Från vila till nypet · beställd utanför Beställ (paow-ingang-2-1-tatuerad-pilot-4).",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 4,
+      "promptText": "Locked camera, one continuous shot. She moves naturally, like a practised dealer, with soft, relaxed arms and hands. Her hand nearest the shoe rises calmly from the felt, goes to the shoe unhurried and takes the top corner of the yellow card in the window between her thumb and fingertips, exactly as in the last frame, and holds it there, completely still, for the last second. Her other hand stays flat on the felt in front of her and does not move. Her eyes stay on the camera, with her calm, soft expression. The tattoos on the backs of her hands, on her fingers and on her throat keep their pattern all the way, sharp and clear. A yellow card shows in the window of the shoe all the time. The plain green background stays as it is.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-ingang-2-1-tatuerad-01/first.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Första bilden i beställningen paow-ingang-2-1-tatuerad-01."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-ingang-2-1-tatuerad-01/last.png",
+          "sha256": "cd363c18da72e4d475e3afed17dad32088ee985aa15fcfd868782489b74893ff"
+        },
+        "note": "Sista bilden i beställningen paow-ingang-2-1-tatuerad-01."
+      },
+      "order": {
+        "id": "paow-ingang-2-1-tatuerad-01",
+        "take": 1
+      }
     }
   ],
   "edits": []

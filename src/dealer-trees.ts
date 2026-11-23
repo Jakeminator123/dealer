@@ -227,13 +227,19 @@ type CutTake = { id?: unknown; from?: unknown; to?: unknown };
 type CutBank = { jobs?: CutTake[]; derived?: CutTake[]; edits?: CutTake[] };
 /**
  * The bank with one tree in it: the takes of the dealer's other trees left out, and the tree's anchor at the shoe played as
- * the game's shoe (READY) in the tree's own takes, so that its entry, deals and returns are the ones the game plays. A take of
+ * the game's shoe (READY) in the tree's own takes, so that its entry, deals and returns are the ones the game plays. The tree's
+ * own takes that really stand on READY (an A2.1 in a tree whose shoe anchor is A2.3: the tattooed A2.1, 2026-11-23) take the
+ * hub's name in exchange, so that the two poses stay apart: the game plays them only where a step names that pose. A take of
  * no tree, and every other dealer's, stays as it was. With hub READY nothing is renamed.
  */
 export function cutBank<B extends CutBank>(bank: B, cut: Pick<TreeCut, 'hub' | 'own' | 'drop'>): B {
   const drop = new Set(cut.drop), own = new Set(cut.own), hub = cut.hub;
-  const atShoe = <T extends CutTake>(t: T): T =>
-    hub === 'READY' || !own.has(String(t.id)) || (t.from !== hub && t.to !== hub) ? t : { ...t, ...(t.from === hub ? { from: 'READY' } : {}), ...(t.to === hub ? { to: 'READY' } : {}) };
+  const swap = (node: unknown) => (node === hub ? 'READY' : node === 'READY' ? hub : null);
+  const atShoe = <T extends CutTake>(t: T): T => {
+    if (hub === 'READY' || !own.has(String(t.id))) return t;
+    const from = swap(t.from), to = swap(t.to);
+    return from === null && to === null ? t : { ...t, ...(from !== null ? { from } : {}), ...(to !== null ? { to } : {}) };
+  };
   const keep = <T extends CutTake>(list: T[] | undefined): T[] | undefined => (Array.isArray(list) ? list.filter((t) => !drop.has(String(t?.id))).map(atShoe) : list);
   return { ...bank, jobs: keep(bank.jobs), derived: keep(bank.derived), edits: keep(bank.edits) };
 }

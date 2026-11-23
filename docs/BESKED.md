@@ -137,6 +137,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   likaså; en retur går hem till sitt eget A2, med skarv eller kort brygga emellan. Alla vyer ska hänga ihop med träden.
 - **Bara träd som passar ihop** (2026-11-23 kl. 21.10): "för nu … INTE får sätta samman nodträd om de är inkompatibla såsom
   nu" (olika händer). Det tatuerade trädet byggs vidare; A2.1 görs om med hennes mindre händer och tatueringar.
+- **Tatuerads A2.1 och vilor** (2026-11-23 kl. 22.46 och 23.01, Beslut): ja till A2.1-bilden (`paow-nyp-tatuerad`; givarna från
+  A2.1 görs om från den genom dockan) och till Casinots vilor med de tatuerade händerna inlagda ("Myckert bra").
 - **Fart** (2026-11-23): klipp ska kunna spelas i 1,5× eller 2×, sparat i en komposition och som klippets egen standard;
   givarna gärna i dubbel fart.
 - **Kartas meny, nivåer och bryggor** (2026-11-23 kl. 21.35): raden med träd och kompositioner är "ful" och görs om; i den
