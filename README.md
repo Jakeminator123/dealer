@@ -69,8 +69,6 @@ Arkivet är det tidigare projektet på D: (snyggare-dealer). Sidorna har kvar si
   `tools/lipsync-register.ts`, labbserverns svar i `tools/lipsync-store.ts`.
 - `data/manifest.json` registrerar filproveniens och SHA-256 (sökvägarna i den räknas från repots rot); `evidence/`
   innehåller verifieringskvitton.
-- `data/library.json` är V6-tidens filmkatalog (V6, sekvenser, original och diagnostiska prov); beslut hämtas från
-  `motions/`. Filmerna visas i Prov under **Filmbiblioteket** och kan läggas under korten i Bordets Kortplan.
 
 Dokumenten länkar till dessa i stället för att föra egna statusregister. Media (`assets/`, `output/`), `.runtime/`,
 `.env*` och `private/` är lokala och Git-ignorerade.
@@ -120,10 +118,10 @@ Dokumenten länkar till dessa i stället för att föra egna statusregister. Med
 
 ## Verifierad bas och gräns
 
-Enligt [reproduktionskvittot](evidence/reproduction.json) återrenderades hela V6 lokalt: 926 rutor, 30 fps, 1762×1174
-och 1080×1920. Båda MP4-filerna var byteidentiska med originalen; 18 kontrollrutor var pixelidentiska enligt
-[bildrutekvittot](evidence/frame-verification.json), också efter renderinläsningsrättningarna
-([V6-kvitto](evidence/render-safety-frames.json)). Det verifierade V6, inte utdelning till alla åtta platser. På Jakobs
+Enligt reproduktionskvittot återrenderades hela V6 lokalt: 926 rutor, 30 fps, 1762×1174 och 1080×1920. Båda
+MP4-filerna var byteidentiska med originalen; 18 kontrollrutor var pixelidentiska enligt bildrutekvittot, också efter
+renderinläsningsrättningarna (kvittona ligger i V6-arkivet under `evidence/` sedan 2026-11-23). Det verifierade V6,
+inte utdelning till alla åtta platser. På Jakobs
 ja (Beslut `v6-arkiv`, 2026-11-20) ligger råmaterialet, renderaren och återskapningen sedan 2026-11-23 i
 `D:/dealer-archive/v6-2026-11-23`, med hashlista och en README om hur V6 återskapas därifrån; filmen och 18
 rutor i `assets/reference/`, duken och plåten står kvar. Kända begränsningar för fingermask, rörelsekanter och källskarvar kvarstår.
@@ -139,13 +137,11 @@ kräver Jakobs uttryckliga ord står i [AGENTS](AGENTS.md), "Det som skyddar Jak
 
 ## Historiskt underlag
 
-Kvittona från V6-tiden och arkivet ligger i `evidence/`, ett per fråga, och det som följer av dem står i SYSTEM,
-"Återbruk och införande"; beslut per film står i `motions/`. Runway-underlaget från 10 november (promptar, start- och
-slutbilder, resultat) är Prov-mappen `runway-underlaget-10-nov`, med alla parametrar i
-[data/p4-generation-review.json](data/p4-generation-review.json); dit hör kontrollproven `pamela-p4-c1-color-control-01`
-och `pamela-p4-c1-kling-control-01`. Kvitton som inget annat dokument pekar på: placeringslabbets grundkontroller
-([placement-lab](evidence/placement-lab.json)), vy- och nodkontroller
-([plane-and-nodemap](evidence/plane-and-nodemap.json)), V6:s skuggor och fingermasker
-([astra-archive-mask-audit](evidence/astra-archive-mask-audit.json)), den externa granskningen
+Kvittona som gäller i dag ligger i `evidence/`, ett per fråga, och det som följer av dem står i SYSTEM, "Återbruk och
+införande"; beslut per film står i `motions/`. Kvittona om Pamelas bank och V6 togs ur projektet med henne 2026-11-23
+(Git-historiken har dem, V6:s i V6-arkivet). Runway-underlaget från 10 november (promptar, start- och slutbilder,
+resultat) är Prov-mappen `runway-underlaget-10-nov`. Kvitton som inget annat dokument pekar på: placeringslabbets
+grundkontroller ([placement-lab](evidence/placement-lab.json)), vy- och nodkontroller
+([plane-and-nodemap](evidence/plane-and-nodemap.json)), den externa granskningen
 ([external-review-triage](evidence/external-review-triage.json)) och städkvittot från arkivflytten
 ([coach-production-triage](evidence/coach-production-triage.json)).

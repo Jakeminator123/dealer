@@ -26,8 +26,8 @@ Allt annat slås upp när arbetet kräver det, ETT AVSNITT i taget (sök på rub
   andra sessioner, en ny dealer, publicera kopian) har en skill i `.claude/skills/<namn>/SKILL.md`: läs den som gäller
   innan du börjar. Den pekar på dokumentet med rutinen och skriver aldrig om den.
 
-Sökningen ser inte allt, med avsikt: `.ignore` och `.cursorignore` döljer maskindata, binärer, `evidence/`, dockans
-rörelsedata och pausade Pamelas filmregister (Jakob 2026-11-18, för att spara tokens). Filerna läses med
+Sökningen ser inte allt, med avsikt: `.ignore` och `.cursorignore` döljer maskindata, binärer, `evidence/` och dockans
+rörelsedata (Jakob 2026-11-18, för att spara tokens). Filerna läses med
 sin sökväg; en tom sökträff betyder inte att filen saknas. `.claude/settings.json` nekar läsning av modeller,
 film, ljud och låsfiler, och en vakt (`.claude/hooks/read-guard.mjs`) nekar en hel läsning av ett dokument eller
 register över 32 KB: sök upp stället och läs med `offset` och `limit`, högst 400 rader åt gången.

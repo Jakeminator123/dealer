@@ -120,9 +120,8 @@ Sökvägarna gäller under `D:/dealer-scratch/tmp/`. Bilder och filmer som anvä
 - `.env.local` laddas inte automatiskt: kör verktyget med `node --env-file=.env.local <verktyg.ts>`.
   `DEALER_SCRATCH_ROOT` och `DEALER_REMOTE_GENERATION_ENABLED` läses inte av någon kod; spärren är `enabled` i
   `data/order-policy.json`.
-- Pamelas äldre banker: [historiska promptar](../evidence/historical-p4-generation-inputs.json) och
-  [sekvensgranskningen](../evidence/sequence-reuse-audit.json) binder källa till metod;
-  `tools/restore-sequence-review.ts` återställer 17-kortsfilmen byteidentiskt utan ny generering.
+- Pamela är arkiverad (2026-11-23): hennes filmer och bilder ligger i `D:/dealer-archive/pamela-2026-11-23/` (README,
+  liggare och SHA256SUMS), hennes register, kvitton och äldre banker i Git-historiken.
 - Sökning i Codex på Windows: lägg mappen för det `rg.exe` som matchar `*\OpenAI\Codex\bin\*\rg.exe` först i
   processens PATH, annars `Select-String`; ändra inte bestående PATH.
 
@@ -164,7 +163,7 @@ Det som gäller själva beställningen står i handboken och beställningsagente
 
 Studion som låst kopia: allt går att läsa och spela, inget går att ändra, och inga kostnader visas. Det är den enda
 sidan på nätet (BESKED, "En sida på nätet"); gamla labbet, dess Vercel-projekt och Blob-lager är raderade, och äldre
-register bär adresser dit som inte längre svarar (sista kvittot: [public-release](../evidence/public-release.json)).
+register bär adresser dit som inte längre svarar (sista kvittot, `evidence/public-release.json`, finns i Git-historiken).
 
 - **Adress:** `https://dealer-lake.vercel.app`, den enda produktionsadressen för `dealer-studio`, med dörrarna `/casino`
   (spelet ensamt) och `/trailer` (filmen före spelet, sedan Paows casino). Lösenordet skrivs inte ut här. Vilken commit

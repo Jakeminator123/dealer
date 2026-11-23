@@ -54,8 +54,8 @@ Prövade och inte att göra om:
   genereringar (handboken §4). `wan3_prime` och `seedance2` är övervägda men aldrig beställda.
 
 API-vägen drar developer-projektets krediter, Beställ (Runways MCP-server) appkontots (DRIFT, "Anslutningar och miljö").
-Utan post i banken ligger tre WAN 3-filmer och en Kling 4-film för Pamela från omgång 15 (`pamela-p2-c1-plan-deal-02`,
-`pamela-p3-c1-plan-deal-04`, `pamela-p6-c1-plan-deal-02`, `pamela-p6-c1-plan-deal-03`); ingen vy visar dem (M).
+Pamelas filmer, också de fyra utan post från omgång 15, ligger sedan 2026-11-23 i arkivet
+`D:/dealer-archive/pamela-2026-11-23/` (DRIFT).
 
 ## Vinklar, 3D och Runways lista
 
@@ -200,9 +200,8 @@ gränserna utom där det står.
 | Kvittot `assets/motions/<klipp>/generation.json` | `model`, `orderedAs` | `tools/register-order.ts`; äldre av arkivet | labbservern läser läget, krediterna och filmens mått (`clipBank` i `tools/preview.ts`), inte modellen; läs `orderedAs` för Pamelas MCP-filmer |
 | Jobbfilen `data/clip-jobs.json` | `model` på jobb och utsnitt | `tools/register-order.ts`, `tools/speech.ts` | `buildGraph` bär det i tagningens `job.model`; ett utsnitt utan modell heter `utsnitt` |
 
-Känt fel (M): kvittona för `pamela-table-arrive-wide-kling-01`, `pamela-table-leave-wide-kling-01` och den oregistrerade
+Känt fel (M), i arkivet: kvittona för `pamela-table-arrive-wide-kling-01`, `pamela-table-leave-wide-kling-01` och
 `pamela-p6-c1-plan-deal-03` säger `wan3`, fast filmerna är Kling 4 (24 rutor i sekunden, `orderedAs: "kling-4, …"`).
-Posternas `source.model` är rättade till `kling-4` (2026-11-13); kvittona står kvar som de skrevs.
 
 ## Före en ny modell
 

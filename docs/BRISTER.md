@@ -4,7 +4,7 @@ Varje känd brist en gång: vad som saknas och vad som stänger den. En rättad 
 commitmeddelandet. Läget per bana: [film](lage/film.md), [kort](lage/kort.md),
 [labbet och studion](lage/labbet-och-studion.md), [spelet](lage/spelet.md); Jakobs besked: [BESKED](BESKED.md).
 
-Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och scenen · Labbet och verktygen · Pamela
+Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och scenen · Labbet och verktygen
 
 ## Kortet
 
@@ -224,16 +224,3 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   mellan opublicerat och saknat material.
 - **Paows ankare 1 visas som "avviker" i Material:** `paow-vila-tatuerad` mäts mot Pamelas händer i
   `data/dealer-standard.json`. Stänger: ett mått per dealer.
-
-## Pamela
-
-Pamela är pausad (BESKED, "Paow är dealern, Pamela är pausad"); det här tas upp när pausen hävs.
-
-- **Pamela och 2D:** det platta överlägget läcker cirka 30 bildpunkter i fyra rutor i två givar (`node
-  tools/card-coverage.ts --all`), och hennes första dealerkort är 1,76 gånger för stort.
-- **Pamelas material stämmer inte med dagens kortplan:** 14 av 66 bilder med kort stämmer, och ingen av hennes mätbara
-  givar (`data/media-fit.json`).
-- **Pamelas giv till plats 1 duger inte som referensfilm** (kortet på kant när det svänger ur fönstret; Kling lade
-  vändningen där, 1/5 två gånger); plats 4 är ren. Stänger: en egen rörelse för plats 1.
-- **Fyra av Pamelas filmer** från 2026-11-11 ligger på disk utan post. Stänger: de registreras eller arkiveras, på hans
-  ord.

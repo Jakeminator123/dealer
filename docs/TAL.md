@@ -129,8 +129,6 @@ munnen, utom blackjack: spelet säger `paow-tal-blackjack-sv-04`, som har hans e
 förberett vilans klipp (fyra inställningar av `bbox_shift`; tjänsten använder 0). Kvar: streaming, podden och tal över
 filmer i 30 rutor/s.
 
-**Pamela.** Ingenting av läppsynken finns för henne; hon är pausad (BESKED, "Paow är dealern, Pamela är pausad").
-
 ### Vid en ny film eller en ny dealer
 
 En **ny film** som hon ska tala över:

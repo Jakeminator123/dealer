@@ -65,8 +65,8 @@ bord: `diagnos=0|1`, `kort=hand|liggande|matt`, `cardBack=film|dark`, `cardFace=
 `geometri`. Ogiltiga värden lämnas utanför och redovisas som okända (`studio/lib/casino.ts`).
 
 **Filmkameran** läses ur `data/scene-contract.json` i `src/scene3d-geometry.ts`; med geometrin `lens` är den bordets
-lins (`lensCamera`, "Ritade kort"). Kontraktet skrivs av `node tools/scene-measure.ts`, som mäter bordets plan, ljuset
-och porträttramen ur verkliga rutor i Pamelas film (`src/scene-geometry.ts`; varje tal bär sin grund i `basisLegend`).
+lins (`lensCamera`, "Ritade kort"). Kontraktet skrevs 2026-11-11 av verktyget scene-measure (nu i Git-historiken), som mätte bordets plan,
+ljuset och porträttramen ur verkliga rutor i Pamelas film (`src/scene-geometry.ts`; varje tal bär sin grund i `basisLegend`).
 Från filmkamerans plats är bilden filmen pixel för pixel; vridning och zoom är geometriskt exakta; förflyttning är ett
 närmevärde som bryter vid ungefär en stols avstånd. Verifiering: med allt avslaget är hemvyn (klipp 1 vid 2,9 s,
 1764 × 1174) identisk med en referensbild i `assets/proofs/bakgrund-3d-referens/`, utom filtens guldlinjer (medel 0,02,
@@ -86,7 +86,7 @@ Modeller (`props.html`).
 **En dealer i taget:** växeln överst (namn och paus ur `data/dealers.json`) väljer vems tagningar varje vy läser
 (`buildGraph(bank, {dealer})` i `studio/lib/bank.ts`). Valet står i adressen som `?dealer=` och minns i webbläsaren
 (nyckeln `studio.dealer.2`, bara ett eget val); adressen går först, sedan en tagning som adressen nämner, sedan
-minnet. Utan val gäller `FIRST_DEALER` i `src/clip-graph.ts` (Paow). Scen spelar det en annan dealer har och visar
+minnet. Utan val gäller `DEALER` i `src/clip-graph.ts` (Paow). Scen spelar det en annan dealer har och visar
 resten som luckor; Casino och spelsidan spelar aldrig en annan dealers film.
 
 ## Spelet (`game/` och `/api/game`)
@@ -371,15 +371,12 @@ P4.C2@VAR03 | TAKE(LH,BACK) > LAND(BACK) > RELEASE(LH) > RETURN(IDLE)
 ```
 
 Överlappande PASS/TURN beskrivs med faktiska intervall, inte påhittad ordning. Färgbyte eller passage genom kantläge
-bevisar ensam ingen vändning; en författad etikett överordnas inte sammanhängande källbevis
-([p4Followup](../evidence/anchor-color-audit.json)).
+bevisar ensam ingen vändning; en författad etikett överordnas inte sammanhängande källbevis.
 
 ## Ett rörelseregister och tydliga bevis
 
 - `motions/<clip-id>.json` är ensam källa för rörelsens klassning och beslut. Hand, pose, fysisk sida, spelstatus, mål
   och variant hålls separata.
-- `data/library.json` är visningskatalogen utan mediekopior (Prov-mappen Filmbiblioteket, Referens i Bordets Scen och
-  Råfilm); original, historiska sekvenser och diagnostiska överlägg hålls isär, och beslut hämtas från `motionRef`.
 - `publicReview` i ett äldre register pekar på den gamla publika sidan, som är nedtagen
   ([DRIFT](DRIFT.md#den-låsta-kopian-på-nätet)); publiceringen där innebar aldrig godkänd rörelse.
 - Nya original placeras i `assets/motions/<clip-id>/source.mp4`. En korrigerad visningsversion har egen hash och
@@ -516,8 +513,8 @@ IDLE>READY | READY>P1.C1 | P1.C1>READY | READY>D.C1 | D.C1>READY | READY>P1.C2 |
   slinga"). Varje klipp spelas från ruta 3 till tre rutor före slutet, och nästa tar över med rakt klipp. "Dela ut nu"
   klipper ett lugnt klipp direkt till ingången och spelar klart en gest först, i filmad fart (`IDLE_RULE.exitRate` 1;
   BESKED, "Farten"); ett lugnt klipp med `cut: false` spelas också klart. Klippets del står i dess post:
-  `motion.idle = {weight, calm, onRequest, label, cut}`; utan uppgift är bara `pamela-idle-loop-01` lugnt (vikt 20) och
-  övriga gester (vikt 3). Rundans `IDLE>IDLE`-steg spelar det lugnaste klippet, om inte ett är märkt `MAIN`.
+  `motion.idle = {weight, calm, onRequest, label, cut}`; utan uppgift är ett klipp med `-idle-loop-` i namnet lugnt (vikt
+  20) och övriga gester (vikt 3). Rundans `IDLE>IDLE`-steg spelar det lugnaste klippet, om inte ett är märkt `MAIN`.
 - En vilofilm kan be scenen om en effekt: `motion.effect = {kind: "room-flash", room, at, seconds, mono}` (en blixt,
   och under `seconds` från `at`, i filmens egen tid, är rummet `room` och bilden med `mono` svartvit; `effectOf`,
   `Part.effect`). En variant med effekt är en egen post som pekar på samma film.
@@ -573,12 +570,9 @@ IDLE>READY | READY>P1.C1 | P1.C1>READY | READY>D.C1 | D.C1>READY | READY>P1.C2 |
 
 ## Återbruk och införande
 
-Pamelas två historiska banker hålls isär: den äldre vita banken (fjorton 12-sekunderstagningar, 182,867 s) och den nyare
-r2-banken (`motions/pamela-sequence-{16,17}-{native,portrait}-r2.json`, 16 och 17 kort, 30 fps), som Jakob accepterar
-som alternativ men med fel koordinater och format. Filmerna börjar och slutar i IDLE, men bordet går från tomt till 16
-eller 17 kort, så de loopas inte till tom start. Underlaget: [historiska
-promptar](../evidence/historical-p4-generation-inputs.json), [sequence-reuse-audit](../evidence/sequence-reuse-audit.json)
-och [sequence-review-production](../evidence/sequence-review-production.json); besluten är PENDING.
+Pamelas två historiska banker (den vita med fjorton 12-sekunderstagningar och r2-banken med 16 och 17 kort) är
+arkiverade med henne 2026-11-23; filmerna ligger i `D:/dealer-archive/pamela-2026-11-23/`, register och kvitton i
+Git-historiken.
 
 Jakobs fristående blackjack-studio (`local-studio/blackjack-studio`, "Göran"): Görans grundbild är gjord ur ett uppladdat
 foto utan noterat tillstånd, så hans projekt, klipp, kortlägen och ankare används inte, och inte heller

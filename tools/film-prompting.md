@@ -282,7 +282,7 @@ tagningar vänder kortet en gång vid platsen så som en hand kan, med kortet in
   vänster) (V). Pröva P1 först.
 - **Öppet, bara dit med referens (givprov 2A, 2026-11-17; V):** Kling 4, 4 s, första bild ankare 2.2, sista bild ruta
   126 ur `paow-giv-2-2-p4-01-01` (där returen, som Jakob godkände, börjar; skons tryckta kort ersatt med ankare 1:s),
-  referensen Pamelas släp `pamela-p4-c1-drawn-deal-01` ("Svinbra", från ankaret DRAWN). 2 av 2 användbara med
+  referensen Pamelas släp `pamela-p4-c1-drawn-deal-01` ("Svinbra", från ankaret DRAWN; i arkivet sedan 2026-11-23, DRIFT). 2 av 2 användbara med
   anmärkningar (granskaren 4/5 och 3/5): kortet släps plant längs filten, reses på kant nära platsen och vänds genom
   kantläget som i referensen (gångjärn mot filten, tumme och pekfinger; texten sade nyckel), läggs 0–1 px från sista
   bilden. Fel: turkos i 3–5 rutor kring kanten, en ljus kant upp till 34 % runt kortet i tagning 2 (ruta 72), kortet
