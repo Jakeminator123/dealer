@@ -29,9 +29,16 @@ export type NaturalMotion = {hip: Vec3; doll?: string; beats?: Beats[]; frames: 
  * of what the deal gives her, in the sense of Pace.body and the lab's sliders, coming in as the deal's own body does (from
  * beat b to beat g); `shoulderR`/`shoulderL` centimetres [up, forward] of each shoulder and `elbowOut` degrees [right,
  * left] each elbow turns out from her side, both in by the hand change. `follow` (the shoulder follows the arm) and
- * `pinch` (thumb and free fingers) are on unless set false.
+ * `pinch` (thumb and free fingers) are on unless set false. `flatHand` (Jakob 2026-11-23 on the film to P5.C1: "prova
+ * bara röra om filmen så hennes högerhand inte är så vriden vid nedsläpp"; off unless set true): the right hand that lays
+ * the card turned on it about the card's normal through its forefinger's tip, to where her wrist is least bent (palm
+ * down, pointing along her forearm), as far as her arm reaches; it comes in over the second half of the card's turn in
+ * the air (from the frame the card stands on its edge) and is whole when the card is down, and goes out again as the
+ * pose's own additions go. The card, its turn and her left hand are as they are. `steerOut` [from, to]: frames over
+ * which what is steered (body, shoulders, elbows out) goes out again, as in a deal's return to its first frame
+ * (dealer3d/tools/docka-cykel.ts); without it it stays to the last frame.
  */
-export type NaturalSteer = {body?: [number, number, number] | null; shoulderR?: [number, number]; shoulderL?: [number, number]; elbowOut?: [number, number]; follow?: boolean; pinch?: boolean};
+export type NaturalSteer = {body?: [number, number, number] | null; shoulderR?: [number, number]; shoulderL?: [number, number]; elbowOut?: [number, number]; follow?: boolean; pinch?: boolean; flatHand?: boolean; steerOut?: [number, number]};
 
 export const NATURAL = {
   /** The hand change: where the left fingertips lie on the card (metres from its middle toward the shoe's end, and across), and the left hand's way back. Measured on paow 2026-11-23: with this alone no frame of any place has the hands nearer than 16 mm, and with the deeper grip below 10 mm (before: through each other at 13 of 15 places). */
@@ -49,6 +56,8 @@ export const NATURAL = {
   /** Radians the ring and little fingers curl in each phase: as the hand reaches for the card, while it holds it, as it lays it, and after. */
   curl: {reach: -0.08, hold: 0.35, lay: 0.15, free: -0.05},
   settle: 6, tip: 0.0082, touch: 0.003,
+  /** flatHand: the right hand turned on the card at most `most` radians each way, tried every `step`, and its wrist no nearer the end of her reach than `margin` (or where it already is); the turn evened out over `smooth` frames each side. */
+  flat: {most: 1.6, step: 0.01, margin: 0.003, smooth: 2},
 };
 
 /** The recipe's flags with the natural hand change: the shared change's fingertips and way back, or the roll's. Without it the recipe lays the deal it always laid. */
@@ -119,14 +128,40 @@ const chainTo = (h: Vec3[], c: number[], target: Vec3, axis: Vec3): Vec3[] => { 
   if (s > 1e-9) { const ax = mul(turn, 1 / s), angle = Math.atan2(s, dot(was, to)); for (const j of c.slice(1)) p[j] = add(base, turned(sub(p[j], base), ax, angle)); }
   return p; };
 
+/**
+ * flatHand: the frames with the right hand turned on the card by `share(i)` of the turn about the card's normal, through
+ * the forefinger's tip, at which her wrist is least bent (the elbow solved again toward her own pole, as pose-on-doll.ts
+ * solves it); and the turn per frame, radians.
+ */
+function flatOnCard(frames: NaturalFrame[], doll: Doll, long: number, share: (i: number) => number) {
+  const F = NATURAL.flat, W = NATURAL.wrist;
+  const turnedBy = (f: NaturalFrame, a: number) => { const pivot = f.R.p[8], n = f.card.n, p = f.R.p.map(q => add(pivot, turned(sub(q, pivot), n, a))), w = add(pivot, turned(sub(f.R.w, pivot), n, a));
+    return {p, w, e: arm(f.R.s, w, elbowPolesAt(doll, [f.R.s, f.L.s], [w, f.L.w])[0], doll).elbow}; };
+  const bentAt = (f: NaturalFrame, h: ReturnType<typeof turnedBy>) => { const b = wristBent({...f.R, p: h.p, w: h.w}, 1, h.e); return (b.dev / W.dev) ** 2 + (b.flex / W.flex) ** 2; };
+  const room = (f: NaturalFrame) => Math.max(long - F.margin, length(sub(f.R.w, f.R.s)));
+  const best = frames.map((f, i) => { if (share(i) <= 0) return 0; let at = 0, c0 = bentAt(f, turnedBy(f, 0));
+    for (let a = -F.most; a <= F.most + 1e-9; a += F.step) { const h = turnedBy(f, a); if (length(sub(h.w, f.R.s)) > room(f)) continue; const c = bentAt(f, h); if (c < c0) { c0 = c; at = a; } } return at; });
+  const by = box(best, F.smooth).map((a, i) => a * share(i));
+  return {turn: by, frames: frames.map((f, i) => { if (!by[i]) return f; let a = by[i], h = turnedBy(f, a);
+    // (no further than her arm reaches: the turn taken back until it does)
+    for (let n = 0; n < 20 && length(sub(h.w, f.R.s)) > room(f); n++) { a *= 0.9; h = turnedBy(f, a); } by[i] = a;
+    return {...f, R: {...f.R, p: h.p.map(round), w: round(h.w), e: round(h.e)}}; })};
+}
+
 /** The motion `motion` (posed on `doll`) moved as a person moves it; and per frame what was done and measured. */
 export function natural<M extends NaturalMotion>(lens: Lens, motion: M, doll: Doll, steer: NaturalSteer = {}) {
-  const frames = motion.frames, N = frames.length, beat = motion.beats?.[0], hip = motion.hip, long = doll.upperArm + doll.forearm - 1e-4;
+  const laid = motion.frames, N = laid.length, beat = motion.beats?.[0], hip = motion.hip, long = doll.upperArm + doll.forearm - 1e-4;
   const take = beat ? Math.max(8, beat.d) : 8, rest = beat ? Math.min(N - 1 - NATURAL.settle, Math.ceil(beat.h)) : N - 1 - NATURAL.settle, edge = dealerEdge(lens)[2];
+  // (flatHand: in from the frame the card stands on its edge in its turn to the frame it is down, out as what the pose adds by itself goes)
+  const edgeAt = beat && steer.flatHand ? laid.findIndex((f, i) => i > beat.d && f.card.n[1] >= 0) : -1;
+  const flat = beat && edgeAt > 0 ? flatOnCard(laid, doll, long, i => smooth((i - edgeAt + 1) / Math.max(1, beat.g - edgeAt + 1)) * smooth((N - 1 - i) / Math.max(NATURAL.settle, N - 1 - rest))) : null;
+  const frames = flat?.frames ?? laid;
   // What is steered comes in by the hand change and stays; what the pose adds by itself comes in as well and goes again while the card lies still, so that the last frame is the deal's own.
   const userAt = (i: number) => smooth(i / take), selfAt = (i: number) => userAt(i) * smooth((N - 1 - i) / Math.max(NATURAL.settle, N - 1 - rest));
   // (the body's steering comes in as the deal's own body does in dealer3d/src/two-hand.ts: from beat b, or the recipe's leanFrom, to beat g, where the card is laid)
   const leanFrom = (motion as {pace?: {leanFrom?: number}}).pace?.leanFrom ?? beat?.b ?? 0, leanTo = beat ? Math.max(leanFrom + 1, beat.g) : take, bodyIn = (i: number) => smooth((i - leanFrom) / (leanTo - leanFrom));
+  // (steerOut: what is steered goes out again over those frames)
+  const goes = (i: number) => steer.steerOut ? 1 - smooth((i - steer.steerOut[0]) / Math.max(1, steer.steerOut[1] - steer.steerOut[0])) : 1;
   const D = (steer.body ?? [0, 0, 0]).map(rad), sR = steer.shoulderR ?? [0, 0], sL = steer.shoulderL ?? [0, 0], out = (steer.elbowOut ?? [0, 0]).map(rad), follows = steer.follow !== false, pinches = steer.pinch !== false;
   const steered = D.some(x => x) || [...sR, ...sL].some(x => x) || out.some(x => x), F = NATURAL.follow, G = NATURAL.grip, H = CARD.height / 2, Wd = CARD.width / 2, tip = NATURAL.tip;
 
@@ -179,7 +214,7 @@ export function natural<M extends NaturalMotion>(lens: Lens, motion: M, doll: Do
 
   // ---- 2. her trunk: the steering laid on as far as both arms still reach, each shoulder a little toward its hand
   /** Her shoulders and head at frame i when the steering is laid on `share` of the way. */
-  const trunkPose = (i: number, share: number) => { const f = frames[i], t0 = trunkAt(hip, f.R.s, f.L.s), u = share * userAt(i), ub = share * bodyIn(i);
+  const trunkPose = (i: number, share: number) => { const f = frames[i], t0 = trunkAt(hip, f.R.s, f.L.s), u = share * userAt(i) * goes(i), ub = share * bodyIn(i) * goes(i);
     const body = (q: Vec3) => { let d = sub(q, hip); d = turned(d, t0.y, D[1] * ub); d = turned(d, t0.z, -D[0] * ub); d = turned(d, t0.x, D[2] * ub); return add(hip, d); };
     let s: [Vec3, Vec3] = [body(f.R.s), body(f.L.s)]; const head = body(f.h), t = trunkAt(hip, s[0], s[1]);
     s = s.map((q, k) => { const w = k ? f.L.w : wristR(i), own = k ? sL : sR, side = k ? 1 : -1;
@@ -207,10 +242,11 @@ export function natural<M extends NaturalMotion>(lens: Lens, motion: M, doll: Do
       // (the elbow moves by what the new solution moves it from the deal's own, so that a frame nothing changes keeps its elbow to the last digit)
       return {pole: poles[k], bias, self: best - bias, base: elbowAt(k ? f.L.s : f.R.s, k ? f.L.w : f.R.w, was[k], 0), w}; }); });
   const selfTurn = ([0, 1] as const).map(k => box(solved.map(x => x[k].self), NATURAL.smooth.elbow));
-  const turnOf = (i: number, k: 0 | 1) => solved[i][k].bias * userAt(i) + selfTurn[k][i] * selfAt(i);
+  const turnOf = (i: number, k: 0 | 1) => solved[i][k].bias * userAt(i) * goes(i) + selfTurn[k][i] * selfAt(i);
 
   // ---- 4. the frames, and the receipt
-  const receipt = {doll: doll.name, steered, follows, pinches, frames: [] as {i: number; bodyShare: number; shoulderMm: [number, number]; elbowDeg: [number, number]; deeperMm: number; trunkMm: [number, number]; trunkWasMm: [number, number]; wristDeg: [number, number]; wristWasDeg: [number, number]; thumbMm: number | null; thumbWasMm: number | null; thumbCardMm: [number, number]; throughCard: [number, number]; apartMm: number; touching: string[]}[]};
+  // (flatDeg, with flatHand: degrees the right hand is turned on the card; the `was` measures are the frames as they came)
+  const receipt = {doll: doll.name, steered, follows, pinches, frames: [] as {i: number; bodyShare: number; shoulderMm: [number, number]; elbowDeg: [number, number]; deeperMm: number; trunkMm: [number, number]; trunkWasMm: [number, number]; wristDeg: [number, number]; wristWasDeg: [number, number]; thumbMm: number | null; thumbWasMm: number | null; thumbCardMm: [number, number]; throughCard: [number, number]; apartMm: number; touching: string[]; flatDeg?: number}[]};
   const bent = (l: Limb, sign: number, e: Vec3) => { const x = wristBent(l, sign, e); return deg(Math.hypot(x.dev, x.flex * W.dev / W.flex)); };
   const result = frames.map((f, i) => {
     const {s, head, t} = poses[i], was = trunkAt(hip, f.R.s, f.L.s);
@@ -218,8 +254,8 @@ export function natural<M extends NaturalMotion>(lens: Lens, motion: M, doll: Do
       return {...l, s: round(s[k]), e: round(e), ...(k === 0 && hands[i] ? hands[i] : {})}; };
     const R = limb(0), L = limb(1), fr = {...f, R, L, h: round(head)};
     receipt.frames.push({i, bodyShare: Math.round(share[i] * 100) / 100, shoulderMm: [mm(length(sub(R.s, f.R.s))), mm(length(sub(L.s, f.L.s)))], elbowDeg: [deg(turnOf(i, 0)), deg(turnOf(i, 1))], deeperMm: mm(deeper[i]),
-      trunkMm: [mm(armInTrunk(doll, t, R.s, R.e, R.w)), mm(armInTrunk(doll, t, L.s, L.e, L.w))], trunkWasMm: [mm(armInTrunk(doll, was, f.R.s, f.R.e, f.R.w)), mm(armInTrunk(doll, was, f.L.s, f.L.e, f.L.w))],
-      wristDeg: [bent(R, 1, R.e), bent(L, -1, L.e)], wristWasDeg: [bent(f.R, 1, f.R.e), bent(f.L, -1, f.L.e)], thumbMm: thumbs[i].now, thumbWasMm: thumbs[i].was, thumbCardMm: [mm(cardGap(f.card, f.R.p[4])), mm(cardGap(f.card, R.p[4]))], throughCard: [throughCard(f.card, f.R.p) + throughCard(f.card, f.L.p), throughCard(f.card, R.p) + throughCard(f.card, L.p)], apartMm: mm(handsApart(fr)), touching: touching(fr).map(x => `${x.hand}${x.finger}`)});
+      trunkMm: [mm(armInTrunk(doll, t, R.s, R.e, R.w)), mm(armInTrunk(doll, t, L.s, L.e, L.w))], trunkWasMm: [mm(armInTrunk(doll, was, laid[i].R.s, laid[i].R.e, laid[i].R.w)), mm(armInTrunk(doll, was, f.L.s, f.L.e, f.L.w))],
+      wristDeg: [bent(R, 1, R.e), bent(L, -1, L.e)], wristWasDeg: [bent(laid[i].R, 1, laid[i].R.e), bent(f.L, -1, f.L.e)], thumbMm: thumbs[i].now, thumbWasMm: thumbs[i].was, thumbCardMm: [mm(cardGap(f.card, laid[i].R.p[4])), mm(cardGap(f.card, R.p[4]))], throughCard: [throughCard(f.card, laid[i].R.p) + throughCard(f.card, f.L.p), throughCard(f.card, R.p) + throughCard(f.card, L.p)], apartMm: mm(handsApart(fr)), touching: touching(fr).map(x => `${x.hand}${x.finger}`), ...(flat ? {flatDeg: deg(flat.turn[i])} : {})});
     return fr; });
   return {motion: {...motion, about: `${(motion as {about?: string}).about ?? ''} Moved as a person moves by dealer3d/src/natural.ts.`, frames: result} as M, receipt};
 }

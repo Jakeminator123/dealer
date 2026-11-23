@@ -304,7 +304,8 @@ fingrar ska sitta som hennes innan dockan används.
   kortet där varje fingertopp rör det (varm höger, kall vänster) och en rad i bilden om vilka fingrar och var (i hörnet,
   vid kanten, mitt på). **Koden**: `page/docka.ts` och `docka.html`; `page/natural-lab.ts` (`layNatural`,
   `moveNatural`); `page/lay.ts` `natural: true` kör `naturalPace`; `page/lab-stage.ts` `setGrips`,
-  `touching`; `src/natural.ts` (handbytet i `NATURAL.change`, greppet, kroppen, armbågen; kvitto per ruta).
+  `touching`; `src/natural.ts` (handbytet i `NATURAL.change`, greppet, kroppen, armbågen; kvitto per ruta; av som
+  förval: `flatHand`, högerhanden vriden på kortet tills handleden är rakast, och `steerOut`, det styrda ut igen).
   **Mätt på paow** (före → efter): händernas minsta avstånd −16 till 2 mm → 11–14 mm (rull 24–42); tummen mot kortet
   medan pekfingret ligger på, svep P1–P4 39–40 → 2,7–3,4 mm (över 3 mm på 0–1 av 47 rutor, förut 40–41), P5.C1, P5.C2,
   P6.C2 37 → 8 mm (taket är händernas 12 mm); ben genom kortet 13–19 → 12; handleden P1–P3 64–67° → 44–48°, P5 78 →
@@ -320,9 +321,11 @@ fingrar ska sitta som hennes innan dockan används.
   **Dockfilmer för beställning** (2026-11-23; registrerade som `docka-paow-2-3-p5c1-naturlig-a` och `-cykel-a`,
   kopierade in för hand: det ska gå direkt från Docka till Bordets beställning), Naturlig till P5.C1 orörd: given
   `data/giv-fran-2-3-p5c1-naturlig-paow.json` (3,0 s, 30/s; `ut/docka-naturlig-p5c1-a`) och given med retur i samma
-  film `…-naturlig-cykel-paow.json` (4 s, 24/s; `ut/docka-naturlig-p5c1-cykel-a`): underlaget `…-naturlig.json`
-  (standarddockan) genom `return-cycle.ts` till `…-naturlig-cykel.json`, ställd på paow och rörd som Naturlig av
-  `.runtime/docka-naturlig/v2/cykel.ts`. Kortet ligger från ruta 70, handen lyfter från 77, sista rutan = första.
+  film `…-naturlig-cykel-paow.json` (4 s, 24/s; `ut/docka-naturlig-p5c1-cykel-a`); kortet ligger från ruta 70, handen
+  lyfter från 77, sista rutan = första. `tools/docka-cykel.ts --to P5.C1 --no-standard` ger samma rutor (**Köra**).
+  Jakobs dom på filmen av -a: "Rätt", men högerhanden för vriden vid nedsläppet (handleden 68° i sidled). **-b**
+  (`…-naturlig-cykel-b-paow.json`, `ut/docka-naturlig-p5c1-cykel-b`) är -a med `--flat-hand`: handleden vid
+  nedsläppet −68° → −4° i sidled och 35° → 7° upp/ned, handflatan som förut ~18° från rakt ned; ej sedd av Jakob.
   **Mätskripten** i `.runtime/docka-naturlig/` (`lib.ts`, `nat.ts`, `grip.ts` m.fl.) och `v2/`: `tumme.ts` (tummen
   per plats), `sidan.ts` (sidans väg och hans P5.C1), `titt.ts` (headless-titten under låset, egen port 4393).
   **Gör inte om**: tummen under kortet mitt emot pekfingret; tummen runt kanten (`chainTo` böjer bara i tummens plan);
@@ -404,6 +407,16 @@ redovisar både planens avsikt och provets verkliga handbyte. C1:s befintliga H-
 node dealer3d/tools/deal-film.ts --to P4.C2 --seconds 4 --beats 4,15,20,36,22,45,58,70 --right-at 1180,887,83 --meet 1 --push 0.004 --single 1 --carry 0.045 --turned-at 0.01 --roll 1 --tuck 300 --contact-grip landing --out <ny-giv.json>
 node dealer3d/tools/return-cycle.ts <ny-giv.json> <ny-cykel.json> --hold 76 --ready 116 --duration 4 --lift 0.022
 node dealer3d/tools/render-reference.ts --motion <ny-cykel.json> --out <ny-mapp> --seconds 4 --fps 24
+```
+
+En dockfilm med giv och återgång till valfri plats, lagd som Docklabbet lägger den (Naturlig, eller Jakobs sparade
+standard `standard/<docka>-<plats>.json` där en finns, i det val han sparade den i), görs i ett steg. Det skriver en ny
+datafil och renderkommandot; `--no-standard` lägger platsen som om ingen standard fanns, `--flat-hand` lägger högerhanden
+plan vid nedsläppet (bara Naturlig), och cykelns flaggor är `return-cycle.ts`:s. Det styrda i en Naturlig standard går
+ut under återgången, så att sista rutan är den första.
+
+```powershell
+node dealer3d/tools/docka-cykel.ts --to P5.C1 --out dealer3d/data/<ny>.json [--doll paow] [--no-standard] [--flat-hand]
 ```
 
 Cykelverktyget bevarar given till och med ruta 76, lyfter handen 22 mm och återgår till exakt startruta från 116.
