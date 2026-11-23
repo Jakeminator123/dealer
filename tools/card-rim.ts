@@ -1,7 +1,8 @@
 // Takes the white rim off the dealt card in a film's frame. The video model draws a pale rim round the card that no order asked
 // for (Jakob 2026-11-23: "Vad är det som gör att det blir en vit kantlinje på kortet? Det ska inte finnas."); it is not the thin
 // white line round the card in the shoe's window (painting that out of the first picture left the rim and blacked the window).
-// A pure step on pixels, a frame at a time, used by tools/film-after.ts --rim-off (opt-in until Jakob has seen it at game size).
+// A pure step on pixels, a frame at a time, used by tools/film-after.ts --rim <felt|card> (opt-in: without the flag the
+// after-work never calls it, and it stays so until Jakob has said yes).
 //
 // Per frame (cardRimOff):
 //   1. the dealt card is its colour outside the shoe by the lab's own rules (src/card-track.ts is.blue and is.yellow, the rules
@@ -23,6 +24,19 @@
 //      felt: the white's share of each such pixel, measured between her colour a little further in and the rim's beside it, is
 //      replaced by the felt that is there now. Skin and nails themselves (no share of white) are not changed.
 // The shoe is never touched: `keep` (shoeKeep) is the bank's shoe where the anchor shows it, and everything in its window.
+//
+// Two ways (RimWay), since the rim as felt leaves her fingers gripping air where they held the rim (Jakob 2026-11-23: "saken nu
+// är bara att hon nu greppar i "luft"/grönt ... kanske vi i så fall ska fylla kantlinjen med det blåa"):
+//   'felt'  steps 3 and 4 as above: the card becomes as small as its colour;
+//   'card'  the rim becomes the card's own colour instead, blue beside blue and yellow beside yellow, so the card keeps its outer
+//           size and her fingers stay on it. The colour is carried out layer by layer from the card CARD_RIM.inner px inside its
+//           edge (its outermost pixels are paled by the rim, and take that colour too, so no pale line is left where the rim
+//           began). Where the rim was blended into the felt it stays blended: each pixel is read as shares of the card's
+//           colour, the felt and a grey (the rim), and the felt's share stays the felt carried in as in step 3. A pixel whose
+//           grey is too dark to be rim (her hand's blurred edge against the felt) is left as the film has it. Her edge against
+//           the rim becomes her edge against the card's colour.
+//           The card's colour by the lab's rules then reaches the rim's outer edge: the card track and the landing measure read a
+//           larger card than from the same film with its rim on.
 // Over a film (rimOffFilm) the frames come in order, and where the film stands still the result does too: the paint stays and
 // the card's colour stays the card's, so a card at rest does not flicker (see there).
 // Tests: tools/card-rim.test.ts (made-up pictures).
@@ -55,6 +69,9 @@ export const CARD_RIM = {
                    // edge in the hand's shadow is tinted warm too, a line 1–2 px thin that runs on from her finger)
   herMin: 60,      // ... hanging together, at least this many (the pink round the red dot is a speck, not her)
   speckPale: 60,   // warm that is not her may be rim when it is pale: its red less than this above its green or blue
+  cream: 40,       // ... or cream, the yellow back's rim blended with the back: red less than twice warmRG above green, green
+                   // this far above blue and blue twice this (measured 240 228 132 in frame 34: left as specks along the edge;
+                   // her skin blended with the yellow has blue under 61 when its red is that near its green)
   skinGuard: 2,    // a fainter pixel this near her skin is her finger's edge against the felt: it stays
   herEdge: 4,      // her edge against the rim: warm pixels this near it
   herInside: 6,    // ... measured against her colour within this many px that lies further than herEdge from the rim
@@ -62,6 +79,11 @@ export const CARD_RIM = {
   skirt: 4,        // the felt this near the rim goes with it where the rim has tinted it (its red lifted above the felt's)
   softMost: 0.5,   // the soft edge is at most this share of the card's colour
   smooth: 40,      // the felt carried in is evened out this many times (each pixel the mean of its neighbours of felt)
+  inner: 3,        // the card's own colour is taken this far inside its edge against the rim (measured 2026-11-23: the two
+                   // outermost pixels of the blue are paled by the rim, red 130–160 against 105 further in)
+  paleLeast: 0.1,  // ... and a pixel with at least this share of something pale in it is rim only when that pale is at least
+  grey: 140,       // this light: her hand's blurred edge against the felt, in shadow, reads as a share of yellow, felt and a
+                   // grey of 90–110, and was painted yellow along her hand (frame 30); the rim's own blends read as 180–250
   still: 8,        // over a film: a painted pixel stays painted while the film's own pixel is within this of the frame before (per channel),
   drift: 24,       // and within this of what it was when the paint was last settled afresh,
   stillNear: 12,   // and only within this many px of what the step changes in that frame (reach + skirt + this stays under 48)
@@ -70,7 +92,8 @@ export const CARD_RIM = {
   ring: 60,        // the felt's level is read within this many px of the card
 };
 const C = CARD_RIM;
-const warm = (r: number, g: number, b: number) => r - g >= C.warmRG && r - b >= C.warmRB;
+const cream = (r: number, g: number, b: number) => r - g < 2 * C.warmRG && g - b >= C.cream && b >= 2 * C.cream;
+const warm = (r: number, g: number, b: number) => r - g >= C.warmRG && r - b >= C.warmRB && !cream(r, g, b);
 
 /** What is never touched at the shoe: the bank's shoe polygon where the anchor shows something on it (not plain felt), a margin round that, and the whole of its window. */
 export function shoeKeep(anchor: Rgb): Uint8Array {
@@ -84,14 +107,32 @@ export function shoeKeep(anchor: Rgb): Uint8Array {
 
 const toSegment = (x: number, y: number, a: Pt, b: Pt) => { const dx = b.x - a.x, dy = b.y - a.y, t = Math.max(0, Math.min(1, ((x - a.x) * dx + (y - a.y) * dy) / (dx * dx + dy * dy || 1))); return Math.hypot(x - a.x - t * dx, y - a.y - t * dy); };
 const byte = (v: number) => Math.max(0, Math.min(255, Math.round(v)));
+// A colour as shares of three others, x·a + y·b + z·c (null where they do not span), and of one other and a grey, x·a + z (least squares).
+const shares3 = (a: number[], b: number[], c: number[], p: number[]): number[] | null => {
+  const det = (u: number[], v: number[], w: number[]) => u[0] * (v[1] * w[2] - v[2] * w[1]) - v[0] * (u[1] * w[2] - u[2] * w[1]) + w[0] * (u[1] * v[2] - u[2] * v[1]), d = det(a, b, c);
+  return Math.abs(d) < 1e-6 ? null : [det(p, b, c) / d, det(a, p, c) / d, det(a, b, p) / d];
+};
+const shares2 = (a: number[], p: number[]): number[] => {
+  const aa = a[0] * a[0] + a[1] * a[1] + a[2] * a[2], sa = a[0] + a[1] + a[2], ap = a[0] * p[0] + a[1] * p[1] + a[2] * p[2], sp = p[0] + p[1] + p[2], d = 3 * aa - sa * sa;
+  if (Math.abs(d) < 1e-6) return [0, sp / 3];
+  const x = (3 * ap - sa * sp) / d; return [x, (sp - sa * x) / 3];
+};
 
-/** painted: pixels of rim that became felt; softEdge: those of them next to the card (part its colour); herEdge: pixels of her edge against the rim, now against the felt. */
+/** What the rim becomes: the felt round the card, or the card's own colour. */
+export type RimWay = 'felt' | 'card';
+export const RIM_WAYS: RimWay[] = ['felt', 'card'];
+/**
+ * painted: pixels of rim painted (as felt, or in the card's colour); softEdge: those of them that are part card and part felt
+ * (as felt: the ones next to the card; in the card's colour: the rim's outer edge); herEdge: pixels of her edge against the
+ * rim, now against what the rim became.
+ */
 export type RimOff = {cards: number; painted: number; softEdge: number; herEdge: number};
 /**
- * One frame (RGB, the bank's size), changed in place: the pale rim round the dealt card outside the shoe becomes felt.
- * `keep` marks what is never touched (shoeKeep). A frame without a card outside the shoe, or without a rim, is left as it is.
+ * One frame (RGB, the bank's size), changed in place: the pale rim round the dealt card outside the shoe becomes felt, or the
+ * card's own colour. `keep` marks what is never touched (shoeKeep). A frame without a card outside the shoe, or without a rim,
+ * is left as it is.
  */
-export function cardRimOff(rgb: Buffer, keep: Uint8Array): RimOff {
+export function cardRimOff(rgb: Buffer, keep: Uint8Array, way: RimWay = 'felt'): RimOff {
   if (rgb.length !== W * H * 3 || keep.length !== W * H) throw Error(`Rutan är inte bankens ${W} × ${H}.`);
   const core = new Uint8Array(W * H);
   for (let i = 0, p = 0; i < W * H; i++, p += 3) if (!keep[i] && (is.blue(rgb[p], rgb[p + 1], rgb[p + 2]) || is.yellow(rgb[p], rgb[p + 1], rgb[p + 2]))) core[i] = 1;
@@ -109,14 +150,14 @@ export function cardRimOff(rgb: Buffer, keep: Uint8Array): RimOff {
     for (let grew = true; grew;) { grew = false;
       for (const q of pieces) if (!taken.has(q.id) && q.light >= C.asLight * main.light && mine.some((p) => near(p, q))) { mine.push(q); taken.add(q.id); grew = true; } }
     if (mine.reduce((s, part) => s + part.area, 0) < C.minCard) continue;
-    const did = oneCard(rgb, keep, core, labels, new Set(mine.map((part) => part.id)), [Math.min(...mine.map((part) => part.x0)), Math.min(...mine.map((part) => part.y0)), Math.max(...mine.map((part) => part.x1)), Math.max(...mine.map((part) => part.y1))]);
+    const did = oneCard(rgb, keep, core, labels, new Set(mine.map((part) => part.id)), [Math.min(...mine.map((part) => part.x0)), Math.min(...mine.map((part) => part.y0)), Math.max(...mine.map((part) => part.x1)), Math.max(...mine.map((part) => part.y1))], way);
     if (!did.painted) continue;
     done.cards++; done.painted += did.painted; done.softEdge += did.softEdge; done.herEdge += did.herEdge;
   }
   return done;
 }
 
-function oneCard(rgb: Buffer, keep: Uint8Array, core: Uint8Array, labels: Int32Array, ids: Set<number>, box: number[]): Omit<RimOff, 'cards'> {
+function oneCard(rgb: Buffer, keep: Uint8Array, core: Uint8Array, labels: Int32Array, ids: Set<number>, box: number[], way: RimWay): Omit<RimOff, 'cards'> {
   let [cx0, cy0, cx1, cy1] = box;
   const none = {painted: 0, softEdge: 0, herEdge: 0};
   // The card's outline: the convex outline of its pieces' edge pixels.
@@ -175,6 +216,7 @@ function oneCard(rgb: Buffer, keep: Uint8Array, core: Uint8Array, labels: Int32A
   // under a card in the air). Left in place it is what the felt carried in is taken from, and the whole band turns as dark and
   // grey as that line: a dark outline where the white one was (frames 41–48 of paow-giv-2-3-p3-01, green 140 against 170 a few
   // px further out). Her finger's own edge against the felt is not skirt.
+  const proper = found.length; // the rim itself: what `found` holds after these is its skirt
   for (let turn = 0, layer = found.slice(); turn < C.skirt && layer.length; turn++) { const next: number[] = [];
     for (const k of layer) round(k, (j) => { const i = at(j); if (rim[j] || core[i] || keep[i] || skin[j] || nearSkin[j] || !isScreen(rgb, i) || rgb[i * 3] < fr + C.lift) return; rim[j] = 1; next.push(j); found.push(j); });
     layer = next; }
@@ -191,7 +233,7 @@ function oneCard(rgb: Buffer, keep: Uint8Array, core: Uint8Array, labels: Int32A
     for (const [k, r, g, b] of set) { const i = at(k); rgb[i * 3] = byte(r); rgb[i * 3 + 1] = byte(g); rgb[i * 3 + 2] = byte(b); filled[k] = 1; painted++; }
     left = next;
   }
-  if (!painted) return none;
+  if (!painted && way === 'felt') return none;
   const done = found.filter((k) => filled[k]);
   for (let turn = 0; turn < C.smooth; turn++) {
     const set = done.map((k) => { let w = 0; const s = [0, 0, 0];
@@ -201,13 +243,60 @@ function oneCard(rgb: Buffer, keep: Uint8Array, core: Uint8Array, labels: Int32A
   }
   // Felt carried in from the dim edge of her hand can be olive, which is yellow by the lab's rule: its red is held under the rule's.
   for (const k of done) { const p = at(k) * 3; if (is.yellow(rgb[p], rgb[p + 1], rgb[p + 2])) rgb[p] = Math.floor(0.6 * rgb[p + 1]); }
-  const feltNow = Buffer.alloc(bw * bh * 3);
-  for (const k of done) { const i = at(k); for (let c = 0; c < 3; c++) feltNow[k * 3 + c] = rgb[i * 3 + c]; }
-  // A soft edge: the two pixels nearest the card take the card's colour by the share of it in the 5 × 5 round them, at most
-  // softMost and never so much that the pixel reads as the card's colour by the lab's rules: the card keeps its size.
-  const soft = new Uint8Array(bw * bh);
+  // What the rim is now, for her edge below: the felt as it lies before the soft edge, or the card's colour.
+  const paintNow = Buffer.alloc(bw * bh * 3), shown = way === 'card' ? new Uint8Array(bw * bh) : filled, soft = new Uint8Array(bw * bh);
   let softEdge = 0;
-  for (const k of done) { const i = at(k), x = i % W, y = (i - x) / W, card = [0, 0, 0]; let n = 0;
+  if (way === 'card') {
+    // The card's own colour, known where the card is itself: not within `inner` of the rim (paled by it), nor right beside a
+    // mark or her skin (blended with those).
+    const mine = new Uint8Array(bw * bh), other = new Uint8Array(bw * bh), rimAt = new Uint8Array(bw * bh);
+    for (let n = 0; n < proper; n++) rimAt[found[n]] = 1;
+    for (let k = 0; k < bw * bh; k++) { const i = at(k); if (core[i] && ids.has(labels[i])) mine[k] = 1; else if (skin[k] || (!rim[k] && !keep[i] && isCardMark(rgb, i))) other[k] = 1; }
+    const blended = growMask(other, C.skinGuard, bw, bh), paled = growMask(rimAt, C.inner, bw, bh);
+    const tone = new Float32Array(bw * bh * 3), known = new Uint8Array(bw * bh), carried: number[] = [];
+    let left: number[] = [];
+    for (let k = 0; k < bw * bh; k++) { if (!mine[k] || blended[k]) continue;
+      if (paled[k]) left.push(k); else { known[k] = 1; for (let c = 0; c < 3; c++) tone[k * 3 + c] = before[k * 3 + c]; } }
+    const mean = (k: number) => { let w = 0; const s = [0, 0, 0];
+      round(k, (j, straight) => { if (!known[j]) return; const v = straight ? 1 : 0.7; w += v; for (let c = 0; c < 3; c++) s[c] += v * tone[j * 3 + c]; });
+      return w ? [s[0] / w, s[1] / w, s[2] / w] : null; };
+    const layer = () => { const next: number[] = [], set: [number, number[]][] = [];
+      for (const k of left) { const v = mean(k); if (v) set.push([k, v]); else next.push(k); }
+      for (const [k, v] of set) { known[k] = 1; carried.push(k); for (let c = 0; c < 3; c++) tone[k * 3 + c] = v[c]; }
+      left = next; return set.length; };
+    // ... carried out over its paled edge, and where the card is too thin to have a colour further in, the edge's own it is;
+    for (let turn = 0; turn < 2 * C.inner && left.length && layer(); turn++);
+    for (const k of left) { known[k] = 1; for (let c = 0; c < 3; c++) tone[k * 3 + c] = before[k * 3 + c]; }
+    // ... and on over the rim and its skirt, then evened out as the felt is.
+    left = found.slice();
+    while (left.length && layer());
+    for (let turn = 0; turn < C.smooth; turn++) { const set = carried.map(mean); carried.forEach((k, n) => { const v = set[n]; if (v) for (let c = 0; c < 3; c++) tone[k * 3 + c] = v[c]; }); }
+    painted = 0;
+    for (const k of carried) {
+      const p = at(k) * 3, card = [tone[k * 3], tone[k * 3 + 1], tone[k * 3 + 2]];
+      if (mine[k]) { for (let c = 0; c < 3; c++) rgb[p + c] = byte(card[c]); continue; }
+      if (!rimAt[k] && !filled[k]) continue; // skirt with no felt to carry in: as it is
+      // The pixel as it came, as shares of the card's colour, the felt and a grey (the rim: white, or grey in a shadow). The
+      // felt's share stays felt and the rest becomes the card's colour. A pixel whose pale part is too dark to be rim is
+      // something else (her hand's edge, a shadow on the felt) and is left as the film has it.
+      const came = [before[k * 3], before[k * 3 + 1], before[k * 3 + 2]], felt = filled[k] ? [rgb[p], rgb[p + 1], rgb[p + 2]] : [fr, fg, fb];
+      let [own, share, grey] = shares3(card, felt, [1, 1, 1], came) ?? [0, 1, 0];
+      if (own < 0) { own = 0; [share, grey] = shares2(felt, came); }
+      if (share < 0) { share = 0; [own, grey] = shares2(card, came); }
+      share = share < 0.02 ? 0 : share > 0.98 ? 1 : share;
+      const pale = 1 - Math.max(0, Math.min(1 - share, own)) - share;
+      if (pale >= C.paleLeast && grey < pale * C.grey) continue;
+      for (let c = 0; c < 3; c++) rgb[p + c] = byte((1 - share) * card[c] + share * felt[c]);
+      shown[k] = 1; painted++; if (share > 0.05 && share < 0.95) softEdge++;
+    }
+    // Rim that no colour of the card reached is left as the film has it.
+    for (const k of done) if (!shown[k]) { const p = at(k) * 3; for (let c = 0; c < 3; c++) rgb[p + c] = before[k * 3 + c]; }
+    if (!painted) return none;
+  }
+  for (let k = 0; k < bw * bh; k++) if (shown[k]) { const i = at(k); for (let c = 0; c < 3; c++) paintNow[k * 3 + c] = rgb[i * 3 + c]; }
+  // As felt, a soft edge: the two pixels nearest the card take the card's colour by the share of it in the 5 × 5 round them, at
+  // most softMost and never so much that the pixel reads as the card's colour by the lab's rules: the card keeps its size.
+  if (way === 'felt') for (const k of done) { const i = at(k), x = i % W, y = (i - x) / W, card = [0, 0, 0]; let n = 0;
     for (let yy = Math.max(0, y - 2); yy <= Math.min(H - 1, y + 2); yy++) for (let xx = Math.max(0, x - 2); xx <= Math.min(W - 1, x + 2); xx++) { const j = yy * W + xx; if (core[j]) { n++; for (let c = 0; c < 3; c++) card[c] += rgb[j * 3 + c]; } }
     if (!n) continue;
     const mix = (share: number) => [0, 1, 2].map((c) => byte(share * card[c] / n + (1 - share) * rgb[i * 3 + c]));
@@ -216,17 +305,17 @@ function oneCard(rgb: Buffer, keep: Uint8Array, core: Uint8Array, labels: Int32A
     if (share <= 0.05) continue;
     for (let c = 0; c < 3; c++) rgb[i * 3 + c] = v[c];
     soft[k] = 1; softEdge++; }
-  // Her edge against the rim becomes her edge against the felt.
-  const nearRim = growMask(filled, C.herEdge, bw, bh);
+  // Her edge against the rim becomes her edge against what the rim is now.
+  const nearRim = growMask(shown, C.herEdge, bw, bh);
   let herEdge = 0;
   for (let k = 0; k < bw * bh; k++) {
-    if (!nearRim[k] || filled[k] || !zone[k] || !skin[k] || keep[at(k)]) continue;
+    if (!nearRim[k] || shown[k] || !zone[k] || !skin[k] || keep[at(k)]) continue;
     const x = k % bw, y = (k - x) / bw, her = [0, 0, 0], rimWas = [[0, 0, 0], [0, 0, 0]], rimNow = [[0, 0, 0], [0, 0, 0]], rims = [0, 0];
     let hers = 0;
     for (let dy = -C.herInside; dy <= C.herInside; dy++) for (let dx = -C.herInside; dx <= C.herInside; dx++) { const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= bw || yy >= bh) continue; const j = yy * bw + xx;
       if (skin[j] && !nearRim[j]) { hers++; for (let c = 0; c < 3; c++) her[c] += before[j * 3 + c]; }
-      // The rim beside it as it was and the felt there now; where the rim is so thin that all of it is soft edge, that is used.
-      else if (filled[j] && Math.max(Math.abs(dx), Math.abs(dy)) <= C.herEdge + 1 && Math.min(before[j * 3], before[j * 3 + 1], before[j * 3 + 2]) >= C.strong) { const s = soft[j]; rims[s]++; for (let c = 0; c < 3; c++) { rimWas[s][c] += before[j * 3 + c]; rimNow[s][c] += feltNow[j * 3 + c]; } } }
+      // The rim beside it as it was and what is there now; where the rim is so thin that all of it is soft edge, that is used.
+      else if (shown[j] && Math.max(Math.abs(dx), Math.abs(dy)) <= C.herEdge + 1 && Math.min(before[j * 3], before[j * 3 + 1], before[j * 3 + 2]) >= C.strong) { const s = soft[j]; rims[s]++; for (let c = 0; c < 3; c++) { rimWas[s][c] += before[j * 3 + c]; rimNow[s][c] += paintNow[j * 3 + c]; } } }
     const which = rims[0] ? 0 : 1, whites = rims[which], white = rimWas[which], now = rimNow[which];
     if (hers < 3 || !whites) continue;
     const span = [0, 1, 2].map((c) => her[c] / hers - white[c] / whites), length = span.reduce((s, v) => s + v * v, 0);
@@ -234,7 +323,7 @@ function oneCard(rgb: Buffer, keep: Uint8Array, core: Uint8Array, labels: Int32A
     const share = Math.max(0, Math.min(1, [0, 1, 2].reduce((s, c) => s + (before[k * 3 + c] - white[c] / whites) * span[c], 0) / length));
     if (share >= C.herWhole) continue;
     const i = at(k), v = [0, 1, 2].map((c) => byte(before[k * 3 + c] + (1 - share) * (now[c] - white[c]) / whites));
-    if (is.blue(v[0], v[1], v[2]) || is.yellow(v[0], v[1], v[2])) continue; // never a new pixel of the card's colour
+    if (way === 'felt' && (is.blue(v[0], v[1], v[2]) || is.yellow(v[0], v[1], v[2]))) continue; // as felt, never a new pixel of the card's colour
     for (let c = 0; c < 3; c++) rgb[i * 3 + c] = v[c];
     herEdge++;
   }
@@ -252,19 +341,21 @@ const PAINTED = 1, CARDS = 2;
  * the film itself has none). So, for as long as the film's own pixel is within CARD_RIM.still of the frame before and within
  * CARD_RIM.drift of what it was when its state was last settled:
  *   - a painted pixel stays painted, and its paint moves at most CARD_RIM.slew per frame towards what the step makes of the frame;
- *   - a pixel that was the card's colour stays the film's own, also in a frame where it falls just short of the lab's rule.
- * (held: the pixels where either changed the outcome.) A pixel that is the card's colour in the frame is never changed, and
- * nothing is held further than CARD_RIM.stillNear from what the step changes in the frame at hand: where the card has moved on
- * the film's own pixels come back (without that, felt painted once beside the card stayed painted along its whole way).
+ *   - as felt, a pixel that was the card's colour stays the film's own, also in a frame where it falls just short of the lab's rule.
+ * (held: the pixels where either changed the outcome.) As felt, a pixel that is the card's colour in the frame is never changed.
+ * In the card's own colour there is only the first of the two: the paint is the card's colour, and the card's paled edge is
+ * painted like the rim. Nothing is held further than CARD_RIM.stillNear from what the step changes in the frame at hand: where
+ * the card has moved on the film's own pixels come back (without that, felt painted once beside the card stayed painted along
+ * its whole way).
  */
-export function rimOffFilm(anchorBgr: Uint8Array) {
+export function rimOffFilm(anchorBgr: Uint8Array, way: RimWay = 'felt') {
   const keep = shoeKeep(swap(anchorBgr, Buffer.alloc(anchorBgr.length)) as Buffer), perFrame: ({frame: number; held: number} & Omit<RimOff, 'cards'>)[] = [];
   const rgb = Buffer.alloc(W * H * 3), came = Buffer.alloc(W * H * 3), cameThen = Buffer.alloc(W * H * 3), cameLast = Buffer.alloc(W * H * 3), made = Buffer.alloc(W * H * 3), has = new Uint8Array(W * H);
   let frames = 0;
   return {
     add(bgr: Uint8Array) {
       swap(bgr, rgb); came.set(rgb);
-      const {cards: _, ...did} = cardRimOff(rgb, keep);
+      const {cards: _, ...did} = cardRimOff(rgb, keep, way);
       const nowAt = new Uint8Array(W * H);
       let changed = 0, held = 0, any = false;
       for (let i = 0, p = 0; i < W * H; i++, p += 3) if (rgb[p] !== came[p] || rgb[p + 1] !== came[p + 1] || rgb[p + 2] !== came[p + 2]) { nowAt[i] = 1; any = true; }
@@ -272,7 +363,7 @@ export function rimOffFilm(anchorBgr: Uint8Array) {
       const within = (x: Buffer, y: Buffer, p: number, most: number) => Math.abs(x[p] - y[p]) <= most && Math.abs(x[p + 1] - y[p + 1]) <= most && Math.abs(x[p + 2] - y[p + 2]) <= most;
       for (let i = 0, p = 0; i < W * H; i++, p += 3) {
         const now = nowAt[i] === 1;
-        if (is.blue(came[p], came[p + 1], came[p + 2]) || is.yellow(came[p], came[p + 1], came[p + 2])) {
+        if (way === 'felt' && (is.blue(came[p], came[p + 1], came[p + 2]) || is.yellow(came[p], came[p + 1], came[p + 2]))) {
           // The card's colour: the step leaves it as it is and so does this, and it is remembered as the card's.
           for (let c = 0; c < 3; c++) cameThen[p + c] = cameLast[p + c] = came[p + c];
           has[i] = CARDS; if (now) changed++;
@@ -287,7 +378,7 @@ export function rimOffFilm(anchorBgr: Uint8Array) {
         } else if (stands) {
           // Painted and the film has stood still since: the paint stays, and glides towards what the step makes of this frame.
           const to = [0, 1, 2].map((c) => now ? made[p + c] + Math.max(-C.slew, Math.min(C.slew, rgb[p + c] - made[p + c])) : made[p + c]);
-          if (is.blue(to[0], to[1], to[2]) || is.yellow(to[0], to[1], to[2])) for (let c = 0; c < 3; c++) to[c] = made[p + c];
+          if (way === 'felt' && (is.blue(to[0], to[1], to[2]) || is.yellow(to[0], to[1], to[2]))) for (let c = 0; c < 3; c++) to[c] = made[p + c];
           if (rgb[p] !== to[0] || rgb[p + 1] !== to[1] || rgb[p + 2] !== to[2]) held++;
           for (let c = 0; c < 3; c++) { rgb[p + c] = made[p + c] = to[c]; cameLast[p + c] = came[p + c]; }
           changed++;
@@ -299,7 +390,7 @@ export function rimOffFilm(anchorBgr: Uint8Array) {
     },
     result() {
       const sum = (key: 'painted' | 'softEdge' | 'herEdge' | 'held') => perFrame.reduce((s, f) => s + f[key], 0);
-      return {what: 'den bleka kanten runt det givna kortet utanför skon målad som filt, ruta för ruta; där filmen står still står resultatet still (tools/card-rim.ts)', frames, framesChanged: perFrame.length,
+      return {what: `den bleka kanten runt det givna kortet utanför skon målad ${way === 'card' ? 'i kortets egen färg' : 'som filt'}, ruta för ruta; där filmen står still står resultatet still (tools/card-rim.ts)`, way, frames, framesChanged: perFrame.length,
         firstFrame: perFrame[0]?.frame ?? null, lastFrame: perFrame.at(-1)?.frame ?? null, pixelsPainted: sum('painted'), softEdge: sum('softEdge'), herEdge: sum('herEdge'), held: sum('held'), settings: CARD_RIM, perFrame};
     },
   };

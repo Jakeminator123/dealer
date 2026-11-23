@@ -1,7 +1,8 @@
 // tools/card-rim.ts on made-up pictures at the bank's size: the pale rim round the dealt card becomes felt and the card's
 // colour keeps its place and size; a finger lying over the rim stays; the shoe and its window are never touched; a dim patch
-// of card colour on her hand is not the card; and the step over a film counts what it did. The colours are the ones measured on
-// paow-giv-2-3-p3-01 (felt, blue face, yellow back, rim, her skin).
+// of card colour on her hand is not the card; and the step over a film counts what it did. The other way, the rim in the card's
+// own colour: the card keeps its outer size, her finger stays on it, and a blend into the felt stays a blend. The colours are the
+// ones measured on paow-giv-2-3-p3-01 (felt, blue face, yellow back, rim, her skin).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {W, H, type Rgb} from './order-images.ts';
@@ -166,8 +167,59 @@ test('a result is held only beside what the step changes in the frame: where the
   assert.equal(film.result().held, 0);
 });
 
-test('the after-work paints the rim only when asked to', () => {
+test('in the card\'s own colour the rim becomes the card\'s colour: the card keeps its outer size, and its marks are as they were', () => {
+  const before = picture(RIM, FACE, ...CROSS, DOT), after = Buffer.from(before), did = cardRimOff(after, NO_SHOE, 'card');
+  assert.deepEqual(did, {cards: 1, painted: 100 * 70 - 84 * 54, softEdge: 0, herEdge: 0}, 'every pixel of the rim, and nothing else');
+  assert.equal(count(after, pale), 0, 'no pale pixel is left');
+  for (const [x, y] of [[600, 1020], [603, 1050], [650, 1022], [699, 1089], [650, 1085]]) assert.deepEqual(at(after, x, y), BLUE, `the rim at ${x},${y} is the blue beside it`);
+  assert.equal(count(after, is.blue), count(before, is.blue) + did.painted, 'by the lab\'s rule the card now reaches the rim\'s outer edge');
+  assert.ok(same(before, after, FACE), 'the blue, the cross and the dot are as they were');
+  assert.ok(same(before, after, [FELT, 560, 980, 40, 150]) && same(before, after, [FELT, 600, 1090, 100, 40]), 'the felt outside the rim is as it was');
+  // The yellow back likewise: yellow beside yellow.
+  const rim: Block = [WHITE, 1052, 884, 86, 54], back: Block = [YELLOW, 1058, 890, 74, 42], yellow = picture(rim, back);
+  assert.equal(cardRimOff(yellow, NO_SHOE, 'card').painted, 86 * 54 - 74 * 42);
+  assert.deepEqual(at(yellow, 1054, 910), YELLOW);
+  assert.equal(count(yellow, is.yellow), 86 * 54);
+});
+
+test('in the card\'s own colour her finger stays on the card, the rim\'s blend into the felt stays a blend, and the card\'s paled edge goes', () => {
+  // Her fingertip over the rim; the rim's outermost column half white and half felt; the card's outermost column paled by the rim.
+  const FINGER: Block = [SKIN, 640, 990, 24, 50], HALF: Block = [[124, 242, 144], 600, 1020, 1, 70], PALED: Block = [[120, 200, 234], 608, 1028, 1, 54];
+  const before = picture(RIM, HALF, FACE, PALED, ...CROSS, DOT, FINGER), after = Buffer.from(before), did = cardRimOff(after, NO_SHOE, 'card');
+  assert.ok(same(before, after, FINGER), 'her finger is as it was');
+  assert.equal(did.painted, 100 * 70 - 84 * 54 - 24 * 8, 'all of the rim that shows');
+  assert.deepEqual(at(after, 638, 1023), BLUE, 'the rim right beside her finger is the card\'s colour: she holds the card');
+  assert.deepEqual(at(after, 608, 1050), BLUE, 'the card\'s paled edge is the colour from further in');
+  const [r, g, b] = at(after, 600, 1050);
+  assert.ok(Math.abs(r - 52) <= 6 && Math.abs(g - 214) <= 6 && Math.abs(b - 144) <= 6, `the half-white pixel is half the card\'s colour and half felt: ${[r, g, b]}`);
+  assert.equal(did.softEdge, 70, 'and it is counted as soft edge');
+  assert.deepEqual(at(after, 599, 1050), FELT, 'the felt beside it is as it was');
+});
+
+test('over a film in the card\'s own colour the paint stays where the film stands still, and the receipt names the way', () => {
+  const bgr = (rgb: Buffer) => { const out = new Uint8Array(rgb.length); for (let p = 0; p < rgb.length; p += 3) { out[p] = rgb[p + 2]; out[p + 1] = rgb[p + 1]; out[p + 2] = rgb[p]; } return out; };
+  const px = (frame: Uint8Array, x: number, y: number) => { const p = (y * W + x) * 3; return [frame[p + 2], frame[p + 1], frame[p]]; };
+  // The second frame is the first with the blue a little bluer: alone its rim would be that blue at once; in the film the paint
+  // of the first frame stays and glides there.
+  const BLUER = [103, 192, 255], face2: Block = [BLUER, 608, 1028, 84, 54];
+  const alone = picture(RIM, face2, ...CROSS, DOT);
+  cardRimOff(alone, NO_SHOE, 'card');
+  assert.deepEqual(at(alone, 603, 1050), BLUER, 'alone, the rim of the second frame is its own bluer blue');
+  const first = bgr(picture(RIM, FACE, ...CROSS, DOT)), second = bgr(picture(RIM, face2, ...CROSS, DOT)), third = bgr(picture()), film = rimOffFilm(bgr(picture()), 'card');
+  film.add(first); film.add(second); film.add(third);
+  assert.deepEqual(px(first, 603, 1050), BLUE);
+  assert.deepEqual(px(second, 603, 1050), [103, 192, 245 + CARD_RIM.slew], 'the paint of the first frame, one step nearer the bluer blue');
+  assert.ok(third.every((v, p) => v === [FELT[2], FELT[1], FELT[0]][p % 3]), 'nothing is held over where the film has moved on');
+  const r = film.result();
+  assert.deepEqual([r.way, r.frames, r.framesChanged, r.firstFrame, r.lastFrame], ['card', 3, 2, 0, 1]);
+  assert.match(r.what, /kortets egen färg/);
+  assert.equal(rimOffFilm(bgr(picture())).result().way, 'felt');
+});
+
+test('the after-work paints the rim only when asked to, and in the way asked for', () => {
   assert.equal(readFlags([]).rim, undefined);
-  assert.equal(readFlags(['--rim-off']).rim, true);
-  assert.deepEqual(readFlags(['--rim-off', '--out', 'mapp']), {rim: true, out: 'mapp'});
+  assert.equal(readFlags(['--rim', 'felt']).rim, 'felt');
+  assert.deepEqual(readFlags(['--rim', 'card', '--out', 'mapp']), {rim: 'card', out: 'mapp'});
+  assert.throws(() => readFlags(['--rim', 'blue']), /felt .* eller card/);
+  assert.throws(() => readFlags(['--rim']), /behöver ett värde/);
 });

@@ -34,37 +34,6 @@
       }
     },
     {
-      "id": "vita-kanten-bort",
-      "kind": "beslut",
-      "question": "Ska den vita kanten runt kortet tas bort så här?",
-      "leads": "Ja gör steget till förval för nya filmer; kortet blir då bara det blå, alltså lite mindre, och i vändningen syns hack vid fingrarna i några rutor.",
-      "proof": "kant-bort-20261123",
-      "file": "5-kortet-fore-och-efter.png",
-      "page": "studio/granska/?prov=kant-bort-20261123&fil=4-efter-spelets-storlek.mp4",
-      "cost": "Inga krediter",
-      "chips": [
-        {
-          "value": "ja",
-          "label": "Ja, ta bort kanten"
-        },
-        {
-          "value": "nastan",
-          "label": "Rätt håll, men inte än"
-        },
-        {
-          "value": "nej",
-          "label": "Nej, behåll kanten"
-        }
-      ],
-      "asked": "2026-11-23",
-      "from": "film",
-      "answer": {
-        "value": "nastan",
-        "note": "saken nu är bara att hon nu greppar i \"luft\"/grönt. kanske okej, men beroende på vad som faktist är tanken.. Så att om vi säger såhär; om vi ska använda detta som A3'n' kanske vi i så fall ska fylla kantlinjen med det blåa. Ska detta göras för varje frame av en befintlig video så kan man ju kanske ta bort /ersätta det i alla fall med det överlägg av kort som ska komma på och in.. eller jag menar kortet är ju ändå bara referens för hur ett kort ska ersättas av det sätt som vi faktistska använda",
-        "at": "2026-11-23T08:51:55.279Z"
-      }
-    },
-    {
       "id": "paow-giv-2-3-p4c2",
       "kind": "beslut",
       "question": "Håller given från A2.3 till plats 4, kort 2?",
