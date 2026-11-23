@@ -11,15 +11,16 @@
 // On the plan's table (Verkligt perspektiv: a real card, 1,00, through the lens) only moving is possible: the card's size,
 // riktning and perspektiv are the lens's, and its size is adjusted only in Efterarbete.
 // The stage (lib/bordet.ts camera): it opens with the whole picture laid in it ("Anpassa"); the wheel zooms towards the
-// pointer, a drag where there is no card pans, and the control in the corner has Anpassa, 100 % and Närbild (the chosen card
-// in the middle). The cards are one shape (CardShape: rounded corners a share of the card's own side) in the picture's
+// pointer, a drag where there is no card pans, and the control in the corner has Anpassa, 100 %, Spelet (the size the game
+// draws the film at in a window of this size, following the window until another zoom is chosen) and Närbild (the chosen
+// card in the middle). The cards are one shape (CardShape: rounded corners a share of the card's own side) in the picture's
 // pixels, and the handles keep their size on screen, so both stay crisp and look the same at every zoom. Every gesture is one
 // step for Ångra; nothing is saved from here.
 import { Focus, Maximize, Minus, Plus } from "lucide-react";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type RefObject, type SVGProps } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type RefObject, type SVGProps } from "react";
 import { CARD_COLOUR, SHOE, TARGETS, VIEWS, WINDOW_CARD, angleToward, defaultPlan, editPlace, fromPixels, toPixels, type Intent, type Place, type PlacementPlan, type Side, type View } from "../../../src/placement-model.ts";
 import { planCardQuad } from "../../../src/card-plan.ts";
-import { actualCamera, cardPath, clampCamera, closeUp, fitCamera, panBy, pictureOrigin, scaleWords, zoomAt, type Camera } from "../../lib/bordet.ts";
+import { actualCamera, cardPath, clampCamera, closeUp, fitCamera, fitScale, gameCamera, gameScale, panBy, pictureOrigin, scaleWords, zoomAt, type Camera, type Size } from "../../lib/bordet.ts";
 import { PLAN_VIEW, centreOf, nudged, placeCode, sideWord, sizeFromCorner, taperFromCorner, turnHandle, type Pt } from "../../lib/placement.ts";
 import { PATH_SECONDS, pathFrame, type PathPhase } from "../../lib/placement-path.ts";
 import { IconButton } from "../ui";
@@ -53,6 +54,19 @@ export function CardShape({ quad, side, grow = 0, ...rest }: { quad: readonly Pt
       {side === "FRONT" ? <CardMark quad={quad} /> : null}
     </>
   );
+}
+
+const onResize = (changed: () => void) => {
+  window.addEventListener("resize", changed);
+  return () => window.removeEventListener("resize", changed);
+};
+/** The window's size, following every resize: what the game would have for its picture ("Spelet"). Nothing before the page is in a window. */
+function useWindowSize(): Size {
+  const size = useSyncExternalStore(onResize, () => `${window.innerWidth} ${window.innerHeight}`, () => "0 0");
+  return useMemo(() => {
+    const [w, h] = size.split(" ").map(Number);
+    return { w, h };
+  }, [size]);
 }
 
 /** Arrow keys over a run of presses are one step: the run ends after a short pause. */
@@ -129,12 +143,19 @@ export function Board({
   }, []);
   const picture = { w: W, h: H };
   const [held, setHeld] = useState<Camera | null>(null);
+  // "Spelet": the scale is the game's for the window and follows it; a pan keeps it, any other zoom ends it (zoomTo, and the wheel).
+  const [asGame, setAsGame] = useState(false);
+  const zoomTo = (c: Camera | null) => {
+    setAsGame(false);
+    setHeld(c);
+  };
   const [heldView, setHeldView] = useState(view);
   if (heldView !== view) {
     setHeldView(view);
-    setHeld(null);
+    zoomTo(null);
   }
-  const camera = held ? clampCamera(held, area, picture) : fitCamera(area, picture);
+  const win = useWindowSize();
+  const camera = !held ? fitCamera(area, picture) : asGame ? gameCamera(held, win, area, picture) : clampCamera(held, area, picture);
   const cam = useRef({ camera, area, picture });
   useLayoutEffect(() => {
     cam.current = { camera, area, picture };
@@ -145,6 +166,7 @@ export function Board({
       e.preventDefault();
       const r = el.getBoundingClientRect();
       const { camera: c, area: a, picture: p } = cam.current;
+      setAsGame(false);
       setHeld(zoomAt(c, Math.exp(-e.deltaY * (e.deltaMode === 1 ? 0.05 : 0.0015)), { x: e.clientX - r.left, y: e.clientY - r.top }, a, p));
     };
     el.addEventListener("wheel", wheel, { passive: false });
@@ -272,7 +294,7 @@ export function Board({
       onPointerUp={panUp}
       onPointerCancel={panUp}
       onDoubleClick={(e) => {
-        if (!(e.target as Element).closest("[data-place], [data-zoom]")) setHeld(null);
+        if (!(e.target as Element).closest("[data-place], [data-zoom]")) zoomTo(null);
       }}
     >
       <div data-picture className="absolute overflow-hidden shadow-[0_0_0_1px_rgb(255_255_255/0.06),0_18px_50px_rgb(0_0_0/0.45)]" style={{ left: origin.left, top: origin.top, width: boxW, height: boxH }}>
@@ -404,18 +426,46 @@ export function Board({
       <ZoomControl
         camera={camera}
         fitted={!held}
-        onOut={() => setHeld(zoomAt(camera, 1 / 1.25, { x: area.w / 2, y: area.h / 2 }, area, picture))}
-        onIn={() => setHeld(zoomAt(camera, 1.25, { x: area.w / 2, y: area.h / 2 }, area, picture))}
-        onFit={() => setHeld(null)}
-        onActual={() => setHeld(actualCamera(camera, area, picture))}
-        onClose={chosenQuad ? () => setHeld(closeUp(chosenQuad, area, picture)) : null}
+        game={{ on: !!held && asGame, title: gameTitle(gameScale(win), fitScale(area, picture)) }}
+        onOut={() => zoomTo(zoomAt(camera, 1 / 1.25, { x: area.w / 2, y: area.h / 2 }, area, picture))}
+        onIn={() => zoomTo(zoomAt(camera, 1.25, { x: area.w / 2, y: area.h / 2 }, area, picture))}
+        onFit={() => zoomTo(null)}
+        onActual={() => zoomTo(actualCamera(camera, area, picture))}
+        onGame={() => {
+          setHeld(camera);
+          setAsGame(true);
+        }}
+        onClose={chosenQuad ? () => zoomTo(closeUp(chosenQuad, area, picture)) : null}
       />
     </div>
   );
 }
 
-/** The stage's zoom, in its upper right corner (over the room, not the table): −, the scale, +, Anpassa, 100 % and Närbild (the chosen card). */
-function ZoomControl({ camera, fitted, onOut, onIn, onFit, onActual, onClose }: { camera: Camera; fitted: boolean; onOut: () => void; onIn: () => void; onFit: () => void; onActual: () => void; onClose: (() => void) | null }) {
+/**
+ * The hover text of "Spelet", in plain words: the size the game has in a window like this one. Where the game draws the
+ * film smaller than the whole picture lies on the stage (an upright window in one column, where the stage is nearly as wide
+ * as the window), the whole picture is shown, since the stage never zooms out past it, and the text says so.
+ */
+const gameTitle = (game: number, fit: number) =>
+  game < fit - 0.005
+    ? `Spelet visar filmen mindre än så här i det här fönstret (${scaleWords({ scale: game })}): här visas hela bilden`
+    : `Lika stort som spelet visar filmen i ett fönster av den här storleken (${scaleWords({ scale: game })})`;
+
+/** The stage's zoom, in its upper right corner (over the room, not the table): −, the scale, +, Anpassa, 100 %, Spelet (the game's size in this window) and Närbild (the chosen card). */
+function ZoomControl({
+  camera, fitted, game, onOut, onIn, onFit, onActual, onGame, onClose,
+}: {
+  camera: Camera;
+  fitted: boolean;
+  /** "Spelet": whether the stage follows the game's size now, and the button's hover text. */
+  game: { on: boolean; title: string };
+  onOut: () => void;
+  onIn: () => void;
+  onFit: () => void;
+  onActual: () => void;
+  onGame: () => void;
+  onClose: (() => void) | null;
+}) {
   const word = "h-7 rounded-sm px-2 text-xs text-dim hover:bg-raised hover:text-ink aria-pressed:bg-brass/12 aria-pressed:text-brass-hi";
   return (
     <div data-zoom onPointerDown={(e) => e.stopPropagation()} onDoubleClick={(e) => e.stopPropagation()} className="absolute right-2.5 top-2.5 flex cursor-default items-center gap-0.5 rounded-md border border-line bg-surface/90 p-0.5 shadow-pop backdrop-blur-sm">
@@ -431,6 +481,9 @@ function ZoomControl({ camera, fitted, onOut, onIn, onFit, onActual, onClose }: 
       </button>
       <button type="button" aria-pressed={Math.abs(camera.scale - 1) < 0.005} onClick={onActual} title="En bildpunkt per skärmpunkt" className={word}>
         100 %
+      </button>
+      <button type="button" data-zoom-game aria-pressed={game.on} onClick={onGame} title={game.title} className={word}>
+        Spelet
       </button>
       <button type="button" disabled={!onClose} onClick={onClose ?? undefined} title="Det valda kortet nära" className={cn(word, "flex items-center gap-1 disabled:opacity-40")}>
         <Focus className="size-3.5" />

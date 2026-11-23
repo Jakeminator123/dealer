@@ -3,16 +3,19 @@
 // Bordet's films to order (lib/bordet.ts). WishRows is step 3's list for the chosen card (its three films from one anchor:
 // the deal, the return to that anchor, the return to rest) and for the films without a card: one row per film in his
 // notation with its five marks (Första bild, Slutbild, Referensfilm, Text, Pris; ready or missing, the words written on the mark,
-// so the price stands on Pris), the first thing missing where it cannot be ordered yet, and "Lägg till" to put it on the list.
+// so the price stands on Pris) and "Lägg till" to put it on the list. A row never ends in a stop that says nothing: where
+// the store takes the order another way (a deal without its last picture) the row offers that way in one line with its
+// button, and where something truly cannot be sent it says what to do (Jakob 2026-11-23, docs/BESKED.md "Rensa bort regler
+// och låsningar som blockerar").
 // FilmStrip is that list, under the picture: the films chosen across cards, their cards ringed on the stage, the sum, and
-// "Förhandsvisa": the one way to a draft (the lab server's exact drafts, read before they are saved). One line over the list
-// says what never goes to Runway: the card path drawn in the lab is a sketch.
+// "Förhandsvisa": the one way to a draft (the lab server's exact drafts, read before they are saved). A row says what has
+// been tried with its recipe in plain words, not a status. One line over the list says what never goes to Runway: the card
+// path drawn in the lab is a sketch.
 import { Check, Plus, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { credits } from "../../../src/order-model.ts";
-import { METHOD_STATUS_LABEL } from "../../../src/order-methods.ts";
-import { sumWords, type FilmRow, type Mark } from "../../lib/bordet.ts";
+import { sentence, sumWords, type FilmRow, type Mark } from "../../lib/bordet.ts";
 import { Badge, Button, cn } from "../ui";
 
 export type Made = Record<string, string>;
@@ -43,8 +46,23 @@ export function Marks({ marks }: { marks: readonly Mark[] }) {
   );
 }
 
-/** Step 3's rows: a film each, with its marks (the price among them), why it cannot be ordered, and the way onto the list. */
-export function WishRows({ title, rows, listed, made, chosen, onChoose, onAdd }: { title: string | null; rows: readonly FilmRow[]; listed: ReadonlySet<string>; made: Made; chosen: string | null; onChoose: (r: FilmRow) => void; onAdd: (r: FilmRow) => void }) {
+/**
+ * Step 3's rows: a film each, with its marks (the price among them) and the way onto the list: "Lägg till", or where
+ * something is missing that the store can do without, that other way with its own button (`onWay` makes the row's choice
+ * and puts the film on the list); else what is missing and what to do about it.
+ */
+export function WishRows({
+  title, rows, listed, made, chosen, onChoose, onAdd, onWay,
+}: {
+  title: string | null;
+  rows: readonly FilmRow[];
+  listed: ReadonlySet<string>;
+  made: Made;
+  chosen: string | null;
+  onChoose: (r: FilmRow) => void;
+  onAdd: (r: FilmRow) => void;
+  onWay: (r: FilmRow) => void;
+}) {
   if (!rows.length) return null;
   return (
     <div className="flex flex-col gap-1.5">
@@ -84,9 +102,16 @@ export function WishRows({ title, rows, listed, made, chosen, onChoose, onAdd }:
                 </span>
               </div>
               <Marks marks={r.marks} />
-              {!r.orderable && r.why ? (
+              {draft || r.orderable ? null : r.way ? (
+                <div data-way className="flex flex-col items-start gap-1.5" onClick={(e) => e.stopPropagation()}>
+                  <p className="text-xs text-dim">{r.way.words}</p>
+                  <Button size="sm" variant="secondary" icon={<Plus />} onClick={() => onWay(r)}>
+                    {r.way.button}
+                  </Button>
+                </div>
+              ) : r.why ? (
                 <p data-why className="text-xs text-[#f0b07a]">
-                  Kan inte beställas än: {r.why}
+                  {sentence(r.why)}
                 </p>
               ) : null}
             </li>
@@ -169,9 +194,10 @@ function Row({ row, on, made, onChoose, onRemove }: { row: FilmRow; on: boolean;
       className={cn("flex cursor-pointer items-center gap-3 rounded-md px-2 py-1.5", on ? "bg-brass/10 ring-1 ring-brass/40" : "hover:bg-raised/60")}
     >
       <span className="w-40 shrink-0 font-mono text-sm font-semibold text-ink">{row.line}</span>
-      {row.method ? (
-        <Badge tone={row.method.status === "gäller" ? "ok" : row.method.status === "prov" ? "wait" : "bad"}>{METHOD_STATUS_LABEL[row.method.status]}</Badge>
-      ) : null}
+      {/* what has been tried with the recipe, in plain words; his last words about a take of it on hover */}
+      <Badge data-tried tone="neutral" title={row.said ?? undefined}>
+        {row.tried}
+      </Badge>
       <span className="min-w-0 flex-1 truncate text-xs text-dim" title={`${row.label} · ${row.recipe}`}>
         {row.recipe}
         {row.resolved.takes > 1 ? <span className="ml-1.5">· {row.resolved.takes} tagningar</span> : null}
@@ -185,9 +211,13 @@ function Row({ row, on, made, onChoose, onRemove }: { row: FilmRow; on: boolean;
         </Link>
       ) : row.cost !== null ? (
         <span className="shrink-0 text-sm tabular-nums text-ink">{credits(row.cost)} krediter</span>
+      ) : row.way ? (
+        <span className="max-w-[40%] shrink-0 truncate text-xs text-dim" title={row.way.words}>
+          kan beställas utan slutbild: välj filmen
+        </span>
       ) : (
-        <span className="max-w-[40%] shrink-0 truncate text-xs text-[#f0b07a]" title={row.why ?? undefined}>
-          {row.why ?? "kan inte beställas än"}
+        <span className="max-w-[40%] shrink-0 truncate text-xs text-[#f0b07a]" title={row.why ? sentence(row.why) : undefined}>
+          {row.why ? sentence(row.why) : "något saknas: välj filmen"}
         </span>
       )}
       <button type="button" aria-label={`Ta bort ${row.line}`} onClick={(e) => (e.stopPropagation(), onRemove())} className="grid size-7 shrink-0 place-items-center rounded-sm text-faint hover:bg-raised hover:text-ink">

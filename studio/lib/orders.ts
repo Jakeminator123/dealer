@@ -106,7 +106,7 @@ export const PRODUCTION_CHIP: Record<import("../../tools/produce.ts").RowState, 
   KAN: { tone: "brass", sign: "●", word: "kan beställas nu" },
   PROV: { tone: "remark", sign: "◐", word: "kan provas" },
   VÄNTAR: { tone: "wait", sign: "…", word: "väntar på bild" },
-  INGEN_METOD: { tone: "bad", sign: "?", word: "kan inte beställas än" },
+  INGEN_METOD: { tone: "bad", sign: "?", word: "inget sätt prövat än" },
   INTE_BYGGD: { tone: "neutral", sign: "–", word: "inte byggd" },
 };
 /** "5 av 33 klara · 5 av 21 krävs för en runda": the list's count in one line. */

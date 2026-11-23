@@ -3,8 +3,8 @@
 // studio/lib/edge-stats.ts playing, with the verdict of studio/lib/verdict.ts), what is in flight (drafts and approved
 // orders of Beställ for that step), whether a round needs it (the round src/clip-graph.ts roundSequence plays: every
 // player two cards, the dealer two and the hole card turned, with the rest between), what it needs before it can be
-// ordered (the anchors that must hold in Material, the seat's end picture for a deal bara dit, the reference film the
-// recipe's rule asks for) and the method of record for it (data/order-methods.json, src/order-methods.ts). From that each
+// ordered (the anchors that must hold in Material, the seat's end picture for a deal bara dit; never a reference film,
+// which is a choice of the order) and the method of record for it (data/order-methods.json, src/order-methods.ts). From that each
 // step gets one state in Jakob's words: klar, levererad och väntar på hans dom, beställd, utkast, kommer med given, kan
 // beställas nu, kan provas, väntar på en bild, ingen metod än, inte byggd.
 //
@@ -25,7 +25,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SEATS, bankEdges, buildGraph, parseEdge, roundSequence, type BankData, type EdgeKind, type Graph } from '../src/clip-graph.ts';
 import { ANCHOR_NODE, ANCHOR_ROLE, LANDING_ROLE, MODELS, SHOWN_LABEL, landingNode, readCutChecks, seatEndOf, seatWords, stepOf, type Anchor as AnchorKey, type BankFacts, type Order, type Shown, type StepKey } from '../src/order-model.ts';
-import { methodFor, readMethods, recipeFor, recipeHands, recipeWords, referenceByRule, referenceWaits, type Method, type MethodRegister } from '../src/order-methods.ts';
+import { methodFor, readMethods, recipeFor, recipeHands, recipeWords, referenceAbsent, referenceByRule, type Method, type MethodRegister } from '../src/order-methods.ts';
 import { bankSummary, hubAnchor, playing, type Hubs, type Summary } from '../studio/lib/edge-stats.ts';
 import { hubDeals } from '../src/game-director.ts';
 import { VERDICT_LABEL, verdictOf, verdictPhrase, type Verdict } from '../studio/lib/verdict.ts';
@@ -244,12 +244,13 @@ export function productionList(input: ProductionInput): Production {
       const standing = entries.some((e) => e.role === 'keystone' && e.state === 'gäller' && isStanding(e));
       if (!standing) needs.push('en stående bild av henne');
     }
-    // The reference film the recipe's rule finds for the step and the seat (the store takes the same one); without it the step waits.
-    let reference: string | null = null;
+    // The reference film the recipe's rule finds for the step and the seat (the store takes the same one). Never a need
+    // (2026-11-23): without one the step is ordered without a reference film, and the row's words say what was not there.
+    let reference: string | null = null, absent: string | null = null;
     const wantsRef = !!method && method.status !== 'saknas' && method.reference !== 'ingen';
     if (wantsRef && at && def) {
       reference = referenceByRule(input.bank, method!.reference, { dealer: dealer.id, step: def, target: at.target, model: method!.model ? MODELS[method!.model] : null, shape, lays })?.take ?? null;
-      if (!reference) needs.push(referenceWaits(method!.reference, def).replace(/^väntar på /, ''));
+      if (!reference) absent = referenceAbsent(method!.reference, def);
     }
     // A return to 2.1 comes with its deal while the deal's method goes tur och retur and the deal is not there yet.
     const dealEdge = edge.kind === 'RETURN' && edge.target && edge.to === 'READY' ? `READY>${edge.target}` : null;
@@ -272,8 +273,8 @@ export function productionList(input: ProductionInput): Production {
       : state === 'MED_GIVEN' ? `kommer med given till ${cardWords(edge.target!)} (tur och retur)`
       : state === 'VÄNTAR' ? `väntar på ${needs.join(' och ')}`
       : state === 'INTE_BYGGD' ? `inte byggd: kräver ${needs.join(' och ') || 'en bild utan henne'}`
-      : state === 'PROV' ? 'kan provas nu (metoden prövas)'
-      : ROW_STATE_LABEL[state];
+      : state === 'PROV' ? `kan provas nu (metoden prövas)${absent ? ` · utan referensfilm: ${absent}` : ''}`
+      : `${ROW_STATE_LABEL[state]}${state === 'KAN' && absent ? ` · utan referensfilm: ${absent}` : ''}`;
     // The picture Jakob recognises the step by: the anchor it is made around (a deal's start, the anchor an entry, a way
     // out or a return comes to, rest's own), with its card where the plan lays it. A still, never a film's frame: the
     // view loads no film for it.

@@ -1,23 +1,27 @@
 "use client";
 
 // "Det här skickas" for one film of Bordet's step 3, in one glance (Jakob 2026-11-17: "Vad är det som skickas till Runway?"):
-// why it cannot be ordered yet, the text it gets word for word, and the recipe with his deliberate exceptions folded under it.
+// what is missing and what to do about it, or the other way the store takes the order (a deal without its last picture) with
+// its button; what has been tried with the recipe, in plain words; the reference film as a choice in sight, with the film or
+// without (it is never a condition: where the recipe's rule finds none the row says so and the film goes without one); the
+// text it gets word for word, and the recipe with his deliberate exceptions folded under it (open where a step has no
+// recipe, since the model and the length are chosen there).
 // Only what step 2 does not already steer is an exception here: the hand and the side are the plan's (step 2), never chosen
 // twice. A draft is made only from the list's Förhandsvisa. Once the draft is made the same panel shows the stored order
 // and the way to approve it in Kön. "Förra filmen", folded: where the film has been ordered before, the takes that came of it
 // (the protocol, lib/ledger.ts: the film, Jakob's verdict, the reviewer's score, the way to Granska), and nothing of the
 // order's own model or text beside this recipe.
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Plus } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { CARD_SCALES, SHAPE_LABEL, STYLE_LABEL, TAKES_MAX, modelsFor, openEndWords, referenceCandidates, scaleWords, stepOf, stylesFor, type BankFacts, type RefCandidate } from "../../../src/order-model.ts";
-import { referenceName, type FilmRow, type RowChoice } from "../../lib/bordet.ts";
+import { referenceName, referenceOwner, referenceRole, sentence, type FilmRow, type RowChoice } from "../../lib/bordet.ts";
 import { labUrl } from "../../lib/lab.ts";
 import { scoreWords, verdictWords, type LedgerRow } from "../../lib/ledger.ts";
 import { orderLine, picturesInOrder, storedParts, type OrderAnswer, type OrdersAnswer } from "../../lib/orders.ts";
 import { PictureCard, StatusChip } from "../order/Pictures";
 import { PromptText } from "../order/PromptText";
-import { Badge, SegmentedControl, Select, TextArea, buttonClasses, cn } from "../ui";
+import { Badge, Button, SegmentedControl, Select, TextArea, buttonClasses, cn } from "../ui";
 import { queueHref } from "./FilmList";
 
 /** The last-picture choice "Utan slutbild" (RowChoice.end null, the command's --no-end). */
@@ -26,6 +30,8 @@ const NO_END = "utan-slutbild";
 const RECIPE_END = "receptets-slutbild";
 /** The reference film choice "Ingen" (RowChoice.reference null): a value of its own, since "" shows "Välj…". */
 const NO_REFERENCE = "ingen-referensfilm";
+/** The choice in sight: with the reference film (the recipe's, or the one he named) or without. */
+const WITH = "med", WITHOUT = "utan";
 
 function Part({ title, aside, children }: { title: string; aside?: ReactNode; children: ReactNode }) {
   return (
@@ -39,9 +45,12 @@ function Part({ title, aside, children }: { title: string; aside?: ReactNode; ch
   );
 }
 
-/** The reference film that goes, by whose film it is, with the film itself; or "ingen referensfilm". */
-function Reference({ film, wanted, names }: { film: { path: string; dealer: string; edge: string; goesTo: string | null } | null; wanted: boolean; names: Record<string, string> }) {
-  if (!film) return <p className={cn("text-sm", wanted ? "text-[#f0b07a]" : "text-dim")}>{wanted ? "Receptet vill ha en referensfilm, och ingen finns till platsen: inget beställs utan den." : "Ingen referensfilm"}</p>;
+/**
+ * The reference film that goes, by whose film it is, with the film itself; or "ingen referensfilm". `unchosen`: an older
+ * draft stored with its reference film left open (status SAKNAS, which no new draft gets), which cannot be approved as it is.
+ */
+function Reference({ film, unchosen = false, names }: { film: { path: string; dealer: string; edge: string; goesTo: string | null } | null; unchosen?: boolean; names: Record<string, string> }) {
+  if (!film) return <p className={cn("text-sm", unchosen ? "text-[#f0b07a]" : "text-dim")}>{unchosen ? "Det här äldre utkastet sparades utan att referensfilmen var vald och kan inte godkännas så: gör ett nytt utkast av filmen." : "Ingen referensfilm"}</p>;
   return (
     <div className="flex flex-col gap-1.5">
       <p data-reference className="text-sm font-medium text-ink">
@@ -76,7 +85,7 @@ function Takes({ takes }: { takes: readonly LedgerRow[] }) {
 }
 
 export function RowSends({
-  row, names, bank, dealer, choice, onChoice, made, all, last,
+  row, names, bank, dealer, choice, onChoice, onWay, made, all, last,
 }: {
   row: FilmRow;
   names: Record<string, string>;
@@ -84,6 +93,8 @@ export function RowSends({
   dealer: string;
   choice: RowChoice;
   onChoice: (patch: RowChoice | null) => void;
+  /** Takes the other way the row offers (row.way): makes its choice and puts the film on the list. */
+  onWay: () => void;
   /** The draft made from the row, as the store answers it, or null. */
   made: OrderAnswer | null;
   all: OrdersAnswer | null;
@@ -100,6 +111,10 @@ export function RowSends({
   const durations = model?.durations && !line.reference ? Array.from({ length: Math.min(model.durations[1], 10) - model.durations[0] + 1 }, (_, i) => model.durations![0] + i) : [];
   const candidates: RefCandidate[] = model?.videos && bank ? referenceCandidates(bank, { dealer, step, target: row.wish.target, model }).filter((c) => c.fits) : [];
   const words = row.text ? row.text.trim().split(/\s+/).length : 0;
+  // The film the choice in sight is about: the one that goes, else the one the recipe's rule would take.
+  const film = line.reference ?? line.ruled;
+  // A step without a recipe has nothing preselected: the model and the length are chosen in the fold, so it stands open.
+  const choose = !model || (step.kind === "FILM" && line.seconds === null);
   return (
     <div data-sends={row.key} className="flex flex-col gap-4">
       <div className="flex items-baseline gap-2">
@@ -111,10 +126,54 @@ export function RowSends({
           </button>
         ) : null}
       </div>
-      {!row.orderable && row.why ? (
+      {row.orderable ? null : row.way ? (
+        <div data-way className="flex flex-col items-start gap-2 rounded-sm border border-line px-2.5 py-2">
+          <p className="text-sm text-ink">{row.way.words}</p>
+          <Button size="sm" variant="secondary" icon={<Plus />} onClick={onWay}>
+            {row.way.button}
+          </Button>
+        </div>
+      ) : row.why ? (
         <p data-why className="rounded-sm bg-[#3a2a1a] px-2.5 py-1.5 text-sm text-[#f0b07a]">
-          Kan inte beställas än: {row.why}.
+          {sentence(row.why)}
         </p>
+      ) : null}
+      {row.notes.map((note) => (
+        <p key={note} data-note className="text-sm text-dim">
+          {note}
+        </p>
+      ))}
+      {/* a step without a recipe says so on the fold's own line ("Receptet · inget sätt är prövat än") */}
+      {line.recipe ? (
+        <p data-tried className="line-clamp-3 text-xs text-dim" title={row.said ?? undefined}>
+          {sentence(row.tried)}
+          {row.said ? ` ${row.said}` : ""}
+        </p>
+      ) : null}
+      {film ? (
+        <Part title="Referensfilm">
+          <SegmentedControl
+            size="sm"
+            label="Med eller utan referensfilm"
+            className="max-w-full flex-wrap"
+            value={line.reference ? WITH : WITHOUT}
+            onChange={(v) => onChoice({ reference: v === WITH || !line.ruled ? undefined : null })}
+            options={[
+              { value: WITH, label: `Med ${referenceOwner(film)}` },
+              { value: WITHOUT, label: "Utan" },
+            ]}
+          />
+          {line.reference ? (
+            <>
+              <Reference film={line.reference} names={names} />
+              <p data-reference-role className="text-xs text-dim">
+                Texten säger om filmen: {referenceRole(line)}.
+              </p>
+            </>
+          ) : (
+            <p className="text-xs text-dim">Bara bilderna och texten styr filmen.</p>
+          )}
+        </Part>
       ) : null}
       {row.text ? (
         <details data-text className="rounded-md border border-line px-3 py-2">
@@ -124,10 +183,10 @@ export function RowSends({
           <p className="mt-2 select-text whitespace-pre-wrap text-sm leading-6 text-ink">{row.text}</p>
         </details>
       ) : null}
-      <details data-exceptions className="rounded-md border border-line px-3 py-2" open={row.chosen}>
+      <details data-exceptions className="rounded-md border border-line px-3 py-2" open={row.chosen || choose}>
         <summary className="cursor-pointer text-sm text-ink">
           Receptet <span className="text-xs text-dim">· {row.recipe}{line.takes > 1 ? ` · ${line.takes} tagningar` : ""}</span>
-          <span className="ml-2 text-xs text-brass-hi">{row.chosen ? "undantag gjort" : "gör ett undantag"}</span>
+          <span className="ml-2 text-xs text-brass-hi">{choose ? "välj modell och längd" : row.chosen ? "undantag gjort" : "gör ett undantag"}</span>
         </summary>
         <div className="mt-3 flex flex-col gap-3 text-sm">
           <Row label="Modell">
@@ -228,7 +287,7 @@ export function DraftSends({ answer, all, names, takes = [] }: { answer: OrderAn
         ))}
       </div>
       <Part title="Referensfilm">
-        <Reference film={ref ? { path: ref.path, dealer: ref.dealer ?? order.dealer, edge: ref.from?.edge ?? (ref.goesTo ? `READY>${ref.goesTo}` : ""), goesTo: ref.goesTo ?? null } : null} wanted={order.reference.status === "SAKNAS"} names={names} />
+        <Reference film={ref ? { path: ref.path, dealer: ref.dealer ?? order.dealer, edge: ref.from?.edge ?? (ref.goesTo ? `READY>${ref.goesTo}` : ""), goesTo: ref.goesTo ?? null } : null} unchosen={order.reference.status === "SAKNAS"} names={names} />
       </Part>
       <Part title="Texten">
         <PromptText text={order.prompt.text} parts={parts} />

@@ -7,14 +7,19 @@
 // (data/order-methods.json), what the store will resolve for it (lineOf, from the same pure functions the store uses), its five
 // marks (first picture, last picture, reference film, text, price), its text and price as the order freezes them, and the
 // choices sent for a server preview: the dealer, the step and the card, and over them only his deliberate exceptions.
-// Nothing here composes an order: the store does, as for every draft. No DOM, no network; tests in
-// studio/tests/bordet-line.test.ts, studio/tests/line-same.test.ts and studio/tests/bordet-stage.test.ts (the stage).
+// A row stops only on what cannot be sent (no first picture, no model or length, no price, a paused dealer), and then says
+// what to do; where the store takes the order another way (a deal without its last picture) the row offers that way, and a
+// recipe's status and its reference film only inform (Jakob 2026-11-23, docs/BESKED.md "Rensa bort regler och låsningar som
+// blockerar"). Nothing here composes an order: the store does, as for every draft. No DOM, no network; tests in
+// studio/tests/bordet-line.test.ts (the rows, the ways and the stops), studio/tests/line-same.test.ts and
+// studio/tests/bordet-stage.test.ts (the stage).
 import type { Graph } from "../../src/clip-graph.ts";
+import { INTRO_FRAME, INTRO_FRAMING, focalOf } from "../../src/game-intro.ts";
 import {
   ANCHOR_NODE, ANCHOR_ROLE, LANDS_LABEL, a3Candidates, a3Name, costOf, credits, defaultFlip, genitive, handsOf, landingOf, modelFor, paramsOf, referenceCandidates, seatEndOf, seatWords, stepOf,
   type Anchor, type BankFacts, type DealerLook, type FlipAxis, type HandChoice, type ModelDef, type PlanAnswer, type Policy, type RefCandidate, type SeatEnd, type Shape, type StepDef, type StepKey, type TextStyle,
 } from "../../src/order-model.ts";
-import { NOT_YET, TWO_HAND_TURN, methodFor, recipeFor, recipeHands, recipeWords, referenceByRule, secondsOf, type Method, type MethodRegister, type Recipe, type ReferenceRule } from "../../src/order-methods.ts";
+import { NO_RECIPE, TWO_HAND_TURN, methodFor, recipeFor, recipeHands, recipeWords, referenceAbsent, referenceByRule, secondsOf, triedWords, type MethodRegister, type Recipe, type ReferenceRule } from "../../src/order-methods.ts";
 import { TEMPLATE_VERSION, orderPrompt } from "../../src/order-prompts.ts";
 import type { Intent, Place, Side } from "../../src/placement-model.ts";
 import { SHOE } from "../../src/placement-model.ts";
@@ -62,6 +67,19 @@ export function zoomAt(c: Camera, factor: number, at: { x: number; y: number }, 
 export const panBy = (c: Camera, dx: number, dy: number, area: Size, picture: Size): Camera => clampCamera({ ...c, x: c.x - dx / c.scale, y: c.y - dy / c.scale }, area, picture);
 /** 100 %: one picture pixel per screen pixel, about the same middle. */
 export const actualCamera = (c: Camera, area: Size, picture: Size): Camera => clampCamera({ ...c, scale: 1 }, area, picture);
+/**
+ * "Spelet": the scale the game draws the film at in a window of this size, in screen pixels per film pixel. The game's own
+ * numbers (src/game-intro.ts, which the film before the game is laid with): its lying framing, 0.84 × min(width / 1764,
+ * height / 1174), and in an upright window (width / height under 0.8) its tall one, 1.55 × the same. 100 % is not that size:
+ * a window of 1440 × 900 gives 64 % (Jakob 2026-11-23 asked whether 100 % is the size Scen uses).
+ */
+export const gameScale = (window: Size): number => {
+  if (!(window.w > 0 && window.h > 0)) return 1;
+  const framing = window.w / window.h < INTRO_FRAMING.tallBelow ? INTRO_FRAMING.tall : INTRO_FRAMING.lying;
+  return focalOf(window.w, window.h, framing.zoom) / INTRO_FRAME.focalPx;
+};
+/** The camera at the game's scale for the window, about the same middle; never smaller than the whole picture (clampCamera). */
+export const gameCamera = (c: Camera, window: Size, area: Size, picture: Size): Camera => clampCamera({ ...c, scale: gameScale(window) }, area, picture);
 /**
  * "Närbild": the card (its four corners in picture pixels) in the middle of the stage, as large as a fifth of the stage's
  * shorter side gives it, never past ZOOM_MAX.
@@ -205,7 +223,7 @@ export function motionLine(dealer: string, place: Place, intent: Pick<Intent, "p
   if (place === SHOE || !intent) return null;
   const from = wishAnchor(dealer, place, intent), step = stepOf(`GIV-${from}`)!, code = nodeCode(ANCHOR_NODE[from]);
   const recipe = recipeFor(methods, step.key, place);
-  if (!recipe) return `${code} · ${NOT_YET}`;
+  if (!recipe) return `${code} · ${NO_RECIPE}`;
   const open = intent.endSide === "FRONT";
   let how: string;
   if (step.grip === "TWO_HANDS") how = `vänster hand drar ut, ${open ? TWO_HAND_TURN : "höger hand lägger det stängt"}`;
@@ -225,7 +243,7 @@ export const wishKey = (w: FilmWish) => `${w.step}@${w.target ?? ""}`;
 /**
  * The films a card can have, three, all from one anchor (wishAnchor): the deal, the return to the same anchor and the return to
  * rest. With handbyte: A2.3 → A3P4C2, A3P4C2 → A2.3, A3P4C2 → A1; without it, from the anchor the game deals the card from. A
- * film that cannot be ordered yet (no recipe, or turned off as the return to 2.3 is) stays on the list, and its marks say why.
+ * film that lacks something (no recipe, or the return to 2.3, which the command orders) stays on the list, and its row says what to do.
  * The shoe and a place without a card in the plan (`planned` null) have none.
  */
 export function cardWishes(place: Place, planned: object | null, dealer: string): FilmWish[] {
@@ -262,14 +280,26 @@ type EntryLike = { id: string; role: string; state?: string; node?: string; card
 /** The five things a film needs before it can be ordered, in the order a row shows them (Jakob 2026-11-21). */
 export const MARK_NAMES = ["Första bild", "Slutbild", "Referensfilm", "Text", "Pris"] as const;
 export type MarkName = (typeof MARK_NAMES)[number];
-/** One of a row's five marks: ready or not, and its few words ("A2.3", "A3P4C2 saknas (höger hand)", "dockan", "128 ord", "64 krediter"). */
-export type Mark = { name: MarkName; ready: boolean; words: string };
+/**
+ * One of a row's five marks: ready or not, and its few words ("A2.3", "A3P4C2 saknas (höger hand)", "dockan", "128 ord",
+ * "64 krediter"). A missing mark also says what to do about it, in a sentence (`todo`).
+ */
+export type Mark = { name: MarkName; ready: boolean; words: string; todo?: string };
+/**
+ * Another way the store takes an order whose own way lacks something (a deal without its last picture, the command's
+ * --no-end): one plain line of what it means, the button's words, and the choice the button makes on the row.
+ */
+export type Way = { words: string; button: string; choice: RowChoice };
 
 /**
  * What the store makes of a film on the list, resolved the same way before a draft exists (tools/order-store.ts prepare, from
  * the same pure functions): the step's one recipe, and over it only his deliberate exceptions. `marks`: the five things a
- * film needs, each ready or not; `why`: the first that is missing, in the order the store asks for them (the first picture,
- * the recipe, the last picture, the reference film, the price), else null. A row can be ordered only when all five are ready.
+ * film needs, each ready or not. Missing is only what cannot be sent: a picture that is not there, a model or a length that
+ * nobody has chosen, a price outside the frame, a reference film he named that is gone. A reference film the recipe's rule
+ * does not find is not missing: the film goes without one, and `notes` says so. `why`: what to do about the first mark that
+ * is missing, in the order the store asks for them (the first picture, the model, the last picture, the reference film, the
+ * price), else null; `way`: where the store takes the order without what is missing, that way. A row can be ordered when
+ * all five are ready.
  */
 export type Line = {
   recipe: Recipe | null;
@@ -284,29 +314,38 @@ export type Line = {
   hands: { hand: "LH" | "RH"; pass: boolean };
   side: Side;
   reference: RefCandidate | null;
-  /** The recipe wants a reference film (and he has not said otherwise). */
+  /** The recipe takes a reference film by its rule (and he has not said otherwise on the row). */
   wanted: boolean;
+  /** The film the recipe's rule finds for the step and the seat, whatever is chosen on the row: what "med" goes back to. Null where the rule finds none, or the recipe takes none. */
+  ruled: RefCandidate | null;
   /** Where a deal bara dit ends: the seat's own end picture (its A3 for the laying hand, else the cut frame), or the A3 candidate he named; null where the seat has none. */
   end: SeatEnd<EntryLike> | null;
   /** The seat's A3 candidates for the laying hand: what the exception "med kandidaten som sista bild" can name. */
   endChoices: EntryLike[];
   marks: Mark[];
+  /** What the row tells that stops nothing: that the film goes without a reference film where the rule found none, or with neither a last picture nor a reference film. */
+  notes: string[];
   /** The text the store writes for it, word for word; null where it is written only with the draft (a picture drawn or read off a film's frame, a still) or cannot be written yet. */
   text: string | null;
   /** What one draft costs at the policy's prices (all its takes), or null where no price is known. */
   cost: number | null;
   why: string | null;
+  way: Way | null;
 };
 
 const ready = (name: MarkName, words: string): Mark => ({ name, ready: true, words });
-const missing = (name: MarkName, words: string): Mark => ({ name, ready: false, words });
+const missing = (name: MarkName, words: string, todo: string): Mark => ({ name, ready: false, words, todo });
 const anchorCode = (at: Anchor) => nodeCode(ANCHOR_NODE[at]);
 const wordCount = (text: string) => text.trim().split(/\s+/).length;
+/** A row's `why` as the line it is shown as: a capital first and a full stop last. */
+export const sentence = (words: string): string => `${words.charAt(0).toUpperCase()}${words.slice(1)}${/[.!?]$/.test(words) ? "" : "."}`;
 
-/** A step without a method: the store refuses it with "… har ingen metod än". */
-export const NO_METHOD = "steget har ingen metod än";
-/** A step that is tried with the command first (the return to A2.3, StepDef.off). */
-export const NOT_FROM_HERE = "provet beställs med kommandot, inte här";
+/** A step without a recipe: nothing is preselected, so the one who orders says the model and the length (the store asks for the same). */
+export const NO_MODEL = `${NO_RECIPE}: välj modell och längd under Receptet`;
+/** A model without a length: a step without a recipe, or a recipe that says none. */
+export const NO_LENGTH = "välj längd under Receptet";
+/** The return to A2.3 (StepDef.off): its trial continues an approved deal on that deal's frozen last picture, which only the command finds. */
+export const NOT_FROM_HERE = "provet beställs med kommandot (tools/order-new.ts), som själv hittar den godkända given och dess slutbild: be huvudagenten";
 export function lineOf(input: {
   dealer: string; wish: FilmWish; methods: Pick<MethodRegister, "methods"> | null; bank: BankFacts | null; entries: readonly EntryLike[]; plan: Pick<PlanAnswer, "seats"> | null; choice?: RowChoice;
   /** The prices (data/order-policy.json); without them the row has no price. */
@@ -334,35 +373,50 @@ export function lineOf(input: {
   const open = oneWayDeal && c.end === null;
   const end = oneWayDeal && !open ? seatEndOf(entries, bank, { dealer, step: def, target: wish.target, hand: lays, chosen: c.end ?? null }) : null;
   const endChoices = oneWayDeal ? a3Candidates(entries, wish.target, lays) : [];
-  const byRule = c.reference === undefined && !!recipe && recipe.reference !== "ingen" && !!model?.videos;
+  // The reference film is a choice of the order, never a condition (the store, tools/order-store.ts prepare): the one he
+  // named on the row; none where he said none; else the one the recipe's rule finds, and where it finds none the film goes
+  // without one. `ruled` is the rule's film whatever the row says: what the row's choice "med" goes back to.
+  const rule = recipe && recipe.reference !== "ingen" && model?.videos ? recipe.reference : null;
+  const ruled = rule ? referenceByRule(bank, rule, { dealer, step: def, target: wish.target, model, shape, lays }) : null;
+  const byRule = c.reference === undefined && !!rule;
   const reference = c.reference
     ? ((bank && model ? referenceCandidates(bank, { dealer, step: def, target: wish.target, model }).find((x) => (x.take === c.reference || x.film === c.reference) && x.fits) : null) ?? null)
-    : byRule ? referenceByRule(bank, recipe!.reference, { dealer, step: def, target: wish.target, model, shape, lays }) : null;
+    : byRule ? ruled : null;
   // With a reference film its own length rules, as in the store; his length is an exception only without one (orderBody).
   const seconds = def.kind !== "FILM" || !model ? null : (!reference && c.duration !== undefined ? c.duration : secondsOf(model, recipe?.seconds ?? null, reference));
-  // A step that is off (the return to 2.3 until its trial), or without a recipe or a model he chose, is not ordered from here.
+  // What the store cannot write or price: a step that is off (the return to 2.3, made with the command), no model (a step
+  // without a recipe, until he chooses one), no length. In few words for the marks, and in a sentence that says what to do.
   const writable = !!model && !def.off && (def.kind !== "FILM" || seconds !== null);
-  // Why it is not ordered from here, in words that say it (review finding 22, 2026-11-21), not "kan inte beställas än".
-  const notHere = def.off ? NOT_FROM_HERE : !model ? NO_METHOD : "receptet säger ingen längd";
+  const notHere = def.off ? "beställs med kommandot" : !model ? "ingen modell vald" : "ingen längd vald";
+  const toWrite = def.off ? NOT_FROM_HERE : !model ? NO_MODEL : NO_LENGTH;
 
   // The anchor a picture is, where it holds (role, node, gäller, no card), as the store copies it (holding).
   const holds = (at: Anchor) => entries.find((e) => e.role === ANCHOR_ROLE[at] && e.state === "gäller" && !e.card && e.node === ANCHOR_NODE[at] && e.served !== null) ?? null;
-  const anchorMark = (name: MarkName, at: Anchor, drawn = false) => (holds(at) ? ready(name, `${anchorCode(at)}${drawn ? " med kortet ritat" : ""}`) : missing(name, `${anchorCode(at)} saknas`));
+  const anchorMark = (name: MarkName, at: Anchor, drawn = false) =>
+    holds(at) ? ready(name, `${anchorCode(at)}${drawn ? " med kortet ritat" : ""}`) : missing(name, `${anchorCode(at)} saknas`, `ingen bild gäller för ${anchorCode(at)}: gör en gällande i Material`);
   // A return starts on the seat's landing picture for the hand that laid the card (with handbyte the right hand's).
   const startLanding = def.start === "LAND" ? landingOf(entries, wish.target, lays) : null;
+  const a3 = wish.target ? a3Name(wish.target) : "";
   const first = def.start === "LAND"
-    ? (startLanding ? ready("Första bild", a3Name(wish.target!)) : missing("Första bild", `${a3Name(wish.target!)} saknas (${HAND_WORD[lays]})`))
+    ? (startLanding ? ready("Första bild", a3) : missing("Första bild", `${a3} saknas (${HAND_WORD[lays]})`, `returen börjar på ${a3}, som inte finns än med ${HAND_WORD[lays]} vid kortet: beställ given dit först (${a3} görs ur dess sista ruta), eller gör en landningsbild gällande i Material`))
     : anchorMark("Första bild", def.from);
   const last = def.kind !== "FILM" ? ready("Slutbild", "ingen, en bild")
-    : open ? ready("Slutbild", `ingen, ${a3Name(wish.target!)} görs efteråt`)
-    : oneWayDeal ? (end ? ready("Slutbild", end.kind === "LANDNING" ? `${a3Name(wish.target!)}${end.candidate ? " (kandidat)" : ""}` : `snittruta ${end.cut.frame} ur ${end.cut.clip}`) : missing("Slutbild", c.end ? `${c.end} är ingen kandidat` : `${a3Name(wish.target!)} saknas (${HAND_WORD[lays]})`))
+    : open ? ready("Slutbild", `ingen, ${a3} görs efteråt`)
+    : oneWayDeal ? (end ? ready("Slutbild", end.kind === "LANDNING" ? `${a3}${end.candidate ? " (kandidat)" : ""}` : `snittruta ${end.cut.frame} ur ${end.cut.clip}`)
+      : c.end ? missing("Slutbild", `${c.end} är ingen kandidat`, `slutbilden som valdes (${c.end}) är ingen A3-kandidat för platsen med ${HAND_WORD[lays]} vid kortet: välj en annan under Receptet`)
+      : missing("Slutbild", `${a3} saknas (${HAND_WORD[lays]})`, `${a3} finns inte än med ${HAND_WORD[lays]} vid kortet: välj Utan slutbild under Receptet, eller gör en landningsbild gällande i Material`))
     : deal || def.cards?.length ? anchorMark("Slutbild", def.from, true)
     : anchorMark("Slutbild", def.to ?? def.from);
-  const referenceMark = !writable && !model ? missing("Referensfilm", notHere)
-    : reference ? ready("Referensfilm", reference.kind === "RENDERED" || reference.dealer === "docka" ? "dockan" : "godkänd giv")
-    : c.reference || byRule ? missing("Referensfilm", def.card ? "ingen referensfilm till platsen" : "ingen referensfilm")
-    : open ? missing("Referensfilm", "utan slutbild behövs en referensfilm")
-    : ready("Referensfilm", "ingen");
+  // What is not there where the recipe's rule finds no film, in the store's words (its draft's note).
+  const absent = byRule && !reference ? `${referenceAbsent(rule!, def)}${lays === "RH" && !twoHands ? " (lagd med höger hand)" : ""}` : null;
+  const referenceMark = reference ? ready("Referensfilm", reference.kind === "RENDERED" || reference.dealer === "docka" ? "dockan" : "godkänd giv")
+    : c.reference ? missing("Referensfilm", "den valda finns inte", `referensfilmen som valdes (${c.reference}) finns inte bland dem som passar: välj en annan, eller ingen, under Receptet`)
+    : ready("Referensfilm", absent || open ? "går utan" : "ingen");
+  // What goes without a reference film although the recipe would take one, and a deal with neither picture nor film to show
+  // the way: said, as the draft's notes say it, and nothing is stopped by it.
+  const notes: string[] = [];
+  if (open && !reference) notes.push(`Varken slutbild eller referensfilm går med${absent ? ` (${absent})` : ""}: bara första bilden och texten säger vart kortet ska.`);
+  else if (absent) notes.push(`Går utan referensfilm: ${absent}.`);
 
   // The text, as the store writes it (textOf): the motion it stores, the plan's point for the card where the last picture
   // draws none, and the marks where the picture that shows the open card shows them.
@@ -391,19 +445,28 @@ export function lineOf(input: {
   // The price where the model and the length are known, also on a row that is not ordered from here (Bordet shows it dimmed);
   // the row's own cost stays null until it can be ordered.
   const cost = model && (def.kind !== "FILM" || seconds !== null) ? lineCost(def, { model, seconds, takes, recipe }, input.policy ?? null) : null;
-  // The text is not ready while a picture it is written against is missing, or while the last picture is a cut frame (round
-  // two, 2026-11-21): only a text written with the draft's own pictures counts.
-  const textMark = !writable ? missing("Text", notHere)
+  // The text is not ready while a picture it is written against is missing. Where it is written only with the draft (a
+  // picture drawn, or a last picture read off a film's frame) the row says so, and Förhandsvisa shows it word for word.
+  const textMark = !writable ? missing("Text", notHere, toWrite)
     : text ? ready("Text", `${wordCount(text)} ord`)
-    : !first.ready || !last.ready ? missing("Text", "väntar på bilderna")
-    : end?.kind === "SNITTRUTA" ? missing("Text", "slutbilden är en snittruta")
+    : !first.ready || !last.ready ? missing("Text", "väntar på bilderna", (first.ready ? last : first).todo!)
     : ready("Text", "skrivs med utkastet");
-  const priceMark = cost !== null ? ready("Pris", `${credits(cost)} krediter`) : missing("Pris", notHere);
+  const priceMark = cost !== null ? ready("Pris", `${credits(cost)} krediter`)
+    : !writable ? missing("Pris", notHere, toWrite)
+    : input.policy ? missing("Pris", "inget pris i ramen", "ramen (data/order-policy.json) har inget pris för modellen med de här värdena: välj en annan modell eller längd under Receptet")
+    : missing("Pris", "priserna är inte lästa", "priserna kunde inte läsas från labbservern: ladda om sidan");
   const marks = [first, last, referenceMark, textMark, priceMark];
-  // The first missing mark, in the order the store asks: no recipe or model before the last picture, a text that waits for
-  // the pictures after them.
-  const why = (writable ? [first, last, textMark, referenceMark, priceMark] : [first, textMark, last, referenceMark, priceMark]).find((m) => !m.ready)?.words ?? null;
-  return { recipe, model, seconds, takes, style: c.style ?? recipe?.style ?? "KORT", shape, flipAxis: recipe?.turn ?? null, hands, side, reference, wanted: byRule, end, endChoices, marks, text, cost, why };
+  // The first missing mark, in the order the store asks: no model before the last picture, a text that waits for the
+  // pictures after them; and what to do about it.
+  const why = (writable ? [first, last, textMark, referenceMark, priceMark] : [first, textMark, last, referenceMark, priceMark]).find((m) => !m.ready)?.todo ?? null;
+  // Another way, where the store can do without what is missing: a deal bara dit to a seat with no end picture goes without
+  // one (the film ends where the model leaves the card, and the seat's A3 is made from its last frame). Offered only when
+  // nothing else is missing that way.
+  let way: Way | null = null;
+  if (oneWayDeal && !open && !end && c.end === undefined && wish.target && lineOf({ ...input, choice: { ...c, end: null } }).marks.every((m) => m.ready)) {
+    way = { words: `${a3} finns inte än (${HAND_WORD[lays]} vid kortet). Filmen kan beställas utan slutbild: den slutar där modellen lämnar kortet, och ${a3} görs efteråt ur filmens sista ruta.`, button: "Lägg till utan slutbild", choice: { end: null } };
+  }
+  return { recipe, model, seconds, takes, style: c.style ?? recipe?.style ?? "KORT", shape, flipAxis: recipe?.turn ?? null, hands, side, reference, wanted: byRule, ruled, end, endChoices, marks, notes, text, cost, why, way };
 }
 
 export type FilmRow = {
@@ -412,9 +475,15 @@ export type FilmRow = {
   /** His notation, and the step's own name ("Nyp, ett kort till platsen"). */
   line: string;
   label: string;
-  method: Pick<Method, "id" | "status" | "reference"> | null;
-  /** The recipe in one line with the model and length the order gets ("Kling 4 · 1080p · 3 s · bara given, slutar på A3P4C2 · …"), or "kan inte beställas än" (no recipe, or a step that is off). */
+  /** The recipe in one line with the model and length the order gets ("Kling 4 · 1080p · 3 s · bara given, slutar på A3P4C2 · …"), or "inget sätt är prövat än" (a step without a recipe). */
   recipe: string;
+  /**
+   * What has been tried with the recipe, in plain words in place of its status ("prövat i 6 beställningar", "inte prövat
+   * än", "inget sätt är prövat än"), and Jakob's own last words about a take of those orders, or null. It informs; nothing
+   * is stopped by it.
+   */
+  tried: string;
+  said: string | null;
   /** The five marks in their order: Första bild, Slutbild, Referensfilm, Text, Pris. */
   marks: Mark[];
   /** All five marks are ready and the dealer is not paused: the row can be sent. */
@@ -425,11 +494,16 @@ export type FilmRow = {
   cost: number | null;
   /** The body of POST /api/orders for it: the dealer, the step and the card, and his exceptions; null when it cannot be sent. */
   body: NewOrderInput | null;
-  /** That the dealer is paused, else the first of the five marks that is missing (in the order the store asks for them), or null. */
+  /** What stops it and what to do: that the dealer is paused, else about the first of the five marks that is missing (Line.why), or null. */
   why: string | null;
-  /** The reference film that goes with it, or null; `wanted`: the recipe asks for one. */
+  /** Where the store takes the order without what is missing, that way (Line.way); null for a paused dealer. */
+  way: Way | null;
+  /** What the row tells that stops nothing (Line.notes). */
+  notes: string[];
+  /** The reference film that goes with it, or null; `wanted`: the recipe takes one by its rule; `ruled`: the film that rule finds, whatever the row says. */
   reference: RefCandidate | null;
   wanted: boolean;
+  ruled: RefCandidate | null;
   /** He has chosen something against the recipe on the row. */
   chosen: boolean;
   /** Everything the store will resolve for it (what "Det här skickas" shows before the draft exists). */
@@ -481,12 +555,12 @@ export function filmRow(dealer: string, wish: FilmWish, methods: Pick<MethodRegi
   const pausedBy = more.dealers?.find((d) => d.id === dealer && d.paused) ?? null;
   const orderable = !pausedBy && resolved.marks.every((m) => m.ready);
   return {
-    key: wishKey(wish), wish, line: wishLine(def, wish.target, resolved.shape), label: def.label, method: method ? { id: method.id, status: method.status, reference: method.reference } : null,
-    // A step that is off (the return to 2.3 until its trial) shows no recipe: nothing of it can be ordered from here.
-    recipe: def.off ? NOT_YET : recipeWords(method, wish.target, { model: resolved.model?.id ?? null, seconds: resolved.seconds }), marks: resolved.marks, orderable, text: resolved.text,
+    key: wishKey(wish), wish, line: wishLine(def, wish.target, resolved.shape), label: def.label,
+    recipe: recipeWords(method, wish.target, { model: resolved.model?.id ?? null, seconds: resolved.seconds }), ...triedWords(method), marks: resolved.marks, orderable, text: resolved.text,
     cost: orderable ? resolved.cost : null, body: orderable ? orderBody(dealer, wish, choice, { shape: resolved.shape, reference: !!resolved.reference }) : null,
-    why: pausedBy ? `${pausedBy.name} är pausad: inget nytt beställs.` : resolved.why,
-    reference: resolved.reference, wanted: resolved.wanted, chosen: Object.keys(choice).length > 0, resolved,
+    why: pausedBy ? `${pausedBy.name} är pausad: inget nytt beställs förrän pausen är hävd` : resolved.why,
+    way: pausedBy ? null : resolved.way, notes: resolved.notes,
+    reference: resolved.reference, wanted: resolved.wanted, ruled: resolved.ruled, chosen: Object.keys(choice).length > 0, resolved,
   };
 }
 
@@ -497,12 +571,24 @@ export function referenceName(c: Pick<RefCandidate, "dealer" | "edge" | "goesTo"
   return `${who} ${back ? "retur från" : "giv till"} ${seatWords(c.goesTo)}`;
 }
 
-/** "3 filmer · 1 kan beställas · 64 krediter" (the price of those that can), for the foot of the list and step 3's line. */
+/**
+ * What the order's text says of the reference film that goes with it, for the row's choice between with and without: with
+ * template 14's short text a rough guide where her natural movement comes first (GUIDES), else that the movement follows it.
+ */
+export const referenceRole = (line: Pick<Line, "recipe" | "style">): string => (line.recipe?.template === 14 && line.style === "KORT" ? "grov vägledning, naturlig rörelse går före" : "rörelsen följer filmen");
+/** "dockans film" or "referensfilm": a reference film by whose it is, for the choice "Med dockans film". */
+export const referenceOwner = (c: Pick<RefCandidate, "kind" | "dealer">): string => (c.kind === "RENDERED" || c.dealer === "docka" ? "dockans film" : "referensfilm");
+
+/**
+ * "3 filmer · 1 kan beställas · 64 krediter" (the price of those that can), for the foot of the list and step 3's line.
+ * Where none is ready it says that ("3 filmer · ingen klar att beställa"), not that they cannot be ordered: each row says
+ * what to do, or offers another way.
+ */
 export function sumWords(rows: readonly Pick<FilmRow, "cost" | "orderable">[]): string {
   if (!rows.length) return "Inga filmer";
   const can = rows.filter((r) => r.orderable), total = can.reduce((s, r) => s + (r.cost ?? 0), 0);
   const films = `${rows.length} ${rows.length === 1 ? "film" : "filmer"}`;
-  return can.length ? `${films} · ${can.length} kan beställas · ${credits(total)} krediter` : `${films} · ${rows.length === 1 ? "kan inte" : "ingen kan"} beställas än`;
+  return can.length ? `${films} · ${can.length} kan beställas · ${credits(total)} krediter` : `${films} · ${rows.length === 1 ? "inte" : "ingen"} klar att beställa`;
 }
 
 /**

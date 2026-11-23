@@ -1038,8 +1038,9 @@ export function orderPrompt(
 /**
  * A deal bara dit with no last picture (tools/order-store.ts, end: null; the seat's A3 is made afterwards from the film's
  * last frame): the recipe's text with what it says of the last frame taken out. The reference film, made to the seat, shows
- * where the card goes (the store refuses one without; naming it once more makes the text say it twice), template 12 says
- * the place in words, and the card keeps its size. A case these words do not cover still names the last frame, and the
+ * where the card goes (naming it once more makes the text say it twice; without one too the draft is made, and its notes
+ * say that only the first picture and the text tell where the card goes), template 12 says the place in words, and the
+ * card keeps its size. A case these words do not cover still names the last frame, and the
  * store refuses it rather than send a text that points at a picture that is not there.
  */
 const NO_LAST_FRAME: readonly [RegExp, string][] = [

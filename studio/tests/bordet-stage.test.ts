@@ -2,12 +2,13 @@
 // samt bordet."). Three things hold that, and each is held here: the camera keeps the picture's edges at the stage's at every
 // zoom and pan (lib/bordet.ts), the stage clips what is drawn in it (Board.tsx), and in one column every part of the view
 // has its own height, the picture at most a share of what is seen (columnStage), so that nothing runs on under what follows.
+// Also "Spelet", the zoom that shows the film at the size the game draws it in the window (gameScale, gameCamera).
 // Run: node --test "studio/tests/bordet-stage.test.ts"
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { VIEWS } from "../../src/placement-model.ts";
-import { STAGE_MIN, STAGE_SHARE, ZOOM_MAX, actualCamera, clampCamera, closeUp, columnStage, fitCamera, panBy, pictureOrigin, zoomAt, type Camera, type Size } from "../lib/bordet.ts";
+import { STAGE_MIN, STAGE_SHARE, ZOOM_MAX, actualCamera, clampCamera, closeUp, columnStage, fitCamera, gameCamera, gameScale, panBy, pictureOrigin, zoomAt, type Camera, type Size } from "../lib/bordet.ts";
 import { PLAN_VIEW } from "../lib/placement.ts";
 
 const picture: Size = { w: VIEWS[PLAN_VIEW].width, h: VIEWS[PLAN_VIEW].height };
@@ -33,6 +34,27 @@ test("at every zoom and pan the picture's edges stay at the stage's", () => {
       }
     }
   }
+});
+
+test("Spelet: the scale the game draws the film at in the window, never smaller than the whole picture", () => {
+  // The game's lying framing: 0.84 × min(width / 1764, height / 1174); upright (width / height under 0.8) its tall one, 1.55 ×.
+  const near = (got: number, want: number, said: string) => assert.ok(Math.abs(got - want) < 5e-4, `${said}: ${got}, not ${want}`);
+  near(gameScale({ w: 1764, h: 1174 }), 0.84, "the game's own frame");
+  near(gameScale({ w: 1440, h: 900 }), 0.84 * (900 / 1174), "a lying window, its height decides");
+  near(gameScale({ w: 1000, h: 1100 }), 0.84 * (1000 / 1764), "a nearly square window, its width decides");
+  near(gameScale({ w: 390, h: 844 }), 1.55 * (390 / 1764), "a phone held upright: the tall framing");
+  assert.equal(gameScale({ w: 0, h: 0 }), 1, "before the window is measured");
+  // Side by side the stage is narrower than the window, and the game's size is larger than the fitted picture: it is shown.
+  const wide = { w: 1920, h: 1080 }, beside: Size = { w: 964, h: 642 };
+  const held: Camera = { scale: 3, x: 400, y: 300 };
+  const game = gameCamera(held, wide, beside, picture);
+  near(game.scale, gameScale(wide), "the game's scale");
+  assert.ok(game.scale > fitCamera(beside, picture).scale);
+  // In one column of an upright window (900 × 1100) the stage is nearly as wide as the window and shows the whole picture
+  // larger than the game shows the film: the whole picture is shown then (the hover text says so).
+  const narrow = { w: 900, h: 1100 }, column: Size = { w: 824, h: 549 };
+  assert.ok(gameScale(narrow) < fitCamera(column, picture).scale);
+  assert.equal(gameCamera(held, narrow, column, picture).scale, fitCamera(column, picture).scale);
 });
 
 test("one column: the picture's own shape, at most the share of what is seen of the column", () => {

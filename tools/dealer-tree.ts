@@ -29,7 +29,7 @@ import {fileURLToPath} from 'node:url';
 import {buildGraph, type BankData, type Take} from '../src/clip-graph.ts';
 import {countWord, isCard, isTreeHub, levelOf, nodeCode, nodesOf, orderCommand, stepName as stepWords, treeView, type Delivery, type MeasureStep, type Need, type OrderFacts, type TreeAnswer, type TreeDef, type TreeRegister, type TreeState, type TreeStep, type TreeTake, type TreeView, type Verdict as TreeVerdict} from '../src/dealer-trees.ts';
 import {ANCHOR_NODE, costOf, modelFor, paramsOf, stepOf, type Policy, type StepKey} from '../src/order-model.ts';
-import {METHOD_STATUS_LABEL, methodFor, readMethods, recipeFor, referenceWaits, secondsOf, type MethodRegister} from '../src/order-methods.ts';
+import {NO_RECIPE, methodFor, readMethods, recipeFor, referenceAbsent, secondsOf, triedWords, type MethodRegister} from '../src/order-methods.ts';
 import {GAME_VOICE, PHASE_LINE, spokenFilms, type SpeechTake} from '../src/speech-lines.ts';
 import {reviewerNote} from '../studio/lib/ledger.ts';
 import {gameGraph, usesOf, type Use} from '../studio/lib/primaries.ts';
@@ -519,7 +519,8 @@ function orderFacts(f: Facts, view: Pick<TreeView, 'hub' | 'nodes'>, step: TreeS
     : [has(step.from), has(step.to)];
 
   // The reference film: the dummy's film of exactly this step (the last listed first, one that failed its check left out), or
-  // where the rule takes one, a film of the step that Jakob approved himself.
+  // where the rule takes one, a film of the step that Jakob approved himself. A choice of the order, never a need: where
+  // none is found the film is ordered without one (the store does the same), and the row says what was not there.
   const rule = recipe?.reference ?? null;
   const dummy = f.refs.filter(r => r.edge === step.id && r.check?.pass !== false).at(-1) ?? null;
   const banked = rule === 'samma-plats-rakt-godkänd' || rule === 'renderad-eller-samma-plats'
@@ -528,8 +529,8 @@ function orderFacts(f: Facts, view: Pick<TreeView, 'hub' | 'nodes'>, step: TreeS
   const reference: Need = rule === 'ingen' ? {ok: true, what: 'behövs inte: receptet tar ingen'}
     : useDummy ? {ok: true, what: `dockans film${useDummy.seconds ? ` (${useDummy.seconds} s)` : ''}`}
     : banked ? {ok: true, what: 'hans godkända film'}
-    : rule && def ? {ok: false, what: referenceWaits(rule, def)}
-    : {ok: false, what: dummy ? 'dockans film finns, men receptet saknas' : 'ingen dockfilm för steget'};
+    : rule && def ? {ok: true, what: `ingen, filmen beställs utan: ${referenceAbsent(rule, def)}`}
+    : {ok: true, what: dummy ? 'ingen förvald: dockans film finns och kan väljas i beställningen' : 'ingen'};
 
   const status = method?.status ?? null;
   const model = recipe && def ? modelFor(def, recipe.model) : null;
@@ -538,8 +539,10 @@ function orderFacts(f: Facts, view: Pick<TreeView, 'hub' | 'nodes'>, step: TreeS
     // Beställ's sheet does not order the step (def.off): a return is ordered with the command below, from the approved deal to
     // this step's own card and its end picture. Said for the card, without a path (def.off names one card for every return).
     : def?.off ? {ok: false, what: step.kind === 'retur' ? `provet beställs med kommandot nedan, ur den godkända given till ${nodeCode(step.card ?? step.from)} och dess slutbild` : def.off, status}
-    : recipe ? {ok: true, what: [recipe.model, recipe.resolution, seconds ? `${seconds} s` : null, `${recipe.takes} ${recipe.takes === 1 ? 'tagning' : 'tagningar'}`, METHOD_STATUS_LABEL[recipe.method.status]].filter(Boolean).join(' · '), status}
-    : {ok: false, what: status ? METHOD_STATUS_LABEL[status] : 'inget recept skrivet', status};
+    // What has been tried, in plain words (triedWords), in place of the status; the command takes no model, so a step
+    // without a recipe is ordered from Bordet, where the model and the length are chosen.
+    : recipe ? {ok: true, what: [recipe.model, recipe.resolution, seconds ? `${seconds} s` : null, `${recipe.takes} ${recipe.takes === 1 ? 'tagning' : 'tagningar'}`, triedWords(recipe.method).tried].filter(Boolean).join(' · '), status}
+    : {ok: false, what: `${NO_RECIPE}: välj modell och längd i Bordets Beställ`, status};
   const cost = model && recipe && def ? costOf({model: recipe.model, params: paramsOf(def, model, {duration: seconds ?? undefined, resolution: recipe.resolution})}, recipe.takes, f.prices) : null;
   return {step: key, first, last: end, reference, recipe: recipeNeed, price: cost ? cost.worstTotal : null, command: orderCommand(f.dealer, step.from, step.to)};
 }

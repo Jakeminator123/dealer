@@ -3,26 +3,29 @@
 // film rule, where the last picture comes from, Jakob's addition) and whether that is settled (gäller), still being tried
 // (prov) or not known (saknas). Nothing else in the repo says how a step is ordered: the steps (src/order-model.ts STEPS) only
 // say what a film is between, and the store, Bordet and the production list all take their defaults from recipeFor here.
+// A recipe gives defaults and tells what has been tried: neither its status nor its reference film rule stops an order
+// (Jakob 2026-11-23, docs/BESKED.md "Rensa bort regler och låsningar som blockerar"; every status was set by an agent).
 // Pure: the register's check against the steps, models and styles that exist, the recipe for a step and a seat, the reference
 // film the recipe's rule finds (referenceByRule), the film's length (secondsOf), and the words the production list
-// (tools/produce.ts) and Beställ show. No fs, no network. Tests: tools/order-line.test.ts, tools/order-routes.test.ts and studio/tests/line-same.test.ts.
+// (tools/produce.ts), Karta (tools/dealer-tree.ts) and Bordet show. No fs, no network. Tests: tools/order-line.test.ts,
+// tools/order-routes.test.ts, studio/tests/line-same.test.ts and studio/tests/bordet-line.test.ts.
 import { FLIP_AXES, FLIP_LABEL, MODELS, STEPS, TAKES_MAX, a3Name, lengthFor, lengthOfReference, modelFor, referenceCandidates, stepOf, stylesFor, type BankFacts, type FlipAxis, type ModelDef, type RefCandidate, type Shape, type StepDef, type StepKey, type TextStyle } from './order-model.ts';
 import { TEMPLATE_CHOICES, TEMPLATE_CHOICES_WORDS, TEMPLATE_VERSION } from './order-prompts.ts';
 
 export const METHOD_STATUSES = ['gäller', 'prov', 'saknas'] as const;
 export type MethodStatus = (typeof METHOD_STATUSES)[number];
-/** In Jakob's words (2026-11-21, Bordet's review): "på prov", and a step without a recipe "kan inte beställas än". */
-export const METHOD_STATUS_LABEL: Record<MethodStatus, string> = { gäller: 'gäller', prov: 'på prov', saknas: 'kan inte beställas än' };
-/** Why a step without a recipe, or one that is off, has no row to send. */
-export const NOT_YET = 'kan inte beställas än';
+/** In the recipe's place for a step without one: the one who orders then chooses the model and the length. */
+export const NO_RECIPE = 'inget sätt är prövat än';
 /** The classes of seats whose evidence differs: the middle seats, the far seats, the dealer's own cards. */
 export const SEAT_CLASSES = ['mitten', 'ytter', 'dealer'] as const;
 export type SeatClass = (typeof SEAT_CLASSES)[number];
 /**
  * A reference film rule: none; a film of the bank that shows the same step to the same seat, approved straight by Jakob (any
  * dealer's); the dummy's rendered film for the seat, read off a real deal (from trial 2C2, 2026-11-18), else such a film of
- * the bank; or only the dummy's film (the far seats, where the bank's approved deal fell as a reference in trial 2B). Where
- * the rule finds no film the step waits: nothing is ordered without one.
+ * the bank; or only the dummy's film (the far seats, where the bank's approved deal fell as a reference in trial 2B). The
+ * rule says which film goes with an order that names none. It is never a condition: where it finds no film the order goes
+ * without one and says so, and an order can always name another film or none (the doll does not have Jakob's yes yet,
+ * docs/BESKED.md "Dockans vändning längre ut: bättre, men inte än", 2026-11-23).
  */
 export const REFERENCE_RULES = ['ingen', 'samma-plats-rakt-godkänd', 'renderad-eller-samma-plats', 'renderad'] as const;
 export type ReferenceRule = (typeof REFERENCE_RULES)[number];
@@ -32,15 +35,15 @@ export const REFERENCE_LABEL: Record<ReferenceRule, string> = {
   'renderad-eller-samma-plats': 'referensfilm: dockan, annars en godkänd giv',
   renderad: 'referensfilm: dockan',
 };
-/** What a step waits for where its rule finds no reference film, in Jakob's words. */
-export const REFERENCE_WAITS: Record<Exclude<ReferenceRule, 'ingen'>, string> = {
-  'samma-plats-rakt-godkänd': 'väntar på en rakt godkänd giv till platsen som referensfilm',
-  'renderad-eller-samma-plats': 'väntar på dockans film till platsen eller en rakt godkänd giv dit',
-  renderad: 'väntar på dockans film till platsen',
+/** What is not there where a rule finds no reference film, said as a fact: the film is then ordered without one. */
+export const REFERENCE_ABSENT: Record<Exclude<ReferenceRule, 'ingen'>, string> = {
+  'samma-plats-rakt-godkänd': 'ingen rakt godkänd giv till platsen passar som referensfilm',
+  'renderad-eller-samma-plats': 'varken dockan eller en rakt godkänd giv har en film till platsen som passar',
+  renderad: 'dockan har ingen film till platsen som passar',
 };
-/** The same for a given step: a film without a card has no seat, so "till platsen" and "dit" are left out. */
-export const referenceWaits = (rule: ReferenceRule, step: Pick<StepDef, 'card'>): string =>
-  rule === 'ingen' ? '' : step.card ? REFERENCE_WAITS[rule] : REFERENCE_WAITS[rule].replace(' till platsen', '').replace(' dit', '').replace('giv', 'film av samma steg');
+/** The same for a given step: a film without a card has no seat, so "till platsen" is left out. */
+export const referenceAbsent = (rule: ReferenceRule, step: Pick<StepDef, 'card'>): string =>
+  rule === 'ingen' ? '' : step.card ? REFERENCE_ABSENT[rule] : REFERENCE_ABSENT[rule].replace(' till platsen', '').replace('giv', 'film av samma steg');
 /**
  * Where the last picture comes from: the anchor the film ends on (ankare); the first picture with the card drawn where the
  * plan lays it (ritat-kort: a round trip, the hole card's turn); or the seat's own end picture (platsens-slutbild: its
@@ -211,7 +214,7 @@ export function recipeHands(step: Pick<StepDef, 'card' | 'start' | 'grip'>, reci
 }
 
 /**
- * The reference film a rule finds for a step and a seat, or null (the step then waits). Always a film of the same step to
+ * The reference film a rule finds for a step and a seat, or null (the film is then ordered without one). Always a film of the same step to
  * the same seat that passes its own reference check where one has been run. For a deal bara dit also a film that is the deal
  * alone: a take cut from a round trip sends the whole film, and a reference must end as the last picture does (handbook §5).
  * The dummy's film comes first under the rules that take it; a film of the bank must be approved straight by Jakob. The
@@ -223,7 +226,7 @@ export function referenceByRule(bank: BankFacts | null, rule: ReferenceRule, wan
   // A deal bara dit never takes a round trip: neither a take cut from one (the whole film goes) nor the dummy's film that goes
   // back to its anchor (its register says ROUND_TRIP). Match 0 is the step's own edge: for GIV-2.3 the dummy's film to exactly
   // that card from anchor 2.3, of which the one listed last comes first (referenceCandidates). And a round trip takes only a
-  // dummy's film that itself goes there and back (2026-11-21, review of PR 1): a seat without one gets none, and the step waits.
+  // dummy's film that itself goes there and back (2026-11-21, review of PR 1): a seat without one gets none.
   return referenceCandidates(bank, want).find((c) =>
     // A film of a dealer's own doll is never the default (round two, 2026-11-21): it goes only where the order names it.
     c.match === 0 && c.fits && !c.doll && !(c.check && !c.check.pass) && (want.shape !== 'ONE_WAY' || (!c.frames && c.shape !== 'ROUND_TRIP')) && (want.shape !== 'ROUND_TRIP' || c.kind !== 'RENDERED' || c.shape === 'ROUND_TRIP') && (c.lays ?? 'LH') === (want.lays ?? 'LH')
@@ -239,17 +242,30 @@ export function secondsOf(model: Pick<ModelDef, 'durations'>, recipeSeconds: num
   return recipeSeconds === null ? null : lengthFor(model, recipeSeconds);
 }
 
+/**
+ * What has been tried with a step's recipe and how it went, in plain words: in how many orders, and Jakob's own last words
+ * about a take of them (evidence.owner, as his review holds them: "Jakob 2026-11-23: …"). What a page says in place of the
+ * status (gäller, prov, saknas): it informs, and nothing is stopped by it.
+ */
+export function triedWords(m: Pick<Method, 'status' | 'model' | 'evidence'> | null): { tried: string; said: string | null } {
+  if (!m || m.status === 'saknas' || !m.model) return { tried: NO_RECIPE, said: null };
+  const n = m.evidence.orders.length, day = (words: string) => /\d{4}-\d{2}-\d{2}/.exec(words)?.[0] ?? '';
+  // the words with the latest date; of two from the same day, the one listed last
+  const said = m.evidence.owner.reduce<string | null>((last, o) => (last === null || day(o.words) >= day(last) ? o.words : last), null);
+  return { tried: n ? `prövat i ${n} ${n === 1 ? 'beställning' : 'beställningar'}` : 'inte prövat än', said };
+}
+
 /** The turn of anchor 2.3 in Jakob's words: the hand at the shoe strokes the card out, the other turns it and lays it. */
 export const TWO_HAND_TURN = 'höger hand vänder kortet och lägger det';
 /**
  * "Kling 4 · 1080p · 3 s · bara given, slutar på A3P4C2 · höger hand vänder kortet och lägger det · referensfilm: dockan": a
- * method's recipe in one line, or "kan inte beställas än". Only what steers the film: the text style, the template and the
+ * method's recipe in one line, or "inget sätt är prövat än". Only what steers the film: the text style, the template and the
  * takes are left out (Jakob 2026-11-21: Bordet's text-heavy rows read as ugly to him; the order's page has them). `line`:
  * the model and the length the order gets where they are not the recipe's (a reference film's own length, an exception),
  * so that the row says what the order freezes.
  */
 export function recipeWords(m: Method | null, target: string | null = null, line: { model?: string | null; seconds?: number | null } = {}): string {
-  if (!m || m.status === 'saknas' || !m.model) return NOT_YET;
+  if (!m || m.status === 'saknas' || !m.model) return NO_RECIPE;
   const step = stepOf(m.step), model = line.model ?? m.model, seconds = line.seconds ?? m.seconds;
   const turn = step?.grip === 'TWO_HANDS' ? TWO_HAND_TURN : m.turn && m.turn !== 'plan' ? FLIP_LABEL[m.turn].toLowerCase() : null;
   // Bara dit or tur och retur is a deal's: a return starts on the card and goes one way (its line says where).

@@ -7,7 +7,9 @@
 // deal that is the deal alone, a drag from the drawn-out pose, the dummy's rendered films, a film laid with the other hand,
 // a film that fails its reference check is not there to tempt it), makes each draft through the routes with nothing but the
 // line, and compares it with what the row showed: the reference film, the model, the length, the takes, the shape, the
-// price and the text, and where one refuses, that the other does too.
+// price and the text, and where one refuses, that the other does too. A reference film the rule does not find stops neither
+// (Jakob 2026-11-23, docs/BESKED.md "Rensa bort regler och låsningar som blockerar"): the row and the store both make the
+// order without one and say what was not there; and where the row offers a deal without its last picture, the store takes it.
 // Run: node --test "studio/tests/line-same.test.ts"
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -21,8 +23,8 @@ import sharp from "sharp";
 import { orderRoutes } from "../../tools/order-routes.ts";
 import { STEPS, readCutChecks, type BankFacts, type OrdersAnswer } from "../../src/order-model.ts";
 import { productionList, readProduction } from "../../tools/produce.ts";
-import { recipeFor } from "../../src/order-methods.ts";
-import { NO_METHOD, cardWishes, filmRow } from "../lib/bordet.ts";
+import { REFERENCE_ABSENT, recipeFor } from "../../src/order-methods.ts";
+import { NO_MODEL, cardWishes, filmRow, type FilmWish, type RowChoice } from "../lib/bordet.ts";
 
 const repo = path.resolve(import.meta.dirname, "../..");
 const base = existsSync("D:/dealer-scratch/tmp") ? "D:/dealer-scratch/tmp" : os.tmpdir();
@@ -122,8 +124,10 @@ test("Bordet's row and the store agree for every standard step and card, and the
   let listed = 0;
   const shown = entries.map((e) => ({ ...e, served: e.path }));
 
-  const made: Record<string, string | null> = {}, refused: Record<string, string> = {};
-  let compared = 0, texts = 0;
+  const made: Record<string, string | null> = {}, refused: Record<string, string> = {}, without: Record<string, string> = {};
+  let compared = 0, texts = 0, ways = 0;
+  // The dealers' looks and the landing pictures' marks, as the page has them, so that the row writes the text it shows.
+  const rowOf = (wish: FilmWish, choice?: RowChoice) => filmRow("paow", wish, register, all.policy, { bank, entries: shown, plan: all.plan ?? null, dealers: all.dealers, marks: all.marks, choice });
   // The hole card's turn is left out: its pictures are drawn from a bank film that the temporary lab does not have.
   for (const step of STEPS.filter((s) => s.kind === "FILM" && !s.cards?.length)) for (const target of step.card ? SEATS : [null]) {
     const wish = { step: step.key, target }, key = `${step.key}${target ? ` ${target}` : ""}`;
@@ -131,21 +135,20 @@ test("Bordet's row and the store agree for every standard step and card, and the
     const inList = production.rows.find((r) => r.step === step.key && r.target === target);
     if (step.key === "RETUR-2.3") {
       assert.ok(step.off, `${key}: disabled in Beställ's form`);
-      // Changed with the decisions of 2026-11-21 (a card's three films from the anchor its handbyte chooses; returns shown but
-      // not built): a card dealt with handbyte lists its return to 2.3, as a row that cannot be ordered yet; without handbyte
-      // the card has none.
+      // Changed with the decisions of 2026-11-21 (a card's three films from the anchor its handbyte chooses): a card dealt
+      // with handbyte lists its return to 2.3, as a row that is ordered with the command (it finds the approved deal and its
+      // frozen last picture); without handbyte the card has none.
       assert.ok(!cardWishes(target!, {}, "paow").some((w) => w.step === step.key), `${key}: absent from a card dealt without handbyte`);
       assert.ok(cardWishes(target!, { pass: true }, "paow").some((w) => w.step === step.key), `${key}: listed for a card dealt with handbyte`);
-      const listedRow = filmRow("paow", wish, register, all.policy, { bank, entries: shown, plan: all.plan ?? null, dealers: all.dealers, marks: all.marks });
-      assert.ok(!listedRow.orderable && listedRow.body === null && listedRow.why, `${key}: listed, and it cannot be ordered yet`);
+      const listedRow = rowOf(wish);
+      assert.ok(!listedRow.orderable && listedRow.body === null && listedRow.why, `${key}: listed, and not sent from the row`);
       assert.equal(inList, undefined, `${key}: absent from the standard production list`);
       const preview = await call("POST", "/api/orders/preview", input);
       assert.equal(preview.status, 400, key);
       assert.match(preview.json.error, /namngiven A3-kandidat/, key);
       continue;
     }
-    // The dealers' looks and the landing pictures' marks, as the page has them, so that the row writes the text it shows.
-    const row = filmRow("paow", wish, register, all.policy, { bank, entries: shown, plan: all.plan ?? null, dealers: all.dealers, marks: all.marks });
+    const row = rowOf(wish);
     assert.equal(row.orderable, !row.why, `${key}: orderable exactly when no mark is missing`);
     // The production list's row for the same step and card says the same: it can be ordered exactly where the row can be
     // sent, and with the same reference film.
@@ -156,21 +159,29 @@ test("Bordet's row and the store agree for every standard step and card, and the
     }
     const preview = await call("POST", "/api/orders/preview", input);
     if (row.why) {
-      // What the row cannot send, the store refuses, and for the same reason.
+      // What the row cannot send as it stands, the store refuses, and for the same reason. The row says what to do about
+      // the first mark that is missing, and the store's refusal is matched to it: the return's first picture, the deal's
+      // last picture, or a film without a recipe (a model and a length are then chosen on the row, or named to the command).
       assert.equal(preview.status, 400, `${key}: the row says "${row.why}", and the store made a draft`);
       assert.equal(row.body, null, key);
-      // Changed with the five marks (2026-11-21): the row says the first missing mark in his words, and the store's refusal
-      // is matched to it. A picture of the seat that is missing ("A3P4C1 saknas (vänster hand)") is the return's first
-      // picture or the deal's last; no recipe is "steget har ingen metod än"; the reference film the recipe wants and the
-      // rule does not find is "ingen referensfilm (till platsen)".
-      const words = /saknas \((vänster|höger) hand\)$/.test(row.why) ? (step.start === "LAND" ? /Ingen landningsbild gäller/ : /har ingen slutbild/)
-        : row.why === NO_METHOD ? /har ingen metod än/
-        : row.why.startsWith("ingen referensfilm") ? /Inget beställs utan den/
+      const words = row.why.startsWith("returen börjar på ") ? /Ingen landningsbild gäller/
+        : / finns inte än med (vänster|höger) hand vid kortet: välj Utan slutbild/.test(row.why) ? /har ingen slutbild/
+        : row.why === NO_MODEL ? /har ingen metod än/
         : null;
       assert.ok(words, `${key}: the row says "${row.why}", which this test does not map to a refusal of the store`);
       assert.match(preview.json.error, words, key);
-      assert.ok(row.marks.some((m) => !m.ready && m.words === row.why), `${key}: the why is a mark that is missing`);
+      assert.ok(row.marks.some((m) => !m.ready && m.todo === row.why), `${key}: the why is what to do about a mark that is missing`);
       refused[key] = row.why;
+      // No dead end where the store takes the order another way: the way the row offers (a deal without its last picture)
+      // is a draft the store makes, with the row's text and price.
+      if (row.way) {
+        const taken = rowOf(wish, row.way.choice);
+        assert.ok(taken.orderable && taken.body, `${key}: the offered way: ${taken.why}`);
+        const open = await call("POST", "/api/orders/preview", taken.body);
+        assert.equal(open.status, 200, `${key}: the offered way: ${open.json.error}`);
+        assert.deepEqual([open.json.orders[0].prompt.text, open.json.orders[0].cost.total], [taken.text, taken.cost], `${key}: the offered way's text and price`);
+        ways++;
+      }
       continue;
     }
     assert.equal(preview.status, 200, `${key}: no preview`);
@@ -192,19 +203,29 @@ test("Bordet's row and the store agree for every standard step and card, and the
     if (row.text !== null) texts++;
     assert.deepEqual(shownOrder.pictures.map((p: { sha256: string }) => p.sha256), o.pictures.map((p: { sha256: string }) => p.sha256), `${key}: the same image bytes`);
     assert.equal(shownOrder.reference.sha256, o.reference.sha256, `${key}: the same reference bytes`);
-    // Changed 2026-11-21 (review finding 16): the note names the recipe without the file it lies in.
-    assert.deepEqual(o.notes, [`Recept ${recipeFor(register, step.key, target)!.method.id} (${recipeFor(register, step.key, target)!.method.status}).`], `${key}: the recipe and no exception`);
+    // The draft's notes name the recipe with what has been tried with it, in the row's own words (never a status), and where
+    // the recipe wants a reference film and its rule found none, that the order goes without one and what was not there:
+    // the same words as the row's own note.
+    const recipe = recipeFor(register, step.key, target)!;
+    const absent = row.notes.map((n) => /^Går utan referensfilm: (.+)\.$/.exec(n)?.[1]).find(Boolean) ?? null;
+    assert.deepEqual(o.notes, [`Recept ${recipe.method.id}: ${row.tried}.`, ...(absent ? [`Undantag från receptet: ingen referensfilm: ${absent}.`] : [])], `${key}: the recipe, and the reference film that was not there`);
+    assert.equal(absent !== null, recipe.reference !== "ingen" && !stored, `${key}: said exactly where the recipe wants a film and none goes`);
+    if (absent) without[key] = absent;
     made[key] = stored;
     compared++;
   }
-  // Three entries, three ways out and rest; the pinch to seat 1 and seat 4; the drag and the two-hand deal to seat 4.
-  // Changed 2026-11-21 (round two): A2.3 → A1 is a step of its own (UTGANG-2.3, both hands leave the shoe), so 10 became 11.
-  assert.equal(compared, 11, `${compared} orders compared`);
+  // Three entries, three ways out and rest; and every deal whose seat has its last picture: the pinch and the drag to every
+  // card but the dealer's first (8 + 8), the two-hand deal to seat 4, the one seat with an A3 for the right hand.
+  assert.equal(compared, 7 + 8 + 8 + 1, `${compared} orders compared`);
   assert.equal(texts, compared, `${texts} of ${compared} texts compared word for word`);
-  assert.equal(Object.keys(refused).length, 9 * 3 - 4 + 3 * 9, "every other card waits or has no method, in the row and in the store alike");
-  // The dealer's first card: its only cut frame does not hold, and it has no landing picture (in his notation since
-  // 2026-11-21: the missing picture by name and hand).
-  assert.equal(refused["GIV-2.1 D.C1"], "A3DC1 saknas (vänster hand)");
+  // Refused as they stand, in the row and in the store alike: the dealer's first card (the pinch and the drag) and the
+  // two-hand deal to the eight cards without an A3 for the right hand, each offered without its last picture; and every
+  // return, which has no recipe.
+  assert.equal(Object.keys(refused).length, 2 + 8 + 3 * 9, "the deals without a last picture and the returns");
+  assert.equal(ways, 2 + 8, `${ways} deals offered without their last picture, and taken by the store`);
+  // The dealer's first card: its only cut frame does not hold, and it has no landing picture (in his notation: the missing
+  // picture by name and hand, and what to do).
+  assert.match(refused["GIV-2.1 D.C1"], /^A3DC1 finns inte än med vänster hand vid kortet: välj Utan slutbild under Receptet/);
   // Every step the production list has a row for is compared (the dealer's graph: the steps of 2.1 and 2.2, rest and the ways out).
   assert.ok(listed >= 20, `${listed} steps compared with the production list`);
   // What the rule chose, said once here so that a change of rule is seen: the dummy's film first, the deal alone from the
@@ -214,9 +235,13 @@ test("Bordet's row and the store agree for every standard step and card, and the
     { "GIV-2.1 P1.C1": "docka-giv-p1-4", "GIV-2.1 P4.C1": "docka-giv-p4-4", "GIV-2.2 P4.C1": "pamela-p4-c1-drawn-deal-01", "GIV-2.3 P4.C1": "docka-giv-2-3-p4", "INGANG-2.3": "docka-till-2-3", "INGANG-2.1": null },
   );
   // And what it did not take: Paow's own round trip to seat 2 (the whole film would go, and it ends at the shoe), the variant
-  // to seat 5, the film laid with the right hand to seat 3.
-  // The words changed with the five marks (2026-11-21): "ingen referensfilm till platsen" and "kan inte beställas än".
-  for (const key of ["GIV-2.1 P2.C1", "GIV-2.1 P5.C1", "GIV-2.1 P3.C1"]) assert.equal(refused[key], "ingen referensfilm till platsen", key);
-  // Changed 2026-11-21 (review finding 22): a step without a method says so, as the store's refusal does.
-  assert.equal(refused["RETUR-2.1 P4.C1"], NO_METHOD);
+  // to seat 5, the film laid with the right hand to seat 3. Those orders are made without a reference film (changed
+  // 2026-11-23: no longer a stop), and the row and the draft say what was not there.
+  for (const seat of ["P2.C1", "P5.C1", "P3.C1"]) {
+    const rule = recipeFor(register, "GIV-2.1", seat)!.reference;
+    assert.notEqual(rule, "ingen", seat);
+    assert.deepEqual([made[`GIV-2.1 ${seat}`], without[`GIV-2.1 ${seat}`]], [null, REFERENCE_ABSENT[rule as keyof typeof REFERENCE_ABSENT]], seat);
+  }
+  // A step without a recipe says what to do: choose a model and a length (the store's refusal asks the command for the same).
+  assert.equal(refused["RETUR-2.1 P4.C1"], NO_MODEL);
 });

@@ -13,7 +13,9 @@
 // The pictures are the ones Bordet's row would take: the dealer's anchors that hold. --trad <id> (data/dealer-trees.json)
 // refuses a draft whose A1 or A2 picture is not one of that tree's anchors; without it the output names the trees each
 // picture belongs to. --no-end: a deal with no last picture, for a seat with no A3 yet (the A3 is then made from the
-// delivered film's last frame with tools/landing-make.ts). --docka <namn>: the reference film is that dealer's own doll's
+// delivered film's last frame with tools/landing-make.ts). The reference film is a choice, as in Bordet: without a flag the
+// recipe's rule chooses it, and where the rule finds none the draft is made without one (its notes say what was not there);
+// --reference <id> names one, --no-reference takes none. --docka <namn>: the reference film is that dealer's own doll's
 // film for the edge (data/rendered-references.json, an entry with "doll"), which is never the default. --dry shows the draft (model, length, price, pictures, reference film, text) without writing it.
 // It makes a draft only: approving is tools/order-approve.ts, placing tools/order-put.ts. Nothing here pays or approves.
 // Tests: tools/order-routes.test.ts (the template per order, his notation, the tree).

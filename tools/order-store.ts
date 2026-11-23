@@ -14,8 +14,10 @@
 // ONE recipe in data/order-methods.json (src/order-methods.ts recipeFor): model, resolution, takes, text style, shape, turn,
 // the reference film the recipe's rule finds (referenceByRule; the dummy's rendered films from data/rendered-references.json
 // first) and the film's length (the reference film's own, else the recipe's). What a draft says against its recipe is a
-// deliberate exception and is named in its notes; a step without a recipe has no default, and where the recipe's rule finds
-// no reference film nothing is made.
+// deliberate exception and is named in its notes; a step without a recipe has no default. The reference film is a choice of
+// the order, never a condition (2026-11-23): where the recipe's rule finds none the draft is made without one, and its notes
+// say so; a deal without a last picture and without a reference film is made too, and says that only the first picture and
+// the text tell where the card goes.
 // A deal's choices (which hand, handbyte, how the card lands and turns) come with the new draft and default to what the
 // plan says for the card; the last picture draws the card closed or open as chosen. "Alla sju" makes one draft per seat
 // sharing a group (createMany). A draft follows Jakob's choice in Material: when another anchor of the same role holds
@@ -45,7 +47,7 @@ import {
   LANDING_ROLE, bodyLine, canonical, checkPolicy, costOf, crossesBody, cutFrameOf, cutFrameWords, cutIntoOf, tidyMotion, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, hashInput, landingMissing, landingOf, a3Candidates, a3Name, openEndWords, archivedReferenceIds, isArchived, modelFor, modelsFor, paramsOf, plannedOf, readCutChecks, referenceCandidates, seatEndMissing, seatList, seatWords, secondsWords, shownOf, spentOn, stepOf, stylesFor, summaryOf, twoHandDealSideProblem, twoHandDraftProblem, twoHandMotion, validateOrder, waitingOf,
   type Anchor, type BankFacts, type CutFrame, type Drawn, type FlipAxis, type Motion, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Policy, type PoseAnswer, type Receipt, type RefCandidate, type Reference, type RenderedReference, type SeatPlan, type Shape, type StepDef, type StepKey, type TextStyle, type Waits,
 } from '../src/order-model.ts';
-import { readMethods, recipeFor, recipeHands, referenceByRule, referenceWaits, secondsOf, type MethodRegister } from '../src/order-methods.ts';
+import { readMethods, recipeFor, recipeHands, referenceAbsent, referenceByRule, secondsOf, triedWords, type MethodRegister } from '../src/order-methods.ts';
 import { TEMPLATE_CHOICES, TEMPLATE_CHOICES_WORDS, TEMPLATE_VERSION, handsIn, orderPrompt } from '../src/order-prompts.ts';
 import { checkCutFrame, patchShoe } from '../src/cut-frame.ts';
 import { CUT, H, LAY, TEXTURE, W, armAlone, cardTexture, cutFigure, drawCard, drawCards, markSeen, matchGreen, pictureBytes, planQuad, pngOf, poseOnShoe, readPlan, readRgb, type CardOutline, type Pt, type Texture } from './order-images.ts';
@@ -755,15 +757,15 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     if (cardScale !== 1 && !(deal && shape === 'ROUND_TRIP')) throw new StoreError(400, 'Kortets storlek väljs bara för tur och retur, där sista bilden ritas; i bara dit och en retur är kortet som i sista bilden.');
     if (input.reference && !model.videos) throw new StoreError(400, `${model.label} tar ingen referensfilm tillsammans med första och sista bild.`);
     // The reference film: the one the order names; none when it says null; else the one the recipe's rule finds for the
-    // step and the seat. Where the rule finds none the step waits: nothing is ordered without the film the recipe wants.
-    let chosen: RefCandidate | null = null;
+    // step and the seat. Where the rule finds none the draft is made without one, and its notes say what was not there.
+    let chosen: RefCandidate | null = null, absent: string | null = null;
     if (input.reference) {
       chosen = referenceCandidates(bank ?? {}, { dealer: dealer.id, step, target, model }).find((c) => c.take === input.reference || c.film === input.reference) ?? null;
       if (!chosen) throw new StoreError(400, `${input.reference} finns inte bland bankens tagningar för ${step.label}${target ? ` till ${seatWords(target)}` : ''}.`);
       if (!chosen.fits) throw new StoreError(400, `Referensfilmen är ${secondsWords(chosen.seconds)}; ${model.label} tar ${model.referenceSeconds?.join('–')} s.`);
     } else if (input.reference === undefined && recipe && recipe.reference !== 'ingen' && model.videos) {
       chosen = referenceByRule(bank, recipe.reference, { dealer: dealer.id, step, target, model, shape, lays });
-      if (!chosen) throw new StoreError(400, `${step.label}${target && step.card ? ` till ${seatWords(target)}` : ''} ${referenceWaits(recipe.reference, step)}${lays === 'RH' && !twoHands ? ', lagd med höger hand' : ''} (receptet ${recipe.method.id} i data/order-methods.json). Inget beställs utan den; välj en referensfilm själv eller ingen, som ett undantag.`);
+      if (!chosen) absent = `${referenceAbsent(recipe.reference, step)}${lays === 'RH' && !twoHands ? ' (lagd med höger hand)' : ''}`;
     }
     const seat = target && step.card ? target.toLowerCase().replace('.c1', '').replace('.', '-') : null;
     const prefix = [dealer.id, step.key.toLowerCase().replace('.', '-'), seat].filter(Boolean).join('-');
@@ -790,7 +792,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       if (style !== recipe.style) exceptions.push(`texten ${STYLE_LABEL[style].toLowerCase()} i stället för ${STYLE_LABEL[recipe.style as keyof typeof STYLE_LABEL]?.toLowerCase() ?? recipe.style}`);
       if (mall !== recipe.template) exceptions.push(`mall ${mall} i stället för ${recipe.template}`);
       if (recipe.turn && input.flipAxis && input.flipAxis !== recipe.turn) exceptions.push(`vändningen "${FLIP_LABEL[input.flipAxis as FlipAxis] ?? input.flipAxis}" i stället för "${FLIP_LABEL[recipe.turn as FlipAxis] ?? recipe.turn}"`);
-      if (recipe.reference !== 'ingen' && !chosen) exceptions.push('ingen referensfilm fast receptet vill ha en');
+      if (recipe.reference !== 'ingen' && !chosen) exceptions.push(absent ? `ingen referensfilm: ${absent}` : 'ingen referensfilm fast receptet vill ha en');
       if (recipe.reference === 'ingen' && chosen) exceptions.push('en referensfilm fast receptet inte har någon');
       if (chosen?.doll) exceptions.push(`referensfilmen är dockan ${chosen.doll}s egen film (${chosen.take}), vald med namn: en dockas film är aldrig förvald`);
       if (input.duration !== undefined && input.duration !== secondsOf(model, recipe.seconds, chosen)) exceptions.push(`${input.duration} s i stället för ${secondsOf(model, recipe.seconds, chosen)} s`);
@@ -808,7 +810,8 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     const pictures: Picture[] = [];
     const notes = [
       ...(input.notes ?? []),
-      ...(recipe ? [`Recept ${recipe.method.id} (${recipe.method.status}).`] : [`Inget recept finns för ${step.label}: varje värde är valt för den här beställningen.`]),
+      // the recipe by name, with what has been tried with it in plain words (triedWords), never its status
+      ...(recipe ? [`Recept ${recipe.method.id}: ${triedWords(recipe.method).tried}.`] : [`Inget recept finns för ${step.label}: varje värde är valt för den här beställningen.`]),
       ...(exceptions.length ? [`Undantag från receptet: ${exceptions.join('; ')}.`] : []),
       ...(returnStart ? [`Provundantag: A3-kandidaten ${returnStart.entry.name ?? a3Name(target!)} används som första bild, byte för byte ur den godkända givens slutbild.`, takes > 1 ? RETURN_23_BLOCK : RETURN_23_TRIAL] : []),
     ];
@@ -931,8 +934,9 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       status: 'UTKAST',
     };
     draft.prompt = await textOf(draft, dealer, extra, snapshot, files);
-    // Without a last picture the reference film is what shows the way to the seat, and the text may not point at a last frame.
-    if (open && reference.status !== 'FINNS') throw new StoreError(400, `Utan sista bild visar referensfilmen vägen till ${seatWords(target)}: ${model.label} med en referensfilm, eller en sista bild.`);
+    // Without a last picture and without a reference film only the first picture and the text tell where the card goes: the
+    // draft says so (a choice of the one who orders, not a stop). The text may never point at a last frame that is not sent.
+    if (open && reference.status !== 'FINNS') draft.notes.push(`Varken sista bild eller referensfilm går med: bara första bilden och texten säger vart kortet ska (${seatWords(target)}).`);
     if (open && /last frame|last picture/i.test(draft.prompt.text)) throw new StoreError(400, `Texten utan sista bild är inte skriven för det här fallet (mall ${mall}, ${style}): den nämner fortfarande sista bilden.`);
     // A chosen template with no text of its own for this film writes today's words: said, so that a trial of it is not a trial of nothing.
     if (mall !== TEMPLATE_VERSION) {
