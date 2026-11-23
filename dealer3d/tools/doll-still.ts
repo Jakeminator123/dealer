@@ -8,7 +8,8 @@
 //
 // Anchor 1 is her rest: the first frame of the pose film to A2.3 (dealer3d/data/till-ankare-2-3-c.json), whose hands lie
 // where data/dealer-standard.json has the rest picture's (within 15 px). A doll other than the standard is posed on that
-// film by dealer3d/tools/doll-pose.ts first. The stage's look 'bare' (dealer3d/src/stage.ts) draws the figure only: the
+// film by dealer3d/tools/doll-pose.ts first, which gives it its own elbows and, where it has one, its own hand at rest
+// (Doll.elbowAtRest, Doll.hand.rest). The stage's look 'bare' (dealer3d/src/stage.ts) draws the figure only: the
 // table, the shoe and the cards hide what is behind them without being drawn, so her body ends on the table's edge and
 // the shoe stands in front of her elbow as in the picture of the table; the felt keeps the figure's own shadow, nothing else
 // (at rest the light from the players' left puts almost all of it under her hands and behind the edge).
@@ -74,7 +75,7 @@ try {
     pictures.push({doll: p.doll.name, path: path.posix.join(out, `docka-${p.doll.name}.png`), picture, receipt: {
       path: path.posix.join(out, `docka-${p.doll.name}.png`), width: info.width, height: info.height, channels: 4, bytes: picture.length, sha256: sha(picture),
       doll: p.doll.name, measuresJudged: p.doll.name === 'standard' ? 'the figure every film was made with until 2026-11-21' : 'not judged by Jakob (dealer3d/src/doll.ts about)',
-      pose: {film: POSE.file, frame: POSE.frame, sha256: sha(p.bytes), posedWith: p.doll.name === 'standard' ? null : `node dealer3d/tools/doll-pose.ts --motion ${POSE.file} --doll ${p.doll.name} (--elbow forearm)`},
+      pose: {film: POSE.file, frame: POSE.frame, sha256: sha(p.bytes), posedWith: p.doll.name === 'standard' ? null : `node dealer3d/tools/doll-pose.ts --motion ${POSE.file} --doll ${p.doll.name}`},
       figure: {box: [x0, y0, x1, y1], pixels: n, note: 'plan pixels where the alpha is over a half'},
       hands: {rightWrist: at(f.R.w), leftWrist: at(f.L.w), rightMiddleTip: at(f.R.p[12]), leftMiddleTip: at(f.L.p[12]), note: 'her right is the picture\'s left; plan pixels'},
       shot: {chrome: facts.chrome, query: facts.query, size: facts.size}}});

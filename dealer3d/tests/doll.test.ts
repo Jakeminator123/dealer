@@ -2,14 +2,17 @@
 // The dolls of dealer3d/src/doll.ts. "standard" is the figure as it was before there were dolls: its measures, where it
 // stands and how it bends toward a hand are locked to the numbers dealer3d/src/body.ts gave before the dolls (commit
 // bcdef22~1). "paow" stands where her keystone shows her and reaches the card places of Jakob's plan within the lean the
-// seat films are held to. Only placements/default.json is read.
+// seat films are held to. What paow got when she was set against her films (where she sits, where her elbows hang, a hand
+// of her own) the standard doll took none of. Only placements/default.json is read.
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {add, filmEye, mul, see, unit, type Vec3} from '../src/camera.ts';
-import {filmLens, spots, type Plan} from '../src/world.ts';
+import {add, cross, dot, filmEye, length, mul, see, sub, unit, type Vec3} from '../src/camera.ts';
+import {dealerEdge, filmLens, spots, type Plan} from '../src/world.ts';
 import {BODY, restingHand, solveBody, standing} from '../src/body.ts';
-import {DOLLS, PAOW, STANDARD, dollNamed, type Doll, type Frame} from '../src/doll.ts';
+import {FINGERS} from '../src/capture.ts';
+import {placed} from '../src/hand-pose.ts';
+import {DOLLS, ELBOW_POLES, PAOW, STANDARD, dollNamed, elbowPolesAt, type Doll, type Frame} from '../src/doll.ts';
 
 const plan = JSON.parse(await readFile(new URL('../../placements/default.json', import.meta.url), 'utf8')) as Plan, lens = filmLens();
 const near = (a: number, b: number, tolerance: number, what: string) => assert.ok(Math.abs(a - b) <= tolerance, `${what}: ${a} is not within ${tolerance} of ${b}`);
@@ -80,4 +83,49 @@ test('with her right hand, which lays every seat film so far, paow reaches seats
   const held = paow.filter(r => /^(P[1-5]|D)\./.test(r.id)), beyond = paow.filter(r => !/^(P[1-5]|D)\./.test(r.id));
   assert.deepEqual(held.filter(r => r.right > MOST_LEAN).map(r => `${r.id} ${degrees(r.right)}`), [], 'seats 1-5 and the dealer\'s places beyond 9 degrees with her right hand');
   t.diagnostic(`höger hand, säte 6-7 (paow / standard): ${beyond.map(r => `${r.id} ${degrees(r.right)} / ${degrees(byId.get(r.id)!.right)}`).join(', ')}`);
+});
+
+test('the standard doll has no elbow poles and no hand of its own, and stands 0.18 m behind the table edge as before', () => {
+  assert.equal(STANDARD.elbowPoles, undefined); assert.equal(STANDARD.hand, undefined); assert.equal(STANDARD.place.kind, 'film');
+  for (const s of standing(lens, STANDARD).shoulders) near(dealerEdge(lens)[2] - s[2], 0.18, 1e-9, 'shoulder behind the edge');
+});
+
+test('the paow doll sits as far behind the table edge as her hands on the felt put her, and her elbows hang down', () => {
+  const place = PAOW.place; assert.equal(place.kind, 'joints'); if (place.kind !== 'joints') return;
+  for (const s of standing(lens, PAOW).shoulders) near(dealerEdge(lens)[2] - s[2], place.behindEdge, 1e-9, 'shoulder behind the edge');
+  assert.ok(place.behindEdge > 0.3 && place.behindEdge < 0.45, `her hands put her 0.37-0.39 m behind the edge, the doll stands ${place.behindEdge}`);
+  assert.ok(PAOW.elbowPoles, 'paow has elbow poles of her own');
+  for (const pole of PAOW.elbowPoles!) { near(length(pole), 1, 1e-3, 'pole length'); assert.ok(pole[1] < -0.5, `the pole ${pole.join(', ')} points down`); }
+});
+
+test('the standard doll\'s elbows bend toward its poles wherever the hands are; paow\'s turn to the poles of her rest only while both hands lie in front of their shoulders', () => {
+  const s = standing(lens, STANDARD).shoulders;
+  for (const wrists of [[s[0], s[1]], [add(s[0], [-0.3, -0.2, 0.3]), add(s[1], [0.3, -0.2, 0.3])], [add(s[0], [0.2, -0.2, 0.3]), add(s[1], [-0.2, -0.2, 0.3])]] as [Vec3, Vec3][]) assert.equal(elbowPolesAt(STANDARD, s, wrists), ELBOW_POLES);
+  const rest = PAOW.elbowAtRest; assert.ok(rest, 'paow has poles for her rest');
+  for (const pole of rest.poles) { near(length(pole), 1, 1e-3, 'rest pole length'); assert.ok(pole[1] < -0.5, `the rest pole ${pole.join(', ')} points down`); }
+  // A wrist `r` and `l` of the arm's length out to its own side of its shoulder (her right is toward -x), a little down and forward.
+  const p = standing(lens, PAOW).shoulders, long = PAOW.upperArm + PAOW.forearm, hands = (r: number, l: number): [Vec3, Vec3] => [add(p[0], [-r * long, -0.2, 0.3]), add(p[1], [l * long, -0.2, 0.3])];
+  elbowPolesAt(PAOW, p, hands(-0.05, -0.05)).forEach((pole, k) => nearV(pole, unit(rest.poles[k]), 1e-9, `both hands in front, pole ${k}`));
+  assert.equal(elbowPolesAt(PAOW, p, hands(-0.37, 0.22)), PAOW.elbowPoles, 'the left hand at the shoe: the poles of the deals');
+  assert.equal(elbowPolesAt(PAOW, p, hands(0.4, -0.05)), PAOW.elbowPoles, 'the right hand out at seat 1: the poles of the deals');
+  const half = elbowPolesAt(PAOW, p, hands(-0.05, (rest.within[0] + rest.within[1]) / 2));
+  half.forEach((pole, k) => { near(length(pole), 1, 1e-9, `between, pole ${k} length`); assert.ok(dot(pole, unit(rest.poles[k])) < 1 - 1e-6 && dot(pole, PAOW.elbowPoles![k]) < 1 - 1e-6, `between, pole ${k} lies between the two`); });
+});
+
+test('paow\'s hand is one hand: the same bones right and left, at her anchor, carrying a card and at rest, and where it lies at the anchor and at rest it is palm down over the felt', () => {
+  const hand = PAOW.hand; assert.ok(hand?.grip && hand.rest, 'paow has a hand of her own, with the shape she carries a card in and the one she rests in');
+  const bones = (p: Vec3[]) => FINGERS.flatMap(c => c.map((k, n) => length(sub(p[k], p[n ? c[n - 1] : 0])))), PALM = [0, 1, 5, 9, 13, 17];
+  for (const p of [hand.right, hand.left, hand.grip.right, hand.grip.left, hand.rest.right, hand.rest.left]) assert.equal(p.length, 21);
+  // The shapes are written to a tenth of a millimetre, so a bone of two points is the same within 0.3 mm.
+  bones(hand.right).forEach((b, k) => near(b, bones(hand.left)[k], 3e-4, `bone ${k}, right and left`));
+  for (const [side, own, others] of [['right', hand.right, [hand.grip.right, hand.rest.right]], ['left', hand.left, [hand.grip.left, hand.rest.left]]] as const) for (const other of others) {
+    bones(own).forEach((b, k) => near(b, bones(other)[k], 3e-4, `${side} bone ${k}, at the anchor and carrying or resting`));
+    for (const k of PALM) nearV(other[k], own[k], 1e-9, `${side} palm point ${k}`);
+  }
+  for (const [side, shape, at] of [['right', hand.right, hand.at.right], ['left', hand.left, hand.at.left], ['right at rest', hand.rest.right, hand.rest.at.right], ['left at rest', hand.rest.left, hand.rest.at.left]] as const) {
+    near(length(at.forward), 1, 1e-3, `${side} forward`); near(length(at.palm), 1, 1e-3, `${side} palm`); near(dot(at.forward, at.palm), 0, 1e-3, `${side} forward across palm`);
+    assert.ok(at.palm[1] < -0.9, `${side}: the palm faces the felt (${at.palm[1]})`);
+    const lowest = Math.min(...placed(shape, {forward: at.forward, palm: at.palm, across: cross(at.palm, at.forward)}, at.wrist).map(q => q[1]));
+    assert.ok(lowest > 0, `${side}: the hand's lowest point is ${lowest} m over the felt`);
+  }
 });

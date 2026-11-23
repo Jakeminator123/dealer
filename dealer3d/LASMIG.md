@@ -21,8 +21,8 @@ slaskdisken.
   närbild, slutruta och `KLAR-f.txt` (där står vad som håller och inte). Plats 1 ser inte ut som en människa som delar:
   armen ligger längs filten, för dockan sitter med axeln lågt över bordet.
 - Äldre versioner -b till -e: i sina `KLAR-*.txt`. Den avlästa given (A2.1, `src/capture.ts`) är orörd; inget betalt lagt.
-- **Dockorna** (2026-11-21, se **Dockorna**): `src/doll.ts` har `standard` (som förut) och `paow` (hennes mått ur SAM
-  3D Body, inte dömda av Jakob); `?docka=paow`, `shoot.ts --doll paow`; första filmen `docka-paow-2-3-p4c2-svep24d`.
+- **Dockorna** (se **Dockorna**): `src/doll.ts` har `standard` (som förut, låst) och `paow`, rättad 2026-11-23 efter
+  hennes filmer (38 cm bakom bordskanten, egna armbågar och händer; inte dömd av Jakob); `?docka=paow`, `shoot.ts --doll paow`.
 - **Provet en giv, två stolar** (2026-11-20, Jakobs "Ja kör" i Beslut; prov `3d-prov-en-giv-tva-stolar-20261120`; hans
   "ja" på kortet samma dag, och 2026-11-21 "SAM-dockan ska in, men inte nu" i BESKED): given till plats 4 med ett 3D-kort från stol 4 och stol 1. SAM 3D Body över filmen
   `paow-giv-2-3-p4-h24-cykel-02-01` (varannan ruta) ser ut som en människa som ger från båda stolarna (underagentens
@@ -38,7 +38,7 @@ förblir vänd tills kortet ligger); ingen ring som kortet rullar i, och inga fi
 2. Höger hand under rullningen sluter sig till en ring om kortets kortsida (`gripBend` 0,6): prova ett plattare grepp.
 3. Svepet (flera kort i en film) i -f: `tools/deal-film.ts --beats` tar i dag ETT kort.
 4. Dockans filmer in i `data/rendered-references.json` gör huvudagenten; id som `docka-2-3-p4c1-f`, aldrig samma id två gånger.
-5. SAM-dockan: Jakob vill ha in den, men inte nu (BESKED, 2026-11-21); vad som saknas står i **Dockorna**.
+5. SAM-dockan: Jakobs ja 2026-11-23 (BESKED); vad som finns och vad som saknas står sist i **Dockorna**.
 
 **Väntar på Jakob.** Inget utanför Beslut.
 
@@ -84,7 +84,7 @@ använder repots låsta `three` och `sharp`.
 | `tests/two-hand.test.ts` | -e- och -f-filerna är vad koden lägger i dag och kortet rör sig i varje ruta till filten; och 64 tester av de fyra äldre filerna (plats 5 i hennes takt och långsamt, plats 4, svepet): de är vad koden lägger i dag, börjar i pose 2.3, varje led inom gränserna i varje ruta, händerna lika stora, inget under filten eller i skon, kortet rest kring kortsidan och sedan en vridning kring en axel, aldrig en ruta från upprätt till liggande, höger hand sluten om kortets långsida medan det står och aldrig mer än 30 mm från kortet, armbågen aldrig utan fri plats, fingertopparna på hörnet närmast henne, stilla slut; den långsamma filmen är samma giv utdragen och kortet står aldrig stilla. |
 | `src/deal.ts` | Den första given, ritad för hand, som tidslinje: kortets läge och vridning och handens grepp för varje tidpunkt, till vilken kortplats som helst. Bana och tempo ur Paows giv till plats 4. Jakob dömde ut handens rörelse (2026-11-17); den avlästa given ersätter den i proven, och den här står kvar för jämförelse och för platser som ingen film går till. Ren räkning. |
 | `src/body.ts` | Den handritade givens skelett, löst ur var händerna ska vara: hon böjer sig från höften och vrider fram axeln så långt armen behöver. Tar en docka (`src/doll.ts`); utan en är det standarddockan. Ren räkning. |
-| `src/doll.ts`, `tools/doll-pose.ts`, `tools/doll-still.ts`, `tools/docka-sam.py`, `tools/docka-mat.ts`, `tests/doll.test.ts` | Dockorna, deras mått och verktygen som gör dem: se **Dockorna**. |
+| `src/doll.ts`, `tools/doll-pose.ts`, `tools/doll-still.ts`, `tools/docka-sam.py`, `tools/docka-mat.ts`, `tools/docka-jamfor.ts`, `tests/doll.test.ts` | Dockorna, deras mått och verktygen som gör dem: se **Dockorna**. |
 | `src/stage.ts` | Ritningen i three.js: bord, sko, ett kort med två sidor och provdockan, sedda genom flera ögon samtidigt. Tre utseenden: `room` (filtbord), `plain` (vit docka på grått, för en förlagefilm) och `bare` (bara dockan på genomskinligt; bord, sko och kort skymmer utan att ritas). Två källor för rörelsen: en avläst giv (handen ritas av sina 21 punkter) eller den handritade. |
 | `src/figure-model.ts` | En riggad modell (GLB med skelett, som Meshy riggar) på dockans plats, ställd ur samma leder; hämtas bara när sidan ber om den. Se "Kvar". |
 | `page/` | Sidan. `?motion=giv-pamela-p4` väljer en avläst giv; `?model=1` sätter den riggade modellen (`/model.glb`, som inspelaren serverar med `--model`) på dockans plats; `?eyes=1,4` ögon (en stol 1–7, `film` för bankens kamera, eller `runt35` för bankens kamera buren 35° runt dealern åt hennes vänster, `runt-35` åt hennes höger), `?to=P4.C1` kortplatsen för den handritade given, `?look=plain` eller `bare`, `?tags=0`, `?t=1.9`, `?play=1`, `?docka=paow` dockan (annars den rörelsen bär, eller standard). |
@@ -194,49 +194,79 @@ använder repots låsta `three` och `sharp`.
 ## Dockorna
 
 Jakob 2026-11-21: dockan ska inte se onaturlig, "lite kuvad", ut; "Kanske kan man ta mått för respektive dealer?"; en
-docka med Paows mått i stället för Siluetten i studion, där dockan ska gå att byta.
+docka med Paows mått i stället för Siluetten i studion, där dockan ska gå att byta. 2026-11-23: axlar, armbågar och
+fingrar ska sitta som hennes innan dockan används.
 
 - **`src/doll.ts`**: en docka är ett namn och mått: armarnas längder, räckvidd, hur långt hon får böja och vrida sig,
-  höften under filten, var lederna står i bankens bild (`place`) och formerna scenen ritar runt dem (`shape`: ok,
-  armar, hals, huvud, bål som ägg eller svarvad profil). `about` säger om varje mått är mätt (och på vad) eller gissat.
-  `src/body.ts` (`standing`, `solveBody`, `arm`) och `src/stage.ts` tar en docka; utan en är det `standard`.
+  höften under filten, var lederna står i bankens bild och hur långt bakom bordskanten (`place`), åt vilket håll
+  armbågarna hänger (`elbowPoles`, i vilan `elbowAtRest`; `elbowPolesAt` ger polerna för en ställning), en egen hand
+  (`hand`: formen i ankaret, när hon bär ett kort och i vilan, och var den ligger) och formerna scenen ritar (`shape`:
+  ok, armar, hals, huvud, bål som ägg eller svarvad profil). `about` säger om varje mått är mätt (och på vad) eller
+  gissat. `src/body.ts` (`standing`, `solveBody`, `arm`) och `src/stage.ts` tar en docka; utan en är det `standard`.
 - **`standard`**: dockan som alla givar och filmer gjordes med till 2026-11-21. `tests/doll.test.ts` låser den vid de tal
-  den gamla `src/body.ts` gav (mått, ställning och böjning mot fyra handleder).
-- **`paow`**: hennes mått, lästa av SAM 3D Body på ankare 1 och 2.3: axellederna 4 cm lägre än standarddockans (som
-  satt i akromion), sluttande axlar i stället för en rak bom, en hals, huvudet till hakan (215 mm, utan hår), armarna
-  0,266 och 0,252 m, och en bål svarvad efter hennes bredd och djup. Midjan, höfterna och hållningen är gissade. **Måtten är inte dömda
-  av Jakob**; huvudagenten såg bilderna 1 och 3 i `assets/proofs/docka-paow-20261121/` och fann henne naturlig.
+  den gamla `src/body.ts` gav (mått, ställning och böjning mot fyra handleder); den har inga egna poler och ingen egen
+  hand, och står 0,18 m bakom bordskanten.
+- **`paow`** (rättad 2026-11-23 mot ankare 2.3, vilan, den godkända given till plats 4 och given till plats 1, lästa
+  med SAM 3D Body). Grundfelet var var hon sitter: hennes händer mot filten och kortet i skon säger 0,38 m bakom
+  bordskanten, inte 0,18, och då är hon en tiondel större än dockan var (axellederna 366 mm isär, armarna 0,293 och
+  0,275 m). Med dockan för nära och för liten nådde händerna sina platser med armbågarna där hennes aldrig är. Armbågarna hänger
+  nedåt och en aning utåt i givarna (femton bilder), utåt och fram i vilan (tre bilder). Handen är hennes egen: formen i
+  ankare 2.3, när hon bär kortet och i vilan, och var den ligger i ankaret och i vilan. Sluttande axlar, hals, huvud
+  till hakan och svarvad bål som förut; midjan, höfterna och hållningen är gissade. **Inte dömd av Jakob**; provet
+  `assets/proofs/docka-paow-ratt-20261123/` visar före och efter mot henne.
+- **Hur nära hon sitter** (dockan mot henne i bankens bild, 1764 bred, medel per led i bildpunkter, före → efter;
+  `tools/docka-jamfor.ts`): ankare 2.3 och given till plats 4 34 → 20 (vänster armbåge 110 → 14, vänster handled
+  24 → 8), given till plats 1 31 → 25, vilan 24 → 5. Kvar: huvudet följer inte hennes (upp till 39 i landningen);
+  höger armbåge i given till plats 1 ligger 68–79 fel mitt i svepet, sämre än före (medel 27 → 48; hennes armbåge
+  släpar, så var den är följer inte av handens plats ensam); axelns ytterhörn står 1,4 cm över kavajens; i ankare
+  2.3 är hon redan vriden 13° och lutad 4° medan rörelsen börjar rak; givarna är standarddockans, där fingrarna
+  vänder kortet.
 - **Välja docka**: sidan `?docka=paow`, inspelaren `tools/shoot.ts --doll paow`. En rörelse som bär `doll` (från
   `doll-pose.ts`) ritas med den dockan utan val, också av `tools/render-reference.ts`.
 - **Verktygen**: `tools/docka-sam.py` läser stillbilder med SAM 3D Body (i SAM-checkoutens egen Python, lokalt grafikkort,
-  under låset) och skriver alla 127 leder med namn och föräldrar, 70 punkter och ytan; `tools/docka-mat.ts --sam <mapp>`
-  lägger läsningen i scenens meter och skriver ut måtten bredvid dockans. `tools/doll-pose.ts --motion <giv.json> --doll
-  paow --out <fil.json>` ställer en rörelse på en annan docka: händerna och kortet står kvar, bålen vrids kring hennes
-  höft som den gamla dockans, hon lutar sig mer (högst `--most-lean`, 9°) där en handled är utom räckhåll, och
-  armbågarna löses igen; `--elbow forearm` (förval) håller underarmens riktning så nära hennes ben tillåter (med
-  `upper` stod vänster underarm 35° mot siktlinjen, gränsen är 38). Kvittot bredvid utfilen ger lutning per ruta.
-- **Första paow-filmen**: `docka-paow-2-3-p4c2-svep24d` (A2.3 till P4.C2, rörelsen
-  `data/giv-fran-2-3-p4c2-grepp-svep-d-paow.json`), samma som `docka-2-3-p4c2-svep24d` utom dockan: kort, broms och
-  fönster lika (fönstret minst 25,5 % mot 25,3). Vänster underarm 37,3° mot siktlinjen (gränsen 38, standard 39);
-  kvittot i filmens mapp under `assets/references/docka/` har alla mått.
-- **Kedja paow-filmer**: filmen börjar i hennes ställning, inte i standarddockans, och ingångsfilmen till A2.3
-  (`data/till-ankare-2-3-c.json`) är standarddockans. Ska paow-filmer kedjas behövs en paow-ingångsfilm:
-  `doll-pose.ts` på `till-ankare-2-3-c.json` fogar mot paow-given på 0 px (prövat 2026-11-21), men ingen film är gjord av den.
+  under låset) och skriver alla 127 leder med namn och föräldrar, 70 punkter och ytan; `tools/docka-mat.ts --sam <mapp>
+  [--behind-edge <m>]` lägger läsningen i scenens meter och skriver ut måtten bredvid dockans, och i `handsOnFelt` hur
+  långt bakom kanten händerna säger att hon sitter; `tools/docka-jamfor.ts --sam <mapp> --motion <rörelse.json>` ställer
+  dockan bredvid henne led för led vid samma ögonblick (bildpunkter och cm, fingrarnas böjning). `tools/doll-pose.ts
+  --motion <giv.json> --doll paow --out <fil.json>` ställer en rörelse på en annan docka: kortet står kvar, bålen vrids
+  kring hennes höft som den gamla dockans, hon vrider och lutar sig (högst `--most-lean`, 9°) där en handled är utom
+  räckhåll, armbågarna löses mot dockans poler och händerna blir hennes. I ankaret och i vilan ligger de som hennes,
+  och det bleknar över de första fem centimetrarna handen rör sig; i en giv (en rörelse med `beats`) har handen sedan
+  hennes bärande form och håller det rörelsens hand håller, och ingen del går under filten. En docka utan egna poler
+  eller egen hand ställs som förut (`--elbow forearm`, `--hands motion`). Kvittot bredvid utfilen ger lutning,
+  handledens flytt och handens lägsta punkt per ruta.
+- **SAM-läsningarna av Paow** ligger kvar på slaskdisken, `D:/dealer-scratch/tmp/dealer-3d/ut/docka-ratt-sam-p4`
+  (ankare 2.3 och sju rutor ur given till plats 4), `-p1` (sju rutor ur given till plats 1), `-a1` (vilan) och
+  `-ingang` (sex rutor ur ingångsfilmen): `sam.json` och en `.npz` per bild med allt modellen gav. Läs dem inte igen.
+- **Gjort med dockan som den var före 2026-11-23:** första paow-filmen `docka-paow-2-3-p4c2-svep24d` (rörelsen
+  `data/giv-fran-2-3-p4c2-grepp-svep-d-paow.json`; kvittot i filmens mapp under `assets/references/docka/`) och studions
+  bild `docka-paow`. De visar den gamla dockan tills de görs om (`doll-pose.ts` på givens rörelse och en ny film
+  med nytt namn; `node tools/placement-backdrop.ts` för bilden).
+- **Kedja paow-filmer**: ingångsfilmen till A2.3 (`data/till-ankare-2-3-c.json`) är standarddockans. `doll-pose.ts`
+  på den börjar i hennes vila och slutar där paow-givarna börjar (armbågar och handleder 0,0 mm isär, prövat
+  2026-11-23), men ingen film är gjord av den.
 - **Dockan i studion** (2026-11-21): Kortplans lista har "Docka: standard" och "Docka: paow" efter Siluett, som är
   förval tills Jakob har valt; valet står i adressen (`?bakgrund=docka-paow`). `node tools/placement-backdrop.ts` bygger
   Siluett och en bild per docka (`docka-<docka>.jpg`): bordet och skon utan figur, dockan över, skon överst. Dockan kommer
-  ur `doll-still.ts` (vila, ankare 1, genomskinlig, 1762 × 1174), som verktyget kör först, under låset.
-- **Känd avvikelse:** dockornas vila är första rutan i `till-ankare-2-3-c.json`. Hennes högra hand ligger inom 3 px från
-  vilobilden i `data/dealer-standard.json`, den vänstra (till höger i bilden) 15 px längre in (marginalen där är 8 px). Den får stå tills vidare.
+  ur `doll-still.ts` (vila: första rutan i `till-ankare-2-3-c.json` ställd på dockan, genomskinlig, 1762 × 1174), som
+  verktyget kör först, under låset. Paows händer ligger där som i hennes vilobild (`paow-vila-tatuerad`).
+- **Känd avvikelse:** standarddockans vila har händerna som rörelsen har dem: höger inom 3 px från vilobilden i
+  `data/dealer-standard.json`, vänster (till höger i bilden) 15 px längre in (marginalen där är 8 px). Den får stå tills vidare.
 - **Räckvidd** (`tests/doll.test.ts`): med handen närmast platsen når paow alla 17 platser i Jakobs plan inom 9°; med
-  höger hand, som lägger alla sitsfilmer hittills, säte 1–5 och dealerns platser. Säte 6 och 7 kräver med höger hand
-  11,7–24,4° för henne och 8,7–19,9° för standarddockan.
-- **Det som saknas för en SAM-docka med alla leder** (Jakob vill ha den, men inte nu): `Doll.skeleton` (namn, föräldrar,
-  viloläge för de 127 lederna, så som `docka-sam.py` läser dem) är typat men tomt. Det behövs (1) en yta som följer
-  skelettet: SAM ger en yta per bild, inte en riggad modell, så antingen MHR-modellens egna hudvikter eller en export som GLB med
-  ben och vikter som `src/figure-model.ts` kan ställa; (2) en omställning från rörelsens få leder (axlar, armbågar,
-  handleder, 21 handpunkter, huvud, höft) till hela skelettet: ryggens, nyckelbenens och halsens kedjor; (3) händerna:
-  SAM:s fingerleder mot handens 21 punkter; (4) att den förblir vit (Jakob: "Nej, vita dockan räcker").
+  höger hand, som lägger alla sitsfilmer hittills, säte 1–5 och dealerns platser. Säte 6 kräver med höger hand
+  10,7–11,4° för henne (standarddockan 8,7–10,2°) och säte 7 når hon inte med den (standarddockan 17,9–19,9°).
+- **SAM-dockan med alla leder** (Jakobs ja 2026-11-23; inte byggd). Det som finns: modellfilen i SAM-checkouten
+  (`checkpoints/sam-3d-body-dinov3/assets/mhr_model.pt`) är en riggad modell, inte bara en yta per bild: 127 leder
+  med föräldrar och viloläge, en yta med 18 439 hörn och hudvikter (1–4 leder per hörn), 45 formtal. Körd på
+  processorn med en läsnings sparade tal (`shape`, `mhr_model_params`) ger den läsningens yta och leder tillbaka på
+  0,000 mm, så varje sparad läsning ger ledernas vridningar utan att SAM körs igen. `Doll.skeleton` är typat men
+  tomt. Det som saknas: (1) ytan och vikterna ut ur modellen till något scenen ritar (three.js `SkinnedMesh` eller en
+  GLB som `src/figure-model.ts` ställer); otestat om ytan ser bra ut utan modellens egna rättningar per ställning;
+  (2) hennes storlek och plats: SAM gissar henne 8 % för liten, och olika per bild, så hon ställs efter händernas
+  beröring som `paow` (0,38 m bakom kanten); (3) en omställning från rörelsens få leder (axlar, armbågar, handleder,
+  21 handpunkter, huvud, höft) till hela skelettet, eller vridningarna direkt ur läsningar av hennes godkända filmer;
+  (4) fingrarna: SAM läser höger hand inom 3 px men lägger vänsterhandens fingertoppar 13–16 px för långt ut vid
+  skon; (5) att den förblir vit (Jakob: "Nej, vita dockan räcker").
 
 ## Köra
 

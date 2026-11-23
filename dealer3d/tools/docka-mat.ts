@@ -1,10 +1,15 @@
 // Measures a dealer's body in the bank's frame against the doll's: SAM 3D Body's reading of her anchor pictures
 // (dealer3d/tools/docka-sam.py) laid into the 3D scene's metres, and her outline on the green, beside the same measures of a
 // doll of dealer3d/src/doll.ts. What it prints is what the doll "paow" in doll.ts is written from.
-//   node dealer3d/tools/docka-mat.ts --sam <folder of docka-sam.py> [--doll standard] [--out <file.json>]
-// SAM reads her at its own idea of her size; the scene has her shoulders 0.18 m behind the table edge (world.ts ASSUMED).
-// The reading is scaled about the camera until her shoulder joints stand on that plane: the picture stays the same to the
-// pixel, and every length is then in the scene's metres (the factor is printed; near 1 means the two agree).
+//   node dealer3d/tools/docka-mat.ts --sam <folder of docka-sam.py> [--doll standard] [--behind-edge <metres>] [--out <file.json>]
+// SAM reads her at its own idea of her size and distance. The reading is scaled about the camera until her shoulder joints
+// stand on an upright plane behind the table edge: the picture stays the same to the pixel, and every length is then in
+// the scene's metres (the factor is printed; near 1 means SAM and the scene agree). Which plane: --behind-edge, else the
+// doll's own (a doll placed by joints), else the 0.18 m the standard doll has always stood at (world.ts ASSUMED).
+// Where she really is, her hands say: `handsOnFelt` is how far behind the edge her shoulders are when the reading is as big
+// and as far away as it must be for a hand's lowest finger joint to lie a finger's half thickness (8 mm) over the felt. It
+// holds for a hand that does lie on the felt (both in her rest anchor); read it there and measure with that --behind-edge.
+// (Paow, 2026-11-23: 0.37 to 0.39 m from four touches on anchors 1 and 2.3, not 0.18; at 0.18 every length came out 9 % short.)
 import {readFileSync, writeFileSync} from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
@@ -15,7 +20,7 @@ import {DOLLS, dollFrame, type Doll} from '../src/doll.ts';
 const arg = (name: string, fallback?: string) => { const i = process.argv.indexOf(name); return i > 0 ? process.argv[i + 1] : fallback; };
 const folder = arg('--sam'); if (!folder) throw Error('usage: docka-mat.ts --sam <folder> [--doll standard] [--out file.json]');
 const sam = JSON.parse(readFileSync(path.join(folder, 'sam.json'), 'utf8')), lens = filmLens(), eye = filmEye(lens);
-const plane = dealerEdge(lens)[2] - ASSUMED.shouldersBehindEdge, doll: Doll = DOLLS[arg('--doll', 'standard')!];
+const doll: Doll = DOLLS[arg('--doll', 'standard')!], plane = dealerEdge(lens)[2] - Number(arg('--behind-edge', String(doll.place.kind === 'joints' ? doll.place.behindEdge : ASSUMED.shouldersBehindEdge)));
 const f: Vec3 = unit(eye.forward), r: Vec3 = [1, 0, 0], u: Vec3 = [0, -f[2], f[1]]; // the camera's in, right and up in the world (filmEye: right is +x)
 const toWorld = (p: number[]): Vec3 => add(eye.position, add(add(mul(r, p[0]), mul(u, -p[1])), mul(f, p[2])));
 const J = (name: string) => sam.jointNames.indexOf(name), K = (name: string) => sam.keypointNames.indexOf(name);
@@ -30,7 +35,10 @@ function reading(i: number) {
   const bytes = readFileSync(path.join(folder, `${path.basename(path.dirname(pic.picture))}-${path.basename(pic.picture, '.png')}.verts.f32`));
   const raw32 = new Float32Array(bytes.buffer, bytes.byteOffset, bytes.length / 4), verts: Vec3[] = [];
   for (let k = 0; k < raw32.length; k += 3) verts.push(scaled(toWorld([raw32[k], raw32[k + 1], raw32[k + 2]])));
-  return {pic, s, joint: (n: string) => scaled(raw[J(n)]), key: (n: string) => scaled(rawKp[K(n)]), verts};
+  // Where her shoulders would be if a hand lay on the felt: the factor that brings the hand's lowest finger joint to 8 mm over it.
+  const onFelt = (side: 'right' | 'left') => { const first = K(`${side}-thumb-tip`), low = Math.min(...rawKp.slice(first, first + 20).map(p => p[1])), k = (eye.position[1] - 0.008) / (eye.position[1] - low);
+    return {factor: Math.round(k * 1000) / 1000, behindEdgeMm: mm(dealerEdge(lens)[2] - (eye.position[2] + (shoulders[2] - eye.position[2]) * k))}; };
+  return {pic, s, joint: (n: string) => scaled(raw[J(n)]), key: (n: string) => scaled(rawKp[K(n)]), verts, handsOnFelt: {right: onFelt('right'), left: onFelt('left')}};
 }
 
 /** Her measures from one reading: bones, shoulders, neck, head and the lean of her trunk. */
@@ -60,7 +68,7 @@ function hers(i: number) {
   const upper = sub(neck, j('c_spine2')), upperLean = Math.atan2(upper[2], upper[1]); // the upper back alone: what the picture shows of her trunk
   const twist = Math.atan2(-(sL[2] - sR[2]), sL[0] - sR[0]); // + her left shoulder back
   return {
-    picture: R.pic.picture, scale: Math.round(R.s * 10000) / 10000,
+    picture: R.pic.picture, scale: Math.round(R.s * 10000) / 10000, handsOnFelt: R.handsOnFelt,
     bones: {upperArm: [mm(length(sub(eR, sR))), mm(length(sub(eL, sL)))], forearm: [mm(length(sub(wR, eR))), mm(length(sub(wL, eL)))],
       upperArmRadius: [limbRadius(sR, eR), limbRadius(sL, eL)], forearmRadius: [limbRadius(eR, wR), limbRadius(eL, wL)]},
     shoulders: {jointsApart: mm(length(sub(sL, sR))), acromionApart: mm(length(sub(k('left-acromion'), k('right-acromion')))), jointsPx: [px(see(eye, sR)), px(see(eye, sL))], acromionPx: [px(see(eye, k('right-acromion'))), px(see(eye, k('left-acromion')))],

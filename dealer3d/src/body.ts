@@ -4,7 +4,7 @@
 // arm cannot reach, turning the dealing shoulder forward as it does, and each arm is two bones bent at the elbow. It exists
 // to show that hand and card are one geometry from every seat.
 import {add, cross, dot, filmEye, length, mul, onPlane, sub, unit, type Lens, type Vec3} from './camera.ts';
-import {STANDARD, dollFrame, type Doll, type Frame} from './doll.ts';
+import {STANDARD, dollFrame, elbowPolesAt, type Doll, type Frame} from './doll.ts';
 export type {Frame} from './doll.ts';
 
 /** The standard doll's measures, as they were named here before there were dolls. */
@@ -31,7 +31,7 @@ export function arm(shoulder: Vec3, wrist: Vec3, pole: Vec3, bones: {upperArm: n
 /**
  * The figure with its dealing hand (her left, image right) at `dealWrist` and the other at rest. When the arm is too short
  * she bends from the hip toward the hand, and turns her dealing shoulder forward in step with the bend, just as far as the
- * reach needs and no farther than `mostLean`.
+ * reach needs and no farther than `mostLean`. The elbows bend toward the doll's own poles (where hers hang), or the standard's.
  */
 export function solveBody(frame: Frame, dealWrist: Vec3, restWrist: Vec3, doll: Doll = STANDARD): Body {
   const toward = sub(dealWrist, frame.hip), flat = unit([toward[0], 0, toward[2]]), axis = cross([0, 1, 0], flat); // bending about `axis` carries her upper body toward the hand
@@ -39,7 +39,7 @@ export function solveBody(frame: Frame, dealWrist: Vec3, restWrist: Vec3, doll: 
   const twistFor = (lean: number) => { const t = doll.mostTwist * lean / doll.mostLean; return length(sub(dealWrist, posed(frame.shoulders[1], lean, t))) < length(sub(dealWrist, posed(frame.shoulders[1], lean, -t))) ? t : -t; };
   const short = (lean: number) => length(sub(dealWrist, posed(frame.shoulders[1], lean, twistFor(lean)))) > doll.reach;
   let lean = 0; if (short(0)) { let lo = 0, hi = doll.mostLean; for (let i = 0; i < 30; i++) { const m = (lo + hi) / 2; if (short(m)) lo = m; else hi = m; } lean = hi; }
-  const twist = twistFor(lean), shoulders: [Vec3, Vec3] = [posed(frame.shoulders[0], lean, twist), posed(frame.shoulders[1], lean, twist)];
+  const twist = twistFor(lean), shoulders: [Vec3, Vec3] = [posed(frame.shoulders[0], lean, twist), posed(frame.shoulders[1], lean, twist)], poles = elbowPolesAt(doll, shoulders, [restWrist, dealWrist]);
   return {lean, twist, hip: frame.hip, shoulders, neck: posed(frame.neck, lean, twist), head: posed(frame.head, lean * 0.85, twist * 0.5), headRadius: frame.headRadius,
-    arms: [arm(shoulders[0], restWrist, [-0.7, -0.6, -0.4], doll), arm(shoulders[1], dealWrist, [0.7, -0.6, -0.4], doll)]};
+    arms: [arm(shoulders[0], restWrist, poles[0], doll), arm(shoulders[1], dealWrist, poles[1], doll)]};
 }

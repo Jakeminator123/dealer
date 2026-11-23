@@ -53,6 +53,19 @@ export function shapeBetween(a: Vec3[], b: Vec3[], t: number): Vec3[] {
   for (const c of FINGERS) for (let j = 1; j <= 3; j++) p[c[j]] = add(p[c[j - 1]], mul(unit(sub(mix(c[j]), mix(c[j - 1]))), length(sub(a[c[j]], a[c[j - 1]]))));
   return p;
 }
+/** `v` turned as the shortest turn takes unit `a` to unit `b`. */
+export const swung = (v: Vec3, a: Vec3, b: Vec3): Vec3 => { const axis = cross(a, b), s = length(axis); return s < 1e-9 ? v : turned(v, mul(axis, 1 / s), Math.atan2(s, dot(a, b))); };
+/**
+ * One hand's shape carried to another hand (a doll's own, dealer3d/src/doll.ts): `shape` is the first hand now, `from` the
+ * same hand at a moment both are known, `to` the other hand at that moment. Every bone of `to` is turned as the first
+ * hand's bone has turned since that moment and keeps its own length, so the other hand is `to` itself at that moment and
+ * bends its fingers as the first one does from there.
+ */
+export function carried(shape: Vec3[], from: Vec3[], to: Vec3[]): Vec3[] {
+  const p = to.map(q => [...q] as Vec3), bone = (s: Vec3[], a: number, b: number) => unit(sub(s[b], s[a]));
+  for (const c of FINGERS) { let before = 0; for (const k of c) { p[k] = add(p[before], mul(swung(bone(to, before, k), bone(from, before, k), bone(shape, before, k)), length(sub(to[k], to[before])))); before = k; } }
+  return p;
+}
 /**
  * A value that goes through the keys given ([time, value], times rising), at rest at the first and the last, never
  * beyond the keys on the way between two of them (a monotone cubic: no overshoot).
