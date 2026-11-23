@@ -17,7 +17,7 @@
 // he saved it in, whichever way is chosen; the file stays as it is.
 // window.docklabb is for a test that looks at the page: ready, and facts() of what is shown.
 import {createLabStage, type LabStage, type Touch, type ViewName} from './lab-stage.ts';
-import {NO_STEER, PAOW_READS, TURN_AT_PLACE, cardInFilmsShoe, layDeal, placeFrom, readClip, readDeal, recipeOf, shares, standardName, type Entry, type LaidDeal, type PoseFilm, type ReadDeal, type ReadStored, type Recipe, type Steer, type Stored} from './lay.ts';
+import {NO_STEER, PAOW_READS, TURN_AT_PLACE, cardInFilmsShoe, cardTempoMost, cardTempoOf, layDeal, placeFrom, readClip, readDeal, recipeOf, shares, standardName, type Entry, type LaidDeal, type PoseFilm, type ReadDeal, type ReadStored, type Recipe, type Steer, type Stored} from './lay.ts';
 import {NO_KNOBS, dollFor, gripYawsOf, layNatural, moveNatural, onDoll, withReturn, type Knobs, type LaidNatural, type Way} from './natural-lab.ts';
 import {LANDINGS, LANDING_DEFAULT, SHAPING_KNOBS, asBefore, landingOf, landingWords, type Landing, type LandingReceipt} from '../src/landing.ts';
 import {TURNS, TURN_DEFAULT, turnOf, type TurnId, type TurnReceipt} from '../src/turn-in-hand.ts';
@@ -124,11 +124,11 @@ async function showDeal(keepTime = false) {
         // (laid again only when what the laying takes has changed: the body, shoulders and elbows move the doll on the deal laid last)
         const key = JSON.stringify([doll, place, own.from, {...state.steer, body: null}]);
         if (laid?.key !== key) laid = {key, value: layNatural({plan, target: place, recipe: own, pose, steer: state.steer, lens, doll: D})};
-        if (source) { const r = withReturn(laid.value.deal, {way, body: state.steer.body, knobs: state.knobs, lens, doll: D, source, landing: state.landing, turn: state.turn}); shown = {motion: r.motion as unknown as Motion, deal: laid.value.deal, shortMm: r.shortMm, bodyShare: r.bodyShare, receipt: r.receipt, landed: r.landing, turned: r.turn}; }
+        if (source) { const r = withReturn(laid.value.deal, {way, body: state.steer.body, knobs: state.knobs, lens, doll: D, source, landing: state.landing, turn: state.turn, cardTempo: cardTempoOf(state.steer)}); shown = {motion: r.motion as unknown as Motion, deal: laid.value.deal, shortMm: r.shortMm, bodyShare: r.bodyShare, receipt: r.receipt, landed: r.landing, turned: r.turn}; }
         else { const moved = moveNatural(laid.value, state.steer.body, state.knobs, lens, state.landing, state.turn); shown = {motion: moved.motion as unknown as Motion, deal: laid.value.deal, shortMm: laid.value.shortMm, bodyShare: moved.bodyShare, receipt: moved.receipt, landed: moved.landing, turned: moved.turn}; } }
       else {
         // "Som förut": the deal as the lab laid it before, as steered.
-        const deal = layDeal({plan, target: place, recipe: own, pose, steer: state.steer}), r = source ? withReturn(deal, {way: 'forut', body: null, knobs: NO_KNOBS, lens, doll: D, source}) : posedOn(deal, D);
+        const deal = layDeal({plan, target: place, recipe: own, pose, steer: state.steer}), r = source ? withReturn(deal, {way: 'forut', body: null, knobs: NO_KNOBS, lens, doll: D, source, cardTempo: cardTempoOf(state.steer)}) : posedOn(deal, D);
         shown = {motion: r.motion as unknown as Motion, deal, shortMm: r.shortMm, bodyShare: null, receipt: null, landed: null, turned: null}; } }
     const savedBack = lab ? !!lab.back : null;
     now = {doll, place, entry, back, clip: 'clip' in found ? found.clip : null, recipe, lent: found.lent, said: way === 'read' && doll !== 'standard' ? `på ${DOLLS[doll]}s kropp` : null, way, saved: !!saved && savedBack === back, from: saved ? 'saved' : 'laid', savedWay, savedBack, ...shown};
@@ -188,7 +188,9 @@ const KNOBS: Knob[] = [
   natural('shoulderL', 1, 'Vänster axel fram', -3, 4, 0.5, cm('fram', 'bak')),
   natural('elbowOut', 0, 'Höger armbåge ut', -20, 40, 1, out),
   natural('elbowOut', 1, 'Vänster armbåge ut', -20, 40, 1, out),
-  {name: 'Tempo', group: 'Fart', min: () => 40, max: () => R() && shares(R()!) ? 100 : 150, step: 5, on: () => !!R(), value: () => Math.round(state.steer.tempo * 100), set: v => { state.steer.tempo = v / 100; }, text: v => `${v} %`},
+  // (Jakob 2026-11-23: "det är hennes rörelser med kortet som ska gå snabbare"; lay.ts Steer.cardTempo. "Hela given" is the tempo of before, everything faster.)
+  {name: 'Kortets fart', group: 'Fart', min: () => 100, max: () => R() ? Math.round(cardTempoMost(R()!, state.steer) * 100) : 100, step: 5, on: () => !!R(), value: () => Math.round(cardTempoOf(state.steer) * 100), set: v => { if (v === 100) delete state.steer.cardTempo; else state.steer.cardTempo = v / 100; }, text: v => v === 100 ? '100 %' : `${v} %, bara korthänderna`},
+  {name: 'Hela given', min: () => 40, max: () => R() && shares(R()!) ? 100 : 150, step: 5, on: () => !!R(), value: () => Math.round(state.steer.tempo * 100), set: v => { state.steer.tempo = v / 100; }, text: v => `${v} %`},
 ];
 const knobs = KNOBS.map(k => { const box = $('knobs'); if (k.group) { const h = document.createElement('h3'); h.textContent = k.group; box.append(h); }
   const label = document.createElement('label'), name = document.createElement('span'), out = document.createElement('output'), input = document.createElement('input'); label.className = 'knob'; name.textContent = k.name; input.type = 'range'; input.step = String(k.step); label.append(name, out, input); box.append(label);
@@ -321,7 +323,9 @@ $('save').addEventListener('click', async () => {
   const lab = {...now.deal.lab, steer: state.steer, from: state.entry, doll: state.doll, place: state.place, shortMm: now.shortMm, savedAt: new Date().toISOString(), ...(now.way === 'naturlig' ? {naturlig: {knobs: state.knobs, bodyShare: now.bodyShare}} : {}), ...landing, ...turn, ...(cycle ? {back: cycle} : {})};
   const motion = {...shown, doll: state.doll, lab} as Motion;
   try { const r = await fetch(`/dealer3d/standard/${name}.json`, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(motion)}), answer = await r.json(); if (!r.ok) throw Error(answer.error ?? String(r.status));
-    standards = answer.standards; now = {...now, motion: {...now.motion, doll: state.doll, lab}, saved: true, from: 'saved', savedWay: now.way, savedBack: now.back}; paint(); }
+    standards = answer.standards; now = {...now, motion: {...now.motion, doll: state.doll, lab}, saved: true, from: 'saved', savedWay: now.way, savedBack: now.back}; paint();
+    // (embedded: the page around is told, so that what it says of the saved standard is read again)
+    if (asked.get('inbaddad') === '1' && parent !== window) parent.postMessage({docklabb: {place: state.place, saved: name}}, location.origin); }
   catch (e) { paint(); const status = $('status'); status.className = 'small warn'; status.textContent = `Sparades inte: ${String((e as Error).message ?? e)}`; }
 });
 
@@ -347,7 +351,7 @@ requestAnimationFrame(tick);
   touching: stage?.touching().map(t => `${t.hand}${t.finger} ${t.name} ${whereOn(t)}`) ?? [],
   // Where her right wrist and the card are, in the room and in the picture now (CSS pixels of the canvas): for checking a view against the film's own.
   seen: (() => { const m = now?.motion, i = m ? Math.min(m.frameCount - 1, Math.round(state.t * m.fps)) : 0, of = (world: number[]) => ({world, at: stage!.seen(world)}); return m && stage ? {wrist: of(m.frames[i].R.w), card: of(m.frames[i].card.c)} : null; })()})};
-// Embedded in the studio (?inbaddad=1: Scen & bord's part Docka, studio/components/bordet/DollPanel.tsx): the card chosen here
+// Embedded in the studio (?inbaddad=1: Scen & bord, Kortplan's step 2, studio/components/bordet/DollPanel.tsx): the card chosen here
 // is told to the page around the frame, and a card chosen there is chosen here; where reglagen are moved and not saved the
 // deal stays, and the page around is told which card is still shown. Only the lab's own origin is told and heard.
 if (asked.get('inbaddad') === '1' && parent !== window) {

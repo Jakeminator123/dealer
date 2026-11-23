@@ -17,6 +17,19 @@ export type ReturnCycleOptions = {
   liftMeters?: number;
   /** The hand that laid the card and is lifted off it: the right (two-hand deals from A2.3, the default) or the left (the read one-hand deals from A2.1). */
   liftHand?: 'L' | 'R';
+  /**
+   * The frame from which her gaze is back on the shoe, when it comes back later than her hands (Jakob 2026-11-23: the turns
+   * of her head "behöver inte skyndas upp" when the card goes faster): it turns back over its own time, from the lift, while
+   * her hands are already back. Left out: with the hands, at readyFrom. Only for a deal with a gaze point.
+   */
+  gazeReadyFrom?: number;
+  /**
+   * Her free hand (the left, in a two-hand deal from A2.3) goes on along the deal's own way back to the shoe through the
+   * return, at the deal's pace, instead of being brought back with the hand that laid the card: for a deal whose card hand
+   * goes faster than her free hand (lay.ts Steer.cardTempo), so that the free hand is still on its way when the card hand
+   * lifts. The body under it comes back with the return.
+   */
+  freeLeft?: boolean;
 };
 
 type Source = { path: string; sha256: string };
@@ -139,26 +152,46 @@ export function buildReturnCycle<T extends DealMotion>(motion: T, source: Source
     throw new Error('Expected time to lift and return, a ready frame, and a duration aligned to the source FPS');
   }
   if (!Number.isFinite(liftMeters) || liftMeters <= 0) throw new Error('Lift height must be positive and finite');
+  const gazeReadyFrom = options.gazeReadyFrom ?? readyFrom;
+  if (!Number.isSafeInteger(gazeReadyFrom) || gazeReadyFrom < liftEnds + 2 || gazeReadyFrom >= frameCount || (gazeReadyFrom !== readyFrom && motion.frames[0]?.g === undefined)) {
+    throw new Error('Expected the gaze back from a frame after the lift and before the end, in a deal with a gaze point');
+  }
+  const freeLeft = !!options.freeLeft, home = motion.frames[0].L.w;
+  if (freeLeft && liftHand === 'L') throw new Error('The free hand goes on along the deal only where the right hand laid the card');
+  // (freeLeft: the first frame from which the deal's left hand is back where it began, and stays)
+  let leftHome = 0;
+  if (freeLeft) { leftHome = motion.frameCount; while (leftHome > 0 && length(sub(motion.frames[leftHome - 1].L.w, home)) <= 1e-6) leftHome--; }
+  if (freeLeft && (leftHome >= motion.frameCount || leftHome >= frameCount)) throw new Error('The free hand is not back at the shoe by the last frame of the deal');
+  const settled = Math.max(readyFrom, gazeReadyFrom, leftHome);
 
   const start = motion.frames[0];
   const hold = motion.frames[holdThrough];
   const ready = { ...start, card: hold.card };
   const returnLeft = returningLimb(hold.L, start.L, 'L', holdThrough);
   const returnRight = returningLimb(hold.R, start.R, 'R', holdThrough);
+  // (freeLeft: the deal's own left hand, its wrist and fingers where the deal has them, the arm solved anew from the shoulder as the body comes back)
+  const dealtLeft = (t: number, i: number): Limb => {
+    const own = motion.frames[Math.min(i, motion.frameCount - 1)].L, shoulder = lerp(hold.L.s, start.L.s, t);
+    const result = arm(shoulder, own.w, lerp(sub(own.e, own.s), sub(start.L.e, start.L.s), t));
+    if (!result.reached || length(sub(result.wrist, own.w)) > 1e-6) throw new Error(`Unreachable L wrist at frame ${i}`);
+    return { s: shoulder, e: result.elbow, w: result.wrist, k: own.k, p: own.p };
+  };
+  const gazeAt = (i: number) => i <= liftEnds ? 0 : ease(Math.min(1, (i - liftEnds) / (gazeReadyFrom - liftEnds)));
   const frames = motion.frames.slice(0, holdThrough + 1);
-  for (let i = holdThrough + 1; i < readyFrom; i++) {
+  for (let i = holdThrough + 1; i < settled; i++) {
+    if (i >= readyFrom) { frames.push({ ...ready, ...(freeLeft ? { L: dealtLeft(1, i) } : {}), ...(hold.g ? { g: lerp(hold.g, start.g!, gazeAt(i)) } : {}) }); continue; }
     const t = i <= liftEnds ? 0 : ease((i - liftEnds) / (readyFrom - liftEnds));
     const lift = i <= liftEnds ? liftMeters * ease((i - holdThrough) / (liftEnds - holdThrough)) : liftMeters * (1 - t);
     frames.push({
       ...hold,
-      L: returnLeft(t, liftHand === 'L' ? lift : 0, i),
+      L: freeLeft ? dealtLeft(t, i) : returnLeft(t, liftHand === 'L' ? lift : 0, i),
       R: returnRight(t, liftHand === 'R' ? lift : 0, i),
       h: lerp(hold.h, start.h, t),
-      ...(hold.g ? { g: lerp(hold.g, start.g, t) } : {}),
+      ...(hold.g ? { g: lerp(hold.g, start.g!, gazeReadyFrom === readyFrom ? t : gazeAt(i)) } : {}),
     });
   }
-  for (let i = readyFrom; i < frameCount; i++) frames.push(ready);
-  for (let i = holdThrough + 1; i <= readyFrom; i++) checkReturnStep(frames[i - 1], frames[i], fps, i);
+  for (let i = settled; i < frameCount; i++) frames.push(ready);
+  for (let i = holdThrough + 1; i <= settled; i++) checkReturnStep(frames[i - 1], frames[i], fps, i);
 
   return {
     ...motion,
@@ -171,6 +204,8 @@ export function buildReturnCycle<T extends DealMotion>(motion: T, source: Source
       liftStarts: holdThrough + 1,
       liftEnds,
       readyFrom,
+      ...(gazeReadyFrom !== readyFrom ? { gazeReadyFrom } : {}),
+      ...(freeLeft ? { freeLeft } : {}),
       durationSeconds: frameCount / fps,
       liftMeters,
       ...(liftHand === 'L' ? { liftHand } : {}),

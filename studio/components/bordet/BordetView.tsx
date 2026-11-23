@@ -4,20 +4,24 @@
 // vy, och på högersidan ska man kunna ändra och laborera med detta. Detta ska också vara underlaget för beställning av nya
 // filmer."). One frame for everything, titled Scen & bord: the toolbar on top with the view's menu at its left (the row wraps
 // rather than hides what does not fit), the picture as large as the window allows, one column on the right where things are
-// changed (under the picture on a narrow or upright window). The menu's five parts:
+// changed (under the picture on a narrow or upright window). The menu's parts:
 //   Kortplan     the plan on the picture (the chosen dealer's doll or a film of hers under the cards), with the steps for the
 //                chosen card: 1 Var kortet landar, 2 Hur det kommer dit, 3 Ny film (the guide: the dealer, her tree and the
 //                step, the step's recipe, what is sent and "Spara utkastet"; NewFilm.tsx). The guide is the one way to a draft.
+//                The doll has its one place here (Jakob 2026-11-23: "EN väg och ETT ställe man använder dockan"): step 2 shows
+//                the doll lab where the picture is, and the toolbar chooses Planen, Ställ dockan or Dockans filmer
+//                (DollPanel.tsx); step 1 and 3 show the plan again. Step 3 makes a deal from A2.3 to a player's card from
+//                the doll's saved standard where the dealer has a doll of her own.
 //   Kön          the orders (OrderView): what a round lacks, the drafts to approve, an order open with "Det här skickas"
-//   Docka        the doll lab on the chosen card and the doll's films beside what was ordered with them (DollPanel.tsx)
 //   Scen, Råfilm, Efterarbete   the live picture (SceneBody: the 3D scene, the films on their green, what is laid over)
 // The plan is the draft Placering kept (useDraft): nothing is written until Jakob's click on "Spara i kortplanen", which
-// writes the whole plan. The card and the guide's step stay when the menu changes. Addresses: ?lage=bestall opens Kortplan
+// writes the whole plan. The card and the guide's step stay when the menu changes. Addresses: ?lage=docka opens Kortplan
+// with step 2 and the doll lab (&del=filmer the doll's films; the old Docka's words, and /docka/), ?lage=bestall opens it
 // with step 3 open, and with trad=, film= and komposition= on the tree and step they name (Karta's "Beställ",
 // lib/new-film.ts guideHref; the view writes the same words while the guide is open); ?lage=bestall&ko=1, ?order=<id> and
 // ?ny=1&som=<id> open Kön (that order); ?ny=1&steg=…&plats=… (Ny beställning's, which is gone) opens the guide on that film.
-// In the online copy (lib/mode.ts isSnapshot) the same view reads only: Kortplan shows the plan without saving, Kön, the guide
-// and everything that writes are not there, and Scen, Råfilm and Efterarbete are the scene as the copy has it. Inside <Suspense>.
+// In the online copy (lib/mode.ts isSnapshot) the same view reads only: Kortplan shows the plan without saving, Kön, the guide,
+// the doll and everything that writes are not there, and Scen, Råfilm and Efterarbete are the scene as the copy has it. Inside <Suspense>.
 import { Play, RotateCcw, Save, Square, Undo2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
@@ -32,7 +36,7 @@ import { useViewContext } from "../../lib/context.ts";
 import { isSnapshot, swedishMoment } from "../../lib/mode.ts";
 import { nodeCode } from "../../lib/names.ts";
 import { GUIDE_WORDS, cardOf, filmCode, gapCards, guideOf, itemOf, pickFor, pickOfWish, pickTree, sameIn, treeBase, type GuideItem, type StepPick } from "../../lib/new-film.ts";
-import { getOrders, orderingState, presetOf, type CreatedOrders } from "../../lib/orders.ts";
+import { getOrders, orderingState, presetOf, type CreatedOrders, type DollOrdered } from "../../lib/orders.ts";
 import { PLAN_VIEW, START_PLACE, changedPlaces, placeCode, placeFromCode, placeName } from "../../lib/placement.ts";
 import { useTrees } from "../map/useTrees";
 import { getMedia } from "../material/client.ts";
@@ -47,7 +51,7 @@ import { draftActions, useDraft } from "../placement/useDraft.ts";
 import { Page } from "../shell";
 import { Badge, Button, ErrorState, IconButton, SegmentedControl, Select, Skeleton, Switch, cn, useToast } from "../ui";
 import type { Made } from "./FilmList";
-import { DollPanel, dollPartOf } from "./DollPanel";
+import { DollNote, DollStage, PLAYER_CARD, dollPartOf, ownDoll, useDollGroups, useDollStandard, type DollPart } from "./DollPanel";
 import { NewFilm, type Phase } from "./NewFilm";
 import type { SceneKind } from "./SceneBody";
 import { RowSends } from "./Sends";
@@ -55,17 +59,16 @@ import { RowSends } from "./Sends";
 // The live picture is loaded only when it is chosen, so that Kortplan stays light.
 const SceneBody = dynamic(() => import("./SceneBody").then((m) => m.SceneBody), { ssr: false, loading: () => <Skeleton className="m-4 h-[60vh] rounded-md" /> });
 
-export type Mode = "kortplan" | "ko" | "docka" | SceneKind;
+export type Mode = "kortplan" | "ko" | SceneKind;
 export const MODES: readonly { value: Mode; label: string }[] = [
   { value: "kortplan", label: "Kortplan" },
   { value: "ko", label: "Kön" },
-  { value: "docka", label: "Docka" },
   { value: "scen", label: "Scen" },
   { value: "rafilm", label: "Råfilm" },
   { value: "efterarbete", label: "Efterarbete" },
 ];
-/** The parts the menu shows: the copy orders nothing and has no doll lab, so it has no Kön and no Docka. */
-const SHOWN_MODES = isSnapshot ? MODES.filter((m) => m.value !== "ko" && m.value !== "docka") : MODES;
+/** The parts the menu shows: the copy orders nothing, so it has no Kön. */
+const SHOWN_MODES = isSnapshot ? MODES.filter((m) => m.value !== "ko") : MODES;
 const isMode = (v: string | null): v is Mode => SHOWN_MODES.some((m) => m.value === v);
 const isScene = (m: Mode): m is SceneKind => m === "scen" || m === "rafilm" || m === "efterarbete";
 /** A dealer with no drafts made: one object, so that the reference stays the same between renders. */
@@ -85,7 +88,11 @@ function withReference(line: string | null, deal: FilmRow | null): string | null
 type Params = { get(name: string): string | null };
 /** The address asks for Kön: ?lage=ko, and Beställ's old words (?lage=bestall&ko=1, ?order=<id>, ?ny=1&som=<id>). */
 const asksQueue = (p: Params) => !isSnapshot && (p.get("lage") === "ko" || p.get("ko") === "1" || !!p.get("order") || (p.get("ny") === "1" && !!p.get("som")));
-/** The menu's part the address asks for; ?lage=bestall (Beställ, which is now step 3) opens Kortplan. */
+/** The address asks for the doll: ?lage=docka, the old part Docka's word (and /docka/'s), opens Kortplan's step 2 with the doll. */
+const asksDoll = (p: Params) => !isSnapshot && p.get("lage") === "docka";
+/** What Kortplan's picture shows: the plan, or the doll's lab or films. */
+export type Stage = "plan" | DollPart;
+/** The menu's part the address asks for; ?lage=bestall (Beställ, which is now step 3) and ?lage=docka open Kortplan. */
 const modeOf = (p: Params): Mode => (asksQueue(p) ? "ko" : isMode(p.get("lage")) ? (p.get("lage") as Mode) : "kortplan");
 /** Beställ's old words, read once and then taken out of the address. */
 const OLD_WORDS = ["ko", "ny", "som", "steg", "modell"] as const;
@@ -103,10 +110,11 @@ function oldOrder(p: Params): { place: Place | null; wish: FilmWish | null; mode
 }
 
 /**
- * The view's address: the menu's part and the card ("?lage=ko&plats=p4c1"), and with the guide open its tree, step and
- * composition (?lage=bestall&trad=…&film=…, so that a reload opens the same); the rail's dealer and robot are kept.
+ * The view's address: the menu's part and the card ("?lage=ko&plats=p4c1"), with the guide open its tree, step and
+ * composition (?lage=bestall&trad=…&film=…, so that a reload opens the same), and with the doll shown ?lage=docka (and
+ * &del=filmer for its films); the rail's dealer and robot are kept.
  */
-function writeAddress(mode: Mode, place: Place, guide: Partial<Record<(typeof GUIDE_WORDS)[number], string>> | null) {
+function writeAddress(mode: Mode, place: Place, guide: Partial<Record<(typeof GUIDE_WORDS)[number], string>> | null, doll: DollPart | null) {
   const p = new URLSearchParams(window.location.search);
   const like = p.get("ny") === "1" ? p.get("som") : null;
   for (const w of OLD_WORDS) p.delete(w);
@@ -122,8 +130,11 @@ function writeAddress(mode: Mode, place: Place, guide: Partial<Record<(typeof GU
     else p.delete(w);
   }
   if (mode === "kortplan" && guide) p.set("lage", "bestall");
+  else if (mode === "kortplan" && doll) p.set("lage", "docka");
   else if (mode === "kortplan") p.delete("lage");
   else p.set("lage", mode);
+  if (mode === "kortplan" && !guide && doll === "filmer") p.set("del", doll);
+  else p.delete("del");
   if (place === START_PLACE) p.delete("plats");
   else p.set("plats", placeCode(place).toLowerCase());
   const q = p.toString();
@@ -162,16 +173,29 @@ export function BordetView() {
     setSeenAsk(askedQueue);
     if (askedQueue) setMode("ko");
   }
-  // The rail's Docka (/bordet/?lage=docka) while the view is open opens the doll's part; a link to the view without the word
-  // while that part is open (the rail's Scen & bord) leaves it for Kortplan.
-  const askedDoll = !isSnapshot && params.get("lage") === "docka";
+  // The picture of Kortplan: the plan, or the doll (step 2). A link to the doll while the view is open (/docka/, an old
+  // ?lage=docka) shows it; a link to the view without the word while it shows (the rail's Scen & bord) shows the plan.
+  const askedDoll = asksDoll(params);
+  const [stage, setStage] = useState<Stage>(() => (!first && askedDoll ? dollPartOf(params.get("del")) : "plan"));
+  const [step, setStep] = useState<StepId | null>(() => (first || params.get("lage") === "bestall" ? "order" : askedDoll ? "motion" : "place"));
   const [seenDoll, setSeenDoll] = useState(askedDoll);
   if (askedDoll !== seenDoll) {
     setSeenDoll(askedDoll);
-    if (askedDoll) setMode("docka");
-    else if (mode === "docka" && !askedQueue) setMode("kortplan");
+    if (askedDoll) {
+      setMode("kortplan");
+      setStep("motion");
+      setStage(dollPartOf(params.get("del")));
+    } else if (!askedQueue && params.get("lage") !== "bestall") setStage("plan");
   }
-  const [step, setStep] = useState<StepId | null>(() => (first || params.get("lage") === "bestall" ? "order" : "place"));
+  /** A step opened: step 2 shows the doll (Ställ dockan, or the films where they show), step 1 and 3 the plan. */
+  const openStep = (next: StepId | null) => {
+    setStep(next);
+    if (isSnapshot || next === null) return;
+    setStage((was) => (next === "motion" ? (was === "plan" ? "stall" : was) : "plan"));
+  };
+  // Raised when the doll lab saves a standard: what step 2 and 3 say of it is read again.
+  const [savedTick, setSavedTick] = useState(0);
+  const onDollSaved = useCallback(() => setSavedTick((n) => n + 1), []);
   const [media, setMedia] = useState<MediaAnswer | null>(null);
   const [ledger, setLedger] = useState<Ledger | null>(null);
   const [choices, setChoices] = useState<Record<string, RowChoice>>(() => (first?.wish && first.model ? { [wishKey(first.wish)]: { model: first.model } } : {}));
@@ -216,7 +240,8 @@ export function BordetView() {
   const treeWord = guideOpen ? (view?.tree.id ?? guide.tree) : null;
   const filmWord = guideOpen && guide.pick ? filmCode(guide.pick) : null;
   const compositionWord = guideOpen ? guide.composition : null;
-  useEffect(() => writeAddress(mode, place, guideOpen ? { trad: treeWord ?? undefined, film: filmWord ?? undefined, komposition: compositionWord ?? undefined } : null), [mode, place, guideOpen, treeWord, filmWord, compositionWord]);
+  const dollShown = !isSnapshot && mode === "kortplan" && stage !== "plan" ? stage : null;
+  useEffect(() => writeAddress(mode, place, guideOpen ? { trad: treeWord ?? undefined, film: filmWord ?? undefined, komposition: compositionWord ?? undefined } : null, dollShown), [mode, place, guideOpen, treeWord, filmWord, compositionWord, dollShown]);
   const readOrders = useCallback(
     () =>
       getOrders().then(
@@ -261,13 +286,24 @@ export function BordetView() {
   // The dealers the guide can order for: those not paused.
   const orderDealers = orders?.dealers ? orders.dealers.filter((x) => !x.paused) : dealers;
 
-  const created = (answer: CreatedOrders) => {
+  /** A draft saved by the guide (the recipe's, or the doll's: made.id): the row is made, and the orders are read again. */
+  const madeDraft = (id: string, detail: string) => {
     if (!guideRow) return;
     const key = guideRow.key;
-    setMadeBy((was) => ({ ...was, [dealer]: { ...(was[dealer] ?? {}), [key]: answer.made[0] } }));
-    toast({ tone: "ok", title: "Utkastet är sparat", detail: "Det godkänns i Kön." });
+    setMadeBy((was) => ({ ...was, [dealer]: { ...(was[dealer] ?? {}), [key]: id } }));
+    toast({ tone: "ok", title: "Utkastet är sparat", detail });
     void readOrders();
   };
+  const created = (answer: CreatedOrders) => madeDraft(answer.made[0], "Det godkänns i Kön.");
+  const dollMade = (made: DollOrdered) => madeDraft(made.id, `Med dockans film ${made.film}. Det godkänns i Kön.`);
+  // The doll's standard for the chosen card (step 2 says it, step 3 orders from it), and the doll's films by card.
+  const standard = useDollStandard(dealer, place, savedTick, !isSnapshot && mode === "kortplan" && (step === "motion" || step === "order"));
+  const doll = useDollGroups(orders, ledger);
+  // Step 3 orders a deal from A2.3 to a player's card from the doll's saved standard (BESKED "Ett ställe för dockan"; "Givarna
+  // från A2.3 beställs ändå med dockans film"), where the dealer has a doll of her own. tools/doll-order.ts sends the anchor
+  // that holds in Material; where the tree's own picture is another, the panel says so (treePicture).
+  const dollTarget = guideRow?.wish.step === "GIV-2.3" ? guideRow.wish.target : null;
+  const dollWay = dollTarget && PLAYER_CARD.test(dollTarget) && ownDoll(dealer) ? { place: dollTarget, standard, treePicture: base } : null;
   /** A step chosen among the tiles: its card is chosen on the board (and its path played), and the guide goes on to Hur. */
   const pickItem = (i: GuideItem, go: (card: Place) => void) => {
     setGuide((g) => ({ ...g, pick: { from: i.from, to: i.to }, phase: "hur" }));
@@ -343,6 +379,8 @@ export function BordetView() {
       orders={orders}
       composition={guide.composition}
       onCreated={created}
+      doll={dollWay}
+      onDollMade={dollMade}
     />
   );
   const table = mode === "kortplan";
@@ -356,13 +394,6 @@ export function BordetView() {
 
   // Kön: the same frame and menu over the orders (the queue, or an order open with "Det här skickas").
   if (mode === "ko") return <OrderView menu={menu} />;
-  // Docka: the same frame and menu over the doll lab and the doll's films, on the chosen card.
-  if (mode === "docka")
-    return (
-      <Page title="Scen & bord" full>
-        <DollPanel menu={menu} place={place} setPlace={setPlace} dealer={dealer} orders={orders} ordersRead={ordersRead} ledger={ledger} startPart={dollPartOf(params.get("del"))} onOrdered={() => void readOrders()} />
-      </Page>
-    );
   return (
     <Page
       title="Scen & bord"
@@ -402,7 +433,12 @@ export function BordetView() {
           <TableBody
             menu={menu}
             step={step}
-            setStep={setStep}
+            setStep={openStep}
+            stage={isSnapshot ? "plan" : stage}
+            setStage={setStage}
+            dollCount={doll.count}
+            doll={isSnapshot ? null : <DollStage part={dollShown} place={place} setPlace={setPlace} dealer={dealer} orders={orders} ordersRead={ordersRead} groups={doll.groups} onSaved={onDollSaved} />}
+            dollNote={isSnapshot ? null : <DollNote dealer={dealer} place={place} standard={standard} />}
             place={place}
             setPlace={setPlace}
             marked={marked}
@@ -421,11 +457,20 @@ export function BordetView() {
 }
 
 function TableBody({
-  menu, step, setStep, place, setPlace, marked, dealer, methods, dealRow, newFilm, newFilmSummary,
+  menu, step, setStep, stage, setStage, dollCount, doll, dollNote, place, setPlace, marked, dealer, methods, dealRow, newFilm, newFilmSummary,
 }: {
   menu: ReactNode;
   step: StepId | null;
   setStep: (s: StepId | null) => void;
+  /** What the picture shows: the plan, or the doll's lab or films. */
+  stage: Stage;
+  setStage: (s: Stage) => void;
+  /** How many films of the doll's there are, for the toolbar. */
+  dollCount: number;
+  /** The doll's lab and films (DollStage), kept loaded while the plan shows; null in the copy. */
+  doll: ReactNode;
+  /** Step 2's line on the doll's saved standard; null in the copy. */
+  dollNote: ReactNode;
   place: Place;
   setPlace: (p: Place) => void;
   /** The cards the board rings: those that lack a film in the guide's tree. */
@@ -518,14 +563,17 @@ function TableBody({
             title: "Hur det kommer dit",
             summary: stepTwoSummary(dealer, place, intent),
             body: (
-              <MotionPanel
-                plan={plan}
-                id={place}
-                editable={editable}
-                lit={paths.run?.id === place ? paths.lit : null}
-                line={withReference(motionLine(dealer, place, intent, methods ?? null), dealRow)}
-                anchor={nodeCode(ANCHOR_NODE[wishAnchor(dealer, place, intent)])}
-              />
+              <>
+                {dollNote}
+                <MotionPanel
+                  plan={plan}
+                  id={place}
+                  editable={editable}
+                  lit={paths.run?.id === place ? paths.lit : null}
+                  line={withReference(motionLine(dealer, place, intent, methods ?? null), dealRow)}
+                  anchor={nodeCode(ANCHOR_NODE[wishAnchor(dealer, place, intent)])}
+                />
+              </>
             ),
           },
         ]),
@@ -541,20 +589,42 @@ function TableBody({
         ]),
   ];
 
+  const board = stage === "plan";
   // The scrollbar's room is kept in one column, so that the column's width, and with it the picture's height, never follows the scrollbar.
   return (
     <div className="grid h-full min-h-0 grid-cols-1 content-start overflow-y-auto [scrollbar-gutter:stable] lg:landscape:grid-cols-[minmax(0,1fr)_400px] lg:landscape:content-stretch lg:landscape:overflow-hidden lg:landscape:[scrollbar-gutter:auto]">
-      <section ref={column} className="flex min-w-0 flex-col lg:landscape:min-h-0">
+      {/* the doll covers the picture below the toolbar, and gets most of the window's height in one column */}
+      <section ref={column} className={cn("relative flex min-w-0 flex-col lg:landscape:min-h-0", !board && "min-h-[85vh] lg:landscape:min-h-0")}>
         <div ref={bar} className="flex min-h-11 shrink-0 flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-line px-3 py-1.5">
           {menu}
           <span aria-hidden className="h-5 w-px shrink-0 bg-line" />
-          <Button size="sm" variant={paths.run ? "secondary" : "primary"} aria-pressed={!!paths.run} icon={paths.run ? <Square /> : <Play />} onClick={() => paths.toggle(place)} className="shrink-0">
-            {paths.run ? "Stoppa" : "Spela kortbanan"}
-          </Button>
-          <Switch size="sm" checked={paths.halfSpeed} onChange={paths.setHalfSpeed} label="Halv fart" />
-          <Select size="sm" aria-label="Under korten" value={under.value} onChange={under.choose} options={under.options} className="w-48 shrink-0" />
-          <Switch size="sm" checked={allCards} onChange={setAllCards} label="Alla kort" />
-          <Switch size="sm" checked={grid} onChange={setGrid} label="Rutnät" />
+          {doll ? (
+            <>
+              <SegmentedControl
+                size="sm"
+                label="Bilden"
+                value={stage}
+                onChange={setStage}
+                options={[
+                  { value: "plan", label: "Planen" },
+                  { value: "stall", label: "Ställ dockan" },
+                  { value: "filmer", label: dollCount ? `Dockans filmer · ${dollCount}` : "Dockans filmer" },
+                ]}
+              />
+              {board ? <span aria-hidden className="h-5 w-px shrink-0 bg-line" /> : null}
+            </>
+          ) : null}
+          {board ? (
+            <>
+              <Button size="sm" variant={paths.run ? "secondary" : "primary"} aria-pressed={!!paths.run} icon={paths.run ? <Square /> : <Play />} onClick={() => paths.toggle(place)} className="shrink-0">
+                {paths.run ? "Stoppa" : "Spela kortbanan"}
+              </Button>
+              <Switch size="sm" checked={paths.halfSpeed} onChange={paths.setHalfSpeed} label="Halv fart" />
+              <Select size="sm" aria-label="Under korten" value={under.value} onChange={under.choose} options={under.options} className="w-48 shrink-0" />
+              <Switch size="sm" checked={allCards} onChange={setAllCards} label="Alla kort" />
+              <Switch size="sm" checked={grid} onChange={setGrid} label="Rutnät" />
+            </>
+          ) : null}
         </div>
         {draft.conflict ? <p className="shrink-0 border-b border-underkand/30 bg-underkand/8 px-4 py-1.5 text-xs text-[#ef8b8b]">Planen har ändrats på annat håll sedan den lästes.</p> : null}
         {showSaved ? (
@@ -585,6 +655,11 @@ function TableBody({
           ) : null}
         </div>
         {film ? <FilmBar key={film.id} videoRef={under.videoRef} fps={film.fps} frames={film.frames} onFrame={under.setFrame} /> : null}
+        {doll ? (
+          <div data-doll-stage className={cn("absolute inset-x-0 bottom-0 bg-canvas", board && "hidden")} style={{ top: size.bar }}>
+            {doll}
+          </div>
+        ) : null}
       </section>
       <aside className="flex min-w-0 flex-col border-t border-line bg-surface lg:landscape:min-h-0 lg:landscape:border-l lg:landscape:border-t-0" data-nudge>
         <div className="flex flex-col gap-2.5 border-b border-line px-4 pb-3 pt-3.5">

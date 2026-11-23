@@ -8,10 +8,10 @@
 // instead the bot is there: the view
 // Önskemål (with the answers from Jakob not yet seen) and "Fråga", which opens and closes the panel (components/bot).
 // In the lab Beslut stands first in the foot, with the number of things waiting for his answer (components/decisions).
-import { Box, Images, Inbox, LayoutPanelLeft, ListChecks, MessageCircleQuestion, PersonStanding, ScanEye, Spade, Speech, Volume2, Workflow } from "lucide-react";
+import { Box, Images, Inbox, LayoutPanelLeft, ListChecks, MessageCircleQuestion, ScanEye, Spade, Speech, Volume2, Workflow } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useMemo, useState, type ComponentType } from "react";
+import { usePathname } from "next/navigation";
+import { useMemo, type ComponentType } from "react";
 import { useBank } from "../../lib/bank.ts";
 import { dealerHref } from "../../lib/dealer.ts";
 import { isSnapshot } from "../../lib/mode.ts";
@@ -28,8 +28,6 @@ import { DealerSwitch } from "./DealerSwitch";
 import { Glossary } from "./Glossary";
 
 type View = { href: string; label: string; hint: string; icon: ComponentType<{ className?: string }> };
-/** Bordet's part Docka: a view of the rail that is a part of another view, named by the address's word. */
-const DOLL_VIEW = "/bordet/?lage=docka";
 
 export const VIEWS: readonly View[] = [
   // Bordet (2026-11-17): the one view of the table, in the lab and in the copy. Its parts hold what Placering (Kortplan), Scen
@@ -38,9 +36,6 @@ export const VIEWS: readonly View[] = [
   // Karta holds Primära too since 2026-11-17 (each step with its Primär and secondary films); /primara/ leads there. Since
   // 2026-11-21 it draws the dealer's trees, one at a time, against the 36 steps of his measure.
   { href: "/karta/", label: "Karta", hint: "Nodträden: vilka av de 36 stegen som har film, och vad ett saknat steg behöver", icon: Workflow },
-  // Docka (2026-11-23): Bordet's part Docka, the doll lab and the doll's films on the chosen card (components/bordet/DollPanel.tsx).
-  // The old address /docka/ leads there (app/docka/page.tsx).
-  { href: DOLL_VIEW, label: "Docka", hint: "Dockan i Scen & bord: ställ den i varje ställning och giv, och se dockans filmer bredvid det som beställts med dem", icon: PersonStanding },
   // Granska holds the proofs too since 2026-11-17 (its part Prov); /prov/ leads there.
   { href: "/granska/", label: "Granska", hint: "Filmer som väntar på ditt beslut, och proven", icon: ScanEye },
   { href: "/material/", label: "Material", hint: "Per dealer: ingångsbild, keystone, ankare, filmer och referenser", icon: Images },
@@ -50,10 +45,10 @@ export const VIEWS: readonly View[] = [
 
 /**
  * The views the rail shows: the same list in the lab and in the online copy, minus what the copy lacks. The copy carries no
- * lip-sync facts and no doll lab, so it has no Lipsync and no Docka; Bordet is there read-only (no Beställ, no saving), and Casino plays there too (the
+ * lip-sync facts, so it has no Lipsync; Bordet is there read-only (no Beställ, no saving), and Casino plays there too (the
  * game page runs the engine itself).
  */
-const LAB_ONLY: readonly string[] = ["/lipsync/", DOLL_VIEW];
+const LAB_ONLY: readonly string[] = ["/lipsync/"];
 const SHOWN: readonly View[] = isSnapshot ? VIEWS.filter((view) => !LAB_ONLY.includes(view.href)) : VIEWS;
 /** Where the mark at the top leads: the first view of the rail. */
 const HOME = "/bordet/";
@@ -66,31 +61,10 @@ export const DECISIONS_VIEW: View = { href: "/beslut/", label: "Beslut", hint: "
 
 const trim = (path: string) => (path.length > 1 ? path.replace(/\/+$/, "") : path);
 
-/**
- * The view an address belongs to ("/jamfor/" belongs to none). A view whose own address carries words (Docka,
- * "/bordet/?lage=docka") is the one where the address says them all; else the view of the path.
- */
-export function activeView(pathname: string | null, search = ""): string | null {
+/** The view an address belongs to ("/jamfor/" belongs to none). */
+export function activeView(pathname: string | null): string | null {
   const here = trim(pathname ?? "/");
-  const asked = new URLSearchParams(search);
-  let found: { href: string; words: number } | null = null;
-  for (const view of VIEWS) {
-    const at = view.href.indexOf("?");
-    if (trim(at < 0 ? view.href : view.href.slice(0, at)) !== here) continue;
-    const words = [...new URLSearchParams(at < 0 ? "" : view.href.slice(at))];
-    if (words.every(([key, value]) => asked.get(key) === value) && (!found || words.length > found.words)) found = { href: view.href, words: words.length };
-  }
-  return found?.href ?? null;
-}
-
-/**
- * Reads the address's words for the rail. useSearchParams follows Next's navigations and every replaceState(null, …) a view
- * makes (Bordet writes its part there); in its own <Suspense>, so that the shell's pages are still prerendered without it.
- */
-function SearchFromAddress({ onRead }: { onRead: (search: string) => void }) {
-  const search = useSearchParams().toString();
-  useEffect(() => onRead(search), [search, onRead]);
-  return null;
+  return VIEWS.find((view) => trim(view.href) === here)?.href ?? null;
 }
 
 function Mark() {
@@ -172,8 +146,7 @@ const PAGE_LINKS: readonly { href: string; label: string; icon: ComponentType<{ 
 
 export function Rail() {
   const pathname = usePathname();
-  const [search, setSearch] = useState("");
-  const active = activeView(pathname, search);
+  const active = activeView(pathname);
   const bot = useBot();
   const requests = useRequests();
   const onRequests = trim(pathname ?? "/") === trim(REQUESTS_VIEW.href);
@@ -196,9 +169,6 @@ export function Rail() {
     // min-h-0, and the list scrolls: in a window too low for the rail (a phone) the list scrolls instead of making the whole
     // frame taller than the window, which would cut off the foot of every view.
     <nav aria-label="Vyer" className="flex h-full min-h-0 w-[76px] flex-col border-r border-line bg-surface">
-      <Suspense fallback={null}>
-        <SearchFromAddress onRead={setSearch} />
-      </Suspense>
       <Tooltip content="Dealer Studio" side="right">
         <Link href={dealerHref(HOME, dealer)} aria-label="Dealer Studio, till Bordet" className="mx-auto mb-1.5 mt-3 grid size-11 place-items-center rounded-lg text-brass transition-colors hover:bg-raised/60">
           <Mark />
@@ -263,7 +233,7 @@ export function Rail() {
         {isSnapshot ? null : (
           <>
             <div className="mx-2 h-px w-[calc(100%-32px)] bg-line" />
-            {/* The doll lab, and the sound and model pages (pages/sound.html, pages/props.html) until they become parts of a later view. */}
+            {/* The sound and model pages (pages/sound.html, pages/props.html) until they become parts of a later view, and the trial of the graphic. */}
             {PAGE_LINKS.map(({ href, label, icon: Icon }) => (
               <a
                 key={href}

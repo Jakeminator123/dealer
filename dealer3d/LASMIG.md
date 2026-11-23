@@ -363,11 +363,11 @@ fingrar ska sitta som hennes innan dockan används.
   per plats), `sidan.ts` (sidans väg och hans P5.C1), `titt.ts` (headless-titten under låset, egen port 4393).
   **Gör inte om**: tummen under kortet mitt emot pekfingret; tummen runt kanten (`chainTo` böjer bara i tummens plan);
   djupare grepp utan lyft (pekfingret genom kortet); armbågen med tak 1,2 rad.
-  **Kvar, i ordning**: (1) Jakob 2026-11-23: "Kan du sätta 2 sekunder som standard kanske för att spela upp en giv til
-  len spelare i stället för 3 sekunder som standard? men aknske så man kan göra detta valbart också i "Docka"." Ett val
-  2 s/3 s, 2 s förval; sparade standarder som sparade. Tempo går i dag högst till 100 % för svepen, så 2 s (150 %)
-  prövas först; filmmodellens kortaste film är 3 s, så vad en 2 s referensfilm gör med en beställning prövas innan en
-  sådan görs. (2) Ramen i studion: sidan efter ramens storlek, duken i filmens format (inte påbörjad). (3) Tummen i
+  **Kvar, i ordning**: (1) 2 s som förval (Jakob 2026-11-23, BESKED "Dockan framåt"): Docklabbet har reglaget Kortets fart,
+  som bara skyndar händerna med kortet (BESKED "Snabbare: bara händerna med kortet"; `lay.ts` `Steer.cardTempo`, svepen
+  upp till omkring 230 %). P4.C2 på 200 %: kortet ligger i ruta 38, handen är åter i A2.3 i ruta 61 (2,0 s), blicken i
+  ruta 81. Förvalet är 100 % och sparade standarder är som sparade; om 200 % ska vara förval väntar på Jakob. Filmmodellens
+  kortaste film är 3 s: en kortare referens får ett stillastående slut (P4.C2-provet 2026-11-23). (2) Ramen i studion: sidan efter ramens storlek, duken i filmens format (inte påbörjad). (3) Tummen i
   rullgivarna (D.C1, D.C3, P6.C1, P7.C1: ringgrepp, pekfingret rör kortet av och på). (4) Vändningen: om plats 7, kort
   1 vid 0,96 s "kortet vänds ju itne på ett naturligt sätt" (lugnt nu: mall 14 säger att dockan är en grund för
   rörelsen, inte för kortets vändning). (5) Inbäddat läge, kontraktstester, prov i `assets/proofs/`. Labbets kamera är 1764 × 1174
@@ -426,6 +426,12 @@ fingrar ska sitta som hennes innan dockan används.
   med `bakgrund=neutral` visar dealerns docka. `node tools/placement-backdrop.ts` bygger en bild per docka
   (`docka-<docka>.jpg`): bordet och skon, dockan över, skon överst. Dockan kommer ur `doll-still.ts` (vila: första rutan i `till-ankare-2-3-c.json` ställd på dockan, genomskinlig, 1762 × 1174), som
   verktyget kör först, under låset. Paows händer ligger där som i hennes vilobild (`paow-vila-tatuerad`).
+- **Ett ställe för dockan** (2026-11-24, BESKED "Ett ställe för dockan"): Docklabbet och Dockans filmer ligger i
+  Kortplans steg 2 (Hur det kommer dit) i Scen & bord; väljaren Planen | Ställ dockan | Dockans filmer sitter i
+  verktygsraden, `?lage=docka` öppnar steg 2 (`&del=filmer` filmerna), och railens Docka är borta
+  (`studio/components/bordet/DollPanel.tsx`). Steg 2 visar den sparade standardens namn och kortets fart; labbet säger
+  `{docklabb:{saved}}` när en standard sparas. Steg 3 sparar en giv A2.3 → spelarkort från dockans sparade standard
+  (`tools/doll-order.ts`; texten får kortets fart-meningen när farten inte är 100 %); "Utan dockan" ger receptets utkast.
 - **Känd avvikelse:** standarddockans vila har händerna som rörelsen har dem: höger inom 3 px från vilobilden i
   `data/dealer-standard.json`, vänster (till höger i bilden) 15 px längre in (marginalen där är 8 px). Den får stå tills vidare.
 - **Räckvidd** (`tests/doll.test.ts`): med handen närmast platsen når paow alla 17 platser i Jakobs plan inom 9°; med
@@ -490,12 +496,15 @@ enhandsgivarna), `--no-standard` lägger platsen som om ingen standard fanns, `-
 nedsläppet (bara Naturlig), `--sam-hand --recipe-grip-yaw --fingrar-som-forut --en-vinkel` lägger Naturlig som före 2026-11-23
 (den sista: de fria fingrarna utan `src/hand-rule.ts`, för en film gjord före regeln), och cykelns flaggor är
 `return-cycle.ts`:s. Det styrda i en Naturlig standard går ut under återgången, så att sista rutan är den första.
+Kortets fart är standardens (100 % utan); `--kortets-fart <procent>` lägger en annan. Då tas återgången av
+`natural-lab.ts` `quickReturn`: handen som lade kortet vilar och går tillbaka lika många gånger fortare, medan blicken
+vänder tillbaka och den fria handen går hem i sin egen takt (`return-cycle.ts` `gazeReadyFrom`, `freeLeft`).
 Landningen är standardens `lab.landing` (utan den `lang`); `--landning <id>` tar ett förval i stället (bara Naturlig).
 Verktyget skriver raden `landning <id>` (`ingen` utanför Naturlig, ` (egen: …)` med hans reglage), och kvittot i
 `made.landed`.
 
 ```powershell
-node dealer3d/tools/docka-cykel.ts --to P5.C1 --out dealer3d/data/<ny>.json [--from A2.1] [--doll paow] [--no-standard] [--flat-hand] [--landning pek]
+node dealer3d/tools/docka-cykel.ts --to P5.C1 --out dealer3d/data/<ny>.json [--from A2.1] [--doll paow] [--no-standard] [--flat-hand] [--landning pek] [--kortets-fart 200]
 ```
 
 Cykelverktyget bevarar given till och med ruta 76, lyfter handen 22 mm och återgår till exakt startruta från 116.

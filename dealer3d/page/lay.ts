@@ -36,9 +36,17 @@ export type Recipe = {from: string; frames: number; beats: number[]; poseFilm: s
  * `gripYawEnd`: the same once the card is turned, to the end, `gripYaw` then being the angle as her right hand takes the
  * card (Pace.gripYawEnd; Jakob 2026-11-23). Left out (as in every steering saved before it) or null: `gripYaw` all the way.
  * `body`: degrees [leaning sideways, the right shoulder forward, leaning forward] she has at the place, in place of what
- * the reach asks. `tempo`: how many times faster the deal is laid (every beat that much sooner; the still end keeps its length).
+ * the reach asks. `tempo`: how many times faster the whole deal is laid (every beat that much sooner, her free hand's way
+ * back too; the still end keeps its length): the lab's choice until 2026-11-23, kept beside the next.
+ * `cardTempo` (Jakob 2026-11-23: "det är hennes rörelser med kortet som ska gå snabbare", her other arm and the turns of
+ * her head "behöver inte skyndas upp"): how many times faster the hands with the card go, on top of `tempo`. The card's
+ * beats from the take until it meets the felt (b to g) come that much sooner; the settle after it (g to h) and the still
+ * end keep their length, and so does the way back with the card hand where the lab lays one (natural-lab.ts withReturn).
+ * Her free hand goes back to the shoe in the time it takes without it, and her gaze turns as it does without it
+ * (two-hand.ts turns it over a window of frames of its own). The body's lean goes with the reach, which it is part of: it
+ * is what lets her arm reach the place as the card gets there. Left out (as in every steering saved before it): 1.
  */
-export type Steer = {turnNear: number | null; turnLater: number; carry: number | null; gripYaw: number | null; gripYawEnd?: number | null; body: [number, number, number] | null; tempo: number};
+export type Steer = {turnNear: number | null; turnLater: number; carry: number | null; gripYaw: number | null; gripYawEnd?: number | null; body: [number, number, number] | null; tempo: number; cardTempo?: number};
 export const NO_STEER: Steer = {turnNear: null, turnLater: 0, carry: null, gripYaw: null, body: null, tempo: 1};
 /** The turn at the place, as the trial of 2026-11-23 has it for the doll paow (dealer3d/LASMIG.md, "Vändningen vid platsen"): --turn-near 0.7, wait=14 and --grip-yaw -20, on a sweep recipe. */
 export const TURN_AT_PLACE = {turnNear: 0.7, wait: 14, gripYaw: -20};
@@ -53,11 +61,33 @@ export function recipeOf(name: string, stored: Stored): Recipe {
   return {from: name, frames: stored.frameCount, beats: BEATS.map(k => Math.round(real[k] * FPS * 1e6) / 1e6), poseFilm: stored.poseFilm ?? null, rightAt: stored.rightAt ?? null, pace, endElbows: !!elbows};
 }
 
-/** The beats and the length of a recipe as steered: the tempo first, then (where the hands do not share the card) the moment her left hand lets go, a tenth of a frame the finest. */
+/**
+ * The beats and the length of a recipe as steered: the tempo first, then the card's tempo (b to g that much sooner, the
+ * settle g to h as long as it was), then (where the hands do not share the card) the moment her left hand lets go, a tenth
+ * of a frame the finest. The still end after h keeps its length.
+ */
 export function steered(recipe: Recipe, steer: Steer): {frames: number; beats: number[]} {
   const tenth = (x: number) => Math.round(x * 10) / 10, tail = recipe.frames - recipe.beats[7], beats = recipe.beats.map(x => steer.tempo === 1 ? x : tenth(x / steer.tempo));
+  const card = steer.cardTempo ?? 1, settle = beats[7] - beats[6];
+  if (card !== 1) { for (let k = 0; k < 7; k++) beats[k] = tenth(beats[k] / card); beats[7] = tenth(beats[6] + settle); }
   if (steer.turnLater && !shares(recipe)) beats[4] = tenth(beats[4] + steer.turnLater);
-  return {frames: steer.tempo === 1 ? recipe.frames : Math.round(beats[7] + tail), beats};
+  return {frames: steer.tempo === 1 && card === 1 ? recipe.frames : Math.round(beats[7] + tail), beats};
+}
+/** The card's tempo a steering has (1 where it has none). */
+export const cardTempoOf = (steer: Partial<Steer> | null | undefined): number => steer?.cardTempo ?? 1;
+/**
+ * The most the card's tempo can be, in steps of 5 % up to 250 %, for a recipe as otherwise steered: in a contact grip the
+ * card needs nine frames to turn from the moment it may (two-hand.ts: her left hand has let go, and `wait` where the hands
+ * share the card), and that moment comes after the hand change by frames that do not hurry with the card.
+ */
+export function cardTempoMost(recipe: Recipe, steer: Steer): number {
+  if (!recipe.pace.contactGrip) return 2.5;
+  const S: {grasp: number; both: number; wait?: number} = {...TWO_HAND.shared, ...recipe.pace.shared}, sharing = shares(recipe), wait = Math.max(0, (S.wait ?? 1) + (sharing ? steer.turnLater : 0));
+  for (let x = 2.5; x > 1; x = Math.round((x - 0.05) * 100) / 100) {
+    const [, , , , l, f, g] = steered(recipe, {...steer, cardTempo: x}).beats, turned = f + (g - f) * TWO_HAND.turnedBefore;
+    if (turned - (sharing ? l + S.grasp + S.both + wait : l + 6) >= 9) return x;
+  }
+  return 1;
 }
 
 /** The real card whose moments and hand change a place takes, as the tool chooses it: a seat's own (the real dealer's S1 is the plan's seat 7), her own first card, and for the second card of a seat its first card's. Beyond the tool: her own third card, an open card as her first, takes her first card's (the tool has no flags for it yet). Her second card is laid closed, which no deal here does. */
@@ -84,8 +114,10 @@ export function layDeal(input: {plan: Plan; target: string; recipe: Recipe; pose
   const {frames: N, beats: own} = steered(recipe, steer), mode = recipe.pace.contactGrip;
   if (mode && !contactGripFits(target, mode)) throw Error(`${target}: the ${mode === true ? 'contact' : mode} grip does not lay a card there.`);
   if (/^P[1-7]\.C2$/.test(target) && mode !== 'sweep') throw Error(`${target}: a seat's second card is laid with the sweep.`);
-  // The film's own moments in place of the real card's; her left hand goes back to the shoe as much slower as the film is (the tool's `paced`).
-  const r = realOf(target), [b, c, d, e, l, f, g, h] = own.map(x => x / FPS), slower = (h - b) / (Math.max(r.h, r.g + TWO_HAND.settle) - r.b);
+  // The film's own moments in place of the real card's; her left hand goes back to the shoe as much slower as the film is (the tool's `paced`),
+  // the film as it is without the card's tempo: her free hand is not hurried with the card (Steer.cardTempo).
+  const r = realOf(target), [b, c, d, e, l, f, g, h] = own.map(x => x / FPS), paced = cardTempoOf(steer) === 1 ? own : steered(recipe, {...steer, cardTempo: 1}).beats;
+  const slower = (paced[7] / FPS - paced[0] / FPS) / (Math.max(r.h, r.g + TWO_HAND.settle) - r.b);
   const real: RealCard = {...r, a: 0, b, c, d, e, l, f, g, h, i: h + 0.2};
   let pace: Pace = {...recipe.pace, flowing: true, leftBack: Math.round(TWO_HAND.leftBack * slower * 1000) / 1000};
   if (input.natural) pace = naturalPace(pace);

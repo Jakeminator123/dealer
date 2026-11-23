@@ -10,18 +10,22 @@
 //   Hur     the step's recipe in plain words: its film where it has one, the five marks, the pictures the server will send
 //           (the last is the step's end picture), the reference film, the text and his exceptions (Sends.tsx)
 //   Skicka  exactly what is sent and its price, the server's draft before it is saved, and "Spara utkastet"; afterwards the
-//           draft, the way to Kön and the way back to the tree in Karta.
+//           draft, the way to Kön and the way back to the tree in Karta. A deal from A2.3 to a player's card is saved from
+//           the doll (Jakob 2026-11-23: "EN väg och ETT ställe man använder dockan"): its film of his saved standard is
+//           made first, about a minute, and goes as the reference (lib/orders.ts orderDoll, tools/doll-order.ts); "Utan
+//           dockan" saves the recipe's draft instead.
 // Karta's "Beställ" opens it on a step (lib/new-film.ts guideHref). It approves nothing: the draft is approved in Kön.
 import { ArrowLeft, ArrowRight, Check, Copy } from "lucide-react";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { genitive, stepOf } from "../../../src/order-model.ts";
 import { isCard, type TreeView } from "../../../src/dealer-trees.ts";
 import { useBank } from "../../lib/bank.ts";
+import { asApiError } from "../../lib/api.ts";
 import { sentence, type FilmRow } from "../../lib/bordet.ts";
 import type { EntryAnswer } from "../../lib/media.ts";
 import { kartaHref, tileNode, tilesOf, treeOwns, type GuideItem } from "../../lib/new-film.ts";
-import { picturesInOrder, type CreatedOrders, type NewOrderInput, type Order, type OrderAnswer, type OrdersAnswer } from "../../lib/orders.ts";
+import { orderDoll, picturesInOrder, type CreatedOrders, type DollOrdered, type NewOrderInput, type Order, type OrderAnswer, type OrdersAnswer } from "../../lib/orders.ts";
 import type { Trees } from "../map/useTrees";
 import { treeChip } from "../map/TreeRow";
 import { coverOfEntry } from "../material/Tile";
@@ -30,15 +34,18 @@ import { pictureName } from "../order/Pictures";
 import { ProofStill } from "../proofs";
 import { TakeCard } from "../takes";
 import { Badge, Button, SegmentedControl, Skeleton, buttonClasses, cn, useToast } from "../ui";
+import type { StandardState } from "./DollPanel";
 import { Marks } from "./FilmList";
 import { DraftSends } from "./Sends";
 
 export type Phase = "vad" | "hur" | "skicka";
 const STATE_CHIP = { saknas: { tone: "remark", word: "saknas" }, prov: { tone: "wait", word: "väntar på dom" }, finns: { tone: "ok", word: "finns" } } as const;
+/** A deal saved from the doll: the card, and his saved standard for it as the lab has it. */
+export type DollWay = { place: string; standard: StandardState; treePicture: string | null };
 
 
 export function NewFilm({
-  dealer, dealers, onDealer, trees, view, onTree, item, phase, onPhase, onPick, place, row, body, sends, entries, names, ordering, blocked, made, orders, composition, onCreated,
+  dealer, dealers, onDealer, trees, view, onTree, item, phase, onPhase, onPick, place, row, body, sends, entries, names, ordering, blocked, made, orders, composition, onCreated, doll, onDollMade,
 }: {
   dealer: string;
   /** The dealers films can be ordered for (not paused). */
@@ -71,6 +78,9 @@ export function NewFilm({
   /** The composition Karta's "Beställ" came from: the way back leads there. */
   composition: string | null;
   onCreated: (answer: CreatedOrders) => void;
+  /** The film is saved from the doll (a deal from A2.3 to a player's card, the dealer's own doll), or null. */
+  doll: DollWay | null;
+  onDollMade: (made: DollOrdered) => void;
 }) {
   const { graph } = useBank();
   const preview = usePreview(phase === "vad" ? null : body);
@@ -112,7 +122,7 @@ export function NewFilm({
         <>
           <Head item={item} view={view} onBack={() => onPhase("vad")} />
           {phase === "hur" ? (
-            <How item={item} row={row} body={body} sends={sends} graph={graph} order={shown ?? null} loading={preview.loading} foreign={shown ? foreign(shown) : []} view={view} pictureOf={pictureOf} onNext={() => onPhase("skicka")} />
+            <How item={item} row={row} body={body} sends={sends} graph={graph} order={shown ?? null} loading={preview.loading} foreign={shown ? foreign(shown) : []} view={view} pictureOf={pictureOf} doll={!!doll} onNext={() => onPhase("skicka")} />
           ) : (
             <Send
               key={`${dealer}|${item.id}`}
@@ -131,6 +141,8 @@ export function NewFilm({
               orders={orders}
               composition={composition}
               onCreated={onCreated}
+              doll={doll}
+              onDollMade={onDollMade}
               onAgain={() => onPhase("vad")}
             />
           )}
@@ -279,7 +291,7 @@ function Foreign({ pictures, view }: { pictures: readonly Order["pictures"][numb
   return <p className="text-xs text-[#f0b07a]">{pictures.map((p) => pictureName(p)).join(", ")}: inte {genitive(view.tree.name)} egen bild. Det är bilden som gäller i Material som skickas.</p>;
 }
 
-function How({ item, row, body, sends, graph, order, loading, foreign, view, pictureOf, onNext }: { item: GuideItem; row: FilmRow | null; body: NewOrderInput | null; sends: ReactNode; graph: ReturnType<typeof useBank>["graph"]; order: Order | null; loading: boolean; foreign: Order["pictures"]; view: TreeView | null; pictureOf: (node: string) => EntryAnswer | null; onNext: () => void }) {
+function How({ item, row, body, sends, graph, order, loading, foreign, view, pictureOf, doll, onNext }: { item: GuideItem; row: FilmRow | null; body: NewOrderInput | null; sends: ReactNode; graph: ReturnType<typeof useBank>["graph"]; order: Order | null; loading: boolean; foreign: Order["pictures"]; view: TreeView | null; pictureOf: (node: string) => EntryAnswer | null; doll: boolean; onNext: () => void }) {
   const take = item.step?.take && (item.state === "finns" || item.state === "prov") ? (graph?.takes[item.step.take] ?? null) : null;
   const off = item.wish ? stepOf(item.wish.step)?.off : null;
   return (
@@ -290,6 +302,7 @@ function How({ item, row, body, sends, graph, order, loading, foreign, view, pic
       {body && loading && !order ? <p role="status" className="text-xs text-dim">Hämtar bilderna som skickas …</p> : null}
       <Foreign pictures={foreign} view={view} />
       {off && item.step?.order?.command ? <Command text={item.step.order.command} /> : null}
+      {doll ? <p data-doll-way-note className="text-xs text-dim">Givet sparas från dockan (Skicka): dockans film av din sparade standard blir referensfilm. Valen nedan gäller bara om du sparar utan dockan.</p> : null}
       {sends}
       <Button variant="primary" icon={<ArrowRight />} disabled={!body} onClick={onNext} className="self-start" title={body ? "Det som skickas, med pris" : (row?.why ? sentence(row.why) : undefined)}>
         Skicka
@@ -320,7 +333,7 @@ function Command({ text }: { text: string }) {
 }
 
 function Send({
-  item, row, body, order, preview, foreign, view, dealer, names, ordering, blocked, made, orders, composition, onCreated, onAgain,
+  item, row, body, order, preview, foreign, view, dealer, names, ordering, blocked, made, orders, composition, onCreated, doll, onDollMade, onAgain,
 }: {
   item: GuideItem;
   row: FilmRow | null;
@@ -337,9 +350,14 @@ function Send({
   orders: OrdersAnswer | null;
   composition: string | null;
   onCreated: (answer: CreatedOrders) => void;
+  doll: DollWay | null;
+  onDollMade: (made: DollOrdered) => void;
   onAgain: () => void;
 }) {
   const { save, saving, failure } = useDraftSave(onCreated);
+  // The doll's way, unless he chose the recipe's ("Utan dockan"); its film is made before the draft, so it takes a minute.
+  const [recipe, setRecipe] = useState(false);
+  const [dolling, setDolling] = useState<{ busy: boolean; error?: string }>({ busy: false });
   const held = !!ordering && !ordering.open;
   const back = view ? (
     <Link href={kartaHref(dealer, view.tree.id, item.step?.id ?? null, composition)} className={buttonClasses({ variant: "secondary", size: "sm" })}>
@@ -362,6 +380,41 @@ function Send({
         </div>
       </div>
     );
+  if (doll && !recipe) {
+    const st = doll.standard;
+    const from = st.state === "läst" ? (st.standard ? `din sparade standard ${st.standard.name}${st.standard.cardTempo !== 1 ? ` (kortets fart ${Math.round(st.standard.cardTempo * 100)} %)` : ""}` : "Naturlig (ingen sparad standard för kortet)") : st.state === "läser" ? "din sparade standard (läser …)" : "din sparade standard";
+    const orderIt = () => {
+      setDolling({ busy: true });
+      orderDoll(dealer, doll.place).then(
+        (m) => (setDolling({ busy: false }), onDollMade(m)),
+        (cause) => setDolling({ busy: false, error: asApiError(cause, "Dockans beställning").message }),
+      );
+    };
+    return (
+      <div data-doll-way className="flex flex-col gap-4">
+        {held ? <p data-ordering className="rounded-sm bg-[#3a2a1a] px-2.5 py-1.5 text-sm text-[#f0b07a]">{ordering!.words} Utkastet kan sparas, men inget kan godkännas så länge.</p> : null}
+        <div className="flex flex-col gap-1 rounded-md border border-brass/30 bg-brass/5 px-3 py-2.5 text-sm leading-5">
+          <span className="font-semibold text-ink">Från dockan</span>
+          <span className="text-dim">
+            Dockans film av {from} till {doll.place}, giv och återgång i en film, blir referensfilm (mall 15). Filmen görs först, ungefär en minut; sedan ligger utkastet i Kön med bilderna, texten och priset.
+          </span>
+          {doll.treePicture ? <span className="text-xs text-[#f0b07a]">A2.3-bilden blir den som gäller i Material, inte trädets egen ({doll.treePicture}).</span> : null}
+        </div>
+        {blocked ? <p className="text-sm text-[#f0b07a]">{blocked}</p> : null}
+        {dolling.error ? <p role="alert" className="text-sm text-[#f0b07a]">{dolling.error}</p> : null}
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant={held ? "secondary" : "primary"} disabled={!!blocked || dolling.busy} loading={dolling.busy} onClick={orderIt}>
+            {dolling.busy ? `Gör dockans film till ${doll.place} …` : "Spara utkastet"}
+          </Button>
+          {back}
+          <Button size="sm" variant="quiet" disabled={dolling.busy} onClick={() => setRecipe(true)} title="Spara receptets utkast, med referensfilmen och valen i Hur">
+            Utan dockan
+          </Button>
+        </div>
+        <p className="text-xs text-faint">Ett utkast beställer inget: det godkänns i Kön och läggs sedan hos Runway. Det som är sparat i docklabbet är det som beställs; reglage som inte är sparade följer inte med.</p>
+      </div>
+    );
+  }
   const ready = !!body && !!order && !preview.loading && !preview.error;
   // An uncertain save is tried again with the same body and revision (useDraftSave keeps them), never a new one.
   const trySave = () => {

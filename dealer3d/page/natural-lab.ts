@@ -79,6 +79,20 @@ export function layNatural(input: {plan: Plan; target: string; recipe: Recipe; p
 }
 export type LaidNatural = ReturnType<typeof layNatural>;
 
+/**
+ * The return of a deal laid with the card's tempo (lay.ts Steer.cardTempo), where nothing else times it: the card hand
+ * rests on the laid card and comes back that many times sooner than the return's own times (return-cycle.ts: a fifth of a
+ * second's hold, a lift, four thirds of a second back), while her gaze turns back to the shoe over the return's own time
+ * and her free hand goes on along the deal's way back at its own pace (`freeLeft`). Whatever the order's cycle says goes
+ * before it (dealer3d/tools/docka-cykel.ts --hold, --ready, --duration).
+ */
+export function quickReturn(deal: DealMotion, cardTempo: number): ReturnCycleOptions {
+  const fps = deal.fps, holdThrough = deal.rests + Math.max(1, Math.round(fps / 5 / cardTempo)), liftEnds = holdThrough + Math.max(1, Math.round(fps / 5));
+  const readyFrom = Math.max(liftEnds + 2, holdThrough + Math.round(fps * 4 / 3 / cardTempo)), gazeReadyFrom = Math.max(readyFrom, holdThrough + Math.max(3, Math.round(fps * 4 / 3)));
+  let leftHome = deal.frameCount; while (leftHome > 0 && Math.hypot(...[0, 1, 2].map(j => deal.frames[leftHome - 1].L.w[j] - deal.frames[0].L.w[j])) <= 1e-6) leftHome--;
+  return {holdThrough, readyFrom, gazeReadyFrom, freeLeft: true, durationSeconds: (Math.max(gazeReadyFrom, leftHome) + Math.max(1, Math.round(fps * 2 / 15))) / fps};
+}
+
 /** The body the sliders ask of her laid on as the difference from what the deal asks (`lab.bodyAsked`); null: the deal's own. */
 const bodyMore = (body: [number, number, number] | null, asked: [number, number, number]) => body ? body.map((x, k) => Math.round((x - asked[k]) * 1000) / 1000) as [number, number, number] : null;
 /**
@@ -103,9 +117,11 @@ export function moveNatural(laid: LaidNatural, body: [number, number, number] | 
  * read) and in "Naturlig" moved as a person moves, what the sliders steer going out over the return.
  */
 export function withReturn<D extends DealMotion & {lab?: {bodyAsked?: [number, number, number]}}>(deal: D, input: {way: Way | 'read'; body: [number, number, number] | null; knobs: Knobs; lens: Lens; doll: Doll;
-  source: {path: string; sha256: string}; cycle?: ReturnCycleOptions; flatHand?: boolean; before?: AsBefore; landing?: Landing; turn?: TurnId}) {
+  source: {path: string; sha256: string}; cycle?: ReturnCycleOptions; flatHand?: boolean; before?: AsBefore; landing?: Landing; turn?: TurnId; cardTempo?: number}) {
   const {way, lens} = input, read = way === 'read', doll = read ? input.doll : dollFor(way, input.doll, input.before);
-  const cycle = buildReturnCycle(deal, input.source, {...input.cycle, ...(read ? {liftHand: 'L' as const} : {})});
+  const quick = !read && (input.cardTempo ?? 1) !== 1 ? quickReturn(deal, input.cardTempo!) : {};
+  const said = Object.fromEntries(Object.entries(input.cycle ?? {}).filter(([, v]) => v !== undefined)) as ReturnCycleOptions; // (a flag not given says nothing)
+  const cycle = buildReturnCycle(deal, input.source, {...quick, ...said, ...(read ? {liftHand: 'L' as const} : {})});
   const posed = onDoll(lens, cycle, doll, read ? {hands: 'motion'} : undefined);
   if (way !== 'naturlig') return {cycle, motion: posed.motion, shortMm: posed.shortMm, bodyShare: null, receipt: null, landing: null, turn: null};
   const moved = natural(lens, posed.motion as never, doll, {body: bodyMore(input.body, deal.lab!.bodyAsked!), ...input.knobs, steerOut: [cycle.cycle.liftStarts, cycle.cycle.readyFrom], ...(input.flatHand ? {flatHand: true} : {})});

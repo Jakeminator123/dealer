@@ -48,3 +48,16 @@ test('a motion posed on paow is what dealer3d/tools/doll-pose.ts writes of it', 
       assert.deepEqual(Object.keys(mine), Object.keys(theirs), `${name}: the fields`); }
   } finally { await rm(work, {recursive: true, force: true}); }
 });
+
+// Jakob 2026-11-23: faster is "hennes rörelser med kortet"; her other arm and the turns of her head "behöver inte skyndas upp".
+test('the card\'s tempo hurries the card and not her free hand or her gaze', async () => {
+  const name = 'giv-fran-2-3-p4c2-grepp-svep-d', stored = await read(name), recipe = recipeOf(name, stored), pose = await read(recipe.poseFilm ?? 'till-ankare-2-3');
+  const laid = (cardTempo?: number) => layDeal({plan, target: 'P4.C2', recipe, pose, steer: {...NO_STEER, ...(cardTempo ? {cardTempo} : {})}});
+  const moving = (frames: {L: {w: number[]}; g: number[]}[], of: 'L' | 'g') => { const at = (f: typeof frames[0]) => of === 'L' ? f.L.w : f.g, still = frames.map((f, i) => i > 0 && Math.hypot(...at(f).map((x, k) => x - at(frames[i - 1])[k])) < 1e-9);
+    const last = still.lastIndexOf(false), first = still.indexOf(false); return {first, last}; };
+  const slow = laid(), fast = laid(2);
+  assert.ok(fast.beats[0].g < slow.beats[0].g * 0.55, 'the card lies about twice as soon');
+  assert.equal(fast.pace.leftBack, slow.pace.leftBack, 'her free hand goes back to the shoe in the same time');
+  const gs = moving(slow.frames, 'g'), gf = moving(fast.frames, 'g');
+  assert.ok(Math.abs((gs.last - gs.first) - (gf.last - gf.first)) <= 1, 'her gaze turns over as many frames');
+});

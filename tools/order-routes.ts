@@ -10,7 +10,7 @@
 //   PUT  /api/orders/<id>               change a draft: title, takes, hand, side, turn, free addition, length (If-Match)
 //   POST /api/orders/<id>/refresh       fetch what a draft waits for once it holds, draw its last picture again (If-Match)
 //   POST /api/orders/docka              {dealer, place}: the doll's saved movement to that card becomes its film and a draft
-//                                       (tools/doll-order.ts; about a minute, one at a time), from Scen & bord, Docka
+//                                       (tools/doll-order.ts; about a minute, one at a time), from Kortplan's step 3 (Spara utkastet on a deal from A2.3)
 //   POST /api/orders/<id>/approve      Jakob's click: freezes the order with its hash, refused beyond the policy (If-Match)
 //   GET  /assets/orders/<id>/<file>     a picture or film of an order, only from that folder; and a take's film (take-<n>/after.mp4)
 //   GET  /assets/references/docka/<id>/source.mp4   a reference film of the dummy's, only one data/rendered-references.json lists

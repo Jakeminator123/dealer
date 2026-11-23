@@ -97,10 +97,11 @@ Dokumenten länkar till dessa i stället för att föra egna statusregister. Med
     markerna). De gamla adresserna `/studio/` med runda och look, `/studio/scen/`, `/studio/placering/` och
     `/studio/bestall/` leder dit.
   - **Karta**: nodträdet, varje stegs Primär och dess sekundära filmer, med hur spelet använder var och en
-    (`/studio/primara/` leder hit).
-  - **Docka**: en del av Scen & bord (`/studio/bordet/?lage=docka`): Ställ dockan (Docklabbet i en ram, med reglage och
-    Spara som standard) och Dockans filmer bredvid de beställda tagningarna (`dealer3d/page/`, [dealer3d/LASMIG.md](dealer3d/LASMIG.md)).
-    Knappen Beställ given gör dockans film ur den sparade rörelsen och ett utkast i Kön (`node tools/doll-order.ts paow P6.C1`).
+    (`/studio/primara/` leder hit); på A1 en bricka med talfilmerna och panelen Tal.
+  - **Dockan** är Kortplans steg 2, "Hur det kommer dit" (`/studio/bordet/?lage=docka`, `&del=filmer`), med valet
+    Planen | Ställ dockan | Dockans filmer: Docklabbet i en ram, med reglage (Kortets fart, Hela given) och Spara som
+    standard, och dockans filmer bredvid tagningarna (`dealer3d/page/`, [dealer3d/LASMIG.md](dealer3d/LASMIG.md)).
+    Steg 3 sparar en giv ur dockans standard ("Från dockan"; `node tools/doll-order.ts paow P6.C1`) eller receptets utkast ("Utan dockan").
   - **Granska**: Filmer, med Jakobs domar som skrivs i filmregistret, och Prov, provmapparna under `assets/proofs/`
     (`/studio/granska/?prov=<mapp>`; `/studio/prov/` leder dit).
   - **Material** (vilka bilder som gäller), **Lipsync** (var munnen görs och vad som är inställt, skrivskyddad) och
@@ -109,7 +110,7 @@ Dokumenten länkar till dessa i stället för att föra egna statusregister. Med
     **Modeller** och Scens knapp **3D-sidan** (utvecklarens 3D-sida med samma look, [SYSTEM](docs/SYSTEM.md)).
 
   **Jämför** (två tagningar av samma steg sida vid sida) nås från en tagning i Granska och Karta. Kopian på nätet har
-  samma meny utan Lipsync och Docka, Bordet utan Beställ och utan sparning, och i stället för Beslut **Önskemål** och boten (Fråga).
+  samma meny utan Lipsync, Bordet utan Beställ och utan sparning, och i stället för Beslut **Önskemål** och boten (Fråga).
 - Filmgranskningen har steg ±1 bildruta, kapitel och hastighet 0,25×/0,5×/1×. URL-parametrarna `clip` och `frame` pekar
   ut klipp och granskningsruta.
 - `npm test` kör kärnan offline: publiceringsskyddet, spelets regler, hans domar och val, beställningarna, kortplanen
