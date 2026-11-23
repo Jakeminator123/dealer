@@ -27,14 +27,14 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
   med vid avslut på hans uttryckliga begäran 2026-11-19.
 - `data/media-fit.json` säger för varje bild, ankare, giv och referens om den stämmer med dagens kortplan, och Material
   visar det som en bricka ("äldre plan", "annan kamera", "avviker").
-- Labbprovet `kortprov` (Scen, av som förval) lagar det ritade kortet i handen: vändningen ur mätningen, papperets ljus med minne. Prov `kort-fram-bak-20261120`; hur i [BRISTER](../BRISTER.md), "Kortet".
+- Scen ritar det styva kortet i handen utan filmkortets vita kant (Jakobs ja 2026-11-23; `?kortprov=idag`: lagrat spår, `medkant`: kanten kvar). `kortprov=1` står av; hur i [BRISTER](../BRISTER.md), "Kortet".
 
 **Nästa steg.**
 1. C1 ligger kvar genom P4.C2. `paow-c2-paper-rim-20261118` och `paow-c2-contact-20261118` visar mindre blåspill
    med P1/P7 intakta. Rundans behov täcks 22/22; 9 egna givar och 14 återbruk ger 23/24 kortlägen. DC3 är nästa steg.
 2. `data/media-fit.json` är ommätt. Kör `node tools/media-audit.ts --fit --write` igen när plan, lins eller ankare ändras.
-3. Grafiken på kortet ([BESKED](../BESKED.md), "Grafiken på kortet"): gul rygg (SG får stå kvar) och blå framsida, lika i labbet och spelet, på kortmodellens spår. Styvt kort (22/23 A2.3-givar, `styvt_kort.ts`) ses på
-   `/kortlandning.html` (dealer-e7); `kortprov` står avstängt. Provfilmen `paow-giv-2-3-p4-03` (märke på gula sidan) är i banken som variant: det vita är borta ur skon, men krysset blir en röd hörnprick.
+3. Grafiken på kortet ([BESKED](../BESKED.md), "Grafiken på kortet"): gul rygg (SG får stå kvar) och blå framsida, lika i labbet och spelet, på kortmodellens spår. Styvt kort (23/24 A2.3-givar, `styvt_kort.ts`): Scens förval,
+   inte spelets. Provfilmen `paow-giv-2-3-p4-03` (märke på gula sidan) är i banken som variant: det vita är borta ur skon, men krysset blir en röd hörnprick.
 4. Ta bort kravet på två vyer i planfilen (`validatePlan` kräver ännu båda), utan att planfilen skrivs av en agent.
 
 **Väntar på Jakob.** Inget utanför Beslut.

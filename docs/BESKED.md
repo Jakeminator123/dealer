@@ -66,6 +66,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   markernas utseende ändras bara i Bordets läge Efterarbete; valören ritas när rundan spelas.
 - **Grafiken på kortet** (2026-11-23, till dealer-e7): "grafiken" är det som läggs på kortets baksida och framsida, på
   kortmodellens spår. Han vill se den "på och mot" alla filmer som finns (`/kortlandning.html`) och "ett bra system med grafiken".
+- **Styvt kort i handen, utan vit kant** (2026-11-23, två ja i Beslut): Scen ritar kortet med en storlek i handen och tar
+  bort den vita kanten kring filmens kort. Spelet rörs inte förrän han har sagt ja till det där.
 - **Kortets efterarbete görs i förväg per film** (2026-11-17): spelet målar inte kortet medan filmen spelas; det ritade
   kortet är "något procent större än kortet".
 - **Kortbanan följer filmerna** (2026-11-17, "VIKTIGT"): labbets ritade bana och vändning stämmer med hur dealern
@@ -137,6 +139,10 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   nu" (olika händer). Det tatuerade trädet byggs vidare; A2.1 görs om med hennes mindre händer och tatueringar.
 - **Fart** (2026-11-23): klipp ska kunna spelas i 1,5× eller 2×, sparat i en komposition och som klippets egen standard;
   givarna gärna i dubbel fart.
+- **Kartas meny, nivåer och bryggor** (2026-11-23 kl. 21.35): raden med träd och kompositioner är "ful" och görs om; i den
+  sammanlagda vyn ska träden gå att se som nivåer man rullar mellan, och bryggorna ska gå att klicka fram.
+- **Registren i en databas** (2026-11-23 kl. 21.35): "Alla .json i tex 'motion' måste in" i en SQLite-databas och filerna
+  tas bort, "självsanerande": tas en film bort försvinner dess poster. Byggs på grenen `register-sqlite`.
 - **Flera namngivna träd per dealer** (2026-11-21): omkring tre träd, och löst material för sig som är lätt att radera,
   på hans ord. Datorn och nätet ska kunna läsa samma Blob; uppladdning kräver hans ord.
 - **Den tatuerade uppsättningen är förstahandsvalet** (2026-11-17, 2026-11-18): tatuerade händer, 10 % mindre. Nya

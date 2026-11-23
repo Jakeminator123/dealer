@@ -3358,6 +3358,20 @@
           }
         },
         {
+          "id": "paow-film-vila-20-t1",
+          "role": "film",
+          "name": "Tatuerad · vila · lugn vila, tagning 1",
+          "path": "assets/films/paow/vila-20-t1/source.mp4",
+          "still": 65,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Oberoende granskare (Opus, full upplösning): godkänd 4/5, lugnt andetag och en blinkning. Första och sista rutan ligger på A1 (0 px, hänget 1 px), skarven mot nästa vila bättre än den godkända paow-vila-10-02 (2 975 mot 3 494 bildpunkter). Bläcket på händer och hals håller sitt mönster men blir mjukare mitt i filmen (skärpa 0,95 till 0,67 och 0,87 i slutet). Händerna stilla, fem fingrar, stängda…",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-23"
+          }
+        },
+        {
           "id": "paow-film-intro-noir-3-startruta",
           "role": "arbetsmaterial",
           "name": "Startrutan till filmen före spelet",
@@ -3724,13 +3738,13 @@
           "name": "A2.3, äldre försök 2 (montage): vänster hand uppifrån på kortet",
           "path": "assets/anchors/paow-ankare-2-3-b/anchor.png",
           "node": "READY-C",
-          "state": "ersatt",
+          "state": "arkiverad",
           "note": "A2.3 lagd till i studion 2026-11-20.",
           "source": {
             "from": "uppladdad: 1-nytt-ankare-2-3.png",
             "when": "2026-11-20"
           },
-          "stateBy": "Jakob 2026-11-21 16:02: kandidat → ersatt (Ankare 2.3 (C): vänster hand uppifrån på kortet, rak bål godkändes, hans svar i Beslut 2026-11-21 kl. 15.56, kortet paow-ankare-2-3-c: \"Ja, använd C\")"
+          "stateBy": "Jakob 2026-11-23 21:42: ersatt → arkiverad (Material)"
         },
         {
           "id": "paow-ankare-2-3-c",
@@ -3738,7 +3752,7 @@
           "name": "Vänster hand uppifrån på kortet, rak bål",
           "path": "assets/anchors/paow-ankare-2-3-c/anchor.png",
           "node": "READY-C",
-          "state": "ersatt",
+          "state": "arkiverad",
           "builtOn": [
             "paow-vila-tatuerad"
           ],
@@ -3747,7 +3761,7 @@
             "from": "ruta 45 ur filmen ankare 1 → 2.3 C, tagning 3 (Runway-uppdrag 13c3a3b6; receipt.json bredvid bilden)",
             "when": "2026-11-20"
           },
-          "stateBy": "Jakob 2026-11-23 09:29: gäller → ersatt (Blicken ned mot kortet, vänster hand uppifrån på kortet godkändes, hans svar i Beslut 2026-11-23 kl. 09.16, kortet a2-3-blick-pa-kortet: \"Ja, byt blicken\")"
+          "stateBy": "Jakob 2026-11-23 21:42: ersatt → arkiverad (Material)"
         },
         {
           "id": "paow-a3-p4-23b",
@@ -3838,7 +3852,7 @@
           "name": "Blicken ned mot kortet, vänster hand uppifrån på kortet",
           "path": "assets/anchors/paow-ankare-2-3-d/anchor.png",
           "node": "READY-C",
-          "state": "gäller",
+          "state": "arkiverad",
           "note": "A2.3 med blicken ned mot det gula kortet under fingertopparna: huvudet är böjt lite mot skon. Bara huvudet, håret och halsens övre del är nya; händerna, skon, kortet, kavajen och det gröna är den förra A2.3-bildens, bildpunkt för bildpunkt. Ögonlocken är sänkta och ansiktet allvarligare. Halsens tatuering är skarvad under hakan. Kvittot ligger bredvid bilden.",
           "source": {
             "from": "A2.3:s förra bild med nytt huvud ur en bildmodell (Runway-uppdrag 63f501aa; receipt.json bredvid bilden)",
@@ -3847,7 +3861,7 @@
           "builtOn": [
             "paow-ankare-2-3-c"
           ],
-          "stateBy": "Jakob 2026-11-23 09:29: kandidat → gäller (hans svar i Beslut 2026-11-23 kl. 09.16, kortet a2-3-blick-pa-kortet: \"Ja, byt blicken\")"
+          "stateBy": "Jakob 2026-11-23 21:42: ersatt → arkiverad (Material)"
         },
         {
           "id": "paow-ankare-2-3-marke",
@@ -3855,7 +3869,7 @@
           "name": "A2.3 utan det vita i skon, med märke (prov)",
           "path": "assets/anchors/paow-ankare-2-3-marke/anchor.png",
           "node": "READY-C",
-          "state": "kandidat",
+          "state": "gäller",
           "builtOn": [
             "paow-ankare-2-3-d"
           ],
@@ -3863,7 +3877,8 @@
           "source": {
             "from": "A2.3:s bild, ändrad i skons fönster (a2-3-utan-vitt-fylld-cirkel.png; receipt.json bredvid bilden)",
             "when": "2026-11-23"
-          }
+          },
+          "stateBy": "Jakob 2026-11-23 21:41: kandidat → gäller (Material)"
         },
         {
           "id": "kortets-textur",

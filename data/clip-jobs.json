@@ -6913,6 +6913,40 @@
         "id": "paow-giv-2-3-d-01",
         "take": 1
       }
+    },
+    {
+      "id": "paow-vila-20-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-20-01",
+      "frames": [
+        0,
+        117
+      ],
+      "purpose": "Beställning paow-vila-20, tagning 1: Tatuerad · vila · lugn vila.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 4,
+      "promptText": "Locked camera, one continuous shot. She starts and ends exactly as in the first frame, and holds still for the last half second. She takes one slow, deep breath through her nose with her lips closed: her chest and shoulders rise gently, then sink as she breathes out, and she blinks once. Her hands rest on the felt. The tattoos on her hands and throat keep their pattern.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-vila-20/first.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Första bilden i beställningen paow-vila-20."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-vila-20/last.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Sista bilden i beställningen paow-vila-20."
+      },
+      "order": {
+        "id": "paow-vila-20",
+        "take": 1
+      }
     }
   ],
   "edits": []

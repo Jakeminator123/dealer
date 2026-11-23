@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "title": "Tatuerad · vila · blicken åt sidorna",
+  "summary": "Gör en vilofilm av Paow: från och till ankare 1.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "VILA",
+    "label": "Vila, samma bild först och sist",
+    "edge": "IDLE>IDLE",
+    "shape": "ONE_WAY",
+    "cutInto": [],
+    "makes": null
+  },
+  "motion": null,
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows A1",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-vila-23/first.png",
+      "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-vila-tatuerad",
+        "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+        "note": "Vila, tatuerade händer (gäller)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Slutbild · Paows A1",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-vila-23/last.png",
+      "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-vila-tatuerad",
+        "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+        "note": "Vila, tatuerade händer (gäller)"
+      },
+      "waits": null
+    }
+  ],
+  "reference": {
+    "status": "INGEN",
+    "why": "WAN 3 tar ingen referensfilm tillsammans med första och sista bild."
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "wan3",
+    "params": {
+      "resolution": "1080p",
+      "duration": 5,
+      "ratio": "adaptive",
+      "generateAudio": false
+    }
+  },
+  "prompt": {
+    "template": "film-vila-kort@12",
+    "style": "KORT",
+    "text": "Locked camera, one continuous shot. She starts and ends exactly as in the first frame, and holds still for the last half second. Her eyes and head turn calmly a little to one side and rest there a moment, then move across a little to the other side, and come back to the camera. Her head never turns more than a little: her face stays towards the camera. She blinks once on the way, and her shoulders turn a little with her head. Her hands stay exactly where they are. The plain green background, the shoe and the edges of the picture stay exactly as in the first frame all the way. The tattoos on her hands and throat keep their pattern.",
+    "sha256": "f35b3a76b22176df0686257cd7d8906c2c5b5f8538bb115da74cadc2df92896a",
+    "extra": "Her eyes and head turn calmly a little to one side and rest there a moment, then move across a little to the other side, and come back to the camera. Her head never turns more than a little: her face stays towards the camera. She blinks once on the way, and her shoulders turn a little with her head. Her hands stay exactly where they are. The plain green background, the shoe and the edges of the picture stay exactly as in the first frame all the way. The tattoos on her hands and throat keep their pattern.",
+    "middle": false
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 100,
+    "total": 100,
+    "worstPerTake": 100,
+    "worstTotal": 100,
+    "basis": "20 krediter per s × 5 s. DRIFT, Lärdomar som gäller, som sidan stod till commit f6f68ef (git show f6f68ef:docs/DRIFT.md): 20 per s i full storlek; en ingång på 4 s kostade 80 (handboken, tools/film-prompting.md §5)."
+  },
+  "limits": {
+    "maxCredits": 100,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Recept vila: prövat i 8 beställningar.",
+    "Undantag från receptet: 5 s i stället för 4 s."
+  ],
+  "createdBy": "huvudagenten, tools/order-new.ts",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-23T20:42:25.079Z",
+    "orderSha256": "a53cf9e156ac402fff5a8a62622891240d8cadf07e8d9a2b7a7a07a3a9be1289",
+    "mandate": "Jakob 2026-11-23 kl. 21.10: \"skapa nya sådanna ... så de får in just tatueringarna\" (vilorna vid A1); kl. 21.35 \"Kör på i övrigt\". Omprov efter granskningen av vila-21 och -22: samma rörelser, ord som inte nämner något utanför bilden. En tagning var, lästa av dealer-ac."
+  },
+  "status": "GODKÄND",
+  "id": "paow-vila-23",
+  "created": "2026-11-23T20:42:16.790Z"
+}

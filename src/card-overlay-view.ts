@@ -4,7 +4,7 @@
 // and how large comes from src/card-overlay.ts.
 import * as THREE from '../materials/source/references/card-materials/vendor/three.module.js';
 import {CARD, RANKS, SUITS, createCardGeometry, createCardPrint, paperMaterialParameters, applyCardLights, validateCard, type CardValue} from '../materials/source/src/card-material-study.ts';
-import {poseAt, filmLandingFrame, restingQuad, returnCardAt, returnAfterFilmLanding, cardToImage, projectionOf, regionOf, readMatte, filmZone, strayBoxes, plausible, plausibleEdge, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, BESIDE, RIM, type CardRecord, type CardTrack, type Scene, type Pose} from './card-overlay.ts';
+import {poseAt, filmLandingFrame, restingQuad, returnCardAt, returnAfterFilmLanding, cardToImage, projectionOf, regionOf, readMatte, filmZone, strayBoxes, plausible, plausibleEdge, cardRecord, cardFace, CARD_RANKS, CARD_SUITS, BESIDE, RIM, WHITE_RIM, type CardRecord, type CardTrack, type Scene, type Pose} from './card-overlay.ts';
 import {signedArea, inside, clockwise, grown, is, type Pt} from './card-track.ts';
 import {SHOE_BOX} from './scene3d-matte.ts';
 
@@ -191,8 +191,8 @@ export function createCardOverlay(canvas: HTMLCanvasElement) {
     // What the film shows here: hand and sleeve stay in front, the film's own card must go.
     const bw = box.width, bh = box.height;
     read.width = bw; read.height = bh; rctx.drawImage(video, box.x, box.y, bw, bh, 0, 0, bw, bh);
-    const own = pose.film ? clockwise(pose.film) : null;
-    const matte = readMatte(rctx.getImageData(0, 0, bw, bh).data, bw, bh, own ? (x, y) => inside(own, box.x + x + 0.5, box.y + y + 0.5) : undefined), near = filmZone(pose);
+    const own = pose.film ? clockwise(pose.film) : null, all = pose.whole ? grown(clockwise(pose.whole), WHITE_RIM.beyond) : null; // all: a film card with a white rim, that rim included
+    const matte = readMatte(rctx.getImageData(0, 0, bw, bh).data, bw, bh, own ? (x, y) => inside(own, box.x + x + 0.5, box.y + y + 0.5) : undefined, 4, all ? (x, y) => inside(all, box.x + x + 0.5, box.y + y + 0.5) : undefined), near = filmZone(pose);
     // Only the dealt card's own place is cleaned: not the next card seated in the shoe, not a yellowish finger edge elsewhere.
     // Along the border of the film's card a skin-coloured line narrower than a finger is the card's pale rim: it goes with the card.
     const core = own ? grown(own, -9) : null, wide = pose.quad ? grown(clockwise(pose.quad), BESIDE) : null; // just beside the rendered card nothing of the film's card may be left either

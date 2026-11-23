@@ -3,6 +3,36 @@
   "about": "What waits for Jakob: one entry per question (kind beslut) or per thing only he can do (kind gora), shown as one card each in the studio's view Beslut (/studio/beslut/, lab only). The list's order is the order of urgency, the most urgent first. An entry: id, kind, question (at most 14 words), leads (one sentence: what his answer leads to), optionally proof (a folder under assets/proofs/) with file, page (an address in the lab, e.g. game.html?table=casino), link (an address outside, shown as text to open on his phone) and cost (free text), chips (two to four {value, label} for beslut, one to four for gora), asked (date), from (the lane that asks) and answer. An agent adds an entry with answer null, changes only its own entries, reads the file right before editing it and keeps the form JSON.stringify gives with two spaces; it closes an entry by taking it out once his answer is carried out, and the commit says what he answered. Only the page writes answer ({value, note, at}, tools/decision-store.ts); no agent sets, changes or clears an answer he has given. The strict reader is tools/decision-register.ts. The repo is public: no secret, personal detail or path of this machine.",
   "decisions": [
     {
+      "id": "styvt-kort-vit-kant",
+      "kind": "beslut",
+      "question": "Kortet: ska den vita kanten kring kortet tas bort så här?",
+      "leads": "Ja betyder att kanten tas bort som förval i Scen i de fem filmer som har den, medan spelet inte rörs; del 33–40 i provet visar med och utan.",
+      "proof": "styvt-kort-20261123",
+      "file": "35-plats-3-vit-kant-i-scen-spelets-storlek.mp4",
+      "cost": "Ingen kostnad.",
+      "chips": [
+        {
+          "value": "ja",
+          "label": "Ja, ta bort kanten"
+        },
+        {
+          "value": "nej",
+          "label": "Nej, låt den vara"
+        },
+        {
+          "value": "vanta",
+          "label": "Vänta"
+        }
+      ],
+      "asked": "2026-11-23",
+      "from": "Kortbanan",
+      "answer": {
+        "value": "ja",
+        "note": "",
+        "at": "2026-11-23T20:51:05.637Z"
+      }
+    },
+    {
       "id": "styvt-kort-i-handen",
       "kind": "beslut",
       "question": "Det styva kortet i handen: ska det ersätta dagens ritade kort?",

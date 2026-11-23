@@ -1,13 +1,13 @@
 "use client";
 
-// Karta: the dealer's node trees. A row of trees at the top (TreeRow: "Casino 22/36"), the chosen tree drawn with its
+// Karta: the dealer's node trees. A row of trees at the top (TreeRow: a tab per tree with its A1), the chosen tree drawn with its
 // pictures and its 36 steps against his measure (TreeCanvas, from GET /api/trees), a step with a film opening its films
 // (EdgeSheet: its Primär and secondary films, "Gör primär" on his click) and a step without one opening what an order of it
 // has and lacks (StepOrder). A click on a picture opens it large (StillViewer). Väg: he clicks pictures in order (A1, A2.3,
 // A3P4C1, A2.3; PathBar) and Spela plays the films of those steps back to back (PathPlayer, lib/tree-path.ts). What is chosen
 // lives in the address (?trad=…&steg=…&kant=…&tagning=…&vag=A1-A2.3-…), so a link opens a tree, a step, a take or a path;
-// /primara/ leads here. Several trees put together are a composition (?komposition=<id>, CompositionKarta): its chips stand
-// after the trees in the row.
+// /primara/ leads here. Several trees put together are a composition (?komposition=<id>, CompositionKarta): the row's
+// button "Kompositioner" lists them, and the open one is a tab beside the trees.
 // Where the lab has no trees to give (the online copy; an older lab server until it is restarted) Karta draws the bank's own
 // map instead (BankKarta): every step of the bank with what the game plays on it, one film per seat.
 import { ReactFlowProvider, useReactFlow } from "@xyflow/react";
