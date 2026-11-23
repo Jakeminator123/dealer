@@ -241,6 +241,11 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 
 ## Domar, beställningar och pengar
 
+- **Timtaket 1 000 i dag** (2026-11-23, cirka kl. 09.15): "Idag har du 1000 krediter på runway i timmen." Timtaket i
+  mandatet `dealer-b0-20261123` är alltså 1 000 till midnatt samma dag; därefter gäller 800 igen (punkten nedan).
+  Totalsumman i mandatet (1 600) är huvudagentens egen gräns för dagens konkreta beställningar, inom hans ord
+  2026-11-18 om att generera tills kontot är nästan tomt.
+
 - **Utökat totalmandat för filmer** (2026-11-18, senare svar på frågan om H24-cykel-01): "Ja du får generera tills kontot är typ tomta!"
   Det ersätter totalsumman 2 500, inte kravet på granskad kvalitet. Tidigare 800 krediter per timme gäller fortsatt;
   huvudagenten förnyar det tidsatta ordermandatet inför konkreta beställningar utan att nollställa journalen.
