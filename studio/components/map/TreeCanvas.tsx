@@ -3,8 +3,10 @@
 // One tree drawn (React Flow): its anchors and every card as pictures from Material (media first), a node without a picture
 // as an empty box with its name; its 36 steps as lines, solid in the verdict's colour where a film is (finns), dashed grey
 // where a film or a delivered order waits for a verdict (prov), red and dotted where nothing is (saknas). A step's chip opens
-// it: a step with a film its films (EdgeSheet), another what an order of it has and lacks (StepOrder). Little text: the short
-// names (A1, A2.3, A3P4C2) on the pictures, the rest in each chip's title. Geometry: lib/map-layout.ts treeLayout.
+// it: a step with a film its films (EdgeSheet), another what an order of it has and lacks (StepOrder). A click on a picture
+// opens it large; while a path is picked (Väg) it adds the node to the path instead: the path's pictures ringed and numbered
+// in order, its lines lit, and the nodes it cannot go to next faded. Little text: the short names (A1, A2.3, A3P4C2) on the
+// pictures, the rest in each chip's title. Geometry: lib/map-layout.ts treeLayout.
 import "@xyflow/react/dist/style.css";
 import { Background, BackgroundVariant, BaseEdge, EdgeLabelRenderer, ReactFlow, useReactFlow, useStore, type Edge, type EdgeProps, type Node, type NodeProps } from "@xyflow/react";
 import { ImageOff } from "lucide-react";
@@ -44,8 +46,11 @@ const ARROW_PATH = "M0,0 L-8,-4.5 L-8,4.5 Z";
 
 // ── Nodes ───────────────────────────────────────────────────────────────────
 type Pic = { node: TreeNode | null; entry: EntryAnswer | null };
-type PictureData = { box: TreeBox; pic: Pic; dim: boolean; note: string | null; label: string };
-type CardsData = { box: TreeBox; pics: Pic[]; dim: boolean };
+/** One picture on the map as a button: its node, whether a click does anything, its places in the path, faded or not. */
+type Shot = { node: string; pic: Pic; can: boolean; mark: number[] | null; off: boolean };
+type Act = { picking: boolean; onOpen: (node: string) => void };
+type PictureData = { box: TreeBox; shot: Shot; act: Act; dim: boolean; note: string | null; label: string };
+type CardsData = { box: TreeBox; shots: Shot[]; act: Act; dim: boolean };
 type PictureNodeType = Node<PictureData, "picture">;
 type CardsNodeType = Node<CardsData, "cards">;
 
@@ -56,8 +61,8 @@ type CardsNodeType = Node<CardsData, "cards">;
  */
 const labelScale = (zoom: number) => Math.round(Math.min(2, Math.max(1, 1 / zoom)) * 10) / 10;
 
-/** A picture of Material, or an empty box with the node's name when the tree has none for it. */
-function Picture({ pic, code, small = false }: { pic: Pic; code: string; small?: boolean }) {
+/** A picture of Material, or an empty box with the node's name when the tree has none for it; mark: its places in the path. */
+function Picture({ pic, code, small = false, mark = null }: { pic: Pic; code: string; small?: boolean; mark?: number[] | null }) {
   const scale = useStore((s) => labelScale(s.transform[2]));
   const cover = pic.entry ? coverOfEntry(pic.entry) : null;
   const state = pic.node?.state && pic.node.state !== "gäller" ? pic.node.state : null;
@@ -93,29 +98,61 @@ function Picture({ pic, code, small = false }: { pic: Pic; code: string; small?:
           {small ? (state === "kandidat" ? "◐" : "↺") : state}
         </span>
       ) : null}
+      {mark ? (
+        <span
+          className="pointer-events-none absolute bottom-1 left-1 rounded-full bg-brass px-1.5 font-semibold tabular-nums text-brass-ink shadow-[0_1px_4px_rgb(0_0_0/0.6)]"
+          style={{ fontSize: Math.min(20, 11 * scale), lineHeight: grown ? 1.4 : "16px" }}
+          aria-hidden
+        >
+          {mark.join("·")}
+        </span>
+      ) : null}
     </div>
   );
 }
 
+/**
+ * A picture as a button: a click opens it large, or, while a path is picked, adds its node to the path (only a node the
+ * path can go to next). No nopan: a drag over a picture still moves the map, and a drag never counts as a click.
+ */
+function ShotButton({ shot, act, code, small = false }: { shot: Shot; act: Act; code: string; small?: boolean }) {
+  return (
+    <button
+      type="button"
+      aria-disabled={!shot.can}
+      aria-label={act.picking ? `${code}: lägg i vägen` : `${code}: visa stort`}
+      onClick={() => shot.can && act.onOpen(shot.node)}
+      className={cn(
+        "relative block h-full w-full rounded-md text-left transition-opacity duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass",
+        shot.can ? (act.picking ? "cursor-copy" : "cursor-zoom-in") : "cursor-default",
+        shot.mark && "ring-2 ring-brass ring-offset-2 ring-offset-canvas",
+        shot.off && "opacity-35",
+      )}
+    >
+      <Picture pic={shot.pic} code={code} small={small} mark={shot.mark} />
+    </button>
+  );
+}
+
 function PictureNode({ data }: NodeProps<PictureNodeType>) {
-  const { box, pic, dim, note, label } = data;
+  const { box, shot, act, dim, note, label } = data;
   return (
     <div style={{ width: box.box.w, height: box.box.h }} className={cn("relative transition-opacity duration-150", dim && "opacity-40")} aria-label={label}>
       <Hooks />
-      <Picture pic={pic} code={box.node ? nodeCode(box.node) : ""} small={box.kind === "halkort"} />
+      <ShotButton shot={shot} act={act} code={box.node ? nodeCode(box.node) : ""} small={box.kind === "halkort"} />
       {note ? <span className="pointer-events-none absolute -bottom-4 left-0 whitespace-nowrap text-[10.5px] leading-4 text-faint">{note}</span> : null}
     </div>
   );
 }
 
 function CardsNode({ data }: NodeProps<CardsNodeType>) {
-  const { box, pics, dim } = data;
+  const { box, shots, act, dim } = data;
   return (
     <div style={{ width: box.box.w, height: box.box.h }} className={cn("relative rounded-lg border border-line bg-surface/80 transition-opacity duration-150", dim && "opacity-40")}>
       <Hooks />
       {box.cards.map((c, k) => (
         <div key={c.card} className="absolute" style={{ left: c.box.x - box.box.x, top: c.box.y - box.box.y, width: c.box.w, height: c.box.h }}>
-          <Picture pic={pics[k]} code={nodeCode(c.card)} small />
+          <ShotButton shot={shots[k]} act={act} code={nodeCode(c.card)} small />
         </div>
       ))}
     </div>
@@ -123,7 +160,8 @@ function CardsNode({ data }: NodeProps<CardsNodeType>) {
 }
 
 // ── Lines ───────────────────────────────────────────────────────────────────
-type StepData = { line: TreeLine; step: ViewStep; active: boolean; hover: boolean; dim: boolean; onPick: (s: ViewStep) => void; onHover: (id: string | null) => void };
+/** marked: the step lies on the path being picked. */
+type StepData = { line: TreeLine; step: ViewStep; active: boolean; hover: boolean; marked: boolean; dim: boolean; onPick: (s: ViewStep) => void; onHover: (id: string | null) => void };
 type StepEdgeType = Edge<StepData, "step">;
 
 /** A step's chip: the verdict's dot where a film is, a waiting dot for a prov, an empty red ring where nothing is. */
@@ -156,9 +194,9 @@ function StepChip({ step, active, dim, onClick, onHover }: { step: ViewStep; act
 
 function StepEdge({ id, data }: EdgeProps<StepEdgeType>) {
   if (!data) return null;
-  const { line, step, active, hover, dim, onPick, onHover } = data;
+  const { line, step, active, hover, marked, dim, onPick, onHover } = data;
   const color = lineColor(step);
-  const lit = active || hover;
+  const lit = active || hover || marked;
   const opacity = dim ? 0.2 : 1;
   const dash = step.state === "finns" ? undefined : STEP_LINE[step.state].dash;
   return (
@@ -183,6 +221,9 @@ const nodeTypes = { picture: PictureNode, cards: CardsNode };
 const edgeTypes = { step: StepEdge, rail: RailEdge };
 
 // ── The canvas ──────────────────────────────────────────────────────────────
+/** The path being picked (Väg): each node's places in it (1, 2, …), the nodes it can go to next, its steps and last node. */
+export type PathMarks = { at: ReadonlyMap<string, number[]>; next: ReadonlySet<string>; steps: ReadonlySet<string>; last: string | null };
+
 export type TreeCanvasProps = {
   view: TreeView;
   layout: TreeLayout;
@@ -191,11 +232,15 @@ export type TreeCanvasProps = {
   active: string | null;
   hover: string | null;
   sheetOpen: boolean;
+  /** The path being picked; null: a click on a picture opens it large. */
+  path: PathMarks | null;
   onPick: (step: ViewStep) => void;
   onHover: (id: string | null) => void;
+  /** A picture clicked: its node (open it large, or add it to the path). */
+  onOpen: (node: string) => void;
 };
 
-export function TreeCanvas({ view, layout, media, active, hover, sheetOpen, onPick, onHover }: TreeCanvasProps) {
+export function TreeCanvas({ view, layout, media, active, hover, sheetOpen, path, onPick, onHover, onOpen }: TreeCanvasProps) {
   const width = useStore((s) => s.width);
   const height = useStore((s) => s.height);
   const { getViewport, setViewport } = useReactFlow();
@@ -231,6 +276,11 @@ export function TreeCanvas({ view, layout, media, active, hover, sheetOpen, onPi
       const n = view.nodes.find((x) => x.node === node) ?? null;
       return { node: n, entry: n?.entry ? (media.get(n.entry) ?? null) : null };
     };
+    const act: Act = { picking: !!path, onOpen };
+    const shot = (node: string): Shot => {
+      const p = pic(node), mark = path?.at.get(node) ?? null;
+      return path ? { node, pic: p, can: path.next.has(node), mark, off: !mark && !path.next.has(node) } : { node, pic: p, can: !!p.entry, mark: null, off: false };
+    };
     // The other anchors at the shoe say which steps they give (Casino: A2.2 gives A3P6C1).
     const gives = (node: string) => view.steps.filter((s) => s.via === node).map((s) => nodeCode(s.card ?? s.to));
     // The film the round opens with, by its name in Material (none while Material loads, never its id).
@@ -238,25 +288,28 @@ export function TreeCanvas({ view, layout, media, active, hover, sheetOpen, onPi
     return layout.boxes.map((b): Node => {
       const base = { id: b.id, position: { x: b.box.x, y: b.box.y }, width: b.box.w, height: b.box.h, draggable: false, selectable: false, connectable: false, focusable: false, deletable: false };
       const dim = !!active && !litNodes.has(b.id);
-      if (b.kind === "plats" || b.kind === "dealer") return { ...base, type: "cards", data: { box: b, pics: b.cards.map((c) => pic(c.card)), dim } } satisfies CardsNodeType;
+      if (b.kind === "plats" || b.kind === "dealer") return { ...base, type: "cards", data: { box: b, shots: b.cards.map((c) => shot(c.card)), act, dim } } satisfies CardsNodeType;
       const given = b.kind === "annan" ? gives(b.node!) : [];
       const note = b.kind === "annan" ? (given.length ? `ger ${given.join(", ")}` : "ger inget steg") : b.kind === "vila" && opening ? `början: ${opening}` : null;
-      return { ...base, type: "picture", data: { box: b, pic: pic(b.node!), dim, note, label: nodeCode(b.node!) } } satisfies PictureNodeType;
+      return { ...base, type: "picture", data: { box: b, shot: shot(b.node!), act, dim, note, label: nodeCode(b.node!) } } satisfies PictureNodeType;
     });
-  }, [layout, view, media, active, litNodes]);
+  }, [layout, view, media, active, litNodes, path, onOpen]);
 
   const edges = useMemo<Edge[]>(() => {
     const rails: RailEdgeType[] = layout.rails.map((rail) => ({ id: rail.id, source: view.hub, target: "P1", type: "rail", data: { rail }, selectable: false, focusable: false, deletable: false }));
+    // While a path is picked, the lines that are not its steps, nor a way on from its last node, fade.
+    const away = (step: ViewStep) => !!path?.last && !path.steps.has(step.id) && step.from !== path.last;
     const lines = layout.lines.flatMap((line): StepEdgeType[] => {
       const step = steps.get(line.id);
       if (!step) return [];
+      const marked = !!path?.steps.has(line.id);
       return [{
         id: line.id, source: line.nodes[0], target: line.nodes[line.nodes.length - 1], type: "step", selectable: false, focusable: false, deletable: false,
-        data: { line, step, active: active === line.id, hover: hover === line.id, dim: !!active && active !== line.id, onPick, onHover },
+        data: { line, step, active: active === line.id, hover: hover === line.id, marked, dim: active ? active !== line.id : away(step), onPick, onHover },
       }];
-    }).sort((a, b) => Number(a.id === lit) - Number(b.id === lit)); // the chosen step drawn last, over the others
+    }).sort((a, b) => Number(a.id === lit || !!a.data?.marked) - Number(b.id === lit || !!b.data?.marked)); // the chosen step and the path drawn last, over the others
     return [...rails, ...lines];
-  }, [layout, view.hub, steps, active, hover, lit, onPick, onHover]);
+  }, [layout, view.hub, steps, active, hover, lit, path, onPick, onHover]);
 
   return (
     <ReactFlow
@@ -297,7 +350,7 @@ export function TreeLegend({ className }: { className?: string }) {
       <span className="inline-flex items-center gap-1.5">{sample(STEP_LINE.prov.color, STEP_LINE.prov.dash)} prov</span>
       <span className="inline-flex items-center gap-1.5">{sample(STEP_LINE.saknas.color, STEP_LINE.saknas.dash)} saknas</span>
       <span aria-hidden className="h-3 w-px bg-line-strong" />
-      <span>Klicka ett steg</span>
+      <span>Klicka ett steg eller en bild</span>
     </div>
   );
 }

@@ -3,12 +3,14 @@
 // Karta: the dealer's node trees. A row of trees at the top (TreeRow: "Casino 22/36"), the chosen tree drawn with its
 // pictures and its 36 steps against his measure (TreeCanvas, from GET /api/trees), a step with a film opening its films
 // (EdgeSheet: its Primär and secondary films, "Gör primär" on his click) and a step without one opening what an order of it
-// has and lacks (StepOrder). What is chosen lives in the address (?trad=…&steg=…&kant=…&tagning=…), so a link opens a tree,
-// a step or a take; /primara/ leads here.
+// has and lacks (StepOrder). A click on a picture opens it large (StillViewer). Väg: he clicks pictures in order (A1, A2.3,
+// A3P4C1, A2.3; PathBar) and Spela plays the films of those steps back to back (PathPlayer, lib/tree-path.ts). What is chosen
+// lives in the address (?trad=…&steg=…&kant=…&tagning=…&vag=A1-A2.3-…), so a link opens a tree, a step, a take or a path;
+// /primara/ leads here.
 // Where the lab has no trees to give (the online copy; an older lab server until it is restarted) Karta draws the bank's own
 // map instead (BankKarta): every step of the bank with what the game plays on it, one film per seat.
 import { ReactFlowProvider, useReactFlow } from "@xyflow/react";
-import { ChevronRight, Scan, ZoomIn, ZoomOut } from "lucide-react";
+import { ChevronRight, Route, Scan, ZoomIn, ZoomOut } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { TARGETS, buildGraph } from "../../../src/clip-graph.ts";
@@ -21,16 +23,21 @@ import { getPlacements } from "@/lib/api";
 import { useBank } from "@/lib/bank";
 import { bankSummary, edgeInfo, isSecondary, primaryOf, type EdgeInfo, type Summary } from "@/lib/edge-stats";
 import { mapLayout, treeLayout, type PlanPoints } from "@/lib/map-layout";
+import type { EntryAnswer } from "@/lib/media";
 import { stepFilms, treeOrder, type Film } from "@/lib/primaries";
 import { takeName } from "@/lib/names";
+import { nextNodes, parsePath, pathClips, pathParts, pathText } from "@/lib/tree-path";
 import { primarCount } from "@/lib/verdict";
 import { EdgeSheet, type Around } from "./EdgeSheet";
 import { ExperimentTray } from "./ExperimentTray";
 import { Legend } from "./Legend";
 import { MapCanvas, useFitMap } from "./MapCanvas";
+import { PathBar, type PathPic } from "./PathBar";
+import { PathPlayer } from "./PathPlayer";
 import { REST_EDGE } from "./rest.ts";
 import { StepOrder } from "./StepOrder";
-import { TreeCanvas, TreeLegend } from "./TreeCanvas";
+import { StillViewer } from "./StillViewer";
+import { TreeCanvas, TreeLegend, type PathMarks } from "./TreeCanvas";
 import { TreeRow } from "./TreeRow";
 import { useMedia } from "./useOlder";
 import { firstTree, useTrees } from "./useTrees";
@@ -166,19 +173,95 @@ function TreeKarta({ answer }: { answer: TreeAnswer }) {
     (s: ViewStep) => set({ steg: s.id, kant: s.state === "finns" && graph?.edge[s.edge] ? s.edge : null, tagning: null }),
     [set, graph],
   );
-  const choose = useCallback((id: string) => set({ trad: id, steg: null, kant: null, tagning: null }), [set]);
+  const choose = useCallback((id: string) => set({ trad: id, steg: null, kant: null, tagning: null, vag: null }), [set]);
+
+  // The tree's pictures in its own order (A1, the anchors at the shoe, the cards), each once: what the large viewer walks.
+  const stills = useMemo(() => {
+    const seen = new Set<string>();
+    return view.nodes.flatMap((n) => {
+      const entry = n.entry ? media.get(n.entry) : undefined;
+      if (!entry || seen.has(entry.id)) return [];
+      seen.add(entry.id);
+      return [entry];
+    });
+  }, [view.nodes, media]);
+  const [still, setStill] = useState<number | null>(null);
+  const openStill = useCallback((entry: EntryAnswer) => {
+    const at = stills.findIndex((e) => e.id === entry.id);
+    if (at >= 0) setStill(at);
+  }, [stills]);
+  const pathPic = useCallback((node: string): PathPic => {
+    const n = view.nodes.find((x) => x.node === node);
+    return { entry: n?.entry ? (media.get(n.entry) ?? null) : null, code: n?.code ?? nodeCode(node) };
+  }, [view.nodes, media]);
+
+  // Väg: a path he clicks through the tree, picture by picture (?vag=A1-A2.3-A3P4C1-A2.3); Spela plays its steps' films back
+  // to back. Only a node the path can go to next is taken.
+  const [picking, setPicking] = useState(() => params.has("vag"));
+  const [playing, setPlaying] = useState(false);
+  const vag = params.get("vag");
+  const path = useMemo(() => parsePath(vag, view.nodes), [vag, view.nodes]);
+  const clips = useMemo(() => pathClips(view.steps, path), [view.steps, path]);
+  const next = useMemo(() => nextNodes(view.steps, path), [view.steps, path]);
+  const marks = useMemo<PathMarks | null>(() => {
+    if (!picking) return null;
+    const at = new Map<string, number[]>();
+    path.forEach((node, k) => at.set(node, [...(at.get(node) ?? []), k + 1]));
+    return { at, next, steps: new Set(clips.flatMap((c) => (c.step ? [c.step.id] : []))), last: path.at(-1) ?? null };
+  }, [picking, path, next, clips]);
+  const parts = useMemo(() => (playing && graph ? pathParts(graph, clips) : null), [playing, graph, clips]);
+  const setPath = useCallback((nodes: readonly string[]) => set({ vag: nodes.length ? pathText(nodes) : null }), [set]);
+  const leave = () => {
+    setPicking(false);
+    set({ vag: null });
+  };
+  const open = useCallback(
+    (node: string) => {
+      if (picking) {
+        if (next.has(node)) setPath([...path, node]);
+        return;
+      }
+      const n = view.nodes.find((x) => x.node === node);
+      const entry = n?.entry ? media.get(n.entry) : undefined;
+      if (entry) openStill(entry);
+    },
+    [picking, next, path, setPath, view.nodes, media, openStill],
+  );
+
+  const actions = (
+    <>
+      <Button variant={picking ? "primary" : "secondary"} icon={<Route />} aria-pressed={picking} onClick={() => (picking ? leave() : setPicking(true))} className="mr-2" title="Klicka bilderna i ordning och spela stegens filmer efter varandra">
+        Väg
+      </Button>
+      <ZoomActions fit={fit} />
+    </>
+  );
 
   return (
-    <Page title="Karta" full status={<TreeRow trees={answer.trees} chosen={view.tree.id} onChoose={choose} />} actions={<ZoomActions fit={fit} />}>
+    <Page title="Karta" full status={<TreeRow trees={answer.trees} chosen={view.tree.id} onChoose={choose} />} actions={actions}>
       <div className="absolute inset-0">
-        <TreeCanvas view={view} layout={layout} media={media} active={step?.id ?? null} hover={hover} sheetOpen={sheetOpen} onPick={pick} onHover={setHover} />
+        <TreeCanvas view={view} layout={layout} media={media} active={step?.id ?? null} hover={hover} sheetOpen={sheetOpen} path={marks} onPick={pick} onHover={setHover} onOpen={open} />
       </div>
-      <TreeLegend className="absolute bottom-3 left-3 z-10 max-w-[calc(100%-24px)] overflow-hidden" />
+      {picking ? (
+        <PathBar
+          className="absolute bottom-3 left-3 z-10 max-w-[calc(100%-24px)]"
+          path={path}
+          clips={clips}
+          pic={pathPic}
+          onUndo={() => setPath(path.slice(0, -1))}
+          onClear={() => setPath([])}
+          onPlay={() => setPlaying(true)}
+          onClose={leave}
+        />
+      ) : (
+        <TreeLegend className="absolute bottom-3 left-3 z-10 max-w-[calc(100%-24px)] overflow-hidden" />
+      )}
       <StepOrder
         view={view}
         step={films ? null : step}
         media={media}
         onClose={() => set({ steg: null })}
+        onOpen={openStill}
       />
       <EdgeSheet
         graph={graph}
@@ -193,6 +276,8 @@ function TreeKarta({ answer }: { answer: TreeAnswer }) {
         onPickTake={(id) => set({ tagning: id })}
         onPickEdge={(id) => set({ kant: id, tagning: null, steg: view.steps.find((s) => s.edge === id && s.state === "finns")?.id ?? null })}
       />
+      <StillViewer entries={stills} index={still} onIndex={setStill} />
+      <PathPlayer parts={parts} clips={clips} graph={graph} pic={pathPic} onClose={() => setPlaying(false)} />
     </Page>
   );
 }

@@ -40,7 +40,9 @@ export const GUIDE: readonly GuideView[] = [
       "Dealerns nodträd, ett i taget (till exempel Casino 22/36 och Tatuerad 0/36): bilderna för A1, trädets ankare vid skon " +
       "och varje kort, och de 36 stegen i Jakobs mått som linjer. Heldragen linje: steget har film; streckad: ett prov väntar " +
       "på dom; röd: steget saknas. Ett steg med film visar sin Primär och de andra tagningarna; ett saknat steg visar vad en " +
-      "beställning har och saknar, priset och kommandot som gör ett utkast.",
+      "beställning har och saknar, priset och kommandot som gör ett utkast. En klickad bild visas stor. Med Väg klickar man " +
+      "bilderna i ordning (till exempel A1, A2.3, A3P4C1, A2.3), och Spela spelar stegens filmer efter varandra: Primär där " +
+      "den finns, annars en godkänd; ett steg utan film visar sin bild en stund med ”film saknas”.",
   },
   {
     vy: "granska",

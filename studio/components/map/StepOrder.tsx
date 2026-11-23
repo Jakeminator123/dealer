@@ -1,6 +1,7 @@
 "use client";
 
-// The panel of a step of a tree that has no film (saknas) or one that waits (prov): its first and last picture side by side,
+// The panel of a step of a tree that has no film (saknas) or one that waits (prov): its first and last picture side by side
+// (a click opens one large),
 // what an order of it has and lacks (first and last picture, reference film, recipe) as the lab reads them
 // (tools/dealer-tree.ts orderFacts), and, unless the tree rests, the estimated price and the command that makes a draft of
 // it, with a copy button. The step's takes that did not hold lie in Granska, a link away. The panel only shows: it orders
@@ -19,13 +20,21 @@ import { coverOfEntry } from "../material/Tile";
 export const STEP_SHEET_W = 440;
 const STATE_LINE = { prov: "Prov: väntar på dom", saknas: "Saknas", finns: "Finns" } as const;
 
-function Still({ entry, code }: { entry: EntryAnswer | null; code: string }) {
+/** One of the step's two pictures; a click opens it large. */
+function Still({ entry, code, onOpen }: { entry: EntryAnswer | null; code: string; onOpen?: (entry: EntryAnswer) => void }) {
   const cover = entry ? coverOfEntry(entry) : null;
+  const box = cn("relative block aspect-[4/3] w-full overflow-hidden rounded-md", cover ? "border border-line-strong bg-well" : "border border-dashed border-line-strong");
   return (
     <figure className="flex min-w-0 flex-1 flex-col gap-1">
-      <div className={cn("relative aspect-[4/3] overflow-hidden rounded-md", cover ? "border border-line-strong bg-well" : "border border-dashed border-line-strong")}>
-        {cover ? <ProofStill cover={cover} fps={entry?.fps ?? 30} className="absolute inset-0" /> : <span className="absolute inset-0 grid place-items-center text-xs text-faint">ingen bild</span>}
-      </div>
+      {cover && entry && onOpen ? (
+        <button type="button" aria-label={`${code}: visa stort`} onClick={() => onOpen(entry)} className={cn(box, "cursor-zoom-in focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass")}>
+          <ProofStill cover={cover} fps={entry.fps ?? 30} className="absolute inset-0" />
+        </button>
+      ) : (
+        <div className={box}>
+          {cover ? <ProofStill cover={cover} fps={entry?.fps ?? 30} className="absolute inset-0" /> : <span className="absolute inset-0 grid place-items-center text-xs text-faint">ingen bild</span>}
+        </div>
+      )}
       <figcaption className="text-xs font-medium text-ink">{code}</figcaption>
     </figure>
   );
@@ -54,7 +63,7 @@ function Command({ text }: { text: string }) {
   );
 }
 
-export function StepOrder({ view, step, media, onClose }: { view: TreeView; step: ViewStep | null; media: ReadonlyMap<string, EntryAnswer>; onClose: () => void }) {
+export function StepOrder({ view, step, media, onClose, onOpen }: { view: TreeView; step: ViewStep | null; media: ReadonlyMap<string, EntryAnswer>; onClose: () => void; onOpen?: (entry: EntryAnswer) => void }) {
   const toast = useToast();
   const { graph } = useBank();
   const [copied, setCopied] = useState<string | null>(null);
@@ -83,9 +92,9 @@ export function StepOrder({ view, step, media, onClose }: { view: TreeView; step
       {shown && from && to ? (
         <div className="flex flex-col gap-5">
           <div className="flex items-center gap-2">
-            <Still entry={from.entry} code={from.code} />
+            <Still entry={from.entry} code={from.code} onOpen={onOpen} />
             <ArrowRight className="size-4 shrink-0 text-faint" aria-hidden />
-            <Still entry={to.entry} code={to.code} />
+            <Still entry={to.entry} code={to.code} onOpen={onOpen} />
           </div>
 
           {shown.state === "prov" ? (
