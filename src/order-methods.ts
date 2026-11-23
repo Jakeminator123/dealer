@@ -262,15 +262,16 @@ export const TWO_HAND_TURN = 'höger hand vänder kortet och lägger det';
  * method's recipe in one line, or "inget sätt är prövat än". Only what steers the film: the text style, the template and the
  * takes are left out (Jakob 2026-11-21: Bordet's text-heavy rows read as ugly to him; the order's page has them). `line`:
  * the model and the length the order gets where they are not the recipe's (a reference film's own length, an exception),
- * so that the row says what the order freezes.
+ * and `open` where the deal goes without a last picture (the seat has none yet, or he chose none: "bara given, utan
+ * slutbild"), so that the row says what the order freezes.
  */
-export function recipeWords(m: Method | null, target: string | null = null, line: { model?: string | null; seconds?: number | null } = {}): string {
+export function recipeWords(m: Method | null, target: string | null = null, line: { model?: string | null; seconds?: number | null; open?: boolean } = {}): string {
   if (!m || m.status === 'saknas' || !m.model) return NO_RECIPE;
   const step = stepOf(m.step), model = line.model ?? m.model, seconds = line.seconds ?? m.seconds;
   const turn = step?.grip === 'TWO_HANDS' ? TWO_HAND_TURN : m.turn && m.turn !== 'plan' ? FLIP_LABEL[m.turn].toLowerCase() : null;
   // Bara dit or tur och retur is a deal's: a return starts on the card and goes one way (its line says where).
   const deal = !!step?.card && step.start !== 'LAND';
-  const shape = !deal ? null : m.shape === 'ONE_WAY' ? (target ? `bara given, slutar på ${a3Name(target)}` : 'bara given') : m.shape === 'ROUND_TRIP' ? 'tur och retur' : null;
+  const shape = !deal ? null : m.shape === 'ONE_WAY' ? (line.open ? 'bara given, utan slutbild' : target ? `bara given, slutar på ${a3Name(target)}` : 'bara given') : m.shape === 'ROUND_TRIP' ? 'tur och retur' : null;
   const hand = m.hand === 'LH' ? 'utan handbyte' : m.hand === 'RH' ? 'höger hand hela vägen' : null;
   const last = m.lastPicture && m.lastPicture !== 'ankare' && m.shape !== 'ONE_WAY' ? LAST_PICTURE_LABEL[m.lastPicture] : null;
   return [MODELS[model]?.label ?? model, m.resolution, seconds ? `${seconds} s` : null, shape, hand, turn, last, m.reference === 'ingen' ? null : REFERENCE_LABEL[m.reference]].filter(Boolean).join(' · ');

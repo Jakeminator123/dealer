@@ -513,9 +513,12 @@ function orderFacts(f: Facts, view: Pick<TreeView, 'hub' | 'nodes'>, step: TreeS
     return base.ok ? {ok: true, what: `${nodeCode(node)} med ${nodeCode(card)} ritat (Beställ ritar det)`} : base;
   };
   const last = recipe?.lastPicture ?? (step.kind === 'giv' ? 'ritat-kort' : 'ankare');
+  // A deal to a seat with no picture yet is no need: it is ordered without a last picture (the store does the same), and
+  // the seat's picture is made from the film's last frame.
+  const seatEnd = (node: string): Need => pic(node) ? has(node) : {ok: true, what: `ingen, ${nodeCode(node)} görs efteråt ur filmens sista ruta`};
   const [first, end]: [Need, Need] =
     step.kind === 'halkort' ? [drawn('IDLE', 'D.C2'), drawn('IDLE', 'D.C2')]
-    : step.kind === 'giv' ? [has(step.from), last === 'platsens-slutbild' ? has(step.to) : drawn(step.from, step.to)]
+    : step.kind === 'giv' ? [has(step.from), last === 'platsens-slutbild' ? seatEnd(step.to) : drawn(step.from, step.to)]
     : [has(step.from), has(step.to)];
 
   // The reference film: the dummy's film of exactly this step (the last listed first, one that failed its check left out), or

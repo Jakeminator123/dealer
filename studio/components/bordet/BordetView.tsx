@@ -208,13 +208,6 @@ export function BordetView() {
   const listed = useMemo(() => new Set(wishes.map(wishKey)), [wishes]);
   const marked = useMemo(() => new Set(wishes.flatMap((w) => (w.target ? [w.target] : []))), [wishes]);
   const add = (w: FilmWish) => setWishes((was) => (was.some((x) => wishKey(x) === wishKey(w)) ? was : [...was, w]));
-  // The other way a row offers (a deal without its last picture): its choice is made on the row, and the film goes on the list.
-  const takeWay = (r: FilmRow) => {
-    const way = r.way;
-    if (!way) return;
-    setChoices((was) => ({ ...was, [r.key]: withPatch(was[r.key] ?? {}, way.choice) }));
-    add(r.wish);
-  };
 
   // Whether anything can be approved now (the mandate, the caps, the balance), in one line where films are ordered.
   const ordering = orders ? orderingState(orders) : null;
@@ -274,7 +267,6 @@ export function BordetView() {
       dealer={dealer}
       choice={choices[chosen.key] ?? {}}
       onChoice={(patch) => setChoices((was) => ({ ...was, [chosen.key]: patch ? withPatch(was[chosen.key] ?? {}, patch) : {} }))}
-      onWay={() => takeWay(chosen)}
       made={madeAnswer}
       all={orders}
       last={last}
@@ -347,7 +339,6 @@ export function BordetView() {
             methods={orders?.methods ?? null}
             sends={sendsPanel}
             onAdd={(r) => add(r.wish)}
-            onWay={takeWay}
             onRemove={(r) => setWishes((was) => was.filter((w) => wishKey(w) !== r.key))}
             onClear={() => {
               setWishes([]);
@@ -365,7 +356,7 @@ export function BordetView() {
 }
 
 function TableBody({
-  menu, step, setStep, place, setPlace, rows, cardRows, otherRows, listed, marked, chosenRow, setChosenRow, made, blocked, ordering, dealer, methods, sends, onAdd, onWay, onRemove, onClear, onCreate,
+  menu, step, setStep, place, setPlace, rows, cardRows, otherRows, listed, marked, chosenRow, setChosenRow, made, blocked, ordering, dealer, methods, sends, onAdd, onRemove, onClear, onCreate,
 }: {
   menu: ReactNode;
   step: StepId | null;
@@ -390,8 +381,6 @@ function TableBody({
   /** What goes to Runway for the chosen film (Sends.tsx), or null. */
   sends: ReactNode;
   onAdd: (r: FilmRow) => void;
-  /** Takes the other way a row offers (FilmRow.way) and puts the film on the list. */
-  onWay: (r: FilmRow) => void;
   onRemove: (r: FilmRow) => void;
   onClear: () => void;
   onCreate: () => void;
@@ -510,7 +499,7 @@ function TableBody({
                 {blocked ? <p className="text-sm text-[#f0b07a]">{blocked}</p> : null}
                 {cardRows.length ? (
                   <>
-                    <WishRows title={placeName(place)} rows={cardRows} listed={listed} made={made} chosen={chosenRow} onChoose={chooseRow} onAdd={onAdd} onWay={onWay} />
+                    <WishRows title={placeName(place)} rows={cardRows} listed={listed} made={made} chosen={chosenRow} onChoose={chooseRow} onAdd={onAdd} />
                     <p data-sum className="text-sm tabular-nums text-dim">
                       {placeCode(place)}: {sumWords(cardRows)}
                     </p>
@@ -528,7 +517,7 @@ function TableBody({
                     Övriga filmer <span className="text-xs text-dim">· {otherRows.length} filmer: ingångar, utgångar, vila{otherRows.some((r) => r.wish.step === "HALKORT") ? ", hålkortet" : ""}</span>
                   </summary>
                   <div className="mt-2">
-                    <WishRows title={null} rows={otherRows} listed={listed} made={made} chosen={chosenRow} onChoose={chooseRow} onAdd={onAdd} onWay={onWay} />
+                    <WishRows title={null} rows={otherRows} listed={listed} made={made} chosen={chosenRow} onChoose={chooseRow} onAdd={onAdd} />
                   </div>
                 </details>
                 {sends ? <div className="border-t border-line pt-4">{sends}</div> : <p className="text-xs text-faint">Välj en film: där står allt som skickas.</p>}

@@ -7,7 +7,7 @@ import { committedFiles, committedText } from './committed.ts';
 import { createHash } from 'node:crypto';
 import {
   archivedReferenceIds,
-  ALL_SEVEN, CARD_SCALES, cutFrameOf, cutFrameWords, endsOnOf, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, SHAPE_LABEL, MODELS, SEAT_TARGETS, STEPS, TEXT_STYLES, plannedDiffers, plannedOf, bodyLine, canonical, checkPolicy, costOf, crossesBody, cutIntoOf, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, groupBudget, handChoiceOf, handsOf, hashInput, isArchived, cutCheckKey, readCutChecks, landingMissing, landingOf, lengthFor, lengthOfReference, modelFor, modelsFor, paramsOf, priceOf, referenceCandidates, requestOf, scaleQuad, scaleWords, seatEndMissing, seatEndOf, seatEndWords, seatList, seatWords, shownOf, spentOn, stepOf, stepOfEdge, styleOf, stylesFor, summaryOf, takeStates, tidyMotion, validateOrder, verdictOf, waitWords,
+  ALL_SEVEN, CARD_SCALES, cutFrameOf, cutFrameWords, endsOnOf, FLIP_LABEL, HAND_LABEL, LANDS_LABEL, SHAPE_LABEL, MODELS, SEAT_TARGETS, STEPS, TEXT_STYLES, plannedDiffers, plannedOf, bodyLine, canonical, checkPolicy, costOf, crossesBody, cutIntoOf, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, groupBudget, handChoiceOf, handsOf, hashInput, isArchived, cutCheckKey, readCutChecks, landingMissing, landingOf, lengthFor, lengthOfReference, modelFor, modelsFor, paramsOf, priceOf, referenceCandidates, requestOf, scaleQuad, scaleWords, seatEndOf, seatEndWords, seatList, seatWords, shownOf, spentOn, stepOf, stepOfEdge, styleOf, stylesFor, summaryOf, takeStates, tidyMotion, validateOrder, verdictOf, waitWords,
   type BankFacts, type Order, type Policy, type Receipt,
 } from '../src/order-model.ts';
 import * as model from '../src/order-model.ts';
@@ -381,9 +381,6 @@ test('a deal bara dit ends on THAT seat\'s own end picture: its landing picture,
   assert.equal(seatEndWords(end(p4, pinch, 'P4.C1')), 'landningsbilden Plats 4, landning');
   assert.equal(seatEndWords(cut), 'ruta 108 ur paow-giv-2-1-p4-04-01, där returen börjar (Jakob: ”bra”)');
   assert.equal(seatEndWords(null), 'ingen slutbild');
-  assert.equal(seatEndMissing('Paow', 'P5.C1', '2.1'), 'Plats 5 har ingen slutbild för Paows giv från ankare 2.1: ingen landningsbild gäller för platsen, och banken har ingen egen film dit vars retur du har godkänt rakt. Gör en landningsbild för platsen gällande i Material, eller godkänn en retur från platsen i Granska.');
-  // Laid with the right hand (a handbyte, or from anchor 2.3): a landing picture for the left hand may hold, so the hand is said.
-  assert.equal(seatEndMissing('Paow', 'P4.C1', '2.1', 'RH'), 'Plats 4 har ingen slutbild för Paows giv från ankare 2.1 med höger hand vid kortet: ingen landningsbild för höger hand gäller för platsen, och banken har ingen egen film dit, lagd med höger hand, vars retur du har godkänt rakt. Gör en landningsbild för platsen med höger hand vid kortet gällande i Material, eller godkänn en sådan retur från platsen i Granska.');
 });
 
 test('a reference cannot send an archived segment through corrected copies, without archiving through the edit in reverse', () => {

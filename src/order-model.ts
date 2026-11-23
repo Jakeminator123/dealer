@@ -513,8 +513,9 @@ export function endsOnOf(pictures: readonly { goesAs: string; from?: { cut?: { c
  * Where a deal bara dit to a seat ends (Jakob 2026-11-18: a landing "bör rimligtvis tas bort helt, eller så bör vi skapa nya
  * bilder för respektive position"; the main agent's decision the same night): on THAT seat's own end picture. Its landing
  * picture where one holds for the seat (LANDNING), else the cut frame of the bank's own film from the same anchor to the
- * seat (SNITTRUTA, cutFrameOf); a seat with neither has none (null), and the deal cannot be ordered bara dit to it. One
- * seat's picture never stands in for another seat.
+ * seat (SNITTRUTA, cutFrameOf); a seat with neither has none (null), and the deal goes without a last picture (the store's
+ * default since 2026-11-23: the seat's A3 is made from the film's last frame). One seat's picture never stands in for
+ * another seat.
  */
 export type SeatEnd<E> = { kind: 'LANDNING'; entry: E; candidate?: boolean } | { kind: 'SNITTRUTA'; cut: CutFrame };
 /**
@@ -532,18 +533,8 @@ export function seatEndOf<E extends { id?: string; role: string; node?: string; 
   const cut = bank ? cutFrameOf(bank, want)[0] : null;
   return cut ? { kind: 'SNITTRUTA', cut } : null;
 }
-/**
- * Why a deal bara dit cannot be ordered to a seat without an end picture, and the two ways to get one, in Jakob's words.
- * Both are for the hand that lays the card (landingOf, cutFrameOf): laid with the right hand, the words say so, since a
- * landing picture for the left hand may well hold for the seat.
- */
-export const seatEndMissing = (dealerName: string, target: string | null | undefined, from: Anchor, lays: 'LH' | 'RH' = 'LH') =>
-  lays === 'RH'
-    ? `${cap(seatWords(target))} har ingen slutbild för ${genitive(dealerName)} giv från ankare ${from} med höger hand vid kortet: ingen landningsbild för höger hand gäller för platsen, och banken har ingen egen film dit, lagd med höger hand, vars retur du har godkänt rakt. Gör en landningsbild för platsen med höger hand vid kortet gällande i Material, eller godkänn en sådan retur från platsen i Granska.`
-    : `${cap(seatWords(target))} har ingen slutbild för ${genitive(dealerName)} giv från ankare ${from}: ingen landningsbild gäller för platsen, och banken har ingen egen film dit vars retur du har godkänt rakt. Gör en landningsbild för platsen gällande i Material, eller godkänn en retur från platsen i Granska.`;
 /** "landningsbilden Plats 4, landning" or "ruta 126 ur paow-giv-2-2-p4-01-01, där returen börjar": a seat's end picture in words. */
 export const seatEndWords = (end: SeatEnd<{ name?: string }> | null): string => (!end ? 'ingen slutbild' : end.kind === 'LANDNING' ? `landningsbilden${end.entry.name ? ` ${end.entry.name}` : ''}` : cutFrameWords(end.cut));
-const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 /** A take the bank has set aside for good (review.archived, written from Karta): never a reference film, never a last frame. */
 export const isArchived = (bank: Pick<BankFacts, 'motions'>, id: string): boolean => !!bank.motions?.[id]?.review?.archived;
 

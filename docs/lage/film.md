@@ -8,8 +8,8 @@ som gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompt
   resten) eller med kommandot `node tools/order-new.ts paow "A2.3 - A3P4C2"`, som gör samma utkast. Huvudagenten
   godkänner (`tools/order-approve.ts`) och en beställare lägger kön (`tools/order-clerk.md`). Texterna är mall 12.
 - Metoden som håller: en giv bara dit på Kling 4, 3 s, med första bild och 3D-banans dockfilm som referensfilm, i
-  UTDRAGEN takt (given över drygt 2 s, en obruten rörelse). Finns platsens A3 inte än beställs en tagning utan sista
-  bild (`--no-end`); efterarbetet mäter då kortet mot kortplanen.
+  UTDRAGEN takt (given över drygt 2 s, en obruten rörelse). Finns platsens A3 inte än går given utan sista bild, som
+  förval; efterarbetet mäter då kortet mot kortplanen.
 - Ett ankare heter alltid A och numret (A1, A2.3, A3P4C1), aldrig med en bokstav efter (Jakob 2026-11-21); bokstäverna
   i id:n är arbetsnamn: A2.3 är `paow-ankare-2-3-d` (blicken på kortet; givarna hittills börjar på `-c`), A2.2 `paow-ankare-2-2-blick-a`.
 - Trädet Tatuerad (vyn Karta, `/studio/karta/?dealer=paow&trad=tatuerad`) fylls från A2.3 och har 5 av 36 steg. I

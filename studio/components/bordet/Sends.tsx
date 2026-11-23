@@ -1,32 +1,33 @@
 "use client";
 
 // "Det här skickas" for one film of Bordet's step 3, in one glance (Jakob 2026-11-17: "Vad är det som skickas till Runway?"):
-// what is missing and what to do about it, or the other way the store takes the order (a deal without its last picture) with
-// its button; what has been tried with the recipe, in plain words; the reference film as a choice in sight, with the film or
-// without (it is never a condition: where the recipe's rule finds none the row says so and the film goes without one); the
-// text it gets word for word, and the recipe with his deliberate exceptions folded under it (open where a step has no
-// recipe, since the model and the length are chosen there).
+// what is missing and what to do about it, or what the film waits for (a return for its deal, said quietly: nothing is
+// wrong); what has been tried with the recipe, in plain words; the reference film as a choice in sight, with the film or
+// without, and the film itself played there (it is never a condition: where the recipe's rule finds none the row says so and
+// the film goes without one); the text it gets word for word, and the recipe with his deliberate exceptions folded under it
+// (open where a step has no recipe, since the model and the length are chosen there). A deal to a seat with no last picture
+// yet goes without one and says so on Slutbild: nothing is chosen for it.
 // Only what step 2 does not already steer is an exception here: the hand and the side are the plan's (step 2), never chosen
 // twice. A draft is made only from the list's Förhandsvisa. Once the draft is made the same panel shows the stored order
 // and the way to approve it in Kön. "Förra filmen", folded: where the film has been ordered before, the takes that came of it
 // (the protocol, lib/ledger.ts: the film, Jakob's verdict, the reviewer's score, the way to Granska), and nothing of the
 // order's own model or text beside this recipe.
-import { ExternalLink, Plus } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { CARD_SCALES, SHAPE_LABEL, STYLE_LABEL, TAKES_MAX, modelsFor, openEndWords, referenceCandidates, scaleWords, stepOf, stylesFor, type BankFacts, type RefCandidate } from "../../../src/order-model.ts";
+import { CARD_SCALES, SHAPE_LABEL, STYLE_LABEL, TAKES_MAX, a3Name, modelsFor, openEndWords, referenceCandidates, scaleWords, stepOf, stylesFor, type BankFacts, type RefCandidate } from "../../../src/order-model.ts";
 import { referenceName, referenceOwner, referenceRole, sentence, type FilmRow, type RowChoice } from "../../lib/bordet.ts";
 import { labUrl } from "../../lib/lab.ts";
 import { scoreWords, verdictWords, type LedgerRow } from "../../lib/ledger.ts";
 import { orderLine, picturesInOrder, storedParts, type OrderAnswer, type OrdersAnswer } from "../../lib/orders.ts";
 import { PictureCard, StatusChip } from "../order/Pictures";
 import { PromptText } from "../order/PromptText";
-import { Badge, Button, SegmentedControl, Select, TextArea, buttonClasses, cn } from "../ui";
+import { Badge, SegmentedControl, Select, TextArea, buttonClasses, cn } from "../ui";
 import { queueHref } from "./FilmList";
 
-/** The last-picture choice "Utan slutbild" (RowChoice.end null, the command's --no-end). */
+/** The last-picture choice "Utan slutbild" (RowChoice.end null, the command's --no-end): his exception where the seat has an end picture. */
 const NO_END = "utan-slutbild";
-/** The last-picture choice "Platsens egen (receptet)" (RowChoice.end undefined): a value of its own, since "" shows "Välj…". */
+/** The last-picture choice nothing is said for (RowChoice.end undefined): the seat's own, and none where it has none yet. A value of its own, since "" shows "Välj…". */
 const RECIPE_END = "receptets-slutbild";
 /** The reference film choice "Ingen" (RowChoice.reference null): a value of its own, since "" shows "Välj…". */
 const NO_REFERENCE = "ingen-referensfilm";
@@ -85,7 +86,7 @@ function Takes({ takes }: { takes: readonly LedgerRow[] }) {
 }
 
 export function RowSends({
-  row, names, bank, dealer, choice, onChoice, onWay, made, all, last,
+  row, names, bank, dealer, choice, onChoice, made, all, last,
 }: {
   row: FilmRow;
   names: Record<string, string>;
@@ -93,8 +94,6 @@ export function RowSends({
   dealer: string;
   choice: RowChoice;
   onChoice: (patch: RowChoice | null) => void;
-  /** Takes the other way the row offers (row.way): makes its choice and puts the film on the list. */
-  onWay: () => void;
   /** The draft made from the row, as the store answers it, or null. */
   made: OrderAnswer | null;
   all: OrdersAnswer | null;
@@ -126,18 +125,11 @@ export function RowSends({
           </button>
         ) : null}
       </div>
-      {row.orderable ? null : row.way ? (
-        <div data-way className="flex flex-col items-start gap-2 rounded-sm border border-line px-2.5 py-2">
-          <p className="text-sm text-ink">{row.way.words}</p>
-          <Button size="sm" variant="secondary" icon={<Plus />} onClick={onWay}>
-            {row.way.button}
-          </Button>
-        </div>
-      ) : row.why ? (
-        <p data-why className="rounded-sm bg-[#3a2a1a] px-2.5 py-1.5 text-sm text-[#f0b07a]">
+      {row.orderable || !row.why ? null : (
+        <p data-why data-waits={row.waits ? "1" : undefined} className={cn("rounded-sm px-2.5 py-1.5 text-sm", row.waits ? "border border-line text-dim" : "bg-[#3a2a1a] text-[#f0b07a]")}>
           {sentence(row.why)}
         </p>
-      ) : null}
+      )}
       {row.notes.map((note) => (
         <p key={note} data-note className="text-sm text-dim">
           {note}
@@ -215,12 +207,24 @@ export function RowSends({
               <Select size="sm" aria-label="Referensfilm" value={line.reference?.take ?? NO_REFERENCE} onChange={(v) => onChoice({ reference: v === NO_REFERENCE ? null : v })} options={[{ value: NO_REFERENCE, label: "Ingen" }, ...candidates.map((c) => ({ value: c.take, label: referenceName(c, names), hint: c.kind === "RENDERED" ? (c.doll ? `dockan ${c.doll}` : "dockan") : c.verdict === "GODKÄND" ? "godkänd" : c.verdict.toLowerCase() }))]} className="w-56" />
             </Row>
           ) : null}
+          {/* where the seat has an end picture, none is his exception; where it has none yet, none is what goes and nothing is chosen for it */}
           {deal && line.shape === "ONE_WAY" ? (
             <Row label="Slutbild">
-              <Select size="sm" aria-label="Slutbild" value={choice.end === null ? NO_END : (choice.end ?? RECIPE_END)} onChange={(v) => onChoice({ end: v === NO_END ? null : v === RECIPE_END ? undefined : v })} options={[{ value: RECIPE_END, label: "Platsens egen (receptet)" }, ...line.endChoices.map((e, i) => ({ value: e.id, label: e.name ?? `Kandidat ${i + 1}`, hint: "kandidat, undantag" })), { value: NO_END, label: "Utan slutbild", hint: "undantag" }]} className="w-56" />
+              <Select
+                size="sm"
+                aria-label="Slutbild"
+                value={choice.end ? choice.end : choice.end === null && line.ownEnd ? NO_END : RECIPE_END}
+                onChange={(v) => onChoice({ end: v === NO_END ? null : v === RECIPE_END ? undefined : v })}
+                options={[
+                  { value: RECIPE_END, label: line.ownEnd ? "Platsens egen (receptet)" : `Ingen, ${row.wish.target ? a3Name(row.wish.target) : "platsens bild"} görs efteråt` },
+                  ...line.endChoices.map((e, i) => ({ value: e.id, label: e.name ?? `Kandidat ${i + 1}`, hint: "kandidat, undantag" })),
+                  ...(line.ownEnd ? [{ value: NO_END, label: "Utan slutbild", hint: "undantag" }] : []),
+                ]}
+                className="w-56"
+              />
             </Row>
           ) : null}
-          {deal && line.shape === "ONE_WAY" && choice.end === null && row.wish.target ? <p className="text-xs text-dim">Undantag: {openEndWords(row.wish.target)}.</p> : null}
+          {line.open && row.wish.target ? <p data-open-end className="text-xs text-dim">{line.ownEnd ? "Undantag: " : ""}{sentence(openEndWords(row.wish.target))}</p> : null}
           {deal && line.shape === "ROUND_TRIP" ? (
             <Row label="Kortets storlek">
               <SegmentedControl size="sm" label="Kortets storlek i den här beställningen" value={choice.cardScale ?? 1} onChange={(f) => onChoice({ cardScale: f })} options={CARD_SCALES.map((f) => ({ value: f, label: scaleWords(f) }))} />

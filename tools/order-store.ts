@@ -16,8 +16,9 @@
 // first) and the film's length (the reference film's own, else the recipe's). What a draft says against its recipe is a
 // deliberate exception and is named in its notes; a step without a recipe has no default. The reference film is a choice of
 // the order, never a condition (2026-11-23): where the recipe's rule finds none the draft is made without one, and its notes
-// say so; a deal without a last picture and without a reference film is made too, and says that only the first picture and
-// the text tell where the card goes.
+// say so. Nor is a deal's last picture a condition: a deal to a seat with no end picture yet is made without one (its A3 is
+// made from the film's last frame), and one with no reference film either says that only the first picture and the text
+// tell where the card goes.
 // A deal's choices (which hand, handbyte, how the card lands and turns) come with the new draft and default to what the
 // plan says for the card; the last picture draws the card closed or open as chosen. "Alla sju" makes one draft per seat
 // sharing a group (createMany). A draft follows Jakob's choice in Material: when another anchor of the same role holds
@@ -44,7 +45,7 @@ import { mediaRoles } from './media-roles.ts';
 import { readMandateBudget } from './order-mandate.ts';
 import {
   ANCHOR_NODE, ANCHOR_ROLE, CARD_SCALES, EXTRA_LIMIT, MODELS, FILE_NAME, FLIP_AXES, FLIP_LABEL, STYLE_LABEL, ORDER_ID, RETURN_23_BLOCK, RETURN_23_TRIAL, SEAT_TARGETS, SHORT_TWO_HAND_TURN_HELP, TAKES_MAX, scaleWords, shortTwoHandTurnProblem,
-  LANDING_ROLE, bodyLine, canonical, checkPolicy, costOf, crossesBody, cutFrameOf, cutFrameWords, cutIntoOf, tidyMotion, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, hashInput, landingMissing, landingOf, a3Candidates, a3Name, openEndWords, archivedReferenceIds, isArchived, modelFor, modelsFor, paramsOf, plannedOf, readCutChecks, referenceCandidates, seatEndMissing, seatList, seatWords, secondsWords, shownOf, spentOn, stepOf, stylesFor, summaryOf, twoHandDealSideProblem, twoHandDraftProblem, twoHandMotion, validateOrder, waitingOf,
+  LANDING_ROLE, bodyLine, canonical, checkPolicy, costOf, crossesBody, cutFrameOf, cutFrameWords, cutIntoOf, tidyMotion, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, hashInput, landingMissing, landingOf, a3Candidates, a3Name, openEndWords, archivedReferenceIds, isArchived, modelFor, modelsFor, paramsOf, plannedOf, readCutChecks, referenceCandidates, seatList, seatWords, secondsWords, shownOf, spentOn, stepOf, stylesFor, summaryOf, twoHandDealSideProblem, twoHandDraftProblem, twoHandMotion, validateOrder, waitingOf,
   type Anchor, type BankFacts, type CutFrame, type Drawn, type FlipAxis, type Motion, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Policy, type PoseAnswer, type Receipt, type RefCandidate, type Reference, type RenderedReference, type SeatPlan, type Shape, type StepDef, type StepKey, type TextStyle, type Waits,
 } from '../src/order-model.ts';
 import { readMethods, recipeFor, recipeHands, referenceAbsent, referenceByRule, secondsOf, triedWords, type MethodRegister } from '../src/order-methods.ts';
@@ -121,10 +122,11 @@ export type NewOrder = {
   /**
    * A deal bara dit: the seat's A3 candidate (a landing picture for the seat and the laying hand that does not hold yet) named
    * as its last picture, a deliberate exception ("med kandidaten som sista bild") said in the draft's notes; absent: the seat's
-   * own end picture (the A3 that holds, else the cut frame). null: no last picture at all (the main agent's exception of
-   * 2026-11-21 for a seat with no A3 yet, tools/order-new.ts --no-end): the film ends where the model leaves the card, the
-   * reference film shows the way there, the text says no last frame (src/order-prompts.ts withoutLastFrame), and the seat's
-   * A3 is made afterwards from the delivered film's last frame (tools/landing-make.ts).
+   * own end picture (the A3 that holds, else the cut frame), and where the seat has neither yet, no last picture. null: no
+   * last picture although the seat has one (tools/order-new.ts --no-end). Without a last picture the film ends where the
+   * model leaves the card, the reference film shows the way there where one goes, the text says no last frame
+   * (src/order-prompts.ts withoutLastFrame), and the seat's A3 is made afterwards from the delivered film's last frame
+   * (tools/landing-make.ts).
    */
   end?: string | null;
   id?: string;
@@ -741,16 +743,16 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     const lays: 'LH' | 'RH' = handsIn({ hand, pass }).lays;
     const bank = step.kind === 'FILM' ? await readBank(watch) : null;
     // A deal bara dit ends on the seat's own end picture: its landing picture where one holds, else the cut frame of the
-    // bank's own film to the seat. A seat with neither says so.
+    // bank's own film to the seat. A seat with neither yet gets its deal without a last picture (`open`), which is also
+    // what the order can ask for where the seat has one (end: null): the seat's A3 is then made from the film's last frame.
     const oneWayDeal = deal && shape === 'ONE_WAY';
     // The seat's A3 for the hand that lays the card; or, as a named exception, an A3 candidate for that seat and hand.
     if (input.end !== undefined && ((input.end !== null && typeof input.end !== 'string') || !oneWayDeal)) throw new StoreError(400, 'Slutbilden väljs bara för en giv bara dit, som en A3-kandidat för platsen eller ingen alls.');
-    const open = oneWayDeal && input.end === null;
     const named = input.end ? a3Candidates(register.dealers[dealer.id]?.entries ?? [], target, lays).find((e) => e.id === input.end && isPicture(e)) ?? null : null;
     if (input.end && !named) throw new StoreError(400, `${input.end} är ingen A3-kandidat för ${seatWords(target)} med ${lays === 'RH' ? 'höger' : 'vänster'} hand vid kortet.`);
-    const seatLanding = named ?? (oneWayDeal && !open ? landingEntry(register, dealer.id, target, lays) : null);
-    const cuts = oneWayDeal && !open && !seatLanding ? cutFrameOf(bank!, { dealer: dealer.id, step, target, hand: lays }) : [];
-    if (oneWayDeal && !open && !seatLanding && !cuts.length) throw new StoreError(400, `${seatEndMissing(dealer.name, target, step.from, lays)}${lays === 'RH' && twoHands ? ` Från ankare 2.3 lägger höger hand kortet: platsen behöver sin A3 (${a3Name(target!)}) med höger hand vid kortet.` : ''}`);
+    const seatLanding = named ?? (oneWayDeal && input.end !== null ? landingEntry(register, dealer.id, target, lays) : null);
+    const cuts = oneWayDeal && input.end !== null && !seatLanding ? cutFrameOf(bank!, { dealer: dealer.id, step, target, hand: lays }) : [];
+    const open = oneWayDeal && !seatLanding && !cuts.length;
     if (input.reference !== undefined && input.reference !== null && typeof input.reference !== 'string') throw new StoreError(400, 'Referensfilmen ska vara en tagnings id.');
     const cardScale = input.cardScale ?? 1;
     if (!(CARD_SCALES as readonly unknown[]).includes(cardScale)) throw new StoreError(400, `Kortets storlek ska vara ${CARD_SCALES.map((f) => scaleWords(f)).join(', ')}.`);
@@ -1541,12 +1543,18 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     });
   }
 
-  /** A file of an order's folder, for the lab to hand out: only a picture or film directly in assets/orders/<id>/. */
+  /**
+   * A file for the lab to hand out: a picture or film directly in an order's folder (assets/orders/<id>/), or a film of the
+   * dummy's that data/rendered-references.json lists (assets/references/docka/<id>/source.mp4), which a row plays where the
+   * reference film is chosen, before a draft holds its own copy. Nothing else under assets/.
+   */
   async function servable(rel: string): Promise<string | null> {
     const m = /^assets\/orders\/([a-z0-9]+(?:-[a-z0-9]+)*)\/([a-z0-9][a-z0-9._-]*\.(?:png|jpg|mp4))$/.exec(rel);
-    if (!m) return null;
-    const file = path.join(root, 'assets', 'orders', m[1], m[2]);
-    try { if ((await realpath(file)) !== path.join(await realpath(path.join(root, 'assets', 'orders')), m[1], m[2])) return null; } catch { return null; }
+    const listed = m || !rel.startsWith('assets/references/docka/') ? null : (await readRendered()).find((r) => r.path === rel) ?? null;
+    const at = m ? { home: ['assets', 'orders'], folder: m[1], name: m[2] } : listed ? { home: ['assets', 'references', 'docka'], folder: listed.id, name: 'source.mp4' } : null;
+    if (!at) return null;
+    const file = path.join(root, ...at.home, at.folder, at.name);
+    try { if ((await realpath(file)) !== path.join(await realpath(path.join(root, ...at.home)), at.folder, at.name)) return null; } catch { return null; }
     return (await stat(file).then((s) => s.isFile(), () => false)) ? file : null;
   }
 

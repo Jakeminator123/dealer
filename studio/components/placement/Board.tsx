@@ -466,9 +466,10 @@ function ZoomControl({
   onGame: () => void;
   onClose: (() => void) | null;
 }) {
-  const word = "h-7 rounded-sm px-2 text-xs text-dim hover:bg-raised hover:text-ink aria-pressed:bg-brass/12 aria-pressed:text-brass-hi";
+  const word = "h-7 whitespace-nowrap rounded-sm px-2 text-xs text-dim hover:bg-raised hover:text-ink aria-pressed:bg-brass/12 aria-pressed:text-brass-hi";
+  // On a stage narrower than the row (a phone) the buttons wrap to a second line, so that none is cut off at the left edge.
   return (
-    <div data-zoom onPointerDown={(e) => e.stopPropagation()} onDoubleClick={(e) => e.stopPropagation()} className="absolute right-2.5 top-2.5 flex cursor-default items-center gap-0.5 rounded-md border border-line bg-surface/90 p-0.5 shadow-pop backdrop-blur-sm">
+    <div data-zoom onPointerDown={(e) => e.stopPropagation()} onDoubleClick={(e) => e.stopPropagation()} className="absolute right-2.5 top-2.5 flex max-w-[calc(100%-1.25rem)] cursor-default flex-wrap items-center justify-end gap-0.5 rounded-md border border-line bg-surface/90 p-0.5 shadow-pop backdrop-blur-sm">
       <IconButton label="Zooma ut" size="sm" icon={<Minus />} onClick={onOut} />
       <span data-zoom-scale className="min-w-12 text-center text-xs tabular-nums text-ink">
         {scaleWords(camera)}

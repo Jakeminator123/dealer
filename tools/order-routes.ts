@@ -13,6 +13,7 @@
 //   GET  /api/orders/pose/<step>        the pose figure a still would get (ANKARE-2.1, ANKARE-2.2), before a draft exists;
 //                                       ?anchor=<entry> brings its green to that anchor's
 //   GET  /assets/orders/<id>/<file>     a picture or film of an order, only from that folder
+//   GET  /assets/references/docka/<id>/source.mp4   a reference film of the dummy's, only one data/rendered-references.json lists
 //   PUT  /api/media/<id>/state          Godkänn / Underkänn of a picture in Material (If-Match on the register); the
 //                                       dealer's drafts then follow the anchor that holds (store.follow)
 //   GET  /api/production?dealer=<id>    the production list (tools/produce.ts): every step of the dealer's graph, its state
@@ -74,7 +75,7 @@ export function orderRoutes(options: { root: string; origin: string } & StoreOpt
 
   return async function handleOrders(req: IncomingMessage, res: ServerResponse, url: URL): Promise<boolean> {
     const p = url.pathname, method = req.method ?? 'GET';
-    if (p.startsWith('/assets/orders/')) {
+    if (p.startsWith('/assets/orders/') || p.startsWith('/assets/references/docka/')) {
       if (method !== 'GET' && method !== 'HEAD') { res.writeHead(405).end(); return true; }
       let rel: string;
       try { rel = decodeURIComponent(p.slice(1)); } catch { res.writeHead(400).end(); return true; }

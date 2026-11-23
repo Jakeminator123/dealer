@@ -2,11 +2,11 @@
 
 // Bordet's films to order (lib/bordet.ts). WishRows is step 3's list for the chosen card (its three films from one anchor:
 // the deal, the return to that anchor, the return to rest) and for the films without a card: one row per film in his
-// notation with its five marks (Första bild, Slutbild, Referensfilm, Text, Pris; ready or missing, the words written on the mark,
-// so the price stands on Pris) and "Lägg till" to put it on the list. A row never ends in a stop that says nothing: where
-// the store takes the order another way (a deal without its last picture) the row offers that way in one line with its
-// button, and where something truly cannot be sent it says what to do (Jakob 2026-11-23, docs/BESKED.md "Rensa bort regler
-// och låsningar som blockerar").
+// notation with its five marks (Första bild, Slutbild, Referensfilm, Text, Pris; ready, missing or waiting, the words written
+// on the mark, so the price stands on Pris) and "Lägg till" to put it on the list. A row never ends in a stop that says
+// nothing: where something cannot be sent it says what to do, and a row that only waits for another film (a return for its
+// deal) says that in a quiet line, not as a fault (Jakob 2026-11-23, docs/BESKED.md "Rensa bort regler och låsningar som
+// blockerar").
 // FilmStrip is that list, under the picture: the films chosen across cards, their cards ringed on the stage, the sum, and
 // "Förhandsvisa": the one way to a draft (the lab server's exact drafts, read before they are saved). A row says what has
 // been tried with its recipe in plain words, not a status. One line over the list says what never goes to Runway: the card
@@ -23,8 +23,9 @@ export type Made = Record<string, string>;
 export const queueHref = (order: string) => `/bordet/?lage=ko&order=${encodeURIComponent(order)}`;
 
 /**
- * A row's five marks as small chips: ready (✓) or missing (✗), the name and its few words written out on the chip
- * ("Slutbild A3P4C2", "Pris 64 krediter"), since a phone has no hover.
+ * A row's five marks as small chips: ready (✓), missing (✗) or waiting for another film (…, in a quiet tone: nothing is
+ * wrong), the name and its few words written out on the chip ("Slutbild A3P4C2", "Pris 64 krediter"), since a phone has
+ * no hover.
  */
 export function Marks({ marks }: { marks: readonly Mark[] }) {
   return (
@@ -34,10 +35,11 @@ export function Marks({ marks }: { marks: readonly Mark[] }) {
           key={m.name}
           data-mark={m.name}
           data-ready={m.ready ? "1" : "0"}
-          className={cn("inline-flex min-h-5 items-center gap-1 rounded-sm border px-1.5 py-px text-2xs", m.ready ? "border-godkand/30 bg-godkand/10 text-[#6cc595]" : "border-anmarkning/35 bg-anmarkning/10 text-[#f0b07a]")}
+          data-waits={m.waits ? "1" : undefined}
+          className={cn("inline-flex min-h-5 items-center gap-1 rounded-sm border px-1.5 py-px text-2xs", m.ready ? "border-godkand/30 bg-godkand/10 text-[#6cc595]" : m.waits ? "border-line bg-raised/50 text-dim" : "border-anmarkning/35 bg-anmarkning/10 text-[#f0b07a]")}
         >
-          <span aria-hidden>{m.ready ? "✓" : "✗"}</span>
-          <span className="sr-only">{m.ready ? "klar: " : "saknas: "}</span>
+          <span aria-hidden>{m.ready ? "✓" : m.waits ? "…" : "✗"}</span>
+          <span className="sr-only">{m.ready ? "klar: " : m.waits ? "väntar: " : "saknas: "}</span>
           <span>{m.name}</span>
           {m.words ? <span data-mark-words className="text-ink/80">{m.words}</span> : null}
         </li>
@@ -47,12 +49,11 @@ export function Marks({ marks }: { marks: readonly Mark[] }) {
 }
 
 /**
- * Step 3's rows: a film each, with its marks (the price among them) and the way onto the list: "Lägg till", or where
- * something is missing that the store can do without, that other way with its own button (`onWay` makes the row's choice
- * and puts the film on the list); else what is missing and what to do about it.
+ * Step 3's rows: a film each, with its marks (the price among them) and "Lägg till", the way onto the list; where the row
+ * is not ready, what is missing and what to do about it, or what it waits for.
  */
 export function WishRows({
-  title, rows, listed, made, chosen, onChoose, onAdd, onWay,
+  title, rows, listed, made, chosen, onChoose, onAdd,
 }: {
   title: string | null;
   rows: readonly FilmRow[];
@@ -61,7 +62,6 @@ export function WishRows({
   chosen: string | null;
   onChoose: (r: FilmRow) => void;
   onAdd: (r: FilmRow) => void;
-  onWay: (r: FilmRow) => void;
 }) {
   if (!rows.length) return null;
   return (
@@ -102,18 +102,11 @@ export function WishRows({
                 </span>
               </div>
               <Marks marks={r.marks} />
-              {draft || r.orderable ? null : r.way ? (
-                <div data-way className="flex flex-col items-start gap-1.5" onClick={(e) => e.stopPropagation()}>
-                  <p className="text-xs text-dim">{r.way.words}</p>
-                  <Button size="sm" variant="secondary" icon={<Plus />} onClick={() => onWay(r)}>
-                    {r.way.button}
-                  </Button>
-                </div>
-              ) : r.why ? (
-                <p data-why className="text-xs text-[#f0b07a]">
+              {draft || r.orderable || !r.why ? null : (
+                <p data-why data-waits={r.waits ? "1" : undefined} className={cn("text-xs", r.waits ? "text-dim" : "text-[#f0b07a]")}>
                   {sentence(r.why)}
                 </p>
-              ) : null}
+              )}
             </li>
           );
         })}
@@ -211,12 +204,8 @@ function Row({ row, on, made, onChoose, onRemove }: { row: FilmRow; on: boolean;
         </Link>
       ) : row.cost !== null ? (
         <span className="shrink-0 text-sm tabular-nums text-ink">{credits(row.cost)} krediter</span>
-      ) : row.way ? (
-        <span className="max-w-[40%] shrink-0 truncate text-xs text-dim" title={row.way.words}>
-          kan beställas utan slutbild: välj filmen
-        </span>
       ) : (
-        <span className="max-w-[40%] shrink-0 truncate text-xs text-[#f0b07a]" title={row.why ? sentence(row.why) : undefined}>
+        <span className={cn("max-w-[40%] shrink-0 truncate text-xs", row.waits ? "text-dim" : "text-[#f0b07a]")} title={row.why ? sentence(row.why) : undefined}>
           {row.why ? sentence(row.why) : "något saknas: välj filmen"}
         </span>
       )}

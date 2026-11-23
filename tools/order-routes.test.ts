@@ -391,11 +391,16 @@ test('drafts, changes and approval go through the routes with their guards', asy
   const noLanding = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'RETUR-2.1', target: 'P4.C1' } });
   assert.equal(noLanding.status, 400, 'a return needs a landing picture that holds');
   assert.match(noLanding.json.error, /Ingen landningsbild gäller för Paows plats 4\. En retur som egen film börjar på den/);
-  // A deal is bara dit by its recipe and ends on the seat's own end picture; here seat 4 has neither a landing picture nor a film of its own.
+  // A deal is bara dit by its recipe and ends on the seat's own end picture; here seat 4 has neither a landing picture nor a
+  // film of its own, so the deal is made without a last picture (changed 2026-11-23: a seat with no end picture yet stops
+  // no deal). Read as a preview: nothing is written.
   for (const body of [{ dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1' }, { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', shape: 'ONE_WAY' }]) {
-    const none = await call('POST', '/api/orders', { body });
-    assert.equal(none.status, 400);
-    assert.match(none.json.error, /^Plats 4 har ingen slutbild för Paows giv från ankare 2\.1: ingen landningsbild gäller för platsen, och banken har ingen egen film dit vars retur du har godkänt rakt\./);
+    const none = await call('POST', '/api/orders/preview', { body });
+    assert.equal(none.status, 200, none.json.error);
+    const open = none.json.orders[0];
+    assert.deepEqual(open.pictures.map((p: { goesAs: string }) => p.goesAs), ['startFrame'], 'the first picture and no last one');
+    assert.doesNotMatch(open.prompt.text, /last frame|last picture/i);
+    assert.ok(open.notes.some((n: string) => /utan sista bild: .*A3P4C1 görs efteråt ur filmens sista ruta/.test(n)), open.notes.join('\n'));
   }
   assert.match((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'ANKARE-2.1', style: 'MINIMAL' } })).json.error, /^En bild skrivs KORT\.$/);
   // The free addition: up to the limit it is kept whole; beyond it a new draft is refused as a change is, never cut.
@@ -727,10 +732,16 @@ test('a deal with no last picture (end: null): the reference film shows the way,
     schemaVersion: 1, films: [{ id, edge: 'READY-C>P4.C2', path: ref, sha256: sha(film), seconds: 3, lays: 'RH', check: null }],
   }));
   const input = { dealer: 'paow', step: 'GIV-2.3', target: 'P4.C2', side: 'FRONT' };
-  // Without the exception the seat has no end picture, as before.
-  const refused = await request('POST', '/api/orders/preview', { body: input });
-  assert.equal(refused.status, 400);
-  assert.match(refused.json.error, /har ingen slutbild/);
+  // Nothing said about the last picture: the seat has none yet, so the draft is made without one (changed 2026-11-23: a
+  // seat with no end picture yet stops no deal), the same draft as the one that asks for none.
+  const plain = await request('POST', '/api/orders/preview', { body: input });
+  assert.equal(plain.status, 200, plain.json.error);
+  const asked = await request('POST', '/api/orders/preview', { body: { ...input, end: null } });
+  assert.equal(asked.status, 200, asked.json.error);
+  const said = (o: { pictures: { goesAs: string }[]; prompt: { text: string }; notes: string[]; reference: { clips?: string[] } }) => [o.pictures.map((p) => p.goesAs), o.prompt.text, o.notes, o.reference.clips];
+  assert.deepEqual(said(plain.json.orders[0]), said(asked.json.orders[0]));
+  assert.deepEqual([plain.json.orders[0].pictures.map((p: { goesAs: string }) => p.goesAs), plain.json.orders[0].reference.clips], [['startFrame'], [id]]);
+  assert.doesNotMatch(plain.json.orders[0].prompt.text, /last frame|last picture/i);
   for (const template of [12, 13]) {
     const made = await call('POST', '/api/orders', { body: { ...input, end: null, reference: id, template } });
     assert.equal(made.status, 201, made.json.error);
@@ -1071,11 +1082,13 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   assert.deepEqual([far.json.order.reference.status, far.json.order.notes], ['INGEN', [recipeNote('giv-2.1-ytter'), 'Undantag från receptet: ingen referensfilm: dockan har ingen film till platsen som passar.']]);
   assert.doesNotMatch(far.json.order.prompt.text, /Video 1/);
   // A handbyte lays the card with the right hand, and a landing picture holds for one hand: seat 4's is for the left, so the
-  // seat has no end picture for it, and the refusal says the hand.
-  const pass = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', pass: true } });
-  assert.equal(pass.status, 400);
-  assert.equal(pass.json.error, 'Plats 4 har ingen slutbild för Paows giv från ankare 2.1 med höger hand vid kortet: ingen landningsbild för höger hand gäller för platsen, och banken har ingen egen film dit, lagd med höger hand, vars retur du har godkänt rakt. Gör en landningsbild för platsen med höger hand vid kortet gällande i Material, eller godkänn en sådan retur från platsen i Granska.');
-  // With one for the right hand the handbyte is ordered: the bank's one-hand deal is no reference film for it, so it goes
+  // seat has no end picture for it, and the deal is made without a last picture (changed 2026-11-23: a seat with no end
+  // picture yet stops no deal); the left hand's picture never stands in. Read as a preview: nothing is written.
+  const pass = await call('POST', '/api/orders/preview', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', pass: true } });
+  assert.equal(pass.status, 200, pass.json.error);
+  assert.deepEqual(pass.json.orders[0].pictures.map((p: { goesAs: string }) => p.goesAs), ['startFrame']);
+  assert.ok(pass.json.orders[0].notes.some((n: string) => /utan sista bild: .*A3P4C1 görs efteråt ur filmens sista ruta/.test(n)), pass.json.orders[0].notes.join('\n'));
+  // With one for the right hand the handbyte ends on it: the bank's one-hand deal is no reference film for it, so it goes
   // without one, and the notes say that and the hand.
   register.dealers.paow.entries.push({ id: 'paow-landning-p4-rh', role: 'landning', name: 'Plats 4, landning, höger hand', path: 'assets/anchors/paow-landning-p4/anchor.png', node: 'LAND(P4.C1)', card: 'P4.C1', hand: 'RH', state: 'gäller' });
   await writeFile(path.join(root, 'data/media-roles.json'), JSON.stringify(register, null, 2));
@@ -1230,11 +1243,14 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   assert.deepEqual(await readFile(correctedFrozenPath), correctedFrozenBytes, 'an already-approved copy stays frozen');
   await writeFile(bankFile, bankBefore);
 
-  // Where no cut frame holds as a picture, the draft is refused with what each lacks; and an archived take gives none.
+  // Where no cut frame holds as a picture, the draft is refused with what each lacks; and an archived take gives none, so
+  // the seat has no end picture and the deal is made without a last picture (changed 2026-11-23). Read as a preview.
   frames.of = async () => frame(40);
   assert.match((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1' } })).json.error, /^Plats 4 har ingen slutbild som håller: paow-giv-2-1-p4-04-01 ruta 108: kortet ligger 40 px från planens; paow-giv-2-1-p4-08-01 ruta 133: kortet ligger 40 px från planens\.$/);
   for (const clip of ['paow-giv-2-1-p4-04-01', 'paow-giv-2-1-p4-08-01']) await writeFile(path.join(root, `motions/${clip}-return.json`), JSON.stringify({ review: { ...straight, archived: { by: 'Jakob', at: '2026-11-18T00:00:00Z', where: 'Karta' } } }));
-  assert.match((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1' } })).json.error, /^Plats 4 har ingen slutbild för Paows giv från ankare 2\.1/);
+  const noCut = await call('POST', '/api/orders/preview', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1' } });
+  assert.equal(noCut.status, 200, noCut.json.error);
+  assert.deepEqual(noCut.json.orders[0].pictures.map((p: { goesAs: string }) => p.goesAs), ['startFrame'], 'an archived take is no last frame');
   // An archived take is no reference film either.
   await writeFile(path.join(root, 'motions/pamela-p4-c1-plan-deal-02.json'), JSON.stringify({ source: { frames: 120, fps: 30, sha256: sha(film) }, review: { ...straight, archived: { by: 'Jakob', where: 'Karta' } } }));
   const staleReference = await call('POST', `/api/orders/${f.id}/approve`, { match: line.json.revision });
@@ -1268,7 +1284,15 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   await writeFile(path.join(root, 'assets/references/docka/docka-giv-p4-4/source.mp4'), docka);
   await writeFile(path.join(root, 'data/rendered-references.json'), JSON.stringify({ schemaVersion: 1, about: 'test', films: [{ id: 'docka-giv-p4-4', edge: 'READY>P4.C1', path: 'assets/references/docka/docka-giv-p4-4/source.mp4', sha256: sha(docka), seconds: 3.967, fromDeal: 'pamela-p4-c1-plan-deal-02' }, { id: 'utanfor', edge: 'READY>P4.C1', path: 'assets/motions/x/source.mp4', sha256: sha(docka), seconds: 4 }] }));
   assert.deepEqual((await call('GET', '/api/orders')).json.rendered.map((x: { id: string }) => x.id), ['docka-giv-p4-4'], 'an entry outside the dummy\'s folder is left out');
-  const withDocka = await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1' } });
+  // The lab hands that film out, so that a row plays it where the reference film is chosen; and nothing else: no film the
+  // register does not list, no other file of a listed film's folder, nothing of the bank.
+  const played = await request('GET', '/assets/references/docka/docka-giv-p4-4/source.mp4');
+  assert.deepEqual([played.status, played.bytes], [200, docka]);
+  await mkdir(path.join(root, 'assets/references/docka/olistad'), { recursive: true });
+  await writeFile(path.join(root, 'assets/references/docka/olistad/source.mp4'), docka);
+  await writeFile(path.join(root, 'assets/references/docka/docka-giv-p4-4/other.mp4'), docka);
+  for (const bad of ['/assets/references/docka/olistad/source.mp4', '/assets/references/docka/docka-giv-p4-4/other.mp4', '/assets/references/docka/docka-giv-p4-4/..%2Folistad%2Fsource.mp4', '/assets/motions/x/source.mp4']) assert.equal((await request('GET', bad)).status, 404, bad);
+  const withDocka =await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1' } });
   assert.equal(withDocka.status, 201);
   const d = withDocka.json.order;
   assert.deepEqual([d.reference.clips, d.reference.dealer, d.reference.sha256, d.reference.seconds, d.generation.params.duration, d.reference.from.path], [['docka-giv-p4-4'], 'docka', sha(docka), 3.967, 4, 'assets/references/docka/docka-giv-p4-4/source.mp4']);

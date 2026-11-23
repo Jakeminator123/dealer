@@ -237,13 +237,15 @@ export function productionList(input: ProductionInput): Production {
       const anchors = new Set<AnchorKey>(def.start === 'LAND' ? [def.to ?? def.from] : [def.from, ...(def.to ? [def.to] : [])]);
       for (const a of anchors) if (!anchorHolding(entries, a)) needs.push(anchorWords(a));
       if (def.start === 'LAND' && !landingHolding(entries, at!.target)) needs.push(`landningsbild på ${cardWords(at!.target!)}`);
-      // A deal bara dit ends on the seat's own end picture: its landing picture, else the cut frame of the bank's film there.
-      if (def.card && def.start !== 'LAND' && shape === 'ONE_WAY' && !seatEndOf(entries, input.bank, { dealer: dealer.id, step: def, target: at!.target, hand: lays })) needs.push(`slutbild för ${cardWords(at!.target!)}${lays === 'RH' ? ' med höger hand vid kortet' : ''}`);
     } else if (edge.kind === 'ARRIVE' || edge.kind === 'LEAVE') {
       needs.push('en bild av bordet utan henne (ingen roll i Material än)');
       const standing = entries.some((e) => e.role === 'keystone' && e.state === 'gäller' && isStanding(e));
       if (!standing) needs.push('en stående bild av henne');
     }
+    // A deal bara dit ends on the seat's own end picture: its landing picture, else the cut frame of the bank's film there.
+    // Never a need (2026-11-23): to a seat with neither yet the deal is ordered without a last picture, as the store makes
+    // it (the seat's A3 is made from the film's last frame), and the row's words say so.
+    const open = !!def && def.card && def.start !== 'LAND' && shape === 'ONE_WAY' && !seatEndOf(entries, input.bank, { dealer: dealer.id, step: def, target: at!.target, hand: lays });
     // The reference film the recipe's rule finds for the step and the seat (the store takes the same one). Never a need
     // (2026-11-23): without one the step is ordered without a reference film, and the row's words say what was not there.
     let reference: string | null = null, absent: string | null = null;
@@ -267,14 +269,15 @@ export function productionList(input: ProductionInput): Production {
     else if (!method || method.status === 'saknas') state = 'INGEN_METOD';
     else if (needs.length) state = 'VÄNTAR';
     else state = method.status === 'gäller' ? 'KAN' : 'PROV';
+    const goesWithout = `${open ? ' · utan slutbild' : ''}${absent ? ` · utan referensfilm: ${absent}` : ''}`;
     const words =
       state === 'KLAR' ? `klar · ${v?.provisional ? verdictPhrase(v) : `${VERDICT_LABEL[have as Verdict].toLowerCase()}${v && !v.byJakob ? ' (granskaren)' : ''}`}${now.hub ? ` · ges via ${hubAnchor(now.hub)}: ${now.take!.id}` : ''}`
       : state === 'BESTÄLLD' && flying.some((f) => f.approved && f.delivered) ? 'levererad, efterarbetas och granskas'
       : state === 'MED_GIVEN' ? `kommer med given till ${cardWords(edge.target!)} (tur och retur)`
       : state === 'VÄNTAR' ? `väntar på ${needs.join(' och ')}`
       : state === 'INTE_BYGGD' ? `inte byggd: kräver ${needs.join(' och ') || 'en bild utan henne'}`
-      : state === 'PROV' ? `kan provas nu (metoden prövas)${absent ? ` · utan referensfilm: ${absent}` : ''}`
-      : `${ROW_STATE_LABEL[state]}${state === 'KAN' && absent ? ` · utan referensfilm: ${absent}` : ''}`;
+      : state === 'PROV' ? `kan provas nu (metoden prövas)${goesWithout}`
+      : `${ROW_STATE_LABEL[state]}${state === 'KAN' ? goesWithout : ''}`;
     // The picture Jakob recognises the step by: the anchor it is made around (a deal's start, the anchor an entry, a way
     // out or a return comes to, rest's own), with its card where the plan lays it. A still, never a film's frame: the
     // view loads no film for it.

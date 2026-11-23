@@ -234,7 +234,7 @@ test("Bordet's rows for a card with handbyte and one without say what the store'
     // The returns are listed too, and none of them is a dead end (changed 2026-11-23): a row that lacks something says what
     // to do, never only that it cannot be ordered.
     for (const r of [back, rest]) {
-      assert.ok(!r.orderable && r.body === null && r.cost === null && r.why && !r.way, `${r.key}: listed, something is missing`);
+      assert.ok(!r.orderable && r.body === null && r.cost === null && r.why, `${r.key}: listed, something is missing`);
       assert.doesNotMatch(`${r.why} ${r.recipe} ${r.tried} ${r.marks.map((m) => m.words).join(" ")}`, /kan inte beställas/, `${r.key}: what to do, not only a stop`);
       assert.doesNotMatch(recipeWords(methodFor(all.methods!, r.wish.step, card), card), /bara given|tur och retur/, `${r.key}: a return is no deal`);
       assert.equal((await call("POST", "/api/orders/preview", { dealer: "paow", step: r.wish.step, target: card })).status, 400, `${r.key}: the store asks for the same`);
@@ -291,11 +291,13 @@ test("Bordet's rows for a card with handbyte and one without say what the store'
       assert.match(deal.text!, /Video 1 shows only the movement, as a rough guide/);
       const written = (template: number, style: "KORT" | "MINIMAL" = "KORT") => motionLine("paow", card, intent, { methods: all.methods!.methods.map((m) => (m.id === "giv-2.3" ? { ...m, template, style } : m)) });
       for (const line of [written(12), written(13), written(14, "MINIMAL")]) assert.equal(line, "A2.3 · vänster hand drar ut, höger hand vänder kortet och lägger det · rörelsen följer dockfilmen");
-      // New in round two (2026-11-21): "Utan slutbild", what the command's --no-end makes, is a choice of the row, with the
-      // command's note; the row says the text and the price the store freezes for it.
+      // New in round two (2026-11-21): "Utan slutbild", what the command's --no-end makes, is a choice of the row where the
+      // seat has an end picture, with the command's note; the row says the text and the price the store freezes for it.
       const open = filmRow("paow", deal.wish, all.methods!, all.policy, { bank, entries: shown, plan: all.plan ?? null, dealers: all.dealers, marks: all.marks, choice: { end: null } });
       assert.ok(open.orderable, `${open.key}: ${open.why}`);
+      assert.ok(open.resolved.ownEnd && open.resolved.open, "the seat has its end picture, and he chose none");
       assert.equal(words(open).Slutbild, "ingen, A3P4C2 görs efteråt");
+      assert.match(open.recipe, /· bara given, utan slutbild ·/, "the recipe line names no picture that is not sent");
       assert.equal(open.body?.end, null);
       const openPreview = await call("POST", "/api/orders/preview", open.body);
       assert.equal(openPreview.status, 200, openPreview.json.error);
@@ -308,7 +310,7 @@ test("Bordet's rows for a card with handbyte and one without say what the store'
       // A paused dealer gets nothing new (data/dealers.json, his word): the same deal cannot be ordered for her, and says why.
       const pausedDealers = all.dealers?.map((d) => (d.id === "paow" ? { ...d, paused: "Jakob: inget nytt beställs" } : d));
       const paused = filmRow("paow", deal.wish, all.methods!, all.policy, { bank, entries: shown, plan: all.plan ?? null, dealers: pausedDealers, marks: all.marks });
-      assert.ok(!paused.orderable && paused.body === null && paused.cost === null && !paused.way, `${paused.key}: not orderable while paused`);
+      assert.ok(!paused.orderable && paused.body === null && paused.cost === null, `${paused.key}: not orderable while paused`);
       assert.match(paused.why ?? "", /^Paow är pausad: inget nytt beställs/);
       assert.equal(sumWords([paused]), "1 film · inte klar att beställa");
       // What the text says of the doll's film, for the choice in sight: a rough guide with template 14's short text.
@@ -327,42 +329,43 @@ test("Bordet's rows for a card with handbyte and one without say what the store'
       assert.match(deal.text!, /she moves like the dealer in video 1, with the same timing/, "template 12: the text says she follows the film, as the line does");
     }
   }
-  // No dead end where the store takes the order another way (2026-11-23). Seat 6 has no end picture and no film of the
-  // doll's here: the deal from A2.3 (the right hand lays the card) lacks its last picture, and the row offers it without
-  // one. Taken, that way is ordered: the row says that neither a last picture nor a reference film goes, and so does the
-  // store's draft, whose text names no last frame.
+  // A seat with no end picture yet stops no deal (Jakob 2026-11-23, docs/BESKED.md "Rensa bort regler och låsningar som
+  // blockerar"). Seat 6 has no end picture and no film of the doll's here: the deal from A2.3 (the right hand lays the
+  // card) is ready as it stands, with nothing chosen. The row says that neither a last picture nor a reference film goes,
+  // and the store makes the same draft from the line alone, whose text names no last frame.
   const far = rowOf({ step: "GIV-2.3", target: "P6.C1" });
-  assert.ok(!far.orderable && far.body === null, `${far.key}: its last picture is missing`);
-  assert.equal(words(far).Slutbild, "✗ A3P6C1 saknas (höger hand)");
-  assert.equal(words(far).Referensfilm, "går utan", "no film of the doll's to the seat: no stop, it goes without one");
-  assert.deepEqual(far.way?.choice, { end: null });
-  assert.equal(far.way?.button, "Lägg till utan slutbild");
-  assert.match(far.way!.words, /^A3P6C1 finns inte än \(höger hand vid kortet\)\. Filmen kan beställas utan slutbild/);
-  assert.match(far.why ?? "", /välj Utan slutbild under Receptet, eller gör en landningsbild gällande i Material$/, "also said as what to do");
-  assert.equal((await call("POST", "/api/orders/preview", { dealer: "paow", step: "GIV-2.3", target: "P6.C1" })).status, 400, "as it stands the store asks for the last picture too");
-  const taken = rowOf(far.wish, far.way!.choice);
-  assert.ok(taken.orderable && taken.why === null && taken.way === null, `${taken.key}: ${taken.why}`);
-  assert.deepEqual([words(taken).Slutbild, words(taken).Referensfilm], ["ingen, A3P6C1 görs efteråt", "går utan"]);
-  assert.deepEqual(taken.notes, [`Varken slutbild eller referensfilm går med (${referenceAbsent("renderad", { card: true })}): bara första bilden och texten säger vart kortet ska.`]);
-  const sent = await previewOf(taken);
-  assert.equal(sent.status, 200, `${taken.key}: ${sent.json.error}`);
+  assert.ok(far.orderable && far.why === null && !far.chosen, `${far.key}: ${far.why}`);
+  assert.ok(far.resolved.open && !far.resolved.ownEnd, "open because the seat has no end picture, not by a choice");
+  assert.deepEqual(far.body, { dealer: "paow", step: "GIV-2.3", target: "P6.C1" }, "the line and nothing else: no choice is sent");
+  assert.deepEqual([words(far).Slutbild, words(far).Referensfilm], ["ingen, A3P6C1 görs efteråt", "går utan"]);
+  assert.match(far.recipe, /· bara given, utan slutbild ·/);
+  assert.doesNotMatch(far.recipe, /slutar på/, "the recipe line names no picture that is not sent");
+  assert.deepEqual(far.notes, [`Varken slutbild eller referensfilm går med (${referenceAbsent("renderad", { card: true })}): bara första bilden och texten säger vart kortet ska.`]);
+  const sent = await previewOf(far);
+  assert.equal(sent.status, 200, `${far.key}: ${sent.json.error}`);
   const farOrder = sent.json.orders[0];
   assert.deepEqual(farOrder.pictures.map((p: { goesAs: string }) => p.goesAs).filter((g: string) => g !== "referenceImage"), ["startFrame"], "only the first picture goes");
   assert.equal(farOrder.reference.status, "INGEN");
+  assert.ok(farOrder.notes.join(" ").includes(openEndWords("P6.C1")), "the draft says that it goes without a last picture, and how the seat's A3 is made");
   assert.match(farOrder.notes.join(" "), /Varken sista bild eller referensfilm går med: bara första bilden och texten säger vart kortet ska \(plats 6\)\./);
   assert.match(farOrder.notes.join(" "), /ingen referensfilm: dockan har ingen film till platsen som passar/);
   assert.doesNotMatch(farOrder.prompt.text, /last frame|last picture|video 1/i);
-  assert.deepEqual([farOrder.prompt.text, farOrder.cost.total], [taken.text, taken.cost], "the text and the price are the row's");
-  // The return from that seat starts on a picture that is not there: a true stop, and the row says what to do about it.
-  const farBack = rowOf({ step: "RETUR-1", target: "P6.C1" }, { model: modelsFor(stepOf("RETUR-1")!).find((m) => !m.off && m.durations)!.id });
-  assert.match(farBack.why ?? "", /^returen börjar på A3P6C1, som inte finns än .*: beställ given dit först \(A3P6C1 görs ur dess sista ruta\), eller gör en landningsbild gällande i Material$/);
-  // A missing anchor is a true stop too: nothing can be sent without the first picture.
+  assert.deepEqual([farOrder.prompt.text, farOrder.cost.total], [far.text, far.cost], "the text and the price are the row's");
+  // The return from that seat starts in the last frame of the deal there: it waits for that deal, which is no fault of the
+  // row's. Said as waiting, in plain words, and the store asks for the same picture.
+  const backModel = modelsFor(stepOf("RETUR-1")!).find((m) => !m.off && m.durations)!;
+  const farBack = rowOf({ step: "RETUR-1", target: "P6.C1" }, { model: backModel.id, duration: backModel.durations![0] });
+  assert.ok(!farBack.orderable && farBack.body === null && farBack.waits, `${farBack.key}: waits for its deal`);
+  assert.equal(farBack.why, "väntar på A3P6C1: returen börjar i sista rutan av given dit, och A3P6C1 görs ur den");
+  assert.deepEqual(farBack.marks.filter((m) => m.waits).map((m) => [m.name, m.words]), [["Första bild", "väntar på A3P6C1"], ["Text", "väntar på bilderna"]]);
+  assert.match((await call("POST", "/api/orders/preview", { dealer: "paow", step: "RETUR-1", target: "P6.C1" })).json.error, /Ingen landningsbild gäller/);
+  // A missing anchor is a true stop: nothing can be sent without the first picture, and that is a fault, not a wait.
   const noAnchor = filmRow("paow", { step: "GIV-2.3", target: "P4.C2" }, all.methods!, all.policy, { bank, entries: shown.filter((e) => e.role !== "ankare-2.3"), plan: all.plan ?? null, dealers: all.dealers, marks: all.marks });
-  assert.ok(!noAnchor.orderable && !noAnchor.way);
+  assert.ok(!noAnchor.orderable && !noAnchor.waits);
   assert.equal(noAnchor.why, "ingen bild gäller för A2.3: gör en gällande i Material");
   // And a price outside the frame: no price, no order.
   const noPrice = filmRow("paow", { step: "GIV-2.3", target: "P4.C2" }, all.methods!, { ...all.policy, prices: [] }, { bank, entries: shown, plan: all.plan ?? null, dealers: all.dealers, marks: all.marks });
-  assert.ok(!noPrice.orderable && !noPrice.way);
+  assert.ok(!noPrice.orderable && !noPrice.waits);
   assert.match(noPrice.why ?? "", /^ramen \(data\/order-policy\.json\) har inget pris/);
 
   assert.equal(sumWords([]), "Inga filmer");

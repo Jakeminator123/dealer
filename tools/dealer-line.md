@@ -90,8 +90,9 @@ returen och utgången från 2.2 är dömda (`SEAT_HUB` i `src/game-director.ts`,
 **6. Platsens slutbild (landningsbild per plats, nod `LAND(<plats>)`).** En giv bara dit, som är receptet, slutar på
 platsens EGEN slutbild (`seatEndOf` i `src/order-model.ts`): platsens landningsbild där en gäller (roll `landning`, nod
 `LAND(<plats>)`, `card`, `gäller`), annars snittrutan ur dealerns egen film från samma ankare till platsen, där returen
-Jakob har godkänt rakt börjar (`cutFrameOf`) (V). En plats med ingetdera har ingen slutbild, och det sägs rakt ut i
-Bordets rad och i Materials station Landningar, som visar plats för plats. En plats bild står aldrig för en annan
+Jakob har godkänt rakt börjar (`cutFrameOf`) (V). En plats med ingetdera beställs utan slutbild, som förval i Bordet
+och i kommandot: filmen slutar där modellen lämnar kortet, och platsens A3 görs ur dess sista ruta
+(`tools/landing-make.ts`). Materials station Landningar visar plats för plats. En plats bild står aldrig för en annan
 plats. En snittruta håller bara om dess lagda kort ligger på planens kort (inom 5 bildpunkter, `checkCutFrame` i
 `src/cut-frame.ts`): `node tools/order-cut-frames.ts <dealer>` prövar varje snittruta mot filmerna och skriver svaren i
 `data/cut-frames.json`, som Material, Bordet och lagret läser, så att alla tre säger samma sak; kör det igen när planens
