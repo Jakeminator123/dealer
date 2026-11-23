@@ -8,7 +8,8 @@
 //   node tools/media-thin.ts --tom-korgen           deletes the trash days older than 14 days
 // Levels:
 //   säkert   what one rule decides alone: the films of a take with Jakob's OWN verdict Inte bra (never one given for him), that the
-//            game does not hold, that nothing else points to and that is older than three days (the record in motions/ stays, the
+//            game does not hold, that nothing else points to and that is older than three days (the film's posts leave the
+//            register with it, tools/register-store.ts: his verdict stays as one row in data/motions-removed.jsonl, and the
 //            folder gets RADERAD.txt); what can provably be made again from a kept file by a command (none today: see the report);
 //            byte-identical files under assets/ made one file with hard links (talets filer, V6, originals and references never share).
 //   förslag  never without his word: verdicts Inte bra that are not his own; loose films (half or not linked to a tree) not judged
@@ -29,6 +30,7 @@ import {copyFileSync, existsSync, linkSync, lstatSync, mkdirSync, readFileSync, 
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {checkedPath, hash} from './media-dedupe.ts';
+import {MOTIONS_TEXT, filmFiles, motionRegister, type Removal} from './register-store.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const DAY = 86_400_000, MIN_AGE_DAYS = 3, NOTE_DAYS = 14, TRASH_DAYS = 14, PLAN_HOURS = 24;
@@ -118,14 +120,14 @@ export type Plan = {schemaVersion: 1; about: string; made: string; trash: string
   notes: string[]};
 const mb = (bytes: number) => Math.round(bytes / 1e5) / 10;
 const GROUPS: {name: string; level: Level; title: string; rule: string}[] = [
-  {name: 'inte-bra-hans', level: 'säkert', title: 'Hans eget Inte bra', rule: 'Filmen till en tagning som Jakob själv dömt Inte bra (inte sekundär, inte given åt honom), som spelet inte har, som ingen annan post eller register pekar på och som är äldre än tre dygn; samma fil i dess egen beställningsmapp går med. Posten i motions/ står kvar och mappen får RADERAD.txt.'},
+  {name: 'inte-bra-hans', level: 'säkert', title: 'Hans eget Inte bra', rule: 'Filmen till en tagning som Jakob själv dömt Inte bra (inte sekundär, inte given åt honom), som spelet inte har, som ingen annan post eller register pekar på och som är äldre än tre dygn; samma fil i dess egen beställningsmapp går med. Filmens poster lämnar registret med filmen (hans dom står kvar som en rad i data/motions-removed.jsonl) och mappen får RADERAD.txt.'},
   {name: 'aterskapbart', level: 'säkert', title: 'Går att göra igen ur en bevarad fil', rule: 'Det ett register visar är gjort ur en bevarad fil med ett kommando, och där en körning har visat samma SHA-256.'},
   {name: 'dubbletter', level: 'säkert', title: 'Byteidentiska filer blir en fil', rule: 'Filer under assets/ med samma SHA-256 som inte redan delar fil görs till hårda länkar; båda namnen finns kvar. Talets filer, V6, original, referenser och noir-samlingen delar aldrig fil.'},
   {name: 'inte-bra-inte-hans', level: 'förslag', title: 'Inte bra, men inte hans dom', rule: 'Som hans eget Inte bra, men domen är given åt honom, en granskares, eller sekundär.'},
   {name: 'tal-aldre', level: 'förslag', title: 'Äldre talfilmer och munlappar', rule: 'En talfilm med ett lägre nummer än den som spelet har för samma replik, och munlappar som är ersatta eller som registret inte längre nämner. Talets mapp går helt (så att numret inte tas upp igen), bankens film får RADERAD.txt.'},
   {name: 'lost', level: 'förslag', title: 'Löst, inte dömt bra', rule: 'Halv- eller okopplade filmer (tools/dealer-tree.ts) som inte är dömda bra och som spelet inte har.'},
   {name: 'original-forkastade', level: 'förslag', title: 'Råleveranser till borttagna tagningar', rule: 'Runways egen leverans (source.mp4) i beställningsmappen till en tagning vars film går i en av grupperna ovan.'},
-  {name: 'bestallningar-utan-post', level: 'förslag', title: 'Leveranser som aldrig blev en post', rule: 'En beställd tagning som stannade före INFÖRD och som ingen post i motions/ har; bilderna och filmerna går, kvittona står kvar.'},
+  {name: 'bestallningar-utan-post', level: 'förslag', title: 'Leveranser som aldrig blev en post', rule: 'En beställd tagning som stannade före INFÖRD och som ingen post i registret har; bilderna och filmerna går, kvittona står kvar.'},
   {name: 'prov-utan-kort', level: 'förslag', title: 'Prov utan kort', rule: 'Prov i assets/proofs/ utan kort i Beslut, utan anteckning från honom de senaste 14 dygnen och som inget dokument eller utgåvan nämner.'},
   {name: 'efterarbete-kopior', level: 'förslag', title: 'Efterarbetets kopior', rule: 'after.mp4 vars after.json säger hur den gjordes ur leveransen; går att göra igen med kommandot, men ingen körning har ännu visat samma SHA-256.'},
 ];
@@ -146,7 +148,7 @@ export async function makePlan(repo = ROOT, now = Date.now()): Promise<{plan: Pl
   const names = new Map<string, string[]>(); for (const f of files.values()) names.set(f.key, [...(names.get(f.key) ?? []), f.path]);
   const report = await buildReport(), rows = report.rows as RowLike[];
   const {items} = audit(repo);
-  const records = new Map<string, Rec>(); for (const f of readdirSync(path.join(repo, 'motions')).filter(f => f.endsWith('.json'))) { const r = json<Rec>(`motions/${f}`); if (r) records.set(f.slice(0, -5), r); }
+  const records = motionRegister(repo).posts() as Map<string, Rec>, postOf = (id: string) => `${MOTIONS_TEXT}#${id}`; // the register's posts, and how one is named as a pointer
   const jobs = json<{jobs?: {id: string}[]; derived?: {id: string; clip?: string}[]; edits?: {id: string}[]}>('data/clip-jobs.json') ?? {};
   const clipOf = new Map((jobs.derived ?? []).filter(d => d.clip).map(d => [d.id, d.clip!]));
   const folderOf = (id: string) => clipOf.get(id) ?? id;
@@ -213,7 +215,7 @@ export async function makePlan(repo = ROOT, now = Date.now()): Promise<{plan: Pl
     const leaf = (v: unknown): void => { if (typeof v === 'string') { if (motionIds.has(v)) addRef(`assets/motions/${v}`, from); } else if (Array.isArray(v)) v.forEach(leaf); else if (v && typeof v === 'object') Object.values(v).forEach(leaf); };
     leaf(value);
   };
-  for (const [id, r] of records) scan(r, `motions/${id}.json`);
+  for (const [id, r] of records) scan(r, postOf(id));
   const perEntry: Record<string, (v: Record<string, unknown>) => [string, unknown][]> = {
     'clip-jobs.json': v => ['jobs', 'derived', 'edits'].flatMap(k => ((v[k] ?? []) as {id: string}[]).map(e => [e.id, e] as [string, unknown])),
     'speech-patches.json': v => ((v.patches ?? []) as {id: string}[]).map(e => [e.id, e] as [string, unknown]),
@@ -244,14 +246,14 @@ export async function makePlan(repo = ROOT, now = Date.now()): Promise<{plan: Pl
   const planned = new Set<string>();
   /** The guard's reason in a few words, so that skipped units add up by kind (plan.json keeps the examples). */
   const source = (w: string) => /^talfilmen \S+ spelas/.test(w) ? 'talfilm på begäran i bankens graf (buildGraph)' : /buildGraph/.test(w) ? 'bankens graf (buildGraph)'
-    : (/^(\S+\.(?:md|json|ts))/.exec(w)?.[1] ?? w).replace(/^(data\/orders|motions|evidence|placements)\/.*/, '$1/…').slice(0, 60);
+    : (/^(\S+\.(?:md|jsonl?|ts))/.exec(w)?.[1] ?? w).replace(/^(data\/orders|evidence|placements)\/.*/, '$1/…').slice(0, 60);
   const short = (s: string): string => {
     const twin = /^samma fil som \S+ \((.*)\)$/.exec(s); if (twin) return `delar fil med en skyddad fil: ${short(twin[1])}`;
     const use = /^(visas|spelas|referens): (.*)$/.exec(s); if (use) return `${use[1]}: ${source(use[2])}`;
     return s.replace(/^spelet har .*$/, 'spelet har den').replace(/^\S+ är dömd .*$/, 'dömd bra').replace(/^(roll i Material|kort i Beslut):.*$/, '$1').replace(/^utgåvan .*$/, 'utgåvan')
       .replace(/^beställningen .*$/, 'beställning under arbete').replace(/^munlapp i .*$/, 'munlapp i data/speech-patches.json').replace(/^V6, original eller referens \((.*)\)$/, (_, f: string) => `V6, original eller referens: ${source(f)}`).slice(0, 80);
   };
-  const outWord = (from: string) => `pekas ut av ${from.replace(/#.*$/, '').replace(/^assets\/([^/]+)\/.*$/, 'assets/$1/…').replace(/^(data\/orders|motions|evidence|placements)\/.*/, '$1/…')}`;
+  const outWord = (from: string) => `pekas ut av ${from.replace(/#.*$/, '').replace(/^assets\/([^/]+)\/.*$/, 'assets/$1/…').replace(/^(data\/orders|evidence|placements)\/.*/, '$1/…')}`;
   /** A unit enters its group only when every file passes the guard and nothing outside it points at it (out: who does);
    *  otherwise it is counted under why, the guard's reason first. */
   const take = (g: string, u: Unit, out: string[] = []): boolean => {
@@ -279,7 +281,7 @@ export async function makePlan(repo = ROOT, now = Date.now()): Promise<{plan: Pl
     const ids = new Set(own.map(r => r.id)), ownOrders = new Set(own.map(r => records.get(r.id)?.order?.id).filter(Boolean) as string[]);
     // Its own: its records and job entries, its speech folder, its order, and Material's entry for the film itself (role film);
     // any other entry of Material (a landing, a reference, a keystone made from it) points at it.
-    const isOwn = (from: string) => [...ids].some(id => from === `motions/${id}.json` || from === `data/clip-jobs.json#${id}` || dealersDirs.some(d => from.startsWith(`assets/speech/${d}/${id}/`)))
+    const isOwn = (from: string) => [...ids].some(id => from === postOf(id) || from === `data/clip-jobs.json#${id}` || dealersDirs.some(d => from.startsWith(`assets/speech/${d}/${id}/`)))
       || [...ownOrders].some(o => from === `data/orders/${o}.json` || from.startsWith(`assets/orders/${o}/`)) || roleFilm.get(from) === f;
     // A source film cut into takes has no verdict of its own: the takes cut from it decide.
     const judged = own.filter(r => !(r.kind === 'källfilm' && !r.judge));
@@ -307,7 +309,7 @@ export async function makePlan(repo = ROOT, now = Date.now()): Promise<{plan: Pl
       // The working folder goes only with its film: while the bank keeps the film, its record still names the folder.
       const film = videosIn(`assets/motions/${folderOf(name)}`);
       if (film.some(x => !planned.has(x.path))) { skip('tal-aldre', 'talets mapp går bara med filmen, som står kvar i banken', dir, all.reduce((n, x) => n + x.bytes, 0)); continue; }
-      const out = foreign(dir, from => from === `motions/${name}.json` || from === `data/clip-jobs.json#${name}` || from.startsWith(`assets/motions/${name}/`));
+      const out = foreign(dir, from => from === postOf(name) || from === `data/clip-jobs.json#${name}` || from.startsWith(`assets/motions/${name}/`));
       take('tal-aldre', {id: dir, reason: `talets mapp; ${name} är äldre än ${newer}, som spelet har`, marker: null, removeEmpty: dir, files: all.map(x => ({...x, action: 'flytta'}))}, out);
     }
     for (const sub of ['patches', 'patches-ersatta']) {
@@ -439,7 +441,7 @@ export function lasmig(p: Plan): string {
 
 // ── Carrying it out ─────────────────────────────────────────────────────────
 export type Done = {at: string; path: string; action: string; bytes: number; sha256: string; to: string};
-export type Receipt = {tool: string; started: string; plan: string; groups: string[]; trash: string; done: Done[]; skipped: {unit: string; reason: string}[]; markers: string[]; error: string | null};
+export type Receipt = {tool: string; started: string; plan: string; groups: string[]; trash: string; done: Done[]; skipped: {unit: string; reason: string}[]; markers: string[]; posts: string[]; error: string | null};
 /** Carries out named groups of a plan: every file is checked again (size, time, the guard, SHA-256) before it is touched; a unit
  *  with one file that does not hold is left whole. fresh: the units the plan made just now still has, by group. */
 export async function carryOut(p: Plan, groups: string[], o: {repo: string; trash: string; shield: Shield; fresh?: Map<string, Set<string>>; receiptDir: string; now?: number}): Promise<{receipt: string; result: Receipt}> {
@@ -451,7 +453,7 @@ export async function carryOut(p: Plan, groups: string[], o: {repo: string; tras
   const now = o.now ?? Date.now(), day = new Date(now).toISOString().slice(0, 10), bin = path.join(o.trash, day);
   mkdirSync(o.receiptDir, {recursive: true});
   const receipt = path.join(o.receiptDir, `${new Date(now).toISOString().replace(/[:.]/g, '-')}-gallra-${groups.join('+')}.json`);
-  const result: Receipt = {tool: 'tools/media-thin.ts', started: new Date(now).toISOString(), plan: p.made, groups, trash: bin, done: [], skipped: [], markers: [], error: null};
+  const result: Receipt = {tool: 'tools/media-thin.ts', started: new Date(now).toISOString(), plan: p.made, groups, trash: bin, done: [], skipped: [], markers: [], posts: [], error: null};
   const save = () => writeFileSync(receipt, JSON.stringify(result, null, 2) + '\n');
   save();
   try {
@@ -492,10 +494,18 @@ export async function carryOut(p: Plan, groups: string[], o: {repo: string; tras
         const d = {at: new Date().toISOString(), path: f.path, action: 'flyttad', bytes: f.bytes, sha256: sha, to: path.relative(o.trash, dest).replace(/\\/g, '/')};
         result.done.push(d); moved.push(d); save();
       }
+      // A film that is gone takes its posts out of the register with it (Jakob 2026-11-23: self-cleaning); his verdict stays as one row.
+      const film = moved.length ? /^assets\/motions\/([^/]+)$/.exec(u.marker ?? '')?.[1] : undefined;
+      let gone: Removal | null = null;
+      if (film) {
+        const register = motionRegister(o.repo), named = filmFiles(register.ofFilm(film).map(e => e.post));
+        if (named.length && !named.some(f => existsSync(path.join(o.repo, f)))) { gone = register.remove(film, {why: `gallrad ${day} av tools/media-thin.ts, gruppen ${g.name}: ${u.reason}`}); result.posts.push(...gone.removed); save(); }
+      }
+      const posts = gone?.removed.length ? `Filmens poster är borttagna ur registret: ${gone.removed.join(', ')}. De kan tas tillbaka ur Git (${MOTIONS_TEXT}).${gone.verdicts.length ? ' Jakobs dom står kvar som en rad i data/motions-removed.jsonl.' : ''}\n` : '';
       if (u.marker && moved.length) {
         const file = path.join(o.repo, u.marker, MARKER), had = existsSync(file) ? readFileSync(file, 'utf8') + '\n' : '';
         mkdirSync(path.dirname(file), {recursive: true});
-        writeFileSync(file, `${had}Raderad ${day} av tools/media-thin.ts, gruppen ${g.name} (${g.level}).\nSkäl: ${u.reason}\nFilerna ligger i papperskorgen ${bin.replace(/\\/g, '/')} i ${TRASH_DAYS} dygn:\n${moved.map(m => `- ${m.path} (${m.bytes} byte, sha256 ${m.sha256})`).join('\n')}\nPosten i registret står kvar.\n`);
+        writeFileSync(file, `${had}Raderad ${day} av tools/media-thin.ts, gruppen ${g.name} (${g.level}).\nSkäl: ${u.reason}\nFilerna ligger i papperskorgen ${bin.replace(/\\/g, '/')} i ${TRASH_DAYS} dygn:\n${moved.map(m => `- ${m.path} (${m.bytes} byte, sha256 ${m.sha256})`).join('\n')}\n${posts}`);
         result.markers.push(`${u.marker}/${MARKER}`); save();
       }
       if (u.removeEmpty) { const dir = path.join(o.repo, u.removeEmpty); const prune = (d: string) => { for (const e of readdirSync(d, {withFileTypes: true})) if (e.isDirectory()) prune(path.join(d, e.name)); if (!readdirSync(d).length) rmdirSync(d); }; if (existsSync(dir)) prune(dir); }

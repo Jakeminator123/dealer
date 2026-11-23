@@ -1,13 +1,13 @@
 // The chain from picture to played film, read from the registers as they stand when the test runs (data/media-roles.json,
-// data/dealers.json, data/clip-jobs.json, motions/, data/orders/): anchors, verdicts, the clip bank's graph and what the game
+// data/dealers.json, data/clip-jobs.json, the register of films and takes, data/orders/): anchors, verdicts, the clip bank's graph and what the game
 // plays from it. Each test holds something that is consistent today; a contradiction that still stands is no test here,
 // neither red nor todo: it is a line in docs/BRISTER.md. No media is needed: a film
 // counts as there when its record says it was made (as the lab server serves it where the file lies), and the checks that
 // need a file run only where assets/ is. Nothing reads placements/default.json: what is held does not depend on his plan.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync, existsSync, readdirSync} from 'node:fs';
-import path from 'node:path';
+import {readFileSync, existsSync} from 'node:fs';
+import {motionRegister} from './register-store.ts';
 import {
   OPTIONAL_TARGETS, REVEAL_EDGE, SEATS, TARGETS, bankEdges, buildGraph, dealHub, dealersOf, filmCard, hubOf, parseEdge, parseNode, pickIdle,
   resolveRound, returnFits, returnsOf, roundSequence, type BankData, type Graph, type MotionRecord, type Segment, type Take,
@@ -18,6 +18,7 @@ import {ANCHOR_NODE, ANCHOR_ROLE, cutFrameOf, referenceCandidates, stepOf} from 
 // ── The registers as the lab server reads them (tools/build-knowledge.ts localBank), without media ──
 const json = (rel: string) => JSON.parse(readFileSync(rel, 'utf8'));
 const maybe = (rel: string) => { try { return json(rel); } catch { return null; } };
+const posts = motionRegister(process.cwd()).posts() as Map<string, any>, post = (id: string) => posts.get(id) ?? null;
 const CLIP = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 function readBank(): BankData {
   const file = json('data/clip-jobs.json'), named = (list: unknown) => (Array.isArray(list) ? list : []).filter((x: any) => typeof x?.id === 'string' && CLIP.test(x.id));
@@ -26,12 +27,12 @@ function readBank(): BankData {
   // A film is there when its file lies in assets/ or its record says it was made (source.frames): the registers, not the disk.
   const film = (clip: string, record: MotionRecord | null) => existsSync(`assets/motions/${clip}/source.mp4`) || Number.isInteger(record?.source?.frames) ? `assets/motions/${clip}/source.mp4` : null;
   for (const t of derived as any[]) {
-    const own = maybe(`motions/${t.id}.json`), clip = maybe(`motions/${t.clip}.json`);
+    const own = post(t.id), clip = post(t.clip);
     motions[t.id] = {source: clip?.source, motion: own?.motion, review: own?.review};
     media[t.id] = {video: film(t.clip, clip ?? own)};
   }
   for (const j of [...jobs, ...edits] as any[]) {
-    const record = maybe(`motions/${j.id}.json`), receipt = maybe(`assets/motions/${j.id}/generation.json`);
+    const record = post(j.id), receipt = maybe(`assets/motions/${j.id}/generation.json`);
     if (record) motions[j.id] = {source: record.source, motion: record.motion, review: record.review};
     if (receipt) receipts[j.id] = {status: receipt.status, output: receipt.output ?? null};
     media[j.id] = {video: film(j.id, record)};
@@ -126,8 +127,8 @@ test('the game opens on a dealer of data/dealers.json who is not paused', async 
 
 // ── Verdicts: what is his, what is given for him, what is out of play ────────
 test('a Primär is his: no MAIN without his verdict, none given for him (provisional), none with his verdict and a provisional block at once', () => {
-  for (const f of readdirSync('motions').filter(x => x.endsWith('.json'))) {
-    const r = json(path.join('motions', f)).review ?? {}, id = f.slice(0, -5);
+  for (const [id, own] of posts) {
+    const r = own.review ?? {};
     if (r.acceptedAs === 'MAIN') assert.ok(r.userAccepted === true || typeof r.userReview === 'string', `${id} is Primär without his verdict`);
     if (r.provisional) assert.notEqual(r.acceptedAs, 'MAIN', `${id} is Primär by a provisional verdict`);
     if (r.provisional) assert.ok(r.userAccepted !== true && !r.userReview, `${id} carries both his verdict and one given for him`);

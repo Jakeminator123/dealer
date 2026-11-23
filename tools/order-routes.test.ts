@@ -14,6 +14,7 @@ import sharp from 'sharp';
 import { orderRoutes } from './order-routes.ts';
 import { defaultPlan } from '../src/placement-model.ts';
 import { orderStore, orderHash } from './order-store.ts';
+import { MOTIONS_TEXT, motionRegister } from './register-store.ts';
 import { promptFor } from '../src/order-prompts.ts';
 import { MODELS, requestOf, stepOf } from '../src/order-model.ts';
 import { referenceByRule, triedWords } from '../src/order-methods.ts';
@@ -23,6 +24,9 @@ import { replacedBy, allowed, isDecidable } from '../studio/components/material/
 
 const base = existsSync('D:/dealer-scratch/tmp') ? 'D:/dealer-scratch/tmp' : os.tmpdir();
 const sha = (b: Buffer) => createHash('sha256').update(b).digest('hex');
+/** A post of the fixture's register of films and takes (tools/register-store.ts), written whole with its id; its text file is postsFile. */
+const post = (root: string, id: string, value: Record<string, unknown>) => { motionRegister(root).put(id, { id, ...value }); };
+const postsFile = (root: string) => path.join(root, MOTIONS_TEXT);
 // The bank's frame: every picture of an order is in bank pixels.
 const picture = (r: number, g: number, b: number) => sharp({ create: { width: 1764, height: 1174, channels: 3, background: { r, g, b } } }).png().toBuffer();
 
@@ -989,13 +993,12 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   await writeFile(path.join(root, 'assets/anchors/paow-landning-p4/anchor.png'), landing);
   const film = Buffer.from('a film of four seconds');
   await mkdir(path.join(root, 'assets/motions/ada-p4-c1-plan-deal-02'), { recursive: true });
-  await mkdir(path.join(root, 'motions'), { recursive: true });
   await writeFile(path.join(root, 'assets/motions/ada-p4-c1-plan-deal-02/source.mp4'), film);
   const straight = { decision: 'ACCEPTED', userAccepted: true, userReview: 'Jakob 2026-11-11: Det ser bra ut.' };
   const jobs = [{ id: 'ada-p4-c1-plan-deal-02', from: 'READY', to: 'RELEASE(P4.C1)', duration: 4, dealer: 'ada' }, { id: 'ada-kort-01', from: 'READY', to: 'LAND(P4.C1)', duration: 2 }];
   await writeFile(path.join(root, 'data/clip-jobs.json'), JSON.stringify({ jobs }));
-  await writeFile(path.join(root, 'motions/ada-p4-c1-plan-deal-02.json'), JSON.stringify({ source: { frames: 120, fps: 30, sha256: sha(film) }, review: straight }));
-  await writeFile(path.join(root, 'motions/ada-kort-01.json'), JSON.stringify({ source: { frames: 60, fps: 30 } }));
+  post(root, 'ada-p4-c1-plan-deal-02', { source: { frames: 120, fps: 30, sha256: sha(film) }, review: straight });
+  post(root, 'ada-kort-01', { source: { frames: 60, fps: 30 } });
   if (!(await texture(root))) return t.skip(NO_TEXTURE);
 
   // A return has no method yet: nothing is defaulted, and the one who orders says the model and the length.
@@ -1113,8 +1116,8 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   const trip = (clip: string, cut: number) => [{ id: `${clip}-deal`, from: 'READY', to: 'P4.C1', clip, frames: [0, cut], dealer: 'paow' }, { id: `${clip}-return`, from: 'P4.C1', to: 'READY', clip, frames: [cut + 1, cut + 60], dealer: 'paow' }];
   await writeFile(path.join(root, 'data/clip-jobs.json'), JSON.stringify({ jobs, derived: [...trip('paow-giv-2-1-p4-04-01', 108), ...trip('paow-giv-2-1-p4-08-01', 133)] }));
   for (const clip of ['paow-giv-2-1-p4-04-01', 'paow-giv-2-1-p4-08-01']) {
-    await writeFile(path.join(root, `motions/${clip}.json`), JSON.stringify({ source: { frames: 169, fps: 24 } }));
-    await writeFile(path.join(root, `motions/${clip}-return.json`), JSON.stringify({ review: { ...straight, userReview: 'Jakob 2026-11-13: Bra retur.' }, motion: { releaseHand: 'LH' } }));
+    post(root, clip, { source: { frames: 169, fps: 24 } });
+    post(root, `${clip}-return`, { review: { ...straight, userReview: 'Jakob 2026-11-13: Bra retur.' }, motion: { releaseHand: 'LH' } });
   }
   const quad = (await call('GET', '/api/orders')).json.plan.seats['P4.C1'].quad as [number, number][];
   const box = [Math.round(Math.min(...quad.map((p) => p[0]))), Math.round(Math.min(...quad.map((p) => p[1]))), Math.round(Math.max(...quad.map((p) => p[0]))), Math.round(Math.max(...quad.map((p) => p[1])))];
@@ -1183,16 +1186,15 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   const frozenBytes = await readFile(frozenFile);
   const archive = { by: 'Jakob', at: '2026-11-18T00:00:00Z', where: 'Karta' };
   for (const id of [last.from.cut.ret, last.from.cut.clip, `${last.from.cut.clip}-deal`]) {
-    const file = path.join(root, `motions/${id}.json`);
-    const previous = await readFile(file).catch(() => null);
-    await writeFile(file, JSON.stringify({ ...(previous ? JSON.parse(previous.toString()) : {}), review: { ...straight, archived: archive } }));
+    const before = await readFile(postsFile(root));
+    post(root, id, { ...(motionRegister(root).get(id) ?? {}), review: { ...straight, archived: archive } });
     const blocked = await call('POST', `/api/orders/${c.id}/approve`, { match: cut.json.revision });
-    if (previous) await writeFile(file, previous); else await rm(file);
+    await writeFile(postsFile(root), before); // the register as it was: the layer follows its text
     assert.equal(blocked.status, 409, `cut-frame provenance ${id}`);
     assert.match(blocked.json.error, /snittrutan.*arkiverad/i);
   }
-  const cutSource = path.join(root, `motions/${last.from.cut.ret}.json`), cutSourceBefore = await readFile(cutSource);
-  await writeFile(cutSource, '{');
+  const cutSource = postsFile(root), cutSourceBefore = await readFile(cutSource);
+  await writeFile(cutSource, '{\n');
   const unreadableCut = await call('POST', `/api/orders/${c.id}/approve`, { match: cut.json.revision });
   assert.equal(unreadableCut.status, 409);
   assert.match(unreadableCut.json.error, /Arkivstatus.*snittrutan/i);
@@ -1205,7 +1207,7 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   const correctedFilm = Buffer.from('a corrected copy of the four-second film');
   await mkdir(path.dirname(correctedPath), {recursive: true});
   await writeFile(correctedPath, correctedFilm);
-  await writeFile(path.join(root, `motions/${correctedId}.json`), JSON.stringify({source: {frames: 120, fps: 30, sha256: sha(correctedFilm)}}));
+  post(root, correctedId, {source: {frames: 120, fps: 30, sha256: sha(correctedFilm)}});
   await writeFile(bankFile, JSON.stringify(bank));
   const correctedInput = {dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', reference: correctedId};
   const correctedBefore = await call('POST', '/api/orders', {body: correctedInput});
@@ -1218,7 +1220,7 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   assert.equal(pendingCorrection.status, 201, pendingCorrection.json.error);
   bank.derived.push({ id: referencePart, clip: f.reference.from.film, from: 'P4.C1', to: 'READY', frames: [80, 119], dealer: 'ada' });
   await writeFile(bankFile, JSON.stringify(bank));
-  await writeFile(path.join(root, `motions/${referencePart}.json`), JSON.stringify({ review: { archived: archive } }));
+  post(root, referencePart, { review: { archived: archive } });
   const stalePart = await call('POST', `/api/orders/${f.id}/approve`, { match: line.json.revision });
   assert.equal(stalePart.status, 409);
   assert.match(stalePart.json.error, /referensfilmen.*arkiverad/i);
@@ -1235,12 +1237,12 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   // the seat has no end picture and the deal is made without a last picture (changed 2026-11-23). Read as a preview.
   frames.of = async () => frame(40);
   assert.match((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1' } })).json.error, /^Plats 4 har ingen slutbild som håller: paow-giv-2-1-p4-04-01 ruta 108: kortet ligger 40 px från planens; paow-giv-2-1-p4-08-01 ruta 133: kortet ligger 40 px från planens\.$/);
-  for (const clip of ['paow-giv-2-1-p4-04-01', 'paow-giv-2-1-p4-08-01']) await writeFile(path.join(root, `motions/${clip}-return.json`), JSON.stringify({ review: { ...straight, archived: { by: 'Jakob', at: '2026-11-18T00:00:00Z', where: 'Karta' } } }));
+  for (const clip of ['paow-giv-2-1-p4-04-01', 'paow-giv-2-1-p4-08-01']) post(root, `${clip}-return`, { review: { ...straight, archived: { by: 'Jakob', at: '2026-11-18T00:00:00Z', where: 'Karta' } } });
   const noCut = await call('POST', '/api/orders/preview', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1' } });
   assert.equal(noCut.status, 200, noCut.json.error);
   assert.deepEqual(noCut.json.orders[0].pictures.map((p: { goesAs: string }) => p.goesAs), ['startFrame'], 'an archived take is no last frame');
   // An archived take is no reference film either.
-  await writeFile(path.join(root, 'motions/ada-p4-c1-plan-deal-02.json'), JSON.stringify({ source: { frames: 120, fps: 30, sha256: sha(film) }, review: { ...straight, archived: { by: 'Jakob', where: 'Karta' } } }));
+  post(root, 'ada-p4-c1-plan-deal-02', { source: { frames: 120, fps: 30, sha256: sha(film) }, review: { ...straight, archived: { by: 'Jakob', where: 'Karta' } } });
   const staleReference = await call('POST', `/api/orders/${f.id}/approve`, { match: line.json.revision });
   assert.equal(staleReference.status, 409, staleReference.json.error);
   assert.match(staleReference.json.error, /referensfilmen.*arkiverad/i);
@@ -1262,7 +1264,7 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   assert.deepEqual([unreferenced.json.order.reference.status, unreferenced.json.order.notes], ['INGEN', [recipeNote('giv-2.1-mitten'), 'Undantag från receptet: ingen referensfilm: varken dockan eller en rakt godkänd giv har en film till platsen som passar.']]);
   assert.match((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', reference: 'ada-p4-c1-plan-deal-02' } })).json.error, /finns inte bland bankens tagningar/);
   // A changed film in the bank is not copied.
-  await writeFile(path.join(root, 'motions/ada-p4-c1-plan-deal-02.json'), JSON.stringify({ source: { frames: 120, fps: 30, sha256: sha(film) }, review: straight }));
+  post(root, 'ada-p4-c1-plan-deal-02', { source: { frames: 120, fps: 30, sha256: sha(film) }, review: straight });
   await writeFile(path.join(root, 'assets/motions/ada-p4-c1-plan-deal-02/source.mp4'), 'another film');
   assert.equal((await call('POST', '/api/orders', { body: { dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1' } })).status, 409);
 
@@ -1285,7 +1287,7 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   const d = withDocka.json.order;
   assert.deepEqual([d.reference.clips, d.reference.dealer, d.reference.sha256, d.reference.seconds, d.generation.params.duration, d.reference.from.path], [['docka-giv-p4-4'], 'docka', sha(docka), 3.967, 4, 'assets/references/docka/docka-giv-p4-4/source.mp4']);
   assert.equal((await call('GET', `/${d.reference.path}`)).bytes!.equals(docka), true);
-  await writeFile(path.join(root, 'motions/ada-p4-c1-plan-deal-02.json'), JSON.stringify({ review: { archived: archive } }));
+  post(root, 'ada-p4-c1-plan-deal-02', { review: { archived: archive } });
   const approvedDocka = await call('POST', `/api/orders/${d.id}/approve`, { match: withDocka.json.revision });
   assert.equal(approvedDocka.status, 200, approvedDocka.json.error);
 });
@@ -1303,33 +1305,31 @@ test('corrected full films inherit archived originals and unreadable provenance 
     {id: `${clip}-return`, clip, from: 'P4.C1', to: 'READY', frames: [80, 119], ...(clip === fixed ? {editOf: `${parent}-return`} : {})},
   ]);
   const registry = path.join(root, 'data/clip-jobs.json'), registryData = JSON.stringify({jobs: [], derived});
-  const motion = (id: string) => path.join(root, `motions/${id}.json`);
-  await mkdir(path.join(root, 'motions'));
   await writeFile(registry, registryData);
   for (const clip of [parent, fixed]) {
     const asset = path.join(root, `assets/motions/${clip}/source.mp4`);
     await mkdir(path.dirname(asset), {recursive: true});
     await writeFile(asset, film);
-    await writeFile(motion(clip), JSON.stringify({source: {frames: 120, fps: 30, sha256: sha(film)}}));
+    post(root, clip, {source: {frames: 120, fps: 30, sha256: sha(film)}});
   }
+  const posts = postsFile(root), bare = await readFile(posts); // the register with the two films and no verdict
   const input = (reference: string) => ({dealer: 'paow', step: 'GIV-2.1', target: 'P4.C1', reference});
   const preview = (reference: string) => request('POST', '/api/orders/preview', {body: input(reference)});
-  const archive = JSON.stringify({review: {archived: {by: 'Jakob', where: 'Karta'}}});
-  const fixedReturn = motion(`${fixed}-return`), originalReturn = motion(`${parent}-return`);
-  await writeFile(fixedReturn, archive);
+  const archive = {review: {archived: {by: 'Jakob', where: 'Karta'}}};
+  post(root, `${fixed}-return`, archive);
   assert.equal((await preview(parent)).status, 200, 'archiving a corrected copy does not block the original');
-  await rm(fixedReturn);
+  await writeFile(posts, bare);
   const pending = await call('POST', '/api/orders', {body: input(`${fixed}-deal`)});
   assert.equal(pending.status, 201, pending.json.error);
   const address = `/api/orders/${pending.json.order.id}`;
   const approve = () => call('POST', `${address}/approve`, {match: pending.json.revision});
 
-  await writeFile(originalReturn, archive);
+  post(root, `${parent}-return`, archive);
   const blocked = await approve();
   assert.equal(blocked.status, 409, blocked.json.error);
   assert.match(blocked.json.error, /referensfilmen.*arkiverad/i);
   for (const reference of [fixed, `${fixed}-deal`]) assert.equal((await preview(reference)).status, 400, reference);
-  await rm(originalReturn);
+  await writeFile(posts, bare);
 
   for (const invalid of ['{', 'null', '{"jobs": [], "derived": "unreadable"}']) {
     await writeFile(registry, invalid);
@@ -1342,19 +1342,19 @@ test('corrected full films inherit archived originals and unreadable provenance 
   assert.equal(missingRegistry.status, 409);
   assert.match(missingRegistry.json.error, /Arkivstatus.*clip-jobs\.json/i);
   await writeFile(registry, registryData);
-  await writeFile(originalReturn, '{');
+  await writeFile(posts, '{\n');
   const invalidMotion = await approve();
   assert.equal(invalidMotion.status, 409);
   assert.match(invalidMotion.json.error, /Arkivstatus.*referensfilmen/i);
-  await rm(originalReturn);
-  await mkdir(originalReturn);
+  await rm(posts);
+  await mkdir(posts);
   const unreadableMotion = await approve();
   assert.equal(unreadableMotion.status, 409);
   assert.match(unreadableMotion.json.error, /Arkivstatus.*referensfilmen/i);
-  await rmdir(originalReturn);
-  // Missing records can mean there has never been a review. An unrelated unreadable record is not the draft's source.
+  await rmdir(posts);
+  // A missing post can mean there has never been a review: with the register readable again, and no post for the takes, it is approved.
+  await writeFile(posts, bare);
   await writeFile(registry, JSON.stringify({jobs: [{id: 'unrelated', from: 'IDLE', to: 'READY'}], derived}));
-  await writeFile(motion('unrelated'), '{');
   const accepted = await approve();
   assert.equal(accepted.status, 200, accepted.json.error);
 });

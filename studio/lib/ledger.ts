@@ -3,7 +3,7 @@
 // the exact text and its template, the deal's choices, the pictures, a reference film, the cost). What happened to the
 // take: assets/orders/<id>/receipt.json (tools/order-put.ts; the independent reviewer's verdict is the note of the step
 // GRANSKAD, "Oberoende granskare: given 2,5/5 …", or the one kept beside the take by order-put's review, the newer of the
-// two). Jakob's verdict: the clip bank's records motions/<id>.json of the takes
+// two). Jakob's verdict: the clip bank's posts (the register, tools/register-store.ts) of the takes
 // tools/register-order.ts brought in (each names its order and take), and for a still the state of the picture in
 // data/media-roles.json whose receipt came from the take. Then a summary per method: how many takes, the reviewer's mean,
 // and how many Jakob accepted, kept as a variant, rejected or has not judged; always with the count, two takes are little.
@@ -31,7 +31,7 @@ export type LedgerInput = {
   orders: unknown[];
   /** Receipt per order id, null where there is none. */
   receipts: Record<string, unknown>;
-  /** The clip bank's records by id (motions/<id>.json); only those that name an order are used. */
+  /** The clip bank's posts by id (the register); only those that name an order are used. */
   records: Record<string, unknown>;
   stills?: StillInput[];
   /** Whose each clip is (src/clip-graph.ts dealersOf), for a reference film. */

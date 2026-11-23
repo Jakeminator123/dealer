@@ -74,7 +74,7 @@ test('every file but the user card plan counts as open: studio, registers and do
   assert.deepEqual(dirtyTestInputs(['src/sound.ts','package-lock.json','placements/default.json']),['src/sound.ts','package-lock.json']);
   const studio=['studio/app/page.tsx','studio/package.json','studio/lib/api.ts','src/studio/x.ts'];
   assert.deepEqual(dirtyTestInputs(studio),studio);
-  const inputs=['data/order-methods.json','data/orders/new-draft.json','motions/example.json','tools/texts/prompt.txt','.gitignore'];
+  const inputs=['data/order-methods.json','data/orders/new-draft.json','data/motions.jsonl','tools/texts/prompt.txt','.gitignore'];
   assert.deepEqual(dirtyTestInputs(inputs),inputs);
 });
 

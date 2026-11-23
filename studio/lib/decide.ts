@@ -19,7 +19,7 @@ export type Decided = { lowered: string[]; failed: string[] };
  * among them): then nothing else has been written.
  */
 export async function decide(take: Take, decision: Decision, note: string, graph: Graph | null, put: Put): Promise<Decided> {
-  if (!take.revision) throw new Error("Tagningen har ingen post i motions/ ännu, så beslutet kan inte sparas.");
+  if (!take.revision) throw new Error("Tagningen har ingen post i registret ännu, så beslutet kan inte sparas.");
   if (decision === "MAIN" && take.archived) throw new Error("Tagningen är arkiverad. Ta tillbaka den i Karta först, så kan den bli Primär.");
   await put(take.id, decision, decision === "PENDING" ? "" : note, take.revision);
   const lowered: string[] = [];

@@ -7,6 +7,7 @@ import { traceTakes, type OrderPicture, type TakeLike } from '../studio/lib/line
 import { currentReviewerEntry, reviewInstant } from '../studio/lib/ledger.ts';
 import type { Entry, JobPicture } from '../studio/lib/media.ts';
 import { parseReviewEvidence } from '../src/review-evidence.ts';
+import { MOTIONS_TEXT, motionRegister } from './register-store.ts';
 
 const indexDir = '.runtime/evidence';
 const runsDir = indexDir + '/runs';
@@ -277,10 +278,13 @@ function materialLinks(root: string, unreadable: Set<string>): Link[] {
     }
   }
 
-  for (const source of jsonFiles(root, 'motions')) {
-    const motion = readMetadata(root, source, unreadable);
-    if (!motion) continue;
-    const key = identifier(motion.id) ?? path.posix.basename(source, '.json');
+  // The register of films and takes: each post is one line of its text file (tools/register-store.ts).
+  const source = MOTIONS_TEXT;
+  let posts: Obj[] = [];
+  try { posts = motionRegister(root).list().map(entry => object(entry.post)); } catch { unreadable.add(source); }
+  for (const motion of posts) {
+    const key = identifier(motion.id);
+    if (!key) continue;
     const media = object(motion.source), order = object(motion.order);
     if (relative(media.path) || matched(media.sha256, sha256)) add(source, key, 'motion-file', null, media);
     const orderId = identifier(order.id);

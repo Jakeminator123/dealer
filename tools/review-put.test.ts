@@ -1,12 +1,13 @@
 // Offline tests for tools/review-put.ts, the provisional verdict judged for Jakob ("åt dig"). Every write goes to a temporary
-// copy; the checkout's own motions/ is only read.
+// register; the checkout's own is never touched.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtemp, mkdir, readFile, writeFile, readdir, rm} from 'node:fs/promises';
+import {mkdtemp, readdir, rm} from 'node:fs/promises';
 import {existsSync} from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {reviewPut} from './review-put.ts';
+import {motionRegister} from './register-store.ts';
 import {applyChange, applyProvisional, reviewStore} from './review-store.ts';
 import {buildGraph, type BankData, type BankJob} from '../src/clip-graph.ts';
 import {verdictOf, referenceCandidates, stepOf} from '../src/order-model.ts';
@@ -22,23 +23,23 @@ const record = (review: Record<string, unknown> = {decision: 'PENDING', basis: '
   ({schemaVersion: 1, id, source: {path: `assets/motions/${id}/source.mp4`, frames: 120}, review, published: false});
 async function temp(t: {after(fn: () => Promise<void>): void}, value: unknown = record()) {
   const root = await mkdtemp(path.join(base, 'review-put-')); t.after(() => rm(root, {recursive: true, force: true}));
-  await mkdir(path.join(root, 'motions'));
-  const text = JSON.stringify(value, null, 2) + '\n';
-  await writeFile(path.join(root, 'motions', `${id}.json`), text);
-  return {root, text, file: path.join(root, 'motions', `${id}.json`)};
+  motionRegister(root).put(id, value);
+  return {root, text: JSON.stringify(value, null, 2) + '\n'};
 }
+/** The post as the register gives it, written the way its file was: two spaces, a newline, the keys in the order they stand. */
+const written = (root: string) => JSON.stringify(motionRegister(root).get(id), null, 2) + '\n';
 const args = (decision: string, note = 'Ren landning på f88, kortet ligger still.') => [id, decision, '--by', by, '--mandate', mandate, '--note', note];
 const fails = (status: number) => (error: unknown) => (error as {status?: number}).status === status;
 
 test('the command writes a provisional verdict through the store and touches only the review block', async t => {
-  const {root, text, file} = await temp(t);
+  const {root, text} = await temp(t);
   const out = await reviewPut(args('ACCEPTED'), {root, now: () => at});
-  const after = JSON.parse(await readFile(file, 'utf8'));
+  const after = JSON.parse(written(root));
   assert.deepEqual(after.review, {decision: 'ACCEPTED', basis: 'Handen lyfter f24.', userAccepted: false,
     provisional: {by, at, mandate, note: 'Ren landning på f88, kortet ligger still.'}});
-  assert.equal(await readFile(file, 'utf8'), JSON.stringify({...JSON.parse(text), review: after.review}, null, 2) + '\n');
-  assert.equal(out.text, `motions/${id}.json: godkänd åt Jakob av ${by}. Väntar inte i hans kö; Granska visar den under Dömda åt dig, och hans eget beslut ersätter den.`);
-  assert.deepEqual(await readdir(path.join(root, 'motions')), [`${id}.json`]);
+  assert.equal(written(root), JSON.stringify({...JSON.parse(text), review: after.review}, null, 2) + '\n');
+  assert.equal(out.text, `${id}: godkänd åt Jakob av ${by}. Väntar inte i hans kö; Granska visar den under Dömda åt dig, och hans eget beslut ersätter den.`);
+  assert.deepEqual(await readdir(path.join(root, 'data')), ['motions.jsonl']);
   // It may replace an earlier provisional verdict: a variant, then a rejection.
   assert.equal((await reviewPut(args('variant'), {root, now: () => at})).review.acceptedAs, 'VARIANT');
   const rejected = (await reviewPut(args('REJECTED', 'Kortet glider f80.'), {root, now: () => at})).review;
@@ -46,26 +47,26 @@ test('the command writes a provisional verdict through the store and touches onl
 });
 
 test('--dry prints the block and writes nothing; bad arguments and his own verdict are refused', async t => {
-  const {root, text, file} = await temp(t);
+  const {root, text} = await temp(t);
   const dry = await reviewPut([...args('VARIANT'), '--dry'], {root, now: () => at});
   assert.equal(dry.dry, true); assert.equal(dry.review.acceptedAs, 'VARIANT'); assert.match(dry.text, /^Torrkörning, inget skrivet/);
-  assert.equal(await readFile(file, 'utf8'), text); assert.equal(existsSync(path.join(root, '.runtime')), false);
+  assert.equal(written(root), text); assert.equal(existsSync(path.join(root, '.runtime/review-previous.json')), false);
   for (const bad of [args('MAIN'), args('PENDING'), [id, 'ACCEPTED', '--by', by, '--mandate', mandate], [id, 'ACCEPTED', '--by', '--mandate', mandate, '--note', 'n'],
     [...args('ACCEPTED'), '--force'], ['ACCEPTED', '--by', by, '--mandate', mandate, '--note', 'n'], args('ACCEPTED', 'x'.repeat(1501)), ['../placements/default', ...args('ACCEPTED').slice(1)]])
     await assert.rejects(reviewPut(bad, {root, now: () => at}), fails(400), bad.join(' '));
   await assert.rejects(reviewPut(['paow-none-01', ...args('ACCEPTED').slice(1)], {root}), fails(404));
-  assert.equal(await readFile(file, 'utf8'), text);
+  assert.equal(written(root), text);
   // His verdict stands: his words, or a decision without a provisional block. Nothing is written.
   for (const review of [{decision: 'ACCEPTED', userAccepted: true, userReview: 'Jakob 2026-11-12: bra'}, {decision: 'PENDING', userReview: 'Jakob 2026-11-12: kanske'}, {decision: 'REJECTED'}]) {
     const own = await temp(t, record(review));
     await assert.rejects(reviewPut(args('ACCEPTED'), {root: own.root}), fails(409));
     await assert.rejects(reviewPut([...args('ACCEPTED'), '--dry'], {root: own.root}), fails(409));
-    assert.equal(await readFile(own.file, 'utf8'), own.text);
+    assert.equal(written(own.root), own.text);
   }
 });
 
 test('his decision in Granska replaces the provisional one, and the command then refuses', async t => {
-  const {root, file} = await temp(t);
+  const {root} = await temp(t);
   await reviewPut(args('ACCEPTED'), {root, now: () => at});
   const store = reviewStore(root, () => '2026-11-13');
   const his = await store.save(id, {decision: 'VARIANT', note: 'bara ibland'}, (await store.load(id)).revision);
@@ -77,7 +78,7 @@ test('his decision in Granska replaces the provisional one, and the command then
   const s2 = reviewStore(again.root, () => '2026-11-13');
   const reset = await s2.save(id, {decision: 'PENDING', note: ''}, (await s2.load(id)).revision);
   assert.deepEqual(reset.review, {decision: 'PENDING', basis: 'Handen lyfter f24.', userAccepted: false});
-  assert.ok(JSON.parse(await readFile(file, 'utf8')).review.userReview.startsWith('Jakob 2026-11-13:'));
+  assert.ok(JSON.parse(written(root)).review.userReview.startsWith('Jakob 2026-11-13:'));
 });
 
 // The bank of one seat: an older take that waits, and a take from an order in the inbox.

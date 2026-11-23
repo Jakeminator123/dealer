@@ -23,6 +23,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import sharp from 'sharp';
 import {PATCH, cellAt, cellRgb, patchProblems, patchRange, readWav, stripLayout, wavBytes, type MouthPatch, type PatchBox, type PatchRegister} from '../src/speech-patch.ts';
+import {motionRegister} from './register-store.ts';
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ffmpeg = process.env.FFMPEG ?? 'ffmpeg', SCRATCH = 'D:/dealer-scratch/tmp';
@@ -91,7 +92,8 @@ type OverReceipt = {id: string; dealer: string; kind: string; line: string; lang
   renderer?: {releaseSha256?: string; jobId?: string; requestId?: string}; worker: {path: string; sha256: string};
   laidBack: {bridge: {film: {width: number; height: number}; cropX: number; padY: number; skipStart: number; skipEnd: number}; changed: PatchBox; box: PatchBox; feather: number; gate?: Record<string, number>; weights: number[]};
   output: {fps: number; frames: number}};
-const filmInfo = async (filmPath: string) => { const id = filmPath.split('/')[2], record = JSON.parse(await readFile(path.join(repo, 'motions', `${id}.json`), 'utf8')) as {source: {path: string; sha256: string; fps: number; frames: number; width: number; height: number}};
+const filmInfo = async (filmPath: string) => { const id = filmPath.split('/')[2], record = motionRegister(repo).get(id) as {source: {path: string; sha256: string; fps: number; frames: number; width: number; height: number}} | null;
+  if (!record) throw new Error(`${id} har ingen post i registret över filmer (node tools/register.ts get ${id}).`);
   return {id, path: record.source.path, sha256: record.source.sha256, fps: record.source.fps, frames: record.source.frames, width: record.source.width, height: record.source.height}; };
 /** A patch cut out of a line said over a film (the speech tool's `over` folder). */
 export async function cutPatch(from: string, out?: string, id?: string, log = console.log): Promise<{dir: string; record: MouthPatch}> {

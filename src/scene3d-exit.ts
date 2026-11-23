@@ -9,7 +9,7 @@
 import {solveCamera, type FilmCamera} from './scene3d-geometry.ts';
 
 // One film in two parts (the lab follows the second with its camera): the bank's exit take, 2088 pixels wide so that she has room
-// to walk. The frame, the speed and the frames in which she rises are the film's record's (motions/paow-table-leave-wide-01.json);
+// to walk. The frame, the speed and the frames in which she rises are the film's post's (paow-table-leave-wide-01 in the register, tools/register-store.ts);
 // the first three frames are left out, and the second part begins where she starts to rise.
 const WIDE = {path: 'assets/motions/paow-table-leave-wide-01/source.mp4', fps: 24, frame: {scale: 0.5, anchor: [1044, 656] as [number, number], size: [2088, 1174] as [number, number], layer: 'BEHIND_TABLE' as const, shadow: false, behindFrom: 31}};
 export const EXIT_TRIAL = {lead: {...WIDE, start: 3, end: 12}, probe: {...WIDE, start: 12, end: null}, rise: [12, 36]};

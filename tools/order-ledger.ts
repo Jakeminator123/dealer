@@ -1,5 +1,5 @@
 // The order protocol, read from disk: every order (data/orders/<id>.json), its receipt (assets/orders/<id>/receipt.json),
-// the clip bank's records that name it (motions/<id>.json) and the pictures of the register made from its takes
+// the clip bank's posts that name it (tools/register-store.ts) and the pictures of the register made from its takes
 // (data/media-roles.json with each picture's receipt), joined by the pure ledgerOf in studio/lib/ledger.ts, the same
 // function the studio's view Protokoll shows. Reads only; a missing or half-written file is a word in problems, never a stop.
 //   node tools/order-ledger.ts                       every take, then the summary per method (best first)
@@ -12,6 +12,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { dealersOf } from '../src/clip-graph.ts';
+import { MOTIONS_TEXT, motionRegister } from './register-store.ts';
 import {
   GROUP_BY, STEP_GROUPS, STEP_GROUP_LABEL, filterRows, ledgerOf, methodChips, scoreWords, summarize, verdictWords,
   type GroupBy, type Ledger, type LedgerInput, type LedgerRow, type StepGroup, type StillInput, type SummaryRow,
@@ -44,16 +45,9 @@ export async function readLedgerInput(root: string): Promise<LedgerInput> {
   await Promise.all([...ids].map(async (id) => { receipts[id] = note(await readJson(root, `assets/orders/${id}/receipt.json`)); }));
   // The bank's records that name one of them.
   const records: Record<string, unknown> = {};
-  const motionNames = (await readdir(path.join(root, 'motions')).catch(() => [] as string[])).filter((n) => n.endsWith('.json') && ID.test(n.slice(0, -5)));
-  await Promise.all(motionNames.map(async (n) => {
-    let text: string;
-    try { text = await readFile(path.join(root, 'motions', n), 'utf8'); } catch { return; }
-    if (!text.includes('"order"')) return;
-    let value: unknown;
-    try { value = JSON.parse(text); } catch { problems.push(`motions/${n} är inte hel JSON.`); return; }
-    const ref = isObj(value) && isObj(value.order) ? value.order : null;
-    if (ref && typeof ref.id === 'string' && ids.has(ref.id)) records[n.slice(0, -5)] = value;
-  }));
+  try {
+    for (const [id, post] of motionRegister(root).posts()) { const ref = isObj(post.order) ? post.order : null; if (ref && typeof ref.id === 'string' && ids.has(ref.id)) records[id] = post; }
+  } catch (error) { problems.push(`Registret över filmer och tagningar (${MOTIONS_TEXT}) kunde inte läsas: ${(error as Error).message}`); }
   // The register's pictures of the dealers ordered for, with what their receipts say they were made from.
   const dealers = new Set(orders.map((o) => String(o.dealer)));
   const register = note(await readJson(root, 'data/media-roles.json', true));

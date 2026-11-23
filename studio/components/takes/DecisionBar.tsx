@@ -165,7 +165,7 @@ function DecisionButtons({ take, demo = false, compact = false, help = true, onS
 
   const chosen = demo && demoChoice !== undefined ? demoChoice : chosenDecision(take);
   const ready = take.stage === "DONE" && !!take.revision;
-  const blocked = take.stage !== "DONE" ? "Beslut kan sättas när filmen är klar." : !take.revision ? "Kan inte sparas ännu: tagningen har ingen post i motions/." : null;
+  const blocked = take.stage !== "DONE" ? "Beslut kan sättas när filmen är klar." : !take.revision ? "Kan inte sparas ännu: tagningen har ingen post i registret." : null;
   const can = (demo || ready) && !saving;
   // A provisional verdict can be reset as his own decision can (it then waits, without it).
   const hasWord = !!take.motion?.review?.userReview || !!provisionalOf(take.motion?.review);
@@ -196,7 +196,7 @@ function DecisionButtons({ take, demo = false, compact = false, help = true, onS
       setDirty(false);
       if (failed.length) toast({ tone: "bad", title: `${DONE_TEXT[decision]} sparat, men ${failed.join(", ")} är också kvar som Primär`, detail: "Läs om och sätt den andra till Godkänn." });
       else toast({ tone: "ok", title: `${DONE_TEXT[decision]} · sparat`, detail: lowered.length ? `${lowered.join(", ")} är nu godkänd i stället för Primär.` : undefined });
-      setLine({ tone: "ok", text: decision === "PENDING" ? "Återställd: filmen väntar på ditt beslut igen." : `Sparat i motions/${take.id}.json.` });
+      setLine({ tone: "ok", text: decision === "PENDING" ? "Återställd: filmen väntar på ditt beslut igen." : `Sparat i registret (${take.id}).` });
       await bank?.reload();
       onSaved?.(decision);
       return true;

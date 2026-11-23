@@ -9,8 +9,8 @@
 //   … --dry                  prints the review block it would write and writes nothing
 //   … --root <folder>        another checkout (a temporary copy of the data)
 //
-// Same store as the lab's decisions: the revision read is the one presented, writes are queued and atomic, and only the
-// `review` block of motions/<clip-id>.json changes. Refused where his verdict stands (a userReview, or a decision other than
+// Same store as the lab's decisions: the revision read is the one presented, and only the `review` block of the take's
+// post in the register changes (tools/register-store.ts). Refused where his verdict stands (a userReview, or a decision other than
 // PENDING without a provisional block); an earlier verdict judged for him may be replaced. Tests: tools/review-put.test.ts.
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -38,11 +38,11 @@ export async function reviewPut(args: string[], options: {root?: string; now?: (
   if (refused) throw new StoreError(409, refused);
   if (args.includes('--dry')) {
     const review = applyProvisional(read.record.review, change, now());
-    return {id, dry: true, review, revision: null, text: `Torrkörning, inget skrivet. motions/${id}.json skulle få review:\n${JSON.stringify(review, null, 2)}`};
+    return {id, dry: true, review, revision: null, text: `Torrkörning, inget skrivet. Posten ${id} i registret skulle få review:\n${JSON.stringify(review, null, 2)}`};
   }
   const saved = await store.saveProvisional(id, change, read.revision);
   const said = change.decision === 'REJECTED' ? 'underkänd' : change.decision === 'VARIANT' ? 'variant' : 'godkänd';
-  return {id, dry: false, review: saved.review, revision: saved.revision, text: `motions/${id}.json: ${said} åt Jakob av ${change.by}. Väntar inte i hans kö; Granska visar den under Dömda åt dig, och hans eget beslut ersätter den.`};
+  return {id, dry: false, review: saved.review, revision: saved.revision, text: `${id}: ${said} åt Jakob av ${change.by}. Väntar inte i hans kö; Granska visar den under Dömda åt dig, och hans eget beslut ersätter den.`};
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

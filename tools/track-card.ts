@@ -10,6 +10,7 @@ import {createHash} from 'node:crypto';
 import {spawn, execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
+import {motionRegister} from './register-store.ts';
 import {classify, paleMask, persistent, follower, buildTrack, settleRaws, soundFrames, blobs, morph, YELLOW, BLUE, TABLE, EDGE_THICKNESS, MIN_AREA, type Raw, type Pt, type FilmKind} from '../src/card-track.ts';
 
 if (path.resolve(process.cwd()) !== path.resolve(fileURLToPath(new URL('../', import.meta.url)))) throw Error('Run from the dealer checkout.');
@@ -37,8 +38,8 @@ function kindOf(clip: string): FilmKind | null {
   // hole card is the same thing to follow, a card that turns once and then lies; it only starts on the table instead of in the shoe.
   if (kinds.length) return kinds.includes('DEAL') ? 'DEAL' : kinds.length === 1 ? kinds[0] as FilmKind : null;
   // A take brought in from an order (tools/register-order.ts) is not in the job file: its bank record says what it is, the
-  // clip's own motion or the records it is cut into (motions/<clip>.json cutInto, a deal and the return after it).
-  const record = (name: string) => { try { return JSON.parse(readFileSync(`motions/${name}.json`, 'utf8')); } catch { return null; } };
+  // clip's own motion or the posts it is cut into (cutInto in its post of the register: a deal and the return after it).
+  const posts = motionRegister(process.cwd()).posts() as Map<string, any>, record = (name: string) => posts.get(name) ?? null;
   const own = record(clip), parts = Array.isArray(own?.cutInto) ? own.cutInto.map(record) : [];
   const told = [own, ...parts].flatMap((m: {motion?: {kind?: string; from?: string}} | null) => m?.motion?.kind ? [m.motion] : [])
     .map(m => m.kind === 'DEAL' || m.kind === 'REVEAL' ? 'DEAL' : m.kind === 'RETURN' && /(?:P[1-7]|D)\.C[1-3]/.test(String(m.from)) ? 'RETURN' : 'OTHER');

@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { evidenceStatus, reindexEvidence, traceEvidence, writeRunReceipt, type RunReceiptInput } from './evidence-store.ts';
+import { motionRegister } from './register-store.ts';
 
 const digest = 'a'.repeat(64);
 const plan = 'b'.repeat(64);
@@ -46,7 +47,7 @@ function fixture(t: { after: (callback: () => void) => void }) {
   write('assets/orders/example-order/receipt.json', {
     takes: [{ take: 1, file: sample.inputs[0].path, sha256: digest, taskId: 'provider-private', note: 'ignore this' }],
   });
-  write('motions/example-film.json', {
+  motionRegister(root).put('example-film', {
     id: 'example-film', source: sample.inputs[0],
     order: { id: 'example-order', take: 1, orderSha256: orderVersion, path: 'data/orders/example-order.json' },
   });
@@ -217,6 +218,7 @@ test('a linked worktree writes and queries the primary checkout journal and regi
   const env = {...process.env};
   for (const name of ['GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_COMMON_DIR', 'GIT_OBJECT_DIRECTORY', 'GIT_ALTERNATE_OBJECT_DIRECTORIES']) delete env[name];
   const git = (...args: string[]) => execFileSync('git', args, {cwd: root, env, windowsHide: true, stdio: 'pipe'});
+  writeFileSync(path.join(root, '.gitignore'), '.runtime/\n'); // as in the repo: the register's working copy stays out of Git
   git('init', '-q');
   git('add', '.');
   git('-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '-qm', 'fixture');

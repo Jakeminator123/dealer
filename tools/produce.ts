@@ -33,6 +33,7 @@ import { isStanding, type Entry } from '../studio/lib/media.ts';
 import { mediaRoles } from './media-roles.ts';
 import { orderStore, type NewOrder } from './order-store.ts';
 import { StoreError } from './placement-store.ts';
+import { motionRegister } from './register-store.ts';
 
 // ── Words ───────────────────────────────────────────────────────────────────
 export type RowState = 'KLAR' | 'DOM' | 'BESTÄLLD' | 'UTKAST' | 'MED_GIVEN' | 'KAN' | 'PROV' | 'VÄNTAR' | 'INGEN_METOD' | 'INTE_BYGGD';
@@ -336,13 +337,14 @@ export async function readBank(root: string): Promise<BankData> {
   const motions: NonNullable<BankData['motions']> = {}, receipts: NonNullable<BankData['receipts']> = {}, media: NonNullable<BankData['media']> = {};
   const film = (clip: string) => { const f = at('assets', 'motions', clip, 'source.mp4'); try { return existsSync(f) && realpathSync(f) === path.join(realpathSync(at('assets', 'motions')), clip, 'source.mp4') ? `assets/motions/${clip}/source.mp4` : null; } catch { return null; } };
   type Rec = { source?: unknown; motion?: unknown; review?: unknown };
+  const posts = motionRegister(root).posts() as Map<string, Rec>; // the register of films and takes (tools/register-store.ts)
   for (const take of derived) {
-    const own = await readJson<Rec>(at('motions', `${take.id}.json`)), clip = await readJson<Rec>(at('motions', `${take.clip}.json`));
+    const own = posts.get(take.id), clip = posts.get(take.clip);
     motions[take.id] = { source: clip?.source, motion: own?.motion, review: own?.review } as never;
     media[take.id] = { video: film(take.clip), first: null, last: null };
   }
   for (const job of [...jobs, ...edits]) {
-    const motion = await readJson<Rec>(at('motions', `${job.id}.json`)), receipt = await readJson<{ status?: string; estimatedCredits?: number; requestedAt?: string; completedAt?: string; output?: { bytes?: number; fps?: number; frames?: number; width?: number; height?: number } }>(at('assets', 'motions', job.id, 'generation.json'));
+    const motion = posts.get(job.id), receipt = await readJson<{ status?: string; estimatedCredits?: number; requestedAt?: string; completedAt?: string; output?: { bytes?: number; fps?: number; frames?: number; width?: number; height?: number } }>(at('assets', 'motions', job.id, 'generation.json'));
     if (motion) motions[job.id] = { source: motion.source, motion: motion.motion, review: motion.review } as never;
     if (receipt) receipts[job.id] = { status: receipt.status, estimatedCredits: receipt.estimatedCredits, requestedAt: receipt.requestedAt, completedAt: receipt.completedAt, output: receipt.output ? { bytes: receipt.output.bytes, fps: receipt.output.fps, frames: receipt.output.frames, width: receipt.output.width, height: receipt.output.height } : null };
     media[job.id] = { video: film(job.id) };

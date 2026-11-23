@@ -9,7 +9,7 @@
 // Names come from the graph's nodes (src/dealer-trees.ts nodeCode, the studio's words): IDLE = A1, READY = A2.1, READY-B = A2.2,
 // READY-C = A2.3, P4.C1 = A3P4C1, D.C1 = A3DC1; an anchor seen from a seat is S2-A2.2.
 //
-// Every record in motions/ lands in one group, read from the registers and never from a file name:
+// Every post of the register of films and takes (tools/register-store.ts) lands in one group, read from the registers and never from a file name:
 //   kopplad      its edge's anchors are the tree's: the pictures its order started and ended on (data/orders/<id>.json
 //                pictures[].from), the first and last pictures of its job (data/clip-jobs.json), the deal it starts on
 //                (startsOn), the clip it is cut from, or the rest film a talk film is laid on (speech.restFilm). Where a
@@ -37,6 +37,7 @@ import {gameGraph, usesOf, type Use} from '../studio/lib/primaries.ts';
 import {verdictOf} from '../studio/lib/verdict.ts';
 import {audit} from './media-audit.ts';
 import {readBank} from './produce.ts';
+import {motionRegister} from './register-store.ts';
 import {gameTakes} from './studio-freeze.ts';
 
 // ── The register ────────────────────────────────────────────────────────────
@@ -206,8 +207,7 @@ async function readWorld(only: string | null) {
 
   // The bank the lab serves: readBank, with each record's speech as GET /api/clip-bank gives it (tools/preview.ts clipBank).
   const bank = await readBank(ROOT) as BankData & {jobs: Job[]; derived: Job[]; edits: Job[]};
-  const records = new Map<string, MotionRec>();
-  for (const f of readdirSync(at('motions')).filter(f => f.endsWith('.json'))) { const r = json<MotionRec>(`motions/${f}`); if (r) records.set(f.slice(0, -5), r); }
+  const records = motionRegister(ROOT).posts() as Map<string, MotionRec>;
   for (const [id, m] of Object.entries(bank.motions ?? {})) { const speech = records.get(id)?.speech; if (speech) (m as {speech?: unknown}).speech = speech; }
   const jobs = new Map<string, Job>([...bank.jobs, ...bank.derived, ...bank.edits].map(j => [j.id, j]));
 
@@ -333,7 +333,7 @@ export async function buildReport(only: string | null = null) {
       reason: whole ? `hel runda i ett stycke (${whole}), ingen kant` : target ? `ingen tagning i banken, siktar på ${code(target)}` : 'ingen kant och ingen tagning i banken',
       proposal: target ? `${owners(dealer).filter(t => true).map(t => t.name).join(' eller ')}: mot ${code(target)} (förslag)` : null});
   }
-  // 3. Film folders under assets/motions without a record in motions/. A folder without a film (only the generation's notes)
+  // 3. Film folders under assets/motions without a post in the register. A folder without a film (only the generation's notes)
   // is no film and is only counted.
   const motionsNoFilm: string[] = [];
   for (const name of readdirSync(at('assets/motions'))) {
@@ -342,7 +342,7 @@ export async function buildReport(only: string | null = null) {
     if (!scan(`assets/motions/${name}`).videos) { motionsNoFilm.push(name); continue; }
     const f = folder(`assets/motions/${name}`);
     rows.push({id: name, dealer, kind: 'filmmapp utan post', group: 'okopplad', tree: null, step: null, edge: null, verdict: 'ej dömd', good: false, variant: false, plays: false,
-      use: null, mb: mb(f.bytes), via: null, reason: 'mapp i assets/motions utan post i motions/', proposal: null, anchors: []});
+      use: null, mb: mb(f.bytes), via: null, reason: 'mapp i assets/motions utan post i registret', proposal: null, anchors: []});
   }
 
   // ── Material outside the bank ──────────────────────────────────────────────
@@ -651,7 +651,7 @@ export function lasmig(r: Report): string {
     L.push(`| ${dealerName(dealer)} | utanför träden | – | – | ${g(out, 'halvkopplad').length} | ${fmt(sum(g(out, 'halvkopplad')))} | ${g(out, 'okopplad').length} | ${fmt(sum(g(out, 'okopplad')))} |`);
     L.push(`| ${dealerName(dealer)} | **alla poster** | ${g(rows, 'kopplad').length} | ${fmt(sum(g(rows, 'kopplad')))} | ${g(rows, 'halvkopplad').length} | ${fmt(sum(g(rows, 'halvkopplad')))} | ${g(rows, 'okopplad').length} | ${fmt(sum(g(rows, 'okopplad')))} |`);
   }
-  L.push('', 'Raderna är posterna i `motions/` (tagningar och källfilmer) och filmmappar i `assets/motions/` utan post. En tagning som är skuren ur en källfilm har ingen egen mapp (0 MB); källfilmen bär storleken.', '');
+  L.push('', 'Raderna är posterna i registret över filmer och tagningar (`node tools/register.ts get <id>`: tagningar och källfilmer) och filmmappar i `assets/motions/` utan post. En tagning som är skuren ur en källfilm har ingen egen mapp (0 MB); källfilmen bär storleken.', '');
 
   L.push('## Halvkopplat, per skäl', '', '| Dealer | Skäl | St | MB | Exempel | Troligt steg (förslag) |', '|---|---|---|---|---|---|');
   const reasonKey = (s: string) => s.replace(/paow-[a-z0-9-]+/g, '…').replace(/\s+\([^)]*\)/g, '').slice(0, 90);
@@ -695,10 +695,10 @@ export function lasmig(r: Report): string {
   const keptShare = sum(r.outside.filter(o => !o.tree && o.keptMb).map(o => ({mb: o.keptMb!})));
   const tick = (s: string) => `\`${s}\``, sharing = r.outside.filter(o => !o.tree && o.keptMb).map(o => tick(o.id)).join(', ');
   L.push('', `Summa löst: ${loose.length} poster, ${fmt(sum(loose))} MB, varav dömt bra ${fmt(sum(good))} MB.${keptShare ? ` Utöver det är ${fmt(keptShare)} MB i ${sharing} samma filer som den bevarade samlingen ${r.kept.map(k => tick(`${k.path}/`)).join(', ')}; de är inte lösa.` : ''}`, '');
-  L.push('### Radera: så går det till', '', 'Verktyget raderar ingenting. En radering går genom `tools/local-work.md`, avsnittet "Radera oanvänt material": kör `npm run media:status` och se roller och hänvisningar; `tools/media-audit.ts` ensamt är inget raderingslov, utan spelets bank, scenen, Material, Prov och Beslut, hans domar, beställningar, referenser och pågående arbete kontrolleras först; V6 och original som används är skyddade. Unikt material som är verifierat oanvänt får raderas (Jakob 2026-11-19), och registren beskriver samtidigt det som togs bort: en raderad underkänd film får `RADERAD.txt` och dess post i `motions/` står kvar. Dubbla kopior går med `tools/media-dedupe.ts`; kvittona läggs under `.runtime/cleanup/`. Det "dömt bra" ovan raderas inte utan hans ord.', '');
+  L.push('### Radera: så går det till', '', 'Verktyget raderar ingenting. En radering går genom `tools/local-work.md`, avsnittet "Radera oanvänt material": kör `npm run media:status` och se roller och hänvisningar; `tools/media-audit.ts` ensamt är inget raderingslov, utan spelets bank, scenen, Material, Prov och Beslut, hans domar, beställningar, referenser och pågående arbete kontrolleras först; V6 och original som används är skyddade. Unikt material som är verifierat oanvänt får raderas (Jakob 2026-11-19), och registren beskriver samtidigt det som togs bort: en raderad underkänd film får `RADERAD.txt`, dess poster går ur registret och hans dom står kvar som en rad i `data/motions-removed.jsonl`. Dubbla kopior går med `tools/media-dedupe.ts`; kvittona läggs under `.runtime/cleanup/`. Det "dömt bra" ovan raderas inte utan hans ord.', '');
 
   L.push('## Säten (S)', '', 'P är spelaren som får kortet (A3P2C1); S är stolen eller kameravinkeln ett ankare ses ifrån (S2-A2.2). Ett ankare utan `seat` i trädregistret är den raka kameran.', '');
-  L.push(`- Ankare i Material med en vinkel: ${r.seats.anchors.length ? r.seats.anchors.join(', ') : 'inga'}. Poster i motions/ med en vinkel: ${r.seats.records.length ? r.seats.records.join(', ') : 'inga'}. Ankare med \`seat\` i trädregistret: ${r.seats.treeSeats.length ? r.seats.treeSeats.join(', ') : 'inga'}.`);
+  L.push(`- Ankare i Material med en vinkel: ${r.seats.anchors.length ? r.seats.anchors.join(', ') : 'inga'}. Poster i registret med en vinkel: ${r.seats.records.length ? r.seats.records.join(', ') : 'inga'}. Ankare med \`seat\` i trädregistret: ${r.seats.treeSeats.length ? r.seats.treeSeats.join(', ') : 'inga'}.`);
   L.push(`- Spelet har alltså inga ankare eller filmer från en annan vinkel än den raka. Det som finns är prov i Granska, utanför banken${r.seats.proofs.some(p => p.plays) ? '' : ', och spelet använder inget av dem'}:`, '');
   L.push('| Prov | Titel | Gjort | Spelas |', '|---|---|---|---|');
   for (const p of r.seats.proofs) L.push(`| \`${p.id}\` | ${cell(p.title)} | ${p.made} | ${p.plays ? 'ja' : 'nej'} |`);

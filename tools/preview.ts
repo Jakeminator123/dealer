@@ -6,6 +6,7 @@ import {randomUUID} from 'node:crypto';
 import path from 'node:path';
 import {placementStore,StoreError} from './placement-store.ts';
 import {reviewStore} from './review-store.ts';
+import {motionRegister} from './register-store.ts';
 import {decisionStore,ANSWER_BYTES} from './decision-store.ts';
 import {proofNotesStore,NOTE_BYTES} from './proof-notes-store.ts';
 import {lipsyncAnswer} from './lipsync-store.ts';
@@ -132,11 +133,12 @@ if(has('--restart')){
  };
  const clipBank=async()=>{
   const {file,jobs,edits,clips,derived}=await clipJobs(),motions:Record<string,unknown>={},receipts:Record<string,unknown>={},media:Record<string,unknown>={},revisions:Record<string,string>={};
-  // The revision of a motion record is what a review decision must present to be saved (If-Match).
-  const motionOf=async(id:string)=>{try{const text=await readFile(`motions/${id}.json`,'utf8');revisions[id]=reviews.revisionOf(text);return JSON.parse(text);}catch{return null;}};
-  // A derived take borrows its film, film facts and card track from the clip it is cut from; a review of its own may lie in motions/<id>.json.
+  // The register, read once (tools/register-store.ts). The revision of a post is what a review decision must present to be saved (If-Match).
+  const posts=new Map(motionRegister(process.cwd()).list().map(entry=>[entry.id,entry]));
+  const motionOf=(id:string)=>{const entry=posts.get(id);if(!entry)return null;revisions[id]=entry.revision;return entry.post as Record<string,any>;};
+  // A derived take borrows its film, film facts and card track from the clip it is cut from; a review of its own may stand in its own post.
   await Promise.all(derived.map(async take=>{
-   const own=await motionOf(take.id),clip=await readJson(`motions/${take.clip}.json`);
+   const own=motionOf(take.id),clip=posts.get(take.clip)?.post as Record<string,any>|undefined;
    // speech: a talk film's line and where its sound starts and ends (src/speech-lines.ts reads it in the browser).
    motions[take.id]={source:clip?.source,motion:own?.motion,review:own?.review,speech:own?.speech};
    media[take.id]={video:await confined(take.clip,'source.mp4')?`assets/motions/${take.clip}/source.mp4`:null,first:null,last:null,...await tracking(take.clip)};
@@ -227,7 +229,7 @@ if(has('--restart')){
    }
    if(url.pathname==='/api/clip-bank'&&req.method==='GET'){res.setHeader('Content-Type','application/json; charset=utf-8');res.end(JSON.stringify(await clipBank()));return;}
    // The one write besides placements: a review decision for a clip of the job file. It rewrites only the review block
-   // of motions/<id>.json, from this page only, and only against the revision the page last read.
+   // of the take's post in the register, from this page only, and only against the revision the page last read.
    if(url.pathname.startsWith('/api/clip-bank/review/')){
     const id=url.pathname.slice('/api/clip-bank/review/'.length);
     res.setHeader('Content-Type','application/json; charset=utf-8');
