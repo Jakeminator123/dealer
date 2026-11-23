@@ -529,6 +529,19 @@
         "at": "2026-11-23T08:06:13.295Z"
       },
       "read": "2026-11-23T08:06:13.295Z"
+    },
+    {
+      "id": 46,
+      "proof": "docka-paow-vansterarm-20261123",
+      "file": "01-skon-idag-och-forslag.png",
+      "choice": null,
+      "text": "Se över och fixa så allt blir rätt bara. Kommer då skon behövas ändras på alla andra videos? Förstår inte riktigt. Lös detta bara",
+      "at": "2026-11-23T09:45:23.517Z",
+      "answer": {
+        "text": "Nej, inga filmer ändras. Skon i filmerna är den riktiga. Felet sitter i den ritade skon i 3D-scenen, som står 2,4 cm fel mot filmens. Den flyttas till filmens plats, så att dockan och filmerna stämmer. Dockagenten gör det nu.",
+        "at": "2026-11-23T09:55:41.836Z"
+      },
+      "read": "2026-11-23T09:55:41.836Z"
     }
   ]
 }
