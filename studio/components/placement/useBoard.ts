@@ -11,7 +11,7 @@ import { labUrl } from "../../lib/lab.ts";
 import { readLibrary } from "../../lib/placement-api.ts";
 import type { PathPhase } from "../../lib/placement-path.ts";
 import {
-  GREEN_FILM, PLAN_VIEW, START_PLACE, STILL, STILLS, bankFilms, filmGoesTo, libraryFilms, motionSteps, nudged, readPlacementAddress, shownBackdrop, stillsFor, underFilms, type Film,
+  GREEN_FILM, PLAN_VIEW, START_PLACE, STILLS, bankFilms, dollFor, filmGoesTo, libraryFilms, motionSteps, nudged, readPlacementAddress, shownBackdrop, stillsFor, underFilms, type Film,
 } from "../../lib/placement.ts";
 import type { Backdrop, PathRun } from "./Board";
 import { useKeyRun } from "./Board";
@@ -22,8 +22,8 @@ export const filmLabel = (film: Film) => (film.id === GREEN_FILM ? "Grön film �
 export const pathCard = (place: Place) => (place === SHOE ? START_PLACE : place);
 
 /**
- * The choice in the address (?bakgrund=docka-paow), beside the view's other words, with a film's first frame where the take
- * begins inside its film (&ruta=138); Siluett, the default, has none.
+ * The choice in the address (?bakgrund=docka-standard), beside the view's other words, with a film's first frame where the
+ * take begins inside its film (&ruta=138); the dealer's own doll, the default, is no word there (null).
  */
 function writeBackdrop(backdrop: string | null, start = 0) {
   const p = new URLSearchParams(window.location.search);
@@ -38,7 +38,8 @@ function writeBackdrop(backdrop: string | null, start = 0) {
 /**
  * What lies under the cards: the caller's choice to start with, else the address's (?bakgrund=), the chosen dealer's films
  * (her takes in the bank, and for Pamela the library's older ones: underFilms), what is shown, and the list to choose from
- * (Siluett and the dolls, then her films, the films to `place` first). No other dealer's picture or film is ever in it
+ * (her doll, the other dolls, then her films, the films to `place` first). With nothing chosen her doll lies there, and it
+ * follows the dealer when another is chosen (Jakob 2026-11-23). No other dealer's picture or film is ever in it
  * (Jakob 2026-11-18). A choice is written to the address with its frame, so that it stays over a reload and in a link; a
  * film named without a frame starts on the take's own first frame (a return cut from its deal's film begins inside it).
  */
@@ -53,13 +54,14 @@ export function useUnder(place: Place, first: { backdrop: string | null; frame: 
     void readLibrary().then((items) => setLibrary(libraryFilms(items)));
   }, []);
   const films = useMemo(() => underFilms(dealer, graph ? bankFilms(graph) : [], library), [dealer, graph, library]);
-  const shown = shownBackdrop(backdrop, films);
+  const shown = shownBackdrop(backdrop, films, dealer);
   const film = shown.kind === "film" ? shown.film : null;
   const at = frame ?? film?.start ?? 0;
   const under: Backdrop = shown.kind === "film" ? { kind: "film", src: labUrl(shown.film.path), fps: shown.film.fps, frame: at } : { kind: "still", src: labUrl(shown.path) };
   const runCard = pathCard(place);
-  // The pictures without a dealer first: Siluett (the default), then the dolls, the chosen dealer's own doll first.
-  const stills: { value: string; label: string; hint?: string }[] = stillsFor(dealer).map((s) => ({ value: s.id, label: s.word, hint: s.id === STILL ? "förval" : undefined }));
+  // The dolls first: the chosen dealer's own (the default), then the others.
+  const own = dollFor(dealer);
+  const stills: { value: string; label: string; hint?: string }[] = stillsFor(dealer).map((s) => ({ value: s.id, label: s.word, hint: s === own ? "förval" : undefined }));
   const still = shown.kind === "still" ? STILLS.find((s) => s.id === shown.still) : undefined;
   const options = [
     ...stills,
@@ -76,17 +78,17 @@ export function useUnder(place: Place, first: { backdrop: string | null; frame: 
     film,
     under,
     options,
-    value: film ? film.id : (still?.id ?? STILL),
-    /** A choice in the list: Siluett, a doll, or a film from the take's own first frame. */
+    value: film ? film.id : (still ?? own).id,
+    /** A choice in the list: a doll (the dealer's own is the default, and no word in the address), or a film from the take's own first frame. */
     choose: (v: string) => {
-      const next = v === STILL ? null : v;
+      const next = v === own.id ? null : v;
       const start = films.find((f) => f.id === v)?.start ?? 0;
       setBackdrop(next);
       setFrame(start || null);
       writeBackdrop(next, start);
     },
-    label: film ? filmLabel(film) : (still?.word ?? STILLS[0].word),
-    /** Paint the card in the shoe's window: on Siluett and a doll (the same shoe), not under a film (it shows its own card). */
+    label: film ? filmLabel(film) : (still ?? own).word,
+    /** Paint the card in the shoe's window: on a doll's picture (every doll's has the same shoe), not under a film (it shows its own card). */
     shoeCard: !film,
     videoRef: videoRef as RefObject<HTMLVideoElement | null>,
   };

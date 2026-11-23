@@ -83,7 +83,7 @@ if(has('--restart')){
 }else{
  const manifest=JSON.parse(await readFile('data/manifest.json','utf8'));
  // The pages themselves (pages/, game/page/) are served at their root addresses through PAGES (tools/lab-routes.ts), below.
- const allowed=new Set(['data/props.json','data/dealers.json','data/scene-contract.json','data/scene-rooms.json','data/speech-patches.json','assets/lab/native.jpg','assets/lab/portrait.jpg','assets/lab/placement-backdrop/native.jpg',...DOLL_BACKDROPS.map(d=>d.native),...sceneFiles,'materials/kortmaterial.html','materials/markermaterial.html',...manifest.files.map((f:{path:string})=>f.path).filter((p:string)=>p.startsWith('assets/')||p.startsWith('materials/')||p.startsWith('output/v6/'))]);
+ const allowed=new Set(['data/props.json','data/dealers.json','data/scene-contract.json','data/scene-rooms.json','data/speech-patches.json','assets/lab/native.jpg','assets/lab/portrait.jpg',...DOLL_BACKDROPS.map(d=>d.native),...sceneFiles,'materials/kortmaterial.html','materials/markermaterial.html',...manifest.files.map((f:{path:string})=>f.path).filter((p:string)=>p.startsWith('assets/')||p.startsWith('materials/')||p.startsWith('output/v6/'))]);
  // The modules and vendor files the pages ask for, and how a module is made ready for the browser: tools/lab-routes.ts, which the
  // build of the online copy reads too (tools/build-studio-snapshot.ts), so that the copy serves exactly what this server serves.
  // Table props made by tools/prop-glb.ts: assets/props/<id>.glb, and only where the file really lies in that folder.

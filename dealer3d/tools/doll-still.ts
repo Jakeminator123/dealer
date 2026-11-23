@@ -1,6 +1,6 @@
 // The dolls of dealer3d/src/doll.ts at anchor 1, each alone on a transparent picture in the plan's native pixels
-// (1762 × 1174), cut as the studio's Siluett is (tools/placement-backdrop.ts: the bank's frame, x_plan = x_film × 1761 / 1763),
-// for tools/placement-backdrop.ts, which runs this first and lays each doll over the table without Siluett's drawn figure.
+// (1762 × 1174), cut as the studio's table picture is (tools/placement-backdrop.ts: the bank's frame, x_plan = x_film × 1761 / 1763),
+// for tools/placement-backdrop.ts, which runs this first and lays each doll over the table and the shoe.
 //   node dealer3d/tools/doll-still.ts [--dolls standard,paow] [--out assets/lab/placement-backdrop]
 // Writes <out>/docka-<doll>.png (RGBA) per doll and <out>/docka-receipt.json (sources with SHA-256, the pose, where the
 // hands and the figure lie in plan pixels). Needs Chrome; not the lab server. Takes the shared lock for the graphics card
@@ -21,7 +21,7 @@ import {setTimeout as delay} from 'node:timers/promises';
 import {fileURLToPath} from 'node:url';
 import sharp from 'sharp';
 import {LOCK, lockLine, releaseLock, takeLock} from '../../tools/lab-look.ts';
-import {NEUTRAL_BACKDROP, VIEWS} from '../../src/placement-model.ts';
+import {DOLL_BACKDROPS, VIEWS} from '../../src/placement-model.ts';
 import {filmEye, see, type Vec3} from '../src/camera.ts';
 import {filmLens} from '../src/world.ts';
 import {dollNamed} from '../src/doll.ts';
@@ -29,7 +29,7 @@ import {dollNamed} from '../src/doll.ts';
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const arg = (name: string, fallback?: string) => { const i = process.argv.indexOf(name); return i > 0 ? process.argv[i + 1] : fallback; };
 const dolls = arg('--dolls', 'standard,paow')!.split(',').map(s => dollNamed(s.trim()));
-const out = arg('--out', path.posix.dirname(NEUTRAL_BACKDROP.native))!;
+const out = arg('--out', path.posix.dirname(DOLL_BACKDROPS[0].native))!;
 export const FILM = {width: 1764, height: 1174}, PLAN = {width: VIEWS.native.width, height: VIEWS.native.height};
 export const POSE = {file: 'dealer3d/data/till-ankare-2-3-c.json', name: 'till-ankare-2-3-c', frame: 0};
 const filmToPlan = (p: {x: number; y: number}) => ({x: p.x * (PLAN.width - 1) / (FILM.width - 1), y: p.y * (PLAN.height - 1) / (FILM.height - 1)});
@@ -82,9 +82,9 @@ try {
   }
   const head = (() => { try { return execFileSync('git', ['rev-parse', 'HEAD'], {cwd: ROOT, windowsHide: true}).toString().trim(); } catch { return null; } })();
   const sources = Object.fromEntries(await Promise.all(['dealer3d/src/doll.ts', 'dealer3d/src/stage.ts', 'dealer3d/src/body.ts', 'dealer3d/tools/doll-pose.ts', 'dealer3d/tools/shoot.ts', POSE.file].map(async f => [f, sha(await readFile(path.join(ROOT, f)))])));
-  const receipt = {schemaVersion: 1, about: 'Placering: dockorna i vila (ankare 1) utan bakgrund, i planens bildpunkter som Siluetten, för att läggas över bordets bild. Byggda av dealer3d/tools/doll-still.ts; läs filens början för hur.',
+  const receipt = {schemaVersion: 1, about: 'Placering: dockorna i vila (ankare 1) utan bakgrund, i planens bildpunkter, för att läggas över bordets bild. Byggda av dealer3d/tools/doll-still.ts; läs filens början för hur.',
     madeAt: new Date().toISOString(), madeBy: `node dealer3d/tools/doll-still.ts --dolls ${dolls.map(d => d.name).join(',')}`, repoHead: head, three: JSON.parse(await readFile(path.join(ROOT, 'node_modules/three/package.json'), 'utf8')).version,
-    frame: {film: `${FILM.width} × ${FILM.height}`, plan: `${PLAN.width} × ${PLAN.height}`, mapping: 'x_plan = x_film × 1761 / 1763, y unchanged (one resize, fill, lanczos3), as tools/placement-backdrop.ts', camera: 'the bank\'s camera (filmEye of the fitted lens), as the Siluett\'s table'},
+    frame: {film: `${FILM.width} × ${FILM.height}`, plan: `${PLAN.width} × ${PLAN.height}`, mapping: 'x_plan = x_film × 1761 / 1763, y unchanged (one resize, fill, lanczos3), as tools/placement-backdrop.ts', camera: 'the bank\'s camera (filmEye of the fitted lens), as the table picture\'s'},
     look: 'dealer3d/src/stage.ts look bare: the white figure, lit as the plain look; table, shoe and cards write depth only; the felt shows the figure\'s shadow at 0.3 (at rest almost all of it lies under her hands)',
     sources, dolls: pictures.map(p => p.receipt)};
   await mkdir(path.join(ROOT, out), {recursive: true});

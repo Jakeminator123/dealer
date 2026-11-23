@@ -1,14 +1,14 @@
-// The neutral backdrops of the studio's view Placering: the studio's own table, a neutral seated figure where the dealer sits,
-// and the bank's shoe where the shoe stands, in the plan's native pixels (1762 × 1174), so that Jakob plans card places, and
-// the films he orders, on the table the films are played on and on no dealer's picture. Beside Siluett, one picture per doll
-// (src/placement-model.ts DOLL_BACKDROPS): the same table and shoe with the doll at rest where the figure sits.
+// The backdrops of Kortplan in the studio's Bordet: the studio's own table, the bank's shoe where the shoe stands and a white
+// doll at rest where the dealer sits, in the plan's native pixels (1762 × 1174), so that Jakob plans card places, and the
+// films he orders, on the table the films are played on and on no dealer's picture. One picture per doll
+// (src/placement-model.ts DOLL_BACKDROPS); the studio lays the chosen dealer's own doll under the cards.
 //   node tools/placement-backdrop.ts [--proof <png>] [--keep <folder>] [--from <folder>] [--port <devtools port>]
 // The lab server (127.0.0.1:4319) must be running; it is only read. First the dolls' stills are made (dealer3d/tools/
 // doll-still.ts, its own Chrome under the shared lock); then one headless Chrome for the table, under the same lock, closed
-// again. Writes assets/lab/placement-backdrop/native.jpg, docka-<doll>.jpg per doll and receipt.json beside them (sources with
-// SHA-256, the scene's state, the figure's measures, the dolls' stills and the fit measured against two bank films). --proof
-// writes a picture of the fit, --keep the raw stills, --from builds from stills kept earlier instead of starting Chrome, with
-// the dolls' stills as they lie (the receipt says so).
+// again. Writes assets/lab/placement-backdrop/docka-<doll>.jpg per doll and receipt.json beside them (sources with SHA-256,
+// the scene's state, the dolls' stills and the fit measured against two bank films). --proof writes a picture of the fit,
+// --keep the raw stills, --from builds from stills kept earlier instead of starting Chrome, with the dolls' stills as they
+// lie (the receipt says so).
 //
 // How it is made. Seen from the film camera, the 3D scene shows a film pixel for pixel (docs/SYSTEM.md "3D-scenen"): in the
 // scene's home view at 1764 × 1174 the film frame is the whole canvas, one rectangle, with no warp, so a still of that view is
@@ -17,33 +17,30 @@
 // where its card lies on P4.C1. The look is the studio's shipped preset Basgrund (what the game shows) without the camera's
 // motion, focus, dust, clock and the rendered cards, and without the printed card boxes (the view draws the plan's own cards
 // live, and a box printed from the plan as it was would stay behind when a card is moved). The shoe is B where B differs from
-// A in the shoe's own connected patch (the film's shoe, keyed by the scene as every film is). The figure is drawn, not cut
-// out: a head, a neck, a torso that ends on the table edge row and arms whose hands lie where data/dealer-standard.json puts
-// them; head, neck, shoulders and elbows are placed by a few rows and widths measured on the dealer's patch in B, so the
-// figure sits where a dealer sits without carrying anyone's outline. Film pixels become plan pixels by one resize (1764 →
-// 1762 wide, x_plan = x_film × 1761 / 1763 as everywhere else). The pure parts are exported and tested in
-// tools/placement-backdrop.test.ts.
+// A in the shoe's own connected patch (the film's shoe, keyed by the scene as every film is). The dealer's patch in B, found
+// between the wrists data/dealer-standard.json gives the rest picture, is only kept off the shoe: nothing of her goes into a
+// picture. Film pixels become plan pixels by one resize (1764 → 1762 wide, x_plan = x_film × 1761 / 1763 as everywhere else).
 //
-// A doll's picture is the table and shoe without the figure, the doll's transparent still over it (already in plan pixels)
-// and the shoe over the doll as over the figure: the table under a doll is the table under Siluett, and the doll is drawn
-// from its own measures, never from a picture of the dealer.
+// A doll's picture is the table and shoe, the doll's transparent still over them (already in plan pixels) and the shoe again
+// over the doll (it stands on the felt in front of her elbow): the doll is drawn from its own measures (dealer3d/src/doll.ts),
+// never from a picture of the dealer. The pure parts are exported and tested in tools/placement-backdrop.test.ts.
 import {spawn, execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {mkdir, readFile, rename, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
-import {DOLL_BACKDROPS, NEUTRAL_BACKDROP, VIEWS, planQuad, validatePlan, type PlacementPlan} from '../src/placement-model.ts';
+import {DOLL_BACKDROPS, VIEWS, planQuad, validatePlan, type PlacementPlan} from '../src/placement-model.ts';
 import {SHIPPED} from '../studio/lib/scene-presets.ts';
 import {LOCK, lockLine, releaseLock, takeLock} from './lab-look.ts';
 
 export const FILM = {width: 1764, height: 1174};
 export const PLAN = {width: VIEWS.native.width, height: VIEWS.native.height};
-/** The picture and its receipt. */
-export const OUT = NEUTRAL_BACKDROP.native;
-export const RECEIPT = path.posix.join(path.posix.dirname(OUT), 'receipt.json');
-/** A doll's transparent still and the receipt of the stills, as dealer3d/tools/doll-still.ts writes them beside the picture. */
-export const dollStill = (doll: string) => path.posix.join(path.posix.dirname(OUT), `docka-${doll}.png`);
-export const DOLL_RECEIPT = path.posix.join(path.posix.dirname(OUT), 'docka-receipt.json');
+/** The folder of the dolls' pictures (src/placement-model.ts DOLL_BACKDROPS), where their stills and the receipts lie too. */
+export const FOLDER = path.posix.dirname(DOLL_BACKDROPS[0].native);
+export const RECEIPT = path.posix.join(FOLDER, 'receipt.json');
+/** A doll's transparent still and the receipt of the stills, as dealer3d/tools/doll-still.ts writes them beside the pictures. */
+export const dollStill = (doll: string) => path.posix.join(FOLDER, `docka-${doll}.png`);
+export const DOLL_RECEIPT = path.posix.join(FOLDER, 'docka-receipt.json');
 export const DOLL_STILLS = 'node dealer3d/tools/doll-still.ts';
 /** Anchor 1 of the dealer standard: the rest film's first frame, whose shoe every dealer shares (data/dealer-standard.json shoe.perDealer). */
 export const REST = {film: 'pamela-idle-ready-entry-01', frame: 0};
@@ -55,8 +52,6 @@ export const MARKS = 'trim,arc,text,logo,rings,numbers';
 export function lookOf(base: Record<string, unknown>): Record<string, unknown> {
   return {...base, mode: 'look', yaw: 0, pitch: 0, zoom: 1, dx: 0, dy: 0, dz: 0, sway: false, format: 'desk', cards: false, focus: 'off', dust: 0, clock: false, flicker: false, fan: false, roomShift: 'cut', marks: MARKS};
 }
-/** The figure's one tone and its edge. */
-export const FIGURE = {fill: '#767b83', soft: 1.6, shadow: 0.32};
 
 // ── Film pixels and plan pixels ────────────────────────────────────────────
 export const filmToPlan = (p: {x: number; y: number}) => ({x: p.x * (PLAN.width - 1) / (FILM.width - 1), y: p.y * (PLAN.height - 1) / (FILM.height - 1)});
@@ -107,112 +102,12 @@ export function grown(labels: Int32Array, id: number, width: number, height: num
   return m;
 }
 
-// ── The figure ──────────────────────────────────────────────────────────────
-export type Pt = [number, number];
-export type Hand = {wrist: Pt; indexKnuckle: Pt; littleKnuckle: Pt; middleFingertip: Pt};
-/** Where the dealer's body is, read off its patch: rows and half widths in film pixels (y down). */
-export type Body = {centre: number; headTop: number; headHalf: number; neckRow: number; neckHalf: number; shoulderRow: number; shoulderHalf: number; elbowRow: number; elbowLeft: number; elbowRight: number};
-/**
- * A few measures of a seated dealer's patch above the table edge row: the head's top and widest half, the neck (the narrowest
- * row 150 to 330 rows under the top), the shoulders (the first row under the neck at least 3.4 times as wide), the elbows (the
- * widest row between shoulders and edge) and the body's middle. Rounded to whole pixels: only a place, never an outline.
- */
-export function measureBody(mask: Uint8Array, width: number, edgeRow: number): Body {
-  const rows = Math.floor(edgeRow), left: number[] = [], right: number[] = [];
-  for (let y = 0; y < rows; y++) { let l = -1, r = -1; for (let x = 0; x < width; x++) if (mask[y * width + x]) { if (l < 0) l = x; r = x; } left.push(l); right.push(r); }
-  const w = (y: number) => left[y] < 0 ? 0 : right[y] - left[y] + 1;
-  const headTop = left.findIndex((l, y) => l >= 0 && w(y) >= 20);
-  if (headTop < 0) throw Error('Ingen kropp över bordskanten.');
-  let neckRow = headTop + 150; for (let y = headTop + 150; y <= Math.min(rows - 1, headTop + 330); y++) if (w(y) > 0 && w(y) < w(neckRow)) neckRow = y;
-  let headRow = headTop; for (let y = headTop; y < neckRow; y++) if (w(y) > w(headRow)) headRow = y;
-  let shoulderRow = neckRow; while (shoulderRow < rows - 1 && w(shoulderRow) < 3.4 * w(neckRow)) shoulderRow++;
-  let elbowRow = shoulderRow; for (let y = shoulderRow; y < rows - 20; y++) if (w(y) > w(elbowRow)) elbowRow = y;
-  const mids: number[] = []; for (let y = shoulderRow; y < rows - 20; y++) if (w(y) > 0) mids.push((left[y] + right[y]) / 2);
-  mids.sort((a, b) => a - b);
-  const r = Math.round;
-  return {centre: r(mids[mids.length >> 1] ?? (left[headRow] + right[headRow]) / 2), headTop, headHalf: r(w(headRow) / 2), neckRow, neckHalf: r(w(neckRow) / 2), shoulderRow, shoulderHalf: r(w(shoulderRow + 15) / 2), elbowRow, elbowLeft: left[elbowRow], elbowRight: right[elbowRow]};
-}
-const add = (a: Pt, b: Pt, k = 1): Pt => [a[0] + b[0] * k, a[1] + b[1] * k];
-const sub = (a: Pt, b: Pt): Pt => [a[0] - b[0], a[1] - b[1]];
-const len = (a: Pt) => Math.hypot(a[0], a[1]);
-const unit = (a: Pt): Pt => { const l = len(a) || 1; return [a[0] / l, a[1] / l]; };
-const f1 = (n: number) => Math.round(n * 10) / 10;
-/** A closed smooth path through points (Catmull-Rom as cubic Béziers). */
-export function smoothPath(points: readonly Pt[]): string {
-  const n = points.length, at = (i: number) => points[(i + n) % n];
-  let d = `M${f1(points[0][0])},${f1(points[0][1])}`;
-  for (let i = 0; i < n; i++) {
-    const p0 = at(i - 1), p1 = at(i), p2 = at(i + 1), p3 = at(i + 2);
-    const c1 = add(p1, sub(p2, p0), 1 / 6), c2 = add(p2, sub(p3, p1), -1 / 6);
-    d += ` C${f1(c1[0])},${f1(c1[1])} ${f1(c2[0])},${f1(c2[1])} ${f1(p2[0])},${f1(p2[1])}`;
-  }
-  return `${d} Z`;
-}
-/**
- * A hand as a mitten: from the wrist over the index knuckle to the fingertips and back by the little knuckle. The fingertips
- * lie along the knuckles' line carried by the middle finger's reach (index 95 %, little 72 % of it); the wrist is `wrist` wide.
- */
-export function mitten(h: Hand, wrist: number): Pt[] {
-  const mid: Pt = [(h.indexKnuckle[0] + h.littleKnuckle[0]) / 2, (h.indexKnuckle[1] + h.littleKnuckle[1]) / 2], reach = sub(h.middleFingertip, mid);
-  const axis = unit(sub(mid, h.wrist)), across: Pt = [-axis[1], axis[0]];
-  const a = add(h.wrist, across, wrist / 2), b = add(h.wrist, across, -wrist / 2);
-  const [toIndex, toLittle] = len(sub(a, h.indexKnuckle)) < len(sub(b, h.indexKnuckle)) ? [a, b] : [b, a];
-  return [toIndex, h.indexKnuckle, add(h.indexKnuckle, reach, 0.95), h.middleFingertip, add(h.littleKnuckle, reach, 0.72), h.littleKnuckle, toLittle];
-}
-/** A limb from a to b, `wa` wide at a and `wb` at b, as a polygon (round ends are added as circles). */
-function limb(a: Pt, b: Pt, wa: number, wb: number): Pt[] {
-  const d = unit(sub(b, a)), n: Pt = [-d[1], d[0]];
-  return [add(a, n, wa / 2), add(b, n, wb / 2), add(b, n, -wb / 2), add(a, n, -wa / 2)];
-}
-const poly = (p: readonly Pt[]) => p.map(q => `${f1(q[0])},${f1(q[1])}`).join(' ');
-/**
- * The seated figure as SVG in film pixels: head, neck, torso and upper arms (cut at the row the body ends on), forearms and
- * mittens (which reach over the edge onto the felt) in one grey tone with a soft edge, and the hands' faint shadow on the felt.
- */
-export function figureSvg(body: Body, hands: {left: Hand; right: Hand}, knuckleBreadth: number, bodyEnd: number, edgeRow: number): string {
-  const c = body.centre, wristW = knuckleBreadth * 0.72, arm = Math.max(60, Math.round(knuckleBreadth * 1.2)), fore = Math.round(knuckleBreadth * 1.05);
-  // a mannequin's head: an upright egg a little smaller than the measured head, its chin over the neck
-  const headRy = (body.neckRow - body.headTop) / 2 * 0.9, headCy = body.headTop + headRy * 1.12, headRx = Math.min(body.headHalf * 0.8, headRy * 0.74);
-  const neck = body.neckHalf * 0.72, sh = body.shoulderHalf, sRow = body.shoulderRow;
-  // round shoulders; the upper arms hang from them to the elbows at the body's widest row, the forearms come in to the hands
-  const capL: Pt = [c - sh + arm / 2, sRow + arm * 0.5], capR: Pt = [c + sh - arm / 2, sRow + arm * 0.5];
-  const elbowL: Pt = [body.elbowLeft + arm / 2, body.elbowRow], elbowR: Pt = [body.elbowRight - arm / 2, body.elbowRow];
-  // the torso between the arms: from the shoulders' inner side it narrows a little to the table edge, so that the room shows
-  // between body and arm as it does round a seated person with the elbows out
-  const chest = sh - arm * 0.62, waist = sh - arm * 0.95;
-  const torso: Pt[] = [[c - neck, sRow - 26], [c - chest, sRow + 6], [c - chest, sRow + arm * 1.4], [c - waist, bodyEnd + 20], [c + waist, bodyEnd + 20], [c + chest, sRow + arm * 1.4], [c + chest, sRow + 6], [c + neck, sRow - 26]];
-  const hands2 = [mitten(hands.left, wristW), mitten(hands.right, wristW)];
-  const forearms = [limb(elbowL, hands.left.wrist, fore, wristW + 6), limb(elbowR, hands.right.wrist, fore, wristW + 6)];
-  const g = FIGURE.fill;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${FILM.width}" height="${FILM.height}" viewBox="0 0 ${FILM.width} ${FILM.height}">
-<defs>
-<clipPath id="body"><rect x="0" y="0" width="${FILM.width}" height="${f1(bodyEnd)}"/></clipPath>
-<clipPath id="felt"><rect x="0" y="${f1(edgeRow)}" width="${FILM.width}" height="${f1(FILM.height - edgeRow)}"/></clipPath>
-<filter id="soft" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="${FIGURE.soft}"/></filter>
-<filter id="shade" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="5"/></filter>
-</defs>
-<g clip-path="url(#felt)" filter="url(#shade)" opacity="${FIGURE.shadow}">${hands2.map(h => `<path d="${smoothPath(h.map(p => add(p, [2, 6])))}" fill="#000"/>`).join('')}</g>
-<g filter="url(#soft)" fill="${g}" stroke="${g}" stroke-linejoin="round" stroke-linecap="round">
-<g clip-path="url(#body)">
-<ellipse cx="${f1(c)}" cy="${f1(headCy)}" rx="${f1(headRx)}" ry="${f1(headRy)}" stroke="none"/>
-<rect x="${f1(c - neck)}" y="${f1(headCy)}" width="${f1(2 * neck)}" height="${f1(sRow - headCy + 10)}" stroke="none"/>
-<polygon points="${poly(torso)}" stroke-width="44"/>
-<line x1="${f1(capL[0])}" y1="${f1(capL[1])}" x2="${f1(elbowL[0])}" y2="${f1(elbowL[1])}" stroke-width="${arm}"/>
-<line x1="${f1(capR[0])}" y1="${f1(capR[1])}" x2="${f1(elbowR[0])}" y2="${f1(elbowR[1])}" stroke-width="${arm}"/>
-</g>
-${forearms.map(p => `<polygon points="${poly(p)}" stroke-width="4"/>`).join('')}
-${[elbowL, elbowR].map(p => `<circle cx="${f1(p[0])}" cy="${f1(p[1])}" r="${f1(fore / 2)}" stroke="none"/>`).join('')}
-${hands2.map(h => `<path d="${smoothPath(h)}" stroke-width="3"/>`).join('')}
-</g>
-</svg>`;
-}
-
-// ── A doll in the figure's place ────────────────────────────────────────────
+// ── A doll at the table ─────────────────────────────────────────────────────
 type Raw = {data: Buffer | Uint8Array; width: number; height: number};
 /**
- * A doll's picture in plan pixels (PNG): the table without the figure (film pixels, RGB), the doll's still over it (a PNG in
- * plan pixels with alpha) and the shoe over the doll (film pixels, RGBA, transparent off the shoe). Each layer in film pixels
- * is resized once (fill, lanczos3), as the whole of Siluett is, so where the doll is transparent the table is Siluett's.
+ * A doll's picture in plan pixels (PNG): the table with its shoe (film pixels, RGB), the doll's still over it (a PNG in plan
+ * pixels with alpha) and the shoe over the doll (film pixels, RGBA, transparent off the shoe). Each layer in film pixels is
+ * resized once (fill, lanczos3), so where the doll is transparent the picture is the table as the scene shows it.
  */
 export async function dollOver(table: Raw, shoe: Raw, doll: Buffer, plan: {width: number; height: number} = PLAN): Promise<Buffer> {
   const m = await sharp(doll).metadata();
@@ -241,6 +136,7 @@ export function quadCentre(q: readonly {x: number; y: number}[]): {x: number; y:
   for (let i = 0; i < q.length; i++) { const p = q[i], r = q[(i + 1) % q.length], k = p.x * r.y - r.x * p.y; a += k; cx += (p.x + r.x) * k; cy += (p.y + r.y) * k; }
   return a ? {x: cx / (3 * a), y: cy / (3 * a)} : {x: q.reduce((s, p) => s + p.x, 0) / q.length, y: q.reduce((s, p) => s + p.y, 0) / q.length};
 }
+const f1 = (n: number) => Math.round(n * 10) / 10;
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
 // ── The lab's scene in a headless Chrome ────────────────────────────────────
@@ -308,7 +204,7 @@ const sha = (bytes: Buffer | string) => createHash('sha256').update(bytes).diges
 const rgbOf = async (png: Buffer) => { const {data, info} = await sharp(png).removeAlpha().raw().toBuffer({resolveWithObject: true}); return {rgb: new Uint8Array(data), width: info.width, height: info.height}; };
 const filmFrame = (film: string, frame: number) => execFileSync(ffmpeg, ['-hide_banner', '-loglevel', 'error', '-i', `assets/motions/${film}/source.mp4`, '-vf', `select=eq(n\\,${frame})`, '-fps_mode', 'vfr', '-frames:v', '1', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], {maxBuffer: 64 << 20, windowsHide: true});
 
-/** The fit's picture: the backdrop with every plan card outlined, and P4's card ×4 on the backdrop and in the scene's frame. */
+/** The fit's picture: the backdrop (the first doll's picture) with every plan card outlined, and P4's card ×4 on the backdrop and in the scene's frame. */
 async function proofPicture(file: string, backdrop: Buffer, scene: Buffer, plan: PlacementPlan, measured: {place: string; card: {x: number; y: number}; plan: {x: number; y: number}}) {
   const outline = (q: {x: number; y: number}[], colour: string, w: number) => `<polygon points="${q.map(p => `${f1(p.x)},${f1(p.y)}`).join(' ')}" fill="none" stroke="${colour}" stroke-width="${w}"/>`;
   const all = Object.keys(plan.targets).map(id => outline(planQuad(plan, id, 'native'), plan.targets[id].intent.endSide === 'BACK' ? '#ffff00' : '#3b82f6', id === measured.place ? 3 : 1.5)).join('');
@@ -330,19 +226,19 @@ export async function build(options: {proof?: string | null; keep?: string | nul
   // one folder however its drive letter is written (c:\ from a shell, C:\ from START.cmd)
   const folder = (p: string) => process.platform === 'win32' ? path.resolve(p).toLowerCase() : path.resolve(p);
   if (!health?.root || folder(health.root) !== folder(process.cwd())) throw Error('Labbservern för den här mappen svarar inte på 127.0.0.1:4319. Starta den (START.cmd) och kör igen.');
+  // The scene contract is the scene's own (its camera and table): nothing is read from it here, the receipt names it as a source.
   const [standardText, contractText, planText] = await Promise.all(['data/dealer-standard.json', 'data/scene-contract.json', 'placements/default.json'].map(f => readFile(f, 'utf8')));
-  const standard = JSON.parse(standardText), contract = JSON.parse(contractText), plan = JSON.parse(planText) as PlacementPlan; validatePlan(plan);
+  const standard = JSON.parse(standardText), plan = JSON.parse(planText) as PlacementPlan; validatePlan(plan);
   if (!String(standard.shoe?.perDealer ?? '').includes(REST.film)) throw Error(`Grundstandarden pekar inte längre på ${REST.film} för skon; se över REST.`);
-  const edgeRow = Number(contract.keyFigures?.dealerEdgeImageRow?.value), bodyEnd = Number(standard.body?.bodyEndsOnRows?.[1]), knuckles = Number(standard.hands?.knuckleBreadthPx);
+  // The rest picture's shoe box, and its wrists: the dealer's patch lies between them.
   const shoeBox = standard.shoe?.box as number[];
-  if (!(edgeRow > 0) || !(bodyEnd > 0) || !(knuckles > 0) || shoeBox?.length !== 4) throw Error('Grundstandarden eller scenkontraktet saknar ett mått.');
-  const hand = (h: any): Hand => ({wrist: h.wrist, indexKnuckle: h.indexKnuckle, littleKnuckle: h.littleKnuckle, middleFingertip: h.middleFingertip});
-  const hands = {left: hand(standard.hands.leftInPicture), right: hand(standard.hands.rightInPicture)};
+  const wrists = [standard.hands?.leftInPicture?.wrist, standard.hands?.rightInPicture?.wrist] as number[][];
+  if (shoeBox?.length !== 4 || wrists.some(w => !(w?.[0] > 0))) throw Error('Grundstandarden saknar ett mått.');
   const basgrund = SHIPPED.find(p => p.name === 'basgrund'); if (!basgrund) throw Error('Förvalet Basgrund saknas.');
   const look = lookOf(basgrund.state);
 
   // The dolls' stills first: their tool takes the shared lock itself, so it runs before this one takes it for the table.
-  if (!options.from) execFileSync(process.execPath, ['dealer3d/tools/doll-still.ts', '--out', path.posix.dirname(OUT)], {stdio: 'inherit', windowsHide: true});
+  if (!options.from) execFileSync(process.execPath, ['dealer3d/tools/doll-still.ts', '--out', FOLDER], {stdio: 'inherit', windowsHide: true});
   const dollStills = await Promise.all(DOLL_BACKDROPS.map(async d => {
     const png = await readFile(dollStill(d.doll)).catch(() => null);
     if (!png) throw Error(`${dollStill(d.doll)} saknas: kör ${DOLL_STILLS} (eller det här verktyget utan --from).`);
@@ -353,34 +249,28 @@ export async function build(options: {proof?: string | null; keep?: string | nul
   const scratch = path.resolve('.runtime'), port = options.port ?? 9481;
   const profile = path.join(scratch, 'placement-backdrop', `chrome-profile-${port}`);
   const shots: Shot[] = [{name: 'table', film: null, frame: REST.frame, hide: true}, {name: 'rest', film: null, frame: REST.frame, hide: false}, ...PROOFS.map(p => ({name: `${p.film}-${p.frame}`, film: p.film, frame: p.frame, hide: false}))];
-  // --from: the stills a run kept with --keep, so that the figure can be redrawn without starting Chrome again
+  // --from: the stills a run kept with --keep, so that the pictures can be built again without starting Chrome
   const {stills, browser} = options.from
     ? {stills: await Promise.all(shots.map(async s => ({name: s.name, png: await readFile(path.join(options.from!, `${s.name}.png`)), frame: s.hide ? null : s.frame}))), browser: `stills from ${options.from}`}
     : await (async () => {
-      const line = lockLine('placement-backdrop', 'Siluettens bord, sko och passning', 5, new Date());
+      const line = lockLine('placement-backdrop', 'Kortplans bord, sko och passning', 5, new Date());
       if (!await takeLock(LOCK, line)) throw Error('GPU-låset är upptaget.');
       try { return await capture(port, look, shots, profile); } finally { if (!releaseLock(LOCK, line)) console.error('GPU-låsets ägare ändrades under körningen.'); }
     })();
   if (!options.from) await rm(profile, {recursive: true, force: true, maxRetries: 5, retryDelay: 400}).catch(() => {});
   if (options.keep) { await mkdir(options.keep, {recursive: true}); for (const s of stills) await writeFile(path.join(options.keep, `${s.name}.png`), s.png); }
 
-  // The table, the dealer's patch and the shoe's.
+  // The table, and the shoe's patch apart from the dealer's.
   const A = await rgbOf(stills[0].png), B = await rgbOf(stills[1].png), W = A.width, H = A.height;
   const {labels, list} = patches(differs(A.rgb, B.rgb, 4), W, H);
-  const wristMid = (hands.left.wrist[0] + hands.right.wrist[0]) / 2;
+  const wristMid = (wrists[0][0] + wrists[1][0]) / 2;
   const dealer = patchIn(labels, W, [wristMid - 150, 450, wristMid + 150, 700]), shoe = patchIn(labels, W, shoeBox);
   if (dealer === null || shoe === null || dealer === shoe) throw Error('Dealern och skon gick inte att skilja åt i vilobilden.');
-  const body = measureBody(grown(labels, dealer, W, H, 0), W, edgeRow);
   const shoeMask = grown(labels, shoe, W, H, 3), dealerNear = grown(labels, dealer, W, H, 2);
   const composed = Buffer.from(A.rgb); let shoePixels = 0;
   for (let i = 0; i < W * H; i++) if (shoeMask[i] && !dealerNear[i]) { composed[i * 3] = B.rgb[i * 3]; composed[i * 3 + 1] = B.rgb[i * 3 + 1]; composed[i * 3 + 2] = B.rgb[i * 3 + 2]; shoePixels++; }
-  const svg = figureSvg(body, hands, knuckles, bodyEnd, edgeRow);
-  const figure = await sharp(Buffer.from(svg)).png().toBuffer();
   const shoeOver = Buffer.alloc(W * H * 4); for (let i = 0; i < W * H; i++) if (shoeMask[i] && !dealerNear[i]) { shoeOver[i * 4] = B.rgb[i * 3]; shoeOver[i * 4 + 1] = B.rgb[i * 3 + 1]; shoeOver[i * 4 + 2] = B.rgb[i * 3 + 2]; shoeOver[i * 4 + 3] = 255; }
-  // table and shoe, the figure over them, the shoe over the figure (it stands on the felt in front of her elbow)
-  const film = await sharp(composed, {raw: {width: W, height: H, channels: 3}}).composite([{input: figure}, {input: shoeOver, raw: {width: W, height: H, channels: 4}}]).png().toBuffer();
-  const picture = await sharp(film).resize(PLAN.width, PLAN.height, {fit: 'fill', kernel: 'lanczos3'}).jpeg({quality: 90, chromaSubsampling: '4:4:4'}).toBuffer();
-  // each doll where the figure was: the table and shoe without the figure, the doll, the shoe over the doll
+  // each doll at the table: the table and shoe, the doll over them, the shoe over the doll (it stands on the felt in front of her elbow)
   const dolls = await Promise.all(dollStills.map(async d => ({...d, picture: await sharp(await dollOver({data: composed, width: W, height: H}, {data: shoeOver, width: W, height: H}, d.png)).jpeg({quality: 90, chromaSubsampling: '4:4:4'}).toBuffer()})));
 
   // The fit: each proof frame's card in the scene against the same frame of the film itself, and against the plan's quad.
@@ -405,14 +295,12 @@ export async function build(options: {proof?: string | null; keep?: string | nul
   const [restHash, ...proofHashes] = await Promise.all([REST.film, ...PROOFS.map(p => p.film)].map(async f => sha(await readFile(`assets/motions/${f}/source.mp4`))));
   const head = (() => { try { return execFileSync('git', ['rev-parse', 'HEAD'], {windowsHide: true}).toString().trim(); } catch { return null; } })();
   const receipt = {
-    schemaVersion: 1, about: 'Placering: neutral bakgrund i Dator (studions bord, en neutral figur, bankens sko). Byggd av tools/placement-backdrop.ts; läs filens början för hur.',
-    picture: {path: OUT, width: PLAN.width, height: PLAN.height, bytes: picture.length, sha256: sha(picture), view: 'native'},
+    schemaVersion: 2, about: 'Kortplan: dockornas bilder under korten (studions bord, en docka i vila, bankens sko), i vyn native. Byggd av tools/placement-backdrop.ts; läs filens början för hur.',
     madeAt: new Date().toISOString(), madeBy: 'node tools/placement-backdrop.ts', repoHead: head, browser,
     frame: {film: `${FILM.width} × ${FILM.height}`, plan: `${PLAN.width} × ${PLAN.height}`, mapping: 'x_plan = x_film × 1761 / 1763, y unchanged (one resize, fill)', homeView: 'scene3d.html at 1764 × 1174, format desk, yaw 0, pitch 0, zoom 1, at the film camera: the film frame is the whole canvas'},
     table: {page: 'scene3d.html?ui=0', preset: 'basgrund', state: look, filmHidden: true, marks: `${MARKS} (no card boxes: the view draws the plan's cards)`},
     shoe: {from: `${REST.film} frame ${REST.frame}, as the scene keys it`, patch: list[shoe].box, pixels: shoePixels, rule: 'the scene with the film against the scene without it: the connected patch that fills the standard\'s shoe box, grown 3 px, without the dealer\'s patch grown 2 px'},
-    figure: {fill: FIGURE.fill, softEdgePx: FIGURE.soft, handShadow: FIGURE.shadow, body, bodyEndsOnRow: bodyEnd, edgeRow, hands: 'data/dealer-standard.json hands (wrist, knuckles, middle fingertip), mittens', knuckleBreadthPx: knuckles, note: 'drawn from these numbers only; no outline of a dealer is used'},
-    dolls: {made: options.from ? 'the stills as they lay (--from)' : DOLL_STILLS, layers: 'the table and shoe without the figure, the doll\'s still over it, the shoe over the doll; the table and shoe resized once from film pixels, the still already in plan pixels', stillsReceipt: {path: DOLL_RECEIPT, sha256: sha(dollReceiptText)},
+    dolls: {made: options.from ? 'the stills as they lay (--from)' : DOLL_STILLS, layers: 'the table and shoe, the doll\'s still over them, the shoe over the doll; the table and shoe resized once from film pixels, the still already in plan pixels', stillsReceipt: {path: DOLL_RECEIPT, sha256: sha(dollReceiptText)},
       pictures: dolls.map(d => ({id: d.id, doll: d.doll, path: d.native, width: PLAN.width, height: PLAN.height, bytes: d.picture.length, sha256: sha(d.picture), still: {path: d.still, sha256: sha(d.png)}}))},
     sources: {
       'data/dealer-standard.json': sha(standardText), 'data/scene-contract.json': sha(contractText), 'placements/default.json': sha(planText),
@@ -421,14 +309,14 @@ export async function build(options: {proof?: string | null; keep?: string | nul
     planUpdatedAt: plan.updatedAt,
     fit,
   };
-  await mkdir(path.dirname(OUT), {recursive: true});
-  for (const [file, bytes] of [[OUT, picture], ...dolls.map(d => [d.native, d.picture] as const), [RECEIPT, Buffer.from(JSON.stringify(receipt, null, 2) + '\n')]] as const) { const temp = `${file}.${process.pid}.tmp`; await writeFile(temp, bytes); await rename(temp, file); }
-  if (options.proof) { const best = fit[fit.length - 1]; await proofPicture(options.proof, await sharp(picture).png().toBuffer(), await sharp(stills[stills.length - 1].png).resize(PLAN.width, PLAN.height, {fit: 'fill', kernel: 'lanczos3'}).png().toBuffer(), plan, {place: best.place, card: best.centres.scene, plan: best.centres.plan}); }
+  await mkdir(FOLDER, {recursive: true});
+  for (const [file, bytes] of [...dolls.map(d => [d.native, d.picture] as const), [RECEIPT, Buffer.from(JSON.stringify(receipt, null, 2) + '\n')] as const]) { const temp = `${file}.${process.pid}.tmp`; await writeFile(temp, bytes); await rename(temp, file); }
+  if (options.proof) { const best = fit[fit.length - 1]; await proofPicture(options.proof, await sharp(dolls[0].picture).png().toBuffer(), await sharp(stills[stills.length - 1].png).resize(PLAN.width, PLAN.height, {fit: 'fill', kernel: 'lanczos3'}).png().toBuffer(), plan, {place: best.place, card: best.centres.scene, plan: best.centres.plan}); }
   return receipt;
 }
 
 if (import.meta.main) {
   const args = process.argv.slice(2), value = (flag: string) => { const i = args.indexOf(flag); return i >= 0 ? args[i + 1] ?? null : null; };
   const receipt = await build({proof: value('--proof'), keep: value('--keep'), from: value('--from'), port: value('--port') ? Number(value('--port')) : undefined});
-  console.log(JSON.stringify({picture: receipt.picture, dolls: receipt.dolls.pictures, body: receipt.figure.body, fit: receipt.fit.map(f => ({film: f.film, frame: f.frame, sceneAgainstFilm: f.sceneAgainstFilm.px, planAgainstCard: f.planAgainstCard, size: f.sizeAgainstPlan, table: f.tableUnderFilm.maxDifference}))}, null, 2));
+  console.log(JSON.stringify({dolls: receipt.dolls.pictures, fit: receipt.fit.map(f => ({film: f.film, frame: f.frame, sceneAgainstFilm: f.sceneAgainstFilm.px, planAgainstCard: f.planAgainstCard, size: f.sizeAgainstPlan, table: f.tableUnderFilm.maxDifference}))}, null, 2));
 }

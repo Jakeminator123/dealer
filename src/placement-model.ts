@@ -32,15 +32,14 @@ export const TABLE_PERSPECTIVE = { min: .80, max: .96, step: .01 } as const;
 export type PlacementPlan = { schemaVersion: 1; id: 'pamela-table'; space: 'image-normalized-bottom-up'; updatedAt: string | null; shoe: Record<View, Point>; targets: Record<string, Target>; tableProjection?:TableProjection };
 export const PLANE_HEADINGS=[-90,-45,-15,0,15,45,90] as const;
 export const VIEWS = { native: { width: 1762, height: 1174, label: 'Dator', profileId: 'v6-native', background: 'assets/lab/native.jpg' }, portrait: { width: 1080, height: 1920, label: 'Mobil', profileId: 'v6-portrait', background: 'assets/lab/portrait.jpg' } } as const;
-// The neutral backdrop of the studio's Placering view (Jakob 2026-11-13: no dealer's picture, and the table the studio uses):
-// the 3D scene's table at its home view, a neutral figure and the bank's shoe, in the view's own pixels. Built by
-// tools/placement-backdrop.ts with a receipt beside it; outside Git like all media. Only Dator has one: the scene has no home
-// view that matches the Mobil view's pixels (a separate V6 composition), so Mobil keeps its V6 picture.
-export const NEUTRAL_BACKDROP = { native: 'assets/lab/placement-backdrop/native.jpg' } as const;
-// The dolls in the figure's place (Jakob 2026-11-21: a doll with the dealer's measures "in instead of the silhouette we now have
-// in the studio, where one should be able to change doll"): the same table and shoe, and the white doll of dealer3d/src/doll.ts
-// at rest (anchor 1) where the figure sat. Built by the same tool, beside Siluett; the names are the dolls' own there, written
-// out here so that the studio does not import the 3D lane. Siluett stays the default until Jakob has chosen.
+// The backdrops of the studio's Kortplan (Jakob 2026-11-13: no dealer's picture, and the table the studio uses): the 3D scene's
+// table at its home view, the bank's shoe and, where the dealer sits, the white doll of dealer3d/src/doll.ts at rest (anchor
+// 1), in the view's own pixels. One picture per doll (Jakob 2026-11-21: a doll with the dealer's measures, "där man ska kunna
+// ändra docka också"); the chosen dealer's own doll lies under the cards, the standard doll for a dealer without one (Jakob
+// 2026-11-23: "Dockan övertar altså siluetten, men ska vara utifrån vilken dealer som vi har valt"; studio/lib/placement.ts
+// dollFor). A doll is named as its dealer is; the names are the dolls' own in the 3D lane, written out here so that the studio
+// does not import it. Built by tools/placement-backdrop.ts with a receipt beside them; outside Git like all media. Only Dator
+// has them: the scene has no home view that matches the Mobil view's pixels (a separate V6 composition).
 export const DOLL_BACKDROPS = [
  { id:'docka-standard', doll:'standard', native:'assets/lab/placement-backdrop/docka-standard.jpg' },
  { id:'docka-paow', doll:'paow', native:'assets/lab/placement-backdrop/docka-paow.jpg' },
@@ -57,11 +56,12 @@ export const SHOE_CARD: Readonly<Record<View, readonly {x:number;y:number}[]>> =
  native:[{x:1298,y:757.5},{x:1337,y:780},{x:1285,y:854},{x:1244,y:829}],
  portrait:[{x:922.5,y:763.5},{x:955,y:777.5},{x:904.5,y:849.5},{x:867.5,y:826.5}],
 };
-// The card standing in the shoe's window as the neutral backdrop, the dealers' anchors and the bank's films show it (the bank's
+// The card standing in the shoe's window as Kortplan's backdrop, the dealers' anchors and the bank's films show it (the bank's
 // shoe, the same for every dealer): inside the window's mouth, its long side at about 125° in the picture, about 92 × 45 px.
-// Its corners, clockwise from the upper one, are the yellow card's own in assets/lab/placement-backdrop/native.jpg (the
-// largest yellow blob in the window, its hull brought to four points); anchor 1 (paow-vila-ung-2) gives the same card within
-// 2 px, and it is the V6 picture's card (SHOE_CARD) within 5 px. Until 2026-11-17 late these were the card track's first
+// Its corners, clockwise from the upper one, are the yellow card's own in the backdrop's picture (the largest yellow blob in
+// the window, its hull brought to four points; measured in Siluett's picture, the backdrop until 2026-11-23, whose shoe the
+// dolls' pictures carry: tools/placement-backdrop.ts cuts it from the same rest frame); anchor 1 (paow-vila-ung-2) gives the same
+// card within 2 px, and it is the V6 picture's card (SHOE_CARD) within 5 px. Until 2026-11-17 late these were the card track's first
 // frame of a pinch (111 × 57 px): the card already drawn up out of the window with a strip of the next card, which the lab
 // then drew larger than the shoe's mouth (Jakob: "Kortet vid skon ska ju inte vara större än "mynningen" av skon heller").
 // The card path starts from it in Dator; Mobil has no film of its own and starts from SHOE_CARD.
@@ -72,7 +72,7 @@ export const WINDOW_CARD: Readonly<Record<View, readonly {x:number;y:number}[]>>
 // A card as the films show it, and as the labs where films are planned and ordered draw it (Jakob 2026-11-17: the back yellow,
 // the face blue; the print is the game's afterwork): one yellow and one blue, the film card's own. The blue is the median of
 // the card drawn on an order's last picture (the bank's real card pixels, tools/order-images.ts TEXTURE: 0, 130, 218), the
-// yellow the median of the card in the shoe's window of anchors 1 and 2.1 and the neutral backdrop (239–245, 214–228, 0–3).
+// yellow the median of the card in the shoe's window of anchors 1 and 2.1 and Kortplan's backdrop (239–245, 214–228, 0–3).
 // The game's lit film card (src/scene3d-deal.ts COLOUR: 232, 209, 5 and 0, 121, 227) lies within 13 of both.
 //
 // The film card's four colours, kept here and nowhere else (Jakob 2026-11-20: "Spara RGB-färgen för det gula, blåa, kryssets

@@ -5,7 +5,7 @@
 // filmer."). One frame for everything, titled Scen & bord: the toolbar on top with the view's menu at its left (the row wraps
 // rather than hides what does not fit), the picture as large as the window allows, one column on the right where things are
 // changed (under the picture on a narrow or upright window). The menu's five parts:
-//   Kortplan     the plan on the picture (Siluett or a film of the chosen dealer's under the cards), with the steps for the
+//   Kortplan     the plan on the picture (the chosen dealer's doll or a film of hers under the cards), with the steps for the
 //                chosen card: 1 Var kortet landar, 2 Hur det kommer dit, 3 Beställ (the card's three films and the films
 //                without a card, each with its five marks; the chosen film's recipe and exceptions, Sends.tsx). The list of
 //                films lies under the picture (FilmList.tsx), its cards ringed on the stage; its Förhandsvisa is the one way to

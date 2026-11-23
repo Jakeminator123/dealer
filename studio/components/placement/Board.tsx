@@ -1,8 +1,8 @@
 "use client";
 
 // Bordet's picture (Kortplan), as large as the area allows, with the cards on it and the handles on the chosen one.
-// Under the cards lies Siluett (the neutral backdrop) or a film of the chosen dealer's at a frame, in the bank's picture's
-// pixels (the plan's one view, PLAN_VIEW). A card
+// Under the cards lies a doll's picture (the chosen dealer's own until another is chosen) or a film of hers at a frame, in
+// the bank's picture's pixels (the plan's one view, PLAN_VIEW). A card
 // is drawn as the films show it, a plain yellow back (closed) or a plain blue face (open), over the quads (placement-model
 // src/card-plan.ts planCardQuad: real cards through the table's lens on "Verkligt perspektiv", CARD_COLOUR); how the game
 // prints it is afterwork. Over that lies one SVG in the view's own pixels with the handles:
@@ -99,7 +99,7 @@ export function Board({
   grid: boolean;
   changed: ReadonlySet<Place>;
   backdrop: Backdrop;
-  /** Paint the card in the shoe's window plain yellow over Siluett's film card and the window's pale edge; false under a film, which shows its own card. */
+  /** Paint the card in the shoe's window plain yellow over the doll picture's film card and the window's pale edge; false under a film, which shows its own card. */
   shoeCard: boolean;
   path: PathRun | null;
   onPhase: (phase: PathPhase) => void;
@@ -308,7 +308,7 @@ export function Board({
           {grid ? <rect width="100%" height="100%" fill="url(#placering-grid)" pointerEvents="none" /> : null}
           {shoeCard ? (
             // the card standing in the shoe's window, plain yellow as in the films with no pale rim round it: the films' card
-            // (WINDOW_CARD), where it hides Siluett's pale window edge
+            // (WINDOW_CARD), where it hides the pale window edge of the doll's picture
             <CardShape quad={windowCard(plan, view)} side="BACK" grow={2} pointerEvents="none">
               <title>Kortet i skon · stängt</title>
             </CardShape>

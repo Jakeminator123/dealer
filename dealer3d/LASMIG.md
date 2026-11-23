@@ -245,10 +245,11 @@ fingrar ska sitta som hennes innan dockan används.
 - **Kedja paow-filmer**: ingångsfilmen till A2.3 (`data/till-ankare-2-3-c.json`) är standarddockans. `doll-pose.ts`
   på den börjar i hennes vila och slutar där paow-givarna börjar (armbågar och handleder 0,0 mm isär, prövat
   2026-11-23), men ingen film är gjord av den.
-- **Dockan i studion** (2026-11-21): Kortplans lista har "Docka: standard" och "Docka: paow" efter Siluett, som är
-  förval tills Jakob har valt; valet står i adressen (`?bakgrund=docka-paow`). `node tools/placement-backdrop.ts` bygger
-  Siluett och en bild per docka (`docka-<docka>.jpg`): bordet och skon utan figur, dockan över, skon överst. Dockan kommer
-  ur `doll-still.ts` (vila: första rutan i `till-ankare-2-3-c.json` ställd på dockan, genomskinlig, 1762 × 1174), som
+- **Dockan i studion** (2026-11-23): under korten i Bordets Kortplan ligger den valda dealerns docka ("Docka: Paow"
+  för Paow; en dealer utan egen docka får "Docka: Standard"); Siluett finns inte kvar. Listan har hennes docka först,
+  sedan de andra och sedan hennes filmer; ett annat val står i adressen (`?bakgrund=docka-standard`), och en äldre länk
+  med `bakgrund=neutral` visar dealerns docka. `node tools/placement-backdrop.ts` bygger en bild per docka
+  (`docka-<docka>.jpg`): bordet och skon, dockan över, skon överst. Dockan kommer ur `doll-still.ts` (vila: första rutan i `till-ankare-2-3-c.json` ställd på dockan, genomskinlig, 1762 × 1174), som
   verktyget kör först, under låset. Paows händer ligger där som i hennes vilobild (`paow-vila-tatuerad`).
 - **Känd avvikelse:** standarddockans vila har händerna som rörelsen har dem: höger inom 3 px från vilobilden i
   `data/dealer-standard.json`, vänster (till höger i bilden) 15 px längre in (marginalen där är 8 px). Den får stå tills vidare.

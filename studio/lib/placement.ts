@@ -1,9 +1,9 @@
 // The thin helpers of Bordet's Kortplan (the plan on the picture): places in Jakob's words, the draft with its undo and what differs from the saved plan,
-// the handles' arithmetic, numbers with a decimal comma, the view's address, what the cards can be laid over (the neutral
-// backdrop, the V6 picture, the films). The plan's own rules (where a card is drawn, how an edit
+// the handles' arithmetic, numbers with a decimal comma, the view's address, what the cards can be laid over (the dealer's
+// doll, the other dolls, her films). The plan's own rules (where a card is drawn, how an edit
 // is made) are src/placement-model.ts. Pure: no DOM, no network; the motion's words are tested in studio/tests/bordet-line.test.ts.
 import { DEALER, isCurrent, playable, takeRole, ROLE_LABEL, type Graph } from "../../src/clip-graph.ts";
-import { DOLL_BACKDROPS, NEUTRAL_BACKDROP, SHOE, TARGETS, VIEWS, editPlace, motionNodes, sequence, toPixels, type Geometry, type Hand, type Intent, type Place, type PlacementPlan, type Side, type View } from "../../src/placement-model.ts";
+import { DOLL_BACKDROPS, SHOE, TARGETS, VIEWS, editPlace, motionNodes, sequence, toPixels, type Geometry, type Hand, type Intent, type Place, type PlacementPlan, type Side, type View } from "../../src/placement-model.ts";
 import { cardCode, nodeCode } from "./names.ts";
 
 // ── Places ──────────────────────────────────────────────────────────────────
@@ -183,37 +183,44 @@ export function motionSteps(id: string, intent: Intent, anchor: string = anchorO
 }
 
 // ── What lies under the cards ───────────────────────────────────────────────
-// Siluett, the neutral backdrop (Jakob 2026-11-13: "a neutral picture and not a picture of this woman"): the 3D scene's
-// table at its home view with a neutral figure and the bank's shoe, built by tools/placement-backdrop.ts (NEUTRAL_BACKDROP);
-// or a film of the chosen dealer's. Nothing else since 2026-11-18 (Jakob: "Om hon används som referens borde hon rimligtvis
-// göras till silhuett", and "V6-läget är jag skeptisk mot i sin helhet"): the V6 picture left the list, and so did every
-// film of a dealer he has not chosen. Where the silhouette's file is missing the picture stays dark rather than show her.
-// Beside Siluett the dolls (Jakob 2026-11-21: a doll with the dealer's measures "in instead of the silhouette we now have in
-// the studio, where one should be able to change doll"): the same table and shoe with a white doll at rest where the figure
-// sits, built by the same tool (DOLL_BACKDROPS). Siluett stays the default until he has chosen.
-export type Still = "neutral" | (typeof DOLL_BACKDROPS)[number]["id"];
-export const STILL: Still = "neutral";
-/** The stills by his words (Ordlista): Siluett, then "Docka: <doll>" per doll, named as the dealer is ("Docka: Paow"). */
-export const STILLS: readonly { id: Still; word: string; path: string }[] = [
-  { id: STILL, word: "Siluett", path: NEUTRAL_BACKDROP.native },
-  ...DOLL_BACKDROPS.map((d) => ({ id: d.id, word: `Docka: ${d.doll.charAt(0).toUpperCase()}${d.doll.slice(1)}`, path: d.native })),
-];
-/** The list's stills for a dealer: Siluett first, then her own doll when she has one, then the others. */
-export const stillsFor = (dealer: string) => [STILLS[0], ...STILLS.slice(1).sort((a, b) => Number(b.id === `docka-${dealer}`) - Number(a.id === `docka-${dealer}`))];
+// A doll, or a film of the chosen dealer's. A doll's picture is the 3D scene's table at its home view, the bank's shoe and a
+// white doll at rest where the dealer sits, built by tools/placement-backdrop.ts (DOLL_BACKDROPS): never a picture of a dealer
+// (Jakob 2026-11-13: "a neutral picture and not a picture of this woman"). The chosen dealer's own doll lies there until
+// something else is chosen, the standard doll for a dealer who has none (Jakob 2026-11-23: "Sätt in dockan för dealern
+// istället för siluetten. Dockan övertar altså siluetten, men ska vara utifrån vilken dealer som vi har valt"); the other
+// dolls stay in the list (2026-11-21: "där man ska kunna ändra docka också"). Nothing else since 2026-11-18 (Jakob: "Om hon
+// används som referens borde hon rimligtvis göras till silhuett", and "V6-läget är jag skeptisk mot i sin helhet"): the V6
+// picture left the list, and so did every film of a dealer he has not chosen. Where a doll's file is missing the picture
+// stays dark rather than show her.
+export type Still = (typeof DOLL_BACKDROPS)[number]["id"];
+/** The dolls by his words (Ordlista, Docka): "Docka: <doll>", named as the dealer is ("Docka: Paow"). */
+export const STILLS: readonly { id: Still; word: string; path: string }[] = DOLL_BACKDROPS.map((d) => ({ id: d.id, word: `Docka: ${d.doll.charAt(0).toUpperCase()}${d.doll.slice(1)}`, path: d.native }));
+/** A dealer's doll: her own where she has one, else the standard doll. What lies under the cards when nothing is chosen. */
+export const dollFor = (dealer: string) => STILLS.find((s) => s.id === `docka-${dealer}`) ?? STILLS.find((s) => s.id === "docka-standard")!;
+/** The list's dolls for a dealer: hers first, then the others. */
+export function stillsFor(dealer: string) {
+  const own = dollFor(dealer);
+  return [own, ...STILLS.filter((s) => s !== own)];
+}
 export type Shown = { kind: "still"; still: Still; path: string } | { kind: "film"; film: Film };
-/** What lies under the cards: the still or the film the address names (a film when it is one of `films`, the chosen dealer's), else Siluett. */
-export function shownBackdrop(backdrop: string | null, films: readonly Film[]): Shown {
+/**
+ * What lies under the cards: the doll or the film the address names (a film when it is one of `films`, the chosen dealer's),
+ * else the dealer's doll. So does every other name: an old link's bakgrund=neutral (Siluett, which the dolls replaced) and a
+ * film of another dealer's.
+ */
+export function shownBackdrop(backdrop: string | null, films: readonly Film[], dealer: string): Shown {
   const still = STILLS.find((s) => s.id === backdrop);
   const film = backdrop && !still ? films.find((f) => f.id === backdrop) : undefined;
   if (film) return { kind: "film", film };
-  const s = still ?? STILLS[0];
+  const s = still ?? dollFor(dealer);
   return { kind: "still", still: s.id, path: s.path };
 }
 
 // ── The address ─────────────────────────────────────────────────────────────
-// /placering/?plats=p4c2&bakgrund=<film id | neutral | docka-paow>&ruta=40: the chosen place, and what to lay the cards over (a
-// film with its frame, Siluett or a doll). Nothing chosen is the default: P4C2 (the first place), Siluett. An old link's vy=mobil is not read:
-// the plan has one view. "robot" belongs to every lab page (src/preview-ui.ts) and is kept as it stands.
+// /placering/?plats=p4c2&bakgrund=<film id | docka-standard>&ruta=40: the chosen place, and what to lay the cards over (a film
+// with its frame, or a doll). Nothing chosen is the default: P4C2 (the first place), the chosen dealer's doll. An old link's
+// bakgrund=neutral shows that doll too, and its vy=mobil is not read: the plan has one view. "robot" belongs to every lab
+// page (src/preview-ui.ts) and is kept as it stands.
 export type PlacementAddress = { place: Place; backdrop: string | null; frame: number };
 type Params = { get(name: string): string | null };
 export const START_PLACE: Place = "P4.C2";

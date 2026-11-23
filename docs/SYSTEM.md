@@ -522,14 +522,19 @@ böjning 0,14 (av 0,18) och glans 0,35. Kortet i skons fönster målas gult på 
 filmerna och planen; bilden och filmerna är orörda. Förslag bredvid utkastet ligger i `placements/proposals/<namn>.json`
 (i dag `forslag` och `forslag-slump`, K = 1,65): servern läser dem med `api/placements?plan=<namn>` och skriver aldrig
 till dem, bara 3D-scenen visar dem (`scene3d.html?plan=forslag&kort=1.65`), och Kortplan visar dem inte, eftersom den
-sparar till utkastet. **Kortplan: bakgrunden.** Dator öppnar på en neutral bild (Jakob 2026-11-13: ingen
-dealers bild, och studions eget bord): 3D-scenens bord i hemvyn med filmen dold, en grå figur med händerna där
-`data/dealer-standard.json` lägger dem (ingen kontur av en dealer) och bankens sko. I hemvyn är filmrutan hela duken, en
-rektangel utan skevning, så bilden ligger i filmpixlar (1764 → 1762 ger planens). `node tools/placement-backdrop.ts`
-bygger `assets/lab/placement-backdrop/native.jpg` med `receipt.json` (källor med SHA-256, figurens mått och passningen:
-filmens kort i scenen mot samma ruta ur filmen 0,2–0,3 px, bordet under filmen lika pixel för pixel); bilden byggs om
-när bordet, skon eller grundstandarden ändras. Sedan 2026-11-18 (Jakob: ingen dealer han inte valt, och inget görs
-dubbelt för mobilen) finns under korten bara Siluett och den valda dealerns egna filmer: V6-bilden och en annan dealers
+sparar till utkastet. **Kortplan: bakgrunden.** Under korten ligger den valda dealerns docka (Jakob 2026-11-23: dockan
+tar över Siluetten, efter vald dealer; 2026-11-13: ingen dealers bild, och studions eget bord): 3D-scenens bord i hemvyn
+med filmen dold, en vit docka i vila med dealerns mått (`dealer3d/src/doll.ts`; ingen bild av en dealer) och bankens sko.
+Paow har sin egen docka; en dealer utan egen får standarddockan. Listan Under korten har hennes docka först, sedan de
+andra dockorna och sedan hennes filmer; ett annat val än hennes docka står i adressen (`bakgrund=docka-standard` eller en
+films id), och en adress utan `bakgrund`, eller med den äldre `bakgrund=neutral`, visar dealerns docka. I hemvyn är
+filmrutan hela duken, en rektangel utan skevning, så bilden ligger i filmpixlar (1764 → 1762 ger planens).
+`node tools/placement-backdrop.ts` bygger en bild per docka, `assets/lab/placement-backdrop/docka-<docka>.jpg` (bordet och
+skon, dockan ur `dealer3d/tools/doll-still.ts` över, skon överst), med `receipt.json` (källor med SHA-256, dockornas
+stillbilder och passningen: filmens kort i scenen mot samma ruta ur filmen 0,2–0,3 px, bordet under filmen lika pixel för
+pixel); bilderna byggs om när bordet, skon, grundstandarden eller en docka ändras. Sedan 2026-11-18 (Jakob: ingen dealer
+han inte valt, och inget görs dubbelt för mobilen) finns under korten bara dockorna och den valda dealerns egna filmer:
+V6-bilden och en annan dealers
 filmer är ute ur listan (biblioteket `data/library.json` är Pamelas och visas bara när hon är vald), och Kortplan har en
 vy, bankens bild (Dator). Planens andra vy, `portrait`, ligger kvar i filen och godtas av `validatePlan`, men inget i
 labbet, spelet eller en beställning läser den; spelet på en telefon ritar korten ur `native` i filmens bild. Placering är
