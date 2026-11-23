@@ -85,7 +85,11 @@ function firstDraft(got: CompositionAnswer, films: ReadonlyMap<string, BridgeDef
   const [first, second] = [...got.trees].sort((a, b) => Number(b.restFilms) - Number(a.restFilms));
   const trees = [first, second].filter(Boolean).map((t, i) => ({ tree: t.tree, share: i ? 20 : 80 }));
   const bridge = first?.rest && second?.rest ? films.get(pairKey(first.rest, second.rest)) : undefined;
-  return { id: "", name: [first, second].filter(Boolean).map((t) => t.name).join(" + "), trees, ...(bridge ? { bridges: [bridge] } : {}) };
+  // A name no saved composition has, so that a new one can be saved as it stands.
+  const base = [first, second].filter(Boolean).map((t) => t.name).join(" + "), names = new Set(got.compositions.map((c) => c.def.name));
+  let name = base;
+  for (let n = 2; names.has(name); n++) name = `${base} ${n}`;
+  return { id: "", name, trees, ...(bridge ? { bridges: [bridge] } : {}) };
 }
 
 function Editor({ trees, got, saved, graph, dealer, set, reload }: { trees: TreeAnswer; got: CompositionAnswer; saved: CompositionView | null; graph: Graph | null; dealer: string; set: Set; reload: () => void }) {
