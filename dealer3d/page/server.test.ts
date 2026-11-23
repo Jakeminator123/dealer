@@ -57,6 +57,9 @@ test('a standard is saved into its own folder, and read back', () => lab(async (
   assert.equal((await ask('PUT', '/dealer3d/standard/paow-p6c1.json', {...motion('paow', 'P6.C1'), about: 'again'}, {Origin: origin})).status, 200);
   assert.equal(JSON.parse(await readFile(path.join(root, STANDARDS, 'paow-p6c1.json'), 'utf8')).about, 'again'); assert.equal((await files(root)).length, before.length + 1);
   assert.equal((await ask('PUT', '/dealer3d/standard/standard-dc3.json', motion('standard', 'D.C3'), {Origin: origin})).status, 200);
+  // A deal from another entry than A2.3 has the entry in its name, and says it in lab.from.
+  const fromA21 = {...motion('paow', 'P4.C1'), lab: {read: 'x', from: 'A2.1'}}, a21 = await ask('PUT', '/dealer3d/standard/paow-a2-1-p4c1.json', fromA21, {Origin: origin}); assert.equal(a21.status, 200, a21.text);
+  assert.deepEqual(JSON.parse(a21.text).standards.map((s: {name: string; from: string; place: string}) => [s.name, s.from, s.place]), [['paow-a2-1-p4c1', 'A2.1', 'P4.C1'], ['paow-p6c1', 'A2.3', 'P6.C1'], ['standard-dc3', 'A2.3', 'D.C3']]);
 }));
 
 test('nothing is written outside the folder, under another name, from another origin, or of another shape', () => lab(async ({root, origin, ask}) => {
@@ -76,6 +79,9 @@ test('nothing is written outside the folder, under another name, from another or
     ['a page module', '/dealer3d/page/docka.ts', good, own, 405],
     ['another doll than the name says', '/dealer3d/standard/standard-p6c1.json', good, own, 400],
     ['another place than the name says', '/dealer3d/standard/paow-p6c2.json', good, own, 400],
+    ['another entry than the name says', '/dealer3d/standard/paow-a2-1-p6c1.json', good, own, 400],
+    ['an entry the name does not say', '/dealer3d/standard/paow-p6c1.json', {...good, lab: {from: 'A2.1'}}, own, 400],
+    ['an entry there is none of', '/dealer3d/standard/paow-a2-3-p6c1.json', {...good, lab: {from: 'A2.3'}}, own, 400],
     ['a frame count that is not the frames', '/dealer3d/standard/paow-p6c1.json', {...good, frameCount: 3}, own, 400],
     ['a hand of twenty points', '/dealer3d/standard/paow-p6c1.json', {...good, frames: [frame(), {...frame(), R: {...limb(), p: limb().p.slice(1)}}]}, own, 400],
     ['a number that is none', '/dealer3d/standard/paow-p6c1.json', JSON.stringify(good).replace('[0,0.4,-2]', '[0,"x",-2]'), own, 400],

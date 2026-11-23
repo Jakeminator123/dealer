@@ -56,10 +56,13 @@ export type DollSkeleton = {names: string[]; parents: number[]; rest: Vec3[]; so
  * at that anchor; the fingers bend from it as the motion's do, and away from the anchor the hand holds what the motion's holds.
  * `grip` is the same hand (its palm, its bones' lengths) as she carries a card: the shape the hand has away from the anchor.
  * `rest` is the same hand as it lies at rest (anchor 1), its shape and its place: what the hand is where a motion stands at rest.
+ * `natural` is her left hand at the anchor as the doll lab's "Naturlig" has it (naturalDoll): its shape and its place
+ * fitted to the hand in her picture (dealer3d/tools/docka-hand.ts), the same palm and bones; "Som förut", the films made
+ * and the motions in dealer3d/data/ keep `left` and `at.left`.
  */
 export type HandPlace = {wrist: Vec3; forward: Vec3; palm: Vec3};
 export type DollHand = {anchor: string; right: Vec3[]; left: Vec3[]; at: {right: HandPlace; left: HandPlace}; grip?: {right: Vec3[]; left: Vec3[]};
-  rest?: {right: Vec3[]; left: Vec3[]; at: {right: HandPlace; left: HandPlace}}};
+  rest?: {right: Vec3[]; left: Vec3[]; at: {right: HandPlace; left: HandPlace}}; natural?: {left: Vec3[]; at: {left: HandPlace}}};
 export type Doll = {
   name: string;
   upperArm: number; forearm: number;
@@ -130,7 +133,9 @@ export const PAOW: Doll = {
     rest: {right: [[0, 0, 0], [0.0244, 0.0234, -0.0244], [0.0519, 0.0328, -0.0412], [0.0866, 0.0413, -0.0445], [0.1109, 0.0505, -0.0484], [0.084, 0.0089, -0.0249], [0.1226, 0.0157, -0.0166], [0.1462, 0.0236, -0.0103], [0.1662, 0.0291, -0.004], [0.0862, 0, 0], [0.1297, 0.0066, 0.0071], [0.1558, 0.0126, 0.0118], [0.1779, 0.0166, 0.0158], [0.0776, 0.0014, 0.0201], [0.1175, 0.0031, 0.0249], [0.1444, 0.0058, 0.0284], [0.1664, 0.009, 0.03], [0.066, 0.007, 0.0387], [0.096, 0.0019, 0.0426], [0.1161, 0.0013, 0.0466], [0.1357, 0.003, 0.0483]],
       left: [[0, 0, 0], [0.0244, 0.0234, 0.0244], [0.051, 0.0346, 0.0414], [0.0853, 0.0446, 0.0459], [0.1088, 0.0549, 0.051], [0.084, 0.0089, 0.0249], [0.1221, 0.0175, 0.0161], [0.1456, 0.0258, 0.0095], [0.1653, 0.0319, 0.003], [0.0862, 0, 0], [0.129, 0.0102, -0.0076], [0.155, 0.0162, -0.0124], [0.177, 0.0201, -0.0164], [0.0776, 0.0014, -0.0201], [0.1171, 0.006, -0.0253], [0.144, 0.0096, -0.029], [0.1659, 0.0137, -0.0308], [0.066, 0.007, -0.0387], [0.096, 0.0027, -0.0431], [0.116, 0.0026, -0.0475], [0.1357, 0.0047, -0.0495]],
       at: {right: {wrist: [-0.1595, 0.0266, -1.867], forward: [0.5478, 0.1937, 0.8139], palm: [0.3375, -0.9413, -0.0031]},
-        left: {wrist: [0.1425, 0.0242, -1.876], forward: [-0.5539, 0.1926, 0.81], palm: [-0.3192, -0.9477, 0.0071]}}}},
+        left: {wrist: [0.1425, 0.0242, -1.876], forward: [-0.5539, 0.1926, 0.81], palm: [-0.3192, -0.9477, 0.0071]}}},
+    natural: {left: [[0, 0, 0], [0.0244, 0.0234, 0.0244], [0.0525, 0.0228, 0.0427], [0.0859, 0.02, 0.0557], [0.1096, 0.0239, 0.0662], [0.084, 0.0089, 0.0249], [0.1225, 0.0198, 0.0251], [0.1473, 0.0269, 0.0253], [0.1678, 0.0334, 0.0254], [0.0862, 0, 0], [0.1291, 0.0105, 0.0066], [0.1552, 0.0169, 0.0105], [0.1774, 0.0202, 0.0138], [0.0776, 0.0014, -0.0201], [0.1174, 0.0067, -0.0219], [0.1434, 0.0101, -0.0146], [0.1605, 0.0108, -0.0002], [0.066, 0.007, -0.0387], [0.0957, -0.0002, -0.0359], [0.1154, -0.0052, -0.0353], [0.1341, -0.0117, -0.0327]],
+      at: {left: {wrist: [0.2782, 0.1029, -1.9437], forward: [0.515, -0.0963, 0.8518], palm: [0.0727, -0.9852, -0.1553]}}}},
   about: {
     place: 'mätt: hennes händer mot filten och kortet i skon (ankare 1: 390 och 372 mm bakom bordskanten, ankare 2.3: 374 och 380); 0,38 m. Mått tagna vid 0,18 m är 9 % för korta',
     upperArm: 'mätt: axel- till armbågsled 293 mm (ankare 1 och 2.3, båda armarna)',
@@ -141,6 +146,7 @@ export const PAOW: Doll = {
     elbowPoles: 'mätt: det håll hennes armbågar hänger åt i givarna till plats 4 och 1 och i ankare 2.3 (femton bilder): nedåt och en aning utåt, inte bakåt som standarddockans',
     elbowAtRest: 'mätt: i vilan, med båda händerna framför sig, hänger hennes armbågar utåt och fram, inte rakt ned som i givarna (tre bilder: vilan och de två första ur ingångsfilmen till 2.3; dockans armbågar hamnar inom 11 bildpunkter från hennes till höger och inom 4 till vänster, mot 34 till 44 och 130 med givarnas poler). Vilans poler gäller bara medan ingen hand är ute åt sin egen sida om axeln: gränsen 0,11 av armens längd är satt så att givarna från 2.3 inte ändras, där är vänsterhanden vid skon minst 0,119 ut. Handens plats ensam skiljer inte vilan från en giv: i given till plats 1 går hennes högra hand förbi samma plats framför axeln med armbågen längre ut än i vilan',
     hand: 'mätt: hennes hand i ankare 2.3, benens längder medel av båda händerna över femton bilder; handen 190 mm från handled till långfingertopp, 70 mm över knogarna. Var händerna ligger i ankaret (at) är läst i samma bild, med hennes axlar 0,38 m bakom bordskanten. Greppet (grip) är hennes hand när hon bär kortet: högern medel av sex bilder ur givarna till plats 4 och 1 (fingrarnas mellanleder böjda 48-74 grader), vänstern två bilder (32-36 grader). Vänsterhandens fingrar i ankaret (left) är böjda så att de ritade topparna (fingret slutar i en kula på 8,2 mm) ligger på hennes vid skon, lästa med ögat i 8x, och pek-, lång- och ringfingrets kulor vilar på kortets yta i skons fönster (2026-11-23; de stack ut 8-15 bildpunkter); pek- och långfingret böjer i alla tre lederna mot handflatan, mellanleden en och en halv gång den yttre (de var bakåtböjda 21-36 grader i mellan- och ytterleden, en klo); benlängderna och handflatan är desamma',
+    handNatural: 'mätt: vänsterhanden i ankare 2.3 som Naturlig har den (2026-11-23, Jakob: handen över skon "fel i grunden … typ lillfingret"). SAM läste handen pekande mot kameran med ryggen nästan på kant (77 grader mot ögat), handleden 10 bildpunkter för långt till höger och ned och knogarnas linje vriden 34 grader i bilden; för att topparna ändå skulle nå hennes böjdes fingrarna till en klo och lillfingret 40 grader bakåt. MediaPipe läste hennes hand i ankarbilden paow-ankare-2-3-d (tre utsnitt i dubbel storlek, medel); handen är anpassad till den läsningen med samma handflata och benlängder, fingrarna böjda bara i sina leder och inom dem, pek-, lång- och ringfingrets toppar på kortets yta i skons fönster (dealer3d/tools/docka-hand.ts). Felet i bilden 3,3 bildpunkter i medel mot 12,5; handleden 25 mm längre in mot skon, handen vriden 26 grader, ryggen 53 grader mot ögat, fingrarna raka och lillfingret lyft (som hennes), handleden böjd 42 grader mot handflatan',
     handAtRest: 'mätt: hennes händer i vilan (ankare 1, en bild): samma handflata och benlängder som hand, varje fingerben pekar som hennes där; var händerna ligger (at) är läst i samma bild med axlarna 0,38 m bakom bordskanten',
     hipBelowFelt: 'mätt längd, gissad hållning: höftled till axelleder 505 och 511 mm; rak bål rakt under axlarna (höfterna syns inte, SAM lägger dem 13-17 cm framför)',
     shoulders: 'mätt: axellederna på rad 448 och 443 (1764x1174), 366 mm isär; jämnade till rad 445,5. Standarddockans leder ligger högre, i hennes akromion',
@@ -165,6 +171,11 @@ export function dollFrame(lens: Lens, doll: Doll = STANDARD): Frame {
   const ahead = (q: Pixel, by: number): Vec3 => onUpright(eye, q.x, q.y, z + by)!;
   const a = ahead(p.shoulders[0], p.ahead.shoulders[0]), b = ahead(p.shoulders[1], p.ahead.shoulders[1]), mid = mul(add(a, b), 0.5);
   return {hip: [mid[0], -doll.hipBelowFelt, z], shoulders: [a, b], neck: ahead(p.neck, p.ahead.neck), head: ahead(p.head, p.ahead.head), headRadius: p.headRadius};
+}
+
+/** The doll as the doll lab's "Naturlig" has her: her left hand at the anchor as `hand.natural` has it, where she has one; else the doll as she is. Same name. */
+export function naturalDoll(doll: Doll): Doll {
+  const n = doll.hand?.natural; return n ? {...doll, hand: {...doll.hand!, left: n.left, at: {...doll.hand!.at, left: n.at.left}}} : doll;
 }
 
 export const DOLLS: Record<string, Doll> = {standard: STANDARD, paow: PAOW};

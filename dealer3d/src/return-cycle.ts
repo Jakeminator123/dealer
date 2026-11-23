@@ -15,6 +15,8 @@ export type ReturnCycleOptions = {
   readyFrom?: number;
   durationSeconds?: number;
   liftMeters?: number;
+  /** The hand that laid the card and is lifted off it: the right (two-hand deals from A2.3, the default) or the left (the one-hand deals read from Pamela's film, A2.1). */
+  liftHand?: 'L' | 'R';
 };
 
 type Source = { path: string; sha256: string };
@@ -46,11 +48,13 @@ function validateMotion(motion: DealMotion): void {
     throw new Error('Expected a timed deal with at least two frames of a settled card');
   }
   const cardId = motion.frames[0]?.card?.id;
+  // A deal read from a film (dealer3d/data/giv-pamela-*.json) has no gaze point g in any frame; a laid deal has it in every frame.
+  const gazes = motion.frames[0]?.g !== undefined;
   for (const [i, frame] of motion.frames.entries()) {
     const card = frame?.card;
     if (!card || !Number.isSafeInteger(card.id) || card.id !== cardId ||
         !vector(card.c) || !vector(card.l) || !vector(card.n) ||
-        !limb(frame.L) || !limb(frame.R) || !vector(frame.h) || !vector(frame.g)) {
+        !limb(frame.L) || !limb(frame.R) || !vector(frame.h) || (gazes ? !vector(frame.g) : frame.g !== undefined)) {
       throw new Error(`Invalid single-card deal at frame ${i}`);
     }
   }
@@ -123,6 +127,8 @@ export function buildReturnCycle<T extends DealMotion>(motion: T, source: Source
   const readyFrom = options.readyFrom ?? holdThrough + Math.max(3, Math.round(fps * 4 / 3));
   const durationSeconds = options.durationSeconds ?? (readyFrom + Math.max(1, Math.round(fps * 2 / 15))) / fps;
   const liftMeters = options.liftMeters ?? 0.022;
+  const liftHand = options.liftHand ?? 'R';
+  if (liftHand !== 'L' && liftHand !== 'R') throw new Error('The lifted hand is L or R');
   const frameCount = Math.round(durationSeconds * fps);
   if (!Number.isSafeInteger(holdThrough) || holdThrough < motion.rests || holdThrough >= motion.frameCount) {
     throw new Error('The hold must end at an existing frame at or after the settled card');
@@ -145,10 +151,10 @@ export function buildReturnCycle<T extends DealMotion>(motion: T, source: Source
     const lift = i <= liftEnds ? liftMeters * ease((i - holdThrough) / (liftEnds - holdThrough)) : liftMeters * (1 - t);
     frames.push({
       ...hold,
-      L: returnLeft(t, 0, i),
-      R: returnRight(t, lift, i),
+      L: returnLeft(t, liftHand === 'L' ? lift : 0, i),
+      R: returnRight(t, liftHand === 'R' ? lift : 0, i),
       h: lerp(hold.h, start.h, t),
-      g: lerp(hold.g, start.g, t),
+      ...(hold.g ? { g: lerp(hold.g, start.g, t) } : {}),
     });
   }
   for (let i = readyFrom; i < frameCount; i++) frames.push(ready);
@@ -167,6 +173,7 @@ export function buildReturnCycle<T extends DealMotion>(motion: T, source: Source
       readyFrom,
       durationSeconds: frameCount / fps,
       liftMeters,
+      ...(liftHand === 'L' ? { liftHand } : {}),
       method: 'Vertical wrist lift, eased reach to the original pose, and solved arm joints. The laid card remains on the table.',
     },
   };

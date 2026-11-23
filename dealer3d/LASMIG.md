@@ -24,8 +24,8 @@ slaskdisken.
 - **Dockorna** (se **Dockorna**): `src/doll.ts` har `standard` (som förut, låst) och `paow`, rättad 2026-11-23 efter
   hennes filmer (38 cm bakom bordskanten, egna armbågar och händer); `?docka=paow`, `shoot.ts --doll paow`. Jakob
   2026-11-23 om vändningen vid platsen: "Bättre, men inte än", vänsterarmen ser fel ut mot skon. Scenens sko är rättad
-  efter filmens samma dag, och vänsterhandens fingrar böjer mot handflatan (**Vänsterarmen vid skon**). Hans
-  naturligare standard: i docklabbet som valet Naturlig (Som förut kvar), ej sedd av honom; **Naturlig ställning**.
+  efter filmens samma dag, och vänsterhandens fingrar böjer mot handflatan (**Vänsterarmen vid skon**). Docklabbet:
+  Naturlig (Som förut kvar), giv från A2.1 eller A2.3, Giv och återgång; **Naturlig ställning**, **Ingång och återgång**.
 - **Provet en giv, två stolar** (2026-11-20, Jakobs "Ja kör" i Beslut; prov `3d-prov-en-giv-tva-stolar-20261120`; hans
   "ja" på kortet samma dag, och 2026-11-21 "SAM-dockan ska in, men inte nu" i BESKED): given till plats 4 med ett 3D-kort från stol 4 och stol 1. SAM 3D Body över filmen
   `paow-giv-2-3-p4-h24-cykel-02-01` (varannan ruta) ser ut som en människa som ger från båda stolarna (underagentens
@@ -322,7 +322,8 @@ fingrar ska sitta som hennes innan dockan används.
   kopierade in för hand: det ska gå direkt från Docka till Bordets beställning), Naturlig till P5.C1 orörd: given
   `data/giv-fran-2-3-p5c1-naturlig-paow.json` (3,0 s, 30/s; `ut/docka-naturlig-p5c1-a`) och given med retur i samma
   film `…-naturlig-cykel-paow.json` (4 s, 24/s; `ut/docka-naturlig-p5c1-cykel-a`); kortet ligger från ruta 70, handen
-  lyfter från 77, sista rutan = första. `tools/docka-cykel.ts --to P5.C1 --no-standard` ger samma rutor (**Köra**).
+  lyfter från 77, sista rutan = första. `tools/docka-cykel.ts --to P5.C1 --no-standard --sam-hand --recipe-grip-yaw`
+  ger samma rutor (**Köra**).
   Jakobs dom på filmen av -a: "Rätt", men högerhanden för vriden vid nedsläppet (handleden 68° i sidled). **-b**
   (`…-naturlig-cykel-b-paow.json`, `ut/docka-naturlig-p5c1-cykel-b`) är -a med `--flat-hand`: handleden vid
   nedsläppet −68° → −4° i sidled och 35° → 7° upp/ned, handflatan som förut ~18° från rakt ned; ej sedd av Jakob.
@@ -343,6 +344,20 @@ fingrar ska sitta som hennes innan dockan används.
   olika val."; och dockan tar över Siluetten i Scen & Bord: "där fins ju alla val typ ändå för handvrisningar och så
   vidare, men bara att dessa måste sättas samman med dockan på ett bra sätt." **Ramen**: ankarna och slutbilden som i
   dag, lagrade rörelser och `dealer3d/standard/` orörda, inga filmer ändras.
+- **Ingång och återgång i docklabbet** (2026-11-23; sedd i headless, inte av Jakob). **Giv från** A2.3 (förval, som
+  förut) eller A2.1; A2.2 är avstängd (bara ankarbilden finns, ingen ställning är läst ur den). Från A2.1 finns bara
+  Pamelas avlästa enhandsgivar (`giv-pamela-p1/p3/p4/p5`, plats 1, 3, 4 och 5, kort 1), lagda med filmens sko
+  (`lay.ts readDeal`: kortet och vänsterhanden flyttas stelt till skon medan kortet är där, armbågen löses om); inga
+  reglage, ett sätt. **Giv / Giv och återgång** (förval Giv): återgången är `natural-lab.ts withReturn`, samma som
+  `tools/docka-cykel.ts` (`src/return-cycle.ts`; från A2.1 lyfts vänsterhanden). **Standardernas namn**:
+  `standard/<docka>-<plats>.json` är A2.3 (alla äldre filer, lästa som de är), `<docka>-a2-1-<plats>.json` är A2.1
+  (`a2-2` hålls för A2.2); filen bär `lab.from`, och med återgången `lab.back` (cykelns uppgifter). **Vänsterhanden
+  vid skon i Naturlig** (bara paow; `doll.ts hand.natural`, `naturalDoll`): grundfelet var att SAM:s hand låg 25 mm
+  för långt ut och 26° fel vriden, med handryggen 53° fel mot kameran; passad mot MediaPipe på ankare 2.3 (3,3 px
+  medel mot 12,5): raka fingrar, lillfingret lyft som hennes, handleden böjd 42°. **Handens vinkel på kortet** i Naturlig: −30°
+  som förval (`NATURAL_GRIP_YAW`, Jakob samma dag), också för hans sparade standarder där värdet är tomt (`null`).
+  Som förut och standarddockan ger samma rutor som före (avtryck på 34 lägen); Naturlig som förut fås med
+  `docka-cykel.ts --sam-hand --recipe-grip-yaw`. Passningen: `tools/docka-hand.ts`.
 - **Kedja paow-filmer**: ingångsfilmen till A2.3 (`data/till-ankare-2-3-c.json`) är standarddockans. `doll-pose.ts`
   på den börjar i hennes vila och slutar där paow-givarna börjar (armbågar och handleder 0,0 mm isär, prövat
   2026-11-23), men ingen film är gjord av den.
@@ -409,14 +424,15 @@ node dealer3d/tools/return-cycle.ts <ny-giv.json> <ny-cykel.json> --hold 76 --re
 node dealer3d/tools/render-reference.ts --motion <ny-cykel.json> --out <ny-mapp> --seconds 4 --fps 24
 ```
 
-En dockfilm med giv och återgång till valfri plats, lagd som Docklabbet lägger den (Naturlig, eller Jakobs sparade
-standard `standard/<docka>-<plats>.json` där en finns, i det val han sparade den i), görs i ett steg. Det skriver en ny
-datafil och renderkommandot; `--no-standard` lägger platsen som om ingen standard fanns, `--flat-hand` lägger högerhanden
-plan vid nedsläppet (bara Naturlig), och cykelns flaggor är `return-cycle.ts`:s. Det styrda i en Naturlig standard går
-ut under återgången, så att sista rutan är den första.
+En dockfilm med giv och återgång till valfri plats, lagd som Docklabbet lägger den med Giv och återgång (Naturlig,
+eller Jakobs sparade standard för docka, ingång och plats där en finns, i det val han sparade den i), görs i ett steg.
+Det skriver en ny datafil och renderkommandot; `--from` är ingången (A2.3 om den utelämnas, A2.1 för Pamelas avlästa
+givar), `--no-standard` lägger platsen som om ingen standard fanns, `--flat-hand` lägger högerhanden plan vid
+nedsläppet (bara Naturlig), `--sam-hand --recipe-grip-yaw` lägger Naturlig som före 2026-11-23, och cykelns flaggor är
+`return-cycle.ts`:s. Det styrda i en Naturlig standard går ut under återgången, så att sista rutan är den första.
 
 ```powershell
-node dealer3d/tools/docka-cykel.ts --to P5.C1 --out dealer3d/data/<ny>.json [--doll paow] [--no-standard] [--flat-hand]
+node dealer3d/tools/docka-cykel.ts --to P5.C1 --out dealer3d/data/<ny>.json [--from A2.1] [--doll paow] [--no-standard] [--flat-hand]
 ```
 
 Cykelverktyget bevarar given till och med ruta 76, lyfter handen 22 mm och återgår till exakt startruta från 116.

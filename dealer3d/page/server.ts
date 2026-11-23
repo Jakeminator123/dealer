@@ -7,13 +7,14 @@
 //                                          modules name their neighbours with .ts, as Node needs them)
 //   GET /dealer3d/data/<name>.json         a motion of dealer3d/data/
 //   GET /dealer3d/plan                     Jakob's card plan (placements/default.json), read only
-//   GET /dealer3d/standard                 the saved standards: name, doll, place and when each was saved
+//   GET /dealer3d/standard                 the saved standards: name, doll, entry, place and when each was saved
 //   GET /dealer3d/standard/<name>.json     one saved standard
 //   PUT /dealer3d/standard/<name>.json     save one: "Spara som standard" on the page
-// A standard is a motion in the form of dealer3d/data/*.json for one doll and one place, named <doll>-<place>
-// (paow-p6c1, standard-dc1), so that `node dealer3d/tools/render-reference.ts --motion dealer3d/standard/<name>.json`
+// A standard is a motion in the form of dealer3d/data/*.json for one doll, one entry and one place, named <doll>-<place>
+// from A2.3 (paow-p6c1, standard-dc1; every standard saved before the entries) and <doll>-a2-1-<place> from A2.1
+// (paow-a2-1-p4c1; a2-2 is kept for A2.2), so that `node dealer3d/tools/render-reference.ts --motion dealer3d/standard/<name>.json`
 // films exactly what was saved. The write is narrow: only into dealer3d/standard/, only a name of that pattern, only from
-// the lab's own origin, only JSON of a motion's shape that names the same doll and place as its name, at most 1.5 MB;
+// the lab's own origin, only JSON of a motion's shape that names the same doll, entry (`lab.from`, A2.3 if left out) and place as its name, at most 1.5 MB;
 // written beside the target and renamed over it. Nothing else under the repo is written by these routes.
 // Imports nothing of dealer3d/src/, so that a module half way through a change there cannot stop the lab server.
 // Test: node --test dealer3d/page/server.test.ts
@@ -24,22 +25,25 @@ import type {IncomingMessage, ServerResponse} from 'node:http';
 
 export const STANDARDS = 'dealer3d/standard';
 const BODY_LIMIT = 1_500_000, MOST_FRAMES = 900;
-const NAME = /^([a-z][a-z0-9]{1,15})-(p[1-7]c[12]|dc[123])$/;
+const NAME = /^([a-z][a-z0-9]{1,15})-(?:a2-([12])-)?(p[1-7]c[12]|dc[123])$/;
 // A motion's own fields (dealer3d/tools/deal-film.ts and doll-pose.ts write these), and `lab`: what the page laid it from.
 const KEYS = new Set(['about', 'film', 'pose', 'poseFilm', 'places', 'pace', 'rightAt', 'to', 'loose', 'fps', 'frameCount', 'leavesShoe', 'edge', 'folds', 'rests', 'handSize', 'palm', 'throughShoe', 'elbowForced', 'hip', 'beats', 'turns', 'laid', 'frames', 'doll', 'lab']);
 class Refused extends Error { status: number; constructor(status: number, message: string) { super(message); this.status = status; } }
 
 /** The plan's name of a place from a standard's: p6c1 is P6.C1, dc3 is D.C3. */
 export const placeOf = (short: string) => short.startsWith('d') ? `D.C${short[2]}` : `P${short[1]}.C${short[3]}`;
+/** The entry a standard's name says its deal begins in: A2.1 or A2.2 where the name has a2-1 or a2-2, else A2.3. */
+const entryOf = (m: RegExpExecArray) => `A2.${m[2] ?? 3}`;
 const vec = (v: unknown) => Array.isArray(v) && v.length === 3 && v.every(x => typeof x === 'number' && Number.isFinite(x));
 const limb = (l: unknown) => { const a = l as {s?: unknown; e?: unknown; w?: unknown; p?: unknown} | null; return !!a && typeof a === 'object' && vec(a.s) && vec(a.e) && vec(a.w) && Array.isArray(a.p) && a.p.length === 21 && a.p.every(vec); };
-/** Says what is wrong with a standard that is to be saved under `name`, or null: a motion's shape, and the doll and place its name says. */
+/** Says what is wrong with a standard that is to be saved under `name`, or null: a motion's shape, and the doll, entry and place its name says. */
 export function faultOf(name: string, value: unknown): string | null {
   const m = NAME.exec(name); if (!m) return 'Namnet är inte en docka och en plats.';
   if (!value || typeof value !== 'object' || Array.isArray(value)) return 'Rörelsen är inte ett objekt.';
   const v = value as Record<string, unknown>, strange = Object.keys(v).find(k => !KEYS.has(k)); if (strange) return `Okänt fält: ${strange.slice(0, 40)}.`;
   if (v.doll !== m[1]) return 'Rörelsen är för en annan docka än namnet säger.';
-  if (!Array.isArray(v.to) || v.to.length !== 1 || v.to[0] !== placeOf(m[2])) return 'Rörelsen går till en annan plats än namnet säger.';
+  if (!Array.isArray(v.to) || v.to.length !== 1 || v.to[0] !== placeOf(m[3])) return 'Rörelsen går till en annan plats än namnet säger.';
+  if (((v.lab as {from?: unknown} | null)?.from ?? 'A2.3') !== entryOf(m)) return 'Rörelsen börjar i en annan ställning än namnet säger.';
   if (typeof v.fps !== 'number' || !(v.fps > 0 && v.fps <= 120)) return 'Rörelsen saknar rutor per sekund.';
   if (!Array.isArray(v.frames) || !Number.isInteger(v.frameCount) || v.frameCount !== v.frames.length || v.frames.length < 2 || v.frames.length > MOST_FRAMES) return 'Antalet rutor stämmer inte.';
   if (!vec(v.hip)) return 'Rörelsen saknar höft.';
@@ -67,7 +71,7 @@ export function dollLabRoutes(options: {root: string; origin: string}) {
   }
   async function list() {
     const names = (await readdir(folder).catch(() => [] as string[])).filter(n => n.endsWith('.json') && NAME.test(n.slice(0, -5))).sort();
-    return Promise.all(names.map(async n => { const name = n.slice(0, -5), m = NAME.exec(name)!; return {name, doll: m[1], place: placeOf(m[2]), savedAt: (await stat(path.join(folder, n))).mtime.toISOString()}; }));
+    return Promise.all(names.map(async n => { const name = n.slice(0, -5), m = NAME.exec(name)!; return {name, doll: m[1], from: entryOf(m), place: placeOf(m[3]), savedAt: (await stat(path.join(folder, n))).mtime.toISOString()}; }));
   }
   let writes: Promise<unknown> = Promise.resolve(), serial = 0;
   async function save(name: string, value: unknown) {

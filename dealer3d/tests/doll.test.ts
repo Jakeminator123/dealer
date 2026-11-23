@@ -113,16 +113,16 @@ test('the standard doll\'s elbows bend toward its poles wherever the hands are; 
 });
 
 test('paow\'s hand is one hand: the same bones right and left, at her anchor, carrying a card and at rest, and where it lies at the anchor and at rest it is palm down over the felt', () => {
-  const hand = PAOW.hand; assert.ok(hand?.grip && hand.rest, 'paow has a hand of her own, with the shape she carries a card in and the one she rests in');
+  const hand = PAOW.hand; assert.ok(hand?.grip && hand.rest && hand.natural, 'paow has a hand of her own, with the shape she carries a card in, the one she rests in and her left as Naturlig has it');
   const bones = (p: Vec3[]) => FINGERS.flatMap(c => c.map((k, n) => length(sub(p[k], p[n ? c[n - 1] : 0])))), PALM = [0, 1, 5, 9, 13, 17];
-  for (const p of [hand.right, hand.left, hand.grip.right, hand.grip.left, hand.rest.right, hand.rest.left]) assert.equal(p.length, 21);
+  for (const p of [hand.right, hand.left, hand.grip.right, hand.grip.left, hand.rest.right, hand.rest.left, hand.natural.left]) assert.equal(p.length, 21);
   // The shapes are written to a tenth of a millimetre, so a bone of two points is the same within 0.3 mm.
   bones(hand.right).forEach((b, k) => near(b, bones(hand.left)[k], 3e-4, `bone ${k}, right and left`));
-  for (const [side, own, others] of [['right', hand.right, [hand.grip.right, hand.rest.right]], ['left', hand.left, [hand.grip.left, hand.rest.left]]] as const) for (const other of others) {
+  for (const [side, own, others] of [['right', hand.right, [hand.grip.right, hand.rest.right]], ['left', hand.left, [hand.grip.left, hand.rest.left, hand.natural.left]]] as const) for (const other of others) {
     bones(own).forEach((b, k) => near(b, bones(other)[k], 3e-4, `${side} bone ${k}, at the anchor and carrying or resting`));
     for (const k of PALM) nearV(other[k], own[k], 1e-9, `${side} palm point ${k}`);
   }
-  for (const [side, shape, at] of [['right', hand.right, hand.at.right], ['left', hand.left, hand.at.left], ['right at rest', hand.rest.right, hand.rest.at.right], ['left at rest', hand.rest.left, hand.rest.at.left]] as const) {
+  for (const [side, shape, at] of [['right', hand.right, hand.at.right], ['left', hand.left, hand.at.left], ['right at rest', hand.rest.right, hand.rest.at.right], ['left at rest', hand.rest.left, hand.rest.at.left], ['left in Naturlig', hand.natural.left, hand.natural.at.left]] as const) {
     near(length(at.forward), 1, 1e-3, `${side} forward`); near(length(at.palm), 1, 1e-3, `${side} palm`); near(dot(at.forward, at.palm), 0, 1e-3, `${side} forward across palm`);
     assert.ok(at.palm[1] < -0.9, `${side}: the palm faces the felt (${at.palm[1]})`);
     const lowest = Math.min(...placed(shape, {forward: at.forward, palm: at.palm, across: cross(at.palm, at.forward)}, at.wrist).map(q => q[1]));
