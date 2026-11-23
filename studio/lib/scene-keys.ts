@@ -144,8 +144,8 @@ export const SCENE_KEYS: readonly KeySpec[] = [
   spec("cardMethod", "kort", "U", "Ritsätt", choice(["scene", "I scenen"], ["film", "I filmrutan"], ["matte", "Filmens matt"]), "I scenen: ett föremål under filmen. I filmrutan: det äldre sättet. Filmens matt (prov): filmens eget kort färgas om."),
   spec("cardHand", "kort", "U", "Kortet i handen", choice(["film", "Filmens storlek"], ["standard", "Standard"]), "Standard: kortet har vilans storlek hela vägen."),
   spec("cardScale", "kort", "U", "Kortens storlek", slider(0.8, 2, 0.05, "×"), "Alla ritade kort, förval 1,2. I Standard är 1,2 ett verkligt kort (63 × 88 mm)."),
-  spec("cardRank", "kort", "U", "Valör", choice(...["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"].map((r): [string, string] => [r, r])), "Bara för provet: i spelet bestämmer Scout."),
-  spec("cardSuit", "kort", "U", "Kortets färg", choice(["spades", "Spader"], ["hearts", "Hjärter"], ["diamonds", "Ruter"], ["clubs", "Klöver"]), "Bara för provet: i spelet bestämmer Scout."),
+  spec("cardRank", "kort", "U", "Valör", choice(...["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"].map((r): [string, string] => [r, r])), "Bara för provet: i spelet bestämmer spelmotorn."),
+  spec("cardSuit", "kort", "U", "Kortets färg", choice(["spades", "Spader"], ["hearts", "Hjärter"], ["diamonds", "Ruter"], ["clubs", "Klöver"]), "Bara för provet: i spelet bestämmer spelmotorn."),
   spec("chipGloss", "kort", "U", "Markernas glans", slider(0, 1, 0.01), "Markernas glans; 0,50 är deras utseende förut. Syns när insatser ligger."),
   // ── Kamera ──
   spec("mode", "kamera", "U", "Kameraläge", choice(["look", "Titta runt"], ["lean", "Luta, flytta"]), "Titta runt vrider på stället, exakt för filmen. Luta flyttar kameran: rum och bord i 3D."),
