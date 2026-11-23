@@ -10,7 +10,7 @@ beslut per film i `motions/`.
 | --- | --- |
 | Arbetsyta | `C:/Users/jakem/dev/super-feature-sg/dealer` |
 | Publikt GitHub | `Jakeminator123/dealer`, origin `https://github.com/Jakeminator123/dealer.git` |
-| Slutmål | `C:/Users/jakem/dev/scoutgaming`, remote `git@github.com:Jakeminator123/scoutgaming.git` |
+| Scoutgaming, läsreferens | `C:/Users/jakem/dev/scoutgaming`, remote `git@github.com:Jakeminator123/scoutgaming.git`; projektet är frikopplat därifrån i nuläget (Jakob 2026-11-23, BESKED) och ändrar inget där |
 | Gammal läsreferens | `D:/dealer-archive/snyggare-dealer`; fullständigt verifierat arkiv, tidigare C:/Users/jakem/dev/super-feature-sg/snyggare-dealer |
 | Ny slask | `D:/dealer-scratch/tmp`, `renders`, `review` |
 | Befintligt arkiv | `D:/dealerlab-archive/snyggare-dealer`; tidigare delarkiv, inte bevis på full projektflytt |
@@ -396,8 +396,8 @@ kopia. Därefter prövas sidor och filmsökning som förut; fel version efter ti
   vilken store (båda finns sedan 2026-11-13). Till en ny store, se "En ny store" nedan.
 - Vercel CLI inloggad med ett konto i teamet (`vercel whoami` ger `jakeminator0`), labbservern på 4319 igång (den svarar
   på om en mediefil lämnas ut; utan den lämnas sådana filer, till exempel Paows bild i spelets dealermeny, utanför),
-  porten 4341 ledig och Scoutgaming utcheckat bredvid (`C:/Users/jakem/dev/scoutgaming`, botens kunskap; annars
-  `DEALER_SCOUT_ROOT`).
+  och porten 4341 ledig. Botens kunskap byggs bara ur det här repots egna filer; Scoutgaming behöver inte vara
+  utcheckat (2026-11-23).
 - `DEALER_LOSEN_PROV=<ordet>` framför kommandot för kontrollen med lösenordet; utan den prövas bara att allt är låst.
 
 **När ett steg stannar halvvägs** står kopian på nätet kvar som den var, utom om det är kontrollen efter deployen:

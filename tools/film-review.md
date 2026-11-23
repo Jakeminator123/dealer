@@ -202,9 +202,9 @@ en `trim`. Sökvägar till bilder (`level`:s `reference`, `patch`:s `mask`) skri
 Den som startade dig kör `node tools/film-fix.ts <film> fixes.json`; den skriver `fixed-<k>.mp4`, `fix-receipt-<k>.json`
 och `fix-strip-<k>.png` bredvid originalet, som aldrig ändras.
 
-## Mjuka aldrig upp domen
+## Domen gäller filmen som den levererades
 
-Domen gäller filmen som den levererades; att ett fel är lagbart höjer den inte. En rättad kopia är en egen film: den
+Att ett fel är lagbart höjer inte domen. En rättad kopia är en egen film: den
 granskas på nytt med hela denna instruktion i full upplösning, med kvittot och remsan som underlag, och bedöms på vad den
 visar, inte på vad lagningen skulle göra. Säg rent ut vad du inte kunde kontrollera.
 

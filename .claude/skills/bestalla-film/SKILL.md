@@ -12,31 +12,23 @@ Proceduren står på ett ställe och skrivs inte om här: ingången och station 
 
 ## Reglerna som oftast bryts
 
-1. **Betalt bara inom `data/order-policy.json`,** godkänt med Jakobs klick eller av huvudagenten på hans uppdrag
-   (`node tools/order-approve.ts <id> --mandate "…"`). Taket och hans gällande ord om budgeten: `docs/BESKED.md`, "Domar,
-   beställningar och pengar"; läs saldot innan en omgång. Ett betalt anrop utanför Beställ rapporteras till huvudagenten
-   med belopp (AGENTS, "Det som skyddar Jakob").
-2. **Texten skrivs aldrig för hand.** Den är `promptFor` i `src/order-prompts.ts` med dagens mall; ska orden ändras,
-   ändras mallen och versionen räknas upp (handboken §2; bandet, station 8).
-3. **Det som skickas är det som godkändes, inget annat:** modell, varje parameter, texten och bilderna är frysta i
-   ordern och prövas med hash (`order-clerk.md` §1 och §3). En ändrad parameter är en ny order. I labbet beskriver
-   bara det som verkligen går till Runway beställningen (`docs/BESKED.md`, "Labbet och studion").
-4. **Ett osäkert anrop läggs aldrig om.** En tagning med `requestedAt` och utan task-id är OSÄKER (`order-clerk.md` §3).
-5. **Förklara en fallen tagning ur det som faktiskt skickades:** orderns `prompt.text`, bilderna och kvittot
-   (`data/orders/<id>.json`, `assets/orders/<id>/receipt.json`), inte ur vad mallen brukar säga. Mall 9 kom till när
-   Jakob pekade på "något konstigt i den prompt som skickas" (handboken §5, Mall 9; felen och ändringarna i §4).
-6. **En plats, den svåraste, före alla; en ändring per omgång mot ett recept som har hållit; billigt först; det som
-   föll beställs inte om** (bandet, "Regler som kostar pengar när de bryts"; handboken, "Det som föll").
-7. **Metoden väljs efter Jakobs domar,** `node tools/verdicts-per-method.ts <dealer>`, inte efter granskarens poäng
-   (bandet, station 7; handboken §5).
-8. **Receptet ger tagningarna:** en för ett prov, två där metoden gäller (`data/order-methods.json`), en till bara om
-   alla faller; varje omgång granskas oberoende innan nästa bygger på den, och kostnaden berättas efter omgången
-   (`docs/BESKED.md`, "Domar, beställningar och pengar").
-9. **Receptet ger resten också:** en giv bara dit på Kling 4 med referensfilm; från A2.1 en hand och inget handbyte som
-   förval, från A2.3 två händer (Jakob 2026-11-21 och 2026-11-23); vändningen är inget val. Ett avsteg görs under "Receptet · gör ett undantag" och står i utkastets anteckningar
-   (handboken §2).
-10. **Signerade adresser i skriptfiler,** aldrig `node -e`, och en värdadress hamnar aldrig i `data/` eller `assets/`
-   (`order-clerk.md`, Tools och §2).
+1. **Betalt bara inom `data/order-policy.json`,** godkänt av Jakob eller av huvudagenten på hans uppdrag
+   (`tools/order-approve.ts`). Ramen och hans gällande ord: `docs/BESKED.md`, "Domar, beställningar och pengar"; läs
+   saldot före en omgång. Betalt utanför Beställ rapporteras med belopp (AGENTS, "Det som skyddar Jakob").
+2. **Det som skickas är det som godkändes:** ordern är fryst och prövas med hash; en ändrad parameter är en ny order
+   (`order-clerk.md` §1 och §3).
+3. **Ett osäkert anrop läggs aldrig om** (`order-clerk.md` §3).
+4. **Ramens tagningar och omgångar:** en per prov, två där metoden gäller, varje omgång oberoende granskad innan nästa
+   bygger på den, kostnaden berättad efteråt (BESKED, "Betald generering"; bandet, "Regler som kostar pengar när de
+   bryts").
+5. **Metoden väljs efter Jakobs domar** (`node tools/verdicts-per-method.ts <dealer>`), inte efter granskarens poäng
+   (bandet, station 7).
+6. **Händerna och vändningen följer receptet och hans ord** (från A2.3 två händer, Jakob 2026-11-21 och 2026-11-23);
+   ett avsteg står i utkastets anteckningar (handboken §2).
+7. **Signerade adresser i skriptfiler, aldrig `node -e`, och ingen värdadress i `data/` eller `assets/`**: repot är
+   publikt (`order-clerk.md`, Tools och §2).
+8. **Råd:** texten kommer ur mallen (`promptFor` i `src/order-prompts.ts`; handboken §2), och en fallen tagning
+   förklaras ur det som faktiskt skickades, orderns `prompt.text`, bilderna och kvittot (handboken §4–§5).
 
 ## När det är klart
 

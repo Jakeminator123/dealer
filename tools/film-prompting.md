@@ -133,7 +133,7 @@ och inget annat: rörelsen beskrivs bara av texten som skickas (Jakob 2026-11-17
 | Sista bild | Receptets `lastPicture`. En giv bara dit slutar på PLATSENS EGEN slutbild (`seatEndOf` i `src/order-model.ts`): platsens landningsbild där en gäller, annars snittrutan, sista rutan i given i dealerns egen tur och retur från samma ankare till platsen, vars retur Jakob har godkänt rakt och som är lagd med samma hand (`cutFrameOf`; lagret tar rutan ur filmen, prövar att kortet ligger på planens och sätter tillbaka skon ur ankare 1 om fönstrets kort är tryckt; den nya given bär `endsOn`, och den returen följer den). En plats med ingetdera har ingen slutbild och kan inte beställas bara dit; en plats bild står aldrig för en annan plats. Övriga steg: ankaret de slutar på; ett undantag tur och retur: första bilden plus kortet där planen säger | Exakt samma kort som första bilden plus det enda som delas ut |
 | Mellanbild | Ingen i vårt nuvarande MCP | Extra referensbild är inte en tidsatt mellanbild; b1b och b4 läste extra bilder som start, slut eller följd (V). Runways API för `kling_4` har nu uttryckliga mellanbilder (3.8); de kräver ett eget kontrollerat prov. |
 | Referensfilm | Receptets regel (`referenceByRule` i `src/order-methods.ts`, det enda stället som väljer): dockans renderade film till platsen först (`data/rendered-references.json`), annars en film ur banken av samma steg till samma plats | Bara `kling-4`; obruten, 3–30 s, samma kortföljd och samma plats som sista bilden, rakt godkänd av Jakob, lagd med samma hand, och för en giv bara dit given ensam (en tagning ur en tur och retur skickar hela filmen, som slutar vid skon); aldrig en arkiverad tagning; ytterplatserna tar bara dockans film; meningen `SAY.reference` ("video 1"). Den väljs också efter vad den visar: samma kontroll som en levererad giv körs på den (`checkReference` i `src/deal-check.ts`), och en film där kortet står på kant före vändningen eller är större än ett verkligt kort erbjuds inte först (givprov 2B) |
-| Text | Steg, plats; sidan ur planen; handen ur receptet (handen vid skon hela vägen, som proven som höll; planens handbyte för ett kort är ett undantag som måste sägas, eftersom handbytet föll i båda sina prov och ingen referensfilm eller slutbild visar det); vändningen ur receptet (ingen väljer den: Jakob 2026-11-18, "SE BARA TILL ATT ALLA VRIDNINGAR BLIR BRA") | Skelettet nedan |
+| Text | Steg, plats; sidan ur planen; handen ur receptet (från A2.1 en hand, handen vid skon hela vägen, och inget handbyte som förval, eftersom handbytet därifrån föll i båda sina prov; från A2.3 två händer: vänster arm tar ut kortet, höger tar emot och vänder, Jakob 2026-11-21 och 2026-11-23); vändningen ur receptet (ingen väljer den: Jakob 2026-11-18, "SE BARA TILL ATT ALLA VRIDNINGAR BLIR BRA") | Skelettet nedan |
 | Modell, längd | Receptet. Längden: med referensfilm filmens egen längd i hela sekunder (texten säger "with the same timing"), annars receptets; en giv bara dit 3 s, det kortaste Kling 4 tar (3–30 s; WAN 3 2–30 s). Den uppmätta riktiga dealern lägger ett kort var 0,75–0,9 s | Tabellen nedan |
 | Tagningar | 1 per metodprov, 2 per klipp när metoden är vald | En tredje bara om båda faller |
 
@@ -450,15 +450,14 @@ Pamelas godkända par, 552 krediter (V: `assets/motions/paow-table-arrive-wide-0
 
 ## 5. Prov och protokoll
 
-- **En ändring per order** mot en namngiven jämförelse; ordens titel säger vad som ändrades. Samma bilder, samma längd.
-- **Antal tagningar:** en per metodprov, två per klipp när metoden är vald. En metod blir regel först efter ytterligare
-  fyra tagningar med minst hälften användbara (S; att skilja 25 % från 75 % kräver 6–8 tagningar).
-- **En ytterplats före alla platser:** omgång 3 och 3b gick till alla platser från plats 4: 12 av 14 föll, 1 960
-  krediter (V). Pröva P1 och P7 innan en metod beställs till alla.
-- **En ändring per omgång mot ett recept som har hållit:** omgång 4 ändrade två saker mot Jakobs godkända givar till P4
-  på en gång, platsen och vändsättet (`FREE`, planens förval, mot `AT_PLACE` i de godkända) (V, `motion.flipAxis` i
-  ordrarna). Fyra av fem fel i omgång 4 gällde kortet i luften; det femte skons kort (`p7-03`) (V). Att den andra
-  ändringen orsakade felen är skattat (S).
+- **En ändring per order, och en tagning per metodprov, två per klipp när metoden är vald** (Jakobs ram, BESKED,
+  "Betald generering"): mot en namngiven jämförelse som har hållit; ordens titel säger vad som ändrades. Samma bilder,
+  samma längd. Belägget: omgång 4 ändrade två saker mot Jakobs godkända givar till P4 på en gång, platsen och
+  vändsättet (`FREE`, planens förval, mot `AT_PLACE` i de godkända) (V, `motion.flipAxis` i ordrarna), och fyra av fem
+  fel gällde kortet i luften; det femte skons kort (`p7-03`) (V). Att den andra ändringen orsakade felen är skattat (S).
+- **Råd: en ytterplats först.** Omgång 3 och 3b gick till alla platser från plats 4: 12 av 14 föll, 1 960 krediter (V).
+  Pröva P1 och P7 innan en metod beställs till alla.
+- **Råd: hur säker en metod är** syns först efter fler tagningar: att skilja 25 % från 75 % lyckade kräver 6–8 (S).
 - **Granskning:** först den automatiska kontrollen (`src/deal-check.ts`, i `after.json` som `dealCheck`): det Jakob fäller på
   synen (färgbyte utan kantläge, vänt tillbaka, på kant en gång till, fel sida upp, lagt gult och vänt efteråt, ett kort långt
   från ett verkligt korts storlek, fel plats, tryck, ett andra kort) fäller tagningen, och den går inte till granskaren; det

@@ -52,7 +52,7 @@ const isYellow = (r: number, g: number, b: number) => r > 170 && g > 150 && b < 
 const isCardYellow = (r: number, g: number, b: number) => r > 200 && g > 190 && b < 100; // the back itself, without the shoe's gold frame
 const isSkin = (r: number, g: number, b: number) => r > 120 && r > g + 15 && g >= b - 25 && r > b + 25 && g > 0.55 * r;
 const isDark = (r: number, g: number, b: number) => r < 110 && g < 110 && b < 110 && g - Math.max(r, b) < 28;
-// Table green down to a deep contact shadow (rule from src/pamela-contact-shadow.ts).
+// Table green down to a deep contact shadow (rule from pamela-contact-shadow.ts in the V6 archive).
 const isShadedTable = (r: number, g: number, b: number) => g > 32 && g > r * 1.55 && g > b * 1.55 && g - Math.max(r, b) > 28;
 const sample = (px: Buffer, x: number, y: number): [number, number, number] => {
   const x0 = Math.max(0, Math.min(W - 2, Math.floor(x))), y0 = Math.max(0, Math.min(H - 2, Math.floor(y))), fx = Math.max(0, Math.min(1, x - x0)), fy = Math.max(0, Math.min(1, y - y0)), i = (y0 * W + x0) * 3, out: [number, number, number] = [0, 0, 0];
@@ -292,7 +292,7 @@ const generatorRows = cards.filter(c => c.family === 'GENERATOR').map(c => {
 });
 const checkRows = cards.filter(c => c.role === 'CHECK').map(c => { const q = c[PRIMARY], best = fitCardPose(plane.H, observation(c.id, q)), twin = cards.find(o => o.role === 'FIT' && o.target === c.target)![PRIMARY], real = (x: Quad, k: number) => x.measured[k] && !x.sides[k]?.proxy && !x.sides[(k + 3) % 4]?.proxy;
   return {id: c.id, clip: c.clip, frames: c.frames, target: c.target, quadPx: q.corners, cornersMeasured: q.measured, edgeRmsOnPlanePx: best.residualRms, edgeMaxOnPlanePx: best.residualMax, cornerShiftAgainstFitClipPx: cornerGaps(q.corners, twin.corners).map((g, k) => real(q, k) && real(twin, k) ? g : null)}; });
-// The older white-card take behind V6 put a much larger card on the same spot (constant `landed` in src/pamela-card-contact-v6.ts, native pixels).
+// The older white-card take behind V6 put a much larger card on the same spot (constant `landed` in pamela-card-contact-v6.ts in the V6 archive, native pixels).
 const v6Landed = [[820, 1026], [943, 1026], [963, 1091], [802, 1093]].map(([x, y]) => ({x: x * TO_FILM, y})), v6OnPlane = quadOnPlane(plane.H, v6Landed);
 
 // ---- 1e. things of roughly known size, as sanity checks, on a frame with both hands at rest ----
@@ -608,7 +608,7 @@ const contract = {
         hands: {basis: 'ESTIMATED', k: handFactor && handFactor.map(v => round(v, 2)), from: 'resting hand width on the plane against 95-125 mm'},
         shoe: {basis: 'ESTIMATED', k: shoeFactor.map(v => round(v, 2)), from: 'shoe base length on the plane against 380-450 mm'},
         shoeMouthCard: {basis: 'DERIVED', kAtLeast: round(shoeCardScale / shoeFoot.alongX, 2), from: 'long side of the yellow card in the shoe mouth against the plane scale at the shoe foot'},
-        legacyV6Card: {basis: 'DERIVED', kWidth: round(v6OnPlane.widthMm / CARD_MM.width, 2), kDepth: round(v6OnPlane.heightMm / CARD_MM.height, 2), from: 'landed white card of the older take (src/pamela-card-contact-v6.ts)'},
+        legacyV6Card: {basis: 'DERIVED', kWidth: round(v6OnPlane.widthMm / CARD_MM.width, 2), kDepth: round(v6OnPlane.heightMm / CARD_MM.height, 2), from: 'landed white card of the older take (pamela-card-contact-v6.ts in the V6 archive)'},
         earlierBlueCards: {basis: 'DERIVED', k: generatorFactor, from: 'pamela-p4-c1-source-turn and pamela-p4-c1-deal-calm-01; the second was generated with a last image and lands on the same quad as the first, so it is not independent'},
         freshDeals: {basis: 'REPORTED', k: [round(124 / 70, 2), round(182 / 94, 2)], from: 'coordinator\'s frame review of freshly generated deals: landed card 124-182 px wide, shrunk to the anchor\'s 70-94 px in the last two frames. Not measured by this tool.'},
       },
@@ -688,7 +688,7 @@ const contract = {
         onCalibratedPlane: {basis: 'DERIVED', sizeMm: {width: round(g.sizeOnPlaneMm.width, 1), height: round(g.sizeOnPlaneMm.height, 1)}, sizeRatioTo63x88: {width: round(g.sizeRatio.width, 3), height: round(g.sizeRatio.height, 3)}, edgeRmsAsA63x88CardPx: round(g.bestPoseEdgeRmsPx, 1),
           planeCardThere: {farWidthPx: round(g.planeCardAtSamePlace.shape.farWidthPx, 1), nearWidthPx: round(g.planeCardAtSamePlace.shape.nearWidthPx, 1), depthPx: round(g.planeCardAtSamePlace.shape.depthPx, 1), taper: round(g.planeCardAtSamePlace.shape.taper, 3)}},
         own: {basis: 'DERIVED', pxPerMm: round(g.ownScalePxPerMm, 3), planePxPerMmThere: round(g.planeScalePxPerMm, 3), foreshortening: round(g.ownForeshortening, 3), planeForeshorteningThere: round(g.planeForeshortening, 3), vanishingLineRowFromThisCardAlone: round(g.ownHorizonY, 0)}})),
-      legacyV6Card: {basis: 'DERIVED', what: 'landed card of the older white-card take, constant `landed` in src/pamela-card-contact-v6.ts (GIVEN), laid on the calibrated plane', quadFilmPx: quadOut(v6Landed), sizeOnPlaneMm: {width: round(v6OnPlane.widthMm, 0), height: round(v6OnPlane.heightMm, 0)}},
+      legacyV6Card: {basis: 'DERIVED', what: 'landed card of the older white-card take, constant `landed` in pamela-card-contact-v6.ts in the V6 archive (GIVEN), laid on the calibrated plane', quadFilmPx: quadOut(v6Landed), sizeOnPlaneMm: {width: round(v6OnPlane.widthMm, 0), height: round(v6OnPlane.heightMm, 0)}},
       finding: 'The generator\'s own cards are larger, less foreshortened and less tapered than a plan-plane card at the same place, and the two clips disagree with each other on perspective. The families share one thing: a foreshortening near 0.6 at P4.'},
   },
   sanityChecks: {
@@ -734,7 +734,7 @@ const contract = {
   },
   portrait: {
     canvas: {basis: 'GIVEN', width: PORTRAIT.width, height: PORTRAIT.height},
-    currentTransform: {basis: 'GIVEN', source: 'src/pamela-card-contact-v6.ts', nativeSize: [NATIVE_W, H], resizedTo: [1586, 1057], cropLeft: 250, cropWidth: 1080, placedAt: [0, 80], scale: round(V6_PORTRAIT.scaleX, 4), nativeColumnsVisible: v6Report.nativeColumnsVisible.map(v => round(v, 1)), formula: 'x\' = x * 1586/1762 - 250, y\' = y * 1057/1174 + 80'},
+    currentTransform: {basis: 'GIVEN', source: 'pamela-card-contact-v6.ts in the V6 archive', nativeSize: [NATIVE_W, H], resizedTo: [1586, 1057], cropLeft: 250, cropWidth: 1080, placedAt: [0, 80], scale: round(V6_PORTRAIT.scaleX, 4), nativeColumnsVisible: v6Report.nativeColumnsVisible.map(v => round(v, 1)), formula: 'x\' = x * 1586/1762 - 250, y\' = y * 1057/1174 + 80'},
     targetsUnderCurrentTransform: {basis: 'DERIVED', rows: v6Rows.map(r => ({id: r.id, state: r.state, centrePx: xy(r.centre, 1), widthInsidePercent: round(r.widthInside * 100, 0), lostLeftPx: round(r.overflow.left, 1), lostRightPx: round(r.overflow.right, 1)}))},
     targetsCutOff: {basis: 'DERIVED', outside: v6Cut.filter(r => r.state === 'OUTSIDE').map(r => r.id), partlyCut: v6Cut.filter(r => r.state === 'PARTLY_CUT').map(r => ({id: r.id, widthInsidePercent: round(r.widthInside * 100, 0)})), inside: v6Rows.length - v6Cut.length,
       plannedCardsSpanNativePx: [round(seatBox.x0, 1), round(seatBox.x1, 1)], spanPx: round(seatBox.x1 - seatBox.x0, 0), v6ShowsNativePx: round(PORTRAIT.width / V6_PORTRAIT.scaleX, 0)},

@@ -167,24 +167,6 @@ export function planCardFrom(outline: readonly Pixel[], shape = 0, grow = 1, len
   return { quad: at.mirrored ? [k[1], k[0], k[3], k[2]] : k, turned: at.turned };
 }
 
-/**
- * V6's cards against a real card (Jakob 2026-11-17: "native-0694.png har ju tex skitbra kortstorlekar"): frame 694 of V6
- * (assets/reference/native-0694.png, in the plan's own Dator pixels) has two open cards at seat 4 lying with their long side
- * across. The front card's corners, read off the frame (the card against the felt, the shadow line to the card under it),
- * far left, far right, near right, near left. Against a real card lying the same way at the same place under the table's
- * lens it is 1.46 times on the near edge and 1.47 times deep; its far edge narrows to 0.74 (V6's own camera is wider), so
- * as a whole, the square root of the areas, it is 1.38 times: the value of Efterarbete's "Kortens storlek" that would draw
- * the game's cards as V6's (an estimate: V6's camera is not the bank's).
- */
-export const V6_CARD: readonly Pixel[] = [{ x: 867.8, y: 1024.5 }, { x: 990.3, y: 1024.5 }, { x: 1010.5, y: 1096.5 }, { x: 844.2, y: 1096.5 }];
-export const V6_CARD_SIZE = 1.38;
-/** A real card lying with its long side across at a place of the plan (Dator pixels), as the lens draws it, in plan pixels, far edge first. */
-export function realCardAcross(place: Pixel, lens: Lens = TABLE_LENS): Pixel[] | null {
-  const q = realCardQuad(planToFilm(place), Math.PI / 2, 1, lens);
-  if (!q) return null;
-  const byRow = q.map(filmToPlan).sort((a, b) => a.y - b.y), [f1, f2, n1, n2] = byRow;
-  return [f1.x < f2.x ? f1 : f2, f1.x < f2.x ? f2 : f1, n1.x > n2.x ? n1 : n2, n1.x > n2.x ? n2 : n1];
-}
 /** A quad's near and far edge, depth and area on screen (corners far left, far right, near right, near left). */
 export function screenMeasure(q: readonly Pixel[]) {
   const d = (a: Pixel, b: Pixel) => Math.hypot(a.x - b.x, a.y - b.y);

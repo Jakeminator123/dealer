@@ -66,14 +66,27 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   5–10 minuter. Sol 6.2 används för kvantitativa deluppgifter. Underlagets råd prövas mot aktuell kod; original,
   användarbedömningar och kortplan bevaras. Lokal kod/publicering till GitHub innebär ingen webbdeploy.
 
-- **Målet** (2026-11-13): "nu ska vi skapa en bättre version av blackjackspelet". Arbetet gäller spelet i studion
-  först; Scoutgaming är slutmålet på sikt och äger regler, slump och kortvärden.
+- **Målet** (2026-11-13): "nu ska vi skapa en bättre version av blackjackspelet". Arbetet gäller spelet i studion.
+- **Frikopplat från Scoutgaming, och repot görs normalt** (2026-11-23, till sessionen dealer-37, vidarebefordrat ord
+  för ord): "Jag säger ja till allt du tycker är korret. Detta proejkt ska vara frikopplat mot scoutgaming i nuläget
+  ska jag säga om jag inte sagt det tydligt nog. men vaqfan lösgö detta repo nu bara så det blir normalt. kan dyu
+  synkronisera med andra agenten och få in ert arbte och comitta och pusha efter all tvätting och omgörning. Sedan vill
+  jag gå vidare med dig att ordna med kort och överläggning av kort". Projektet står alltså på egna ben i nuläget och
+  behöver inget ur Scoutgamings repo eller konton; Scoutgaming beskrivs inte som målet arbetet siktar mot nu. Att
+  inget ändras i Scoutgaming härifrån står kvar (AGENTS, "Det som skyddar Jakob"). Efter städningen: commit och push,
+  och sedan korten och överlägget av kort. Ersätter "Scoutgaming är slutmålet på sikt" (Ersatta besked).
 - **Den enda vägen** (2026-11-13, kl. 07.45): "Se till att verkligen ha denna 'enda bästa väg' när jag vaknar imorgon",
   och samma natt: "Jag vill systematisera skapandet av dealer och kortflöden." En ny dealer och varje film görs längs
   den enda vägen i `tools/dealer-line.md`.
 - **Normala regler, städning och dokumentation** (2026-11-13): "Gör bara det här så normalt som möjligt i repot, utan
   specialregler. Ha kontinuerlig städning och dokumentera gärna mer, det har varit ett misstag från min sida att inte
   dokumentera tillräckligt." Repot sköts som ett vanligt repo, och det som görs skrivs ned på rätt ställe.
+- **Rensa bort regler och låsningar som blockerar** (2026-11-23, på morgonen, i chatten med huvudagenten): "kan vi inte
+  radera alla test eller andra regler som kanske blockar?", "Försök se om vi kan ta och hitta vart du hittar alla
+  beslut och skit som låser saker också?", och cirka kl. 09.40: "ja men se till att rensa detta repo från massa
+  konstiga regler och skit. Samt det som gjör att massa regler och låsningar kommer upp måste ju fixas". Det som
+  följer står i AGENTS, "Regler och spärrar": en regel står bara om den är hans daterade ord eller skyddar honom, och
+  efter ett fel rättas orsaken i stället för att ett nytt förbud, test eller en spärr läggs till.
 - **Fria händer med ansvar** (2026-11-14): "Du har fria privilegier och kör på. men se till att dokumentera coh städa
   och så vidare." Huvudagenten väljer väg själv men lämnar ordning efter sig.
 - **Rensa gammalt** (2026-11-17, efter frågan om projektet borde startas om; svaret var nej, navigeringen är felet):
@@ -81,8 +94,9 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 - **Ordlistan och städningen** (2026-11-17): "Finns vår ordlista som är ouppdaterad eller pekar på fel saker utifrån hur
   jag använder ord - se till att en opus 5.5 extra hög fixar det. Samt en anna opus 5.5 som får städa och radera skit
   som bara förvirrar." Ordlistan följer hans ord, och sidornas ord rättas efter den.
-- **Han talar bara med huvudagenten** (2026-11-17): "kan jag kanske tala med dig hela tiden så får du delegera".
-  Huvudagenten delar ut arbetet; det som bara han kan svara på blir ett kort i Beslut.
+- **Han talar helst med huvudagenten** (2026-11-17): "kan jag kanske tala med dig hela tiden så får du delegera".
+  Ett önskemål, inte ett förbud: han öppnar andra chattar när han vill (det gjorde han 2026-11-23). Huvudagenten delar
+  ut arbetet; det som bara han kan svara på blir ett kort i Beslut.
 - **Huvudagenten håller ihop sessionerna** (2026-11-13): "Kör på och du delegerar och kanske nu tom ska komma vad de tre
   andra agenterna gör och se till att du har kontroll över vad alla gör". Varje bana får sin kö av huvudagenten och gör
   en typ av uppgift (samma dag).
@@ -267,9 +281,8 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   han kan ändra: allt genom Beställ och handboken `tools/film-prompting.md`; en ändring och en tagning per metodprov,
   två tagningar per klipp när metoden är vald; varje omgång oberoende granskad innan nästa bygger på den; kostnaden
   berättas efter varje omgång. Hans är domarna i Granska och Material och allt utanför filmbeställning.
-- **Budgeten** (2026-11-13, cirka kl. 15.13): "Nej du får obegränsat i budget!", och kl. 16.37 "inga tak idag".
-  2026-11-17: "Vi ska inte ha någon limit på 400 krediter.. Höjj till 2k åtminstonde." Taket per beställning är 2 000
-  (`data/order-policy.json`) och står som skydd mot ett misstag. Saldot sätter gränsen tills han fyller på, och
+- **Taket per beställning** (2026-11-17): "Vi ska inte ha någon limit på 400 krediter.. Höjj till 2k åtminstonde."
+  Taket per beställning är 2 000 (`data/order-policy.json`) och står som skydd mot ett misstag. Saldot sätter gränsen tills han fyller på, och
   påfyllningen gör bara han.
 - **Klicket är kön** (2026-11-13): "jag vill ju kunna klicka bara i stället för att säga lägg kön, så görs det per
   automatik." Huvudagenten startar beställningsagenten (`tools/order-clerk.md`) så snart en godkänd order har en
@@ -374,11 +387,14 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   en tagning inom huvudagentens tak. Kandidaten, händerna, ansiktet och bilden i spelets storlek märkte han som Bra i
   Prov `paow-ankare-2-3` 2026-11-18, kl. 02.24, och i Beslut kl. 02.39 svarade han "Ja, registrera" på bilden med
   omgjort efterarbete (`assets/anchors/paow-ankare-2-3-a/`).
-- **Ankare 2.3 görs om, och C gäller** (2026-11-20, kl. 14.55, när piloten till plats 4 från B tappade vänster arm):
-  "Det är möjligt att hela grunden för det här ankaret är fel och taget utifrån en vinkel som jag testade. Kanske ska
-  du göra om hela ankaret, `2.3`, och sedan utifrån det göra allting på nytt." På kortet `paow-ankare-2-3-c` i Beslut
-  (2026-11-21, kl. 15.56) svarade han "Ja, använd C": C, en riktig filmruta med rak bål, gäller i
-  `data/media-roles.json` och B är ersatt. Givarna till varje plats görs från C.
+- **Ankare 2.3 görs om, på en riktig filmruta** (2026-11-20, kl. 14.55, när piloten till plats 4 från B tappade vänster
+  arm): "Det är möjligt att hela grunden för det här ankaret är fel och taget utifrån en vinkel som jag testade. Kanske
+  ska du göra om hela ankaret, `2.3`, och sedan utifrån det göra allting på nytt." C, en riktig filmruta med rak bål,
+  blev grunden och B är ersatt; att C gällde som A2.3 är ersatt av blicken (nästa punkt, och Ersatta besked).
+- **A2.3 får blicken på kortet** (2026-11-23, kl. 09.16, i Beslut, kortet `a2-3-blick-pa-kortet`): "Ja, byt blicken".
+  A2.3 i trädet Tatuerad är `paow-ankare-2-3-d`: C:s bild med huvudet böjt och blicken ned mot kortet, händerna, skon
+  och kortet bildpunkt för bildpunkt som i C (gäller i `data/media-roles.json` sedan kl. 09.29). Ingången dit från
+  A1, `paow-ingang-2-3-03-01`, dömde han i Granska samma dag: "Jättebra!". Givarna hittills börjar på C.
 - **Ett ankare heter alltid A och sitt nummer** (2026-11-21, kväll, till sessionen dealer-37): "Jag tror att du har
   helt och hållet fel när det kommer till A och B och C och så vidare. Jag använder inte sådana. Det är alltid ett
   stort A. För ett ankare." Ankarna heter A1, A2.1, A2.2, A2.3 och A3P1C1–A3P7C1. Bokstäverna A, B och C efter 2.3 var
@@ -404,14 +420,17 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   siluetten. Dockan övertar altså siluetten, men ska vara utifrån vilken dealer som vi har valt - i detta fall är det
   ju PAOW." Siluett finns alltså inte kvar som val: under korten i Bordets Kortplan ligger den valda dealerns docka
   (en dealer utan egen docka får standarddockan), och det är hans val som beskedet 2026-11-21 väntade på.
-- **Paows rättade docka: bättre, men armen viks för trångt i vändningen** (2026-11-23, hans svar i Beslut, "Bättre,
-  men inte än"): "Bättre! mnen allt sitter nu i detalkjer, jag tror at dockan lixom inte är 100% bra med hennes elelr
-  själva djuper för i hennes vridningar av korten och så vidare så blir det som att hennes arm måste vridas väldigt
-  ihoptryckt, vilket resulterar i att hon frår lite konstig vridning i hennes arm som skulle se narurligare om hon
-  sträkte ut armen mer". Dockan styr alltså inte nya givar än: vändningen görs med armen mer utsträckt, och djupet
-  (hur långt bakom bordskanten hon sitter) prövas på nytt mot hennes filmer.
-- **A3P6C1 som bild: armen ser fel ut** (2026-11-23, Beslut och Prov): "Hon fick ne väldig lång underarm här". Ingen
-  film beställs med den bilden; nästa provbild görs där hon lutar sig fram mot platsen.
+- **Dockans vändning längre ut: bättre, men inte än** (2026-11-23, kl. 09.48, i Beslut, kortet
+  `docka-paow-vandning`, "Bättre, men inte än"): "Nja, ser inte exakt hur hennes fingrar beter sig vfid
+  kortvändningen, men kanske. Dock är det som att henens framförallt vänsterarm inte är naturlig i förhållande till sko
+  och kort(en), det är återigen som ngt fel i djupoet och aknske i distansen till skon och dess kort, det syns på hennes
+  handled och armboge". Dockan styr alltså fortfarande inte nya givar: vänster arm mot skon och kortet, djupet och
+  avståndet till skon prövas mot hennes filmer, sedda på handleden och armbågen. Ersätter "Paows rättade docka: bättre,
+  men armen viks för trångt i vändningen" (Ersatta besked).
+- **A3P6C1 ges utan sista bild** (2026-11-23, kl. 10.02, i Beslut, kortet `a3p6c1-som-bild-2`, "Nej, ge utan sista
+  bild"): "OM detta är tänkt att vara en bild som genereras som en A2'n' så aknske detta ine behövs i och med att vi
+  nu kommer använda dockan för PAOW ändå". Ingen genererad A3-bild för plats 6: given dit beställs utan sista bild,
+  med dockans film som ledning, när dockan har hans ja. Ersätter "A3P6C1 som bild: armen ser fel ut" (Ersatta besked).
 - **Ett tredje och fjärde dealerkort** (2026-11-13): "Skapa då ett tredje och fjärde till dealer". Inte byggt: planen
   har sexton platser, så en film dit går inte att beställa; hur det ska byggas är en fråga för ett kort i Beslut.
 - **Önskemål för senare** (hans lista 2026-11-11 och 2026-11-13; inget är beställt): mer av höger arm, kaffe ur en mugg
@@ -434,6 +453,14 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   kvar (95 % av kortets fria kontur mot 80–95 % i de fyra tidigare) och skons fönster blev svart när kortet lämnat
   det, så linjen i skon ska vara kvar och kanten tas bort i efterarbetet i stället. Se också "Ingen vit rand"
   (2026-11-17) längre ned.
+- **Den vita kanten bort i efterarbetet: rätt håll, men inte än** (2026-11-23, kl. 09.51, i Beslut, kortet
+  `vita-kanten-bort`, "Rätt håll, men inte än"): "saken nu är bara att hon nu greppar i "luft"/grönt. kanske okej, men
+  beroende på vad som faktist är tanken.. Så att om vi säger såhär; om vi ska använda detta som A3'n' kanske vi i så
+  fall ska fylla kantlinjen med det blåa. Ska detta göras för varje frame av en befintlig video så kan man ju kanske ta
+  bort /ersätta det i alla fall med det överlägg av kort som ska komma på och in.. eller jag menar kortet är ju ändå
+  bara referens för hur ett kort ska ersättas av det sätt som vi faktistska använda". Läst så: borttagningen blir inte
+  förval för nya filmer än; i en A3-bild fylls kantlinjen hellre med det blå, och i en befintlig film kan kortet
+  ersättas av kortöverlägget, eftersom filmens kort bara visar hur överlägget ska ligga.
 - **Given till plats 4, kort 2: vändningen ser fel ut** (Beslut 2026-11-23, kl. 07.13, kortet om given från A2.3):
   "Nej, vändningen ser fel ut", med orden "vändningen ser inte helt naturlig ut heller, kortet blir lixom för långt
   från fingrarna". Om dockan med Paows mått svarade han samma minut "Måtten ser fel ut": "Ser i och för sig mycket
@@ -455,7 +482,8 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   inställningar ta och prova skapa en ankarbild för A3P6C1 då förslagsvis. Om jag dock ställt in att korten ska vara
   p åett specefikt sätt i 'http://127.0.0.1:4319/studio/bordet/' så är det ju det som gäller såklart. Sedan om jag
   gillar ankarbilden, så kan vi prova att generera en vide som alts är A2.3 till A3P6C1 eller så." Ordningen är
-  alltså: bilden, hans ja på bilden, sedan filmen med bilden som sista bild. Samma dag undrade han om A3-bilderna kan
+  alltså: bilden, hans ja på bilden, sedan filmen med bilden som sista bild; för plats 6 gäller sedan kl. 10.02 "A3P6C1
+  ges utan sista bild" (Dealern och ankarna). Samma dag undrade han om A3-bilderna kan
   göras "mer generiskt så man inte behöver skapa/återskapqa dessa för nya dealers som jag potentiellt sätt vill ha
   in": receptet ska alltså vara ett och samma för varje dealer och plats (kortplanen, dealerns A2.3 och en pose per
   plats), inte handarbete per dealer.
@@ -713,8 +741,9 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
 - **Spelet på telefon** (2026-11-14): markeröverlägget ska göras "smartare och mindre så det inte täckeer bla vart
   marker ska in osv", "..men liggande också ser jag." Om den nya konsolen (2026-11-17): "Angående mobilversionen ser
   allt bättre ut", och filmen före spelet ligger i mitten på en liggande telefon på hans ord samma dag.
-- **Scoutgaming:** inget härifrån införs där utan hans uttryckliga ord (AGENTS). Scoutgamings huvudagent har fått
-  besked om det, och om att insatsrutor bör vara data per bord och filmbank.
+- **Scoutgaming:** inget härifrån införs där utan hans uttryckliga ord (AGENTS), och projektet är frikopplat därifrån i
+  nuläget (2026-11-23, Arbetet och dokumenten). Scoutgamings huvudagent har fått besked om det, och om att insatsrutor
+  bör vara data per bord och filmbank.
 - **Görans material** används inte (`docs/SYSTEM.md`, "Återbruk och införande").
 - **Looken i Scen** (2026-11-20): förvalet Jakob-1 "är verkligen det bästa", även om det kanske inte "hänger ihop
   exakt". Basgrund med Standard ger "det här tråkiga bordet som ser ut som att det står på golvet", och "bordet är för
@@ -784,6 +813,23 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   foton, och 3D-banans docka här är byggd för hand. Han svarade: "Jag vill ha in SAM-metoden/dockan. men inte nu.."
   och att han ersätter den "när jag har en bättre modell av paulina från SAM vid tillfälle".
 
+- **Scoutgaming är slutmålet på sikt** (2026-11-13, huvudagentens läsning under "Målet", inte citat: "Scoutgaming är
+  slutmålet på sikt och äger regler, slump och kortvärden"). Ersatt 2026-11-23 av "Detta proejkt ska vara frikopplat
+  mot scoutgaming i nuläget" (Arbetet och dokumenten); att inget ändras i Scoutgaming härifrån står kvar.
+
+- **C gäller som A2.3** (2026-11-21, kl. 15.56, i Beslut, kortet `paow-ankare-2-3-c`): "Ja, använd C". Ersatt
+  2026-11-23 kl. 09.16 av "Ja, byt blicken" (Dealern och ankarna): `paow-ankare-2-3-d`, byggd på C, gäller.
+
+- **Paows rättade docka: bättre, men armen viks för trångt i vändningen** (2026-11-23, hans svar i Beslut, "Bättre,
+  men inte än"): "Bättre! mnen allt sitter nu i detalkjer, jag tror at dockan lixom inte är 100% bra med hennes elelr
+  själva djuper för i hennes vridningar av korten och så vidare så blir det som att hennes arm måste vridas väldigt
+  ihoptryckt, vilket resulterar i att hon frår lite konstig vridning i hennes arm som skulle se narurligare om hon
+  sträkte ut armen mer". Vändningen gjordes längre ut med rakare handled (`9208d69`); ersatt samma dag kl. 09.48 av
+  "Bättre, men inte än" på kortet `docka-paow-vandning` (Dealern och ankarna).
+
+- **A3P6C1 som bild: armen ser fel ut** (2026-11-23, Beslut och Prov): "Hon fick ne väldig lång underarm här". Ingen
+  film beställdes med den bilden. Stängt samma dag kl. 10.02 av "Nej, ge utan sista bild" (Dealern och ankarna).
+
 - **Tidigare budget i räddningsomgången** (2026-11-18, ersatt av senare totalmandat ovan): "du har totalt 800 krediter per timme och 2500 krediter för att generera filmer."
   Det ersatte tidigare svaret "Högst 1 000 krediter totalt". Timtaket 800 gäller fortfarande.
 
@@ -819,7 +865,10 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   bör bekräftas av honom med ett kort i Beslut.
 - **Tak på 400 krediter per beställning.** Ersatt 2026-11-17 av "Höjj till 2k åtminstonde" (Domar, beställningar och
   pengar).
-- **Dagstak och golv för krediter.** Ersatta 2026-11-13 av "Nej du får obegränsat i budget!" (samma avsnitt).
+- **Dagstak och golv för krediter.** Ersatta 2026-11-13 av "Nej du får obegränsat i budget!" ("Budgeten", nästa punkt).
+- **Budgeten** (2026-11-13, cirka kl. 15.13): "Nej du får obegränsat i budget!", och kl. 16.37 "inga tak idag". Det som
+  styr i stället är mandatet i `data/order-policy.json` och hans ord 2026-11-23, "Idag har du 1000 krediter på runway i
+  timmen." (Domar, beställningar och pengar); taket per beställning, 2 000, står kvar där.
 - **Betald generering kräver hans ja per beställning.** Ersatt 2026-11-13 av uppdraget till huvudagenten (samma
   avsnitt).
 - **Den tatuerade uppsättningen bredvid den gamla** (2026-11-17, kl. 21.38, hans svar om det nya ankare 1): "Ja. Mne vi

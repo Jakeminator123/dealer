@@ -7,24 +7,20 @@ description: Använd i dealer-repot när studions kopia på nätet (dealer-lake.
 
 Rutinen, det som ska finnas på plats och vad som görs när ett steg stannar står i
 [`docs/DRIFT.md`](../../../docs/DRIFT.md), "Den låsta kopian på nätet" och "Publicera igen från en nyare commit";
-kopians läge nu och skripten som frågar den efteråt i [`docs/lage/spelet.md`](../../../docs/lage/spelet.md).
+kopians läge nu och skripten som frågar den efteråt i [`docs/lage/spelet.md`](../../../docs/lage/spelet.md). Här står
+bara var det står.
 
 ## Reglerna som oftast bryts
 
-1. **Bara på Jakobs uttryckliga ord.** Deploy och mediauppladdning är hans beslut, och att Git är pushat är inget ja
-   till en publicering (AGENTS, "Det som skyddar Jakob"; DRIFT, "Git och kontroller"). Hans ord om kopian:
-   `docs/BESKED.md`, "Kopian och nätet".
-2. **Planen först:** `node tools/publish-studio.ts` utan flagga visar commit, arbetskopia och stegen och kör inget;
-   `--kor` först när planen stämmer (DRIFT).
-3. **Det som går ut är pushat till `origin/main`.** Bygget görs i den egna rena arbetskopian; huvudträdets ocommittade
-   filer kommer aldrig med, och arbetskopian ändras eller committas aldrig för hand (DRIFT).
-4. **Vad som går upp avgör `data/studio-release.json`**; taket för Blob höjs först när tabellen visar vad som har vuxit
-   (DRIFT, "Taket för Blob").
-5. **Inga hemligheter eller adresser i repot:** storens id, kvittot med filmernas Blob-adresser, lösenorden och nycklarna
-   stannar i `.runtime/` och i Vercel; kör aldrig `vercel blob …` eller `vercel env …` i repots rot (DRIFT).
-6. **Labbservern på 4319 startas och stoppas inte av publiceringen,** och inget stoppas på port eller processnamn; en
-   kvarlämnad server på 4341 stoppas med sin egen nyckel (DRIFT, "När ett steg stannar halvvägs").
-7. **Faller kontrollen efter deployen:** lägg tillbaka den förra versionen och läs vad som föll innan nästa försök
-   (DRIFT).
-8. **Fråga kopian som en ny besökare** efter varje publicering, utan sparade val och i telefonstorlek, med skripten som
-   lägesfilen namnger (`docs/lage/spelet.md`, "Var saker ligger").
+1. **Bara på Jakobs uttryckliga ord;** en push är inget ja till en publicering (AGENTS, "Det som skyddar Jakob"; hans
+   ord om kopian: `docs/BESKED.md`, "Kopian och nätet").
+2. **Inga hemligheter eller adresser i repot:** storens id, Blob-adresserna, lösenorden och nycklarna stannar i
+   `.runtime/` och i Vercel (DRIFT, "Den låsta kopian på nätet").
+3. **Labbservern rörs inte av publiceringen,** och inget stoppas på port eller processnamn (AGENTS, "Labbservern";
+   DRIFT, "När ett steg stannar halvvägs").
+4. **Det som går ut är pushat till `origin/main`,** byggt i den egna rena arbetskopian (DRIFT).
+5. **Råd: planen först,** `node tools/publish-studio.ts` utan flagga, och `--kor` när den stämmer; vad som går upp
+   avgör `data/studio-release.json` (DRIFT).
+6. **Råd: faller kontrollen efter deployen,** lägg tillbaka den förra versionen och läs vad som föll (DRIFT).
+7. **Råd: fråga kopian som en ny besökare** efteråt, utan sparade val och i telefonstorlek (`docs/lage/spelet.md`,
+   "Var saker ligger").

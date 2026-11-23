@@ -284,7 +284,8 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   sidan gör ett nytt `requestId` per tryck. Stänger: sidan sänder om samma kommando med samma `requestId`, och motorns
   fel får svensk text på sidan.
 - **En omladdning i kopian är ett nytt bord** (saldo 1000, en pågående runda borta), och labbserverns bord lever bara
-  så länge servern går. Avsiktligt (en spelare i minnet). Stänger: först med Scoutgaming.
+  så länge servern går. Avsiktligt (en spelare i minnet). Stänger: när spelet sparar bordet utanför minnet; projektet
+  är frikopplat från Scoutgaming i nuläget (Jakob 2026-11-23).
 - **Spelet.** Syns: 3D-skon klipper handen i givarna; helkroppsfilmerna har ingen sko; utfallsskyltarna ligger över
   insatsbrickorna när alla sju platser spelar; dubbling och försäkring är inte sedda ([SYSTEM.md](SYSTEM.md),
   "Spelet"). Prövat: inget. Stänger: var och en i ett eget steg i spelets bana.

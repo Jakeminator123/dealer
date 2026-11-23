@@ -1,6 +1,7 @@
 # Dealer
 
-Självständig arbetsyta för en filmad dealer i Scoutgaming: två kort till sju spelare och en dealer, med trovärdig
+Självständig arbetsyta för en filmad dealer till Jakobs blackjackspel, frikopplad från Scoutgaming i nuläget (Jakob
+2026-11-23): två kort till sju spelare och en dealer, med trovärdig
 utdelning. Rörelserna är korta filmklipp mellan fasta ankare (vila, redo, kortets plats) i en klippbank; en runda är en
 väg genom klippen, och samma rundor spelas i labbet, i 3D-scenen och i spelet. V6, Pamelas referensfilm, är arkiverad på
 Jakobs ord (2026-11-20); filmen och 18 rutor står kvar. Scoutgaming äger regler, slump och kortvärden.

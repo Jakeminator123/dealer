@@ -12,7 +12,7 @@
 //                     data/studio-release.json or a document or instruction, a proof changed today, the card track a
 //                     played film needs, the scene's rooms, table and
 //                     props (data/scene-*.json, data/props.json), the lab's backdrops (src/placement-model.ts)
-//   referens          kept by the rules: V6 and what recreates it (data/library.json, output/), data/manifest.json, evidence/, a
+//   referens          kept by the rules: what is left of V6, data/library.json, data/manifest.json, evidence/, a
 //                     reference in Material, and the first or last picture of a film that plays
 //   bara registrerad  a register names it, but nothing plays it, shows it as living work or builds on it
 //   okänd             no register names it
@@ -97,14 +97,12 @@ export function whatOf(u: Unit): string {
     case 'speech': return parts[3] === 'patches' ? `munlapp till en talfilm (${id})` : `${w}talfilmens arbetsmapp: ljud, röst och kvitto (${id})`;
     case 'scene': return `3D-scenens ${({rooms: 'rum', thumbs: 'rumsbild i menyn', materials: 'bordsmaterial', source: 'källmaterial'} as Record<string, string>)[parts[2]] ?? 'material'} (${id})`;
     case 'scene-work': return `arbetsmaterial för scenen (${id})`;
-    case 'frames': return `rutor ur V6-filmen (${id})`;
     case 'sources': return `${w}källbilder till ankare (${id})`;
     case 'sequences': return `${w}en hel runda i rutor (${id})`;
     case 'lab': return `labbets bakgrundsbild (${id})`;
     case 'props': return `3D-föremål på bordet (${id})`;
     case 'reference': return `referensbild (${id})`;
-    case 'v6': return `V6-filmen, Jakobs visuella referens (${id})`;
-    case 'verification': return 'kontrollrutor från tools/verify.ts';
+    case 'verification': return 'kontrollrutor från V6:s återskapning, som är arkiverad';
     default: return id;
   }
 }
@@ -219,8 +217,6 @@ export function audit(repo: string): {items: Item[]; judged: Map<string, string>
   // The rules' references: V6, the manifest, evidence, the library.
   for (const f of ['data/manifest.json', 'data/library.json']) for (const p of pathsIn(read(f))) claims.push({path: p, use: 'referens', why: f});
   for (const f of readdirSync(path.join(repo, 'evidence')).filter(f => f.endsWith('.json'))) for (const p of pathsIn(read(`evidence/${f}`))) claims.push({path: p, use: 'referens', why: `evidence/${f}`});
-  for (const t of ['tools/render.ts', 'tools/verify.ts']) for (const p of pathsIn(read(t))) if (p.startsWith('output/')) claims.push({path: p, use: 'referens', why: `${t} (V6)`});
-  if (read('tools/verify.ts').includes('frames.json')) claims.push({path: 'output/verification/frames.json', use: 'referens', why: 'tools/verify.ts skriver och läser kontrollrutorna'});
   // Anything Beslut, the release, a document or an instruction names by its exact id is living work; a proof also when it changed today.
   const list2 = (dir: string, test: (f: string) => boolean) => { try { return readdirSync(path.join(repo, dir)).filter(test).map(f => `${dir}/${f}`); } catch { return []; } };
   const skills = list2('.claude/skills', () => true).map(d => `${d}/SKILL.md`).filter(f => existsSync(path.join(repo, f)));
@@ -293,7 +289,7 @@ export function edgeRowOf(cls: Uint8Array, w: number, h: number): number | null 
 export type Camera = 'bankens' | 'annan';
 /**
  * The camera by the frame's size: the bank's films and anchors are 1764 × 1174; V6 and its raw films are 1762 × 1174 from a
- * wider camera (src/card-plan.ts V6_CARD), and the old lab's pictures 1536 × 1024. The table's edge row was tried as a second
+ * wider camera (V6's cards measure about 1.38 times a real card at the same place), and the old lab's pictures 1536 × 1024. The table's edge row was tried as a second
  * sign and is only reported: on the green anchors the whole background reads as felt, and where the dealer sits in front of
  * the edge the first full row of felt lies about 36 px below the contract's 831.5 (868 on Pamela's own rest frame).
  */
@@ -388,7 +384,7 @@ export async function fitAll(repo: string, loadPixels = pixels): Promise<{rule: 
       if (!px) { entries[e.id] = {verdict: 'går inte att mäta', words: existsSync(path.join(repo, e.path)) ? 'Bilden gick inte att läsa.' : 'Filen finns inte här.', ...(e.role === 'referens' ? {for: null, usedBy: users(e.path)} : {})}; continue; }
       const cls = classify(px.rgb, px.w * px.h), edge = edgeRowOf(cls, px.w, px.h), camera = cameraOf(px.w, px.h, BANK);
       if (e.role === 'referens') {
-        const used = users(e.path), verify = /assets\/(reference|frames|originals)|output\/v6/.test(e.path);
+        const used = users(e.path), verify = /assets\/(reference|originals)/.test(e.path);
         const forWhat = verify && camera === 'annan' ? 'kontroll' : camera === 'bankens' ? 'rörelse' : 'utseende';
         entries[e.id] = {verdict: camera === 'bankens' ? 'stämmer' : 'annan kamera', for: forWhat, usedBy: used, measured: {width: px.w, height: px.h, edgeRow: edge},
           words: camera === 'bankens' ? `Bankens kamera (${px.w} × ${px.h}, bordskanten på rad ${edge}): duger som referens för rörelse.` : `En annan kamera än bankens (${px.w} × ${px.h}, bordskanten på rad ${edge ?? '?'} mot ${BANK.edgeRow}): en referens för ${forWhat === 'kontroll' ? 'kontroll av V6' : 'utseende'}, inte för mått eller platser.`};
@@ -448,16 +444,16 @@ export async function fitAll(repo: string, loadPixels = pixels): Promise<{rule: 
   }
   return {rule, entries, takes};
 }
-/** What uses a reference or a working picture today: orders that sent it, the round picker's reference films, tools/verify.ts, the bank's jobs. */
+/** What uses a reference or a working picture today: orders that sent it, the round picker's reference films, V6's hashes, the bank's jobs. */
 function referenceUsers(repo: string, read: (f: string) => string): (p: string) => string[] {
   // An order's reference film: its reference field (data/orders/<id>.json reference.from.path), not any mention.
   const orders = readdirSync(path.join(repo, 'data/orders')).filter(f => f.endsWith('.json')).map(f => { let r = ''; try { r = JSON.stringify(JSON.parse(read(`data/orders/${f}`)).reference ?? null); } catch {} return [f.slice(0, -5), r] as const; });
-  const rounds = read('studio/lib/rounds.ts'), verify = read('tools/verify.ts') + read('tools/render.ts'), jobs = read('data/clip-jobs.json'), game = readdirSync(path.join(repo, 'src')).filter(f => /^game/.test(f)).map(f => read(`src/${f}`)).join('\n');
+  const rounds = read('studio/lib/rounds.ts'), manifest = read('data/manifest.json'), jobs = read('data/clip-jobs.json'), game = readdirSync(path.join(repo, 'src')).filter(f => /^game/.test(f)).map(f => read(`src/${f}`)).join('\n');
   return (p: string) => {
     const out: string[] = [];
     const sent = orders.filter(([, t]) => t.includes(`"${p}"`)).map(([o]) => o); if (sent.length) out.push(`${sent.length} beställningar skickade den (${sent.slice(0, 3).join(', ')}${sent.length > 3 ? ' …' : ''})`);
     if (rounds.includes(p)) out.push('Referensfilmer i rundväljaren (studio/lib/rounds.ts)');
-    if (/assets\/(reference|frames|originals)|output\/v6|assets\/tracking/.test(p) || verify.includes(p)) out.push('tools/verify.ts och tools/render.ts (V6)');
+    if (manifest.includes(`"${p}"`)) out.push('V6, hashen i data/manifest.json (tools/verify.ts)');
     if (jobs.includes(p)) out.push('första eller sista bild i bankens jobb');
     if (game.includes(p)) out.push('spelet laddar den');
     return out;

@@ -197,7 +197,7 @@
           "basis": "DERIVED",
           "kWidth": 2.17,
           "kDepth": 1.27,
-          "from": "landed white card of the older take (src/pamela-card-contact-v6.ts)"
+          "from": "landed white card of the older take (pamela-card-contact-v6.ts in the V6 archive)"
         },
         "earlierBlueCards": {
           "basis": "DERIVED",
@@ -3789,7 +3789,7 @@
       ],
       "legacyV6Card": {
         "basis": "DERIVED",
-        "what": "landed card of the older white-card take, constant `landed` in src/pamela-card-contact-v6.ts (GIVEN), laid on the calibrated plane",
+        "what": "landed card of the older white-card take, constant `landed` in pamela-card-contact-v6.ts in the V6 archive (GIVEN), laid on the calibrated plane",
         "quadFilmPx": [
           [
             820.93,
@@ -4617,7 +4617,7 @@
     },
     "currentTransform": {
       "basis": "GIVEN",
-      "source": "src/pamela-card-contact-v6.ts",
+      "source": "pamela-card-contact-v6.ts in the V6 archive",
       "nativeSize": [
         1762,
         1174

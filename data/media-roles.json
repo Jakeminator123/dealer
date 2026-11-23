@@ -1075,14 +1075,16 @@
           "id": "pamela-v6-aterskapad",
           "role": "referens",
           "name": "V6 återskapad",
-          "path": "output/v6/take-01/render/idle-deal-idle-native.mp4",
+          "path": "D:/dealer-archive/v6-2026-11-23/output/v6/take-01/render/idle-deal-idle-native.mp4",
           "still": 520,
           "fps": 30,
-          "note": "V6 återskapad ruta för ruta ur råfilmerna och kontrollerad mot referensen (npm run verify).",
+          "note": "V6 återskapad ruta för ruta ur råfilmerna och kontrollerad mot referensen. Arkiverad med renderaren i D:/dealer-archive/v6-2026-11-23 (README där säger hur V6 återskapas); filmen i assets/reference/ står kvar.",
           "source": {
-            "from": "tools/render.ts",
+            "from": "tools/render.ts, nu i V6-arkivet",
             "when": "2026-11-10"
-          }
+          },
+          "state": "arkiverad",
+          "stateBy": "Jakob 2026-11-20 12:07: Ja, arkivera (Beslut, kortet v6-arkiv); arkiverat 2026-11-23 till D:/dealer-archive/v6-2026-11-23, infört av dokumentsessionen"
         },
         {
           "id": "pamela-v6-rutor",
@@ -1100,13 +1102,14 @@
           "id": "pamela-v6-rarutor",
           "role": "referens",
           "name": "Råfilmernas rutor",
-          "path": "assets/frames/deal/frame-016.png",
-          "pattern": "assets/frames/*/*.png",
-          "note": "Råfilmernas rutor uppackade (vila, fram, giv, tillbaka), V6:s indata.",
+          "path": "D:/dealer-archive/v6-2026-11-23/assets/frames/deal/frame-016.png",
+          "note": "Råfilmernas rutor uppackade (vila, fram, giv, tillbaka), V6:s indata: 686 rutor, arkiverade i D:/dealer-archive/v6-2026-11-23/assets/frames/.",
           "source": {
             "from": "assets/originals",
             "when": "2026-11-10"
-          }
+          },
+          "state": "arkiverad",
+          "stateBy": "Jakob 2026-11-20 12:07: Ja, arkivera (Beslut, kortet v6-arkiv); arkiverat 2026-11-23 till D:/dealer-archive/v6-2026-11-23, infört av dokumentsessionen"
         },
         {
           "id": "pamela-drawn-01",

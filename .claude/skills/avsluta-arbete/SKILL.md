@@ -5,35 +5,24 @@ description: Använd i dealer-repot när ett arbete är färdigt och ska in i Gi
 
 # Avsluta ett arbete
 
-Rutinen står i [`AGENTS.md`](../../../AGENTS.md), "Git och samarbete", och i
+Rutinen står i [`AGENTS.md`](../../../AGENTS.md), "Git och samarbete" och "Regler och spärrar", och i
 [`docs/DRIFT.md`](../../../docs/DRIFT.md), "Git och kontroller"; sessionens sista steg i
-[`HANDOFF.md`](../../../HANDOFF.md), "Före avslut".
+[`HANDOFF.md`](../../../HANDOFF.md), "Före avslut". Här står bara var det står.
 
 ## Reglerna som oftast bryts
 
-1. **Bara huvudagenten committar, taggar och pushar** (vem det är: HANDOFF, "Vem äger vad"). En annan session eller
-   underagent lämnar en fillista eller en kort gren till huvudagenten (AGENTS, "Git och samarbete").
-2. **Ordningen:** uttrycklig staging av egna filer med namn (aldrig `git add -A` eller `.`), commit, `npm run check`
-   (hela sviten, en gång; kör den inte separat före), push, och sedan fjärrens SHA (AGENTS; DRIFT). Kontrollen körs
-   bara på den här datorn; GitHub kör ingen.
-3. **Push medan andra skriver** görs från byggträdet: `node tools/push-clean.ts --trad C:/Users/jakem/dev/super-feature-sg/dealer-bygg` (`--dry-run` gör allt utom
-   `git push`). Det som pushas är incheckade commits, aldrig någons öppna filer (DRIFT, "Push medan andra skriver").
-4. **Ingen force-push, ingen `--no-verify`, ingen automatisk commit av utkast** (AGENTS). "Try running Pull first" i
-   Cursor betyder att pre-push-kontrollen blev röd: läs varför, dra inte och kringgå inte.
-5. **Rött stoppar.** Utred orsaken och rätta den; sänk aldrig en kontroll och ändra aldrig en referens för att få grönt.
-   En verklig kvarvarande begränsning skrivs kort i `docs/BRISTER.md` (AGENTS; DRIFT, "Rött" och "Gult").
-6. **En ny testfil** skrivs in i `test`-skriptet i `package.json`, och bara där: pushkontrollen kör samma filer, och
-   vakttestet fäller en testfil i `tools/` som skriptet inte namnger (DRIFT, "Git och kontroller").
-7. **HANDOFF är en startsida med tak** (högst 120 rader och 900 ord; `tools/handoff.test.ts` håller det): läget skrivs
-   i banans lägesfil (`docs/lage/<bana>.md`, fem delar, högst 60 rader och 800 ord), och i båda ersätts det som inte längre gäller;
-   inget läggs till som dagbok. Det som väntar på Jakob blir ett kort i Beslut, ett nytt besked av honom en punkt i
-   `docs/BESKED.md`, en ny brist en punkt i `docs/BRISTER.md`; vad som hände och varför står i commitmeddelandet
-   (AGENTS, "Var kunskap står"; HANDOFF, "Före avslut").
-8. **Städa efter den egna ändringen:** kod som den gör överflödig, ersatt status och döda sökvägar tas bort, och det nya
-   beteendet beskrivs där det hör hemma (AGENTS, "Städa löpande"). Detta ger inget mandat att rensa andra sessioners
-   grenar, arbetsträd eller arbetsfiler. Slaskverktyget används först som rapport; åtgärder följer DRIFT:s ägarkontroll.
-9. **Media och hemligheter stannar utanför Git** (`assets/`, `output/`, `.runtime/`, `.env*`, `private/`); repot är
-   publikt (AGENTS, "Det som skyddar Jakob").
-10. **Efter mediearbete:** rensa egna överflödiga mellanresultat och kör `npm run media:status`. Översikten under
-    `.runtime/media-status/` visar storlek, användning och förändring. `npm run gallra` visar vad som kan bort ur
-    `assets/`; bara nivån säkert körs utan Jakobs ord. Rutinen står i `tools/local-work.md`.
+1. **Bara huvudagenten committar, taggar och pushar** (vem det är: HANDOFF, "Vem äger vad"). Andra lämnar en
+   fillista till huvudagenten (AGENTS, "Git och samarbete").
+2. **Ordningen och push medan andra skriver** står i DRIFT, "Git och kontroller": egna filer stagas med namn, commit,
+   `npm run check` en gång, push, fjärrens SHA; från byggträdet med `tools/push-clean.ts` när andra har öppna filer.
+   En ny testfil skrivs in i `test`-skriptet i `package.json`.
+3. **Ingen force-push och ingen `--no-verify`** (AGENTS). Råd: "Try running Pull first" i Cursor betyder att
+   pre-push-kontrollen blev röd; läs varför i stället för att dra.
+4. **Rött stoppar; utred orsaken** (AGENTS, "Regler och spärrar"). Ett test som bara låser hur kod eller text ser ut i
+   dag stryks när det hindrar; skyddet sänks aldrig. En verklig kvarvarande begränsning skrivs kort i `docs/BRISTER.md`.
+5. **HANDOFF och lägesfilen har tak** (Jakob 2026-11-18; `tools/handoff.test.ts`): ersätt det som inte längre gäller.
+   Var resten hör hemma står i AGENTS, "Var kunskap står".
+6. **Städa efter den egna ändringen** (AGENTS, "Git och samarbete"). Andra sessioners grenar, träd och arbetsfiler
+   är deras.
+7. **Media och hemligheter stannar utanför Git**; repot är publikt (AGENTS, "Det som skyddar Jakob").
+8. **Efter mediearbete:** `npm run media:status`; gallringen följer `tools/local-work.md`.

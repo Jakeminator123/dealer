@@ -6,37 +6,29 @@ description: Använd i dealer-repot när något ska visas för Jakob eller ett s
 # Visa Jakob något
 
 Rutinen för labbservern och fliken står i [`docs/DRIFT.md`](../../../docs/DRIFT.md), "Labbservern och fliken"; reglerna
-för servern och för svaret i [`AGENTS.md`](../../../AGENTS.md), "Labbservern" och "Svar till Jakob".
+för servern och för svaret i [`AGENTS.md`](../../../AGENTS.md), "Labbservern" och "Svar till Jakob". Här står bara var
+det står.
 
 ## Reglerna som oftast bryts
 
-1. **En flik** (AGENTS, "Labbservern"). I vanlig webbläsare används `node tools/preview.ts --open "<sida>"`; aldrig
-   `Start-Process` eller `start` (DRIFT).
-2. **Före en länk:** `node tools/preview.ts --ensure`. Servern startas, stoppas och startas om bara av den HANDOFF säger
-   ("Vem äger vad"), och bara med `STOPP.cmd`, `--stop` eller `--restart`, aldrig via processnamn eller port (AGENTS).
-3. **Studion han ser är byggd ur det incheckade:** `node tools/studio-from-commit.ts` bygger en commit i ett rent träd
-   och byter in den i huvudträdets `studio/out` först när bygget lyckades. Bygg inte i huvudträdet medan andra skriver
-   under `studio/` (DRIFT, "Labbservern och fliken", Studion byggd ur det incheckade).
-4. **Det han ska se ligger i repots media, inte på slaskdisken:** en provmapp `assets/proofs/<namn>/` med `proof.json`
-   (titel, korta etiketter, omdömen), i Granska, Prov (`/studio/granska/?prov=<mapp>`). Lösa sidor under
-   `D:/dealer-scratch` visas inte för honom (SYSTEM, vyn Prov; README, Studion).
-5. **En stillbild bredvid varje film han ska döma,** och ett nytt utseende för alla visas i spelets storlek och i
-   rörelse innan det gäller (`docs/BESKED.md`, "Arbetet och dokumenten" och "Läpparna och talet").
-6. **Ett prov (film, bild) som väntar på hans dom är ett kort i Beslut;** teknik, publicering och arbetssätt frågas i
-   chatten, aldrig som kort (`docs/BESKED.md`, "Labbet och studion"). Kortet är en post i `data/decisions.json` med en kort fråga (högst 14 ord) och
-   en bild ur ett prov (`proof`, `file`); agenter lägger till och tar bort poster, bara sidan skriver hans svar (README, Register;
-   reglerna i huvudet på `tools/decision-register.ts`). Läs hans svar och anteckningar där innan du svarar honom, och ta ut kortet när det är
-   utfört. Hans ord i Prov (Bra, Inte bra, kommentarer) läses med `node tools/proof-notes.ts` före svaret och besvaras
-   med `--answer` eller markeras med `--read` (README, Register).
-7. **Prov och effekter först i labbet;** spelet (`game.html`) får bara det han har godkänt där (`docs/BESKED.md`, "Labbet och
-   studion").
-8. **En headless-titt är inte hans skärm.** Sidorna ses under det delade låset med `node tools/lab-look.ts`; ett fel på
-   hans telefon läses med `/trailer?diagnos=1` och hans skärmbild (DRIFT, "Labbservern och fliken", En titt på labbsidor; "Den
-   låsta kopian på nätet").
+1. **En flik, öppnad med `node tools/preview.ts --open "<sida>"`, och `--ensure` före en länk** (AGENTS,
+   "Labbservern").
+2. **Servern stoppas och startas om bara av den HANDOFF säger, och bara med sitt eget kommando** (AGENTS,
+   "Labbservern"; HANDOFF, "Vem äger vad").
+3. **Det han ska se ligger i repots media, inte på slaskdisken:** en provmapp `assets/proofs/<namn>/` i Granska, Prov
+   (AGENTS, "Det som skyddar Jakob"; SYSTEM, vyn Prov).
+4. **En stillbild bredvid varje film han ska döma,** och ett nytt utseende för alla visas i spelets storlek och i
+   rörelse och kräver hans ja (BESKED, "Svaren till honom" och "Hans ja före ett byte av läppar").
+5. **Ett kort i Beslut bara för ett prov (film, bild) som väntar på hans dom;** teknik och arbetssätt frågas i chatten
+   (BESKED, "Labbet och studion"). Läs hans svar där, och i Prov med `node tools/proof-notes.ts`, innan du svarar
+   honom (README, Register).
+6. **Prov och effekter först i labbet;** spelet får bara det han har godkänt där (BESKED, "Labbet och studion").
+7. **Råd: studion han ser byggs ur det incheckade** med `node tools/studio-from-commit.ts` (DRIFT, "Labbservern och
+   fliken").
+8. **Råd: en headless-titt är inte hans skärm;** ett fel på hans telefon läses med `?diagnos=1` och hans skärmbild
+   (DRIFT, "Labbservern och fliken").
 
 ## Svaret till honom
 
-Svenska, slutsatsen först, så kort som frågan tillåter men varje fråga besvarad; punktform, procent och poäng; det
-verifierade skilt från det skattade; vad som återstår; sist antalet aktiva underagenter (AGENTS, "Svar till Jakob").
-Han talar helst med huvudagenten (HANDOFF, "Vem äger vad"): en annan session som han inte själv skriver i lämnar
-sitt svar till huvudagenten.
+Formen står i AGENTS, "Svar till Jakob". Han talar helst med huvudagenten (HANDOFF, "Vem äger vad"): en annan session
+som han inte själv skriver i lämnar sitt svar till huvudagenten.

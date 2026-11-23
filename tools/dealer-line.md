@@ -219,18 +219,14 @@ långt en dealer har kommit, och vad som är kvar för en runda, räknar `node t
 
 ## Regler som kostar pengar när de bryts
 
-- **Metoden väljs efter Jakobs domar,** räknade med `node tools/verdicts-per-method.ts`, inte efter granskarens poäng.
-- **En plats, och den svåraste, före alla.** Omgång 3 och 3b gick till alla sju platser från plats 4: 12 av 14 föll, 1 960
-  krediter. Omgång 4 med platsen i ord: handen nådde P1 eller P7 i 4 av 5, 677 krediter (kvittona, V).
-- **En ändring per omgång, mot ett recept som har hållit,** med samma bilder och längd. Omgång 4 ändrade både plats och
-  vändsätt, och fyra av fem fel gällde kortet i luften; omgång 6 ställde två mallar mot varandra i två par (handboken §5, V).
-- **Antalet tagningar** per metodprov och per klipp står i handboken §2; fler beställs bara när de som finns har fallit.
-- **Varje omgång granskas oberoende innan nästa bygger på den,** och kostnaden berättas efter omgången (`docs/BESKED.md`, "Domar, beställningar och pengar").
-- **Det som föll beställs inte om:** hela rundan i en tagning (0 av 7, cirka 3 500 krediter), Motion Control, mellanbild i
-  Kling 4, Aleph och video-till-video, 4K-filmmodell, bildmodellen som flyttar kameran, stängd giv till en spelares plats
-  (handboken, "Det som föll").
-- **Billigt först:** WAN 3 i 480p kostar 5 krediter per s mot 20 i 1080p (`data/order-policy.json`).
-- **Ett osäkert anrop läggs aldrig om:** en tagning med `requestedAt` och utan task-id är OSÄKER ([order-clerk.md §3](order-clerk.md)).
+Ramen är Jakobs (`docs/BESKED.md`, "Betald generering", som han kan ändra): en ändring och en tagning per metodprov,
+två tagningar per klipp när metoden är vald (handboken §2), varje omgång oberoende granskad innan nästa bygger på den,
+och kostnaden berättad efter omgången. Ett osäkert anrop läggs aldrig om ([order-clerk.md §3](order-clerk.md)). 4K-filmmodellen
+är avstängd (Jakob 2026-11-13).
+
+Råden ur kvittona, som har kostat pengar när de inte följdes (en ytterplats först, ändra mot ett recept som har hållit,
+billig sållning först), står med sina belägg i [handboken](film-prompting.md) §2 och §5, och det som har fallit på
+[protokollsidan](film-prov.md), "Det som föll".
 
 ## Format och namn
 

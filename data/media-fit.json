@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "about": "Whether each picture and film fits today's rules: written by node tools/media-audit.ts --fit --write; Material shows it. The card against planCardQuad (src/card-plan.ts), rest hands against the dealer's held rest image (search areas in data/dealer-standard.json), a reference by its camera. Jakob's states are not touched.",
-  "made": "2026-11-19T16:58:11.243Z",
+  "made": "2026-11-23T09:00:36.043Z",
   "rule": {
     "placePx": 15,
     "sizeShare": 0.12,
@@ -782,7 +782,7 @@
       "for": "kontroll",
       "usedBy": [
         "Referensfilmer i rundväljaren (studio/lib/rounds.ts)",
-        "tools/verify.ts och tools/render.ts (V6)"
+        "V6, hashen i data/manifest.json (tools/verify.ts)"
       ],
       "measured": {
         "width": 1762,
@@ -795,7 +795,8 @@
       "verdict": "stämmer",
       "for": "rörelse",
       "usedBy": [
-        "Referensfilmer i rundväljaren (studio/lib/rounds.ts)"
+        "Referensfilmer i rundväljaren (studio/lib/rounds.ts)",
+        "V6, hashen i data/manifest.json (tools/verify.ts)"
       ],
       "measured": {
         "width": 1764,
@@ -808,7 +809,8 @@
       "verdict": "stämmer",
       "for": "rörelse",
       "usedBy": [
-        "Referensfilmer i rundväljaren (studio/lib/rounds.ts)"
+        "Referensfilmer i rundväljaren (studio/lib/rounds.ts)",
+        "V6, hashen i data/manifest.json (tools/verify.ts)"
       ],
       "measured": {
         "width": 1764,
@@ -821,7 +823,8 @@
       "verdict": "annan kamera",
       "for": "utseende",
       "usedBy": [
-        "Referensfilmer i rundväljaren (studio/lib/rounds.ts)"
+        "Referensfilmer i rundväljaren (studio/lib/rounds.ts)",
+        "V6, hashen i data/manifest.json (tools/verify.ts)"
       ],
       "measured": {
         "width": 1762,
@@ -834,6 +837,7 @@
       "verdict": "stämmer",
       "for": "rörelse",
       "usedBy": [
+        "V6, hashen i data/manifest.json (tools/verify.ts)",
         "första eller sista bild i bankens jobb"
       ],
       "measured": {
@@ -847,7 +851,7 @@
       "verdict": "annan kamera",
       "for": "kontroll",
       "usedBy": [
-        "tools/verify.ts och tools/render.ts (V6)"
+        "V6, hashen i data/manifest.json (tools/verify.ts)"
       ],
       "measured": {
         "width": 1762,
@@ -860,7 +864,7 @@
       "verdict": "annan kamera",
       "for": "kontroll",
       "usedBy": [
-        "tools/verify.ts och tools/render.ts (V6)"
+        "V6, hashen i data/manifest.json (tools/verify.ts)"
       ],
       "measured": {
         "width": 1762,
@@ -873,7 +877,7 @@
       "verdict": "annan kamera",
       "for": "kontroll",
       "usedBy": [
-        "tools/verify.ts och tools/render.ts (V6)"
+        "V6, hashen i data/manifest.json (tools/verify.ts)"
       ],
       "measured": {
         "width": 1762,
@@ -886,7 +890,7 @@
       "verdict": "annan kamera",
       "for": "kontroll",
       "usedBy": [
-        "tools/verify.ts och tools/render.ts (V6)"
+        "V6, hashen i data/manifest.json (tools/verify.ts)"
       ],
       "measured": {
         "width": 1762,
@@ -896,23 +900,16 @@
       "words": "En annan kamera än bankens (1762 × 1174, bordskanten på rad 411 mot 831.5): en referens för kontroll av V6, inte för mått eller platser."
     },
     "pamela-v6-aterskapad": {
-      "verdict": "annan kamera",
-      "for": "kontroll",
-      "usedBy": [
-        "tools/verify.ts och tools/render.ts (V6)"
-      ],
-      "measured": {
-        "width": 1762,
-        "height": 1174,
-        "edgeRow": null
-      },
-      "words": "En annan kamera än bankens (1762 × 1174, bordskanten på rad ? mot 831.5): en referens för kontroll av V6, inte för mått eller platser."
+      "verdict": "går inte att mäta",
+      "words": "Filen finns inte här.",
+      "for": null,
+      "usedBy": []
     },
     "pamela-v6-rutor": {
       "verdict": "annan kamera",
       "for": "kontroll",
       "usedBy": [
-        "tools/verify.ts och tools/render.ts (V6)"
+        "V6, hashen i data/manifest.json (tools/verify.ts)"
       ],
       "measured": {
         "width": 1762,
@@ -922,17 +919,10 @@
       "words": "En annan kamera än bankens (1762 × 1174, bordskanten på rad ? mot 831.5): en referens för kontroll av V6, inte för mått eller platser."
     },
     "pamela-v6-rarutor": {
-      "verdict": "annan kamera",
-      "for": "kontroll",
-      "usedBy": [
-        "tools/verify.ts och tools/render.ts (V6)"
-      ],
-      "measured": {
-        "width": 1762,
-        "height": 1174,
-        "edgeRow": 411
-      },
-      "words": "En annan kamera än bankens (1762 × 1174, bordskanten på rad 411 mot 831.5): en referens för kontroll av V6, inte för mått eller platser."
+      "verdict": "går inte att mäta",
+      "words": "Filen finns inte här.",
+      "for": null,
+      "usedBy": []
     },
     "pamela-drawn-01": {
       "verdict": "går inte att mäta",
@@ -1150,8 +1140,7 @@
       "verdict": "stämmer",
       "for": "rörelse",
       "usedBy": [
-        "3 beställningar skickade den (paow-giv-2-3-p4-h24-01, paow-giv-2-3-p4-h24-02, paow-giv-2-3-p4-h24-03)",
-        "tools/verify.ts och tools/render.ts (V6)"
+        "4 beställningar skickade den (paow-giv-2-3-p4-h24-01, paow-giv-2-3-p4-h24-02, paow-giv-2-3-p4-h24-03 …)"
       ],
       "measured": {
         "width": 1764,
@@ -1164,8 +1153,7 @@
       "verdict": "stämmer",
       "for": "rörelse",
       "usedBy": [
-        "2 beställningar skickade den (paow-giv-2-3-p4-h24-cykel-01, paow-giv-2-3-p4-h24-cykel-02)",
-        "tools/verify.ts och tools/render.ts (V6)"
+        "2 beställningar skickade den (paow-giv-2-3-p4-h24-cykel-01, paow-giv-2-3-p4-h24-cykel-02)"
       ],
       "measured": {
         "width": 1764,
@@ -1178,8 +1166,7 @@
       "verdict": "stämmer",
       "for": "rörelse",
       "usedBy": [
-        "1 beställningar skickade den (paow-giv-2-3-p4-c2-h24-cykel-01)",
-        "tools/verify.ts och tools/render.ts (V6)"
+        "1 beställningar skickade den (paow-giv-2-3-p4-c2-h24-cykel-01)"
       ],
       "measured": {
         "width": 1764,
@@ -1239,8 +1226,7 @@
       "verdict": "stämmer",
       "for": "rörelse",
       "usedBy": [
-        "1 beställningar skickade den (paow-giv-2-3-p4-c2-h24-cykel-02)",
-        "tools/verify.ts och tools/render.ts (V6)"
+        "1 beställningar skickade den (paow-giv-2-3-p4-c2-h24-cykel-02)"
       ],
       "measured": {
         "width": 1764,
@@ -1288,6 +1274,50 @@
       "verdict": "går inte att mäta",
       "words": "Övrigt: inget att mäta mot planen.",
       "usedBy": []
+    },
+    "paow-a3-p4-23b": {
+      "verdict": "stämmer",
+      "words": "Kortet ligger 3 px från platsen P4.C1 och är 2 % större än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 3.1,
+          "size": 1.019,
+          "card": "P4.C1"
+        }
+      }
+    },
+    "paow-a3-p4-23c": {
+      "verdict": "stämmer",
+      "words": "Kortet ligger 3 px från platsen P4.C1 och är 2 % större än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 3.1,
+          "size": 1.019,
+          "card": "P4.C1"
+        }
+      }
+    },
+    "paow-a3-p4-ur-film-1120": {
+      "verdict": "stämmer",
+      "words": "Kortet ligger 10 px från platsen P4.C1 och är 1 % större än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 10.3,
+          "size": 1.012,
+          "card": "P4.C1"
+        }
+      }
+    },
+    "paow-a3-p4c2-ur-paow-giv-2-3-p4-c2-01": {
+      "verdict": "stämmer",
+      "words": "Kortet ligger 7 px från platsen P4.C2 och är 1 % större än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "card": {
+          "distancePx": 6.7,
+          "size": 1.014,
+          "card": "P4.C2"
+        }
+      }
     }
   },
   "takes": {
@@ -1536,8 +1566,13 @@
       "played": true
     },
     "pamela-arkiv-d-c3-third-join": {
-      "verdict": "går inte att mäta",
-      "words": "Planen har ingen plats D.C3.",
+      "verdict": "äldre plan",
+      "words": "Kortet ligger 1 px från platsen D.C3 och är 13 % större än kortet dagens plan ritar (planCardQuad).",
+      "measured": {
+        "distancePx": 0.7,
+        "size": 1.129,
+        "card": "D.C3"
+      },
       "approved": false,
       "played": true
     },
@@ -1974,6 +2009,48 @@
       },
       "approved": false,
       "played": false
+    },
+    "paow-giv-2-3c-p4-pilot-02-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": true
+    },
+    "paow-giv-2-3-p4-c2-01-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": false
+    },
+    "paow-giv-2-3-p1-02-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": true
+    },
+    "paow-giv-2-3-p2-01-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": true
+    },
+    "paow-giv-2-3-p3-01-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": false,
+      "played": true
+    },
+    "paow-giv-2-3-p3-02-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": true,
+      "played": true
+    },
+    "paow-giv-2-3-p3-03-01": {
+      "verdict": "går inte att mäta",
+      "words": "Filmen har inget kortspår med ett liggande kort.",
+      "approved": true,
+      "played": true
     }
   }
 }
