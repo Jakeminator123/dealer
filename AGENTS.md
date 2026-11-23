@@ -40,8 +40,8 @@ behöver veta och namnger högst tre filer eller avsnitt att läsa.
 
 - Startsidan `HANDOFF.md` (läget, nästa steg, ägare, pekare) är högst 120 rader och 900 ord; `tools/handoff.test.ts`
   håller taket. Ersätt det som inte längre gäller; ingen dagbok per körning.
-- Läget per bana: `docs/lage/<bana>.md` i fast form, högst 60 rader och 800 ord. Jakobs gällande besked med hans ord och datum:
-  `docs/BESKED.md` (ett ersatt besked flyttas till "Ersatta besked", aldrig bort). Kända brister: `docs/BRISTER.md`.
+- Läget per bana: `docs/lage/<bana>.md` i fast form, högst 60 rader och 800 ord. Jakobs gällande besked, högst två rader per besked:
+  `docs/BESKED.md` (ett ändrat besked skrivs om; Git har det gamla). Kända brister: `docs/BRISTER.md`.
 - Ett prov (film, bild) som väntar på Jakobs dom är ett kort i Beslut (`data/decisions.json`). Andra frågor ställs i
   chatten, aldrig som lista i ett dokument.
 - Kontrakt och format: `docs/SYSTEM.md`. Rutiner, anslutningar och sådant som gäller en viss dator eller ett visst
@@ -52,7 +52,7 @@ behöver veta och namnger högst tre filer eller avsnitt att läsa.
 - Beslut och fakta per film, bild eller körning: registren (`motions/`, `data/*.json`, `placements/`, `evidence/`).
   Dokumenten länkar dit i stället för att kopiera.
 - Vad som hände och varför: commitmeddelandet.
-- Skriv hellre en mening för mycket än för lite (Jakob 2026-11-13), men på rätt ställe och en gång.
+- Skriv kort, det som gäller nu, på rätt ställe och en gång (Jakob 2026-11-23); historien står i Git.
 
 ## Det som skyddar Jakob
 

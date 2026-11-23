@@ -219,7 +219,7 @@ långt en dealer har kommit, och vad som är kvar för en runda, räknar `node t
 
 ## Regler som kostar pengar när de bryts
 
-Ramen är Jakobs (`docs/BESKED.md`, "Betald generering", som han kan ändra): en ändring och en tagning per metodprov,
+Ramen är Jakobs (`docs/BESKED.md`, "Två tagningar per klipp", som han kan ändra): en ändring och en tagning per metodprov,
 två tagningar per klipp när metoden är vald (handboken §2), varje omgång oberoende granskad innan nästa bygger på den,
 och kostnaden berättad efter omgången. Ett osäkert anrop läggs aldrig om ([order-clerk.md §3](order-clerk.md)). 4K-filmmodellen
 är avstängd (Jakob 2026-11-13).

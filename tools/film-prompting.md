@@ -451,7 +451,7 @@ Pamelas godkända par, 552 krediter (V: `assets/motions/paow-table-arrive-wide-0
 ## 5. Prov och protokoll
 
 - **En ändring per order, och en tagning per metodprov, två per klipp när metoden är vald** (Jakobs ram, BESKED,
-  "Betald generering"): mot en namngiven jämförelse som har hållit; ordens titel säger vad som ändrades. Samma bilder,
+  "Två tagningar per klipp"): mot en namngiven jämförelse som har hållit; ordens titel säger vad som ändrades. Samma bilder,
   samma längd. Belägget: omgång 4 ändrade två saker mot Jakobs godkända givar till P4 på en gång, platsen och
   vändsättet (`FREE`, planens förval, mot `AT_PLACE` i de godkända) (V, `motion.flipAxis` i ordrarna), och fyra av fem
   fel gällde kortet i luften; det femte skons kort (`p7-03`) (V). Att den andra ändringen orsakade felen är skattat (S).

@@ -4,7 +4,7 @@
 // the end was Jakob's standing decisions and the known defects). So each thing now stands in one place, and this test
 // holds the cap so that the page cannot grow back:
 //   HANDOFF.md              at most 120 lines and 900 words, six fixed sections, the main agent's address on one line
-//   docs/BESKED.md          Jakob's standing decisions, looked up by topic (may be long)
+//   docs/BESKED.md          Jakob's standing decisions, looked up by topic: one point at most two lines
 //   docs/BRISTER.md         the known defects (may be long)
 //   docs/lage/<bana>.md     one lane's state in a fixed form of five labelled parts, at most 60 lines and 800 words
 // What happened and why stands in commit messages only, so no heading carries a date or a clock time (a dated heading is

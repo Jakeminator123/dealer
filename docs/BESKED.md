@@ -1,907 +1,273 @@
 # Jakobs besked som gäller
 
-Slå upp ditt ämne här när ett beslut är i fråga; sidan läses per ämne, inte i sin helhet. Ett besked per punkt: datum,
-hans ord inom citattecken precis som han skrev dem (stavfelen är hans och rättas aldrig), och vad det betyder i
-arbetet. Ett besked som han har ersatt flyttas till "Ersatta besked" med vad som ersatte det; inget tas bort. Ett nytt
-besked skrivs in här samma dag, under sitt ämne. En punkt utan datum bar inget datum i den äldre överlämningen. Det
-som väntar på hans svar står inte här utan som kort i Beslut
-(`data/decisions.json`).
-
-Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och studion](#labbet-och-studion) ·
-[Domar, beställningar och pengar](#domar-beställningar-och-pengar) · [Dealern och ankarna](#dealern-och-ankarna) ·
-[Filmerna och given](#filmerna-och-given) · [Kortet](#kortet) · [Läpparna och talet](#läpparna-och-talet) ·
-[Scenen och spelet](#scenen-och-spelet) · [Kopian och nätet](#kopian-och-nätet) · [Ersatta besked](#ersatta-besked) ·
-[Utgått](#utgått)
+Slå upp ditt ämne när ett beslut är i fråga. En punkt är ett besked: rubrik, datum och vad som gäller nu, på högst två
+rader. Hans egna ord står kvar bara där ordalydelsen själv styr (skydden och smaken); stavningen är hans. Ett nytt
+besked skrivs in samma dag som en rad under sitt ämne. Ett besked som ett senare ord har ändrat skrivs om till det som
+gäller, och en beställning som är utförd stryks. Äldre och ersatta besked, med hela citaten, finns i Git (sista långa
+versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`data/decisions.json`), inte här.
 
 ## Arbetet och dokumenten
 
-- **Nattens mål: allt i steg med underagenter, avslutat med push till `main`** (2026-11-21, kl. 19.45): "Gör nu allt
-  detta i de steg och med bra modeller som underagenter. Sätt upp detta om ett /goal att arbeta med i ca 6h eller till
-  det börjar bli för komplicerat för dig att hålla i all kontext. Alltså sätt din egen målbeskrivning typ.. Avsluta
-  gärna allt med en push till main på master". Stegen är de han gav samma kväll (Labbet och studion, "Bordet ska
-  byggas om …"), och dockan lades till kl. 19.55 (Filmerna och given). Läst så (huvudagentens tolkning): PR,
-  sammanslagning och push till `main` är beställda för det arbetet; beställningarna görs inom mandatet, som
-  huvudagenten förnyar före första ordern.
-
-- **Datorn bär bara det som det arbetas med; resten ligger på den nya Blobben, och det ersatta gallras** (2026-11-21,
-  sent): "idag ser jag att 'assets' har sjukt mkt material. Ska man inte göra så att det raderas massa om nya versioner
-  kommer in lite automatiskt? Eller typ att någonting gör att mappen inte blir så tung? Eller jag menar allt ska ju
-  köras via blobben fortsättningsvis, den nya alltså, så lokalt ska vi kanske inte ha så mkt alls. Men om vi arbetar
-  aktivt lokalt så ska vi såklart ha det.. kan du inte bara fixa upp något bra ang detta?" Läst så: det en regel ensam
-  avgör (hans egna Inte bra, återskapbart, dubbletter) gallras utan fler ord och går att ta tillbaka i 14 dygn; allt
-  annat löst listas och tas först på hans ord; Primär, Godkänd, Variant, ankare och det spelet spelar rörs aldrig.
-  När den nya storen finns kan det som ligger där tas bort från datorn och hämtas vid behov. Rutinen:
-  `tools/local-work.md`, "Radera oanvänt material".
-- **Testerna skars ner till en kärna, och en ny Blob med ett träd per dealer** (2026-11-21, kväll): "Försök antingen
-  gör en quickfix och radera alla tester eller om du kan skriva ett kommando så jag på annat sätt kan svärma mappen med
-  tester […] men tveka inte att bara radera dem.. kan inte låsningar jag har i projektet bero på detta? Kan ju bara
-  bygga upp nya?" Gjort så: 93 testfiler borttagna (`032aadb`), kvar är de som skyddar publiceringen, spelets regler,
-  hans domar och val, beställningarna och dokumentens tak. Om media: "ny blob", och "respektive dealer får egna
-  nodträd […] A1 […] är starten för ett träd, sedan […] A2.1 och A2.2, som sedan förgrenar sig"; problemet är
-  "okopplade filmer samt halvkopplat som kommit från andra benämningar", och varianterna är han "rädd för att
-  förlora". Läst så: inget material raderas på datorn; nätet får bara det aktiva trädet per dealer; varianter
-  följer med när han säger det (kortet i Beslut).
-- **Mappen dealer, testerna och media på nätet** (2026-11-21, kl. 16.55): "Varför jobbar ni inte alltid i mappen
-  'dealer'? – visst, ska en branch/worktree eller nått användas uttryckligen kanske det ska arbetas på andra ställen,
-  men liksom mer som best practice-sätt." Om testerna: CI på GitHub "kostar pengar och ska göras väldigt sällan";
-  "är testerna lokalt BRA på riktigt ska de såklart göras, men 1500 tester (?)". Om media: "ska endast filer som används
-  i casinot finnas + filer som kan behövas och testas med typ i och under fliken 'Scen & Bord'. Allt detta material ska
-  finnas i en blob på Vercel." Läst så: arbetet görs i `dealer`, och ett extra träd bara när det uttryckligen behövs;
-  ingen CI på GitHub (det finns ingen); den lokala sviten körs en gång per push och inte flera; det som går upp till
-  Blob avgränsas till Casinot och Scen & bord, vilket görs vid nästa publicering på hans ord.
-- **Projektmapp och städning** (2026-11-19): "Du ska jobba i projektet och i den mapp eller det arbetsträd som
-  `codebase` eller en annan IDE använder"; "Jag vill att det mesta som inte används ska raderas". Fria händer att
-  förbättra lokal struktur och rutiner. D: är inte arbetsförval. Kontrollera användning före radering; betalning
-  ensam är inget skäl att arkivera allt. Båda separata projekten får utveckla 3D; förslaget att frysa Dealer drogs
-  tillbaka i samtalet Jakob bifogade. Ingen hopslagning av projekten följer av detta.
-  Förtydligande samma dag: "arbetar kontinuerligt i mappen på C" och "allt normalt, men gärna med omtanke om att
-  repot arbetar med just videomaterial". Vanliga grenar och bra ändringar från andra IDE:er får användas; granska
-  och inför det som faktiskt tillför något. Rensa färdiga mellanresultat löpande och håll materialet överblickbart.
-  Arbetsmappen preciserades 2026-11-21 (beskedet ovan): `dealer` på `main`, ett extra träd bara när det uttryckligen behövs.
-
-- **Sammanhängande lokal räddning** (2026-11-18, Codex): "Styr upp det här och gör det så bra som möjligt för att spela
-  upp Black Jack"; "Samordna arbetet så att vi har kontroll, även med flera metoder." Jakob gav fria händer för lokala
-  ändringar, underagenter efter behov, kompakt lagring (gärna SQLite) och smart dokumentation. Arbetet fortsätter i
-  befintligt repo. Han begärde återkommande push och GPT-browser-granskningar under fem timmar, med avläsning efter
-  5–10 minuter. Sol 6.2 används för kvantitativa deluppgifter. Underlagets råd prövas mot aktuell kod; original,
-  användarbedömningar och kortplan bevaras. Lokal kod/publicering till GitHub innebär ingen webbdeploy.
-
 - **Målet** (2026-11-13): "nu ska vi skapa en bättre version av blackjackspelet". Arbetet gäller spelet i studion.
-- **Frikopplat från Scoutgaming, och repot görs normalt** (2026-11-23, till sessionen dealer-37, vidarebefordrat ord
-  för ord): "Jag säger ja till allt du tycker är korret. Detta proejkt ska vara frikopplat mot scoutgaming i nuläget
-  ska jag säga om jag inte sagt det tydligt nog. men vaqfan lösgö detta repo nu bara så det blir normalt. kan dyu
-  synkronisera med andra agenten och få in ert arbte och comitta och pusha efter all tvätting och omgörning. Sedan vill
-  jag gå vidare med dig att ordna med kort och överläggning av kort". Projektet står alltså på egna ben i nuläget och
-  behöver inget ur Scoutgamings repo eller konton; Scoutgaming beskrivs inte som målet arbetet siktar mot nu. Att
-  inget ändras i Scoutgaming härifrån står kvar (AGENTS, "Det som skyddar Jakob"). Efter städningen: commit och push,
-  och sedan korten och överlägget av kort. Ersätter "Scoutgaming är slutmålet på sikt" (Ersatta besked).
-- **Den enda vägen** (2026-11-13, kl. 07.45): "Se till att verkligen ha denna 'enda bästa väg' när jag vaknar imorgon",
-  och samma natt: "Jag vill systematisera skapandet av dealer och kortflöden." En ny dealer och varje film görs längs
-  den enda vägen i `tools/dealer-line.md`.
-- **Normala regler, städning och dokumentation** (2026-11-13): "Gör bara det här så normalt som möjligt i repot, utan
-  specialregler. Ha kontinuerlig städning och dokumentera gärna mer, det har varit ett misstag från min sida att inte
-  dokumentera tillräckligt." Repot sköts som ett vanligt repo, och det som görs skrivs ned på rätt ställe.
-- **Rensa bort regler och låsningar som blockerar** (2026-11-23, på morgonen, i chatten med huvudagenten): "kan vi inte
-  radera alla test eller andra regler som kanske blockar?", "Försök se om vi kan ta och hitta vart du hittar alla
-  beslut och skit som låser saker också?", och cirka kl. 09.40: "ja men se till att rensa detta repo från massa
-  konstiga regler och skit. Samt det som gjör att massa regler och låsningar kommer upp måste ju fixas". Det som
-  följer står i AGENTS, "Regler och spärrar": en regel står bara om den är hans daterade ord eller skyddar honom, och
-  efter ett fel rättas orsaken i stället för att ett nytt förbud, test eller en spärr läggs till.
-- **Fria händer med ansvar** (2026-11-14): "Du har fria privilegier och kör på. men se till att dokumentera coh städa
-  och så vidare." Huvudagenten väljer väg själv men lämnar ordning efter sig.
-- **Rensa gammalt** (2026-11-17, efter frågan om projektet borde startas om; svaret var nej, navigeringen är felet):
-  "Rensa gammalt otydligt skit i projektet gärna också." Det som en ändring gör överflödigt tas bort i samma ändring.
-- **Ordlistan och städningen** (2026-11-17): "Finns vår ordlista som är ouppdaterad eller pekar på fel saker utifrån hur
-  jag använder ord - se till att en opus 5.5 extra hög fixar det. Samt en anna opus 5.5 som får städa och radera skit
-  som bara förvirrar." Ordlistan följer hans ord, och sidornas ord rättas efter den.
-- **Han talar helst med huvudagenten** (2026-11-17): "kan jag kanske tala med dig hela tiden så får du delegera".
-  Ett önskemål, inte ett förbud: han öppnar andra chattar när han vill (det gjorde han 2026-11-23). Huvudagenten delar
-  ut arbetet; det som bara han kan svara på blir ett kort i Beslut.
-- **Huvudagenten håller ihop sessionerna** (2026-11-13): "Kör på och du delegerar och kanske nu tom ska komma vad de tre
-  andra agenterna gör och se till att du har kontroll över vad alla gör". Varje bana får sin kö av huvudagenten och gör
-  en typ av uppgift (samma dag).
-- **Nya agenter i stället för gamla banor** (2026-11-17, kväll): "resätts eller arkiveras så att vi kan börja om med nya
-  agenter". Banorna Scen, Tal och Trailer är stängda; deras filer hålls av huvudagenten tills en ny bana får dem.
-- **3D-banan** (2026-11-17, kväll): "en till agent som arbetar parallellt med dig och som ska förbättra
-  3D-visualiseringen av det som idag är 2D". Banan arbetar avskilt i `dealer3d/` och lämnar sin gren till huvudagenten.
-- **Mått ur en riktig dealers film** (natten till 2026-11-18, till sessionen som mäter filmen): den ska se filmen, ta
-  hennes handrörelser, bordets bilder, kortens storlek "och annat", bygga en modell, och "komplettera framförallt den
-  som äger checkout med mått på saker samt vinklar". Hans plan är ett ankare "A3 (eller kanske A2.2 ...)" (återgivet av
-  huvudagenten) och flera filmer; sessionen beställde inget förrän han sade det, vilket han gjorde med ankare 2.3
-  (Dealern och ankarna), och filmen går aldrig in i Git, `assets/` eller ett prov.
-- **Svaren till honom:** korta, i punktform, med procent och poäng (AGENTS). Filmer kan se utfrätta ut i hans flik
-  (troligen hans skärm, inte filerna): lägg alltid en stillbild bredvid en film han ska döma.
-- **Överlämningen** (2026-11-18, kl. 01.10): den gamla filen "ska raderas, elelr summerqas till några % bara av vad
-  den faktistär. Det ska i grunden göras omett system så handoffsen blir rimligare sch
-  smartare eller itne användas allt, eller hälst som best practice. Detta är PRIO 1 nu." och "Se till att ordna motsägelser
-  och även instruktioner. Allt ska vara 4./5."
-  Därför är `HANDOFF.md` en startsida med ett tak som ett test håller, och resten står här, i
-  [BRISTER.md](BRISTER.md) och i lägesfilerna under `docs/lage/`.
-- **Huvudagenten orkestrerar** (2026-11-18, kl. 01.54): "När du är klar med ditt arbete, försök att sätta en eller ett
-  par underagenter i arbete. Du ska mest orkestrera. Se till att du får en städagent som rensar upp, samt en agent som
-  stramar upp så att allt följer en rak linje." och "Delegera och använd underagenter elelr sidocahttar". Huvudagenten
-  delar ut arbetet till underagenter och sidochattar och gör själv granskningen, sammanslagningen och svaren till honom.
-- **Räddningsuppdraget, och banorna som underagenter** (2026-11-18, kl. 04.05, med uppdraget bifogat;
-  `D:/dealer-scratch/tmp/raddning/UPPDRAG.md`): "Också vill jag att du försöker se till det som nämnts ang kritik till
-  repot och att det behövs "räddas" i och med att saker blandats ihop (läs bifogat). Se om det behövs bättre rensning
-  och städning. mer av "en väg" ect", och om sidochattarna 3D och MODEL: "Sdan ska du stareta upp dessa men användas
-  som underagenter utifrån hur du vill använda dessa (jag kommer arkivera de sidochattarna nu)." Uppdragets fem
-  kontrollpunkter (en kortgeometri och kamera, ett referensval, ankare och nodkarta, spelkärnans gräns, samma väg i
-  labbet och Casinot) drivs av huvudagenten tills var och en är stängd eller står som en brist; 3D-banan och banan
-  mätning och ankare 2.3 är underagenter till huvudagenten.
-- **Spara tokens** (2026-11-18, kl. 03.42): "Kan du på något sätt se till att vi inte spenderar så mycket tokens? Det
-  går snabbt med den här femtimmarsgrejen som körs". Kontots gräns delas av alla sessioner. En underagent startas bara
-  för det han har beställt, en oberoende granskare bara för en tagning som den automatiska kontrollen släpper igenom,
-  mekaniskt arbete går till en mindre modell, och en session skriver till huvudagenten en gång per färdig sak.
-- **Städningen, och vem som ser över och committar** (2026-11-20). Hans ja till alla städpaket, i Beslut (kortet
-  `stada-paketen`): "AJ alltihopa. men se till att underätta alla agenter med vad som ska görs och vilka filer som ska
-  ske vad med typ. kanske dokumentera också elelr liknande. Gärna med bokkom up-logik så dokumetation ändras utifrån
-  vad som faktist finns (kanske lite luddugt, men..). Protokollför allt som ändras7raderas och så vidare gärna åpå
-  förhand i den mån det går så andra agenterna enkelt kan förstå om berörs elelr inte." Protokollet förs av
-  städsessionen (STÄD) före och efter varje steg. Samma dag, till städsessionen och upprepat till sessionen dealer-29:
-  "Låt de köra klart eller synaka md dem då.. När du är kalr med allt ditt ska du rapportera till agenten som ahr
-  chatten "Schen & Bord från Referensbilder" som seda nska göra en övergripande koll och committa allt i proejktet
-  typ". Den chatten gör alltså den samlade kontrollen och committar; varje session lämnar sin fillista dit.
-- **Ny orkestrerande session, och Node 24.22.3 i hela projektet** (2026-11-20, till sessionen dealer-37 när chatten
-  ovan stängdes): "Jag vill att du gör flera saker och använder underagenter för allt. Du ska mest orkestrera det som
-  sker." Den sessionen tog därmed över den samlade kontrollen och commits (vem som är huvudagent nu står i HANDOFF,
-  "Vem äger vad"). Om Node samma gång: "prova att installera
-  den nya node-versionen och testa att allt fungerar. Om det gör det, byt över till den nyare node-versionen överallt."
+- **Frikopplat från Scoutgaming** (2026-11-23): "Detta proejkt ska vara frikopplat mot scoutgaming i nuläget". Repot
+  står på egna ben och behöver inget därifrån; inget ändras i Scoutgaming härifrån.
+- **Normalt repo utan specialregler** (2026-11-13): "så normalt som möjligt i repot, utan specialregler". Arbetet görs i
+  mappen `dealer` på `main`; ett extra träd bara när det uttryckligen behövs (2026-11-21).
+- **Rensa bort regler och låsningar som blockerar** (2026-11-23): en regel står bara om den är hans daterade ord eller
+  skyddar honom; efter ett fel rättas orsaken, utan nytt förbud, test eller spärr (AGENTS, "Regler och spärrar").
+- **Dokumenten ska vara smidiga** (2026-11-23): "docks/besked måste bli betydligt smidigare", och det gäller alla
+  dokument och rutiner i `docs/`. Kort, en sak på ett ställe; det en commit eller ett register säger står inte här.
+- **Städa löpande och hårt** (2026-11-17, 2026-11-19): "Jag vill att det mesta som inte används ska raderas". Det en
+  ändring gör överflödigt tas bort i samma ändring; kontrollera användning före radering.
+- **Tester: en kärna** (2026-11-21): kvar är de som skyddar publiceringen, spelets regler, hans domar och val och
+  beställningarna. Den lokala sviten körs en gång per push.
+- **Media på datorn gallras** (2026-11-20, 2026-11-21): det en regel ensam avgör (hans Inte bra, återskapbart,
+  dubbletter) tas bort och går att ta tillbaka i 14 dygn; annat tas på hans ord (`tools/local-work.md`).
+- **Aldrig gallrat:** Primär, Godkänd, Variant, ankare och det spelet spelar; varianterna är han "rädd för att
+  förlora" (2026-11-21).
+- **Media på nätet** (2026-11-21): bara det Casinot använder och det som prövas i Scen & bord, i en Blob på Vercel med
+  ett träd per dealer från A1. Görs vid en publicering på hans ord.
+- **Den enda vägen** (2026-11-13): en ny dealer och varje film görs längs `tools/dealer-line.md`.
+- **Fria händer med ansvar** (2026-11-14): "Du har fria privilegier och kör på. men se till att dokumentera coh städa".
+- **Ordlistan följer hans ord** (2026-11-17), och sidornas ord rättas efter den.
+- **Huvudagenten orkestrerar** (2026-11-13, 2026-11-18, 2026-11-20): delar ut arbetet till underagenter och sidochattar,
+  granskar, slår ihop, committar och svarar honom. Vem det är står i HANDOFF, "Vem äger vad".
+- **Han talar helst med huvudagenten** (2026-11-17): ett önskemål, inget förbud; han öppnar andra chattar när han vill.
+- **3D-banan** (2026-11-17): arbetar avskilt i `dealer3d/` och lämnar sitt arbete till huvudagenten.
+- **Spara tokens** (2026-11-18): kontots gräns delas av alla sessioner. En underagent bara för det han har beställt,
+  mekaniskt arbete till en mindre modell, och en rapport till huvudagenten per färdig sak.
+- **Överlämningen** (2026-11-18): `HANDOFF.md` är en startsida med tak; motsägelser rättas, och "Allt ska vara 4./5."
+- **Svaren till honom:** korta, i punktform, med procent och poäng; en stillbild bredvid varje film han ska döma.
+- **Den riktiga dealerns film** (2026-11-18): den mäts bara, och går aldrig in i Git, `assets/` eller ett prov.
+- **Räddningsuppdraget** (2026-11-18): en kortgeometri och kamera, ett referensval, ankare och nodkarta, spelkärnans
+  gräns och samma väg i labbet och Casinot drivs av huvudagenten tills varje punkt är stängd eller står i BRISTER.
 
 ## Labbet och studion
 
-- **Bordet ska byggas om så att en beställning går att kontrollera, och hela vyn genomlysas** (2026-11-21, kväll, två
-  meddelanden). Först, om plats 4 kort 2: "Det står att ingen metod finns, och det står 'prövas' och lite annat. Jag ser
-  att det inte finns någon slutbild för hur Ankare 3 ska se ut, så det måste åtgärdas … det känns som att det är
-  krångliga ord … när du fått en rapport från honom vill jag att du bygger om allt så att vi verkligen kan verifiera att
-  allt blir korrekt. Jag vill behålla enkelheten och att det ska vara logiskt." Sedan: "gå igenom UI och UX för denna
-  sida och undersida. En total genomlysning ska göras efter felaktigheter/legacy och skit. Vill hålla allt enkelt men
-  allt måste vara logiskt och bra." Han vill också att gammalt och felaktiga sökvägar raderas, att testerna inte låser
-  det nya ("om inte radera alla tester, se så de inte låser nytt bra saker"), och att metoder och texter granskas så
-  att texterna blir "så bra som möjligt utan att vara onödigt avancerade". Ordningen han gav: en PR för allt, en
-  utomstående buggranskare på den, och sammanslagning "när vi kommit till en nivå vi känner oss nöjda med". Därefter
-  en vy där de olika nodträden syns, och sist beställningar "på det nya sättet och helst genom typ kommandon" som
-  följer studions nya form, tills Paows träd är fullt: "bara en giv per kort för respektive spelare", eftersom han
-  tänker ordna kortförflyttningar senare. Huvudagenten orkestrerar ("Du ska nu mest agera orchestrator").
-
-- **Korten i Beslut är bara för provmaterial** (2026-11-21, kväll, till sessionen dealer-37, om kortet "Ska nätet få en
-  ny Blob med bara det aktiva trädet per dealer?"): "Altså allt som har att göra med en AI på sidan så att säga ska bara
-  göras för provmaterial av filmer och sånt. Sånt här ska den inte ha att göra med alls!" Läst så: ett kort i Beslut
-  bär en film eller en bild han ska se och döma; frågor om teknik, publicering, Blob och arbetssätt ställs i chatten.
-  Kortet togs ut samma kväll.
-- **Handöverlägget av i grunden** (2026-11-19): "Ta bort det svarta kortöverlägget som standard så jag slipper speciallänkar. Behåll korten som ligger på bordet."
-  Scen har separata reglage för Kort på bordet och Överlägg i handen. Det senare är av som standard, även i Casino;
-  filmens gula/blå originalkort kan synas under utdelningen. Huvudvyn heter Scen & bord; adressen `/bordet/` består.
-
-- **Labbet först** (2026-11-11): prov och effekter hör hemma i labbets sidor; spelet (`game.html`) är ett mellansteg
-  mot Scout och får bara det han har godkänt i labbet.
-- **Ett labb** (2026-11-17, kväll): "Angående det gamla och nya labbet skulle jag vilja att du lyfter över relevanta
-  delar från det gamla labbet till det nya labbet och raderar allt som har med det gamla labbet att göra för att undvika
-  förvirring." Det gamla labbet är borttaget; inget nytt byggs utanför studion.
-- **Placering och Beställ i en vy** (2026-11-17, kväll): "Dessutom skulle jag vilja att det som nu heter placering på
-  något sätt bakas ihop med det som är beställ och eventuellt fler av dessa sidomenyer, så att vi får en grund för hur
-  hela det nya labbet ska vara." Det är vyn Bordet. Om det nya Placering sade han: "Nu ser allt mycket bättre ut
-  angående placeringen i det nya."
-- **En film ska kunna jämföras med det som skickades** (2026-11-17): med sina instruktioner och referenser ("visuella,
-  om json skickas, ock skrivna"). Varje rad i Beställ visar därför exakt vad som går till Runway.
-- **Bara det som skickas beskrivs** (Beslut 2026-11-17, kl. 20.22, "Ja bygg men med anmärkning"): "angående det som är
-  till för att beskriva det som ska gå till runway, så ska bara instruktioner som faktist ska komma med till runway -
-  finnas som är tänmkt att beskriva just detta, så att inte olika beskrivningar i nya labbet skapas som finns bara för
-  att beskriva för användaren saker som ändå inte kommer komma med till runway". Skisserna (Prov `labbets-grund`) har
-  hans ja; beskrivningar av rörelsen som inte skickas tas bort ur labbet.
-- **Efterarbetet för sig, efter filmerna** (2026-11-17): "Det här vill jag att vi behandlar separat från hur vi
-  hanterar filmerna, eftersom filmerna är det vi först måste få rätt", och det läggs där Runda och Scen ligger ("Kan vi
-  också separera att själva spelet ritar saker. Utan att detta görs i ett mellansteg/efterlabborering från råmaterial
-  till färdigt material - fast som är tillordnat kanske just ett företag som önskar sin företagsloggo eller liknande"),
-  med prov av läppsynk under samma del. Vilket kort det är bestäms när rundan spelas, så valören ritas då; hur korten
-  ser ut bestäms i efterarbetet (huvudagentens svar, som han inte har sagt emot).
-- **Kortets efterarbete görs i förväg per film** (2026-11-17): "Det är bättre att vi gör detta i en post- eller
-  efterkonstruktion. […] om det behövs, ta ruta för ruta och måla ut ett kort som ser riktigt bra ut", med det ritade
-  kortet "något procent större än kortet". Spelet målar alltså inte kortet medan filmen spelas.
-- **Skons kort i labbets bild** (2026-11-17): "Den gulaktiga kortsiluetten är cirka 50 grader för tiltat nedåt från
-  ovansidan och ska vändas innot (så man ser mindre) […] Jämför bara mot kortet i en bild från en video eller bild".
-  Skons kort i labbet mäts mot en ruta ur en film.
-- **Bordet: en vy för plan, scen och beställning** (2026-11-17, kl. 21.46, med en bild av Placering): "Jag vill att vi
-  ska ordna en bättre vy för det nya labbet. Vi ska radera det gamla labbet men se till att behålla det som är bra från
-  det. […] Eftersom vi har en stillbild under placering, och att placering ska bli det nya labbet helt och hållet,
-  borde det inkludera andra element, som scenen med nyvalet till vänster. Scen och placering bör ha samma typ av vy,
-  och på högersidan ska man kunna ändra och laborera med detta. Detta ska också vara underlaget för beställning av nya
-  filmer. Man ska kunna se vilket av filmerna man beställer, eller om man kan kombinera och beställa flera filmer. En
-  specifik sak jag vill lösa är vyn för zoomning. Eftersom detta är en stillbild blir korten stela och har olika
-  format, och framförallt är skons kort alldeles för stort." och "Se till att gammalt skit tar bort också och att
-  strukturen blir tydlig i projektet!" Huvudagentens läsning: en vy med en ram, där bilden är kortplanen eller den
-  levande 3D-scenen, allt ändras i högerspalten och beställningen är en lista av filmer i samma vy.
-- **Bordet som det blev** (2026-11-17, sent; hans ord står i commit `c9a1873`): "Bra. Fortsätt standarlisera och
-  förenkla allt i denna riktning. Se till attproejktet också vet vad som är vad." Bordet är den enda labbvyn, och
-  Placering, Beställ och Scen leder dit.
-- **Menyn** (2026-11-17, kl. 21.58): "Inte 3D leder bara till greenscreenen, så den borde heta något annat"; "Spela i
-  `casino` bör rimligtvis vara samma som i `casino`, alltså som det är i `runtime`"; "Den vänstra knappen där det står
-  beställ ska också ingå i den huvudsakliga menyn som nu till stor del handlar om knappen scen. Detsamma gäller knappen
-  placering."; "prov och granska […] slås ihop till en knapp". Menyn är Bordet (lägena Kortplan, Beställ, Scen, Råfilm
-  och Efterarbete), Karta, Granska, Material, Lipsync och Casino, med Beslut, Ordlista, Ljud och Modeller i foten.
-- **Karta med Primära** (2026-11-17, kl. 21.58): "Karta och primära ska bli en och samma typ av sida, så att man kan
-  följa nodträdet och se vilka som är primära och sekundära klipp och hur de sekundära klippen används […] vi ska
-  högst ha några stycken videor för respektive". Kartan visar Primär och högst tre sekundära per steg.
-- **Knappen Efterarbete** (2026-11-17, kl. 21.58): den stora scenen "ska ha en annan knapp på sin sida där det står 3D,
-  inte 3D, spela i `casino` och så vidare. Den knappen ska heta efterarbete, där till exempel kort eller marker kan
-  ligga. Här kan man efterarbeta utifrån videon och efter att man lagt på bakgrund och bord kan man lägga på overlay av
-  hur korten och markerna ska se ut." Kortens och markernas utseende ändras bara i Bordets läge Efterarbete.
-- **Rundan byggs av noderna** (2026-11-17, kl. 21.58): "Varför finns "Runda" ens som förval med 3 alternativ, varför
-  ska mkan tex inte få lägga in egna vägar utifrån vilka noder som finns". En runda byggs av de noder som finns.
-- **Städa hårt** (2026-11-17, kl. 21.58): "var aggressiv med att rensa upp och fixa i ordning nu". Gamla sidor och skal
-  tas bort när deras delar har flyttat.
-- **Kortbanan ska stämma med filmerna** (2026-11-17, "VIKTIGT"): det som används som instruktion eller material för
-  kortets vändning ("kortbana" i Rörelse) "måste stämma med hur rörelserna är i antingen filmen om det görs postumt
-  eller som det är tänkt att vara utifrån om dealern släpar eller nyper kortet och sedan öppnar upp det till själva
-  spelaren. Nu så tror jag korten vrids aningen onaturligt och felaktigt från hur kortet faktist är ställt som
-  utgångspossition." Labbets ritade kortbana följer filmerna, inte tvärtom.
-- **Val för hand i Material** (natten till 2026-11-18): "Jag vill också kunna manuellt ändra typ ankare och klipp så
-  jag får välja de som är primära eller radera eller arkivera och så vidare. Men samtidigt om jag väljer ett visst,
-  kanske nytt ankare, så ska då såklart vissa andra klipp som bygger på det ankaret i så fall "gråas" eller mörkas för
-  att de då inte kan härledas ur rätt ankare förslagsvis". Vilken bild som helst kan göras gällande, läggas åt sidan,
-  arkiveras och tas tillbaka av honom; klipp byggda på en äldre bild mörkas. Betald media raderas aldrig från en knapp.
-- **Hans egen kommentar i Prov** (natten till 2026-11-18): "Står också "inte granskad" på massor av klipp. Varför
-  granskas de inte? Är det jag som ska granska? Då måste jag ju få val att kommentera.." Bara tagningar får en bricka,
-  en tagning utan omdöme säger att den väntar på granskaren, och hans åsikt och kommentar på varje film och bild läses
-  med `node tools/proof-notes.ts` före varje svar till honom.
-- **Inget dubbelt för mobilen, och ingen Pamela av sig själv** (2026-11-18, cirka kl. 00.00): "Jag trodde att ingenting
-  skulle göras dubbelt för mobilen. Generellt förstår jag inte varför vi automatiskt kan komma in till Pamela".
-  Kortplan har en vy; behövs en mobilvy härleds den ur samma kort och lins. Paow står först, och en pausad dealer
-  visas bara när en adress nämner den.
-- **Färre val när en film beställs** (2026-11-18, kl. 01.54): "Trots att mycket har blivit tajtare finns det
-  fortfarande för många val som kan leda till överlappande instruktioner för att skapa videos." En film beställs längs
-  en rak linje: från vilket ankare och till vilken plats. Resten är stegets recept (`data/order-methods.json`), och
-  texten som skickas säger varje sak en gång.
+- **Labbet först** (2026-11-11): prov och effekter hör hemma i labbet; spelet (`game.html`) får bara det han har
+  godkänt där.
+- **Ett labb** (2026-11-17): det gamla labbet är borta, och inget nytt byggs utanför studion.
+- **Bordet (Scen & bord) är den enda labbvyn** (2026-11-17, 2026-11-19): plan, scen och beställning i en vy, och allt
+  ändras i högerspalten. "Fortsätt standarlisera och förenkla allt i denna riktning."
+- **Enkelt och logiskt, och en beställning ska gå att kontrollera** (2026-11-21): varje steg visar sin slutbild, och
+  texterna är "så bra som möjligt utan att vara onödigt avancerade". Gammalt och döda sökvägar tas bort.
+- **Paows träd fylls med kommandon** (2026-11-21): beställningar "på det nya sättet och helst genom typ kommandon", och
+  "bara en giv per kort för respektive spelare" tills trädet är fullt.
+- **Kort i Beslut bara för provmaterial** (2026-11-21): ett kort bär en film eller bild han ska döma. Teknik,
+  publicering, Blob och arbetssätt frågas i chatten: "Sånt här ska den inte ha att göra med alls!"
+- **Överlägg i handen är av i grunden** (2026-11-19), även i Casino: "Ta bort det svarta kortöverlägget som standard så
+  jag slipper speciallänkar. Behåll korten som ligger på bordet."
+- **Beställ visar exakt vad som skickas** (2026-11-17): varje rad visar instruktionerna och referenserna som går till
+  Runway, och inget beskrivs i labbet som inte skickas.
+- **Färre val när en film beställs** (2026-11-18): från vilket ankare och till vilken plats. Resten är stegets recept
+  (`data/order-methods.json`), och texten som skickas säger varje sak en gång.
+- **Efterarbetet för sig, efter filmerna** (2026-11-17): "filmerna är det vi först måste få rätt". Kortens och
+  markernas utseende ändras bara i Bordets läge Efterarbete; valören ritas när rundan spelas.
+- **Kortets efterarbete görs i förväg per film** (2026-11-17): spelet målar inte kortet medan filmen spelas; det ritade
+  kortet är "något procent större än kortet".
+- **Kortbanan följer filmerna** (2026-11-17, "VIKTIGT"): labbets ritade bana och vändning stämmer med hur dealern
+  faktiskt släpar eller nyper kortet, inte tvärtom. Skons kort i labbet mäts mot en ruta ur en film.
+- **Karta med Primära** (2026-11-17): en sida där nodträdet följs, med Primär och högst tre sekundära filmer per steg.
+- **Rundan byggs av noderna** (2026-11-17): egna vägar ur de noder som finns, inga tre förval.
+- **Menyn** (2026-11-17): det som hör ihop är en knapp: Placering, Beställ och Scen i Bordet, Prov i Granska. Att spela
+  i Casino från labbet är samma Casino.
+- **Val för hand i Material** (2026-11-18): han kan göra vilken bild som helst gällande, lägga den åt sidan, arkivera
+  och ta tillbaka; klipp byggda på en äldre bild mörkas. Betald media raderas aldrig från en knapp.
+- **Hans kommentarer i Prov** (2026-11-18): hans åsikt och kommentar på varje film och bild läses med
+  `node tools/proof-notes.ts` före varje svar till honom.
+- **Inget dubbelt för mobilen, ingen Pamela av sig själv** (2026-11-18): en vy; en mobilvy härleds ur samma kort och
+  lins. Paow står först, och en pausad dealer visas bara när en adress nämner den.
 
 ## Domar, beställningar och pengar
 
-- **Timtaket 1 000 i dag** (2026-11-23, cirka kl. 09.15): "Idag har du 1000 krediter på runway i timmen." Timtaket i
-  mandatet `dealer-b0-20261123` är alltså 1 000 till midnatt samma dag; därefter gäller 800 igen (punkten nedan).
-  Totalsumman i mandatet (1 600) är huvudagentens egen gräns för dagens konkreta beställningar, inom hans ord
-  2026-11-18 om att generera tills kontot är nästan tomt.
-
-- **Utökat totalmandat för filmer** (2026-11-18, senare svar på frågan om H24-cykel-01): "Ja du får generera tills kontot är typ tomta!"
-  Det ersätter totalsumman 2 500, inte kravet på granskad kvalitet. Tidigare 800 krediter per timme gäller fortsatt;
-  huvudagenten förnyar det tidsatta ordermandatet inför konkreta beställningar utan att nollställa journalen.
-  "Kvalitet före kvantitet, men om allt sitter, får du gärna gå vidare och skapa mycket material så länge det är bra."
-  En granskad pilot föregår serien. 3D-Dealer har ett eget repo; saldot samordnas i skrivbordets DISKMASKIN.TXT.
-  Senare samma dag: "max 2000 mer idag" gäller hans möjliga påfyllning; saldot räknas inte upp före ett kvitto.
-
-- **Städningen: radera** (2026-11-20, om dubbletterna i `assets/` och om förkastade tagningar och äldre prov):
-  "radera" (`tools/local-work.md`, "Radera oanvänt material").
-
-- **Domar åt honom, och ingen kö** (2026-11-13): "jag måste sova och du får granska och godkänna alla klipp", och kl.
-  15.50, på väg ut: "jag vill nu för jag ska iväg att du godkänner allt videomaterial som innehåller de där kriterierna
-  så vi får en roligare grundloop i idle/ankjare 1" och "Med andra ord vill jag inte se en sån här lista när jag är
-  tillbaka!". Huvudagenten och en oberoende granskare dömer det som annars skulle vänta (`node tools/review-put.ts`),
-  märkt som inte hans och ersatt av hans eget beslut; en tagning han själv har dömt rörs aldrig. Primär väljer bara han.
-- **Betald generering** (2026-11-13): "Kan vi nu göra så att du beställer lämpliga filmer automatiskt utan mitt
-  godkännande, för det är bara jobbigt för mig att göra allt detta med att godkänna!" Huvudagenten godkänner på hans
-  uppdrag (`approval.by: "huvudagent"`; hans eget klick står som `"jakob"`) inom `data/order-policy.json`. Ramen, som
-  han kan ändra: allt genom Beställ och handboken `tools/film-prompting.md`; en ändring och en tagning per metodprov,
-  två tagningar per klipp när metoden är vald; varje omgång oberoende granskad innan nästa bygger på den; kostnaden
-  berättas efter varje omgång. Hans är domarna i Granska och Material och allt utanför filmbeställning.
-- **Taket per beställning** (2026-11-17): "Vi ska inte ha någon limit på 400 krediter.. Höjj till 2k åtminstonde."
-  Taket per beställning är 2 000 (`data/order-policy.json`) och står som skydd mot ett misstag. Saldot sätter gränsen tills han fyller på, och
-  påfyllningen gör bara han.
-- **Klicket är kön** (2026-11-13): "jag vill ju kunna klicka bara i stället för att säga lägg kön, så görs det per
-  automatik." Huvudagenten startar beställningsagenten (`tools/order-clerk.md`) så snart en godkänd order har en
-  tagning som inte är lagd.
-- **Två tagningar per klipp** (om Paow 2026-11-12): "Kör på, men kontrollerat, med det som faktiskt fungerar". Två
-  tagningar, en tredje bara om båda faller, och oberoende rutgranskning i full upplösning före hans dom. Underlag till
-  nya filmer är bara tagningar han har godkänt rakt av, i bankens format; Astrids och Kevins stående material används
-  inte.
-- **Meshy och annat betalt utanför Beställ:** Meshy bara på hans eget ja; varje betalt anrop utanför Beställ rapporteras
-  till huvudagenten med belopp.
-- **GitHubs kostnad** (Beslut 2026-11-18, kl. 01.47, på kortet om den låsta betalningen): "Fixat. undersök vad som
-  kostar så mkt och gör så att det som kostar inte kostar så mycket". Vad som kostar på kontot är utrett
-  ([BRISTER.md](BRISTER.md), "Labbet och verktygen"). Kl. 02.41, på kortet om ett tak: "Gör saker mycket enklare med
-  kontroller och se till att detta repo har minimalt. […] Altså om allt detta görs på github ska det inte göras, utan
-  göras lokalt gällande om det är för "dealer"", och på kortet om låset: "Vi ska inte behöva licens och radera massa
-  skit om sådant finns". Det här repot kör därför ingen kontroll hos GitHub: kontrollen är pre-push och `push-clean`
-  på datorn. Det som hör till ett annat repo eller till kontots inställningar föreslås för honom och ändras inte härifrån.
-  Undantaget han själv gav (Beslut 2026-11-18, kl. 03.05, om kontrollerna i `scoutgaming`): "ja stäng av dem i så fall
-  om elller oavsätt. Elelr ha dem på om jag pushar. men går dem nu om Kevin eller Emil pushar också?" Den stora
-  kontrollen där (`croupier.yml`) är avstängd hos GitHub, ingen fil är ändrad; vad som är gjort och hur det slås på igen
-  står i `D:/dealer-scratch/tmp/github-kostnad/FORSLAG-TILL-SCOUTGAMING.md`.
+- **Hans domar är hans** (2026-11-13): domarna i Granska och Material och valet av Primär sätts bara av honom. En
+  tagning han själv har dömt rörs aldrig, och hans beslut ersätter en dom som gjorts åt honom.
+- **Domar åt honom, och ingen kö** (2026-11-13): "Med andra ord vill jag inte se en sån här lista när jag är tillbaka!"
+  Huvudagenten och en oberoende granskare dömer i hans ställe (`node tools/review-put.ts`), märkt som inte hans.
+- **Betald generering utan hans klick** (2026-11-13): "beställer lämpliga filmer automatiskt utan mitt godkännande".
+  Huvudagenten godkänner på hans uppdrag inom `data/order-policy.json`, genom Beställ och `tools/film-prompting.md`.
+- **Två tagningar per klipp** (2026-11-12, 2026-11-13): en ändring och en tagning per metodprov; två per klipp när
+  metoden är vald, en tredje bara om båda faller. Varje omgång granskas oberoende i full upplösning före nästa.
+- **Mandatet** (2026-11-18): "Ja du får generera tills kontot är typ tomta!", med 800 krediter per timme (1 000 bara
+  2026-11-23). En granskad pilot föregår en serie, och kostnaden berättas efter varje omgång.
+- **Kvalitet före kvantitet** (2026-11-18): "men om allt sitter, får du gärna gå vidare och skapa mycket material så
+  länge det är bra."
+- **API-nyckeln** (2026-11-20): beställningar får gå genom nyckeln i `.env.local` (utvecklarprojektets krediter) när
+  Runways MCP-inloggning saknas.
+- **Taket per beställning är 2 000** (2026-11-17), som skydd mot ett misstag (`data/order-policy.json`). Saldot sätter
+  gränsen, och påfyllningen gör bara han.
+- **Klicket är kön** (2026-11-13): en godkänd order läggs utan att han säger till (`tools/order-clerk.md`).
+- **Underlag till nya filmer** (2026-11-12): bara tagningar han har godkänt rakt av, i bankens format. Astrids och
+  Kevins stående material används inte.
+- **Betalt utanför Beställ:** Meshy bara på hans eget ja; varje betalt anrop utanför Beställ rapporteras till
+  huvudagenten med belopp.
+- **Inget körs hos GitHub** (2026-11-18): "om allt detta görs på github ska det inte göras, utan göras lokalt".
+  Kontrollen är pre-push och `push-clean` på datorn; det som hör till ett annat repo eller kontot föreslås för honom.
 
 ## Dealern och ankarna
 
-- **Släpet med handbyte ges från A2.3, och A2.2 är som A2.1 fast med tatueringarna** (2026-11-21, kväll): "då ska den
-  där beställningen med släpande hand göras från A2.3. Du kan få ändra det till A2.3 då. Men A2.2 ska vara som 2.1 fast
-  med tatueringarna." Bakgrund: han trodde att A2.3 var borttaget; det han arkiverade i Karta 2026-11-19 var ett äldre
-  försök, och A2.3 är bilden `paow-ankare-2-3-c` som han sa ja till samma dag. Läst så (huvudagentens tolkning): ett
-  kort vars plan säger handbyte beställs från A2.3, där vänster hand drar ut kortet och höger lägger det; A2.2 i den
-  tatuerade uppsättningen (`paow-ankare-2-2-blick-a`, som han satte till gäller 2026-11-20) är enhandsgiven, samma roll
-  som A2.1. Hur uppsättningarna visas hör till trädvyn.
-
-- **S är sätet, kameravinkeln ett ankare ses ifrån** (2026-11-21, kväll): "Oklart om vi har och använder ankare för
-  respektive plats. Detta vill jag vi ska återkomma till, men eller låt oss kalla detta för S = Seat. Med andra ord
-  ska det kunna vara 'S2-A2.2', det är alltså kameravinkel/seat för spelare 2 som ser på en vinkel av ankaret där
-  dealern är i en position för att ta ut kortet." Läst så: P är spelaren som får kortet (A3P2C1), S är sätet som
-  bilden ses ifrån (S2-A2.2); utan S är det den raka kameran. Inget byggs för sätena nu: han vill återkomma.
-- **Flera namngivna träd per dealer, löst material för sig, och en Blob för både datorn och nätet** (2026-11-21,
-  kväll): "man ska kunna ha flera träd per dealer. men att de olika träden får heta saker.. kanske kan man ha 3 träd
-  per dealer + allt annat löst material som man sedan ska kunna radera enkelt. Vi kan göra så att vi lokalt och från
-  sajten på och via vercel kör från samma blobb - den nya." Som exempel på parallella träd nämner han det som spelas
-  i Casino och "de kanske aningen annorlunda klipp som finns i slutet på PAOW-filmens ingång till Casinot". Läst så:
-  träden står med namn i ett register och filmerna räknas ur ankarna; nya Bloben bär de träd som spelas, ingången
-  med; löst material listas men raderas först på hans ord, och det han har dömt bra hålls isär från resten. Att
-  datorn läser samma Blob utreds först; uppladdning kräver hans ord.
-- **A3 är ankaret där ett kort har landat, och det skrivs ihop med spelare och kort** (2026-11-21, kväll): "Vad menar
-  du A3 är? nej alltså 'A3P2C1' är t.ex. 'Ankare 3, Player 2, card 1'". Läst så: A3 är en nivå i trädet med ett
-  ankare per spelare och kort (A3P1C1 … A3P7C2, och dealerns); det skrivs ihop, utan punkt eller mellanrum, och bara
-  "A3" eller "A3 per plats" säger för lite.
-- **Paow är dealern, Pamela är pausad** (2026-11-12): "Vi pausar Pamela när vi är klara. Sedan går vi vidare med Paow."
-  och om Paows utseende "jag vill ha de yngre och nättare bilderna". Om Pamelas filmer på sajten (2026-11-17): "Jag
-  vill ha kvar dem." Pamelas öppna frågor tas upp först när han häver pausen.
-- **Namnet är Paow** (Beslut 2026-11-18, kl. 04.39): på frågan om hon ska heta Paulina i studion och spelet, som
-  räddningsuppdraget skriver, svarade han "Nej, Paow". Inget döps om; Paulina är trailerversionen han valde bort.
-- **Ingångsbild och keystone** (2026-11-12): ingångsbilden är det vi börjar från för en ny dealer, "vilken bild som
-  helst"; av den görs keystone, förlagan i hög upplösning, som aldrig spelas upp. Hans tanke är att ankaret tas ur en
-  video av keystone, "så att inte keystonebilder kommer in i videosekvenser"; Paows ankare är redigerade stillbilder,
-  och han har inte avgjort vägen.
-- **Ankare** (2026-11-12): de gröna bilderna i bankens format heter ankare, inte keystone: ankare 1 är vila, 2.1 nyp i
-  skons fönster och 2.2 handen över kortet i skons öppning (orden och koderna står i `docs/SYSTEM.md`, Ordlista).
-- **Kortets tre mått** (2026-11-12): riktning, lutning och perspektiv. "perspektiv är bättre", och han vill kunna
-  ställa in alla tre "men också ha en normal" (förslaget: 0°, 0°, 87 %).
-- **Visningen:** Paow ska kunna spela en hel runda; spelets nödlösningar (ersättare där en film saknas, utgången
-  baklänges) ger vika när banken har egna filmer (`src/game-director.ts`).
-- **Förvalen han sade ja till** (2026-11-13): "Jag håller med om allt annat du nämnde, så jag kan acceptera det rakt
-  av". Ljuset utjämnat mellan filmer, liv i överkroppen och kopparna i relingen (de två sista när de är sedda rena),
-  plats 6 från ankare 2.2, och en runda ska kunna gå via 2.2.
-- **Mer rörelse när hon delar ut** (2026-11-13): "jag vill i allmänhet att paow rör sin kropp och huvud och SIN
-  högerarm aningen mer när HENNES vänsterarm dealar." Bara mall 7 skrev det, och då gick kortet fel i 15 av 18
-  tagningar; hur hon rör sig utan att det kostar kortet är öppet (handboken §5).
-- **Returen efter en tvåhandsgiv** (2026-11-13): "OM hon har någon deal där hon använder sin vänster och högerarm så
-  måste retreat/tillbakagången vara annorlunda då den andra armen är den som är utsträckt." I texten `SAY.backPass`, i
-  rundan en retur med den hand som är ute (`motion.releaseHand`).
-- **Farten** (2026-11-13, kl. 19.13): "Dessutom har jag tyvärr bett om att snabba upp vissa typer av rörelser, kanske
-  till och med vissa `talk clips`, vilket har resulterat i att hon är jättesnabb i vissa lägen och ser konstig ut."
-  `filmTempo` är 1 och en vilogest spelas klart som filmad (`IDLE_RULE.exitRate` 1); reglaget Givarnas tempo står kvar.
-- **Vilans slinga** (2026-11-14): "Flera animationer kommer sedan inte in automatiskt i "grundloopen" idle eller vad vi
-  nu kallar det." och "Den där hon dricker från undersidan av bortet är bra, och säkert andrasakeer som ska in i
-  grundloopen". Godkända vilofilmer går in i vilans slinga av sig själva (`docs/SYSTEM.md`, Vilan).
-- **Tatuerade och mindre händer** (Beslut 2026-11-17, `tatuerade-mindre-hander`): "starta upp nya filmer från "ankare
-  2.2 där hon har aningen indre händer och även taueringarna. […] men också får till rätt beställningsmetod". En ny
-  uppsättning byggs med tatuerade händer 10 % mindre; att måla tatueringar i färdiga filmer har fallit två gånger.
-- **Fotot som förlaga** (2026-11-17): "Punkt tre, ja, foton får skickas." Hans foto får skickas till bildmodellen som
-  förlaga; det ligger i `private/referenser/` och läggs aldrig i Git, i ett prov eller på sajten.
-- **Den tatuerade uppsättningen är förstahandsvalet** (natten till 2026-11-18): "vi också sätter hennes tatuerade
-  keystone/som förstahandsval". Keystone sittande och stående och ankare 1 med tatuerade händer gäller; nya ankare och
-  filmer beställs ur dem, och bankens äldre filmer spelas tills en ny finns.
-- **Ankare 2.2 ska ha blicken mot skon och en styvare hand** (natten till 2026-11-18): "Ankare 2.2 för paow vill jag
-  ska vara så att hon tittar mot kortet/skon/handen […] Just hennes ankare 2.2 är dåligt i alla fall på grund av att
-  hon inte har en "styvare" handhållning för att "stryka/dra trycka ut kortet ur skon, och att hennes blick inte är
-  just mot skon"". Ett nytt ankare 2.2 görs; hans två anteckningar om kandidaterna (lyft armbågen; händerna lika stora
-  och tummen synlig) står i Prov `paow-ankare-2-2-blick`. Rättat 2026-11-21: kandidat A (`paow-ankare-2-2-blick-a`)
-  gäller sedan Jakob 2026-11-20 kl. 08.34 (Material), B och C föll ([film](lage/film.md)).
-- **Ankare 2.3** (2026-11-18, cirka kl. 01.10, till sessionen MODEL; hans ord som MODEL:s rapport återger dem): "Jag
-  vill att du skapar ett nytt ankare, ankare 2.3, och inget annat. Ankare 2.3 ska göra ett undantag, där ankare 1 får
-  gå till ankare 2.3. Ankare 1 ska nu vara paushänder som är tatuerade, om du kan hitta det. En videofilm ska
-  genereras från ankare 1, det nya, till 2.3. Där ska hon försöka ha sitt nya ankare 2.3, som de i din granskade film
-  har skapat, med händerna precis vid utdelningen." Till huvudagenten kl. 01.54: "Jag vill att du inspireras av hur hon
-  arbetar med händerna för att skapa ett ankare som är 2.3. […] Hon ska gå från ankare 1 till ankare 2.3 och titta ner
-  mot sin hand eller den som hon ska fösa ur kortet med. Skapa en film som går dit." Ankare 2.3 är båda händerna vid
-  skon precis före draget, tatuerade som i ankare 1, med blicken ned mot handen som föser ut kortet. MODEL gör det, med
-  en tagning inom huvudagentens tak. Kandidaten, händerna, ansiktet och bilden i spelets storlek märkte han som Bra i
-  Prov `paow-ankare-2-3` 2026-11-18, kl. 02.24, och i Beslut kl. 02.39 svarade han "Ja, registrera" på bilden med
-  omgjort efterarbete (`assets/anchors/paow-ankare-2-3-a/`).
-- **Ankare 2.3 görs om, på en riktig filmruta** (2026-11-20, kl. 14.55, när piloten till plats 4 från B tappade vänster
-  arm): "Det är möjligt att hela grunden för det här ankaret är fel och taget utifrån en vinkel som jag testade. Kanske
-  ska du göra om hela ankaret, `2.3`, och sedan utifrån det göra allting på nytt." C, en riktig filmruta med rak bål,
-  blev grunden och B är ersatt; att C gällde som A2.3 är ersatt av blicken (nästa punkt, och Ersatta besked).
-- **A2.3 får blicken på kortet** (2026-11-23, kl. 09.16, i Beslut, kortet `a2-3-blick-pa-kortet`): "Ja, byt blicken".
-  A2.3 i trädet Tatuerad är `paow-ankare-2-3-d`: C:s bild med huvudet böjt och blicken ned mot kortet, händerna, skon
-  och kortet bildpunkt för bildpunkt som i C (gäller i `data/media-roles.json` sedan kl. 09.29). Ingången dit från
-  A1, `paow-ingang-2-3-03-01`, dömde han i Granska samma dag: "Jättebra!". Givarna hittills börjar på C.
-- **Ett ankare heter alltid A och sitt nummer** (2026-11-21, kväll, till sessionen dealer-37): "Jag tror att du har
-  helt och hållet fel när det kommer till A och B och C och så vidare. Jag använder inte sådana. Det är alltid ett
-  stort A. För ett ankare." Ankarna heter A1, A2.1, A2.2, A2.3 och A3P1C1–A3P7C1. Bokstäverna A, B och C efter 2.3 var
-  agenternas arbetsnamn på tre försök och ska inte stå i det han läser: det som gäller heter A2.3. Register-id:n
-  (`paow-ankare-2-3-c`) står kvar som id.
-- **Dealern från en annan stol** (Prov `dealer-fran-stol-1`, 2026-11-18, kl. 02.46): första bilden "Ser "okej" ut som
-  referensmaterial till en tagning från första s isidan typ", och om sista bilden: "tänk på att detta är ovanifrån och
-  inte från samam vinkel". Vägen med en stillbild från sidan och dockans film från samma öga får fortsätta, men sidans
-  kamera ska ha samma höjd och lutning som den i mitten, bara flyttad åt sidan.
-- **Landningar per plats, eller inga** (2026-11-18, kl. 01.54, om Materials station Landningar): "Jag undrar också om
-  det som kallas landningar alltid har en referensbild för kortplats nummer ett och spelare fyra. Detta bör rimligtvis
-  tas bort helt, eller så bör vi skapa nya bilder för respektive position." Huvudagentens val: en giv slutar på
-  platsens egen slutbild, en per plats, och den ensamma bilden för plats 4 ställs undan.
-- **3D-dockan** (Beslut 2026-11-18, kl. 01.04): ja till blicken och den friare vilande handen, nej till att bygga
-  vidare på Meshy-modellen av Paow, och ja till ett betalt prov av dealern sedd från stol 1.
-- **Bygg den riktiga SAM-dockan** (2026-11-23): "Ja bygg den riktiga SAM-dockan." Sagt sedan han fått veta att
-  båda dockorna är byggda för hand och att SAM 3D Body bara gett Paows docka några mått. Samma morgon om den
-  handbyggda: "hennes docka har ju axlar som sitter för höjt upp och så vidare, är detta inte viktigt att sånt sitter
-  innan vi använder dockan? Samma sak - fingrar och armboge etc ser itne helt ut som hon gör i de filmer som är bra".
-  Dockan rättas alltså mot hennes filmer innan den styr en beställning, och SAM-dockan byggs på de mätningarna.
-  Ersätter "SAM-dockan ska in, men inte nu" (Ersatta besked).
-- **Dockan tar över Siluetten i studion, efter vald dealer** (2026-11-23): "Sätt in dockan för dealern istället för
-  siluetten. Dockan övertar altså siluetten, men ska vara utifrån vilken dealer som vi har valt - i detta fall är det
-  ju PAOW." Siluett finns alltså inte kvar som val: under korten i Bordets Kortplan ligger den valda dealerns docka
-  (en dealer utan egen docka får standarddockan), och det är hans val som beskedet 2026-11-21 väntade på.
-- **Dockans vändning längre ut: bättre, men inte än** (2026-11-23, kl. 09.48, i Beslut, kortet
-  `docka-paow-vandning`, "Bättre, men inte än"): "Nja, ser inte exakt hur hennes fingrar beter sig vfid
-  kortvändningen, men kanske. Dock är det som att henens framförallt vänsterarm inte är naturlig i förhållande till sko
-  och kort(en), det är återigen som ngt fel i djupoet och aknske i distansen till skon och dess kort, det syns på hennes
-  handled och armboge". Dockan styr alltså fortfarande inte nya givar: vänster arm mot skon och kortet, djupet och
-  avståndet till skon prövas mot hennes filmer, sedda på handleden och armbågen. Ersätter "Paows rättade docka: bättre,
-  men armen viks för trångt i vändningen" (Ersatta besked).
-- **A3P6C1 ges utan sista bild** (2026-11-23, kl. 10.02, i Beslut, kortet `a3p6c1-som-bild-2`, "Nej, ge utan sista
-  bild"): "OM detta är tänkt att vara en bild som genereras som en A2'n' så aknske detta ine behövs i och med att vi
-  nu kommer använda dockan för PAOW ändå". Ingen genererad A3-bild för plats 6: given dit beställs utan sista bild,
-  med dockans film som ledning, när dockan har hans ja. Ersätter "A3P6C1 som bild: armen ser fel ut" (Ersatta besked).
-- **Ett tredje och fjärde dealerkort** (2026-11-13): "Skapa då ett tredje och fjärde till dealer". Inte byggt: planen
-  har sexton platser, så en film dit går inte att beställa; hur det ska byggas är en fråga för ett kort i Beslut.
-- **Önskemål för senare** (hans lista 2026-11-11 och 2026-11-13; inget är beställt): mer av höger arm, kaffe ur en mugg
-  som finns i bilden från början (gärna med Scout Gaming-loggan, pålagd efteråt), en animation på bordet, marker som
-  dealern tar och betalar, insamling av korten, och en andra spelarfigur, "Astrid", som kommer in från sidan och satsar.
+- **Paow är dealern, Pamela är pausad** (2026-11-12): Pamelas frågor tas upp när han häver pausen; hennes filmer på
+  sajten står kvar ("Jag vill ha kvar dem").
+- **Namnet är Paow** (2026-11-18), inte Paulina; hennes utseende är "de yngre och nättare bilderna" (2026-11-12).
+- **Ingångsbild och keystone** (2026-11-12): ingångsbilden är det en ny dealer börjar från, "vilken bild som helst"; av
+  den görs keystone, förlagan i hög upplösning, som aldrig spelas upp.
+- **Ett ankare heter alltid A och sitt nummer** (2026-11-21): "Det är alltid ett stort A. För ett ankare." A1, A2.1,
+  A2.2, A2.3 och A3P2C1 ("Ankare 3, Player 2, card 1", skrivet ihop). Aldrig en bokstav efteråt; register-id:n är id.
+- **Vad ankarna är** (2026-11-12, 2026-11-21): A1 vila, A2.1 nyp i skons fönster, A2.2 "som 2.1 fast med tatueringarna"
+  (enhandsgiv), A2.3 båda händerna vid skon före draget, A3 där ett kort har landat, ett per spelare och kort.
+- **Släpet med handbyte ges från A2.3** (2026-11-21): ett kort vars plan säger handbyte beställs från A2.3, där
+  vänster hand drar ut kortet och höger lägger det.
+- **A2.3 som gäller** (2026-11-18, 2026-11-20, 2026-11-23): en riktig filmruta med blicken ned mot kortet
+  (`paow-ankare-2-3-d`, "Ja, byt blicken"). A1 får gå direkt till A2.3; ingången `paow-ingang-2-3-03-01`: "Jättebra!"
+- **A2.2 som gäller** (2026-11-18, 2026-11-20): blicken mot skon och en styvare hand; `paow-ankare-2-2-blick-a`.
+- **S är sätet, kameravinkeln ett ankare ses ifrån** (2026-11-21): S2-A2.2 är ankaret sett från plats 2:s kamera;
+  utan S är det den raka kameran. Inget byggs för sätena nu: han vill återkomma.
+- **Flera namngivna träd per dealer** (2026-11-21): omkring tre träd, och löst material för sig som är lätt att radera,
+  på hans ord. Datorn och nätet ska kunna läsa samma Blob; uppladdning kräver hans ord.
+- **Den tatuerade uppsättningen är förstahandsvalet** (2026-11-17, 2026-11-18): tatuerade händer, 10 % mindre. Nya
+  ankare och filmer beställs ur den; bankens äldre filmer spelas tills en ny finns.
+- **Hans foto som förlaga** (2026-11-17): det får skickas till bildmodellen; det ligger i `private/referenser/` och
+  läggs aldrig i Git, i ett prov eller på sajten.
+- **Kortets tre mått** (2026-11-12): riktning, lutning och perspektiv, alla ställbara "men också ha en normal" (0°, 0°,
+  87 %).
+- **Hela rundan** (2026-11-12): Paow ska kunna spela en hel runda; spelets nödlösningar ger vika när banken har egna
+  filmer (`src/game-director.ts`).
+- **Förvalen han sade ja till** (2026-11-13): ljuset utjämnat mellan filmer, liv i överkroppen, kopparna i relingen,
+  plats 6 från A2.2, och en runda ska kunna gå via A2.2.
+- **Mer rörelse när hon delar ut** (2026-11-13): "jag vill i allmänhet att paow rör sin kropp och huvud och SIN högerarm
+  aningen mer när HENNES vänsterarm dealar." Hur, utan att det kostar kortet, är öppet (`tools/film-prompting.md` §5).
+- **Returen efter en tvåhandsgiv** (2026-11-13) görs med den hand som är ute (`motion.releaseHand`).
+- **Farten** (2026-11-13): filmerna spelas i filmad fart (`filmTempo` 1); en vilogest spelas klart som filmad.
+- **Vilans slinga** (2026-11-14): godkända vilofilmer går in i slingan av sig själva (`docs/SYSTEM.md`, Vilan).
+- **Dockan per dealer** (2026-11-21, 2026-11-23): dealerns mått, naturlig och inte "kuvad"; den valda dealerns docka
+  ligger under korten i Kortplan i stället för Siluett. `ultimate-reality` är bara läsreferens.
+- **Dockan rättas mot hennes filmer innan den styr en beställning** (2026-11-23): axlar, fingrar och armbåge ska se ut
+  som i de filmer som är bra; SAM-dockan byggs på de mätningarna ("Ja bygg den riktiga SAM-dockan").
+- **Dockans vändning längre ut: bättre, men inte än** (2026-11-23): vänster arm mot sko och kort, djupet och avståndet
+  till skon stämmer inte ("det syns på hennes handled och armboge"). Dockan styr inte nya givar före hans ja.
+- **Nej till Meshy-modellen av Paow** (2026-11-18); ja till att avlästa leder styr en klädd figur (2026-11-20).
+- **A3P6C1 ges utan sista bild** (2026-11-23): ingen genererad A3-bild för plats 6; given dit beställs med dockans film
+  som ledning när dockan har hans ja.
+- **Dealern från en annan stol** (2026-11-18): sidans kamera har samma höjd och lutning som den i mitten, bara flyttad
+  åt sidan.
+- **Ett tredje och fjärde dealerkort** (2026-11-13) är önskat men inte byggt: planen har sexton platser.
+- **Önskemål för senare** (2026-11-11, 2026-11-13; inget är beställt): mer av höger arm, kaffe ur en mugg som finns i
+  bilden, en animation på bordet, marker som dealern tar och betalar, insamling av korten, en andra spelarfigur.
 
 ## Filmerna och given
 
-- **Hela trädet från A2.3: ingången och alla givar som fattas** (2026-11-23): "Försök att skapa sedean filmer så att
-  vi har att hon kommer från A1 till A2.3, samt vill jag att du försöker få till alla de givar som fattas för alla
-  possitioner som fattas för nogkartan som inkluderar 2.3 så att säga, så denn kan spela upp givar åt alla
-  possitioner". Läst så (huvudagentens tolkning): varje plats och kort får sin egen giv i trädet Tatuerad (16 givar,
-  11 fattades den dagen), beställda efter att dockan rättats ("sedan"), och det är hans ord för ett nytt mandat.
-  Om nattens fyra givar till plats 1–3 och plats 4 kort 2: "De som du dömt som bra, är verkligen bra."
-- **Den vita ramen runt kortet** (2026-11-23): "Varför är det som en vit karm runt kortet? Någonting måste ju göra så
-  att det blir så?" och hans egen gissning: "Kanske är det för att det på referensantakeret är som lite vitt runt
-  själva det gula/kortets rygg?" (skons ljusa fönsterram i A2.3). På kortet i Beslut samma morgon: "Vad är det som
-  gör att det blir en vit kantlinje på kortet? Det sk inte finnas." Texten ber inte om en kant och dockans kort har
-  ingen. Hans gissning prövades samma dag med en giv till A3P3C1 där linjen var bortmålad i första bilden: kanten var
-  kvar (95 % av kortets fria kontur mot 80–95 % i de fyra tidigare) och skons fönster blev svart när kortet lämnat
-  det, så linjen i skon ska vara kvar och kanten tas bort i efterarbetet i stället. Se också "Ingen vit rand"
-  (2026-11-17) längre ned.
-- **Den vita kanten bort i efterarbetet: rätt håll, men inte än** (2026-11-23, kl. 09.51, i Beslut, kortet
-  `vita-kanten-bort`, "Rätt håll, men inte än"): "saken nu är bara att hon nu greppar i "luft"/grönt. kanske okej, men
-  beroende på vad som faktist är tanken.. Så att om vi säger såhär; om vi ska använda detta som A3'n' kanske vi i så
-  fall ska fylla kantlinjen med det blåa. Ska detta göras för varje frame av en befintlig video så kan man ju kanske ta
-  bort /ersätta det i alla fall med det överlägg av kort som ska komma på och in.. eller jag menar kortet är ju ändå
-  bara referens för hur ett kort ska ersättas av det sätt som vi faktistska använda". Läst så: borttagningen blir inte
-  förval för nya filmer än; i en A3-bild fylls kantlinjen hellre med det blå, och i en befintlig film kan kortet
-  ersättas av kortöverlägget, eftersom filmens kort bara visar hur överlägget ska ligga.
-- **Given till plats 4, kort 2: vändningen ser fel ut** (Beslut 2026-11-23, kl. 07.13, kortet om given från A2.3):
-  "Nej, vändningen ser fel ut", med orden "vändningen ser inte helt naturlig ut heller, kortet blir lixom för långt
-  från fingrarna". Om dockan med Paows mått svarade han samma minut "Måtten ser fel ut": "Ser i och för sig mycket
-  bättre ut. men osäker på om vi bygger ännu en ny dock..". Huvudagentens godkännande av filmen drogs tillbaka samma
-  morgon (underkänd åt honom, med hans ord som skäl); given görs om.
-- **Filmerna från A2.3 är okej men lite robotlika: hennes naturliga rörelse går före dockans** (2026-11-23):
-  "Angående de filmer som finns nu är de okej för A2.3. Dock är det som att dessa är elelr blir lite lite
-  robotliknande och onaturliga. Jag skulle gissa detta beror på att vår docka inte är narulig helt och hållet. kanske
-  blir detta bättre med vår nya docka? Oavsätt aknske man borde skicka med i instruktionernamed dessa videos med docka
-  typ att '..filmen ska få rörelserna av vår dealer att vara naturlig primärt, så var inte extremt nitsk med dockans
-  rörelse..' eeller något." Läst så (huvudagentens tolkning): beställningens text säger att dockans film är en grov
-  ledning och att hon rör sig naturligt i första hand; den nya meningen prövas på en giv bredvid en godkänd film med
-  den gamla texten innan den används för alla.
-- **Plats 6 och 7: vänster arm tar ut kortet, höger arm tar emot och vänder upp** (2026-11-23, rättar huvudagentens
-  förslag att ge de två platserna med vänster hand): "Och - nej, för de sista possitionerna så vill jag att hennes
-  vänsterarm tar ut kortet, och att hennes högerarm tar emot och vänder upp för de där två possitionerna ändpå."
-  Det är samma giv med två händer som plats 1–5 har från A2.3; dockan måste först kunna resa sig och luta sig dit.
-- **En A3-bild gjord som bild, prov på A3P6C1; kortplanen i Bordet gäller** (2026-11-23): "kanske ska du utifrån typ
-  inställningar ta och prova skapa en ankarbild för A3P6C1 då förslagsvis. Om jag dock ställt in att korten ska vara
-  p åett specefikt sätt i 'http://127.0.0.1:4319/studio/bordet/' så är det ju det som gäller såklart. Sedan om jag
-  gillar ankarbilden, så kan vi prova att generera en vide som alts är A2.3 till A3P6C1 eller så." Ordningen är
-  alltså: bilden, hans ja på bilden, sedan filmen med bilden som sista bild; för plats 6 gäller sedan kl. 10.02 "A3P6C1
-  ges utan sista bild" (Dealern och ankarna). Samma dag undrade han om A3-bilderna kan
-  göras "mer generiskt så man inte behöver skapa/återskapqa dessa för nya dealers som jag potentiellt sätt vill ha
-  in": receptet ska alltså vara ett och samma för varje dealer och plats (kortplanen, dealerns A2.3 och en pose per
-  plats), inte handarbete per dealer.
-
-- **Dockan ska se naturlig ut och ha dealerns mått, och en vald docka ersätter Siluett i studion** (2026-11-21,
-  kl. 19.55): "om docka ska användas. Kolla då om dockan kan göras bättre så dockan inte ser onaturlig ut.. typ lite
-  'kuvad'. Kanske kan man ta mått för respektive dealer? Jag har ett annat projekt du kan granska för detta som heter
-  'ultimate-reality'. Du får fria händer att använda dig av den SAM 3D-metod de använder för en ny docka. Men tänk
-  också på att dessa dockor som produceras där kommer ha massa leder för fingrar och ansikte också. Men framförallt
-  kanske vi kan ha en dummydocka nu för PAOW som gissar hennes mått typ. Denna eller en docka ska förslagsvis in
-  istället för den siluett vi nu har i studion, där man ska kunna ändra docka också." Läst så (huvudagentens
-  tolkning): dockan blir en namngiven uppsättning mått per dealer, dagens står kvar som den är, och projektet
-  `ultimate-reality` är en läsreferens (inga länkar eller beroenden dit). Hans nej 2026-11-18 gällde Meshy-modellen
-  av Paow, inte en klädd figur: 2026-11-20 svarade han "Ja, gå vidare" i Beslut (kortet `3d-avlast-giv-kladd-figur`)
-  om att de avlästa lederna styr en klädd figur. Se också "Bygg den riktiga SAM-dockan" (2026-11-23) under Dealern och ankarna.
-
-- **Handleden vrider kortet** (2026-11-17): "Oavsett om hon nyper eller släpar ut kortet, alltså om hon kommer från
-  ankaret 2.1 eller 2.2, måste hon vrida över handleden. Jag har pratat med dig i flera timmar om det här, men det
-  verkar inte fungera. Det måste bero på något konstigt i den prompt som skickas." Han hade rätt om texten; varje mall
-  för en giv säger handleden, och den som förklarar en fallen giv läser först vad ordern faktiskt skickade.
-- **Kortets vändning: två sätt gäller** (2026-11-17, cirka kl. 21): "Båda dessa två sätt är giltiga som du ger exempl
-  på är rimliga och gilltiga. Altså både vrida som en nyckel samt den andra. Huvudsaken är att rätt sida kommer upp mot
-  spelaren och att korten har symetriskt samma storkel som de rimligen borde ha, och/eller som välj si labbet och att
-  det är gult till blått som görs." Handleden vrids över (`FREE`, förvalet) eller nyckeln kring långsidan som Pamela
-  (`LONG_EDGE`).
-- **Ingen vit rand** (2026-11-17, samma meddelande): "Vad som får mig att böli så tveksam till det mesta i övrgt är den
-  vita rand runtom korten som är en gammal instruktion jag givit - det rä därför jag undrar om kanske gammla
-  instruktioner kommer med?" Ingen instruktion om vit kant har skickats (alla 98 ordrar lästa), och gamla
-  beställningstexter kan inte längre skrivas in i en ny order.
-- **Pröva vilka instruktioner som håller** (2026-11-17): "Men jag vill nu du testar vilka av våra instruktioner som
-  fungerar bäst. Ta det bästa från Pamela och det bästa från det vi har idag. I och med att vi redan har tillbakagången
-  från respetive A3 så kanske vi bara kan producera några filmer som är själva utgiven. Du får fria händer att skriva
-  om instruktionerna. Kanske om du vill lägga till en bild eller beskrivning för hur korten ska vara storleksmässigt
-  med." Givar beställs bara dit, och huvudagenten skriver om beställningstexterna efter vad proven visar.
-- **Förlagefilmen, också för släpet** (Beslut 2026-11-17, `givprovet-forlagefilm`): "Ja, absolut. Det här skulle kunna
-  vara en vridning, givet att dealern nu nyper upp kortet för att sedan vrida över det med en rörelse. Å andra sidan
-  krävs det också en sådan här för när hon släpar ut ett kort, antar jag." och "det behövs ju också för och från A2.2
-  till P4C1.. och kanske för alla andra spelare". Metoden med en referensfilm prövas från båda ankarna och för varje
-  plats.
-- **Hans öga på följdproven** (2026-11-17, cirka kl. 23.47): "Alla A-filmer ser bra ut.. C nyp ser bra ut!", och om B:
-  "hela B:serien som är fel.. Det kan finnas fel eftersom Pamelas grundfilm är otydlig; det är oklart om hon växlar
-  över till rätt sida innan hon trycker ner kortet, som dessutom är för litet och har vitt runt det blåa […] färgerna
-  växlar en gång för mycket […] Pau i båda tagningarna släpper ner fel sida". Han godtar dockans tagning, där kortet
-  glider utan finger: i den automatiska kontrollen är det en anmärkning och inget fall, och en referensfilm mäts
-  själv innan den används.
-- **Givens slut ska ha en logik** (natten till 2026-11-18, om arket för prov C): "Det måste finnas en logik i allt
-  detta också. DOCK om det är så att det är tänkt att hon ska de sista ca 30 bildrutorna vända handen igen och skjuda
-  in det så är det såkalrt bra. Men vi måste vet vd som sker!", och "När "2.1" används så ska ju rimligen
-  "nyckelvridning" av kortet ske i allmänhet utan att hon ska "lyfta kortet efter det släpats" eller tryckts ut".
-  Handen vänds en gång, i luften, och aldrig i slutet; ordningen per ankare står i handboken
-  (`tools/film-prompting.md` §5).
-- **Kortare givar, och en film till alla platser** (2026-11-18, kl. 01.54, om nästa film efter ankare 2.3): "Utifrån
-  det kan vi prova att göra en film efter en förenkling av hur man skapar filmer från menyvalet bordet. En beställning
-  ska läggas, och jag vill att vi kortar ner till endast två eller tre sekunder, eller vad YouTube-filmen säger
-  angående utdelning till de olika positionerna. Alternativt kan du skapa en 15-sekunders film där hon delar ut till
-  kort nummer ett i alla positioner." En giv beställs på 3 s (det kortaste Kling 4 tar), och filmen med kort ett till
-  alla platser prövas som en tagning.
-- **Given till plats 4 från 2.3 C, tre sekunder** (Beslut 2026-11-21, kl. 15.56, `paow-giv-2-3c-p4-pilot-02`): på
-  frågan om given är bra nog att göra övriga platser likadant svarade han "Ja, tre sekunder är lagom". Övriga platser
-  görs med samma metod: en dockfilm där vänster hand går lågt hem, och Kling 4 på 3 s med första och sista bild.
-  Svaret "Nej, vänster hand väntar i luften" (granskarens anmärkning, en halv sekund vid skon) fanns och valdes inte.
-- **Given från 2.3 till plats 5, från två håll** (2026-11-18, cirka kl. 02.45): "Skapa en video när den här dealen går
-  till plats nummer fem, kort ett. Jag vill ha en tagning från ankare 2.3 till den här positionen, eller
-  kortpositionen ett, och spelare fem. Jag vill se detta från en sidovinkel och en rakt fram." Två tagningar av samma
-  giv till P5.C1: en från bankens kamera och en från sidan.
-- **Vilken vändning som helst, bara den blir bra** (2026-11-18, samma meddelande): "SE BARA TILL ATT ALLA VRIDNINGAR
-  BLIR BRA, LITEW SKITSAMMA VILKEN VRIDNING SOM GJÖRS i övrigt", och om tagningen från stol 1: "i ruta 34 påbörjas en
-  vridning som inte fullföljs vilket bara ser konstigt ut.. annars kanske bra." En vändning är en hel rörelse, aldrig
-  påbörjad och avbruten; sättet (handleden, nyckeln kring långsidan eller ände över ände som den riktiga dealern)
-  väljs efter vad som blir bäst i filmen.
-- **Takten: ingången fortare, given i ett svep** (2026-11-18, kl. 03.15, om proven `paow-ankare-2-3` och
-  `giv-fran-2-3-p5`): "Ankare 2.3 går för sakta. Given 2.3 är för upphackad och borde bli mer naturlig.. Den stannar
-  lixom upp i mitten typ. Sista videon är okej men hon har ett bord som ändrar färger och ett ort som visar textur av
-  vitt". Filmen från vila till ankare 2.3 ska gå fortare. En giv är en sammanhängande rörelse, utan stopp med kortet
-  rest. Bordets gröna är densamma genom hela filmen, och kortet är slätt, utan vitt eller mönster. Om ingångsfilmen i
-  Beslut kl. 04.31, efter att ha sett farterna: "Det går för sakta, och är för hackigt och hon lutar sig för mkt".
-  Ingången till 2.3 beställs om: kortare, i en mjuk rörelse utan borttagna rutor, och utan att hon lutar sig längre
-  än ankaret gör; ingen av de tre farterna förs in i banken.
-- **Två givar till från ankare 2.3, och ingången i dubbel fart** (Prov 2026-11-18, kl. 03.30–03.55). Om tagning 3
-  till plats 5: "Kan vara bra. men hon gör verkligen en konstig vridning med andra handen som tippar över kortet i
-  mitten av videon. men kanske kan vi följa upp på detta och skapa två till voideos, en för kort plats nummer 1 och
-  plats nummer 4. Men från samma ankare." Tagning 4 märkte han Bra. Ingångsfilmen: 2 gånger farten Bra, 1,5 gånger
-  "hackar och långsam" (hans svar 1,5 på kortet i Beslut var ett misstag, sade han). Nästa filmer är given från 2.3
-  till plats 4 och till plats 1, utan att den andra handen tippar kortet; ingången går in i banken i dubbel fart.
-- **Ett slutbildsankare per plats, en gång för alla** (2026-11-18, cirka kl. 04.25, om att given från 2.3 saknade slutbild):
-  "kan du inte skapa som en bra och logisk slutbildsankare (A3P'n') för respektive possition som sätts in på något
-  sätt? Kan du inte bara lösa detta en gång för alla! Lös allt och ta oss vidare. VIll se nya filmer. Ska inte bättre
-  modell än Nao Banana användas elelr använder vi någon annan?" Varje kortplats får ett ankare 3 (A3P1C1 till A3P7C1 och
-  dealerns kort): bilden en giv slutar på, med handen som lade kortet vid kortet, registrerad per plats och hand och
-  använd av varje giv dit. Bildmodellen väljs efter ett prov med flera modeller på en plats, inte av vana.
-- **Ingången på halva tiden, eller en film genom hela rörelsen** (Granska 2026-11-18, cirka kl. 05.13, hans dom
-  Underkänd på den omgjorda ingången `paow-ingang-2-3-01`): "Från ruta 45 är hon i samma possition hela tiden.
-  Rimligen ska denna göras på halva tiden, eller görqas utifrån A1 till A2.3 och till sedan A3P'n' som sedan klipps
-  eller nått". En film slutar när rörelsen är klar, utan ett stilla slut; hans andra väg är en enda film från vila
-  via 2.3 till platsens slutbild, klippt i två. Samma stund märkte han givarna till plats 4 och plats 1 som Inte bra
-  i Prov, utan skäl.
-- **Dockan ska hålla kortet genom vändningen** (Prov 2026-11-18, cirka kl. 05.14, om given till plats 4): "Hon
-  flippar korten lixom utanpå fingrarna.. Är denn gjort av en sån vitfigur så måste vit-figuren bli bättre med att
-  sköta kordineringen med kort/fingrar". Kortet ligger kvar mellan tumme och fingrar genom hela vändningen, och det
-  är handleden som vrider det (hans regel sedan 2026-11-17, "Handleden vrider kortet"); en docka där kortet rullar
-  fritt i en ring av fingrar duger inte som förlaga.
-- **Flera kameravinklar ur samma film** (2026-11-18, kl. 03.10 och 03.25). Först: "Kna du itne bara prova att
-  förenkla.. Typ skicka filemn för när PAOW dealar till P4C1 och sedan säger du att samma video ska genereras med säg
-  35% från sida". Om provet `sidovinkel-ur-film`: "Det här är mycket bra, jag vet inte hur du gjorde. Det kanske är
-  exakt allt som behövs. Vi har med andra ord 35% framifrån, 35% åt sidan, och vi skulle kunna göra 70% åt sidan. Vi
-  kan också spegelvända filmen till andra sidan, vilket ger oss fem olika kameravinklar. Utifrån det kan vi binda
-  samman dessa vinklar för att titta åt ett visst håll. Innan vi gör det kanske vi kan göra ett prov där vi binder
-  ihop de två videorna på bordet med en egen scen. Hon ser lite kantig ut, så jag kan generera en bild där hon är 35%
-  åt sidan, som kan användas som ett alternativt ankare eller `keystone`-bild." En sidovinkel görs av bankens egen
-  film i Runways videoredigerare, inte av nya stillbilder och en ny tagning. Först ett prov i labbet där filmen
-  rakt fram och filmen från sidan binds ihop i en scen där man kan se åt sidan; hans egen bild från sidan blir
-  stillbilden som styr nästa film.
-- **Givens sex steg från ankare 2.1** (2026-11-13, hans skiss, inte underlag i repot): Nyp, Dra (ned på filten,
-  baksidan upp), För fram (lågt längs filten, inte vänt i luften), Vrid (kortet reser sig på långsidan), Vänd upp,
-  Lägg. Det är valet Vänd vid platsen (`AT_PLACE`), som planen väljer per kort i Bordets Kortplan; förvalet för en ny
-  giv är handleden på vägen (`defaultFlip` i `src/order-model.ts`).
-- **Nypet** (2026-11-13): i ankare 2.1 håller tumme och pekfinger i själva det gula kortet, inte i skons kant ("hon
-  nyper tag i skons kant mer"); kortet får gärna vikas lite. Det står i texten, syns i posebilden och prövas i
-  granskningen.
-- **Kortet ur skon** (2026-11-12): "Ett kort ska tas som det ser ut i skon (inte den konstiga bild som har ett kort som
-  är kort och tjockt). Sedan ska handen vrida kortet." Skon är den svarta behållaren; av bankens två bilder av den
-  används för Paow den med kortet i en öppning snett framtill, i alla lägen, om han inte säger annat.
-- **Referenser** (2026-11-12): V6 är i hans ögon den bästa filmen av en hel giv, "A2.1 - P4C1 - A2.1 - P4C2 - A2.1"
-  (handen vänds inte vid vändningen, och kortet byter hand), och dess kortstorlek kallar han "väldigt bra" (Prov
-  `v6-referens`). Plats 4 i 3D-scenen (`pamela-idle-ready-entry-01`, `pamela-p4-c1-plan-deal-02`,
-  `pamela-p4-c1-plan-return-idle-01`): "väldigt bra". Betyg samma dag: P4.C1 rått original 4,5/5, V6 4/5, vita banken
-  3/5, gul/blå sekvens 2,5/5, READY2 "konstiga". Senare ord om V6: se nästa punkt.
-- **V6 som läge i labbet** (2026-11-18, cirka kl. 00.00): "V6-läget är jag skeptisk mot i sin helhet". V6-bilden är ute
-  ur Kortplans lista. Senare ord om V6: se nästa punkt.
-- **V6 behöver inte längre vara en referens att dö för** (2026-11-20, i Beslut, anteckningen på kortet
-  `stada-paketen`): ""V6"- kan vi cokså "läätta" lite på. Det som har att göra med det kan vi kanske lägga lite
-  säkrare, mne behöver inte vara referenser att dö för längre alls". Skyddet får alltså lättas och V6-materialet
-  läggas säkrare undan. Senare ord om V6: se nästa punkt.
-- **V6 arkiveras, filmen står kvar** (2026-11-20, kl. 12.07, i Beslut, kortet `v6-arkiv`, "V6: arkivera råmaterialet
-  och renderaren, men behåll filmen att titta på?"): han valde "Ja, arkivera". Kortets löfte: råmaterialet och
-  renderarens kod går till ett prövat arkiv med hashlista och tas sedan ur projektet; filmen, 18 rutor, duken och
-  plåten står kvar. Utfört 2026-11-23: arkivet är `D:/dealer-archive/v6-2026-11-23` ([DRIFT](DRIFT.md), "D: och
-  städning"), och V6 återskapas inte längre i projektet.
-- **Trailern med tatuerade händer** (2026-11-17, kl. 19.40): rollblad 4 har hans ja, "Ja hennes 5-faldiga bilder:er är
-  nu bra". **Pausad** samma kväll: "Om allt med videon är dåligt.. Låt mig titta, mne strunt i det och pausa det
-  sålänge". Inget beställs och inget byts i trailern tills han säger till.
+- **Hela trädet från A2.3** (2026-11-23): varje plats och kort får sin egen giv i trädet Tatuerad, beställda när dockan
+  är rättad; det är hans ord för ett nytt mandat.
+- **Plats 6 och 7** (2026-11-23): "hennes vänsterarm tar ut kortet, och … hennes högerarm tar emot och vänder upp",
+  samma tvåhandsgiv som plats 1–5 har från A2.3.
+- **Naturlig rörelse går före dockans** (2026-11-23): filmerna från A2.3 är okej men "robotliknande". Beställningens
+  text säger att dockans film är en grov ledning: "var inte extremt nitsk med dockans rörelse".
+- **Kortplanen i Bordet gäller** (2026-11-23): har han ställt in korten där "så är det ju det som gäller såklart".
+  Receptet för en A3-bild är ett och samma för varje dealer och plats, inte handarbete per dealer.
+- **Handleden vrider kortet** (2026-11-17): "Oavsett om hon nyper eller släpar ut kortet … måste hon vrida över
+  handleden." Den som förklarar en fallen giv läser först vad ordern faktiskt skickade.
+- **Vändningen: sättet är fritt, den ska bli bra** (2026-11-17, 2026-11-18): handleden (`FREE`, förvalet), nyckeln
+  kring långsidan (`LONG_EDGE`) eller ände över ände; rätt sida upp mot spelaren, gult till blått.
+- **En vändning är hel** (2026-11-18): aldrig påbörjad och avbruten.
+- **Kortet sitter i fingrarna genom vändningen** (2026-11-18, 2026-11-23): inte "utanpå fingrarna" och inte "för långt
+  från fingrarna". Det gäller dockan som förlaga också.
+- **Handen vänds en gång, i luften, aldrig i slutet** (2026-11-18); ordningen per ankare står i
+  `tools/film-prompting.md` §5.
+- **Ingen vit kant på kortet** (2026-11-17, 2026-11-23): "Det sk inte finnas." Ingen order ber om den. Linjen i skons
+  fönster i A2.3 står kvar; kanten tas bort i efterarbetet.
+- **Kanten bort: rätt håll, men inte förval än** (2026-11-23): i en A3-bild fylls kantlinjen med det blå; i en färdig
+  film kan kortet ersättas av kortöverlägget: "kortet är ju ändå bara referens för hur ett kort ska ersättas".
+- **En giv är tre sekunder** (2026-11-18, 2026-11-21): "Ja, tre sekunder är lagom".
+- **Takten** (2026-11-18): en giv är en sammanhängande rörelse utan stopp med kortet rest, och en film slutar när
+  rörelsen är klar. Bordets gröna är densamma genom filmen, och kortet är slätt, utan vitt eller mönster.
+- **Flera kameravinklar ur samma film** (2026-11-18): en sidovinkel görs av bankens egen film i Runways videoredigerare
+  (35 % och 70 % åt sidan, också speglat), inte av en ny tagning. Först ett labbprov där två vinklar binds ihop.
+- **Givens sex steg från A2.1** (2026-11-13): Nyp, Dra, För fram, Vrid, Vänd upp, Lägg. Det är valet Vänd vid platsen
+  (`AT_PLACE`) per kort i Kortplan; förvalet för en ny giv är handleden på vägen.
+- **Nypet** (2026-11-13): i A2.1 håller tumme och pekfinger i själva det gula kortet, inte i skons kant.
+- **Kortet ur skon** (2026-11-12): "Ett kort ska tas som det ser ut i skon … Sedan ska handen vrida kortet." För Paow
+  används skon med kortet i en öppning snett framtill.
+- **Fria händer med beställningstexterna** (2026-11-17): huvudagenten skriver om dem efter vad proven visar. En giv
+  beställs bara dit; returen är en egen film.
+- **V6 är arkiverad** (2026-11-20): råmaterialet och renderaren ligger i arkivet på D:, filmen och 18 rutor står kvar
+  att titta på. V6 är ingen referens "att dö för"; dess kortstorlek kallade han "väldigt bra" (2026-11-12).
+- **Trailern är pausad** (2026-11-17): rollblad 4 med tatuerade händer har hans ja, men inget beställs och inget byts i
+  trailern tills han säger till.
 
 ## Kortet
 
-- **Återbruk före egna andrakortsfilmer** (2026-11-19): spelarnas C2, C3 och senare kort använder tills vidare
-  C1-rörelsen med en liten förskjutning av kortet. Egna filmer för dessa är nästa steg, inte nödvändiga luckor nu.
-- **Perspektivet som sparat val** (2026-11-19): Jakob gillar ovalerna och djupkänslan. Kamerans vinkel och avstånd
-  ska kunna ändras i Scen & bord och sparas för Casino. Ringar och kort följer samma bord och kamera; ingen separat
-  ovaleffekt för bara markeringarna. Han vill att Casino använder det som faktiskt ställts in där. Hans förtydligande:
-  det bredare, mer ovala perspektivet ska finnas som alternativ, inte automatiskt som grund (Scen: **Bred lins**).
-- **Bred lins följer med till Casino** (2026-11-21, kl. 16.10): "Kan du göra så att 'Casino' eller 'Prova i Casino'
-  faktiskt går med och för om man har 'Bred lins'?" Spärren som stängde Använd i Casino under Bred lins tas bort: Prova
-  i Casino visar Bred lins, och Använd i Casino sparar den som Casinos förval när han själv väljer det. Standard är
-  kvar som förval i Scen, och kortplan och beställningar följer fortfarande B-linsen.
-
-- **B-linsen som utgångspunkt nu** (2026-11-19): Jakob vill att nya filmer följer en överenskommen standard och
-  väljer tills vidare linsen i D.C3-prov B. Han bedömer B:s rörelse som rätt; kortet kan behöva granskas. C vänder
-  igen till fel fysisk sida trots rätt färg. A kan vara en variant, men det landade kortet är för litet. Detta är
-  inte ett Primär-val. Nya labbordrar använder redan linsen; befintliga filmer blir inte omgjorda av valet.
-  Casino och labbet använder samma geometri. Före massbeställning återstår en godkänd helgiv med rätt hand och tempo;
-  den matematiska perspektivkontrollen är inte ett godkännande av filmens grepp.
-- **Tre geometrier som jämförelse** (2026-11-19): "Skapa en film med den gamla spelgeometrin, en för den nya och en som den gamla geometrin med nya storleken på korten"; lägg också in det nya kortet redigerbart i labbet. Jakob godkände tre D.C3-prov och deras styrbilder till Runway, högst 495 krediter. Proven ersätter inga gällande ankare, Primär-val eller labbförval; uppladdade bilder blir inte automatiskt framtida standarder. Nästa order hämtar fortfarande uttryckliga referenser ur labbets materialregister.
-- **En linje för korten** (2026-11-13, kl. 15.47): "Angående förvalda och icke-förvalda kort, är jag osäker på vad som
-  ska gälla. Jag vill bara att det ska bli en linje och att allt ska anpassas till en standard som passar med det som
-  för närvarande finns i systemet, om det ens behövs. Jag har svårt att förstå vad som gäller för korten." Huvudagenten
-  bestämmer linjen och visar resultatet, inte valen: ritade kort hela vägen, en storlek, en brytare i spelet (Ritade
-  kort i Miljö; `docs/SYSTEM.md`, "Ritade kort"). Kortmattan ur filmens eget kort: "ja som val i labbet, nej för
-  spelet".
-- **Korten ser inte bra ut än** (2026-11-14, kl. 15.14): "Ang spelkorten så ser de inte skitbra ut heller än så länge."
-  Underlägget är förvalet sedan samma timme; det som är kvar står i [BRISTER.md](BRISTER.md).
-- **Kortets sidor: gul rygg, blå framsida** (Beslut 2026-11-17, `kortets-baksida`): "Kortryggen, den del av kortet som
-  inte visas, ska vara gul, medan den sida där kortet visas ska vara blå. Detta kommer att ske via en overlay eller
-  något annat som vi kommer överens om, vilket hör till efterarbetet. […] Allt ska ju gjöras sen gällande fram och
-  baksida", och samma kväll att korten ska vara utan vit kant, "bara … blåa, med rundade kanter". Bordet visar släta
-  gula och blå kort; det tryckta kortet med SG är ett val märkt som efterarbete. Vilken variant som visas avgör
-  huvudagenten ("Du får ta det sista beslutet"). Tillagt på kortet 2026-11-18, kl. 01.44: "Du kan behålla SG-ryggen.
-  men so msagt vill jag allt ska vara rent tills efterarbete gjörs". Spelets rygg med SG står alltså kvar, och inget
-  trycks på korten före efterarbetet.
-- **Märket på blå sidan** (2026-11-20): "Kan vi göra en markering på kortets blåa sida […] med ett litet rosa kryss?
-  I ena hörnet av alla blåa kort ska det också finnas en liten röd cirkel. På så sätt kommer videon ha svårare att
-  fuska med vilken sida av kortet som syns. Krysset kan också bidra till bättre vinklar. Spara RGB-färgen för det gula,
-  blåa, kryssets färg och den lilla cirkelns färg på alla kort. Det ska synas i scen och bord, men även på andra
-  ställen för att få beställningarna korrekta." Det ändrar "inget trycks på korten före efterarbetet" ovan på en
-  punkt: filmkortets blå sida bär krysset och cirkeln, i labbet och på beställningens bild; den gula sidan är slät.
-  I frågan stod "alltså korttryggen" om den blå sidan; samma dag rättade han det: "Jag menade att "gula" ska vara
-  ryggen. Förlåt!" Gult är alltså ryggen (stängt kort, slätt), blått är framsidan (öppet kort) och bär krysset och
-  cirkeln, som i beskedet ovan och i registren. Samma dag: "notera/dokumentera det X, och prick och blå och gul RGB vi
-  hoppas använda i videogenereringen": gul rygg 241, 216, 0 · blå framsida 0, 130, 218 · rosa kryss 255, 120, 200 ·
-  röd cirkel 225, 30, 35, på ett ställe i koden, `CARD_RGB` (`src/placement-model.ts`), och i handboken
-  (`tools/film-prompting.md` §2). Var cirkeln sitter och måtten valde sessionen 222 KORTMÄRKE.
+- **Gul rygg, blå framsida** (2026-11-17, 2026-11-20): gult är ryggen (stängt kort, slätt), blått är framsidan (öppet
+  kort); utan vit kant, "bara … blåa, med rundade kanter".
+- **Märket på blå sidan** (2026-11-20): ett litet rosa kryss och en liten röd cirkel i ett hörn, så att filmen inte kan
+  "fuska med vilken sida av kortet som syns".
+- **Kortens färger** (2026-11-20) står på ett ställe, `CARD_RGB` (`src/placement-model.ts`): gul 241, 216, 0 · blå
+  0, 130, 218 · kryss 255, 120, 200 · cirkel 225, 30, 35.
+- **Rent tills efterarbetet** (2026-11-18): "Du kan behålla SG-ryggen. men so msagt vill jag allt ska vara rent tills
+  efterarbete gjörs". Inget annat än märket trycks på filmens kort; valören ritas när rundan spelas.
+- **En linje för korten** (2026-11-13): huvudagenten bestämmer linjen och visar resultatet, inte valen: ritade kort hela
+  vägen, en storlek, en brytare i spelet. Kortmattan ur filmens eget kort: "ja som val i labbet, nej för spelet".
 - **Ett kortformat:** kortet på plats 4 är standard och allt annat anpassar sig ("Storleken är inte problemet, utan att
-  det finns olika format"; `docs/SYSTEM.md`).
-- **En film per plats** (2026-11-11): platsens andra kort spelar första kortets filmer med det ritade kortet flyttat.
-- **Kortens storlek: verkligt kort, justering i efterarbetet** (2026-11-17, kl. 23.14): "`assets\reference\native-0694.png`
-  har ju tex skitbra kortstorlekar […] är så osäker på allt. Men finns så många spår!", och kl. 23.22: "Ang kort. Gör
-  allt enkelt bara. kör vi 1.0 så kanske det är bra. men bara allt är logiskt. Min ide är ju att vi ska kunna
-  efterarbeta fram en ovelay ändå där vi kanske ska kunna justera just som sånt här." Kortplanen ritar ett verkligt
-  kort (storlek 1,00) genom linsen, utan eget storleksreglage; storleken justeras bara i Efterarbete.
-- **Perspektiv ändrar bara kortens form** (natten till 2026-11-18, om den förra versionen): "Kortet i skon är större än
-  korten som ligger närmare oss […] DC1 kanske 65% av storleken av kortet i skon […] Är det perspektivet som är fel".
-  Varje kort har den verkliga kamerans storlek och plats; reglaget Perspektiv smalnar bara av den bortre kanten, ett
-  värde för alla kort, och utan sparat värde ritas hans plans 87 %.
-- **Planen är hans** (2026-11-11 och 2026-11-12): `placements/default.json` är incheckad på hans ja; på hans ord gäller
-  perspektiv 87 %, vridning 0°, platserna speglade kring bildens mitt och dealerns två kort centrerade. Bara Bordet
-  skriver filen, när han trycker Spara.
+  det finns olika format").
+- **Verkligt kort, storlek 1,00** (2026-11-17): "Gör allt enkelt bara. kör vi 1.0". Kortplanen ritar ett verkligt kort
+  genom linsen utan eget storleksreglage; storleken justeras bara i Efterarbete.
+- **Perspektiv ändrar bara kortens form** (2026-11-18): varje kort har kamerans storlek och plats; reglaget smalnar av
+  den bortre kanten, ett värde för alla kort (hans plans 87 % om inget är sparat).
+- **Planen är hans** (2026-11-11, 2026-11-12): `placements/default.json` är incheckad på hans ja: perspektiv 87 %,
+  vridning 0°, platserna speglade, dealerns två kort centrerade. Bara Bordet skriver filen, när han trycker Spara.
+- **B-linsen är standard för nya filmer** (2026-11-19): linsen i D.C3-prov B. Det är inget Primär-val, och före en
+  massbeställning krävs en godkänd helgiv med rätt hand och tempo.
+- **Perspektivet som sparat val** (2026-11-19, 2026-11-21): kamerans vinkel och avstånd ställs i Scen & bord och sparas
+  för Casino med Använd i Casino, Bred lins inräknad. Ringar och kort följer samma bord och kamera.
+- **Andra kortet** (2026-11-11, 2026-11-19): tills en egen giv finns spelar platsens andra och senare kort första
+  kortets film med det ritade kortet flyttat.
 
 ## Läpparna och talet
 
-- **Den neutrala munnen är standard för alla Paows repliker** (2026-11-21, kl. 18.38, anteckning 43 i Prov på
-  `paow-munbyte-neutral-20261121`): "den andra av dessa ska in som standard för alla hennes repliker överallt och som
-  standard-läppsynk för PAOW men bara vi vet att detta är just i ett annat format OM det är andra format i denna än de
-  som tex finns i andra projekt eller som den dära stora imagen eller vad det är använder som standards för cache".
-  Läst så: "den andra" är den högra i jämförelserna, den neutrala munnen; den gäller varje replik och är förvalet för
-  en ny; och det ska stå i klartext om dess format skiljer sig från det Scouts renderer och imagen på hans RunPod
-  väntar sig (`docs/TAL.md`).
-- **Läpparna i realtid är huvudmålet** (2026-11-17): "Jag vill ju kunna använda mig av min runpod framgent för att
-  skapa realtidslipsynk. Det är det som är huvudmålet. hennes talade replikklipp är av mindre relevans, även fast dessa
-  också ska sitta såklart." Arbetet med munnen gäller först realtid på hans pod; replikfilmerna kommer i andra hand.
-  Runway-modellen (Seedance) är avförd, eftersom den inte går i realtid.
-- **Egen körare** (2026-11-17, om Scouts lås): "Jag har ju min egna runpod och så vidare på ett eget konto ju! DU kan
-  absolut skapa en egen grejj lokalt vi kanske sedan kan lägga upp på min pod om du vill?" Scouts renderer har ett
-  avsiktligt lås som vi inte går förbi; en egen körare byggs ur öppen källkod, och en provkväll på hans pod är godkänd
-  till högst 5 USD, med besked till honom samma dag före start.
-- **Munnens storlek** (2026-11-17): "ser nog F bäst ut givet att hon faktist säger något där hon rör munnen mycket."
-  Storlek F gäller.
-- **Runt munnen** (2026-11-17, kvällens prov): "Runt munnen ser det inte jättebra ut, men det är godkänt för nu. Hennes
-  överläpp borde bli något större"; munnen är "tillräckligt bra för att godkännas", men "området runt hennes mouth
-  [är] fortfarande lite utdraget och ser överjusterat ut. Skulle det vara möjligt att få just de ytorna omkring hennes
-  mouth att bli mindre animerade?" Bara läpparna läggs in; huden runt är vilofilmens, näsan påverkas inte och området
-  runt munnen får röra sig lite.
-- **Mindre öppen mun** (Beslut 2026-11-17, svar "Ändra": "Just när hon säger detta lägger jag insatser, tack, så ska
-  hon förmodligen ha en lite mindre öppen mun. […] Utifrån hur hennes mun ser ut när den är stängd ska den max kunna gå
-  upp så här, men den ska kunna gå upp lite mindre och hon ska visa mindre tänder. […] Nu ser det nästan lite
-  överdrivet ut."). Provet `paow-realtid-mun-6` har hans ja kl. 21.38: storlek F, bara läpparna, mindre öppning i
-  vanligt tal med dagens som tak, och hakan följer mjukt.
-- **Mungiporna och överläppen** är inte lösta i hans ögon: "Hon får lixom lite som typ clown-mungipor." (2026-11-14),
-  "måste som sagt med" (2026-11-17), och om den lyfta överläppen "Denna lipsync är typ sämre, bara underläppen som
-  pratar" (2026-11-13).
-- **Hans ja före ett byte av läppar** (2026-11-17): granskarna föredrog omläggningen i 30 av 30 och han kallade den
-  "värre än förut", så den togs ut. Före nästa byte visas en jämförelse i spelets storlek och i rörelse, och hans ja
-  krävs. Hans godkända `paow-tal-blackjack-sv-04` rörs inte.
-- **Sättet ska dokumenteras per dealer** (2026-11-17, kl. 21.58): det nya sättet (på hans dator eller på hans RunPod)
-  "ska dokumenteras så att vi vid beställning av nya videor eller arbete med `lipsync` förstår och kan ställa in vad
-  som stämmer och inte stämmer för just den dealern". Det är vyn Lipsync och `data/lipsync.json`.
-- **Munnen ur hennes egen film** (2026-11-17, kl. 17.20, hans idé, obyggd): leendefilmen `paow-vila-03-01` som underlag,
-  så att munnen hämtas ur hennes egen film och modellen bara bestämmer när och hur mycket.
+- **Läpparna i realtid är huvudmålet** (2026-11-17), på hans RunPod: "Det är det som är huvudmålet." Replikfilmerna
+  kommer i andra hand, och en modell som inte går i realtid är avförd.
+- **Den neutrala munnen är standard för alla Paows repliker** (2026-11-21). Skiljer sig dess format från det som
+  renderaren och imagen på hans RunPod väntar sig ska det stå i klartext (`docs/TAL.md`).
+- **Egen körare** (2026-11-17): Scouts renderer har ett avsiktligt lås som vi inte går förbi; en egen körare byggs ur
+  öppen källkod. En provkväll på hans pod: högst 5 USD, med besked till honom samma dag före start.
+- **Munnen** (2026-11-17): storlek F, bara läpparna läggs in (huden runt är vilofilmens), mindre öppning och färre
+  tänder i vanligt tal ("Nu ser det nästan lite överdrivet ut"). Provet `paow-realtid-mun-6` har hans ja.
+- **Inte löst i hans ögon:** mungiporna ("lite som typ clown-mungipor", 2026-11-14) och överläppen, som "borde bli något
+  större" (2026-11-17).
+- **Hans ja före ett byte av läppar** (2026-11-17): först en jämförelse i spelets storlek och i rörelse (granskarna
+  föredrog 30 av 30 det han kallade "värre än förut"). Hans godkända `paow-tal-blackjack-sv-04` rörs inte.
+- **Sättet dokumenteras per dealer** (2026-11-17): vyn Lipsync och `data/lipsync.json`.
+- **Munnen ur hennes egen film** (2026-11-17, hans idé, obyggd): leendefilmen `paow-vila-03-01` som underlag.
 
 ## Scenen och spelet
 
-- **Naturligt utseende:** ljus ska komma ur rummet (panoramat som ljuskälla, skuggor i världens koordinater), inte
-  målade sken. Duken han vill ha som bordets yta är `assets/scene/table.png`; 3D-filten ritar trycket med kod.
-- **3D-labbet:** "fantastiskt". Bordsbenen får vara så länge de inte kostar minne; markerbrädet är reserv, avstängt.
-  Bordet från backad kamera: "fruktansvärt fult" (därför underredet Två ben, obedömt). Monacos bakgrund är bra som den
-  är (Beslut 2026-11-17).
-- **Spelet på telefon** (2026-11-14): markeröverlägget ska göras "smartare och mindre så det inte täckeer bla vart
-  marker ska in osv", "..men liggande också ser jag." Om den nya konsolen (2026-11-17): "Angående mobilversionen ser
-  allt bättre ut", och filmen före spelet ligger i mitten på en liggande telefon på hans ord samma dag.
-- **Scoutgaming:** inget härifrån införs där utan hans uttryckliga ord (AGENTS), och projektet är frikopplat därifrån i
-  nuläget (2026-11-23, Arbetet och dokumenten). Scoutgamings huvudagent har fått besked om det, och om att insatsrutor
-  bör vara data per bord och filmbank.
+- **Naturligt utseende:** ljuset kommer ur rummet (panoramat som ljuskälla, skuggor i världens koordinater), inte
+  målade sken. Duken han vill ha som bordets yta är `assets/scene/table.png`.
+- **Looken i Scen** (2026-11-20): förvalet Jakob-1 "är verkligen det bästa", och "Bred lins är vad jag älskar och som
+  gör jobbet." Standard är kvar som grund; ingen lutning av bordet är byggd.
+- **3D-scenen:** "fantastiskt"; bordet från backad kamera "fruktansvärt fult". Monacos bakgrund är bra som den är
+  (2026-11-17).
+- **Bordet BORD-02** (2026-11-20): "skitbra" som alternativ; ett labbprov som spelet inte slår på före hans ja.
+  Gräsduken är kvar som val.
+- **Spelet på telefon** (2026-11-14): markeröverlägget "smartare och mindre så det inte täckeer bla vart marker ska in",
+  också liggande. Filmen före spelet ligger i mitten på en liggande telefon (2026-11-17).
 - **Görans material** används inte (`docs/SYSTEM.md`, "Återbruk och införande").
-- **Looken i Scen** (2026-11-20): förvalet Jakob-1 "är verkligen det bästa", även om det kanske inte "hänger ihop
-  exakt". Basgrund med Standard ger "det här tråkiga bordet som ser ut som att det står på golvet", och "bordet är för
-  stort". Dealern ses nästan framifrån, så bordet ska inte "ligga så mkt" utan vinklas mer mot spelaren: "Bred lins är
-  vad jag älskar och som gör jobbet." Samma dag: "Eller ska vi ha som nu kanske så kan man ju alltid ändra efter vår
-  grund?" Därför är inget ändrat: Standard är kvar som grund och Bred lins som alternativ ("Kortet", Perspektivet som
-  sparat val), och ingen lutning av bordet är byggd.
-- **Bordet BORD-02 i Scen** (2026-11-20): "en utomstående agent har lagt in nya bordet, som alternativ och är skitbra"
-  (läst som BORD-02, det enda nya bordet i projektet den dagen; tolkningen är sessionen dealer-e7:s). Gräsduken, valet
-  Gräsmatta under Spelyta, ska vara kvar som val: "behåll gräsdike". Bordet är ett labbprov, avslaget som förval, och
-  spelet slår inte på det före hans ja.
 
 ## Kopian och nätet
 
-- **Gamla labbet och de udda adresserna bort, filmdörren kvar** (2026-11-23, till sessionen dealer-37): "Ja men radera
-  allt som borde raderas angåend e onstiga adresser osv samt det "gammla labbet". men se til len sak bara. Det ska
-  finnas som en länk som gör att kman kommer in via en noir-film till casinodelen som är en specialanpassning för PAOW.
-  Detta vill jag ha kvar dock?" Utfört samma dag: gamla labbets projekt, dess två adresser och dess Blob-lager är
-  raderade, och kopians andra adress är borttagen. Kopian på `dealer-lake.vercel.app` är orörd, med dörren `/trailer`
-  (noir-filmen och sedan Paows casino). Vad som togs bort står i [DRIFT](DRIFT.md#den-låsta-kopian-på-nätet).
-- **Casinot på nätet visar det som är inställt i studion** (2026-11-21, kl. 16.20): "Jag vill också att det som jag
-  tex nu har inställt … är det som faktiskt ska kunna publiceras ut till nätet … bara det att casinolayouten ändras
-  till det som faktiskt är inställt här lokalt i studion", med en länk eller knapp för att se Casinot på nätet; "ställer
-  jag in detta och 'publicerar' så ska just den breda linsen vara det som syns". Läst så: det som sparas med Använd i
-  Casino (Bred lins inräknad) är det som dörren `/casino` på kopian visar efter nästa publicering. Strax efter:
-  Prova i Casino är bra för att testa lokalt, "men jag vill kunna få ut alla förändringar till officiella
-  internetcasinot", alltså hela det pushade läget och inte bara looken. Själva publiceringen sker fortfarande bara på
-  hans uttryckliga ord.
-- **Ingången genom filmen före spelet står kvar** (2026-11-21, kl. 16.30): "kan man kanske göra så allt är som det är
-  för den videon när den kommer till casinot – alltså att det är det casino man kommer till där som ska gälla för just
-  'den ingången' – i alla fall för nu. Anledningen är att videon slutar på en frame som är mycket eller helt lik det
-  casino man kommer till. I övrigt så vill jag genomföra förändringen vi gör i ordinarie casino." Dörren `/trailer`
-  läser därför inget sparat förval och ingen Bred lins; ändringen gäller studions Casino, Prova i Casino och `/casino`.
-- **Sju filmer till mobilkopian** (2026-11-19, Codex): "Ja, publicera dessa sju filmer". Beskedet gäller exakt de
-  sju namngivna källfilmerna, 24,1 MB, till `dealer-lake.vercel.app`; befintligt inloggningsskydd bevaras.
-  Filförteckning och verifiering finns i `assets/proofs/paow-mobile-studio-20261118/publication-20261119.json`.
-- **Mobilkopia och slut på arbetspasset** (2026-11-18, senare på kvällen): "Skcika - bara om möjligt - ngonting till vercel
-  som jag kan klla in från mobilen" och "Avsluta när du känner att det är nog bra. Eller om högst 4h."
-  Det ger mandat att förbereda och publicera Dealer-kopian i detta arbetspass; den befintliga åtkomsten bevaras.
-- **Allt på nätet är sekundärt** (2026-11-17, sent): "Allt på nätet är sekundärt". Inget arbete läggs på kopian, och
-  `cloud/` står orörd tills han säger att den ska bort. En publicering görs bara på hans uttryckliga ord (AGENTS och
-  skillen `publicera-kopian`).
-- **Kopians lösenord** (2026-11-18, kl. 01.10): "Lösenordet ska sättas i .env.local eller om det är .env." Inget
-  lösenord skrivs i någon fil som Git följer. Det gamla ordet har stått i repots historik och ska bytas: ett nytt ord
-  i `.env.local` och sedan en publicering, som är hans ord. Hans ord kom i Beslut 2026-11-18, kl. 01.47, på kortet
-  `kopians-losenord`: "Ja, publicera". Det gällde den publiceringen; nästa kräver hans ord igen.
-- **Kopian till chefen** (2026-11-13): "Sedan valet att spela i casinot eller komma till studio/labbet … Eller bara
-  samma radda av alternativ som finns på vänsterspalten". Kopian har samma meny som studion.
+- **En publicering görs bara på hans uttryckliga ord**, och ett ja gäller den publiceringen; nästa kräver hans ord igen
+  (2026-11-18). "Allt på nätet är sekundärt" (2026-11-17); `cloud/` står kvar tills han säger att den ska bort.
+- **En sida på nätet** (2026-11-23): kopian på `dealer-lake.vercel.app`; gamla labbet och de udda adresserna är
+  raderade.
+- **Filmdörren står kvar** (2026-11-23): `/trailer`, där "kman kommer in via en noir-film till casinodelen som är en
+  specialanpassning för PAOW". Den läser inget sparat förval och ingen Bred lins (2026-11-21).
+- **Casinot på nätet visar det som är inställt i studion** (2026-11-21): det som sparats med Använd i Casino, och hela
+  det pushade läget, är vad dörren `/casino` visar efter nästa publicering.
 - **Kopian är öppen för läsning** (2026-11-14): "Se till att den inte är lösenordsskyddad." Boten och önskemålslådan
-  kräver fortfarande lösenordet, eftersom boten kostar per fråga; han svarade "Ja" i Beslut på att öppna den, med
-  frågan "Vilkne är botten?". Det är förklarat, och boten öppnas först när han säger det igen.
-- **Noirfilmerna: v4 och framåt sparas, och den är filmen på Blob** (2026-11-21, sent): "typ alla lätta kopior kan
-  raderas"; "Alla noirfilmer kan raderas före 'v4'-noirtrailern. Eller kanske ska man i alla fall spara de
-  tagningar/sekvenser om just den har som typ klipp som den byggts av. Men det innan kan raderas som sagt. Denna film
-  ska också vara den som ligger på blobben.. lite separerat från annat dealermaterial". Utfört samma kväll: de lätta
-  kopiorna och allt före v4 raderat, originalet på 30 sekunder och klippen sparade (`assets/noir/`); filmen före
-  spelet är v4 i sin senaste inspelning och står som egen grupp, `ingång`, i utgåvans fillista (DRIFT).
-- **Trailrar** hålls utanför kopian (2026-11-12), utom filmen före spelet bakom `/trailer` (2026-11-13: "så att man
-  övergår till henne i URL:en på vercel"); trailerproven i Prov är spärrade (`data/studio-release.json`).
-- **Vercel** (2026-11-12): kopian och botens anrop via AI Gateway ligger i hans eget team, där krediterna finns
-  (`docs/DRIFT.md`).
-
-## Ersatta besked
-
-- **SAM-dockan ska in, men inte nu** (2026-11-21, till sessionen dealer-37, ersatt 2026-11-23 av "Bygg den riktiga
-  SAM-dockan" under Dealern och ankarna): Paulinas docka i projektet Ultimate Reality är gjord med SAM 3D Body ur
-  foton, och 3D-banans docka här är byggd för hand. Han svarade: "Jag vill ha in SAM-metoden/dockan. men inte nu.."
-  och att han ersätter den "när jag har en bättre modell av paulina från SAM vid tillfälle".
-
-- **Scoutgaming är slutmålet på sikt** (2026-11-13, huvudagentens läsning under "Målet", inte citat: "Scoutgaming är
-  slutmålet på sikt och äger regler, slump och kortvärden"). Ersatt 2026-11-23 av "Detta proejkt ska vara frikopplat
-  mot scoutgaming i nuläget" (Arbetet och dokumenten); att inget ändras i Scoutgaming härifrån står kvar.
-
-- **C gäller som A2.3** (2026-11-21, kl. 15.56, i Beslut, kortet `paow-ankare-2-3-c`): "Ja, använd C". Ersatt
-  2026-11-23 kl. 09.16 av "Ja, byt blicken" (Dealern och ankarna): `paow-ankare-2-3-d`, byggd på C, gäller.
-
-- **Paows rättade docka: bättre, men armen viks för trångt i vändningen** (2026-11-23, hans svar i Beslut, "Bättre,
-  men inte än"): "Bättre! mnen allt sitter nu i detalkjer, jag tror at dockan lixom inte är 100% bra med hennes elelr
-  själva djuper för i hennes vridningar av korten och så vidare så blir det som att hennes arm måste vridas väldigt
-  ihoptryckt, vilket resulterar i att hon frår lite konstig vridning i hennes arm som skulle se narurligare om hon
-  sträkte ut armen mer". Vändningen gjordes längre ut med rakare handled (`9208d69`); ersatt samma dag kl. 09.48 av
-  "Bättre, men inte än" på kortet `docka-paow-vandning` (Dealern och ankarna).
-
-- **A3P6C1 som bild: armen ser fel ut** (2026-11-23, Beslut och Prov): "Hon fick ne väldig lång underarm här". Ingen
-  film beställdes med den bilden. Stängt samma dag kl. 10.02 av "Nej, ge utan sista bild" (Dealern och ankarna).
-
-- **Tidigare budget i räddningsomgången** (2026-11-18, ersatt av senare totalmandat ovan): "du har totalt 800 krediter per timme och 2500 krediter för att generera filmer."
-  Det ersatte tidigare svaret "Högst 1 000 krediter totalt". Timtaket 800 gäller fortfarande.
-
-- **Räddningsomgångens första budget** (2026-11-18, Codex): "Högst 1 000 krediter totalt" för nya betalda Runway-försök
-  under femtimmarsarbetet. Ersatt samma dag av 800 per timme och 2 500 totalt (Domar, beställningar och pengar).
-
-- **Två tusen krediter för proven** (2026-11-18, cirka kl. 02.45, om provet från en annan vinkel och givarna från
-  ankare 2.3): "du får 2000 krediter att använda om du vill.. Ändra där det står 260 krediter som gräns.." Taket för de
-  proven var 2 000 krediter i stället för 260. Förbrukat; ersatt av "Ja du får generera tills kontot är typ tomta!"
-  (2026-11-18) och 2026-11-23 av timtaket 1 000 i dag (Domar, beställningar och pengar). Det som står kvar: varje anrop står
-  i en liggare, och kostnaden berättas efter varje omgång (Betald generering, samma avsnitt).
-
-- **Timtaket för sessionen 222 KORTMÄRKE** (2026-11-20): "Andra agenten får beställa för 800 krediter per timme - så
-  'ja'." Sagt till sessionen dealer-29 om den nya stillbilden av Paows ankare 2.3 (två bilder, 2 × 40 krediter).
-  Förbrukat med den beställningen; timtaket står i "Timtaket 1 000 i dag" (Domar, beställningar och pengar), och
-  hans ord samma dag om städningen står kvar där ("Städningen: radera").
-
-- **API-nyckeln, 3 000 krediter och granskning utan kö** (2026-11-20, kl. 13.05, till sessionen dealer-37 när Runways
-  MCP-inloggning saknades). Han pekade på `RUNWAY_API_KEY` i `.env.local` och skrev: "Du har 3k i budget, men behöver
-  inte använda så mkt såkalrt. me ngår allt bra - fortsä'tt. Livegranskning avklipp med second opinion funkar skitbra
-  från browsern så jag inte behöver gransla allt heal tiden". Beställningar fick alltså gå genom API-nyckeln
-  (utvecklarprojektets krediter) inom 3 000 krediter. Talet är förbrukat; ersatt av timtaket och totalmandatet i Domar,
-  beställningar och pengar. Det som står kvar av svaret: beställningar får gå genom API-nyckeln, och en tagning döms
-  av en oberoende granskare som ser den i rörelse i webbläsaren och väntar inte på honom (Domar åt honom, och ingen kö).
-
-- **Huvudagentens eget tak på 1 500 krediter för natten** (2026-11-21, natten med underagenter; huvudagentens, inte
-  hans). Förbrukat med natten; taket står i "Timtaket 1 000 i dag" (Domar, beställningar och pengar).
-
-- **Publicering efter varje färdig del** (hans stående ord enligt den gamla överlämningen, som inte återgav det som
-  citat: kopian publiceras ur `main` efter varje färdig del, push och publicering, så att det syns på Vercel). Ersatt
-  2026-11-17 av "Allt på nätet är sekundärt" (Kopian och nätet); inget har publicerats sedan dess, och AGENTS kräver
-  hans uttryckliga ord. Att han har dragit tillbaka det stående ordet är huvudagentens läsning åt det säkra hållet och
-  bör bekräftas av honom med ett kort i Beslut.
-- **Tak på 400 krediter per beställning.** Ersatt 2026-11-17 av "Höjj till 2k åtminstonde" (Domar, beställningar och
-  pengar).
-- **Dagstak och golv för krediter.** Ersatta 2026-11-13 av "Nej du får obegränsat i budget!" ("Budgeten", nästa punkt).
-- **Budgeten** (2026-11-13, cirka kl. 15.13): "Nej du får obegränsat i budget!", och kl. 16.37 "inga tak idag". Det som
-  styr i stället är mandatet i `data/order-policy.json` och hans ord 2026-11-23, "Idag har du 1000 krediter på runway i
-  timmen." (Domar, beställningar och pengar); taket per beställning, 2 000, står kvar där.
-- **Betald generering kräver hans ja per beställning.** Ersatt 2026-11-13 av uppdraget till huvudagenten (samma
-  avsnitt).
-- **Den tatuerade uppsättningen bredvid den gamla** (2026-11-17, kl. 21.38, hans svar om det nya ankare 1): "Ja. Mne vi
-  kanske kan göra om en 'A1 till A2.2 och sedan framgent de filmer som görs, tillsi får till hur vi ska göra filmerna,
-  faktist , så kan vi göra med tatueringar. men låt nuvarande vara kvar så kan vi fylla i dem när vi får till resten".
-  Ersatt natten till 2026-11-18 av att den tatuerade uppsättningen är förstahandsvalet (Dealern och ankarna); det som
-  står kvar av svaret är att dagens filmer ligger kvar och spelas tills nya finns.
-- **Kandidaten för ankare 2.2 gäller** (2026-11-13, ett av förvalen han sade ja till). Ersatt natten till 2026-11-18
-  av hans ord att ankare 2.2 "är dåligt" och görs om (Dealern och ankarna).
-- **Alla kort ×1,20 i planen** (2026-11-11; P4 86,6 × 71,8 bildpunkter). Ersatt 2026-11-17 kl. 23.22 av "kör vi 1.0"
-  (Kortet) för det som Bordet ritar; planfilen själv är inte omskriven, och spelet ritar ännu sina liggande kort på
-  det äldre sättet ([BRISTER.md](BRISTER.md), Kortet).
-- **V6 som den bästa filmen och förlaga för kortens storlek** (2026-11-12). Delvis ersatt 2026-11-18 av "V6-läget är
-  jag skeptisk mot i sin helhet" (Filmerna och given): V6 är kvar som skyddad referens men inte som läge i labbet.
-  Sedan 2026-11-20 ("Ja, arkivera", samma avsnitt) är bara filmen, 18 rutor, duken och plåten kvar i projektet.
-- **V6 återskapas byteidentiskt och kontrolleras vid varje push; arkiveringen är inte frågad** (2026-11-12 till
-  2026-11-20, regeln i AGENTS och agenternas läsning av hans ord, inte citat; push-kontrollen hade inget V6-steg).
-  Också: inget som rör V6 ändras förrän städsessionen har inventerat det och han har sett förslaget. Ersatt
-  2026-11-20 kl. 12.07 av "Ja, arkivera" på kortet `v6-arkiv` (Filmerna och given); utfört 2026-11-23.
-- **En yta för beställning** (2026-11-17): "Vart är min 'labb'-yta där jag kan se en typ avatar/siluett och sedan kort
-  och bord, jag kan ställa in allt som jag vill, sedan ska jag kunna lägga en beställning för en film. Tex 'A2.2 till
-  P3C2 och tillbaka till A2.2'?" Uppfyllt och ersatt samma kväll av beskedet om Bordet (Labbet och studion).
-- **Omläggningen av läpparna med hennes egen underläpp och gipor.** Uttagen 2026-11-17 på hans dom (Läpparna och talet).
-
-## Utgått
-
-Citat ur den gamla överlämningen (`HANDOFF.md` till och med commit `aa5f7e7`) som inte är ett besked av Jakob och
-inte styr något arbete framåt. De står här för att kontrollen av citaten ska gå jämnt ut, med skälet.
-
-- "like turning a key": mall 10:s egna ord för vändningen, inte Jakobs. Orden står i `src/order-prompts.ts` och
-  handboken (`tools/film-prompting.md` §5).
-- "Ny beställning som den här": namnet på en knapp i Beställ, nämnt i rapporten om städningen 2026-11-17, som är
-  avslutad (knappen skriver med dagens mall).
-- "Kortens storlek och perspektiv": rubriken på en punkt under de kända bristerna som beskrev läget före `918e7f4`
-  och `f8c637f`; det som återstår av den står i [BRISTER.md](BRISTER.md) och i [lage/kort.md](lage/kort.md).
-
+  kräver lösenordet tills han säger annat.
+- **Lösenord** (2026-11-18): "Lösenordet ska sättas i .env.local"; inget lösenord skrivs i en fil som Git följer.
+- **Kopian har samma meny som studion** (2026-11-13).
+- **Noirfilmen** (2026-11-21): v4 och klippen den byggts av sparas (`assets/noir/`); allt före v4 fick raderas. Den är
+  filmen före spelet och ligger för sig på Blob, som gruppen `ingång`.
+- **Trailrar hålls utanför kopian** (2026-11-12), utom filmen före spelet bakom `/trailer`; trailerproven i Prov är
+  spärrade (`data/studio-release.json`).
+- **Vercel** (2026-11-12): kopian och botens anrop ligger i hans eget team, där krediterna finns (`docs/DRIFT.md`).

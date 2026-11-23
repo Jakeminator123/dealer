@@ -19,7 +19,7 @@ Proceduren står på ett ställe och skrivs inte om här: ingången och station 
    (`order-clerk.md` §1 och §3).
 3. **Ett osäkert anrop läggs aldrig om** (`order-clerk.md` §3).
 4. **Ramens tagningar och omgångar:** en per prov, två där metoden gäller, varje omgång oberoende granskad innan nästa
-   bygger på den, kostnaden berättad efteråt (BESKED, "Betald generering"; bandet, "Regler som kostar pengar när de
+   bygger på den, kostnaden berättad efteråt (BESKED, "Två tagningar per klipp"; bandet, "Regler som kostar pengar när de
    bryts").
 5. **Metoden väljs efter Jakobs domar** (`node tools/verdicts-per-method.ts <dealer>`), inte efter granskarens poäng
    (bandet, station 7).
