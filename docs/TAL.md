@@ -1,100 +1,192 @@
 # Tal: hur dealern får tal, och vart det är på väg
 
-Skriven 2026-11-13 av banan Tal. Sidan säger vad som finns i dag, på vilka sätt munnen görs och hur ett jobb kommer dit (på hans dator eller på hans RunPod), vad som gäller per dealer, hur en replik och en ny dealer görs, vad provet med tal under en giv visar, och vad fritt tal ur en chatt skulle kräva. Det som är mätt står som mätt; det som är skattat står som skattat. Kontraktet för själva filmen står i koden (`src/speech-plan.ts`, `tools/speech.ts`), registret är `data/speech.json`, och fakta om läppsynken per dealer står i `data/lipsync.json`, som studions vy Lipsync visar för den dealer som är vald i menyn.
+Läget nu och receptet som används. Målet är läpparna i realtid på hans RunPod; replikfilmerna kommer i andra hand
+(BESKED, "Läpparna och talet"). Kontraktet för filmen står i koden (`src/speech-plan.ts`, `tools/speech.ts`), registret
+är `data/speech.json`, och fakta om läppsynken per dealer står i `data/lipsync.json`, som studions vy Lipsync visar för
+den valda dealern; ändras något här ändras det där också. Varje granskningsomgång med poäng och mått står i belägget
+[tal-granskningar](../evidence/tal-granskningar.md).
 
 ## Vad som finns i dag
 
-En **talfilm** är en vilotagning med ljudspår: bankens ruta (1764 × 1174 på grönt), 24 rutor per sekund, H.264 med AAC. Den spelar vilofilmens rutor från första spelade rutan (ruta 3) ut och samma väg tillbaka, så den börjar och slutar på samma ruta som varje vila, med stängd mun. Munnen är ritad efter ljudet av en läppsynkmodell (MuseTalk), och bara ett stycke kring munnen är utbytt: utanför en låda på cirka 184 × 190 bildpunkter (kvittots `laidBack.box`) är varje bildpunkt vilofilmens egen. Den ritade munnen läggs dessutom bara in medan hon hörs (**grinden**, `speechGate` i `src/speech-plan.ts`). Den ritade börjar högst två rutor före det hörbara ljudet och slutar högst tre rutor efter, och varje växling är en enda ruta med hälften av varje mun, lagd där de två är mest lika. I en tyst paus på sex rutor eller mer växlar den ut och in igen, och hennes egen mun får då minst fyra hela rutor; en kortare tystnad talas igenom. Före första ordet, efter det sista och mitt i en paus är munnen alltså vilofilmens egen, sluten, med hennes egna läppar. Medan hon talar är Paows mun den **neutrala**: rendererns låda lagd in som den är, utan läpparna och lyftet nedan (Jakob 2026-11-21 för alla hennes repliker, Kvaliteten; verktygets val per dealer är `recipeOf` i `tools/speech.ts`). Med **läpparna** (`layMouth`), som verktyget lägger andra dealrars repliker med, är också medan hon talar överläppen och mungiporna filmens egna bildpunkter: den ritade munnen läggs bara in under hennes överläpp och mellan hennes gipor, förstorad en fjärdedel på höjden och i hennes läppars färg (Jakobs val 2026-11-13, se Kvaliteten). Överläppen står inte stilla: den flyttas uppåt, hel, när den ritade munnen öppnar (**lyftet**, `mouthMoves`), huden mellan läppen och näsan dras ihop lika mycket, och den ritade munnens öppning börjar vid den lyfta läppens kant (Jakob samma kväll om filmerna utan lyft: "bara underläppen som pratar"). Lyftet följer munnen som visas: i varje ruta där den ritade munnen ligger hel, också genom en kort paus och till replikens sista öppna ruta, men inte i växlingsrutan; en rundad mun (ett o) räknas som öppen, och en ruta där de ritade läpparna möts är sluten, liksom en tyst ruta där den ritade munnen inte är tydligt öppen. Lyftet per ruta står i kvittot (`laidBack.lifts`). Underläppen är den ritade. Ett sätt där också underläppen är hennes egen prövades 2026-11-14 till 17 och togs ur spelet på Jakobs dom (Kvaliteten; stycke 6 i [belägget](../evidence/tal-granskningar.md)). Ljudet har samma styrka i alla repliker (Rösten). Vikten per ruta står i kvittot (`laidBack.weights`), och en film byter aldrig innehåll under sitt id: en omläggning ger en ny tagning. Ljudet börjar 0,22 s in i filmen.
+En **talfilm** är en vilotagning med ljudspår: bankens ruta (1764 × 1174 på grönt), 24 rutor per sekund, H.264 med AAC.
+Den spelar vilofilmens rutor från ruta 3 ut och samma väg tillbaka, så den börjar och slutar på samma ruta som varje
+vila, med stängd mun. Munnen ritas efter ljudet av en läppsynkmodell (MuseTalk), och bara en låda kring munnen, cirka
+184 × 190 bildpunkter (kvittots `laidBack.box`), är utbytt; utanför är varje bildpunkt vilofilmens.
 
-Munnen ritas av samma renderer som Scoutgamings dealers har (`services/moving-gpu-worker` i `Jakeminator123/scoutgaming`), hämtad som färdig image och körd i Docker i WSL på den här datorns grafikkort, utan nät. Rösten läses av ElevenLabs: Paow har samma röst som Scoutgamings egen Paow, en klon i Kevins ElevenLabs-konto (Jakob 2026-11-13). Inget i Scoutgamings produktion används eller ändras: inga av deras GPU-platser hos RunPod, ingen databas, inget lager.
+- **Grinden** (`speechGate` i `src/speech-plan.ts`): den ritade munnen läggs bara in medan hon hörs. Den börjar högst två
+  rutor före det hörbara ljudet och slutar högst tre rutor efter; varje växling är en enda ruta med hälften av varje mun,
+  lagd där de två är mest lika. En tyst paus på sex rutor eller mer växlar ut och in igen, och hennes egen mun får då
+  minst fyra hela rutor; en kortare tystnad talas igenom. Vikten per ruta står i kvittot (`laidBack.weights`).
+- **Munnen medan hon talar** läggs som dealern har den (`recipeOf` i `tools/speech.ts`): Paows är den neutrala,
+  rendererns låda lagd in som den är (BESKED, "Den neutrala munnen är standard för alla Paows repliker"); andra dealrar
+  får läppreceptet (Kvaliteten).
+- Ljudet börjar 0,22 s in och har samma styrka i alla repliker (Rösten). En film byter aldrig innehåll under sitt id: en
+  omläggning ger en ny tagning.
 
-- **Verktyget** `tools/speech.ts`: `check`, `bank`, `say`, `reel`, `over`, `warm`, `proof` (kommandona står överst i filen).
-- **Registret** `data/speech.json`: rendererns image, rösterna (med modell och inställningar per språk, och namnet på den rad i `.env.local` som bär kontots nyckel), vilken vilofilm dealern talar över, och replikernas exakta text. `lines` är de tio en runda behöver (samma nycklar som `SpeakLine` i `game/presentation.ts`, Scoutgamings egna texter), `chat` är chattens femton fasta svar.
-- **Filmerna** ligger i `assets/speech/<dealer>/<id>/` (utanför Git) med `source.mp4`, kvittot `receipt.json`, rendererns råa svar `worker.mp4`, rösten `tts.mp3` och granskarens dom `review.json`. De som är införda i banken ligger som tagningar av `IDLE>IDLE` med `motion.idle.onRequest: true` och repliken i postens `speech`.
-- **Provet** `paow-tal` i studions Prov visar allt i dealerns egen röst, med ljud: demofilmen först, sedan tal under en giv, de tio replikerna och chattens svar. Filmer i en annan röst (ett tidigare val, ett prov) ligger kvar där de gjordes och visas inte. Provet `paow-rost` är röstjämförelsen från 13 november: samma replik på fyra sätt.
+Munnen ritas av samma renderer som Scoutgamings dealers har (`services/moving-gpu-worker` i
+`Jakeminator123/scoutgaming`), hämtad som färdig image och körd i Docker i WSL på den här datorns grafikkort, utan nät.
+Rösten läses av ElevenLabs. Inget i Scoutgamings produktion används eller ändras: inga GPU-platser, ingen databas,
+inget lager.
 
-För Paow finns 2026-11-13: de tio replikerna och femton chattsvar i hennes egen röst, en demofilm på 34 s, och prov av tal lagt över en annan film än vilan. Nattens första omgång med rösten Jessica ligger kvar som egna mappar och tagningar, så att rösterna går att jämföra. Bankens id är `paow-v2`, eftersom Scoutgaming redan har en äldre dealer som heter PAOW.
+- **Verktyget** `tools/speech.ts`: `check`, `bank`, `say`, `reel`, `over`, `warm`, `proof` (kommandona står överst i
+  filen).
+- **Registret** `data/speech.json`: rendererns image, rösterna (modell och inställningar per språk, och namnet på raden
+  i `.env.local` som bär kontots nyckel), vilofilmen dealern talar över, och replikernas text. `lines` är de tio en runda
+  behöver (samma nycklar som `SpeakLine` i `game/presentation.ts`), `chat` chattens femton fasta svar.
+- **Filmerna** ligger i `assets/speech/<dealer>/<id>/` (utanför Git) med `source.mp4`, kvittot `receipt.json`,
+  rendererns råa svar `worker.mp4`, rösten `tts.mp3` och granskarens dom `review.json`. De införda är tagningar av
+  `IDLE>IDLE` med `motion.idle.onRequest: true` och repliken i postens `speech`.
+- **Provet** `paow-tal` i Prov visar allt i dealerns egen röst, med ljud; `paow-rost` är röstjämförelsen.
+
+Paow har de tio replikerna och femton chattsvar i sin röst. Bankens id är `paow-v2`, eftersom Scoutgaming redan har en
+äldre dealer som heter PAOW.
 
 ## Munnen: tre sätt, och vad som gäller per dealer
 
-Jakob 2026-11-17: "Jag vill ju kunna använda mig av min runpod framgent för att skapa realtidslipsynk. Det är det som är huvudmålet. hennes talade replikklipp är av mindre relevans, även fast dessa också ska sitta såklart." Samma kväll byggde talbanan en egen körare för munnen, och den gör att ett jobb kan gå till två ställen: hans dator eller hans RunPod. Det här avsnittet säger hur, och vad som gäller för varje dealer. Samma uppgifter står i `data/lipsync.json` (`ways`, `dealers`, `whenNew`) och syns i studions vy Lipsync; ändras något här ändras det där också.
+Samma uppgifter står i `data/lipsync.json` (`ways`, `dealers`, `whenNew`).
 
 | Sätt | Var | Läge | Kostar |
 | --- | --- | --- | --- |
-| **Replikfilmerna** genom Scoutgamings renderer | hans dator: Scoutgamings image i Docker i WSL, RTX 3060, utan nät | fungerar; det är så spelets talfilmer och munlappar är gjorda | 0 kr för grafikkortet; rösten per tecken hos ElevenLabs |
+| **Replikfilmerna** genom Scoutgamings renderer | hans dator: Scoutgamings image i Docker i WSL, RTX 3060, utan nät | fungerar; spelets talfilmer och munlappar är gjorda så | 0 kr för grafikkortet; rösten per tecken hos ElevenLabs |
 | **Köraren** på hans dator | hans dator: egen image `dealer-korare:0.2` i Docker i WSL, RTX 3060 | fungerar som tjänst, prövad på vilan; inte i spelet | 0 kr |
 | **Köraren** på hans RunPod | en 4090-podd på hans eget RunPod-konto | inte byggd, inte startad | 0,34–0,89 USD per timme; provkvällen högst 5 USD |
 
 ### Replikfilmerna genom Scoutgamings renderer
 
-Det sätt som resten av sidan beskriver: `tools/speech.ts` bygger en bank per film (`bank`, eller `over` som gör sin egen), läser repliken hos ElevenLabs och låter Scoutgamings renderer rita munnen i förväg; munnen läggs tillbaka i filmens egna rutor, för Paow neutral och för andra dealrar med läppreceptet (`recipeOf`; Kvaliteten). Kommandona står i Göra en replik. Renderern är förseglad: den kontrollerar sina egna filer inför varje jobb och ritar inte om en av dem är ändrad, så dess inställningar (`bbox_shift`, utjämningen) går inte att ändra här, och vi går inte förbi det. Den är för långsam för realtid här (cirka 10 rutor per sekund) och används för det som görs i förväg.
+`tools/speech.ts` bygger en bank per film (`bank`, eller `over` som gör sin egen), läser repliken hos ElevenLabs och
+låter renderern rita munnen i förväg; munnen läggs tillbaka i filmens egna rutor. Renderern är förseglad: den
+kontrollerar sina filer inför varje jobb och ritar inte om en är ändrad, så dess inställningar (`bbox_shift`,
+utjämningen) går inte att ändra här, och vi går inte förbi det (BESKED, "Egen körare"). Den gör cirka 10 rutor per
+sekund här, för långsamt för realtid, och används för det som görs i förväg.
 
 ### Köraren på hans dator
 
-**Vad det är.** MuseTalk 1.5 ur dess öppna källkod (MIT, samma commit som Scoutgamings renderer) plus egen kod, i en egen image; ingenting ur Scoutgamings renderer. Masken för munnens område ritas ur MediaPipes landmärken i stället för med ansiktssegmenteringen BiSeNet (Licenserna nedan). Källpaketet finns nu i [`tools/python/mouth-runner`](../tools/python/mouth-runner/README.md), med originalhashar, upstream-licens och en versionerad profil. `kod/korare.py` förbereder och ritar, `kod/tjanst.py` serverar, `kod/inlaggning.py` lägger in munnen och `kod/ansikte.py` gör masken. Vikterna hämtas separat enligt `kod/vikter.json`; den befintliga lokala kopian ligger i `D:/dealer-scratch/tmp/tal/korare/modeller/`. Den gamla slaskkoden bevaras som ursprung men är inte längre den enda källan.
+**Vad det är.** MuseTalk 1.5 ur dess öppna källkod (MIT, samma commit som Scoutgamings renderer) plus egen kod, i en
+egen image; ingenting ur Scoutgamings renderer. Masken för munnens område ritas ur MediaPipes landmärken i stället för
+med BiSeNet (Licenserna). Källpaketet är [`tools/python/mouth-runner`](../tools/python/mouth-runner/README.md), med
+originalhashar, upstream-licens och en versionerad profil: `kod/korare.py` förbereder och ritar, `kod/tjanst.py`
+serverar, `kod/inlaggning.py` lägger in munnen och `kod/ansikte.py` gör masken. Vikterna hämtas enligt
+`kod/vikter.json`; den lokala kopian ligger i `D:/dealer-scratch/tmp/tal/korare/modeller/`.
 
-**Så skickas ett jobb.** Bygg- och monteringskommandon står i källpaketets README. Samordna GPU:n med headless-proven genom `D:/dealer-scratch/tmp/gpu-och-headless.lock`: skapa låset exklusivt, identifiera ägaren och ta bara bort ditt eget lås efter avslutat jobb. De gamla slaskskripten ersätts som ingång; de kan annars stoppa en container med ett gemensamt namn. Använd ett eget containernamn, skrivskyddade modeller/indata och bara loopback eller inget nät.
+**Så skickas ett jobb.** Bygg- och monteringskommandon står i källpaketets README. Samordna GPU:n med headless-proven
+genom `D:/dealer-scratch/tmp/gpu-och-headless.lock`: skapa låset exklusivt, identifiera ägaren och ta bara bort ditt
+eget lås efter avslutat jobb. De gamla slaskskripten är ingen ingång; de kan stoppa en container med ett gemensamt namn.
+Använd ett eget containernamn, skrivskyddade modeller och indata, och bara loopback eller inget nät.
 
-Tjänsten svarar på `GET /halsa`, `POST /forbered`, `POST /rita` och `POST /stang`. Kontrollera profil-id och recepthash före rendering. En fråga utan `recept` använder hela den versionerade profilen:
+Tjänsten svarar på `GET /halsa`, `POST /forbered`, `POST /rita` och `POST /stang`. Kontrollera profil-id och recepthash
+före rendering. En fråga utan `recept` använder hela den versionerade profilen:
 
 ```
 {"klipp":"/in/bank/sources/sources/<klippets id>.mp4","ljud":"/in/paow-tal-placebets-sv-13/tts.mp3","plan":"0..23,23..0","ljud_start":5280,"ut":"/arbete/ut/tjanst/<namn>/film.mp4"}
 ```
 
-Svaret är en JSON-rad per händelse och sist en sammanfattning; med `ut` skrivs en film i klippets storlek med ljud och kvitto. Övriga fält står överst i `kod/tjanst.py`. Monteringen av `/in` väljer dealerns indata; Paows är `assets/speech/paow`. Tjänsten ritar 24 rutor per filmsekund. För prov med en äldre image kan paketets `kod/` monteras skrivskyddat på `/opt/korare`; bygg sedan en ny image innan den används som fristående leverans.
+Svaret är en JSON-rad per händelse och sist en sammanfattning; med `ut` skrivs en film i klippets storlek med ljud och
+kvitto. Övriga fält står överst i `kod/tjanst.py`. Monteringen av `/in` väljer dealerns indata (Paows är
+`assets/speech/paow`). Tjänsten ritar 24 rutor per filmsekund. För prov med en äldre image kan paketets `kod/` monteras
+skrivskyddat på `/opt/korare`; bygg en ny image innan den används som fristående leverans.
 
-**Receptet med hans ja.** Källpaketets tjänst använder `paow-realtid-mun-6@1`, hela F plus `opening`, `reach` och `lipsOnly` från Jakobs ja 2026-11-17 kl. 21.38. Definitionen står en gång i `kod/profiler/paow-realtid-mun-6@1.json`: vanlig öppning dämpas, den största finns kvar som tak och hakan följer mjukt. Hälsokontroll och filmkvitto visar profil-id, effektivt recept, SHA-256 och om något överstyrts. Lokalt prov 2026-11-18 verifierade samma förval utan överstyrning i tre repliker. Den gamla imagen får det nya förvalet bara när den nya koden monteras in; ett nytt imagebygge är ännu oprövat. Spelets äldre replikfilmer ändras inte av detta.
+**Receptet med hans ja** (BESKED, "Munnen"): `paow-realtid-mun-6@1`, storlek F plus `opening`, `reach` och `lipsOnly`,
+definierat en gång i `kod/profiler/paow-realtid-mun-6@1.json`: vanlig öppning dämpas, den största finns kvar som tak och
+hakan följer mjukt. Hälsokontroll och filmkvitto visar profil-id, effektivt recept, SHA-256 och om något överstyrts.
+Den gamla imagen får förvalet bara när den nya koden monteras in; ett nytt imagebygge är oprövat.
 
-**Den neutrala munnen och formatet** (2026-11-21; läst i koden och i avsnittet om Emil och Kevin, inget kört i köraren). Samma format: den neutrala munnen ändrar bara hur rendererns svar läggs in i filmens rutor. Renderern får samma klipp och samma ljud som förut (1080 × 1920, 24 rutor/s, PCM 24 kHz med 5 280 samplingar före), och när dubblingen och "Dealern spelar." renderades om 2026-11-21 var svaret byteidentiskt med det förra. Talfilmerna är som förut 1764 × 1174, 24 rutor/s, H.264 (CRF 12, yuv420p) med AAC 128 kbit/s på −16 LUFS, och lapparna `mouth.webp` (en förlustfri remsa av lådan) med `line.wav` (16 bitar, 24 kHz, mono). Det som skiljer mot Scoutgaming är förpackningen, och den var likadan före: deras munlager tar rutor om 256 × 512 i bitar om 12 och sparar utropen i sitt eget `lapp-lager`; våra lappar är en remsa per replik och film. Körarens förberedda klipp gäller också, eftersom dess nyckel är klippet och maskens inställningar, inte receptet (`prep_key` i `kod/korare.py`). Det som måste göras innan realtidsvägen kan ha den neutrala munnen: köraren kan i dag bara lägga in F (`kod/inlaggning.py` kräver F:s mått och nekar de andra), så den behöver en neutral profil med eget versionsnummer (modellens låda som den är, med grinden och kanten, som `layBack` med `lips: null`) och sedan ett prov bredvid talfilmerna, eftersom körarens mask kommer ur MediaPipe och inte ur BiSeNet som rendererns.
+**Den neutrala munnen och formatet.** Den neutrala munnen ändrar bara hur rendererns svar läggs in i filmens rutor.
+Renderern får samma klipp och samma ljud som förut (1080 × 1920, 24 rutor/s, PCM 24 kHz med 5 280 samplingar före), och
+svaret är byteidentiskt med det förra. Talfilmerna är 1764 × 1174, 24 rutor/s, H.264 (CRF 12, yuv420p) med AAC 128
+kbit/s på −16 LUFS, och lapparna `mouth.webp` (en förlustfri remsa av lådan) med `line.wav` (16 bitar, 24 kHz, mono).
+Mot Scoutgaming skiljer bara förpackningen: deras munlager tar rutor om 256 × 512 i bitar om 12 och sparar utropen i
+sitt `lapp-lager`; våra lappar är en remsa per replik och film. Körarens förberedda klipp gäller också, eftersom dess
+nyckel är klippet och maskens inställningar, inte receptet (`prep_key` i `kod/korare.py`). Innan realtidsvägen kan ha
+den neutrala munnen: köraren kan bara lägga in F (`kod/inlaggning.py` nekar andra mått), så den behöver en neutral
+profil med eget versionsnummer (modellens låda som den är, med grinden och kanten, som `layBack` med `lips: null`) och
+ett prov bredvid talfilmerna, eftersom körarens mask kommer ur MediaPipe och rendererns ur BiSeNet.
 
-**Mätt** (RTX 3060, en replik om 48 rutor, varm tjänst, 2026-11-17): start en gång 37 s för modellerna och 29 s uppvärmning; första frågan för ett klipp läser klippet på 5,8 s; per replik de första 12 rutorna efter 1,5–2,5 s och hela repliken efter 3,8–5,0 s, 12–13 rutor per sekund i hela kedjan. Realtid kräver 24, så realtid går inte på den här datorn. Förberedelsen av ett klipp tog 13–19 s för 112 rutor och ligger på disken som cirka 4,5 MB per klipp och inställning (`korare/prep/`). Inläggningen ger på samma indata samma grind och samma färgskifte som förlagan i talbanans klon; bildskillnaden i de lagda rutorna är 0,66 nivåer mot 0,69 i de orörda. `bbox_shift` (−8, 0, +8, +16) ger inte hennes egna läppar; storleken kommer ur inläggningen. Bara vilofilmens klipp är prövat, och bara talbanans blick har sett tjänstens bild och provet -6.
-
-**Verifiering och kvar:** profilens fyra regressioner går utan GPU och ingår i den vanliga kontrollen när Python 3 finns. Tre lokala GPU-prov med versionerad profil gav 48/43/83 rutor. Varm körning med CPU-tak fyra nådde 5,6–6,7 rutor/s från fråga till sista ruta, under 24; första repliken tog 32,43 s inklusive förberedelse. Provkvitton finns i `assets/proofs/paow-approved-f-game-20261118`. Streaming till spelet, PCM in i stället för ljudfil och nytt Dockerbygge återstår.
+**Mätt** (RTX 3060, varm tjänst, 2026-11-17 och 2026-11-18): start 37 s för modellerna och 29 s uppvärmning;
+förberedelsen av ett klipp 13–19 s för 112 rutor, cirka 4,5 MB på disken per klipp och inställning (`korare/prep/`);
+per replik de första 12 rutorna efter 1,5–2,5 s, 12–13 rutor per sekund i hela kedjan, med CPU-tak fyra 5,6–6,7.
+Realtid kräver 24, så **realtid går inte på den här datorn**. `bbox_shift` ger inte hennes egna läppar; storleken kommer
+ur inläggningen. Bara vilofilmens klipp är prövat. Profilens fyra regressioner går utan GPU och ingår i kontrollen när
+Python 3 finns; provkvitton i `assets/proofs/paow-approved-f-game-20261118`. Kvar: streaming till spelet, PCM in i
+stället för ljudfil och ett nytt Dockerbygge.
 
 ### Köraren på hans RunPod
 
-Inte startad, och inget är förberett hos RunPod. Så som den är tänkt (läst i RunPods dokumentation 2026-11-17, inte prövat): en podd kan inte köra `docker build`, så podden startas ur RunPods image `runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404` (samma torch och Ubuntu som `korare/docker/Dockerfile`) och Dockerfilens steg körs där som ett skript, som inte är skrivet; vikterna hämtas från källorna i `korare/kod/vikter.json`. Vilofilmens klipp (24 MB) och replikernas ljud förs till podden; det är media som lämnar datorn, och det sägs till huvudagenten före. Sedan skickas samma frågor till tjänsten som på datorn. Villkoren för första provkvällen: högst 5 USD, besked samma dag före start (belopp och hur länge), podden stängs samma kväll och kostnaden rapporteras; inget konto för ett register och inget publikt. Den mäter rutor per sekund på en 4090, tiden till de första rutorna och förberedelsen per film. Pris enligt RunPods lista 2026-11-17: 4090 som podd 0,34 (Community) eller 0,89 (Secure) USD per timme.
-
-Mätningen hos RunPod 13 november (Tal i rörligt spel, nedan) gällde Scoutgamings renderer på serverless, inte köraren.
+Inte startad, och inget är förberett hos RunPod. Tänkt så (läst i RunPods dokumentation 2026-11-17, inte prövat): en
+podd kan inte köra `docker build`, så podden startas ur `runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404` (samma torch
+och Ubuntu som körarens Dockerfile) och Dockerfilens steg körs där som ett skript, som inte är skrivet; vikterna hämtas
+enligt `kod/vikter.json`. Vilofilmens klipp (24 MB) och replikernas ljud förs till podden; det är media som lämnar
+datorn, och det sägs till huvudagenten före. Sedan skickas samma frågor som på datorn. Villkoren för första
+provkvällen: högst 5 USD, besked samma dag före start (belopp och hur länge), podden stängs samma kväll och kostnaden
+rapporteras; inget konto för ett register och inget publikt. Den mäter rutor per sekund på en 4090, tiden till de
+första rutorna och förberedelsen per film.
 
 ### Vad som gäller per dealer
 
-**Paow.** Bank `paow-v2` av vilofilmen `paow-vila-01-01`, och egna banker för munlapparna över ingången, given till plats 4 och hålkortet. Rösten Paow hos ElevenLabs (`eleven_multilingual_v2`), svenska. Replikfilmerna och munlapparna i spelet har den neutrala munnen (Jakob 2026-11-21: "som standard för alla hennes repliker överallt och som standard-läppsynk för PAOW"; Kvaliteten), utom blackjack, där spelet säger `paow-tal-blackjack-sv-04` med hans egen dom tills han dömer den neutrala; verktyget lägger hennes nästa replik neutral av sig självt (`recipeOf`). Munnen i realtid har hans ja: storlek F, bara läpparna, mindre öppning i vanligt tal med dagens som tak, hakan följer mjukt. Köraren har förberett vilans klipp (fyra inställningar av `bbox_shift`; tjänsten använder 0). Det versionerade förvalet är provkört på tre repliker, även som kandidater i spelets format. Spelets repliker har inte F utan den neutrala munnen, som köraren ännu inte kan lägga in (Den neutrala munnen och formatet, ovan). Streaming till spelet, körning på podden och tal över filmer i 30 rutor/s återstår.
+**Paow.** Bank `paow-v2` av vilofilmen `paow-vila-01-01`, och egna banker för munlapparna över ingången, given till
+plats 4 och hålkortet. Rösten Paow (`eleven_multilingual_v2`), svenska. Replikfilmerna och munlapparna har den neutrala
+munnen, utom blackjack: spelet säger `paow-tal-blackjack-sv-04`, som har hans egen dom, tills han dömer den neutrala
+`…-blackjack-sv-14`. Munnen i realtid har hans ja (F), men köraren kan ännu inte lägga in den neutrala. Köraren har
+förberett vilans klipp (fyra inställningar av `bbox_shift`; tjänsten använder 0). Kvar: streaming, podden och tal över
+filmer i 30 rutor/s.
 
-**Pamela.** Ingenting av läppsynken finns för henne: ingen rad i `data/speech.json`, ingen röst, ingen bank, inga repliker, ingen förberedelse i köraren och inget prov. Hon är pausad (Jakob 2026-11-12).
+**Pamela.** Ingenting av läppsynken finns för henne; hon är pausad (BESKED, "Paow är dealern, Pamela är pausad").
 
 ### Vid en ny film eller en ny dealer
 
 En **ny film** som hon ska tala över:
 
-1. Den ska gå i 24 rutor per sekund. En film i 30 (WAN 3) kan inte bära tal än, varken i verktyget eller i köraren (Gränser, i Munlagret).
-2. Replikfilmer och munlappar: en bank per film (`bank`, eller `over` som gör sin egen; 80–150 s på grafikkortet), sedan en lapp per replik och film; huvudagenten för in lapparna i spelets register (`node tools/speech-patch.ts register`).
-3. Köraren: filmens klipp förbereds en gång (`POST /forbered`, 13–19 s för 112 rutor), sedan ritas varje replik över det. I dag är klippet bankens (`assets/speech/<dealer>/bank/sources/sources/<id>.mp4`, som `bank` skriver); andra klipp är inte prövade.
+1. Den ska gå i 24 rutor per sekund; en film i 30 (WAN 3) kan inte bära tal än (Gränser, i Munlagret).
+2. Replikfilmer och munlappar: en bank per film (`bank` eller `over`; 80–150 s på grafikkortet), sedan en lapp per
+   replik och film; huvudagenten för in lapparna i spelets register (`node tools/speech-patch.ts register`).
+3. Köraren: filmens klipp förbereds en gång (`POST /forbered`), sedan ritas varje replik över det. Prövat är bara
+   bankens klipp (`assets/speech/<dealer>/bank/sources/sources/<id>.mp4`, som `bank` skriver).
 4. En ny film med tal granskas som en tagning, och hans ja behövs innan något byts i spelet.
 
-En **ny dealer**: en godkänd vilofilm i bankens ruta; en rad under `dealers` i `data/speech.json` (bank-id, vilofilm, röst, språk); en röst i ett ElevenLabs-konto (registret namnger raden med kontots nyckel, aldrig nyckeln); `bank` en gång och sedan `say` per replik (Göra en replik). För munnen i realtid: hennes recept prövat och godkänt av Jakob (Paows är inte prövat på någon annan), och skriptets mapp för `/in` satt till hennes. Sist en post för henne under `dealers` i `data/lipsync.json`, så att Lipsync visar vad som finns och inte.
+En **ny dealer**: en godkänd vilofilm i bankens ruta; en rad under `dealers` i `data/speech.json` (bank-id, vilofilm,
+röst, språk); en röst i ett ElevenLabs-konto (registret namnger raden med kontots nyckel, aldrig nyckeln); `bank` en
+gång och sedan `say` per replik. För munnen i realtid: hennes recept prövat och godkänt av Jakob (Paows är inte prövat
+på någon annan), och mappen för `/in` satt till hennes. Sist en post under `dealers` i `data/lipsync.json`.
 
 ### Licenserna
 
-Uppslagna 2026-11-17 (`D:/dealer-scratch/tmp/tal/korare/LICENSER.md`; raderna i `data/lipsync.json`, `licences`): MuseTalks kod och 1.5-vikter MIT, kommersiellt bruk uttryckligen tillåtet; bildkodaren sd-vae-ft-mse MIT; whisper-tiny Apache-2.0; MediaPipe Apache-2.0; ffmpeg i imagen GPL, vilket bara spelar roll om imagen sprids till andra. Ansiktssegmenteringen BiSeNet (`79999_iter.pth`) används inte: den är enligt uppslagningen tränad på CelebAMask-HQ, som bara får användas för icke-kommersiell forskning (datasetets egen licenstext är inte läst). Scoutgamings renderer listar samma vikt i sitt lås; det är en fråga för Jakob och rendererns ägare.
+Uppslagna 2026-11-17 (`tools/python/mouth-runner/LICENSER.md`; `licences` i `data/lipsync.json`): MuseTalks kod och
+1.5-vikter MIT, kommersiellt bruk uttryckligen tillåtet; sd-vae-ft-mse MIT; whisper-tiny Apache-2.0; MediaPipe
+Apache-2.0; ffmpeg i imagen GPL, vilket bara spelar roll om imagen sprids. BiSeNet (`79999_iter.pth`) används inte: den
+är enligt uppslagningen tränad på CelebAMask-HQ, som bara får användas för icke-kommersiell forskning (datasetets egen
+licenstext är inte läst). Scoutgamings renderer listar samma vikt; det är en fråga för Jakob och rendererns ägare.
 
 ## Hur spelet väljer en replik
 
-`src/speech-lines.ts` är en ren modul: den får bankens vilotagningar och svarar vilken talfilm som hör till en repliknyckel (`spokenFilm(takes, 'paow', 'goodluck')`), till ett skede i rundan (`'BETTING'`, `'DEALING'`, `'INSURANCE'`, `'DEALER'`) eller till det spelaren skrev i chatten (`chatReply`). Svaret bär klippets id, texten som den faktiskt läses, och ljudets början och slut i sekunder; finns ingen film svarar den `null`, och spelet visar sin text som förut.
-
-Spelet (kopplat av huvudagentens spelagent natten till 2026-11-13) säger "Lycka till" när given börjar, "Dealern spelar." före dealerns hand, utfallet när rundan är avgjord och "Lägg era insatser, tack." vid ny runda, och svarar i chatten med ett av de fasta svaren. Reglaget `tal` (`av` eller `repliker`) står bland scenens reglage. Replikerna spelas som vilofilmer, alltså mellan givarna och inte under dem.
-
-Chattens svar är fasta: en hälsning, hennes namn, hur hon mår, reglerna, tack, lycka till, otur, vinst, hej då och "det kan jag inte svara på", plus attrappens fyra egna svar. Vilket svar som passar avgörs av ord i det spelaren skrev (`chatKey`). Hon svarar alltså direkt, men bara med det som redan är inspelat.
+`src/speech-lines.ts` är en ren modul: ur bankens vilotagningar svarar den vilken talfilm som hör till en repliknyckel
+(`spokenFilm(takes, 'paow', 'goodluck')`), till ett skede i rundan (`'BETTING'`, `'DEALING'`, `'INSURANCE'`,
+`'DEALER'`) eller till det spelaren skrev i chatten (`chatReply`, efter ord i texten: `chatKey`). Svaret bär klippets
+id, texten som den läses, och ljudets början och slut i sekunder; finns ingen film svarar den `null`, och spelet visar
+texten. Bland lika dömda tagningar tas den med högst nummer. Spelet säger "Lycka till" när given börjar, "Dealern
+spelar." före dealerns hand, utfallet när rundan är avgjord och "Lägg era insatser, tack." vid ny runda (SYSTEM,
+"Spelet"); reglaget `tal` (`av` eller `repliker`) står bland scenens reglage. Chattens svar är fasta (en hälsning,
+hennes namn, hur hon mår, reglerna, tack, lycka till, otur, vinst, hej då, "det kan jag inte svara på", och attrappens
+fyra egna): hon svarar direkt, men bara med det som redan är inspelat.
 
 ## Rösten
 
-En röst hittas bara av det konto den ligger i. I registret namnger rösten därför den rad i `.env.local` som bär kontots nyckel (`key`, till exempel `ELEVENLABS_API_KEY_KEVIN`), aldrig nyckeln själv; en röst utan `key` läses med repots egen `ELEVENLABS_API_KEY`. Uppläsningen betalas per tecken av det konto rösten ligger i; avlyssningen går alltid på repots egen nyckel. `languages` ger modell och inställningar för ett annat språk än röstens eget.
+En röst hittas bara av det konto den ligger i. Registret namnger därför den rad i `.env.local` som bär kontots nyckel
+(`key`), aldrig nyckeln; en röst utan `key` läses med repots egen nyckel. Uppläsningen betalas per tecken av det konto
+rösten ligger i; avlyssningen går alltid på repots nyckel. `languages` ger modell och inställningar för ett annat språk.
 
-Paows röst är ElevenLabs-rösten `WZVEBKUreb9jAKojf0QF` ("Paow", en direktklon i Kevins konto), samma som Scoutgamings katalog har som förval för henne. Svenska läses med `eleven_multilingual_v2` (stability 0,5, similarity 0,85, style 0, speaker boost): Jakob lyssnade på provet `paow-rost` 2026-11-13 och valde den framför `eleven_v3`, som Scoutgaming läser hennes svenska med ("2 paow äldre modell är bäst"). Engelska har Scoutgamings inställning (`eleven_multilingual_v2`, 0,38 / 0,8 / style 0,3); ingen engelsk replik är läst än. Jakob gav två id och ville ha det andra i första hand: `ZJEktbBRUOiQlTc5zJBT`, en professionell klon med samma namn i samma konto. Den går inte att läsa med: ElevenLabs svarar `voice_not_fine_tuned` på uppläsning med båda modellerna och på röstbyte (prövat samma dag), alltså är träningen inte klar, och det kan bara kontots ägare göra. När den är klar är bytet en rad i registret och alla repliker om.
+Paows röst är en direktklon i Kevins ElevenLabs-konto, samma som Scoutgamings katalog har som förval för henne (id och
+inställningar i `data/speech.json`). Svenska läses med `eleven_multilingual_v2`: Jakob valde den 2026-11-13 efter provet
+`paow-rost`, framför `eleven_v3`, som Scoutgaming läser hennes svenska med. Ingen engelsk replik är läst. Han ville ha
+den professionella klonen med samma namn i samma konto i första hand, men ElevenLabs svarar `voice_not_fine_tuned`:
+träningen är inte klar, och det kan bara kontots ägare göra. När den är klar är bytet en rad i registret och alla
+repliker om. Röstbyte på färdigt ljud (speech-to-speech, film 3 i `paow-rost`) prövades och valdes inte: takten och
+tonfallet blir den gamla röstens.
 
-Två vägar till ny röst prövades på en replik (provet `paow-rost`). **Ny läsning och ny mun** (vald, film 1 och 2 i provet): rösten läser texten själv, och munnen ritas efter just det ljudet. **Röstbyte på färdigt ljud** (film 3; ElevenLabs speech-to-speech): ljudet behåller sin längd och takt (2,79 s in, 2,79 s ut) och bilden behöver inte göras om, men tonfallet och takten är den gamla röstens; det blir en annan röst som låter som Paow. Skriptet för röstbytet ligger utanför repot (`D:/dealer-scratch/tmp/tal/skript/rostbyte.mjs`).
-
-**Samma styrka i alla repliker.** ElevenLabs ger varje läsning sin egen styrka: Paows 25 repliker låg 2026-11-13 mellan −10,9 och −20,7 LUFS (alla nära full topp, så det är topparna som skiljer), och i en film av en runda hördes lyckoönskan 6,5 dB under de tre replikerna efter den. Där replikens ljud skrivs i en talfilm, i tal över en film eller i en munlapp sätts det därför till −16 LUFS, med en begränsare som håller topparna under −1 dBFS (`levelled` och `LOUDNESS` i `tools/speech.ts`); ljudet är lika långt och ligger på samma plats i tiden. Mätt på de 29 filmerna efteråt: −16,8 till −16,0 LUFS enligt kvittona, och 1,4 LU isär mätt av en oberoende granskare i filmernas kodade spår; de läsningar som behövde mest förstärkning stannar 0,6–0,8 under målet, eftersom begränsaren tar deras toppar, och efter AAC-kodningen mäts deras toppar till −0,5 till −0,9 dBFS (inget klipper). Kvittot säger vad som lästes och vad det blev (`sound.level`; i en lapps post `made.renderer.level`). Renderern hör läsningen som den lästes, så munnen den ritade gäller och inget ritas om för detta.
+**Samma styrka i alla repliker.** ElevenLabs ger varje läsning sin egen styrka (Paows låg mellan −10,9 och −20,7 LUFS),
+så där replikens ljud skrivs (en talfilm, tal över en film, en munlapp) sätts det till −16 LUFS, med en begränsare som
+håller topparna under −1 dBFS (`levelled` och `LOUDNESS` i `tools/speech.ts`); ljudet är lika långt och ligger på samma
+plats i tiden. Mätt efteråt: −16,8 till −16,0 LUFS, och inget klipper efter AAC. Kvittot säger vad som lästes och vad
+det blev (`sound.level`; i en lapps post `made.renderer.level`). Munnen ritas efter läsningen som den lästes, och inget
+ritas om för detta.
 
 ## Göra en replik, och en ny dealer
 
@@ -107,38 +199,72 @@ node tools/speech.ts say --dealer paow --from paow-tal-lose-sv-09
 node tools/speech.ts proof --dealer paow
 ```
 
-En **ny replik** är en rad i `data/speech.json` (eller `--text` med `--as`) och ett `say`. Samma text i samma röst läses aldrig två gånger av misstag (`--again ja` ger en ny läsning). En tagning som lades tillbaka på ett annat sätt än verktyget gör nu (till exempel före grinden) läggs om ur rendererns sparade svar, som en ny tagning: ingen ny läsning, inget grafikkort, cirka tio sekunder. `say --from <tagning>` gör det för en bestämd tagning (repliken, texten och rösten tas från den, och ljudet är dess eget), och numret blir det första efter alla tagningar av repliken, i talets mappar och i banken. Munnen läggs som dealern har den (`recipeOf` i `tools/speech.ts`: Paows neutral, andras med läppreceptet), utan att någon behöver ange det. Varje ljud skickas tillbaka till ElevenLabs tal-till-text och jämförs med texten; en avvikelse skrivs ut och står i kvittot. Det fångade natten till 2026-11-13 "20" för "tjugoett" och en röst som läste "Lägger en satser".
+En **ny replik** är en rad i `data/speech.json` (eller `--text` med `--as`) och ett `say`. Samma text i samma röst läses
+aldrig två gånger av misstag (`--again ja` ger en ny läsning). `say --from <tagning>` lägger om en tagning ur rendererns
+sparade svar, som en ny tagning: ingen ny läsning, inget grafikkort, cirka tio sekunder; repliken, texten, rösten och
+ljudet tas från den, och numret blir det första efter alla tagningar av repliken. Munnen läggs som dealern har den
+(`recipeOf`), utan att någon anger det. Varje ljud skickas tillbaka till ElevenLabs tal-till-text och jämförs med
+texten; en avvikelse skrivs ut och står i kvittot. En ny dealer: Vid en ny film eller en ny dealer, ovan.
 
-En **ny dealer** behöver en godkänd vilofilm i bankens ruta, en rad under `dealers` i registret (bank-id, vilofilm, röst, språk), `bank` en gång och sedan `say` per replik. Röstbyte är en rad och alla repliker om (se Rösten); 13 november tog de 25 replikerna sju minuter med varm renderer.
+Tider på RTX 3060: banken 80–150 s; en replik 63–110 s kallt när datorn vilar, upp till 245 s när andra arbeten går.
+Det mesta är att renderern läser in sin modell för varje replik.
 
-Tider, mätta på den här datorn (RTX 3060): banken 80–150 s; en replik 63–110 s när datorn i övrigt vilar, upp till 245 s när andra arbeten går samtidigt. Det mesta av tiden är att renderern läser in sin modell för varje replik. ElevenLabs kostade under natten cirka 1 050 tecken för 29 läsningar på repots nyckel (skattat under 5 kr; kontots kvot går inte att läsa med den nyckeln). Röstbytet 13 november kostade 1 422 tecken uppläsning och 34 tecken röstbyte på Kevins konto: 1 116 tecken för de 25 replikerna med den valda modellen (tre omläsningar inräknade) och 306 för de sex läsningar med `eleven_v3` som hann göras före valet.
-
-**Den varma renderern** (`warm --dealer paow`) håller modellen och banken i minnet. Start 95–162 s (mätt tre gånger); därefter tog samma repliker 10–15 s i stället för en minut (mätt på tre repliker om 34, 58 och 77 rutor), och rutorna är desamma som kallt: ingen bildpunkt skiljer i någon ruta. Den tar nästan hela grafikkortets minne (11,8 av 12 GB mätt) medan den går, så den stänger sig själv efter fem minuter utan arbete och ska inte stå på medan 3D-scenen spelas in. När kortet delas med en webbläsare som visar spelet går allt långsammare: 13 november tog starten 181–213 s, en replik 11–21 s varmt och ett kallt bak 69–94 s (hela kommandot 72–247 s med läsning, väntan på kortet och inläggning). WSL stänger dessutom en distribution några sekunder efter dess sista kommando, och renderern med den (sett samma dag: borta 34 s efter en sats); `warm` håller därför ett tyst kommando öppet så länge renderern lever, och väntar ut starten i stället för att baka kallt bredvid. Den är Scoutgamings egna funktioner för bakning, körda i en process som får leva kvar; den rör ingenting hos dem.
+**Den varma renderern** (`warm --dealer paow`) håller modellen och banken i minnet: start 95–162 s, sedan 10–15 s per
+replik, med samma rutor som kallt. Den tar nästan hela grafikkortets minne (11,8 av 12 GB), så den stänger sig själv
+efter fem minuter utan arbete och ska inte stå på medan 3D-scenen spelas in; delas kortet med en webbläsare som visar
+spelet går allt långsammare. WSL stänger en distribution några sekunder efter dess sista kommando, och renderern med
+den; `warm` håller därför ett tyst kommando öppet så länge renderern lever, och väntar ut starten i stället för att baka
+kallt bredvid. Den är Scoutgamings egna funktioner för bakning, körda i en process som får leva kvar.
 
 ## Tal medan hon ger ett kort
 
-Jakob 2026-11-13: "jag vill att hon ska kunna tala när hon t.ex. ger ut kort." Provet `paow-tal-goodluck-over-giv-2-1-p4-04-01` visar att det går med dagens verktyg: repliken "Insatserna är stängda. Lycka till vid mitt bord!" är lagd över hans godkända giv till plats 4 (`over --film … --line goodluck --at 0.6`). Givfilmen får en egen bank, renderern ritar munnen över varje ruta i givens egen ordning, och ansiktet läggs tillbaka i givfilmens rutor.
-
-Granskat i full upplösning tre gånger samma dag. Det som höll varje gång: utanför lådan skiljer ingen bildpunkt mer än kodningsbrus i någon ruta, så handen, kortet, skon och det landade kortet är filmens egna; ingen kant syns när huvudet rör sig, och munnen följer läpplinjen när hon sänker eller vrider huvudet. Med läpparna som de läggs nu (omgång 9) är överläpp och mungipor filmens egna i varje ruta, utan söm. Det som drar ned: munnen öppnar litet under hennes stilla överläpp ("munnen öppnas knappt under Du dubblar"), underläppen är fylligare och mattare än hennes egen, och den står öppen med tänder ett par rutor efter sista hörbara ljudet. Poäng i omgång 9: given 2/5, lyckoönskan över ingången 3/5, dubblingen över ingången 2/5, hålkortet 3/5; alla användbara med anmärkningar.
-
-För att det ska gå i spelet fanns två vägar; den andra är den som är byggd.
-
-1. **En talfilm per film och replik.** Det är provets väg. Den som ska spelas oftast kommer först: "Lycka till" sägs när given börjar, och det första som då spelas är ingången från vila till skon, som är en och samma film vilken plats som än får första kortet. En talfilm över ingången räcker alltså för varje runda (provet `…-over-ingang-2-1-02-01`). "Du dubblar" hör till given av dubblingskortet och kräver en talfilm per plats (sju). Varje sådan film är en tagning som ska granskas, få kortspår och dömas (vilka filmer verktyget tar står under Gränser i nästa avsnitt). Kostnad per film: en bank (80–150 s) och en bakning (cirka en minut kallt), ingen ny uppläsning.
-2. **En munlapp som läggs på den film som spelas.** Byggt 2026-11-13 som munlagret (nästa avsnitt): munnen för en fast replik görs i förväg över precis den film den sägs i och läggs på filmen medan den spelas. Det är Scoutgamings förrenderade utrop, inte deras strömmande väg; vilken text som helst över vilken film som helst kräver fortfarande en renderer som strömmar.
+Hon talar medan en film spelas genom munlagret (nästa avsnitt): munnen för en fast replik görs i förväg över precis den
+film den sägs i och läggs på filmen medan den spelas, så filmen, dess kortspår och Jakobs dom är orörda. Det är
+Scoutgamings förrenderade utrop, inte deras strömmande väg. En talfilm per film och replik var den andra vägen och
+byggs inte: `over` gör sådana filmer som underlag till lappen och prov att titta på.
 
 ## Munlagret: repliken på filmen som spelas
 
-Jakob 2026-11-13: "om man kan se henne deala ett kort samtidigt som hon talar så skulle det vara helt fantastiskt." Så fungerar det nu, utan grafikkort i spelet och utan nya filmer att döma: filmen, dess kortspår och Jakobs dom är orörda, och samma giv spelas med eller utan tal. Lagret i scenen och spelets regel är byggda av huvudagentens munlager; lapparna görs av talverktyget.
+Spelet lägger repliken på filmen utan grafikkort och utan nya filmer att döma; samma giv spelas med eller utan tal.
+Lagret i scenen och spelets regel är byggda av huvudagenten; lapparna görs av talverktyget.
 
-**Lappen.** En munlapp är en film och en replik i ett språk och en röst. Den ligger i `assets/speech/<dealer>/patches/<id>/` (utanför Git): `mouth.webp`, ett rutnät av munnens låda (cirka 184 × 176 bildpunkter) för varje ruta där munnen är ritad, `line.wav`, repliken lika lång som renderern hörde den och i den styrka alla repliker har (16 bitar, 24 kHz, mono, ingen kodarfördröjning), och posten `patch.json`: vilken filmfil (med sha256), vilka rutor, lådan, kanten, grindens vikt per ruta, var ljudet börjar i filmens tid och alla hashar. Kontraktet står i koden (`src/speech-patch.ts`, typen `MouthPatch`); spelet hittar lapparna i registret `data/speech-patches.json`, som bara `node tools/speech-patch.ts register` skriver, och använder en lapp bara när postens, rutnätets och ljudets hashar stämmer och filmfilen är bankens.
+**Lappen.** En munlapp är en film och en replik i ett språk och en röst, i `assets/speech/<dealer>/patches/<id>/`
+(utanför Git): `mouth.webp`, ett rutnät av munnens låda (cirka 184 × 176 bildpunkter) för varje ruta där munnen är
+ritad; `line.wav`, repliken lika lång som renderern hörde den och i alla replikers styrka (16 bitar, 24 kHz, mono, ingen
+kodarfördröjning); och posten `patch.json`: filmfilen med sha256, rutorna, lådan, kanten, grindens vikt per ruta, var
+ljudet börjar i filmens tid och alla hashar. Kontraktet är `MouthPatch` i `src/speech-patch.ts`; spelet hittar lapparna
+i `data/speech-patches.json`, som bara `node tools/speech-patch.ts register` skriver, och använder en lapp bara när
+postens, rutnätets och ljudets hashar stämmer och filmfilen är bankens.
 
-**Färgen.** Bankens filmer är omärkta, och Chrome visar dem med BT.709 och begränsat omfång; rutorna räknas om på samma sätt (`cellRgb`: BT.709, färgkanalerna förstorade linjärt med provet mitt emellan, som grafikkortet läser dem), aldrig med FFmpeg:s förval BT.601. Provet i Chrome 2026-11-13: en lapp av ingången själv, vikt 1, lagd på filmen i scenen och jämförd med filmen utan lapp i 13 rutor: medel 0,01–0,02 nivåer per kanal och högst 2–3 nivåer i 12 rutor; i ruta 35 tre bildpunkter av 32 000 upp till 32 nivåer i rött, i en nästan svart punkt vid hakans skugga (och en av dem med 5 nivåer i ruta 36); orsaken är inte belagd, troligast en skarp färgkant där Chrome läser färgen annorlunda. Samma med `filmEven` på: medel högst 0,03. Kravet var under 0,5 i medel och ingen bildpunkt över 4.
+**Färgen.** Bankens filmer är omärkta, och Chrome visar dem med BT.709 och begränsat omfång; rutorna räknas om på samma
+sätt (`cellRgb`, som grafikkortet läser dem), aldrig med FFmpeg:s förval BT.601. Kravet är under 0,5 nivåer i medel och
+ingen bildpunkt över 4; en lapp av ingången själv, lagd på filmen i Chrome, gav 0,01–0,02 i medel.
 
-**Lagret i scenen** (`src/scene3d-mouth.ts`). En del i filmkön kan bära en lapp (`Part.mouth`). Medan delen visas tar lagret den ruta filmkön säger visas (den som korten ritas för, ur `requestVideoFrameCallback`) och blandar lappens ruta i filmens färg i filmshadern, före grönnyckeln och i filmens kodade värden, med talverktygets kant (`featherMask`) gånger rutans vikt. Allt som sedan görs med filmen (nyckeln, skuggorna, `filmEven`, rummets ljus, liv i överkroppen, kortens nyckel) görs med munnen på samma sätt. Ljudet spelas med Web Audio och sätts så att dess första sampling hörs när filmens tid `startsAtSeconds` visas (rutans visningstid ur `requestVideoFrameCallback`). En del med lapp spelas i sin egen takt, också när tysta filmer spelas fortare: med `filmTempo` 2 går den film hon talar över i vanlig fart (ingången 4,0 s i stället för 2,0), och munnen och ljudet följs åt. En lapp för dubbel fart skulle kräva att munnen ritas över varannan ruta med ljudet i vanlig fart, och en hel replik ryms inte i en film som varar hälften så länge; det är inte byggt. Ljudet hörs först när sidan har rörts, som talfilmerna; dessförinnan rör sig munnen utan ljud. Ljudet går genom sidans enda ljudkontext, som väcks i själva beröringen (Rösten på en telefon). Är lappen inte inläst när delen börjar spelas delen som förut och repliken står som text; glider filmen mer än 80 ms från ljudet (filmen hackar) avbryts repliken. En film som står still (labbets Scen stegar ruta för ruta) visar varje rutas mun utan ljud.
+**Lagret i scenen** (`src/scene3d-mouth.ts`). En del i filmkön kan bära en lapp (`Part.mouth`). Medan delen visas tar
+lagret den ruta filmkön säger visas (ur `requestVideoFrameCallback`) och blandar lappens ruta i filmens färg i
+filmshadern, före grönnyckeln, med talverktygets kant (`featherMask`) gånger rutans vikt; allt som sedan görs med filmen
+görs med munnen på samma sätt. Ljudet spelas med Web Audio så att dess första sampling hörs när filmens tid
+`startsAtSeconds` visas. En del med lapp spelas i takt 1, också när tysta filmer går fortare (`filmTempo`); en lapp för
+dubbel fart är inte byggd. Ljudet hörs först när sidan har rörts, genom sidans enda ljudkontext (Rösten på en telefon).
+Är lappen inte inläst när delen börjar spelas delen som förut och repliken står som text; glider filmen mer än 80 ms
+från ljudet avbryts repliken. En film som står still (Scen stegar ruta för ruta) visar varje rutas mun utan ljud.
+Mätt i Chrome: lagret lade rätt ruta i 716 av 718 ritade bilder, utanför lådan är bilden filmens egen, och ljudet
+sattes inom 9 ms (Chromes egna tal, inte mikrofon).
 
-**Spelets regel** (`src/game-film.ts`, `placeLines` i `src/speech-patch.ts`, `present` i `src/game-page.ts`). En replik som hör till ett stegs början (`goodluck`, och `double`, som motorn säger efter kortet den delar men som den andra produkten säger i greppet mot skon) läggs över den första filmen i kedjan som har en lapp för den, om lappens rutor ryms i delens utsnitt och ljudet börjar högst 8 s in i kedjan. "Dealern spelar." hör till hålkortets vändning och läggs över den, med sina 8 s räknade därifrån, sist bland stegets repliker. En del bär högst en replik, och en senare replik läggs aldrig på en tidigare del. Talfilmen i vila spelas då inte; annars görs som förut. Var ljudet börjar i filmen står i lappens post: den andra produktens tider (600 ms in i ingången, 62 % in i ett korts film) är en regel för den som gör lappen, och en hel replik ryms bara från 0,6 s in i en giv på 7 s. Varje stegs kedja börjar med ingången (vila till sko), också dubblingens, och dealerns med vändningen av hålkortet.
+**Spelets regel** (`placeLines` i `src/speech-patch.ts`, `src/game-film.ts`, `present` i `src/game-page.ts`). En replik
+som hör till ett stegs början (`goodluck`, och `double`) läggs över den första filmen i kedjan som har en lapp för den,
+om lappens rutor ryms i delens utsnitt och ljudet börjar högst 8 s in i kedjan. "Dealern spelar." läggs över hålkortets
+vändning, med sina 8 s räknade därifrån, sist bland stegets repliker. En del bär högst en replik, och en senare replik
+läggs aldrig på en tidigare del. Talfilmen i vila spelas då inte. Var ljudet börjar står i lappens post: Scoutgamings
+tider (600 ms in i ingången, 62 % in i ett korts film) är en regel för den som gör lappen, och en hel replik ryms bara
+från 0,6 s in i en giv på 7 s. Varje stegs kedja börjar med ingången, också dubblingens, och dealerns med hålkortets
+vändning.
 
-**Vad som finns** (2026-11-21): fyra lappar, alla med den neutrala munnen (Kvaliteten, Det som gäller), skrivna av talverktyget i samma steg som repliken lades över filmen, ur rutorna som de lades. Lyckoönskningarna lades om ur rendererns sparade svar (provet `paow-munbyte-neutral-20261121`), dubblingen och "Dealern spelar." med `over` samma kväll; deras sparade svar var rensade, så de renderades om på hans grafikkort (104 och 431 s), och svaret blev byteidentiskt med det förra (provet `paow-munbyte-neutral-alla-20261121`). Varje lapp har samma ljud (samma sha256), rutor, grind och låda som den den ersatte; lapparna med receptet ligger kvar i `assets/speech/paow/patches-ersatta/`. De första fyra lapparna 13 november skars ur rendererns svar (`tools/speech-patch.ts cut`) och hade rendererns hela mun; de är ersatta.
+**Vad som finns** (2026-11-21): fyra lappar, alla med den neutrala munnen, skrivna i samma steg som repliken lades över
+filmen (proven `paow-munbyte-neutral-20261121` och `paow-munbyte-neutral-alla-20261121`). Varje lapp har samma ljud,
+rutor, grind och låda som den den ersatte; de ersatta ligger i `assets/speech/paow/patches-ersatta/`. En runda med tal i
+filmerna behöver de tre första: lyckoönskningen och dubblingen över ingången, och "Dealern spelar." över
+`paow-halkort-04-02` (utsnitt ruta 3–117).
 
 | Lapp | Film | Rutor med mun | Ljudet | Storlek |
 | --- | --- | --- | --- | --- |
@@ -147,145 +273,143 @@ Jakob 2026-11-13: "om man kan se henne deala ett kort samtidigt som hon talar s�
 | `paow-mun-dealerplays-sv-halkort-04-02-02` | hålkortets vändning | 25 (13–37) | från 0,6 s, 0,96 s | 0,72 MB |
 | `paow-mun-goodluck-sv-giv-2-1-p4-04-01-neutral` | given till plats 4 | 62 (16–77) | från 0,6 s, 2,71 s | 1,91 MB |
 
-Mätt på de fyra (`node tools/speech-patch.ts check <mapp> --film ja`), som har samma rutor som filmerna granskade i omgång 9: i ringen mellan det renderern ändrade och lappens låda skiljer de neutrala 0,8–1,1 nivåer i medel och högst 16–24, eftersom lådan är rendererns omkodade, och kontrollen godkänner dem (med receptet var ringen filmens egen: 0 i medel, 0 som högst). Första och sista rutan i varje lapp är en ruta med hälften av varje mun (vikt 0,5). Munnen öppnar 0–2 rutor före det hörbara ljudet och stänger 0–3 rutor före eller efter dess sista hörbara ruta; i dubblingen talas pausen på tre rutor efter "Du dubblar." igenom (grinden tar bara pauser på sex rutor eller mer).
+`node tools/speech-patch.ts check <mapp> --film ja` mäter en lapp: i ringen mellan det renderern ändrade och lappens
+låda skiljer de neutrala 0,8–1,1 nivåer i medel och högst 16–24, eftersom lådan är rendererns omkodade, och kontrollen
+godkänner dem. Första och sista rutan i varje lapp har vikt 0,5.
 
-**Lapparna läggs som talfilmerna** (`over` utan `--lips`): Paows neutrala sedan 2026-11-21, andra dealrars med receptet, där dealerns egen överläpp lyfts när den ritade munnen öppnar och det ritade börjar vid dess kant (Kvaliteten, stycket om lyftet). Fyra av receptets mått kom till på lapparna tidigare samma kväll, medan talfilmerna ännu lades utan dem (`over --lips '{"drop":4,"fall":60,"open":[3,6],"taper":0.5,"ease":1,"heard":true,"arc":44}'`). Med det dåvarande receptet öppnade munnen knappt över filmerna: modellen öppnar munnen vid hennes läpplinje och strax över den, alltså delvis bakom hennes egen överläpp, och granskare såg det både i "Du dubblar" ("ser nästan stängd ut, hon ser ut att mumla") och i lyckoönskan över ingången i en film av en hel runda. I de lapparna flyttades det ritade därför ned fyra bildpunkter i de rutor där den ritade munnen är tydligt öppen och hon hörs (`drop`), tonat ut mot mungiporna (`taper`), jämnat över rutorna intill (`ease`) och ingenting i tysta rutor (`heard`); och det ritade slutar mot giporna längs en båge under läpplinjen i stället för längs en lodrät linje (`arc`). Med lyftet börjar öppningen i stället vid den lyfta läppen, så flytten nedåt står på noll; de fyra andra måtten gäller nu alla repliker.
+**Göra en lapp.** Talverktyget skriver lappen i samma steg som det lägger tillbaka munnen (`over`, med `writePatch` ur
+`tools/speech-patch.ts`), i bankens `patches/` eller med `--patches <mapp>` i en överlämnings mapp, med dealerns mun
+(`recipeOf`). Egna mått för läpparna ges med `--lips '<json>'` (det som ska skilja från `LIPS`; för Paow ger det
+läppreceptet med de måtten); de står i filmens kvitto (`laidBack.recipe`) och i lappens post (`made.renderer.lips`) och
+måste ges varje gång repliken läggs om. `over` skriver aldrig över en lapp, eftersom en färdig mediafil aldrig skrivs om
+(`tools/local-work.md`): finns id:t (`<dealer>-mun-<replik>-<språk>-<film>`) får den nya nästa lediga (`…-02`), och en
+tidigare lapp av samma replik över samma film, i samma språk och röst, flyttas från `patches/` till `patches-ersatta/`,
+eftersom `register` tar varje mapp under `patches/` och spelet lägger den första lappen i registret. Registret skrivs
+sedan om (`node tools/speech-patch.ts register`, huvudagentens). Kostnad per film och replik: en bank (80–150 s, en gång
+per film) och en bakning (70–95 s kallt, upp till 431 s när kortet delas), inget hos ElevenLabs; en omläggning ur
+rendererns sparade svar kostar varken grafikkort eller anrop, så länge `worker.mp4` finns kvar. Verktyget tar inte det
+delade låset självt; den som renderar tar det (Så skickas ett jobb, ovan).
 
-De måtten kom till i fyra blinda jämförelser (omgång 11–14): varje gång fick oberoende granskare två filmer av samma replik över samma film, utan att veta vilken som väntades vara bättre. (1) Flytten mot receptet: 3/5 mot 2/5 i alla fyra filmerna ("läses som tal" mot "mumlar", "en tandremsa under en stängd överläpp"). (2) Flytten tonad mot giporna, jämnad över rutorna och borttagen i tysta rutor, mot flytten rakt av: 3/5 mot 2/5 i alla fyra (munnen sluten i pauser och efter sista ordet, inget ryck där flytten slutar, och i dubblingen ett samband mellan ljud och munöppning på 0,63 mot 0,37). (3) Bågen mot giporna, mot den lodräta linjen: bättre eller likvärdig i alla fyra (3/5 mot 3/5 i två av filmerna, 4/5 mot 3/5 och 3/5 mot 2/5 i de andra): den lodräta kanten vid giporna är borta, underläppen smalnar mot gipan, och det ritade går inte längre ned i hakan; ingen granskare såg något nytt fel av bågen. Poängen är granskarens för det par den såg; samma film fick 3/5 i en jämförelse och 2/5 i nästa, bredvid något bättre. Det som håller är ordningen inom varje par.
-
-Lapparna med lyftet dömdes i omgång 17 bredvid dem de ersatte ([belägget](../evidence/tal-granskningar.md)): lyckoönskan över ingången 4/5 mot 2/5, dubblingen över ingången 4/5 mot 2/5, "Dealern spelar." över hålkortet 3/5 mot 2/5 och lyckoönskan över given 3/5 mot 2/5, alla fyra "båda läpparna" mot "bara underläppen". Med lyftet som följer munnen som visas dömdes de igen i omgång 19, bredvid de första lapparna med lyft: alla fyra 4/5 mot 3/5. Över given lyfts läppen nu också i "vid mitt bord", och o:et i "bord" syns. Kvar i de lapparna (sedan 2026-11-21 ersatta av de neutrala), i granskarnas ord: läppen är lyft två till tre bildpunkter i de slutna rutorna vid v och m i "vid mitt", den står nästan stilla i sitt högsta läge många rutor i följd, underläppens nederkant ligger 6–14 bildpunkter under hennes egen i öppna rutor, läppen saknar hennes glans och är mjukare, och efter p:et i "spelar" hoppar läppen fyra bildpunkter på en ruta.
-
-Mätt i Chrome med de första lapparna (headless, labbets scen i filmens egna bildpunkter, 2026-11-13); lagret är detsamma för de nya:
-
-- **Rätt ruta.** En film där varje ruta bär sitt nummer, med en lapp av sig själv över numret: den cell lagret lade var den ruta filmen visade i 716 av 718 ritade bilder (två gånger en ruta efter). Elementets egen klocka hade varit fel i 188.
-- **Utanför lådan** är bilden filmens egen: 0 nivåers skillnad i varje prövad ruta av de fyra lapparna.
-- **Ljudet** sattes att höras inom 9 ms från när filmen visar dess första sampling, i alla fyra (Chromes egna tal för rutans visning och ljudets utgång; inte mätt med mikrofon).
-- **Kanten** sedd i full upplösning (bilderna i provet `munlagret`): ingen kant syns på ansiktet, halsen eller tatueringen.
-
-Mätt i spelet 2026-11-13 (headless Chrome mot labbet, Paow, en insats på plats 4, `filmTempo` 2 och `filmEven` på; provet `munlagret`, de första lapparna): i två rundor sades fyra repliker över filmer, alla med ljud: lyckoönskan över ingången, lyckoönskan medan hon delar kortet till plats 4 (ingångens lapp borttagen för provet), "Du dubblar" över ingången och "Dealern spelar." över hålkortets vändning i dubblingens steg. I runda 1 var dealerns lapp borttagen med flit, och repliken blev talfilmen i vila som förut. Varje gång ljudet började var den ritade rutan den som ljudet börjar i (ruta 9 för 0,4 s, ruta 14 för 0,6 s), och i inspelningen hörs ljudet 15–60 ms efter den tid lagret satte. Filmen hon talade över gick i fart 0,99–1,0, de andra filmerna i kedjan i 1,8–1,9.
-
-**Göra en lapp.** Talverktyget skriver lappen i samma steg som det lägger tillbaka munnen (`over`, med `writePatch` ur `tools/speech-patch.ts`), i bankens `patches/` eller med `--patches <mapp>` i en överlämnings mapp, med dealerns mun (`recipeOf`: Paows neutral). En replik över en film kan läggas med egna mått för läpparna (`--lips '<json>'`, det som ska skilja från `LIPS`; för Paow ger det läppreceptet med de måtten): de står då i filmens kvitto (`laidBack.recipe`) och i lappens post (`made.renderer.lips`), och de måste ges varje gång den repliken läggs om, annars läggs den med dealerns mun. `over` skriver aldrig över en lapp, eftersom en färdig mediafil aldrig skrivs om (`tools/local-work.md`): finns id:t (`<dealer>-mun-<replik>-<språk>-<film>`) får den nya nästa lediga (`…-02`), och en tidigare lapp av samma replik över samma film, i samma språk och röst, flyttas från `patches/` till `patches-ersatta/`, eftersom `register` tar varje mapp under `patches/` och spelet lägger den första lappen i registret för en replik över en film. Registret skrivs sedan om (`node tools/speech-patch.ts register`, huvudagentens). Kostnad per film och replik: en bank (80–150 s, en gång per film) och en bakning (70–95 s kallt, upp till 431 s när kortet delas), inget hos ElevenLabs; en omläggning ur rendererns sparade svar kostar varken grafikkort eller anrop, så länge `worker.mp4` finns kvar i en tidigare mapp av samma läsning över samma film. Verktyget tar inte det delade låset självt; den som renderar tar det (Så skickas ett jobb, ovan). En runda med tal i filmerna behöver tre lappar: lyckoönskningen och dubblingen över ingången, och "Dealern spelar." över hålkortets film `paow-halkort-04-02` (dess utsnitt är ruta 3–117).
-
-**Gränser.** Talverktyget tar bara filmer i 24 rutor per sekund (ingången, Kling-givarna och hålkortet `halkort-04-02`); lagret bryr sig inte om takten, men filmer i 30 (WAN 3: plats 1 och 3, dealerns första kort, utgången, vilan) kräver att ljudet sträcks för renderern och att munnen läggs tillbaka i rätt takt, vilket inte är byggt. En lapp är 0,7–1,9 MB förlustfritt. Färgen förutsätter att webbläsaren läser bankens filmer som Chrome (BT.709); en annan webbläsare är inte provad. Repliker efter kedjan (försäkringen, utfallet) sägs som förut i vila; regeln lägger bara repliker före en kedja på dess filmer.
+**Gränser.** Talverktyget tar bara filmer i 24 rutor per sekund (ingången, Kling-givarna och hålkortet `halkort-04-02`).
+Filmer i 30 (WAN 3: plats 1 och 3, dealerns första kort, utgången, vilan) kräver att ljudet sträcks till fyra femtedels
+fart för renderern, så att den ritar en mun per filmruta, och att filmens bank byggs av alla dess rutor; det är inte
+byggt (skattat en till två timmar med prov på grafikkortet). En lapp är 0,7–1,9 MB förlustfritt. Färgen förutsätter att
+webbläsaren läser bankens filmer som Chrome (BT.709); en annan webbläsare är inte provad. Repliker efter kedjan
+(försäkringen, utfallet) sägs i vila.
 
 ## Rösten på en telefon
 
-En talfilm bär sitt eget ljud, och filmkön startar den med ljudet på när sidan har rörts (`src/scene3d-film.ts`). En telefons webbläsare går inte med på det: Safari på en iPhone låter en film höras bara när den startas inne i en beröring, och kön startar filmer från rutor och timrar. Starten nekas då, kön spelar filmen ljudlöst så att rundan går vidare, och hon rör munnen utan att höras (härlett ur webbläsarens regler och ur kön; inte sett på en telefon när detta skrevs).
+En talfilm bär sitt eget ljud, och filmkön startar den med ljudet på när sidan har rörts (`src/scene3d-film.ts`). Safari
+på en iPhone låter en film höras bara när den startas inne i en beröring, och kön startar filmer från rutor och timrar.
+Starten nekas då, kön spelar filmen ljudlöst så att rundan går vidare, och rösten går genom sidans eget ljud.
 
-**Rösten går då genom sidans eget ljud** (`src/scene3d-voice.ts`). Kön säger till i just den gren där starten nekades (`hooks.refused` i `createPlayers`), med delen och dess filmelement. Lagret läser filmens ljudspår en gång, som sampel (`decodeAudioData` på själva filmen), och spelar det med Web Audio satt mot filmens egna rutor, som munlagret sätter en repliks ljud: samplet för den filmtid som visas hörs när den rutan visas. Ljudet sätts först när filmen har visat tre olika rutor, alltså när den går; delens första ruta står och väntar när filmen startas, och satt mot den låg ljudet en ruta före bilden. Rösten tystnar (tonad över 30 ms) när elementet stannar: delen tar slut eller klipps, kön pausas eller tas ned. Hackar filmen, så att en ruta visas mer än 80 ms från där ljudet är, sätts ljudet om från den rutan, högst tre gånger per replik. Där webbläsaren låter filmen höras (en dator) körs ingenting av det här och ingenting hämtas, och en sida som inte har rörts spelar sina talfilmer ljudlöst utan att fråga, som förut.
+- **Rösten** (`src/scene3d-voice.ts`): kön säger till där starten nekades (`hooks.refused` i `createPlayers`). Lagret
+  läser filmens ljudspår en gång (`decodeAudioData` på filmen) och spelar det med Web Audio satt mot filmens egna rutor,
+  först när filmen har visat tre olika rutor. Rösten tystnar (tonad över 30 ms) när elementet stannar; visas en ruta mer
+  än 80 ms från ljudet sätts ljudet om, högst tre gånger per replik. Där webbläsaren låter filmen höras körs inget av
+  detta och inget hämtas.
+- **Sidans ljud väcks i beröringen** (`src/page-audio.ts`): en kontext för hennes röst, delad av munlagret och röstens
+  reserv, väcks vid varje beröring tills den går (en släppt finger eller pekare, ett klick, en tangent). Med `playback`
+  ber sidan om att höras med ringsignalen avstängd (`navigator.audioSession`, Safari från iOS 17).
+- Mätt i headless Chrome på en sida som nekar som en telefon (2026-11-14): rösten startade i tre av tre repliker före
+  replikens första hörbara sampel, ljud mot bild som mest 8,6 ms isär.
 
-**Sidans ljud väcks i beröringen** (`src/page-audio.ts`). En telefon släpper fram Web Audio bara från en kontext som har gjorts eller väckts inne i en beröring; munlagret gjorde sin mitt i en ritad ruta och väckte den där, vilket en dator går med på. Nu finns en kontext för hennes röst, delad av munlagret och röstens reserv, och den väcks vid varje beröring tills den går: en släppt finger eller pekare, ett klick, en tangent (en nedsatt finger räknas inte av webbläsarna). Med `playback` ber sidan dessutom om att höras med telefonens ringsignal avstängd, som en films eget ljud gör (`navigator.audioSession`, som bara Safari har, från iOS 17); utan det tystar ringsignalens omkopplare allt Web Audio. Scenen slår på det, eftersom rösten annars skulle höras på en dator men inte på de flesta telefoner.
-
-**Mätt** i en headless Chrome (157) på en sida som nekar filmer med ljud deras start som en telefon gör, med `paow-tal-goodluck-sv-14`, 2026-11-14 (`D:/dealer-scratch/tmp/tal/rost-telefon/`: mätserver, sida, drivare, analys och `matning-2.json`). Det sidans ljud spelade togs upp sampel för sampel och korrelerades mot filmens eget ljudspår avkodat av FFmpeg. Rösten startade i tre av tre repliker, 177–272 ms efter att starten nekades och vid filmtid 0,13–0,14 s, alltså före replikens första hörbara sampel (0,22 s). Ljud mot bild över varje visad ruta: median 0,0–0,3 ms, som mest 8,6 ms åt något håll. Det hörda låg inom en millisekund från där lagret satte det, så det avkodade spåret har filmens tidslinje. Filmen hämtades en gång för tre repliker. När repliken klipptes av en vilofilm slutade rösten 51 ms efter att klippet begärdes (när kön stannade elementet) och var tyst cirka 70 ms senare. På en sida utan nekade starter användes lagret inte och ingenting hämtades; på en orörd sida spelades talfilmen ljudlöst och lagret användes inte.
-
-**Antaget, inte prövat** (ingen av oss har en telefon att pröva på; Jakob prövar): att Safari nekar starten med just `NotAllowedError` (det kön svarar på); att Safari avkodar ljudspåret ur en MP4 med bildspår (en WebKit-rapport säger att MP4 går och MOV inte); att kontexten väcks av `touchend` och `click`; att `audioSession` gör det den ska. Utan bildruteklockan (`requestVideoFrameCallback`, Safari före 15.4) sätts ljudet mot elementets egen klocka, vilket är provat med ställföreträdare men inte mätt. Känd gräns: första gången en replik sägs på en telefon hämtas filmen en gång till för ljudets skull (6–8 MB), så rösten kommer in en bit in i repliken, från där filmen då är; nästa gång är den i takt från första rutan. En liten ljudfil bredvid varje talfilm, som lapparnas `line.wav`, tar bort den väntan och gör det möjligt att läsa in replikerna i förväg; läsaren är en inställning i lagret (`read`) för att den ska kunna sättas in. Den kräver att banken, labbservern och kopian på nätet bär filen, vilket är huvudagentens verktyg, och görs först när en telefon har visat att grunden håller.
+**Antaget, inte prövat** (Jakob prövar på sin telefon): att Safari nekar med just `NotAllowedError`; att Safari avkodar
+ljudspåret ur en MP4 med bildspår; att kontexten väcks av `touchend` och `click`; att `audioSession` gör det den ska.
+Utan `requestVideoFrameCallback` (Safari före 15.4) sätts ljudet mot elementets klocka, vilket inte är mätt. Känd gräns:
+första gången en replik sägs på en telefon hämtas filmen en gång till för ljudets skull (6–8 MB), så rösten kommer in en
+bit in i repliken. En liten ljudfil bredvid varje talfilm, som lapparnas `line.wav`, tar bort väntan (läsaren är
+inställningen `read` i lagret); den kräver att banken, labbservern och kopian bär filen, och görs först när en telefon
+har visat att grunden håller.
 
 ## Fritt tal ur en chatt
 
-I Scoutgaming kommer texten från OpenClaw genom Director, rösten från ElevenLabs, och munnen strömmas från dealerns GPU-plats; deras egen siffra är 6–15 s till ljud med varm renderer. Här finns i dag de fasta svaren (direkt) och möjligheten att baka en ny text i förväg.
-
-Det som skulle behövas för fritt tal här: en källa till texten (en bot med dealerns persona; chatten i spelet är en attrapp), en väg i labbservern som tar texten och svarar med filmen, och en renderer som är varm. Mätt 2026-11-13 med den varma renderern: en ny text på 36 tecken blev färdig film på 41 s, hela vägen (läsning, avlyssning, rendering, inläggning), medan andra arbeten gick på datorn; rendersteget ensamt tog 10–15 s i de tre mätningarna före. Skattat går hela vägen att få till 15–25 s på en dator som i övrigt vilar, om avlyssningen hoppas över och filmen kodas snabbare. Kallt är det 65–110 s. Det är för långsamt för ett samtal men räcker för att hon ska säga något nytt en stund efter att det skrevs. Vägen till sekunder är en renderer som strömmar munnen medan filmen spelas, som Scoutgamings (nästa avsnitt).
+Här finns de fasta svaren (direkt) och möjligheten att baka en ny text i förväg. Fritt tal skulle kräva en källa till
+texten (en bot med dealerns persona; chatten i spelet är en attrapp), en väg i labbservern som tar texten och svarar med
+filmen, och en varm renderer. Mätt 2026-11-13: en ny text på 36 tecken blev färdig film på 41 s med varm renderer (kallt
+65–110 s); för långsamt för ett samtal. Vägen till sekunder är en renderer som strömmar munnen medan filmen spelas.
 
 ## Tal i rörligt spel: går det?
 
-Jakob 2026-11-13: "Kolla annars kevin/kevin-staging hur Emil gjort med lipsynk. Tror de buffrar och köar filmer på ett smart sätt. Samma sak ska vi kanske göra", och högst 30 USD "för att kunna bevisa om det är rimligt att via serverless runpod … få talsynken att funka med lipsynken i rörligt spel".
+Ja: Scoutgamings dealers talar under given med samma renderer på serverless hos RunPod. Det som avgör är om renderern
+är varm och hur munnen läggs på filmen. Hur Emil och Kevin gör, läst i Scoutgamings repo 2026-11-13 (inte kört; hela
+genomgången i `D:/dealer-scratch/tmp/tal/scout-lasning/RAPPORT.md`):
 
-**Svaret är ja: det går, och det görs redan.** Scoutgamings dealers talar under given med samma renderer på serverless hos RunPod. Det som avgör om det känns levande är om renderern är varm och hur munnen läggs på filmen, inte om det är serverless.
+- Munnen är ett lager över klippet som ändå spelas: renderern skickar en munruta per bildruta, märkt med tagning och
+  ruta, i bitar om 12; sidan ritar den bara när just den rutan visas, och given väntar aldrig på talet.
+- Före första kortet börjar rösten 600 ms in i greppet mot skon, efter ett kort 62 % in i kortets film; repliker
+  överlappar aldrig, och en replik görs tidigast 3 s innan den behövs.
+- Utropen förrenderas per plats, språk och tempo och sparas; ett tal börjar bara när både mun och ljud finns (ljudet som
+  egen fil, högst 0,4 s väntan, annars bara text); spelet öppnar först när en varm renderer gör minst 30 rutor per
+  sekund.
+- På `main` görs öppningsrepliken medan spelarna satsar, mot den giv bordet väntas göra; blir given en annan spelas den
+  inspelade.
 
-### Så gör Emil och Kevin (läst, inte kört)
+Det som tagits efter här är munlagret med fasta repliker gjorda i förväg och Scoutgamings tider som regel för lappen.
 
-Läst 2026-11-13 i Scoutgamings repo med `git show`, utan att hämta eller ändra något: `origin/kevin` (`d96c6eb0e`, 2026-10-29), `origin/kevin-staging` (`50acf984f`, 2026-11-12) och `main` (`90d6697c4`); det som kommit på kevin-staging därefter, till `08b649b40` (2026-11-13 12.09 UTC), är läst på GitHub samma dag. Koden ligger i `kevin/croupier-scoutgg/` på Kevins grenar. Hela genomgången: `D:/dealer-scratch/tmp/tal/scout-lasning/RAPPORT.md`.
-
-- **Munnen är ett lager över klippet som ändå spelas** (`server/rorlig-lipsync.mjs`, `900a5ec9c`; `public/lip-layer.js`, `472cdb47b`). Renderern skickar en liten munruta per bildruta, märkt med vilken tagning och ruta den hör till, i bitar om 12 rutor (0,5 s). Sidan ritar munrutan bara när just den tagningen och rutan visas; saknas den syns dealerns egen mun. Given väntar aldrig på talet.
-- **Kön** (`#pump` i samma fil): tidigaste behov först, en replik i taget per renderer, och en replik görs tidigast 3 s innan den behövs, eftersom varje ny plan annars gjorde om den.
-- **När hon talar under given** (`scheduleTalks`): före första kortet börjar rösten 600 ms in i greppet mot skon, efter ett kort när det har landat (62 % in i kortets film), kartan 220 ms före rösten, och repliker överlappar aldrig. Ett chattsvar börjar 1,6 s efter att det är klart, också mitt i given; ändras given under tiden görs munnen om från den nya rutan.
-- **Förrenderade utrop** (`server/lapp-lager.mjs`, `b5ef79d16`, och `server/lapp-forvarm.mjs`, `279030e80`, på kevin-staging): samma utrop över samma film i samma tempo ger alltid samma munrutor, så de görs i förväg för varje plats, språk och tempo och sparas; "no worker, no queue". Emil skriver cirka 1 USD GPU för alla.
-- **Aldrig röst utan mun** (kevin-staging, `public/shared-table.js`): ett svar spelas bara om 0,5 s mun redan är framme och bitarna kommer fortare än de spelas; annars visas bara texten.
-- **Varmt** (kevin-staging, `public/gpu-grind.js`, `e380817b3`): spelet öppnar inte förrän en varm renderer som gör minst 30 rutor per sekund är uppkopplad; den hålls så länge bordet används.
-- **`main`** har Emils renderer och tider men en annan ordning: ett bokfört jobb per uttalande, en sekund mun buffrad före ljudet (`packages/presentation/runtime/moving-speech-player.mjs`), svar över vilan när ingen giv spelas (högst 30 s väntan, annars text), och bara öppningsrepliken över given (`services/game/speech/moving/moving-speech-deal-plan.mjs`).
-
-**Förberäkningen Jakob frågade efter** ("jag trodde main också hade som en typ förberäknande grej som kan börja lipsynkberäkning för att lägga på i nästkommande videos") finns på båda ställena, på två sätt:
-
-- **På `main`: öppningsrepliken görs medan spelarna satsar.** Vid rundans första insats startas GPU-jobbet samtidigt som texten skrivs (`shared-room-opening-line.mjs`), och munnen ritas mot den giv bordet väntas göra (`predictOpeningEvents` i `moving-speech-deal-plan.mjs`). Blir given en annan stryks den, och den inspelade "Lycka till" spelas i stället. Chattsvar startar sitt GPU-jobb på samma sätt medan texten skrivs.
-- **På kevin-staging: utropens munnar görs i förväg och sparas.** För varje plats, språk och tempo renderas "Too many", "21" med flera som små munlappar (256 × 512, i bitar om 12 rutor) när inget bord har spelat på 20 s, ett utrop per sekund, och sparas på disk (`lapp-lager/`, högst 400 MB). Utropet läggs alltid på en hel bildruta av kortets film (`alignCall`), så samma utrop över samma film ger samma lappar; vid en träff skickas de sparade direkt. Sidan väljer lapp efter vilken film och ruta som visas och lånar en granne inom tre rutor om den exakta saknas (`lip-layer.js`).
-
-Nytt på kevin-staging 12–13 november (fem commits av Emil): varje replik har fått sitt ljud som en egen liten fil bredvid klippet (cirka 25 kB), som hämtas i förväg; ett tal börjar bara när både mun och ljud finns, väntar högst 0,4 s på dem och blir annars bara text (`08b649b40`, "her voice and her mouth together or the words alone"); ett chattsvar kräver en halv sekund mun och visas som text efter 6 s; munnens kvalitetsnivå sänks först efter tre långsamma bitar (`f5b72f4e4`); och klippen laddas i nivåer, så att bara det rundans första kort behöver hämtas före start (`407be5733`). Tiderna 600 ms och 62 % är oförändrade. Någon ny GPU-förberäkning har inte tillkommit.
-
-Det som går att ta efter här utan GPU i spelet, i ordning efter nytta mot arbete: lägg varje replik på en hel ruta av filmen, så att munnen görs en gång per film och replik; rendera alla kombinationer i förväg (det är munlagret nedan); ha ljudet som egen fil och börja bara när bild och ljud är klara; börja tala 600 ms in i ingången eller 62 % in i ett korts film, aldrig två repliker samtidigt; ladda filmer i nivåer.
-
-### Mätt
-
-Ur Scoutgamings egen drift (deras logg och bokföring lästa 2026-11-13 med deras läsande verktyg `tal-logg` och `tal-budget`; samma renderer, serverless hos RunPod):
-
-| | Mätt |
-|---|---|
-| Tal med varm renderer (Maud, 11 november, text redan färdig) | 1,0–1,3 s väntan, tre gånger (en avbröts) |
-| Öppningsreplik sagd under given | två gånger; fem gånger hann den inte (de rader jag läste, morgonen 11 november) |
-| Svar med kall renderer | 34 s och 43 s |
-| Inläsning av modellen | 61, 72 och 77 s; en gång 339 s |
-| Kostnad | Maud 100 försök 8,78 USD, Vera 30 försök 3,45 USD, Blankurius 7 försök 0,46 USD: 0,07–0,12 USD per försök med varmhållningen inräknad |
-
-Här, på datorns RTX 3060: den varma renderern gör cirka 10 rutor per sekund (dess egen mätning vid start: 10,3; en replik på 58 rutor tog 10 s, en på 77 tog 15 s). Det är under de 24 som filmen spelas i och de 30 Emil kräver, så **strömmande tal i takt går inte på den här datorn**; det går däremot att rendera i förväg, och en replik är klar på 10–15 s. Tal över en giv och över ingången är gjort och granskat (3/5), se ovan.
-
-Uppgivet av dem, inte mätt av mig: en 4090 gör 55–63 rutor per sekund och första munbiten kommer efter 0,4–1,3 s; en varm renderer kostar 0,74–1,10 USD i timmen; kallt tar containern 30–55 s och modellen 31–52 s.
-
-**Egen mätning hos RunPod, 13 november.** Jakob: "varför vi inte bara kan ladda upp allt till vercel på en egen blob … och kör min pod med lipsynk mot henne"; han lade lagrets nyckel i `.env.local` (`BLOB_READ_WRITE_TOKEN`). Det går, och så här:
-
-- Paows talbank (arkivet 30,2 MB och kvittot 1 kB) lades i labbets eget privata Blob-lager `dealer-lab-tal` (Jakobs eget Vercel-team), under `croupier/media/dealers/paow-v2/runtime/moving-bank/<uuid>/`: den mappen kräver renderern.
-- En egen serverless-endpoint, `dealer-lab-tal-paow`, skapades på Jakobs RunPod-konto med samma image som Scoutgamings, utan deras miljövariabler, 0 workers i vila och högst 1. Scoutgamings endpoints rördes inte.
-- Jobbet är det lokala bakjobbet oförändrat plus fältet `bankDownload`: två signerade läsadresser till bankens filer, giltiga en stund. Renderern får aldrig lagrets nyckel.
-- Tre repliker som redan fanns lokalt bakades där.
-
-| | Mätt hos RunPod |
-|---|---|
-| Första jobbet, ingen worker uppe | 264 s väntan medan en worker startade, sedan 36 s körning |
-| Följande två, workern kvar | 22 s och 24 s från skickat till svar (48 och 88 rutor) |
-| Själva ritandet | 32–33 rutor per sekund (83 rutor på 2,6 s); resten av körtiden är att modellen läses in för varje bakjobb |
-| Banken ur lagret | 1,8 s första gången, sedan kvar hos workern |
-| Samma film som här | intyg och mått stämde i alla tre; bild för bild 51–53 dB (PSNR) mot samma replik bakad lokalt, alltså bara avrundning |
-| Kostnad | 0,05 USD för allt (saldot 55,17 före, 55,12 efter) |
-
-Endpointen är raderad efter mätningen; banken ligger kvar i lagret (privat, gratis i den storleken). Skripten ligger utanför repot: `D:/dealer-scratch/tmp/tal/runpod/runpod.mjs` (endpointen) och `mat.ts` (banken, jobbet, kontrollen).
-
-Vad det säger: ett bakjobb hos RunPod (22–24 s) är inte snabbare än den varma renderern här (10–15 s med ledigt kort), eftersom ett bakjobb läser in modellen varje gång, och den första repliken efter en paus kostar fyra–fem minuters väntan. Vinsten med RunPod ligger i den strömmande vägen, där modellen ligger kvar och kortet ritar fortare än filmen spelas (33 rutor per sekund mätt, mot 24 i filmen och 10 här). För förinspelade repliker räcker den här datorn; RunPod behövs när hon ska tala fritt under spel, eller när repliker ska göras medan datorns grafikkort är upptaget.
-
-### Vad som skulle byggas här
-
-1. **Ett munlager i scenen** i stället för en hel talfilm per giv: munrutan (lådan ur `over`, cirka 200 × 170 bildpunkter per bildruta, med ljudet) ritas över den film som spelas, när just den filmen och rutan visas. Då är givfilmen, dess kortspår och Jakobs dom orörda, och samma giv kan spelas med eller utan tal. Munrutorna görs i förväg på den här datorn, en gång per film och replik: cirka 2–4 minuter styck i dag (en bank per film, 80–150 s, och en bakning), utan ny uppläsning.
-2. **Emils tider som regel i spelet:** 600 ms in i ingången, 62 % in i ett korts film, aldrig två repliker samtidigt, och ett utrop som blivit för sent sägs inte.
-3. **Chattens väg:** fasta svar direkt (finns); en ny text renderas varmt och sägs vid nästa vila, med `main`:s regel (ingen giv spelas, annars bara text efter 30 s).
-4. **För fritt tal i takt:** en renderer som strömmar, alltså en 4090 hos RunPod med Emils protokoll, hållen varm medan bordet används. Det är den delen som kostar pengar (cirka 1 USD per timme och bord) och flera dagars bygge, och den finns redan i Scoutgaming.
-
-### Rekommendation
-
-1. Bygg munlagret och förrendera de fasta replikerna över ingången och givarna (väg 1 och 2): det ger tal under given utan GPU i spelet och utan nya filmer att döma.
-2. Låt chatten svara med de fasta svaren, och med en nyrenderad text vid nästa vila när den varma renderern går (15–40 s).
-3. Bygg inte strömmande tal här. När Paow ska tala fritt under spel är det Scoutgamings väg som gäller, och där är den byggd: det är ett skäl att flytta henne dit, inte att bygga den en gång till.
-
-Punkt 3 gäller inte längre: 2026-11-17 gjorde Jakob munnen i realtid på hans egen RunPod till huvudmålet, med en egen körare i stället för Scoutgamings renderer (Munnen: tre sätt, ovan).
+**Mätt.** Den varma renderern här gör cirka 10 rutor per sekund, under filmens 24 och Emils 30: strömmande tal i takt
+går inte på den här datorn, men en replik i förväg är klar på 10–15 s. Ett prov på hans RunPod 13 november (en egen
+serverless-endpoint med Scoutgamings image, raderad efteråt; 0,05 USD) ritade 32–33 rutor per sekund, men varje bakjobb
+läser in modellen (22–24 s per replik, och 264 s för den första efter en paus) och var inte snabbare än den varma
+renderern här. Vinsten med RunPod ligger i den strömmande vägen, där modellen ligger kvar; därför är köraren på hans
+RunPod målet (Munnen: tre sätt). Skripten ligger utanför repot, i `D:/dealer-scratch/tmp/tal/runpod/`.
 
 ## Kvaliteten
 
-Granskningarna från de första talfilmerna natten till 2026-11-13 till Jakobs dom 2026-11-17 står ordagrant i belägget [tal-granskningar](../evidence/tal-granskningar.md): varje omgång och varje prövat recept med poäng och mått, och varför måtten i `LIPS` har sina värden. Här står det som gäller, Jakobs ord om munnen och det som är kvar.
+**Det som gäller.** Paows repliker har den neutrala munnen: rendererns låda lagd in som den är, med grinden men utan
+läpparna och lyftet (`layBack` med `lips: null`; i kvittot är `laidBack.recipe.lips` `null`). Jakob valde den efter
+jämförelsen i spelets storlek (`assets/proofs/paow-mouth-neutral-trio-20261118`) och gjorde den 2026-11-21 till
+standard för alla hennes repliker (BESKED, "Den neutrala munnen är standard för alla Paows repliker"). Alla 25 repliker
+och alla fyra lappar är neutrala, omlagda ur rendererns svar med samma ljud; de nya tagningarna är godkända i hans
+ställe, de ersatta ligger kvar i banken, och blackjack är undantaget (Vad som gäller per dealer). Verktyget lägger
+Paows nästa replik neutral av sig självt (`NEUTRAL_MOUTH` och `recipeOf` i `tools/speech.ts`).
 
-**Det som gäller.** Felen i de första filmerna satt i munnen och var gemensamma för alla filmer, alltså rendererns: läpparna blev tunnare och matta, munnen stängde 5–7 rutor efter ljudet och stod halvöppen i pauser, och tänderna var ett jämnt vitt band. Ovanpå renderingen läggs därför receptet `RECIPE` i `tools/speech.ts`, med måtten i `LIPS`, `layMouth` och `mouthMoves` i `src/speech-plan.ts`, i tre delar. **Grinden**: den ritade munnen tonas in och ut på en enda blandruta, lagd där munnarna är mest lika, och en paus tas bara när hennes egen mun får fyra rutor. **Läpparna**: munnen förstorad 25 % på höjden, läpparnas färg flyttad till hennes, lätt skärpt, och bara det som ligger under hennes överläpp och mellan hennes gipor är ritat. **Lyftet**: i varje ruta där den ritade munnen ligger hel och är öppen lyfts hennes egen överläpp, hel, med öppningen, mest mitt på munnen och ingenting vid giporna, och den ritade munnen flyttas så att dess öppning börjar vid den lyfta läppens kant; en rundad mun räknas som öppen när käken har sjunkit (`LIPS.round`, `jaw`), och en sluten mun är sluten (`LIPS.quiet`, `sunk`). Ett fjärde prov, det ritade flyttat nedåt utan förstoring, gav lägre poäng och togs inte; dess mått står på noll i koden (`drop`, `closed`). Provet med hennes egen underläpp gäller inte (hans dom nedan). Banken har repliker lagda med olika recept; vilket står i varje tagnings kvitto (`laidBack.recipe.lips`). Paows repliker har den **neutrala munnen**: rendererns låda lagd in som den är, med grinden men utan läpparna och lyftet (`layBack` med `lips: null`; i kvittot är `laidBack.recipe.lips` `null`). Jakob valde den i Beslut 2026-11-19 för "Lägg era insatser", "Hej" och "Lycka till" efter jämförelsen i spelets storlek (`assets/proofs/paow-mouth-neutral-trio-20261118`), de gällde i spelet från 2026-11-21 (provet `paow-munbyte-neutral-20261121`), och samma dag i Prov för alla hennes repliker: "den andra av dessa ska in som standard för alla hennes repliker överallt och som standard-läppsynk för PAOW". Alla 25 repliker (de tio i rundan och chattens femton) har nu en neutral talfilm och alla fyra lappar är neutrala, omlagda ur rendererns svar med samma ljud (provet `paow-munbyte-neutral-alla-20261121`). De nya tagningarna är godkända i hans ställe; tagningarna de ersatte ligger kvar i banken, och spelet tar den med högst nummer bland lika dömda (`src/speech-lines.ts`). Undantaget är blackjack: spelet säger `paow-tal-blackjack-sv-04`, som har hans egen dom, tills han dömer den neutrala `…-blackjack-sv-14`. Verktyget lägger Paows nästa replik neutral av sig självt (`NEUTRAL_MOUTH` och `recipeOf` i `tools/speech.ts`); andra dealrar får receptet.
+Andra dealrar får **läppreceptet** (`RECIPE` i `tools/speech.ts`, måtten i `LIPS`, `layMouth` och `mouthMoves` i
+`src/speech-plan.ts`), lagt ovanpå renderingen eftersom rendererns mun var tunnare och matt, stängde sent och visade
+tänderna som ett vitt band:
 
-**Hans ord om munnen.** 2026-11-13, när han såg felet själv: "när lipsynken är aktiv så blir hennes läppar mycket mindre … Det måste vara byggt på den befintliga munnen som hon har." Om proven i `paow-mun`: "Känns inte riktigt där" (bara munnen inlagd, förstorad och i hennes läppars färg), "läpprover var skitbra" (hennes egen överläpp kvar) och strax efter "lite 'clownläppar' i mungiporna" (modellens mun är bredare än hennes); av det kom läpparna ovan. Samma kväll, när han såg dem i spelet: "Denna lipsync är typ sämre, bara underläppen som pratar"; av det kom lyftet. Natten till 2026-11-14, om filmerna med lyftet: "Hon får lixom lite som typ clown-mungipor."; av det kom provet med hennes egen underläpp.
+- **Läpparna:** munnen förstorad 25 % på höjden, läpparnas färg flyttad till hennes, lätt skärpt, och bara det som ligger
+  under hennes överläpp och mellan hennes gipor är ritat.
+- **Lyftet:** i varje ruta där den ritade munnen ligger hel och är öppen lyfts hennes egen överläpp, hel, med öppningen,
+  mest mitt på munnen och ingenting vid giporna; huden mot näsan dras ihop lika mycket, och den ritade öppningen börjar
+  vid den lyfta läppens kant. En rundad mun räknas som öppen när käken har sjunkit (`LIPS.round`, `jaw`), en sluten mun
+  är sluten (`LIPS.quiet`, `sunk`), och växlingsrutan lyfts inte. Lyftet per ruta står i kvittot (`laidBack.lifts`).
+- Lapparnas mått `taper`, `ease`, `heard` och `arc` kom ur blinda jämförelser (omgång 11–14 i belägget); flytten nedåt
+  (`drop`, `closed`) står på noll.
 
-**Kvar** med den neutrala munnen (talbanans blick och mått 2026-11-21, skattat, inte hans öga): munnen är 3–8 % mjukare än med receptet, som skärper, och underläppen blekare i några repliker; svagast ser dubblingen över ingången, "Detsamma" och "Dealern har blackjack" ut. Med receptet, i granskarnas ord (omgång 17–27): underläppen är mattare, suddigare och tjockare än hennes egen och sjunker medan hakan står stilla, tänderna är strimmiga i de största öppningarna, läppen står i sitt högsta läge flera rutor i följd vid stora öppningar och faller på en ruta när repliken slutar, och munnen står öppen i tysta pauser kortare än sex rutor och sluts på en ruta i replikens sista växling.
+Vilket recept en tagning har står i dess kvitto (`laidBack.recipe.lips`).
 
-**Jakobs dom 2026-11-17, och vad den lär.** Han såg de nya filmerna samma kväll som de gick in (proven `paow-mun` och `paow-tal`, och kopian): "är värre än förut", och om giporna: "hennes mungipor måste som sagt med". Filmerna togs ur spelet och receptet gick tillbaka till lyftet med ritad underläpp; måtten för det andra sättet finns kvar i koden som val och används inte. Elva oberoende granskare hade kallat de nya bättre i 30 av 30 par. De dömde rutor i filmens storlek och i förstoring; han ser filmen i rörelse i spelets storlek, och där avgör han. Två saker som granskarna inte fångade och som nästa försök ska mäta först: öppningen blev smalare och visade färre tänder, så talet syns mindre på håll; och giporna rörde sig två till tre bildpunkter, vilket ingen ser. En jämförelse ska därför göras i spelets storlek och i rörelse innan något byts, och hans ja ska finnas före ett byte av alla repliker.
+**Prövat och inte att göra om:**
 
-Hans egen idé samma kväll är nästa steg: "Hon ler i en video, och hon ler faktist väldigt bra och naturligt med munnen. Varför kan inte lipsynken kanske ha leendet som något form av underlag?" I vilofilmen `paow-vila-03-01` öppnar hon munnen på riktigt innan hon ler (ruta 16–48; leendet 48–96), med sina egna tänder och med gipor som rör sig. Tanken är att modellen bara bestämmer när och hur mycket munnen är öppen, och att munnen själv (läppar, tänder, gipor) hämtas ur hennes egen film för varje ruta, inpassad mot näsan och lagd in genom en mjuk ellips. Det är inte byggt.
+- Det ritade flyttat nedåt utan förstoring: lägre poäng.
+- Hennes egen underläpp (2026-11-14 till 17): Jakob dömde det sämre än förut och det togs ur spelet, fast elva
+  granskare hade föredragit det i 30 av 30 par (BESKED, "Hans ja före ett byte av läppar"). Lärdom: öppningen blev
+  smalare och visade färre tänder, och gipornas rörelse på två till tre bildpunkter ser ingen. En jämförelse görs därför
+  i spelets storlek och i rörelse innan något byts, och hans ja finns före ett byte av alla repliker. Måtten står kvar i
+  koden som val och används inte.
+- En annan läppsynkmodell (betald) behövdes inte för mungiporna och är inte gjord.
 
-En annan läppsynkmodell för de fasta replikerna var tänkt som nästa steg om detta inte räckte (en betald beställning; ett första prov med en replik nekades av Runway för saldot 2026-11-13). Den behövdes inte för mungiporna och är inte gjord.
+**Kvar** med den neutrala munnen (talbanans blick 2026-11-21, skattat, inte hans öga): munnen är 3–8 % mjukare än med
+receptet och underläppen blekare i några repliker; svagast är dubblingen över ingången, "Detsamma" och "Dealern har
+blackjack". Med receptet, i granskarnas ord: underläppen är mattare, suddigare och tjockare än hennes och sjunker medan
+hakan står stilla, tänderna är strimmiga i de största öppningarna, läppen står i sitt högsta läge flera rutor i följd
+och faller på en ruta när repliken slutar. Inte löst i hans ögon: mungiporna och överläppen (BESKED, "Inte löst i hans
+ögon").
 
-En sak till är mätt men inte gjord: rösten har cirka 150 ms nästan tyst ljud före orden (mellan −60 och −50 dB, mätt på 25 läsningar) och 110–190 ms efter. Klipps ljudet tätare (−45 dB i början, −50 i slutet) och renderas om, blir repliken 0,3 s kortare och munnen öppnar en ruta före ljudet i stället för två. Det kräver en ny rendering per replik på grafikkortet.
+**Nästa steg** är hans idé: munnen ur hennes egen film (BESKED, "Munnen ur hennes egen film"). I `paow-vila-03-01`
+öppnar hon munnen på riktigt innan hon ler (ruta 16–48; leendet 48–96), med egna tänder och gipor som rör sig. Modellen
+skulle bara bestämma när och hur mycket munnen är öppen, och läppar, tänder och gipor hämtas ur hennes film för varje
+ruta, inpassade mot näsan och lagda genom en mjuk ellips. Inte byggt.
+
+Mätt men inte gjort: rösten har cirka 150 ms nästan tyst ljud före orden (−60 till −50 dB) och 110–190 ms efter.
+Klipps ljudet tätare och renderas om blir repliken 0,3 s kortare och munnen öppnar en ruta före ljudet i stället för
+två; det kräver en ny rendering per replik.
 
 ## Det som medvetet inte är gjort
 
-- Ingen koppling till Scoutgamings tjänster: inga jobb på deras GPU-platser, inget i deras databas eller lager, ingen OpenClaw. Allt körs på den här datorn.
+- Ingen koppling till Scoutgamings tjänster: inga jobb på deras GPU-platser, inget i deras databas eller lager, ingen
+  OpenClaw.
 - Ingen strömmande läppsynk; varje replik är förrenderad, som hel talfilm i vila eller som munlapp över en film.
-- Inga talfilmer över givar i banken: tal över en film går i spelet som munlapp (avsnittet Munlagret). Filmerna som `over` gör är underlaget till lappen och ett prov att titta på.
-- Inget tal över filmer i 30 bildrutor per sekund: en sådan film kan bära tal först när verktyget sträcker ljudet till fyra femtedels fart för renderern (så att den ritar en mun per filmruta) och bygger filmens bank av alla dess rutor; `over` tar i dag bara filmer i 24 (skattat en till två timmar med prov på grafikkortet).
-- Ingen talfilm med den professionella klonen av Paows röst: den är inte färdigtränad (se Rösten).
+- Inga talfilmer över givar i banken: tal över en film går i spelet som munlapp.
+- Inget tal över filmer i 30 bildrutor per sekund (Gränser, i Munlagret).
+- Ingen talfilm med den professionella klonen av Paows röst (Rösten).

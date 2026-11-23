@@ -1,537 +1,304 @@
 # Drift, anslutningar och återbruk
 
-Rutiner och anslutningar. Genomgånget 2026-11-18 mot koden och diskarna; det som rör Vercel och Blob är inte
-kontrollerat mot tjänsterna sedan 2026-11-13. Läget och ägare står i HANDOFF och i banornas lägesfiler (`docs/lage/`),
-beslut per film i `motions/`.
+Rutiner som görs i dag, och det som gäller den här datorn. Läget och ägarna står i HANDOFF och i banornas lägesfiler
+(`docs/lage/`), beslut per film i `motions/`, Jakobs besked i [BESKED](BESKED.md).
 
 ## Identitet och ansvar
 
-| Del | Kanonisk plats / identitet |
+| Del | Plats |
 | --- | --- |
 | Arbetsyta | `C:/Users/jakem/dev/super-feature-sg/dealer` |
 | Publikt GitHub | `Jakeminator123/dealer`, origin `https://github.com/Jakeminator123/dealer.git` |
-| Scoutgaming, läsreferens | `C:/Users/jakem/dev/scoutgaming`, remote `git@github.com:Jakeminator123/scoutgaming.git`; projektet är frikopplat därifrån i nuläget (Jakob 2026-11-23, BESKED) och ändrar inget där |
-| Gammal läsreferens | `D:/dealer-archive/snyggare-dealer`; fullständigt verifierat arkiv, tidigare C:/Users/jakem/dev/super-feature-sg/snyggare-dealer |
-| Ny slask | `D:/dealer-scratch/tmp`, `renders`, `review` |
-| Befintligt arkiv | `D:/dealerlab-archive/snyggare-dealer`; tidigare delarkiv, inte bevis på full projektflytt |
+| Scoutgaming, läsreferens | `C:/Users/jakem/dev/scoutgaming`, remote `git@github.com:Jakeminator123/scoutgaming.git`; projektet är frikopplat därifrån (BESKED, "Frikopplat från Scoutgaming") och ändrar inget där |
+| Gammal läsreferens | `D:/dealer-archive/snyggare-dealer`, fullständigt verifierat arkiv |
+| Slask | `D:/dealer-scratch/tmp`, `renders`, `review` |
+| Äldre delarkiv | `D:/dealerlab-archive/snyggare-dealer`, inte bevis på full projektflytt |
 
-Huvudagenten äger commits, taggar, push och styrdokumenten; vem det är och vem som äger vilka filer står i HANDOFF. En
-skribent per fil; samordna index och commit.
-
-Vad som kräver Jakobs uttryckliga ord (deploy, mediauppladdning, databasändring, Scout-integration) och vad som gäller
-betald generering står i AGENTS, "Det som skyddar Jakob". GitHub-repot är källförvaring, inte en publicerad studio
-eller webbplats.
+Huvudagenten äger commits, taggar och push; vem det är och vem som äger vilka filer står i HANDOFF. Vad som kräver
+Jakobs uttryckliga ord står i AGENTS, "Det som skyddar Jakob". GitHub-repot är källförvaring, ingen publicerad sida.
 
 ## Git och kontroller
 
-Jakob har godkänt automatisk push som agentens avslutningsrutin för färdiga egna ändringar. Flödet är uttrycklig
-staging av egna filer → commit → `npm run check` (hela sviten, en gång) → vanlig push → verifierad fjärr-SHA. Ingen
-bakgrundsbevakare eller automatisk commit av sparade filer används. Andras arbete och Jakobs placeringsutkast följer
-inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och generering.
+Avslutningsrutinen för färdiga egna ändringar (Jakob har godkänt den): uttrycklig staging av egna filer → commit →
+`npm run check` (hela sviten, en gång) → vanlig push → verifierad fjärr-SHA. Ingen bakgrundsbevakare och ingen
+automatisk commit. En push är skild från deploy, mediauppladdning och generering.
 
-- Aktivera en gång per checkout: `npm run hooks:install`. Installationen vägrar skriva över en annan hooksPath.
-  Git-hooks följer med i repot men aktiveras inte av vanlig clone.
-- `.githooks/pre-push` kontrollerar hela intervallet av nya commits, även känsliga filer som lagts till och senare
-  tagits bort. Lokala media/env-mappar, binärt material, filer över 5 MiB och vissa tokenmönster stoppar push.
+- Aktivera en gång per checkout: `npm run hooks:install` (vägrar skriva över en annan hooksPath).
+- `.githooks/pre-push` granskar hela intervallet av nya commits, även känsliga filer som lagts till och sedan tagits
+  bort. Lokala media/env-mappar, binärt material, filer över 5 MiB och vissa tokenmönster stoppar push.
   Mönsterkontrollen är ett extra skydd, ingen garanti att alla hemligheter upptäcks; granska alltid diffen.
-- Testerna avser exakt den commit som pushas. Öppna filer i arbetsmappen stoppar aldrig en push (Jakob 2026-11-23):
-  har commiten ett grönt körkvitto (högst 6 timmar) går pushen direkt, annars ställer kontrollen byggträdet
-  `../dealer-bygg` på commiten och kör `npm run check` där. Det som stoppar är ett fynd i de utgående commitarna eller
-  ett rött test på just den commiten. De öppna filerna rörs inte och följer inte med.
-  Kontrollen kör testfilerna som `test`-skriptet i `package.json` namnger, läst ur den commit som kontrolleras, alltså
-  samma filer som `npm test`: `tools/*.test.ts`, `studio/tests/*.test.ts` och dockans. En ny testfil i de mapparna
-  körs utan att skrivas in någonstans. Högst fyra arbetare, utan Runway, media eller deploy; tester som gör en liten
-  film med FFmpeg hoppas över där FFmpeg saknas. Node: samma huvudversion som i `package.json` räcker.
-- GitHub kör ingen kontroll för det här repot (Jakob 2026-11-18: det som gäller dealer görs lokalt, inte på GitHub;
-  arbetsflödet `.github/workflows/check.yml` är borttaget). Kontrollen är pre-push-hooken och `push-clean`, på den här
-  datorn. Sviten är sedan 2026-11-21 en kärna (BESKED, "Arbetet och dokumenten"): publiceringen, spelets regler,
-  Jakobs domar och val, beställningarna och dokumentens tak. Den behöver varken media, FFmpeg eller
-  `studio/node_modules`. Före PR kör agenten `npm run check`.
-- **Push medan andra skriver.** En vanlig `git push` från huvudträdet går också med andras öppna filer: pre-push
-  testar då commiten i byggträdet. `node tools/push-clean.ts [<commit>] --trad <mapp> [--dry-run]` behövs bara för en
-  annan commit än utcheckad HEAD eller en torrkörning: trädet ställs detached på commiten (förval `main`) och måste vara rent, `npm
-  ci` körs om paketlistan har ändrats eller `node_modules` saknas, sedan `npm run check` (sviten en gång) och `git push
-  origin HEAD:main`, och sist lokal och fjärrens SHA. Verktyget stannar vid första steg som faller med en rad som börjar
-  STOPP och lägger varje stegs logg i `push-logg` bredvid trädet; `--dry-run` gör allt utom `git push`. Trädet är byggträdet
-  `C:/Users/jakem/dev/super-feature-sg/dealer-bygg` (AGENTS), som står kvar mellan gångerna. `push-clean` kräver `--trad`;
-  pre-push använder alltid `../dealer-bygg`. Båda vägrar huvudträdet, ett träd ur ett annat repo och ett byggträd som
-  inte är rent. Det som pushas är incheckade commits, aldrig någons öppna filer.
-  Förkontrollen får fjärrens verifierade `main`-SHA som `--base`, så ett detached träd inte behöver granska hela
-  historiken igen. Pre-push kontrollerar fortfarande Git:s verkliga pushintervall. Sammanfattningen skiljer
-  godkänt, fel, avbrutet, överhoppat och TODO; efter push måste fjärrens SHA motsvara den avsedda committen.
-- **Testerna läser Jakobs arbetsfiler som de är incheckade** (2026-11-18). Hans kortplan (`placements/default.json`)
-  och ett utkast i `data/orders/` som inte är incheckat ändras när han sparar i labbet. Ett test som behöver dem tar
-  dem ur HEAD med `tools/committed.ts`, så att `npm test` säger samma sak i huvudträdet som i ett rent träd. Rött i
-  huvudträdet är därmed ett verkligt fel, inte hans osparade arbete.
-- **Claude Codes inställningar för repot** (2026-11-18, `.claude/settings.json`; Jakob: "glb-modeller och andra stora
-  filer ignoreras för att spara pengar"). Fyra saker står där. Läsning av modeller, film, ljud, arkiv och låsfiler
-  nekas. Läsvakten (`.claude/hooks/read-guard.mjs`) nekar en hel läsning av ett dokument eller register över 32 KB
-  och av en kodfil över 100 KB; en del läses med `offset` och `limit`, högst 400 rader. En chatt komprimeras vid
-  300 000 tokens (`autoCompactWindow`) i stället för vid fönstrets slut, eftersom varje tur läser om hela kontexten.
-  Kontorsskillerna listas bara med namn (`skillOverrides`). En ändring gäller nya sessioner; i en pågående session
-  läses den in med `/hooks`. Sökningens motsvarighet är `.ignore` och `.cursorignore`.
+- Testerna avser exakt den commit som pushas. Öppna filer i arbetsmappen stoppar aldrig en push (BESKED, "Rensa bort
+  regler och låsningar som blockerar"): har commiten ett grönt körkvitto (högst 6 timmar) går pushen direkt, annars
+  ställer kontrollen byggträdet `../dealer-bygg` på commiten och kör `npm run check` där. Det som stoppar är ett fynd i
+  de utgående commitarna eller ett rött test på just den commiten.
+- Sviten är de testfiler `test`-skriptet i `package.json` namnger, läst ur commiten (`tools/*.test.ts`,
+  `studio/tests/*.test.ts` och dockans); en ny testfil där körs utan att skrivas in. Högst fyra arbetare, utan Runway,
+  media, FFmpeg eller deploy. Node: samma huvudversion som i `package.json`. GitHub kör ingen kontroll (BESKED, "Inget
+  körs hos GitHub").
+- **Push medan andra skriver:** en vanlig `git push` från huvudträdet går också med andras öppna filer. `node
+  tools/push-clean.ts [<commit>] --trad <mapp> [--dry-run]` behövs bara för en annan commit än HEAD eller en
+  torrkörning; verktyget skriver ut sina steg och loggar i `push-logg` bredvid trädet. Båda använder byggträdet
+  `C:/Users/jakem/dev/super-feature-sg/dealer-bygg`, som står kvar, och vägrar huvudträdet, ett annat repos träd och ett
+  byggträd som inte är rent. Det som pushas är incheckade commits, aldrig någons öppna filer.
+- **Testerna läser Jakobs arbetsfiler som de är incheckade:** kortplanen och oincheckade utkast i `data/orders/` tas ur
+  HEAD med `tools/committed.ts`, så att rött i huvudträdet är ett verkligt fel och inte hans osparade arbete.
+- **Claude Codes inställningar** (`.claude/settings.json`): nekad läsning av modeller, film, ljud, arkiv och låsfiler;
+  läsvakten (AGENTS, "Läs först"; en kodfil över 100 KB nekas också); komprimering vid 300 000 tokens
+  (`autoCompactWindow`); kontorsskillerna bara med namn (`skillOverrides`). En ändring gäller nya sessioner, i en
+  pågående efter `/hooks`. Sökningens motsvarighet är `.ignore` och `.cursorignore`.
 - **Rött:** stoppa och rätta orsaken (AGENTS, "Regler och spärrar"). **Gult:** åtgärda, eller skriv en kvarvarande
   begränsning kort i `docs/BRISTER.md`.
-- Känd Node-varning: `stripTypeScriptTypes` (`forBrowser` i `tools/lab-routes.ts`, som labbservern, kopians bygge och
-  `tools/lab-modules.test.ts` använder) är ett experimentellt Node-API. Varningen är spårad till detta API och testerna passerar. Den bevaras synlig; utred
-  kompatibiliteten vid ändrat API/Node, utan att stänga av varningar generellt.
-- **Grenar.** `main` är den enda långlivade grenen. En kortlivad gren (till exempel en worktree för ett avgränsat
-  arbete) slås ihop i `main` av huvudagenten och tas sedan bort, lokalt och på GitHub.
-- **Taggar.** Ett läge som ska gå att komma tillbaka till får en tagg på den pushade commiten, satt på utcheckad HEAD
-  (hooken släpper bara igenom den) och aldrig flyttad; media ligger utanför Git och följer inte med. Etapptaggarna
-  `jakob-3` till `jakob-7` (2026-11-11) står kvar i historiken men rutinen används inte längre; det som gäller är
-  återställningsbara versioner.
-- **Återställningsbara versioner** (Jakob 2026-11-13: "Spara dock nuläget efter push som typ "Återställningsbart
-  version 2" för allt är bra"). En tagg på den pushade commiten, och i `D:/dealer-archive/<namn>/` en bundle av hela
-  historiken och en kopia av allt som ligger utanför Git (`assets/`, `output/`, `.runtime/` utan hemligheter), jämförd
-  mot källan med SHA-256 fil för fil. Mappens `LASMIG.md` säger hur läget återställs, och skripten i `kvitton/skript/`
-  körs om med nytt namn för nästa version. Version 1 är `D:/dealer-archive/V2-backup-studio/` (taggen `fore-struktur`,
-  `ce901d6`, 2026-11-12). Version 2 är `D:/dealer-archive/aterstallningsbar-version-2/` (taggen
-  `aterstallningsbar-version-2`, `c9c3cf2`, 2026-11-13: 4 103 mediefiler, 10,7 GB, 0 avvikelser).
-- Fem kanoniska dokument måste finnas: README (start), AGENTS (arbetsregler), HANDOFF (läget nu, ansvar, hinder), SYSTEM
-  (kontrakt) och DRIFT (rutiner, anslutningar). Saknas ett av dem stoppar kontrollen (rött; listan `CANONICAL` i
-  `tools/publication-check.ts`). Längden mäts bara för HANDOFF och banornas lägesfiler i `docs/lage/`, som har tak
-  (`tools/handoff.test.ts`); en ny sida under `docs/` eller en arbetsinstruktion i `tools/`
-  är välkommen när ett ämne behöver en egen. Uppdatera på plats när beteende eller ansvar ändras, och
-  länka till befintliga JSON-register och kvitton i stället för att kopiera dem.
+- Känd Node-varning: `stripTypeScriptTypes` (`forBrowser` i `tools/lab-routes.ts`) är ett experimentellt API; varningen
+  står kvar synlig, och kompatibiliteten utreds när API:t eller Node ändras.
+- **Grenar och taggar:** en kortlivad gren slås ihop i `main` och tas bort, lokalt och på GitHub. Ett läge som ska gå att
+  komma tillbaka till får en tagg på den pushade commiten (satt på utcheckad HEAD, aldrig flyttad) och en
+  återställningsbar version i `D:/dealer-archive/<namn>/`: en bundle av historiken och en SHA-256-jämförd kopia av det
+  som ligger utanför Git, med en `LASMIG.md` om hur läget återställs; skripten i mappens `kvitton/skript/` körs om med
+  nytt namn för nästa version. Version 1: `V2-backup-studio/` (taggen `fore-struktur`); version 2:
+  `aterstallningsbar-version-2/` (taggen med samma namn).
+- Fem dokument måste finnas, annars stoppar kontrollen (`CANONICAL` i `tools/publication-check.ts`): README, AGENTS,
+  HANDOFF, SYSTEM och DRIFT. Tak har bara HANDOFF och lägesfilerna (`tools/handoff.test.ts`).
 
 ## Labbservern och fliken
 
 - `START.cmd` kör `node tools/preview.ts --open`: servern på `http://127.0.0.1:4319` startas vid behov i ett eget
-  fönsterlöst processträd (TEMP och TMP på `D:/dealer-scratch/tmp`) och visar labbets första sida. `STATUS.cmd` och
-  `STOPP.cmd` frågar och stoppar via kontrollkanalen och svarar "inte igång" i stället för att fela. `--restart` byter
-  server utan att fliken stängs.
-- 3D-sidan, Ljud och Modeller ligger i `pages/` och spelets sida i `game/page/`; servern lämnar ut dem på sina
-  rotadresser (`/scene3d.html`, `/sound.html`, `/props.html`, `/game.html`) via kartan `PAGES` i `tools/lab-routes.ts`.
-  `/` och `/lab.html` (också med `?gamla=1`) leder till studion, så att gamla länkar fungerar.
+  fönsterlöst processträd (TEMP och TMP på `D:/dealer-scratch/tmp`). `STATUS.cmd` och `STOPP.cmd` frågar och stoppar
+  via kontrollkanalen; `--restart` byter server utan att fliken stängs; `--ensure` startar den utan att röra en flik.
+- Sidorna i `pages/` och `game/page/` lämnas ut på sina rotadresser (`/scene3d.html`, `/sound.html`, `/props.html`,
+  `/game.html`) via `PAGES` i `tools/lab-routes.ts`; `/` och `/lab.html` leder till studion.
 - **Servern lämnar ut arbetsträdet, och bara modulerna i sin lista** (`SCRIPTS` i `tools/lab-routes.ts`, läst när
-  servern startar). En halvfärdig ändring i en sessions fil syns alltså direkt för alla, Jakobs flik också. En ny
-  modul under `src/` görs i den här ordningen: filen på plats utan att något importerar den, raden i listan,
-  omstart (`node tools/preview.ts --restart`, huvudagenten, i en lucka utan tagning), och först därefter importen.
-  Importen före listan ger 404 för modulen, och då laddar varken spelet eller Scen i någon webbläsare (det har hänt
-  två gånger). `node --test tools/lab-modules.test.ts` läser varje utlämnad moduls importer och säger vilken granne
-  som saknas eller vilken listad modul som inte är skriven, utan webbläsare; kör det efter en ny import och före en
-  tagning.
-- **En inspelning säger varje nyckel som kan ändras.** Scenens förval ändras ibland samma dag som en film spelas in;
-  en tagning som utelämnar en nyckel får det trädet säger i den minut sidan laddas. Skriv ut nycklarna i tagningens
-  adress (`filmEven`, `filmTempo`, `dealerLife`, `cups`, `cards`).
-- **En labbflik** (2026-11-12): varje labbsida håller en ström öppen mot servern (`src/preview-ui.ts`, `/tab/events`).
-  Den nyaste sidan är labbfliken; en äldre stänger sig själv, eller blir tom där webbläsaren vägrar.
-  Redan godkända lokala tester kräver inte nya frågor om
-  omladdning, navigering eller skärmbilder. I vanlig webbläsare återanvänder `node tools/preview.ts --open "<sida>"`
-  den öppna fliken. Öppna aldrig labbadressen med `Start-Process` eller `start` (AGENTS, "Labbservern").
-- Servern står kvar tills den stoppas med `STOPP.cmd` eller `--stop`. Före en länk till Jakob: `node tools/preview.ts
-  --ensure` startar servern om den inte går, utan att öppna eller flytta någon flik. Stäng inte andra projekts
-  servrar, och stoppa aldrig via processnamn eller port.
-- **Studion byggd ur det incheckade** (2026-11-17). Servern lämnar ut huvudträdets `studio/out`, och ett bygge där bär
-  med sig varje sessions halvfärdiga studiofiler till Jakobs flik. `node tools/studio-from-commit.ts [<commit>] --trad
-  <mapp> [--ut <mapp>]` bygger commiten (förval `main`) i ett uttryckligen valt rent arbetsträd (byggträdet) (detached, `npm ci` där en
-  paketlista har ändrats eller `node_modules` saknas, `npm --prefix studio run build`) och byter in resultatet i
-  huvudträdets `studio/out` först när bygget har lyckats: kopian läggs bredvid som `out.ny`, den gamla mappen flyttas
-  undan och den nya in. Ett bygge eller en flytt som faller lämnar det som visas orört, och `studio/out/bygge.json`
-  säger vilken commit som visas. Trädet är byggträdet `C:/Users/jakem/dev/super-feature-sg/dealer-bygg` (AGENTS); `--trad` krävs. Se [lokal arbetsplats](../tools/local-work.md).
-  Push och bygge använder trädet i turordning. Loggarna ligger i `studio-logg` bredvid; ett körkvitto med full SHA
-  sparas i huvudträdets journal efter varje påbörjat bygge. Renhet och indata kontrolleras direkt före och efter
-  bygget; ändrade filer stoppar bytet även om HEAD är oförändrad. Servern startas inte om.
-- **En titt på labbsidor** (2026-11-17): `node tools/lab-look.ts <lista.json> <utmapp> [--vad "<vad>"] [--vem <namn>]`
-  tar en skärmbild per sida i listan (`[{name, url, wait, width, height, clicks, facts}]`, adresserna efter
-  `http://127.0.0.1:4319`) i en egen headless Chrome (egen profil, port 9591), aldrig i Jakobs flik: varje adress får
-  `robot=1`, så sidan tar aldrig labbflikens plats. Den körs under det delade låset för grafikkortet och headless
-  Chrome (`D:/dealer-scratch/tmp/gpu-och-headless.lock`; regeln i [TAL](TAL.md), "Så skickas ett jobb"): väntar medan
-  låset är yngre än 20 minuter, högst 20 minuter, och stannar då med vems det är. Chrome stängs och kontrolleras efteråt,
-  profilen tas bort och låset släpps bara om det fortfarande är körningens. Listan får bara trycka på det som ställer vyn,
-  aldrig det som sparar; labbservern startas inte härifrån.
-- Andra portar på datorn hör till syskonsessioner: 4320 Pamela-filmens sida
-  (`D:/dealer-scratch/tmp/reel/page/serve.mjs`, lånar 4319), 4331 den frysta 3D-scenen v1
-  (`D:/dealer-scratch/tmp/bakgrund-3d/START-BAKGRUND-3D.cmd`), 9391 Jakobs inloggade Meshy-Chrome.
+  servern startar), så en halvfärdig fil syns direkt i Jakobs flik. En ny modul under `src/`: filen på plats, raden i
+  listan, omstart (`--restart`, huvudagenten, i en lucka utan tagning), sist importen; annars ger modulen 404 och varken
+  spelet eller Scen laddar. `node --test tools/lab-modules.test.ts` säger vilken modul som saknas.
+- **En inspelning säger varje nyckel som kan ändras** i tagningens adress (`filmEven`, `filmTempo`, `dealerLife`, `cups`,
+  `cards`), eftersom scenens förval kan ändras samma dag.
+- **En labbflik:** varje labbsida håller en ström mot servern (`/tab/events`); den nyaste är labbfliken och en äldre
+  stänger sig. `node tools/preview.ts --open "<sida>"` återanvänder den öppna fliken; öppna aldrig labbadressen med
+  `Start-Process` eller `start`.
+- **Studion byggd ur det incheckade:** `node tools/studio-from-commit.ts [<commit>] --trad <byggträdet> [--ut <mapp>]`
+  bygger commiten (förval `main`) i byggträdet och byter in den i huvudträdets `studio/out` först när bygget lyckats;
+  `studio/out/bygge.json` säger vilken commit som visas. Loggar i `studio-logg` bredvid trädet; servern startas inte om.
+- **En titt på labbsidor:** `node tools/lab-look.ts <lista.json> <utmapp> [--vad "<vad>"] [--vem <namn>]` tar en
+  skärmbild per sida i en egen headless Chrome (port 9591, `robot=1`, aldrig i Jakobs flik), under det delade låset
+  `D:/dealer-scratch/tmp/gpu-och-headless.lock` (regeln i [TAL](TAL.md), "Så skickas ett jobb"); den väntar högst 20
+  minuter på låset. Listan trycker bara på det som ställer vyn, aldrig det som sparar.
+- Andra portar hör till syskonsessioner: 4320 Pamela-filmens sida, 4331 den frysta 3D-scenen v1, 9391 Jakobs inloggade
+  Meshy-Chrome.
 
-## Arbetsskript utanför repot
+## Headless Chrome och verktyg på D:
 
-Skript, beställningsfiler, liggare, mallar och startprompter ligger kvar på D: tills de förs in i repot eller avvecklas;
-bilder och filmer som används eller kan användas ligger i `assets/` (AGENTS). Sökvägarna gäller under
-`D:/dealer-scratch/tmp/` om inget annat sägs.
-- **Film, vägen före Beställ** (källbevis och förlagor; dagens väg står under Filmbeställning):
-  `filmagent/register-mcp.mjs`; i `filmagent/mcp/` orderfilerna, `clerk-brief.md`, liggaren
-  `bestallningar.json`, mallarna `granska-giv.md`, `granska-vila.md` och `granska-helfigur.md`, `slab-to-bg.mjs` och
-  `spegla.sh`; Paows kopia i `paow/order/` med liggarna `paow/bestallningar-*.json`; äldre startprompter och
-  överlämningar för roller som inte finns längre, arkiverade i `D:/dealer-archive/review-20261113/`.
-- **Bild och mått:** de fem Python-skript som bandet fortfarande kör (`grundbild-21.py`, `skolagning-21.py`,
-  `filmmatt.py`, `identitet.py`, `forlang-plagg.py`) ligger sedan 2026-11-13 i `tools/python/` med miljö och modeller
-  enligt dess README. Efterarbetet i övrigt är porterat till `tools/film-after.ts` och `tools/still-after.ts`. Paows
-  äldre Python-skript i `paow/skript/` (bland andra `plan-till-order-2.py`, `grundbild.py`, `efterarbete.py`,
-  `slutkoll.py`, `lagafilm.py`) är källbevis för hur hans bilder gjordes, inte en arbetsväg; bankräkningen
-  `huvudagent/dokument/rakna.ts`.
-- **Sidor och headless Chrome:** en inspelning eller skärmbild av 3D-sidan belastar Jakobs dator: en körning i taget,
-  kort, aviserad, och den som startar ett fönster stänger det. Spelsidan körs mot 4319 med `spelagent/drive.mjs`
-  (steglistor bredvid); `POST /api/game/new` med en `stacked` sko ger samma runda varje gång. 3D-scenens skärmbild,
-  bildjämförelse och provfilm: `bakgrund-3d/` (`LÄSMIG.txt`). Pamela-filmens regisida: `reel/` (`LASMIG.md`). Spelet med
-  Paow (`game.html?dealer=paow`, eller Casino med Paow vald) spelas in med `huvudagent11/spel/drive.mjs` (en skärmbild per
-  ruta) och `mix.mjs` (rutorna till 30 bilder/s, rösten lagd där talfilmen började).
-- **Meshy:** Jakobs inloggade Chrome-fönster styrs med `spelagent/meshy.mjs` (DevTools på 127.0.0.1:9391, profilen
-  `chrome-meshy` bredvid, som inte får raderas). Inga lösenord hanteras av agenten.
+Sökvägarna gäller under `D:/dealer-scratch/tmp/`. Bilder och filmer som används ligger i `assets/` (AGENTS).
+
+- **Sidor och headless Chrome:** en inspelning av 3D-sidan belastar Jakobs dator: en körning i taget, kort, aviserad,
+  och den som startar ett fönster stänger det. Spelsidan körs med `spelagent/drive.mjs` (en `stacked` sko i `POST
+  /api/game/new` ger samma runda); spelet med Paow spelas in med `huvudagent11/spel/drive.mjs` och `mix.mjs`. 3D-scenens
+  skärmbild och provfilm: `bakgrund-3d/` (`LÄSMIG.txt`); Pamela-filmens regisida: `reel/` (`LASMIG.md`).
+- **Meshy:** Jakobs inloggade Chrome styrs med `spelagent/meshy.mjs` (DevTools på 127.0.0.1:9391); profilen
+  `chrome-meshy` bredvid får inte raderas. Inga lösenord hanteras av agenten.
+- **Källbevis, ingen arbetsväg:** filmvägen före Beställ i `filmagent/` och `paow/order/` (orderfiler, liggare, mallar),
+  Paows äldre Python-skript i `paow/skript/`, och äldre startprompter i `D:/dealer-archive/review-20261113/`.
 
 ## Anslutningar och miljö
 
-| Kontroll | Resultat / bevisgräns |
+| Anslutning | Gäller |
 | --- | --- |
-| GitHub connector + CLI | Båda autentiserade som `Jakeminator123`; repo skapat privat, därefter ändrat till publikt av Jakob och bekräftat 2026-11-10. |
-| Runway connector | Autentiserad workspace `Jakob`, ID `67037521`. Inloggning och skrivschema kontrolleras var för sig; modellistan från `whoami` bevisar inte att klienten kan skicka modellens parametrar. |
-| Runway MCP-server | `https://mcp.runwayml.com/mcp`, appkontots krediter (workspace `Jakob`). Claude har servern som `runway`, Codex som `Runway`; inloggningen tillhör respektive klient och är inte gemensam. Kontrollera den aktuella sessionen före beställning. `https://dev.runwayml.com/mcp/claude` är en annan server (utvecklarportalen), inte för generering. |
-| Direkt API | Ingen kod i repot anropar Runways API. Sedan 2026-11-20 får beställningar gå genom API-nyckeln när MCP-inloggningen saknas ([BESKED](BESKED.md), "API-nyckeln", det som står kvar); klienten och liggaren ligger utanför repot i `.runtime/ankare-2-3-c/api/`. `RUNWAY_API_KEY` ligger i den Git-ignorerade `.env.local` och drar developer-projektets krediter, en annan pott än appkontots; API-svaret ger inget projekt- eller workspace-ID, så nyckeln bevisar inte samma saldo. Kvitto från 2026-11-10: `.runtime/connection-check.json`. |
+| GitHub connector och CLI | Autentiserade som `Jakeminator123`; repot är publikt sedan 2026-11-10. CLI använder sin egen inloggning. |
+| Runway connector | Workspace `Jakob`, ID `67037521`. Inloggning och skrivschema kontrolleras var för sig: modellistan från `whoami` visar inte att klienten kan skicka modellens parametrar. |
+| Runway MCP-server | `https://mcp.runwayml.com/mcp`, appkontots krediter. Claude har den som `runway`, Codex som `Runway`; inloggningen är klientens egen. `https://dev.runwayml.com/mcp/claude` är utvecklarportalen, inte för generering. |
+| Direkt API | När MCP-inloggningen saknas (BESKED, "API-nyckeln"): klienten och liggaren i `.runtime/ankare-2-3-c/api/`, `RUNWAY_API_KEY` i den Git-ignorerade `.env.local`, developer-projektets krediter, en annan pott än appkontots. Ingen kod i repot anropar API:t. |
 
-**Modellkunskap och API (kontrollerat 2026-11-19).** [Runway Dev-pluginen](https://docs.dev.runwayml.com/guides/plugin/)
-ger dokumentation, modellfält, priser och API-jobbdiagnostik; den genererar inte filmer. Cursor installerar med
-`/add-plugin runway-api`; Claude Code med `/plugin install runway-api@claude-plugins-official` och aktuell guides
-inloggning. Installera en gång, inte både plugin och dubbla skills. Detta är ett förslag, ingen utförd installation.
-API-projektet måste identifieras separat före aktivering. MCP-beställningen har redan frysta indata, hashkontroll,
-budgetreservation och jobb-ID; API ger främst en körbar produktionsintegration och fler exponerade fält, inte automatiskt
-bättre rörelser. En framtida API-transport ska använda samma order/kvitto och aldrig återförsöka ett osäkert köp.
-Codex skickade denna dag Kling 4 med start/slut direkt genom sin MCP. Mellanbilder finns i
-[Klings API-kontrakt](https://docs.dev.runwayml.com/openapi.json), men saknas i aktuellt `generate_video`-schema här.
-Skicka dem inte som vanliga referensbilder och påstå att de styr en viss tidpunkt. Modellråd: handbokens §3.8.
-
-Om Codex-klientens skrivschema saknar Kling 4 eller `referenceVideos` kan huvudagenten använda den befintliga,
-inloggade Claude-klientens `runway`-MCP. Kontrollera `claude mcp get runway`, därefter `whoami` och det faktiska schemat.
-Avgränsa hjälparen till Runway, `whoami` och ett enda godkänt genereringsanrop; fryst request går via stdin, privata
-resultat till `.runtime/`. Samma `order-put begin/placed` gäller, med `--via mcp` (eller `--via api` genom API-klienten).
-Jämför verktygsanropets argument med ordern, spara task-id direkt och gör aldrig en automatisk omtagning. Kopiera inga
-OAuth-uppgifter mellan klienterna.
-
-V6-källan och proven från 2026-11-10 (P7, P6, rosa) gjordes med `wan3` genom developer-API:t; vilken modell en film har
-läses i dess kvitto, inte i filnamnet. [Promptjämförelsen](../evidence/prompt-comparison.json) visar skillnaden: det gamla
-centerklippet byter hand (LH→RH), P7-provet begär samma vänsterhand. Återanvänd inte centerinstruktionen som om den
-beskrev en vänsterhandsutdelning till P7.
-
-Nycklar skrivs aldrig i Git, manifest, dokument eller loggar. Blob/databas-/andra inloggningsuppgifter kopieras inte
-utan ett konkret integrationsbehov. GitHub CLI använder sin befintliga inloggning; ingen tokenfil behövs här.
-
-Tre underlag hålls isär: V6:s sexsekunders centerkälla, den äldre vita 12-sekundersbanken som byggdes till cirka tre
-minuter, och den nyare gul/blå banken med en komplett 119,933-sekunderssekvens. [Historiska
-promptar](../evidence/historical-p4-generation-inputs.json) och [nyare
-sekvens-/källgranskning](../evidence/sequence-reuse-audit.json) binder rätt källa till rätt metod.
-`tools/restore-sequence-review.ts` återställer den nyare 17-kortsfilmen byteidentiskt och klipper dess 16-kortsprefix
-vid ruta 3296, i två format, utan ny API-generering.
-
-`.env.local` laddas inte automatiskt av befintliga Node-kommandon. Verktyg som behöver den körs uttryckligen med
-`node --env-file=.env.local <verktyg.ts>`. `DEALER_SCRATCH_ROOT` och `DEALER_REMOTE_GENERATION_ENABLED` står i filen men
-ingen kod läser dem: flaggan spärrar ingen generering. Spärren är `enabled` i `data/order-policy.json`.
-
-Sökning i Codex på Windows: välj `rg.exe` vars sökväg matchar `*\OpenAI\Codex\bin\*\rg.exe` (`Get-Command rg.exe -All`)
-och lägg dess mapp först i processens PATH, annars `Select-String`; ändra inte bestående PATH.
+- Saknar Codex-klientens schema Kling 4 eller `referenceVideos` kan huvudagenten använda Claude-klientens `runway`-MCP:
+  `claude mcp get runway`, `whoami`, det faktiska schemat, och ett enda godkänt anrop med samma `order-put begin/placed`
+  (`--via mcp`, eller `--via api`). Spara task-id direkt, gör aldrig en automatisk omtagning, och kopiera inga
+  OAuth-uppgifter mellan klienterna.
+- Mellanbilder finns i [Klings API-kontrakt](https://docs.dev.runwayml.com/openapi.json) men inte i `generate_video`-schemat
+  här; skicka dem inte som referensbilder. Vilken modell en film har läses i dess kvitto, inte i filnamnet. Modellråd:
+  handbokens §3.8. Runways Dev-plugin (dokumentation och priser,
+  ingen generering) är föreslagen men inte installerad.
+- Nycklar skrivs aldrig i Git, manifest, dokument eller loggar. Blob-, databas- och andra inloggningsuppgifter kopieras
+  inte utan ett konkret integrationsbehov.
+- `.env.local` laddas inte automatiskt: kör verktyget med `node --env-file=.env.local <verktyg.ts>`.
+  `DEALER_SCRATCH_ROOT` och `DEALER_REMOTE_GENERATION_ENABLED` läses inte av någon kod; spärren är `enabled` i
+  `data/order-policy.json`.
+- Pamelas äldre banker: [historiska promptar](../evidence/historical-p4-generation-inputs.json) och
+  [sekvensgranskningen](../evidence/sequence-reuse-audit.json) binder källa till metod;
+  `tools/restore-sequence-review.ts` återställer 17-kortsfilmen byteidentiskt utan ny generering.
+- Sökning i Codex på Windows: lägg mappen för det `rg.exe` som matchar `*\OpenAI\Codex\bin\*\rg.exe` först i
+  processens PATH, annars `Select-String`; ändra inte bestående PATH.
 
 ## Filmbeställning
 
-Ett jobb är en enda handling mellan två ankare: en giv slutar vid verklig landnings- eller släppruta, en retur börjar
-från den (ankarregeln och skarvregeln i SYSTEM). Hela vägen för en ny dealer, med stationer, format, kommandon och vem
-som beslutar: [löpande bandet](../tools/dealer-line.md). Hur en beställning komponeras och vad som har hållit och
-fallit: [handboken](../tools/film-prompting.md); hur den läggs, hämtas och efterarbetas:
-[beställningsagenten](../tools/order-clerk.md); hur en film granskas: [granskningen](../tools/film-review.md). Nya fynd
-förs in i handbokens tabeller, inte här. Vad som skickades och hur det gick: studions vy Protokoll
-(`node tools/order-ledger.ts`).
+Ett jobb är en handling mellan två ankare (ankarregeln och skarvregeln i SYSTEM). Vägen för en ny dealer:
+[löpande bandet](../tools/dealer-line.md); hur en beställning komponeras: [handboken](../tools/film-prompting.md); hur
+den läggs och hämtas: [beställningsagenten](../tools/order-clerk.md); granskningen: [film-review](../tools/film-review.md).
+Vad som skickades och hur det gick: studions Protokoll (`node tools/order-ledger.ts`).
 
-- **En väg: Beställ.** Utkast i Bordets Beställ (`data/orders/<id>.json`), godkänt med Jakobs klick eller av
-  huvudagenten på hans uppdrag (`tools/order-approve.ts`) inom `data/order-policy.json`, lagt och hämtat av en
-  beställningsagent genom Runways MCP-server på appkontot, eller genom API-nyckeln när MCP-inloggningen saknas (se
-  Direkt API ovan). Betalda anrop utanför Beställ rapporteras till huvudagenten
-  med belopp (AGENTS, "Det som skyddar Jakob").
-- **Kvitton från äldre vägar** (API-jobben i `data/clip-jobs.json`, orderfilerna och liggarna på D:) är källbevis och
-  står kvar; ett osäkert anrop beställs aldrig om, och `request.lock` eller SUBMITTING tas aldrig bort. Pamelas ankare
-  byggdes med `tools/build-anchor.ts` ur riktiga videorutor (bara kortpixlar ändrade, mot fryst plan). Bakgrund:
-  [metodgranskningen](../evidence/generation-method-audit.json) och
-  [API-/MCP-kontraktet](../evidence/runway-production-contract.json).
+- **En väg: Beställ.** Utkast i `data/orders/<id>.json`, godkänt med Jakobs klick eller av huvudagenten på hans uppdrag
+  (`tools/order-approve.ts`) inom `data/order-policy.json`, lagt och hämtat av en beställningsagent. Betalda anrop
+  utanför Beställ rapporteras till huvudagenten med belopp (AGENTS, "Det som skyddar Jakob").
+- **Kvitton från äldre vägar** (`data/clip-jobs.json`, liggarna på D:) är källbevis och står kvar; ett osäkert anrop
+  beställs aldrig om, och `request.lock` eller SUBMITTING tas aldrig bort.
 - **Inkorgen:** en tagning från en order förs in med `review.inbox: true` och spelas bara där steget saknar annan film
-  tills Jakob har dömt den (`src/clip-graph.ts`); hans dom tar bort flaggan. En film som inte förs in men kan användas
-  kopieras till `assets/films/<dealer>/<namn>/source.mp4` med `receipt.json` och får rollen film i
-  `data/media-roles.json`.
+  tills Jakob har dömt den. En film som inte förs in men kan användas läggs i `assets/films/<dealer>/<namn>/` med
+  `receipt.json` och rollen film i `data/media-roles.json`.
 
 ### Lärdomar som gäller
 
-Det som gäller själva beställningen (bilder, text, modell, längd, tagningar, efterarbete) står i handboken och i
-beställningsagentens instruktion; här står det som rör banken, uppspelningen och helkroppen.
+Det som gäller själva beställningen står i handboken och beställningsagentens instruktion; här det som rör banken.
 
-- **Givar slutar på sitt ankare** (sista rutan 17–47 px från landningsankaret vid kvartsstorlek), så returer från
-  ankarbilden passar alla tagningar, och giv och retur kan beställas samtidigt.
-- **Skarvar.** Varje klipp har ljusare grönt i sina första rutor och ett nivåhopp i de två sista: mät och klipp tre
-  rutor in och två före slutet. Frysta rutor förekommer inne i rörelser och räknas vid granskning.
-- **Helkropp.** In- och utgång beställs med en ritad ljusare grön bordsskiva ("flat cut-out shape with no depth"; ordet
-  "block" gav en låda), som målas i varje rutas bakgrundsgröna efteråt (`mcp/slab-to-bg.mjs`). En verklig stående ruta
-  som slutbild låser hennes storlek; att hon sätter sig beställs som egen del. Bankens ruta slutar cirka 80 punkter över
-  hennes hjässa (stående cirka 240 punkter ovanför), därför helkroppsfilm med egen ruta (`motion.frame`, SYSTEM).
-- **Ansiktsuttryck** gick inte med text, men med grundrutan där bara ansiktet bytts mot en redigerad stillbild; filmen
-  blir ditvägen följd av samma rutor baklänges (`mcp/spegla.sh`).
-- **Båda händerna** går att få om slutbilden inte låser vilken hand som lade kortet (`pamela-p2-c1-handover-01`). I
+- **Givar slutar på sitt ankare** (sista rutan 17–47 px från landningsankaret vid kvartsstorlek), så att returer från
+  ankarbilden passar alla tagningar.
+- **Skarvar:** varje klipp har ljusare grönt i sina första rutor och ett nivåhopp i de två sista; klipp tre rutor in och
+  två före slutet. Frysta rutor inne i rörelser räknas vid granskning.
+- **Helkropp:** in- och utgång beställs med en ritad ljusare grön bordsskiva ("flat cut-out shape with no depth"), som
+  målas i bakgrundens grönt efteråt; en verklig stående ruta som slutbild låser hennes storlek, och helkroppsfilmen har
+  egen ruta (`motion.frame`, SYSTEM).
+- **Ansiktsuttryck** går inte med text, men med grundrutan där bara ansiktet bytts, spelad dit och baklänges tillbaka.
+- **Båda händerna** går att få om slutbilden inte låser vilken hand som lade kortet (`pamela-p2-c1-handover-01`); i
   givfilmerna har texten hittills sagt att den andra handen vilar.
 - **Föremål** som inte finns i första bilden växer fram ur filten; en mugg måste finnas i bilden från början.
-- **Kostnad för en hel dealer:** skattat 2026-11-12 cirka 5 000 krediter för en uppsättning med ett utdelningssätt (16
-  kort och omtagningar); Paow hade 2026-11-13 kostat cirka 5 400 utan att vara färdig (räknat ur kvittona).
+- **Kostnad för en hel dealer:** skattat cirka 5 000 krediter för en uppsättning med ett utdelningssätt (16 kort och
+  omtagningar); Paow hade 2026-11-13 kostat cirka 5 400 utan att vara färdig (räknat ur kvittona).
 
 ## Den låsta kopian på nätet
 
-Studion som låst kopia för Jakobs chef (Jakob 2026-11-12 och 2026-11-13: lösenordet (ordet skrivs inte ut här), Scen och Casino med Paow).
-Allt går att läsa och spela, inget går att ändra, och inga kostnader visas. Kopian är den enda sidan på nätet.
+Studion som låst kopia: allt går att läsa och spela, inget går att ändra, och inga kostnader visas. Det är den enda
+sidan på nätet (BESKED, "En sida på nätet"); gamla labbet, dess Vercel-projekt och Blob-lager är raderade, och äldre
+register bär adresser dit som inte längre svarar (sista kvittot: [public-release](../evidence/public-release.json)).
 
-- **Gamla labbet på nätet är nedtaget** (Jakob 2026-11-23, [BESKED](BESKED.md#kopian-och-nätet)): Vercel-projektet
-  `dealer` i teamet `scoutgaming` med adresserna `dealer-delta-eosin` och `dealer-scoutgaming` är raderat, liksom dess
-  Blob-lager `dealer-media` och verktyget som laddade upp dit. Före raderingen låg alla 24 filmer på lagret också på
-  datorn eller i arkivet på D:, med samma SHA-256. Äldre register bär adresser dit som inte längre svarar (`publicReview`
-  i Pamelas filer under `motions/`, kvittona i `evidence/`); det sista kvittot är
-  [evidence/public-release.json](../evidence/public-release.json).
-- **Adress:** `https://dealer-lake.vercel.app`, den enda produktionsadressen för `dealer-studio`; projektets egen
-  (`dealer-studio-one`) togs bort 2026-11-23 på Jakobs ord. Dörrarna `/casino` (spelet ensamt) och `/trailer` (filmen
-  före spelet och sedan Paows casino) står kvar, på hans ord samma dag. Lösenordet skrivs inte ut här (nytt sedan
-  2026-11-18; det gamla nekas). Efter lösenordet kommer studion med vänsterspalten: Bordet (Kortplan, Scen, Råfilm och Efterarbete; inget sparas
-  och inget beställs), Karta, Granska (med Prov, tom i kopian sedan 2026-11-21), Material, Casino och Önskemål. Vilken commit kopian bär säger
-  `/meta.json` på kopian, och läget står i [lägesfilen](lage/spelet.md).
-- **Vercel:** team `jakeminator123s-projects` (Pro), projekt `dealer-studio`, utan Git-
-  koppling: varje version läggs upp färdigbyggd. Projektets och teamets id står bara i länken
-  `.runtime/studio-deploy/.vercel/project.json` (utanför Git). Skydd: Vercels standard (förhandsversioner och de genererade
-  deployadresserna bakom Vercels egen inloggning; produktionsadresserna öppna fram till kopians eget lås).
-- **Blob:** `dealer-studio-media`, public, `arn1`, kopplad till `dealer-studio`. Storens id står bara i kvittot (nedan) och
-  skrivs inte i repot: objekten heter efter sitt innehåll (`studio/<sha256>.<ext>`), filmernas sha256 står i `motions/`, och
-  med id:t går varje film att hämta direkt ur den publika storen utan lösenord. Ett objekt skrivs aldrig över. Låset
-  hämtar en film ur Blob med det intervall (Range) som webbläsaren frågar efter och svarar privat, så webbläsaren ser
-  aldrig Blob-adressen och ingen CDN behåller filmen. En omskrivning till Blob (`DEALER_MEDIA_MODE=rewrite`) används inte: mätt 2026-11-13 behöll Vercels CDN då den
-  första delen av en film för dess adress och lämnade samma 1 000 byte till varje senare fråga, så filmerna spelade inte.
-  Projektet har `DEALER_MEDIA_MODE=proxy`, och från `cloud/studio/gate.ts` efter 2026-11-13 är det förvalet.
-- **Låset:** miljövariablerna `DEALER_LOSEN` (flera lösenord skiljs med komma; orden skrivs inte ut här) och `DEALER_KAKNYCKEL` (48
-  slumptecken, gjorda i röret till `vercel env add` och aldrig nedskrivna), Production, känsliga (går inte att läsa
-  tillbaka). Nytt lösenord: `vercel env rm DEALER_LOSEN production` och `printf '<ord>' | vercel env add DEALER_LOSEN
-  production`, båda med `--cwd .runtime/studio-deploy`, sedan en ny deploy; alla gamla inloggningar slutar då gälla.
-- **Ett lösenord för bara spelet** (Jakob 2026-11-13: en länk "för någon som bara vill spela", med ett eget lösenord
-  "för bara casinot"): miljövariabeln `DEALER_LOSEN_SPEL`, i samma form som `DEALER_LOSEN` och satt på samma sätt (`printf
-  '<ord>' | vercel env add DEALER_LOSEN_SPEL production --cwd .runtime/studio-deploy`, sedan en ny deploy). Ordet skrivs
-  inte i repot. Adressen `/casino` leder till spelsidan ensam, utan studion runt (`GAME_HOME` i `cloud/studio/gate.ts`:
-  Casinos sparade visning med dess perspektiv, Casinos bord och Paow; sedan 2026-11-21, före det hans länk från 13/11),
-  och inloggningssidan heter då Blackjack. Med ett
-  sådant lösenord släpps spelsidan och det den läser igenom (moduler, banken, filmer, spår); studion, varje annan sida och
-  boten leder tillbaka till spelet eller är stängda. Ett ord som står i båda variablerna öppnar allt. Att byta eller ta
-  bort variabeln avslutar bara spelets inloggningar; de andra står kvar. Publiceringens kontroll prövar det med
-  `DEALER_LOSEN_SPEL_PROV=<ordet>` framför kommandot. En andra dörr, `/trailer`, leder till spelet med filmen före
-  (`TRAILER_HOME`: `intro=noir-3`, rummet Monaco med rörelse, bordet och Paow; SYSTEM, "En film före spelet"), bakom
-  samma lås och med båda sorters lösenord. Trailerproven i Prov går fortfarande inte upp (`blocked.folders` i
-  `data/studio-release.json`); bara filmen före spelet gör det, på Jakobs ord 2026-11-13 kl. 21.23.
-- **Ett fel som bara syns på en telefon:** be om en skärmbild av `/trailer?diagnos=1` eller `/casino?diagnos=1`
-  (dörrarna bär ordet vidare till spelet). Sidan skriver då på bilden vilken webbläsare det är, om bildytan har
-  förlorats, sidans senaste fel och vad filmkön håller och senast gjorde (SYSTEM, "Filmkön"). Ingen av oss har en
-  telefon att pröva på, och en inspelning i headless Chrome visar inte vad en telefon gör; för det som en telefon kan
-  tänkas neka finns en attrapp på slaskdisken (`D:/dealer-scratch/tmp/huvudagent11/look/strikt-koll.mjs`).
-- **Öppen utan lösenord** (Jakob 2026-11-14: "Se till att den inte är lösenordsskyddad", "ta bort lösenordet "[ordet]" för
-  sidan nu"): miljövariabeln `DEALER_OPPEN` i projektet. `allt` gör hela kopian läsbar utan lösenord, `spel` bara spelet
-  med dörrarna `/casino` och `/trailer` (studion frågar då fortfarande efter lösenordet), och utan variabeln, eller med
-  något annat ord, är kopian låst som förut (`openOf` i `cloud/studio/gate.ts`). Bara läsning öppnas: boten och
-  önskemålslådan skriver och kostar per fråga, så de kräver alltid hela kopians lösenord, och inloggningen finns kvar
-  för dem. Varje svar bär fortfarande `X-Robots-Tag: noindex, nofollow`. Sedan 2026-11-14 står den på `allt`. Låsa igen:
-  `vercel env rm DEALER_OPPEN production --cwd .runtime/studio-deploy` och en ny deploy; bara spelet: sätt den till
-  `spel` på samma sätt som lösenorden. Publiceringens kontroll får veta vad den ska vänta sig med
-  `DEALER_OPPEN_PROV=allt` (eller `spel`) framför kommandot.
-- **Boten** följer med men har ingen `BOT_BLOB_TOKEN`: den svarar att den saknar lagring och anropar ingen modell, så den
-  kostar inget. Att slå på den (egen privat store, nyckel, tak) är Jakobs beslut.
-- **Vad som går upp** (Jakob 2026-11-21: på nätet "ska endast filer som används i casinot finnas + filer som kan behövas
-  och testas med typ i och under fliken 'Scen & Bord'") avgör spelet: för varje dealer i `casino.dealers` i
-  `data/studio-release.json` de filmer spelet spelar (varje stegs tagning, vilorna och gesterna, talfilmerna det säger),
-  och därtill scenens egna filmer som dess moduler nämner (rummens liv och filmen före spelet vid `/trailer`). Filmen före
-  spelet är en egen grupp, `ingång`, i fillistan och i byggets summering, skild från dealrarnas material (Jakob
-  2026-11-21: "lite separerat från annat dealermaterial"); den är v4 av noir-trailern i sin senaste inspelning. Urvalet görs
-  på ett ställe, `pickTakes` i `tools/studio-freeze.ts`; bygget stannar om spelet i kopian skulle välja en annan tagning
-  än i labbet. `variants` i registret (av som förval) tar också med de varianter av spelets steg som spelet aldrig väljer
-  själv; han väljer det vid en publicering (Jakob 2026-11-21: han är "rädd för att förlora" dem, och ingenting raderas på
-  datorn). Kartans runda, tagningar som spelet inte spelar och provmapparna (`proofs`, tom sedan 2026-11-21) stannar på
-  datorn: kopian listar varje tagning med sin dom, utan film när filmen inte går upp, och ett steg utan film visar ingen
-  film i Karta. Räknat ur filerna 2026-11-21: 156 filer och 1,40 GB utan varianter, 170 filer och 1,52 GB med (före: 223
-  filer, 1,64 GB). Registret håller också förval, spärrade namn och gränser; `tools/build-studio-snapshot.ts` bygger
-  kopian och skriver tabellen. I kopian spelar spelmotorn i
-  `game/` i själva spelsidan (`cloud/studio/game-local.ts`), eftersom det inte finns någon server som håller ett spel.
-  Munlapparna i `data/speech-patches.json` följer med som statiska filer (post, remsa, ljud), var och en kontrollerad mot
-  registrets och postens sha256; en lapp vars film inte går upp eller vars filer inte stämmer lämnas ute, och spelet säger
-  då repliken med talfilmen. Vercel lämnar ut `line.wav` som `audio/wave`.
-- **Tillståndet ligger utanför Git, i Jakobs utcheckning:** `.runtime/studio-deploy/` (länken `.vercel/project.json`,
-  `build.json`, `media-plan.json`, trädet som läggs upp), `.runtime/studio-blob/.env.local` (storens nyckel och inget
-  annat) och `.runtime/studio-blob/studio-media.json` (kvittot med varje films Blob-adress). Kvittot hör aldrig hemma i
-  Git: repot är publikt, och adresserna skulle öppna varje film utan lösenord. Nyckeln `BLOB_READ_WRITE_TOKEN` i
-  utcheckningens egen `.env.local` hör till `dealer-lab-tal` (talbanan) och används aldrig här;
-  `tools/sync-studio-media.ts` vägrar den och varje nyckel i miljön. Kör aldrig `vercel blob …` eller `vercel env …` i
-  repots rot.
+- **Adress:** `https://dealer-lake.vercel.app`, den enda produktionsadressen för `dealer-studio`, med dörrarna `/casino`
+  (spelet ensamt) och `/trailer` (filmen före spelet, sedan Paows casino). Lösenordet skrivs inte ut här. Vilken commit
+  kopian bär säger `/meta.json`; läget står i [lägesfilen](lage/spelet.md).
+- **Vercel:** team `jakeminator123s-projects` (Pro), projekt `dealer-studio`, utan Git-koppling: varje version läggs upp
+  färdigbyggd. Projektets och teamets id står bara i `.runtime/studio-deploy/.vercel/project.json` (utanför Git).
+- **Blob:** `dealer-studio-media`, public, `arn1`. Storens id står bara i kvittot och skrivs inte i repot: objekten
+  heter efter sitt innehåll (`studio/<sha256>.<ext>`), och med id:t går varje film att hämta utan lösenord. Ett objekt
+  skrivs aldrig över. Låset hämtar filmen med webbläsarens intervall (Range) och svarar privat
+  (`DEALER_MEDIA_MODE=proxy`, förvalet i `cloud/studio/gate.ts`); omskrivning till Blob används inte, eftersom Vercels
+  CDN då lämnade samma första 1 000 byte till varje fråga.
+- **Låset:** `DEALER_LOSEN` (flera lösenord skiljs med komma) och `DEALER_KAKNYCKEL` (48 slumptecken, aldrig nedskrivna),
+  Production, känsliga. Nytt lösenord: `vercel env rm DEALER_LOSEN production` och `printf '<ord>' | vercel env add
+  DEALER_LOSEN production`, båda med `--cwd .runtime/studio-deploy`, sedan en ny deploy; gamla inloggningar slutar gälla.
+- **Lösenord för bara spelet:** `DEALER_LOSEN_SPEL`, satt på samma sätt; ordet skrivs inte i repot. Det öppnar `/casino`
+  och `/trailer` och det de läser (`GAME_HOME` och `TRAILER_HOME` i `cloud/studio/gate.ts`); studion, andra sidor och
+  boten leder tillbaka till spelet. Ett ord i båda variablerna öppnar allt; att byta variabeln avslutar bara spelets
+  inloggningar. Kontrollen prövar det med `DEALER_LOSEN_SPEL_PROV=<ordet>` framför kommandot.
+- **Ett fel som bara syns på en telefon:** be om en skärmbild av `/trailer?diagnos=1` eller `/casino?diagnos=1`; sidan
+  skriver webbläsaren, förlorad bildyta, senaste fel och filmköns läge (SYSTEM, "Filmkön"). En headless-inspelning
+  visar inte vad en telefon gör; en attrapp för det en telefon kan neka: `huvudagent11/look/strikt-koll.mjs` på slasken.
+- **Öppen utan lösenord** (BESKED, "Kopian är öppen för läsning"): `DEALER_OPPEN=allt` öppnar hela kopian för läsning,
+  `spel` bara dörrarna, annat eller ingen variabel låser (`openOf` i `cloud/studio/gate.ts`). Boten och önskemålslådan
+  kräver alltid hela kopians lösenord, och varje svar bär `X-Robots-Tag: noindex, nofollow`. Den står på `allt`. Låsa
+  igen: `vercel env rm DEALER_OPPEN production --cwd .runtime/studio-deploy` och en ny deploy. Kontrollen får veta vad
+  den ska vänta sig med `DEALER_OPPEN_PROV=allt` (eller `spel`).
+- **Boten** följer med utan `BOT_BLOB_TOKEN`: den svarar att den saknar lagring och kostar inget. Att slå på den är
+  Jakobs beslut.
+- **Vad som går upp** (BESKED, "Media på nätet"): det spelet spelar för varje dealer i `casino.dealers` i
+  `data/studio-release.json`, scenens egna filmer och filmen före spelet (gruppen `ingång`). Urvalet görs i `pickTakes`
+  (`tools/studio-freeze.ts`), och bygget stannar om kopian skulle välja en annan tagning än labbet. `variants` tar med
+  spelets oanvända varianter när han väljer det. Kartans runda, övriga tagningar och provmapparna stannar på datorn,
+  och trailerproven hålls ute med `blocked.folders` (BESKED, "Trailrar hålls utanför kopian").
+  Munlapparna (`data/speech-patches.json`) följer med när deras filer stämmer mot registret.
+- **Tillståndet ligger utanför Git, i Jakobs utcheckning:** `.runtime/studio-deploy/` (länken, `build.json`,
+  `media-plan.json`, trädet som läggs upp), `.runtime/studio-blob/.env.local` (storens nyckel och inget annat) och
+  `.runtime/studio-blob/studio-media.json` (kvittot med varje films Blob-adress). Kvittot hör aldrig hemma i Git: repot
+  är publikt, och adresserna skulle öppna varje film utan lösenord. `BLOB_READ_WRITE_TOKEN` i utcheckningens egen
+  `.env.local` hör till talbanan och används aldrig här; `tools/sync-studio-media.ts` vägrar den. Kör aldrig `vercel
+  blob …` eller `vercel env …` i repots rot.
 
 ### Publicera igen från en nyare commit
 
+Bara på Jakobs uttryckliga ord (BESKED, "En publicering görs bara på hans uttryckliga ord").
+
 ```
-node tools/publish-studio.ts                         planen: commit, arbetskopia, stegen; inget körs
-DEALER_LOSEN_PROV=<ordet> node tools/publish-studio.ts --kor
+node tools/publish-studio.ts --worktree <rent träd>                          planen; inget körs
+DEALER_LOSEN_PROV=<ordet> node tools/publish-studio.ts --worktree <rent träd> --kor
 ```
 
-`--kor` bygger `origin/main` (eller `--commit <ref>`) i en egen ren arbetskopia,
-`--worktree <valt rent arbetsträd>` (krävs; detached, `npm ci` när en låsfil har ändrats, `assets/` som en koppling
-till Jakobs media), med arbetskopians egen labbserver på 4341. Den startas oförändrad med en startmodul som flyttar porten
-och låter bli att städa D:; labbservern på 4319 startas, stoppas och frågas aldrig, utom om en mediefil lämnas ut. Sedan:
-bygget, uppladdning av de filmer och bilder som är nya (oförändrade objekt skickas inte igen), bygget en gång till så att
-låset får adresserna, `vercel deploy --prebuilt --prod` från `.runtime/studio-deploy` och kontrollen utifrån: utan kaka ska
-varje sida, svar och film ge inloggningssidan; med `DEALER_LOSEN_PROV` loggar den in och prövar första sidan, en film med
-Range och att kopian säger rätt commit. Bygget stannar om arbetskopian inte är ren, om en modul har en maskinsökväg eller
-ett spärrat namn, om klippbanken ändras under bygget eller om Blob-delen går över gränsen i registret. En första
-publicering tar cirka 40 minuter, mest uppladdningen (1,4 till 1,5 GB); en senare med få nya filmer cirka 6, varav 3 för
-studions npm-paket.
+Planen visar commit, arbetskopia och stegen, och `--kor` kör dem: bygget av `origin/main` (eller `--commit <ref>`) i det
+valda rena trädet med en egen labbserver på 4341, uppladdning av det som är nytt, deploy och kontrollen utifrån.
+Labbservern på 4319 startas och stoppas aldrig. Samma träd gäller för planen och körningen, och inget annat bygge körs
+i det under tiden. `--kor --bara-bygge` bygger bara lokalt; `--utan-deploy` laddar upp men lägger inte ut. En första publicering tar cirka 40 minuter, en senare med få nya filmer cirka 6.
 
-`--worktree <absolut sökväg>` återanvänder ett befintligt rent arbetsträd av Dealer. Huvudträdet och andra repos
-nekas. Använd samma val för planen och körningen; kör inget annat bygge i det trädet under publiceringen.
-`--kor --bara-bygge` gör bara det lokala snapshotbygget och dess medieplan. Inga media laddas upp och ingen deploy görs;
-använd planen för att granska exakt publiceringsinnehåll först. `--utan-deploy` laddar däremot fortfarande upp media.
+**Det som ska finnas på plats** (verktyget stannar med ett besked om något saknas):
 
-Efter deploy får varje domän och åtkomstläge högst 30 sekunder att växla version: två svar i följd från `/meta.json` måste bära hela
-den begärda commit-hashen och `sourceDirty: false`. Kontroll görs varannan sekund utan cache eller omdirigering;
-varje svar inklusive JSON har högst tre sekunder, begränsat av återstående tid. Det gäller både öppen och inloggad
-kopia. Därefter prövas sidor och filmsökning som förut; fel version efter tidsgränsen är fortfarande ett fel.
+- Körningen görs från Jakobs utcheckning, med koden pushad till `origin/main`; utcheckningens ocommittade filer kommer
+  aldrig med.
+- Länken `.runtime/studio-deploy/.vercel/project.json` (gjord med `vercel link --yes --project dealer-studio --scope
+  jakeminator123s-projects --cwd .runtime/studio-deploy`), eller `VERCEL_ORG_ID` och `VERCEL_PROJECT_ID`.
+- `.runtime/studio-blob/.env.local` och kvittot `studio-media.json`.
+- Vercel CLI inloggad i teamet (`vercel whoami` ger `jakeminator0`), labbservern på 4319 igång (utan den lämnas
+  mediefiler som Paows bild i dealermenyn ute) och porten 4341 ledig. Botens kunskap byggs bara ur det här repots
+  egna filer; Scoutgaming behöver inte vara utcheckat.
+- `DEALER_LOSEN_PROV=<ordet>` för kontrollen med lösenordet; utan den prövas bara att allt är låst.
 
-**Det som ska finnas på plats** innan `--kor` (verktyget stannar med ett besked om något saknas):
+**När ett steg stannar halvvägs** står kopian på nätet kvar som den var, utom efter deployen:
 
-- Körningen görs från Jakobs utcheckning (`C:/Users/jakem/dev/super-feature-sg/dealer`), med koden som ska ut pushad till
-  `origin/main`; utcheckningens egna ocommittade filer kommer aldrig med.
-- `.runtime/studio-deploy/.vercel/project.json`, länken till `dealer-studio` (finns sedan 2026-11-13; gjordes med `vercel
-  link --yes --project dealer-studio --scope jakeminator123s-projects --cwd .runtime/studio-deploy`). Utan den:
-  `VERCEL_ORG_ID` och `VERCEL_PROJECT_ID`. Verktyget frågar Vercel vilket team länken gäller och skickar inget annars.
-- `.runtime/studio-blob/.env.local` med storens nyckel och `.runtime/studio-blob/studio-media.json`, kvittot som säger
-  vilken store (båda finns sedan 2026-11-13). Till en ny store, se "En ny store" nedan.
-- Vercel CLI inloggad med ett konto i teamet (`vercel whoami` ger `jakeminator0`), labbservern på 4319 igång (den svarar
-  på om en mediefil lämnas ut; utan den lämnas sådana filer, till exempel Paows bild i spelets dealermeny, utanför),
-  och porten 4341 ledig. Botens kunskap byggs bara ur det här repots egna filer; Scoutgaming behöver inte vara
-  utcheckat (2026-11-23).
-- `DEALER_LOSEN_PROV=<ordet>` framför kommandot för kontrollen med lösenordet; utan den prövas bara att allt är låst.
-
-**När ett steg stannar halvvägs** står kopian på nätet kvar som den var, utom om det är kontrollen efter deployen:
-
-- *Arbetskopian är inte ren:* kontrollera `git status` i det valda trädet. Identifiera ändringarnas ägare och bevara
-  arbetet innan något flyttas eller återställs. Använd vid behov ett annat rent arbetsträd; kassera aldrig okända ändringar.
-- *npm ci eller bygget stannar:* läs beskedet. En modul med en maskinsökväg eller ett spärrat namn rättas av den som äger
-  filen och pushas; "Klippbanken ändrades medan kopian byggdes" betyder kör igen; taket för Blob, se nedan.
-- *Uppladdningen bryts:* kör igen. Ett objekt som redan ligger i storen känns igen på namn och storlek och skickas inte
-  på nytt (`.runtime/studio-blob/progress.json` visar hur långt det kom); kvittot skrivs när allt är verifierat.
-- *Något svarar redan på 4341* (en körning dog med sin labbserver kvar): stoppa den med dess egen nyckel, `node -e
+- *Arbetskopian är inte ren:* bevara ändringarnas ägares arbete innan något flyttas; kassera aldrig okända ändringar.
+- *Bygget stannar:* läs beskedet. En maskinsökväg eller ett spärrat namn rättas av filens ägare; "Klippbanken ändrades
+  medan kopian byggdes" betyder kör igen.
+- *Uppladdningen bryts:* kör igen; det som redan ligger i storen skickas inte på nytt.
+- *Något svarar redan på 4341:* stoppa det med dess egen nyckel, `node -e
   "fetch('http://127.0.0.1:4341/stop',{method:'POST',headers:{'x-dealer-token':require('D:/dealer-scratch/tmp/publiceringsagent/kopia/.runtime/preview.json').token}})"`.
   Stoppa aldrig något på port eller processnamn.
-- *Deployen stannar:* trädet är klart; kör bara den igen: `vercel deploy --prebuilt --prod --yes --scope
-  jakeminator123s-projects --cwd .runtime/studio-deploy`.
-- *Kontrollen efter deployen faller:* lägg tillbaka den förra versionen med `vercel rollback --scope
-  jakeminator123s-projects --cwd .runtime/studio-deploy` (eller `vercel ls dealer-studio --scope jakeminator123s-projects`
-  och `vercel promote <adress>`), och läs vad som föll innan nästa försök.
+- *Deployen stannar:* `vercel deploy --prebuilt --prod --yes --scope jakeminator123s-projects --cwd .runtime/studio-deploy`.
+- *Kontrollen efter deployen faller:* `vercel rollback --scope jakeminator123s-projects --cwd .runtime/studio-deploy`
+  (eller `vercel promote <adress>`), och läs vad som föll innan nästa försök.
 
-- **Taket för Blob** är `limits.blobBytes` i `data/studio-release.json`, 2,2 GB sedan 2026-11-13 (Paows andra omgång
-  talfilmer gjorde delen 1,72 GB). Går delen över taket stannar bygget innan planen skrivs: inget laddas upp och inget läggs
-  ut, och kopian på nätet står kvar som den var. Höj taket i registret först när tabellen visar vad som har vuxit.
-  2026-11-17 stannade bygget på 2 250 MB: det som hade vuxit var talfilmer som spelet inte längre säger (varje
-  omläggning av replikerna lade till lika många filmer som hon har repliker). Taket står kvar; av en repliks filmer går
-  bara den upp som spelet säger (`gameTakes` i `tools/studio-freeze.ts`, samma fråga som spelsidan ställer:
-  `spokenFilms` med spelets röst). En ersatt tagning står kvar i kopians klippbank utan film.
-- **Vad storen rymmer** står i kvittot (`.runtime/studio-blob/studio-media.json`). Objekt som en senare kopia inte
-  längre visar ligger kvar i storen: de skrivs aldrig över och tas inte bort av verktyget. En store som bara ska bära det
-  som går upp i dag görs därför ny.
-- **En ny store** (Jakob 2026-11-21: "kan vi inte skapa en ny blob helt och hållet"; görs och används bara på hans ord).
-  `tools/publish-studio.ts` tar storen ur `--store store_<id>` och annars ur kvittots `storeId`, och
-  `tools/sync-studio-media.ts` vägrar ett kvitto som gäller en annan store och en nyckel som inte hör till den. Stegen:
-  1. Skapa storen i teamet `jakeminator123s-projects`, public, i `arn1` (Vercels panel, Storage). Den behöver inte
-     kopplas till `dealer-studio`: låset hämtar filmerna med adresserna i sin karta, utan nyckel.
-  2. Flytta `.runtime/studio-blob/studio-media.json`, `progress.json` och `.env.local` till en egen mapp under
-     `.runtime/` och behåll dem: den version som ligger ute pekar på den gamla storen, och `vercel rollback` dit
-     fungerar bara så länge den finns.
-  3. Lägg den nya storens nyckel (`BLOB_READ_WRITE_TOKEN`, ur panelen) ensam i en ny `.runtime/studio-blob/.env.local`.
-  4. Planen och sedan körningen med `--store store_<det nya id:t>` (ett provbygge först med `--kor --bara-bygge`). Allt
-     laddas upp på nytt; kvittot skrivs när allt är verifierat och bär sedan storen, så senare körningar behöver inte
-     `--store`.
-  5. Den gamla storen står orörd tills han säger att den ska bort (kommandot under "Ta bort kopian", med det gamla
-     kvittots id). Den kostar lagring så länge den finns.
-
+- **Taket för Blob** är `limits.blobBytes` i `data/studio-release.json` (2,2 GB). Över taket stannar bygget innan något
+  laddas upp; höj det först när tabellen visar vad som har vuxit.
+- **En ny store** görs bara på hans ord (BESKED, "Media på nätet"). Skapa den i teamet (public, `arn1`); flytta det gamla
+  kvittot, `progress.json` och `.env.local` till en egen mapp under `.runtime/` och behåll dem (en rollback behöver den
+  gamla storen); lägg den nya nyckeln ensam i `.runtime/studio-blob/.env.local`; kör planen, ett provbygge med `--kor
+  --bara-bygge` och sedan `--kor`, alla med `--store store_<id>`. Den gamla storen står orörd tills han säger att den ska bort; den kostar lagring så länge den
+  finns, och objekt som en senare kopia inte visar ligger kvar i den.
 - Provbygge utan publicering: `node tools/build-studio-snapshot.ts --prov` och `node tools/serve-studio-snapshot.ts
-  --prov` (port 4330, med påhittat lösenord och nyckel), se verktygens huvuden.
-- Ta bort kopian (på Jakobs ord): `vercel project rm dealer-studio` och `vercel blob delete-store <storens id ur kvittot>`, båda
-  med `--scope jakeminator123s-projects`.
-- **Kostnad** (Pro, ur teamets månadskredit på 20 USD): lagringen cirka 1,5 GB × 0,023 USD per GB och månad ≈ 0,04 USD;
-  trafiken ingår i Pro-planens Flat Rate CDN (1 TB) och kostar annars cirka 0,05 USD per GB; en visning av Casino med en
-  runda läser cirka 150 MB film. Uppladdningen är cirka 250 Blob-operationer ≈ 0,001 USD.
+  --prov` (port 4330, påhittat lösenord).
+- Ta bort kopian (på Jakobs ord): `vercel project rm dealer-studio` och `vercel blob delete-store <storens id ur
+  kvittot>`, båda med `--scope jakeminator123s-projects`.
+- **Kostnad:** lagringen cirka 0,04 USD i månaden ur Pro-planens månadskredit; trafiken ingår i Pro-planens CDN (1 TB),
+  och en runda i Casino läser cirka 150 MB film.
 
 ## D: och städning
 
-Arbetet sker i mappen `dealer` på C: (Jakob 2026-11-19 och 2026-11-21) och tillfälligt arbete i
-`.runtime/<uppgift>/`. D:-sökvägar nedan beskriver äldre material och delade tjänster, inte arbetsförval.
-Arbetsrutin, radering av verifierat oanvänt material och hashkontrollerad rensning av dubbla mediefiler:
-[Lokal arbetsplats och städning](../tools/local-work.md).
-
-Ändra inte global TEMP/PATH och skapa inga nya runtime-junctions. Tillfälliga jobb kan få processlokal `TEMP`/`TMP` mot
+Arbetet görs i `dealer` på C: och tillfälligt arbete i `.runtime/<uppgift>/`; D:-sökvägar här är äldre material och
+delade tjänster. Rutinen och radering av verifierat oanvänt material: [lokal arbetsplats](../tools/local-work.md).
+Ändra inte global TEMP eller PATH och skapa inga runtime-junctions; ett jobb kan få processlokal `TEMP` mot
 `D:/dealer-scratch/tmp`.
 
-`data/library.json` pekar på V6:s porträttreproduktion i `assets/proofs/filmbiblioteket/` (samma fil som låg i
-`output/v6/take-01`, SHA-256 jämförd 2026-11-23). Katalogen innehåller bara sökvägar/hashar, inga uppladdade filmer;
-diagnostiska beslut hämtas från motions-registret.
-
-**Vad en mapp i `assets/` eller `output/` är och om något använder den:** `node tools/media-audit.ts [--json] [<mapp>]`
-(bara läsning). Per film, ankare, beställning eller prov: vad det är, storlek, datum, vilket register som nämner det och
-användningen `spelas` (banken enligt `buildGraph`, talfilmer, munlappar, filmen före spelet), `visas` (Material,
-beställningar, scenen, och allt som Beslut, kopian, ett dokument eller en instruktion nämner med sitt exakta id), `referens` (V6, manifestet,
-`evidence/`), `bara registrerad` eller `okänd`, med fil och fält som säger det. Klassningen är ett underlag:
-kontrollera även aktiva prov och användaranteckningar före radering. Det som verifierats oanvänt får raderas;
-den tidigare regeln att alltid arkivera betalda resultat är ersatt av Jakobs besked 2026-11-19.
-
-**Arkivet av det oanvända, 2026-11-17** (`53dc116`): 367 enheter (1 073 filer, 3,96 GB) ligger med samma sökvägar i
-`D:/dealer-archive/dealer-ej-anvant-2026-11-17/`, varje fil kontrollerad på SHA-256. Planen, loggen och skriptet som tar
-tillbaka allt (`aterstall.mjs`) ligger i `D:/dealer-scratch/tmp/stadning/inventering-2026-11-17/`.
-
-**V6-arkivet, 2026-11-23** (Jakobs ja på Beslut-kortet `v6-arkiv`, 2026-11-20): V6:s råmaterial (`assets/frames`,
-733 MB), återskapningen (`output/v6`, 130 MB), renderaren och dess kod, med en kopia av det som stannar (filmen, 18
-rutor, duken, plåten, tidslinjen, spåren, maskerna och manifestet), ligger i `D:/dealer-archive/v6-2026-11-23/`: 1 138 filer,
-959,7 MB, med `SHA256SUMS`, kvittot `arkiv.json` och en README om hur V6 återskapas. Varje fil lästes tillbaka mot
-hashlistan, mot projektets fil och mot hashen i `data/manifest.json` innan råmaterialet och återskapningen togs ur
-projektet. En post i manifestet med `archived` pekar dit, och `npm run verify` hoppar över den.
-
-**Om en bild eller film passar dagens regler:** `node tools/media-audit.ts --fit [--write]` mäter kortet i varje landning
-och i varje ankare med kort på en plats (gult eller blått som `src/card-track.ts` läser) och det liggande kortet i
-bankens kortspår (`assets/tracking/<tagning>/card-track.json`) mot `planCardQuad` (`src/card-plan.ts`), ett viloankare
-mot `data/dealer-standard.json` och en referens efter kameran (rutans storlek). Svaret per sak är `stämmer`, `äldre plan`
-(mitten mer än 15 px från platsen eller storleken mer än 12 % från regelns kort), `avviker`, `annan kamera` eller `går inte
-att mäta`, med siffrorna. `--write` sparar det i `data/media-fit.json`, som Material visar som en etikett på rutan; kör det
-igen när planen, linsen eller ett ankare ändras. Jakobs tillstånd (gäller, kandidat, ersatt) ändras aldrig av mätningen.
-
-Det tidigare projektet (snyggare-dealer, arkivet) ligger i sin helhet på `D:/dealer-archive/snyggare-dealer` och är
-borttaget från C: sedan 2026-11-10: 194 531 filer, varje fil SHA-256-jämförd på båda sidor, med Git-historik, ändrade
-och ospårade filer bevarade ([arkivkvittot](../evidence/archive-move.json); inventeringar, filhashar och
-raderingskvitton under `D:/dealer-archive/receipts/20261110-snyggare-dealer`). Arkivet är läsreferens; C:-sökvägarna
-där inne är proveniens och har inte ändrats. Inga länkar går från dealer till arkivet.
-
-Före arkivflytt: registrera exakta käll-/målrot, ägare, worktrees, untracked/ignorerade filer, reparse-mål och
-processidentitet. Stoppa bara verifierat ägda tjänster via kontrollkanal. Kopiera till ett nytt avgränsat arkivmål utan
-att följa junctions; jämför filantal/byte/SHA-256 och verifiera återläsning. Separat godkänd källradering kan därefter
-frigöra C:. Befintliga D:-delarkiv får inte skrivas över.
-
-Rensning kräver ett kandidatbeslut med källa, ägare, referenser och verifierad ersättning. Filnamnslikhet eller inaktiv
-process räcker inte. Osäkert material stannar för granskning.
-
-**Städverktyget.** `npm run stada` (`tools/scratch-clean.ts`) är en torrkörning: rapport per regel, inget ändras. Det
-körs från huvudträdet; ett arbetsträd på slaskdisken vägras, eftersom slasken, arkivet och repot måste ligga isär.
-`-- --lista` visar varje träff och `-- --forklara <sökväg>` varför något lämnas. En åtgärd utförs först med
-`-- --kor --regel <regel> --sokvag <exakt relativ sökväg> --agare <verifierad ägare>`. Kontrollera ägarskap,
-referenser och aktuell processidentitet före kommandot; namnet i flaggan är operatörens redovisning. RADERA tar
-bara det som går att göra om: headless Chrome-profiler, `node_modules`, Nodes och Pythons cacher, Chromes `scoped_dir*`,
-lösa `*.tmp` och loggar äldre än en vecka. ARKIVERA flyttar skärmbilder och rutdumpar äldre än en vecka till
-`D:/dealer-archive/slask/<år-månad>/<samma sökväg under dealer-scratch>`. Varje flytt och radering skrivs i
-`D:/dealer-archive/slask/arkiv.json`. `-- --kor --aterstall <post>` flyttar tillbaka; utan `--kor` avvisas återställningen.
-Kontaktark och avslutade mappar under `tmp/` eller `review/` kräver ett uttryckligt mål och dom efter två
-veckor. Reglerna står som data överst i verktyget. Radera betyder ta bort; arkivera betyder bevara på arkivplatsen.
-
-Skydden går inte att slå av. Verktyget rör aldrig: det som ändrats de senaste tre dygnen; mappar som HANDOFF, README,
-AGENTS, `docs/*.md`, `docs/lage/*.md`, `data/*.json` eller agenternas minne namnger med sökväg (`SOURCES` i verktyget;
-en arbetsmapp på slaskdisken som ska leva kvar namnges därför i banans lägesfil). En namngiven mapp skyddar allt i den; en
-fil direkt i en sessionsmapp skyddar bara sig själv. Namnge därför undermappen, inte hela sessionen, när bara den ska
-leva kvar; mappar med beställningsliggare eller kvitto (`bestallningar*`, `order-*`, `uploads-*`, `tasks-*`, `*kvitto*`,
-`request.lock`); `chrome-meshy`, Python-miljöer, mappar som en körande process namnger och mappar med länkar; film och
-ljud, som aldrig raderas, och allt utanför `D:/dealer-scratch`. Labbservern gör bara en torrkörning per start;
-utfallet står i `.runtime/stada.log`. Vad som låg kvar på D: när bilder och filmer kopierades till `assets/` 2026-11-12
-säger rapporten `D:/dealer-scratch/tmp/huvudagent/import/RAPPORT.md`.
-
-Registren och små körkvitton är JSON-filer. Ett lokalt, återbyggbart SQLite-index samlar sökning och spårbarhet utan
-medieblobs eller egna användardomar ([evidens](../tools/evidence.md)). Den tidigare
-[lagringsbedömningen](../evidence/storage-choice-review.json) om Scouts Postgres-adapter gäller först när delade
-skrivare och atomisk historik behövs; ingen produktionsdatabas är skapad här.
+- **Vad en mapp i `assets/` eller `output/` är och om något använder den:** `node tools/media-audit.ts [--json]
+  [<mapp>]` (bara läsning) ger per sak användningen `spelas`, `visas`, `referens`, `bara registrerad` eller `okänd`, med
+  fil och fält. Den är ett underlag: kontrollera också aktiva prov och hans anteckningar före radering.
+- **Om en bild eller film passar dagens regler:** `node tools/media-audit.ts --fit [--write]` mäter kortet mot
+  `planCardQuad` och ett viloankare mot `data/dealer-standard.json`; `--write` sparar svaret i `data/media-fit.json`,
+  som Material visar. Kör om när planen, linsen eller ett ankare ändras. Hans tillstånd ändras aldrig av mätningen.
+- **Arkiven:** det oanvända 2026-11-17 i `D:/dealer-archive/dealer-ej-anvant-2026-11-17/` (skriptet som tar tillbaka
+  allt, `aterstall.mjs`, i `D:/dealer-scratch/tmp/stadning/inventering-2026-11-17/`); V6 i
+  `D:/dealer-archive/v6-2026-11-23/` (`SHA256SUMS`, `arkiv.json` och en README om hur V6 återskapas; en post i
+  `data/manifest.json` med `archived` pekar dit, och `npm run verify` hoppar över den); det tidigare projektet i
+  `D:/dealer-archive/snyggare-dealer` ([arkivkvittot](../evidence/archive-move.json); inventeringar och
+  raderingskvitton under `D:/dealer-archive/receipts/20261110-snyggare-dealer`), utan länkar från dealer.
+- **Före en arkivflytt:** registrera käll- och målrot, ägare, arbetsträd, ospårade filer, länkmål och processer; stoppa
+  bara verifierat ägda tjänster via kontrollkanal; kopiera till ett nytt mål utan att följa junctions; jämför antal,
+  byte och SHA-256 och läs tillbaka. Källan raderas först efter ett separat godkännande, och ett befintligt delarkiv
+  skrivs aldrig över.
+- **Rensning** kräver ett kandidatbeslut med källa, ägare, referenser och verifierad ersättning; filnamnslikhet eller en
+  inaktiv process räcker inte, och osäkert material stannar.
+- **Städverktyget:** `npm run stada` (`tools/scratch-clean.ts`) är en torrkörning med rapport per regel; `-- --lista` och
+  `-- --forklara <sökväg>` förklarar. En åtgärd: `-- --kor --regel <regel> --sokvag <relativ sökväg> --agare <verifierad
+  ägare>`, efter kontroll av ägarskap, referenser och processer. RADERA tar bara det som går att göra om; ARKIVERA flyttar
+  till `D:/dealer-archive/slask/<år-månad>/`, varje flytt och radering skrivs i `D:/dealer-archive/slask/arkiv.json`,
+  och `-- --kor --aterstall <post>` flyttar tillbaka. Reglerna står som data överst i verktyget; labbservern gör en
+  torrkörning per start, med utfallet i `.runtime/stada.log`. Skydden går inte att slå av: det som ändrats de senaste tre dygnen, mappar som dokumenten eller
+  agenternas minne namnger med sökväg (`SOURCES`; namnge undermappen som ska leva kvar i banans lägesfil),
+  beställningsliggare och kvitton, `chrome-meshy`, Python-miljöer, mappar som en process eller en länk namnger, film
+  och ljud, och allt utanför `D:/dealer-scratch`.
+- Registren och körkvittona är JSON; ett återbyggbart SQLite-index samlar sökning och spårbarhet
+  ([evidens](../tools/evidence.md)). Ingen produktionsdatabas är skapad.
 
 ## Molnmiljö
 
-En kopia av repot i en molnmiljö (Codex Cloud eller en annan sandlåda ur GitHub) är en separat körning utan media och
-inte säkert med rätt Node: där går bara de tester som klarar sig utan media, och ingenting döms där. Ingen sådan miljö
-är uppsatt för dealer (senast kontrollerat 2026-11-10), och Scouts miljö återanvänds inte utan uttrycklig
-projektbindning. Den som sätter upp en behöver repot, Node 24.22.3 och `npm ci`; hashkontrollen `npm run verify`
-kräver dessutom registrerad media. Kopiera aldrig hela `.env.local` dit.
+En kopia av repot i en molnmiljö (Codex Cloud eller en annan sandlåda ur GitHub) har inga media och kanske fel Node:
+där går bara de tester som klarar sig utan media, och ingenting döms där. Ingen sådan miljö är uppsatt för dealer. Den
+som sätter upp en behöver Node 24.22.3 och `npm ci` (hashkontrollen `npm run verify` kräver dessutom registrerad
+media); kopiera aldrig hela `.env.local` dit.

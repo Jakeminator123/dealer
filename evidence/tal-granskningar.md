@@ -1,7 +1,8 @@
 # Talets granskningar 2026-11-13 – 2026-11-17
 
-Flyttat ordagrant 2026-11-20 ur `docs/TAL.md`, avsnittet "Kvaliteten", där det stod som löpande text. Det som gäller,
-Jakobs ord om munnen och hans dom 2026-11-17 står kvar i [TAL](../docs/TAL.md), "Kvaliteten"; här står varje omgång
+Flyttat ordagrant 2026-11-20 ur `docs/TAL.md`, avsnittet "Kvaliteten", där det stod som löpande text. Det som gäller
+står i [TAL](../docs/TAL.md), "Kvaliteten", och Jakobs besked om munnen i [BESKED](../docs/BESKED.md), "Läpparna och
+talet"; här står varje omgång
 med poäng, mått och vad varje prövat recept gav. Måtten (`LIPS`, `layMouth`, `mouthMoves`, `mouthOpens`) är de i
 `src/speech-plan.ts`, receptet `RECIPE` i `tools/speech.ts`. Omgång 11–14 (munlapparna) står i TAL, "Munlagret".
 
@@ -39,4 +40,5 @@ Om giporna är granskarna inte överens. Sex av de elva som har dömt det nya s�
 
 Kvar med hennes egen underläpp, i granskarnas ord: där den sänkta gipan möter vecket utanför blir det ett litet knyck eller V, synligt bara i förstoring; huden på hakan under underläppen är hoptryckt en till fem bildpunkter men varken randig eller utsmetad; giporna flyttas i höjdled men aldrig i sidled, så ett o eller u rundas inte; munnen står öppen i tysta pauser kortare än sex rutor och sluts på en ruta i replikens sista växling. De två sista ligger i grinden och i renderingen och är desamma som förut.
 
-Fortsättningen, Jakobs dom 2026-11-17 och vad den lär, och nästa steg står i [TAL](../docs/TAL.md), "Kvaliteten".
+Fortsättningen och nästa steg står i [TAL](../docs/TAL.md), "Kvaliteten"; Jakobs besked om munnen i
+[BESKED](../docs/BESKED.md), "Läpparna och talet".

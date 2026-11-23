@@ -1,379 +1,233 @@
 # Kända brister
 
-Här står varje känd brist en gång: var den syns, vad som är prövat och vad som skulle stänga den. En brist som är
-rättad stryks; hur den rättades står i commitmeddelandet. Läget per bana står i `docs/lage/`
-([film](lage/film.md), [kort](lage/kort.md), [labbet och studion](lage/labbet-och-studion.md),
-[spelet](lage/spelet.md)), och Jakobs egna ord om sakerna står i [BESKED.md](BESKED.md).
+Varje känd brist en gång: vad som saknas och vad som stänger den. En rättad brist stryks; hur den rättades står i
+commitmeddelandet. Läget per bana: [film](lage/film.md), [kort](lage/kort.md),
+[labbet och studion](lage/labbet-och-studion.md), [spelet](lage/spelet.md); Jakobs besked: [BESKED](BESKED.md).
 
 Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och scenen · Labbet och verktygen · Pamela
 
 ## Kortet
 
-- **Märket på blå sidan hindrar inte fel i vändningen** (2026-11-20). Prövat i tre vändfilmer utanför Beställ (Kling 4,
-  Prov `paow-ankare-2-3-b`): kortet ligger till slut med kryss och prick som i sista bilden i alla tre, men en film
-  bytte gult mot blått på ytan utan kantläge och en visade en vit sida i sex rutor mellan gult och blått; i
-  handen ritas krysset fyra till nio gånger större än i sista bilden och krymper när kortet släpps. Genom Beställ bär
-  sju ordrar märket (`MARKED_SIDES` i `src/order-prompts.ts`, `prompt.faceMark`), bland dem piloterna till plats 4
-  från A2.3; `paow-giv-2-3c-p4-pilot-02` har Jakobs ja (Beslut 2026-11-21) och övriga platser står på tur (se
-  [film-prompting.md](../tools/film-prompting.md)). Tre ställen läser
-  ännu bara gult och blått och är inte anpassade: kortspåret (`tools/track-card.ts`) kan tappa krysset som hål i det
-  blå; spelets pålägg (`cardFace=paper`) färgar om blått men lämnar rosa och rött; och `tools/landing-make.ts` läser
-  rosa och rött i en KÄLLBILD som hennes hud och lägger det ovanpå det nya kortet. Dockans kort i 3D
-  (`dealer3d/src/stage.ts`) är fortfarande slätt blått, så dess referensfilmer visar inget märke. De A3 som gäller i
-  dag har slätt blått kort; texten följer bilden och säger då inget märke.
-- **Ritat kort fryser och hoppar i handen.** P7 ruta 74–75 återanvänder ruta 73; vid 76 hoppar ritad mittpunkt
-  29,48 filmpixlar mot spårets 9,17. Prov `paow-carry-jitter-20261118` visar bättre greppföljning med filmkort,
-  men silvergrå yta och färgrester kvarstår. Lokal pappersåtervinning ökar ljus kortyta 20,8/36,9 % i ruta 73/74,
-  med samma yttergränser och orörda kontrollområden för hud, filt och sko. Elva native-stills täcker 73–119;
-  överlämning 82–90 visar ett kort men mjuk fingerkant kvarstår. Landad sexa är oförändrad. Stänger: ren färg,
-  överlämningen, övriga egna mål och hålkortet granskade i rörelse. Ordinarie förval är oförändrat.
-- **Återbrukade andrakort/split kräver fortfarande ritade kort.** `kort=liggande` behåller filmkort vid eget mål men
-  ritar återbruket till spelplatsen; tidiga returskarvar följs fram till uppmätt vila. Bankprov `paow-game-carry-20261118`
-  visar en färdig native splitrunda och C2-kant högst 1 px vid två gränser; full rörelsedom återstår. `paow-game-frame-20261118/coverage.json` ger 9/16 egna
-  målfilmer; sju C2 behöver 39–51 px förskjutning. Extra kort/split når cirka 100 px, och D.C3+ saknar filmhand. Scenproven
-  `paow-cycle02-scene-20261118` och `paow-outer-filmcard-20261118`
-  visar kvarliggande kort mellan två olika platser, men inte detta återbruk. P1:s blekta skugga vid ruta 114 är rättad:
-  Prov `paow-rest-paper-zone-20261118` visar före/efter och P7. Eget kompatibelt C2-par prioriteras före C1-delning,
-  även via ett komplett godkänt ankare. `paow-giv-2-3-p4-c2-h24-cykel-01` har egen film och eget spår, Variant giv 3/5,
-  retur 4/5. Prov `paow-c1-c2-scene-20261118` visar C1 kvar genom C2:s giv, släpp och returände. Maskjämförelsen
-  `paow-air-paper-chroma-verified-20261118` visar minskad vitfärgning av grön skugga vid P1 ruta 113 och bevarat kort
-  vid P7 ruta 73. Prov `paow-c2-paper-rim-20261118` visar jämnare pappersfärg i C2 ruta 51/53, med oberoende
-  synkontroll av fem bildpar. `paow-c2-contact-20261118` minskar blåspill vid fingret med starkt lokalt hud- och kortstöd;
-  en blå kant kvarstår. Violett nagellack intill båda färgerna kan inte säkert särskiljas med enbart färg.
-  Omgreppsfilmen `paow-c2-film-regrip-20261118` behåller tvekan och har längre blekning; Cykel01 är starkare.
-  Det lokala tidsprovet `paow-c2-continuous-clock-20261118` tidigarelägger tumsläpp 76 ms (en renderad ruta);
-  oberoende granskning bedömer det för litet som enda skäl till en ny betald tagning.
-  Full rörelseacceptans återstår. Stänger: egna landningar eller verifierat återbruk, hålkortets
-  vändning och en hel giv i båda renderlägena. Spelets förval är därför kvar; inget Primär-val har ändrats.
-- **Forkens hela giv är ett separat metodprov.** Prov `paow-fork-round-review-20261118`: 14 kort ligger kvar och
-  13 skarvpar matchar i oberoende bildgranskning. Kamera och startpose skiljer sig från Dealer 2.3; blank yta byts
-  abrupt till tryckt kort och P2 har dubbelkontur i luften. Filmen kan inte ersätta bankens klipp direkt.
-- **Filmcarry behöver ett giltigt kortspår för full markörrensning.** Syns i 2D-provet `cardMethod=film` när ett
-  givspår saknas eller är ogiltigt: filmkortet skyddas, men äldre färgmarkörer kan också synas. Med giltigt spår
-  skyddas bara aktivt kort och sko; övriga markörer rensas. Vid vila håller bortfall nu spelkortets plats/sida utan gammal mask,
-  med regressioner för trasig EDGE och sidbyte. Stänger: verifierade spår och synprov i båda renderlägena och i rörelse.
-- **Det ritade kortet i spelet** (Jakob 2026-11-13: "Det lixom kletar fast sig på korten", "linjer flyger dit och dit").
-  Syns: i spelet, som ritar kortet hela vägen med underlägget under (`UNDER` i `src/card-overlay.ts`): hålkortet är dolt
-  under hennes fingertoppar cirka 0,6 s innan det glider på plats, kortets högra ände har en svag gulaktig kant, en tunn
-  linje syns medan kortet står på kant, och fingerkanten är taggig. Prövat: kortens fjärde steg (`33b164a`: hålkortet
-  följer filmens kort under handen, skons fönster står mörkt), blint granskat 3,75/5; pålägget fick 3/5 och är inte i
-  spelet; `kort=liggande` finns kvar för hans öga, och `cardBack=film&cardFace=film` visar filmens färger. Stänger:
-  kortets efterarbete per film. Stegen ligger i `D:/dealer-scratch/tmp/kortbyggare/`, utredningen i
-  `D:/dealer-scratch/tmp/kortutredning/RAPPORT.md`.
-- **Spelets kort och scenens kamera följer kortplanens regel bara bakom ett val.** Syns: i spelet och i 3D-scenen
-  utan adressordet `geometri=lins`: liggande kort läggs med `flatQuad`, det ritade kortet vilar som kontraktets kort
-  gånger 1,2 (`restingQuad`), och scenens filmkamera är kontraktets (k = 2). Uppmätt 2026-11-18 på Jakobs sparade
-  plan, det spelet ritar mot kortplanen (nära kant × höjd i bild): plats 1 65 × 47 mot 78 × 62 (28 px i hörnen,
-  skjuvat), plats 4 90 × 74 mot 84,5 × 72, dealerns kort 61 × 35 mot 75 × 57; en marker (39 mm) är 106 px bred vid
-  plats 4, bredare än kortet. Prövat: med valet på ger kortplan, spel, vilande kort och scenens projektion samma
-  fyrhörning inom 0,01 px, också med annan lins och bildstorlek (`tools/card-plan.test.ts`); bilder utan webbläsare
-  i `D:/dealer-scratch/tmp/raddning-geometri/bilder/`. Sett i en webbläsare 2026-11-18 som stillbild, dator och
-  stående telefon (`D:/dealer-scratch/tmp/en-geometri/titt/efter/`): rummet, inramningen, ringen fri från kortet och
-  loggan fri från dealerns kort är rättade (`f649793`). Kvar: rörelsen är inte sedd; på telefon är ringen 25 px och
-  insatsbrickan ligger delvis över markerna, och nedre tredjedelen är tom filt (`FRAMING` är inte omskrivet);
-  kortsättet `film` står kvar på kontraktets kort; Casinot i studion är inte sett; att bilden utan ordet är oförändrad
-  är hållet av tal och tester, inte av en bild. Stänger: de sakerna, sedan kontrollen i
-  webbläsaren, Jakobs ja i labbet, bytet av `TABLE_GEOMETRY` och borttagningen som `docs/SYSTEM.md`, "Ritade kort",
-  räknar upp. Med flit kvar på den gamla regeln: `tools/build-anchor.ts` (frysta hashar), `tools/card-coverage.ts`
-  och `tools/placement-backdrop.ts`.
-- **Dealerns två kort överlappar i kortplanen.** Syns: i Kortplan, och i spelet med `geometri=lins`: D.C1 och D.C2
-  ligger 62 px isär och ett verkligt kort är 75 px brett där, så de överlappar 13 px. Prövat: inget; platserna är
-  Jakobs, satta för den äldre planens mindre kort. Stänger: hans val i Kortplan.
-- **Kortet i nypet (ankare 2.1) är 8–13 % för långt.** Det Jakob såg som ett dubbelt så långt skokort (111 mot 55
-  bildpunkter) kom mest ur den äldre planens krympning nära dealern, som är rättad i labbet (`918e7f4`, `f469450`).
-  Syns: i bankens ankare 2.1 och givarna därifrån. Prövat: 3D-banans mätning (`D:/dealer-scratch/tmp/dealer-3d/kalibrering.txt`)
-  säger att kortet i skons fönster är i stort sett rätt (51 × 92 bildpunkter mot 49 × 98 för ett verkligt kort, 0,94)
-  och att det bara i nypet (ankare 2.1) är 8–13 % för långt; axlar, pupiller och skons fot är lästa för ögat (±10
-  bildpunkter). Stänger: bara nya ankare; inget ankare krymps för skons
-  skull.
-- **Kortbanan i Bordet** (Jakob 2026-11-12: "utgångspunkten skulle vara att kortet låg på bredsida, vilket är fel").
-  Syns: den ritade handen pekar ut från kortets ände och inte från hennes arm, kortet vänds något högre i bilden än i
-  filmen, och vid platsen rullas kortet på filten som ordertexten säger, medan Paows film från ankare 2.2 lyfter och
-  vänder det i luften. Prövat: banan är omgjord efter filmerna (`ccd9c52`, Prov `kortbanan-efter-filmerna`). Stänger:
-  hans svar på hur vändningen vid platsen ska ritas, och en film som visar vändningen med handflatan uppåt (`FREE`) att
-  rita efter; ingen sådan finns.
-- **Det ritade kortet i handen** (Prov `kort-fram-bak-20261120`; Jakob 2026-11-20: "Ja, laga båda"). Syns när kortet
-  ritas i handen (`cardInHand=1`; spelets förval visar filmens eget kort där), mätt på 104 kortspår: (1) i vändningen
-  står kortet kvar brett och blir sedan en linje, för spårets regel för ett skymt kort ("last known shape kept") slår
-  till på ett kort som vänds (95 rutor); (2) papperets ljus slår om mellan rutorna, för `cardBase`
-  (`src/scene3d-film.ts`) tar reservfärgen när färre än 6 av 36 prov bär kortets färgton, som på en starkt belyst
-  framsida, och ljusplanet slår av och på vid samma rutor (`paow-giv-2-3-p4-h24-cykel-02-01`, rutorna 40–41 och 46–51:
-  steg på upp till 36 av 255); (3) fyrhörningen är i 122 rutor färgregelns skarpa kärna, under 0,8 av det mätta kortet;
-  (4) kanten mot fingrarna. Böjning och glans är inte felet (Prov `kort-bojning-glans`). Prövat: labbprovet `kortprov`,
-  av som förval och bara i Scen (`/scene3d.html?cards=1&cardInHand=1&kortprov=1`; delarna `spar`, `skarpa` och `ljus`
-  går att slå på var för sig, `mat` bara mäter). Det lägger mätningen i spåret (`refineFrames` i `src/card-track.ts`)
-  och minns ljuset mellan rutorna (`lightStep` i `src/card-overlay.ts`): på filmen ovan faller det största synliga
-  steget från 36 till 13 av 255, och rutor med kvarhållen form går från 95 till 70 (på de 26 filmer regeln inte är
-  gjord på: 29 till 22). Ett kort lagt mellan mätta grannrutor, på en räknad plats, stod bredvid filmens kort i 3 av 7
-  rutor och är inte med. Stänger: Jakobs ja på provet, och sedan skärpan mot handen; mätningen in i
-  `tools/track-card.ts` (i dag kommer den ur etiketterna på slaskdisken, `tools/python/kort-dataset/`, och provets spår
-  ligger i provmappen); en färgregel som läser en starkt belyst framsida (i dag bär minnet över de rutorna); rutan mitt
-  i vändningen där bara en bit av framsidan syns (som i dag). Tryckta spelkort i en film ser varken spåret eller
-  mätningen.
-- **Orden för kortets sidor är öppna.** Jakob 2026-11-13: "Baksida kan betyda olika saker, som baksidan på ett kort, men
-  det kan också referera till undersidan." Syns: i beställningstexter och på sidorna; mallarna säger slätt kort med
-  "back" och "face" (`PLAIN_CARD` i `src/order-prompts.ts`). Prövat: inget. Stänger: ett ord per sida i ordlistan
-  (`docs/SYSTEM.md`), valt med honom.
-- **Paows givar är för små vid ytterplatserna.** Syns: i Material, som brickan "avviker" (`data/media-fit.json`): 8 av
-  hennes givar stämmer med dagens kortplan i storlek och 14 är 15–37 % för små; korten ligger alla på rätt plats
-  (0,2–1,4 bildpunkter). Prövat: mätningen (`node tools/media-audit.ts --fit --write`). Stänger: nya givar efter
-  filmstandarden. Filen skrivs inte om av sig själv när planens regel ändras (hans sparade Perspektiv): kör mätningen om
-  efter en sådan ändring.
-- **Planfilen kräver en mobilvy som inget läser.** Syns: `validatePlan` kräver både `native` och `portrait`
-  (`src/placement-model.ts:268–269`), fast valet Dator | Mobil är borta ur Bordet och spelet bara läser
-  `geometry.native`. Prövat: inget; `placements/default.json` är Jakobs och är orörd. Stänger: planens format ändras i
-  ett eget steg, på hans ord.
-- **Det ritade kortet i handen: vändningen står still och papperets ljus hoppar** (2026-11-20, mätt på
-  `paow-giv-2-3-p4-h24-cykel-02-01-deal`, Prov `kortet-i-handen-orsaker-20261120`). Ritningen släpar inte: kortet ritas
-  för filmens visade ruta (samma ruta i 2577 av 2577 bilder vid 0,25×, 65 av 65 stegade). Vändningen: i ruta 30
-  behåller spåret ruta 29:s form (`settleRaws` i `src/card-track.ts`, regeln "mostly hidden") fast filmens kort är en
-  strimma, och i rutorna 31–32 ritar scenen bara en linje (`src/scene3d-deal.ts`, vändgrenen); sedan kommer framsidan
-  liten och växer. Hörn under fingrarna vinglar i rutorna 26 och 34–36. Ljuset: `vShade` i `src/scene3d-deal.ts` tas
-  under uppspelning från filmens blå kort, och `cardBase` i `src/scene3d-film.ts` faller till sitt reservvärde när den
-  hittar färre än sex kortfärgade prov, så papperet hoppar 22–26 nivåer vid rutorna 40, 42, 46 och 52. Samma fel i
-  tagningen `-cykel-01-01`. Inte prövat: andra reglagevärden i Scen än förvalet Jakob-1. Stänger: kortet smalnar från
-  sista ryggen till första framsidan genom vändningen; senaste goda ljusvärdet behålls och jämnas över rutorna; på sikt
-  ett styvt kort (63 × 88 mm) passat per ruta. Väntar på Jakobs svar på kortet `kortet-i-handen-vandning-och-ljus`.
-  Underlaget, utanför Git: `.runtime/kort-takt`, `.runtime/kort-spar` (`fit.tsv` och `poses.json` per tagning) och
-  `.runtime/kort-bild` (`ljus.json`).
+- **Märket på blå sidan hindrar inte fel i vändningen:** i tre vändfilmer utanför Beställ (Prov `paow-ankare-2-3-b`)
+  bytte en färg utan kantläge och en visade vit sida i sex rutor, och krysset ritas 4–9 gånger för stort i handen.
+  Kortspåret (`tools/track-card.ts`), spelets pålägg (`cardFace=paper`) och `tools/landing-make.ts` läser ännu bara gult
+  och blått, och dockans kort (`dealer3d/src/stage.ts`) är slätt blått. Stänger: de fyra ställena följer märket.
+- **Ritat kort fryser och hoppar i handen** (P7, ruta 73–76: en ruta återanvänds, mittpunkten hoppar 29 px mot spårets
+  9). Filmkortet (Prov `paow-carry-jitter-20261118`) följer greppet bättre men har silvergrå yta och mjuk fingerkant.
+  Stänger: ren färg, överlämningen, övriga egna mål och hålkortet granskade i rörelse.
+- **Återbrukade andrakort och split kräver ritade kort:** 9 av 16 egna målfilmer finns
+  (`paow-game-frame-20261118/coverage.json`), sju C2 behöver 39–51 px förskjutning, extra kort och split når cirka 100
+  px, och D.C3 och senare saknar filmhand. Efter proven `paow-c2-*-20261118` står en blå kant vid fingret kvar, och
+  violett nagellack går inte att skilja från kortets färger. Stänger: egna landningar eller verifierat återbruk,
+  hålkortets vändning och en hel giv i båda renderlägena, sedda i rörelse.
+- **Forkens hela giv** (Prov `paow-fork-round-review-20261118`) har annan kamera och startpose än Dealer 2.3, blank yta
+  som byts abrupt mot tryckt kort, och dubbelkontur vid P2; den kan inte ersätta bankens klipp direkt.
+- **Filmkortet utan giltigt kortspår** (2D-provet `cardMethod=film`) skyddas, men äldre färgmarkörer kan synas.
+  Stänger: verifierade spår och synprov i båda renderlägena och i rörelse.
+- **Det ritade kortet i spelet** (sett av Jakob 2026-11-13): spelet ritar kortet hela vägen med underlägget under
+  (`UNDER` i `src/card-overlay.ts`), så hålkortet döljs under fingertopparna cirka 0,6 s, högra änden har en gulaktig
+  kant, en linje syns när kortet står på kant och fingerkanten är taggig. Kortens fjärde steg (`33b164a`) fick 3,75/5
+  blint, pålägget 3/5. Stänger: kortets efterarbete per film (BESKED, "Kortets efterarbete görs i förväg per film").
+- **Kontraktets geometri står kvar bredvid linsens.** Förvalet är `lens` (`TABLE_GEOMETRY` i `src/card-plan.ts`), men
+  `geometri=kontrakt` och dess grenar finns kvar för historiska jämförelser. Sett 2026-11-18 och inte omprövat: på
+  telefon ringen (25 px), insatsbrickan över markerna och tom nedre tredjedel (`FRAMING`); kortsättet `film` står på
+  kontraktets kort. Stänger: de sakerna, och borttagningen som SYSTEM räknar upp under "Ritade kort", om vägen tillbaka
+  inte behövs. Med flit kvar på den gamla regeln: `tools/build-anchor.ts`, `tools/card-coverage.ts` och
+  `tools/placement-backdrop.ts`.
+- **Dealerns två kort överlappar i kortplanen** med 13 px (D.C1 och D.C2 ligger 62 px isär, ett kort är 75 px brett).
+  Platserna är Jakobs. Stänger: hans val i Kortplan.
+- **Kortet i nypet (ankare 2.1) är 8–13 % för långt;** i skons fönster stämmer det (0,94, 3D-banans mätning i
+  `D:/dealer-scratch/tmp/dealer-3d/kalibrering.txt`). Stänger: nya ankare; inget ankare krymps för skons skull.
+- **Kortbanan i Bordet** (BESKED, "Kortbanan följer filmerna"): den ritade handen pekar ut från kortets ände, kortet
+  vänds något högre än i filmen, och vid platsen rullas kortet på filten medan Paows film från A2.2 vänder det i luften.
+  Stänger: hans svar på hur vändningen vid platsen ska ritas, och en film med vändningen med handflatan uppåt (`FREE`)
+  att rita efter; ingen sådan finns.
+- **Det ritade kortet i handen** (`cardInHand=1`; mätt på 104 kortspår, Prov `kort-fram-bak-20261120` och
+  `kortet-i-handen-orsaker-20261120`): i vändningen står kortet kvar brett och blir en linje (`settleRaws` i
+  `src/card-track.ts` behåller ett skymt korts form), papperets ljus hoppar när `cardBase` i `src/scene3d-film.ts` tar
+  reservfärgen, fyrhörningen är färgregelns kärna (under 0,8 av kortet), och kanten mot fingrarna. Labbprovet `kortprov`
+  (bara i Scen, av som förval: `/scene3d.html?cards=1&cardInHand=1&kortprov=1`, delarna `spar`, `skarpa`, `ljus`, `mat`)
+  sänker det största ljussteget från 36 till 13 av 255. Stänger: Jakobs ja på Beslut-kortet
+  `kortet-i-handen-provet-i-spelet`, sedan skärpan mot handen och mätningen in i `tools/track-card.ts` (i dag ur
+  etiketterna i `tools/python/kort-dataset/`).
+- **Kortets sidor:** hans ord är rygg och framsida (BESKED, "Gul rygg, blå framsida"), men ordlistan och sidorna säger
+  ännu baksida, och mallarna säger "back" och "face" (`PLAIN_CARD` i `src/order-prompts.ts`). Stänger: ordlistan och
+  sidorna följer hans ord.
+- **Paows givar är för små vid ytterplatserna:** 14 av 22 är 15–37 % för små mot dagens kortplan, alla på rätt plats
+  (brickan "avviker" i Material, `data/media-fit.json`). Stänger: nya givar efter filmstandarden. Mätningen skriver inte
+  om sig själv: kör `node tools/media-audit.ts --fit --write` när planens regel ändras.
+- **Planfilen kräver en mobilvy som inget läser:** `validatePlan` (`src/placement-model.ts`) kräver `native` och
+  `portrait`, fast spelet bara läser `geometry.native`. Stänger: formatet ändras i ett eget steg, på hans ord;
+  `placements/default.json` är hans.
 
 ## Filmerna och banken
 
-- **En giv utan sista bild kan lägga kortet fel** (2026-11-21, ordern `paow-giv-2-3-p5-02`). Dockan landade på
-  kortplanens P5C1, men filmmodellen lade kortet 32 bildpunkter närmare henne; givarna till P1C1, P2C1, P3C1 och P4C2,
-  beställda på samma sätt, landade 1,5 till 13 bildpunkter från platsen. Efterarbetets kontroll fäller en sådan tagning (gränsen är
-  15). Stänger: A3P5C1 gjord som stillbild först, och given beställd med den som sista bild.
-- **Dockans vändning görs med fingrarna** (2026-11-21). I dockfilmerna `svep24d` från A2.3 svänger kortet under
-  stilla fingrar med handryggen mot kameran, mitt i flykten (3–5 kortbredder från platsen). Filmmodellen kopierar det:
-  kortet blir halvgenomskinligt i fyra till sex rutor kring kantrutan. Jakobs regel är att handleden vänder kortet.
-  Stänger: en omgjord dockfilm där handleden vrids och vändningen sker nära platsen, prövad på en plats först.
-- **Rosen på högra handryggen blir en mandala** (2026-11-21). Sett i A3P4C1 (ur pilotgivens slutruta) och i given
-  till A3P3C1 från ruta 46; A2.3 har rosen. En retur från en sådan bild byter tillbaka till rosen under rörelsen
-  (returprovet `paow-retur-2-3-p4-01`, ruta 0–12). Stänger: A3-bilden rättas mot handen i A2.3 innan fler returer
-  beställs, och granskaren jämför handryggen i slutrutan med ankaret.
-- **Landningsverktyget stoppar ytterplatserna** (2026-11-21). A3P1C1 och A3P2C1 ur filmernas slutruta faller på
-  kontrollen av bildrutan: hon lutar sig mot platsen, så huvud och axlar täcker ankarets till 58 och 69 % (gränsen är
-  75 %), och hennes kontur korsar skarven vid skon. Kontrollen är inte sänkt. Stänger: ett beslut om hur en lutning
-  mot en ytterplats ska mätas (till exempel mot dockans hållning för platsen), och en skarv som följer armen dit.
-- **H24-P4 är en Variant, ingen färdig helkedja.** Given fick 4/5 av huvudagent och oberoende granskare; en rosa fläck
-  intill skon finns även i det frysta A3-slutankaret. Lokal lagning blev inte säker. Ingång, retur och nycklad spelbild
-  är inte godkända som kedja. Bevis: `assets/orders/paow-giv-2-3-p4-h24-03/take-1/review/review.md`.
-- **READY-C-kedjan saknar full rörelsedom och naturlig utgång.** Kort inpass (källruta 3–42), egen C1/C2 och omvänd
-  reservutgång når slutet i scenen. Sex native pausbilder visar två kvarliggande kort med 0 px mätt kantändring.
-  Skofärgens hopp är rättat: +37,02 → −0,85 luminansnivåer, genom samma kortutseende redan på inpasset.
-  Inpass/utpass är bara labbvarianter. Bevis: `assets/proofs/paow-ready-c-chain-20261118/fixed-review.md`.
-
-- **Arkiveringens knappar och visning behöver handprovas.** Urvalet spärrar arkiverad referensfilm och snittruta,
-  även när en aktiv del annars skulle skicka hela filmen med en arkiverad systerdel. Sparade utkast kontrolleras igen
-  före godkännande; frysta order bevaras. Detta är kodprövat. Arkivera/Ta tillbaka och visningen i Granska återstår att
-  prova i webbläsaren; spelet, scenen, Karta och produktionslistan filtrerar redan arkiverade klipp (`9a09570`).
-- **Fyra platser och dealerns kort saknar A3, och plats 1 är svag.** Syns: Bordets rad för `GIV-2.3` går bara att
-  beställa till plats 1, 4 och 5, och i given till plats 1 far armen från mitten till platsen på en tredjedels
-  sekund (dockan kan inte resa sig från stolen). Prövat: vägen finns (`tools/landing-make.ts`); av tre bildmodeller
-  lämnade bara ideogram-4.5-precise-edit allt utom armen orört. Stänger: ett A3 per plats (25 krediter var), och en
-  docka som kan resa sig för plats 1 och 2. KORT-mallens historiska kortändevändning spärrar nu motstridiga val;
-  H24 använder MINIMAL. En plats första tagning utan sista bild kräver en ny mall; och
-  `film-fix` kortar ett stilla slut med högst tre rutor, så den nya ingången står stilla 1,3 s i slutet.
-  Vänsterhandens text blir fel om bara ett A3 för höger hand gäller på platsen.
-- **Det bandet inte kan än** ([tools/dealer-line.md](../tools/dealer-line.md)). Syns: i Beställ. Ankare 2.1 och 2.2 är
-  steg (`STEPS` i `src/order-model.ts`), men landningsbild, keystone och ankare 1 är det inte. Tredje dealerkortet
-  D.C3 finns nu i planen och Beställ; D.C4 saknas fortfarande som eget beställningsmål.
-  Stänger: återstående steg läggs i ordermodellen; metoden per steg
-  står i `data/order-methods.json`.
-- **Produktionslistan räknar en bortmätt tagning som på väg.** Syns: `node tools/produce.ts paow`: en tagning som
-  beställaren mätte bort ligger kvar på MÄTT med domen i kvittots `review`, och ordern räknas som på väg tills varje
-  tagning är GRANSKAD eller INFÖRD (`IN_FLIGHT`, `tools/produce.ts:55`). Prövat: inget. Stänger: en tagning med dom i
-  kvittot räknas som avslutad.
-- **Kön läggs bara när en huvudagentchatt är öppen.** Syns: en beställning Jakob godkänner med ett klick ligger olagd om
-  ingen vakt går. Prövat: vakten `node tools/order-watch.ts`, som går i huvudagentens chatt
-  i halvtimmar och måste startas av varje ny huvudagent. Stänger: en vakt som inte behöver en öppen chatt; ingen väg vald.
-- **Paow har ingen användbar landningsbild.** Syns: `paow-landning-p4-giv-t2` står som `gäller` i
-  `data/media-roles.json` men visar handryggen och duger inte för en vändning, och alla hennes returer är andra halvan
-  av en tur-och-retur-film. Prövat: sista bilden i en giv bara dit tas i stället ur bankens film där den godkända
-  returen börjar (`cutFrameOf`, `src/cut-frame.ts`). Stänger: landningsbilder med tatuerade händer för plats 3–5.
-- **Händerna byter mellan gamla och nya filmer.** Syns: varje film i banken har otatuerade, större händer, medan
-  keystonebilderna och ankare 1 som gäller har tatuerade; en skarv mellan gammalt och nytt visar bytet. Prövat: att måla
-  tatueringar i färdiga filmer har fallit två gånger (2 av 5). Stänger: en hel uppsättning ur de tatuerade bilderna.
-  A2.2 (`paow-ankare-2-2-blick-a`) och A2.3 (`paow-ankare-2-3-d`) har dem (rättat 2026-11-21); A2.1 med de händerna
-  finns inte än.
-- **Huvudet hoppar mellan den nya ingången och givarna från A2.3** (2026-11-23). A2.3 är sedan Jakobs ja
-  `paow-ankare-2-3-d`, med blicken ned mot kortet; givarna och returen i banken är gjorda från `paow-ankare-2-3-c`, samma
-  bild med blicken åt sidan (bara huvudet skiljer). Syns: där Tatuerads steg spelas i följd i labbet (Karta, Bordet,
-  Scen), i skarven mellan en film som slutar på den nya bilden och en som börjar på den gamla; i studion bär de äldre
-  filmerna brickan "äldre A2.3". Spelet ger inte från A2.3 i dag. Stänger: givarna och returen görs om från den nya bilden.
-- **Skuggan under armarna** sitter i grundbilden (armbågarna på ett bord bakom kanten, 40–44 bildpunkter ovanför rad
-  831,5). Syns: i varje film av Paow. Prövat: keystonebilderna med tatuerade händer är gjorda utan skuggan. Stänger: nya
-  ankare och filmer ur dem.
-- **Paow ser lite smal ut:** Pamelas kroppsbredd under ett huvud som är 8,7 % högre. Syns: i alla hennes bilder.
-  Prövat: inget. Stänger: ingen väg vald.
-- **Banken räcker inte till en hel runda med egna filmer.** Syns: spelet använder nödlösningar (ersättare där en film
-  saknas, utgången baklänges; `src/game-director.ts`), och nio returer från en plats till vila saknas. Prövat: se vad
-  som saknas med `node tools/produce.ts paow`. Stänger: filmerna beställs; nödlösningarna ger vika när banken har dem.
-- **Paows Primär för P1C1 → A2.1 spelas aldrig** (fel hand mot given). Syns: i Karta. Prövat: inget; Primär väljer bara
-  Jakob. Stänger: han byter Primär.
-- **23 talfilmers `motions/` pekar på kvitton som är flyttade** till `D:/dealer-scratch/tmp/tal/overtaliga/`. Syns: i
-  registren, inte i spelet. Prövat: inget. Stänger: posterna pekas om eller tas ut.
-- **Flera av Paows källor i `data/media-roles.json` ligger på D:** i stället för i `assets/`. Syns: en källa försvinner
-  om slaskdisken städas. Prövat: inget. Stänger: filerna flyttas till `assets/` och posterna pekas om.
-- **Kling 4:s färger** läses som BT.601 fast filmen är BT.709-märkt. Syns: inte, så länge efterarbetet
-  (`tools/film-after.ts`) ger samma bild som de godkända tagningarna. Prövat: inget mer. Stänger: frågan avgörs med en
-  mätning mot en känd färg.
-- **Trailern har ingen som lyssnat på den**, och tre nya tagningar av trappan föll (2/5, 2,5/5, 2/5: händerna håller
-  bara den första sekunden och ryggen är platt). Syns: Prov `trailer-noir-3`. Prövat: rollblad 4 med tatuerade händer
-  och dagens film som förlaga. Stänger: arbetet är pausat på hans ord; fortsätter det måste också gränd-glimten och de
-  tre scenerna efter trappan göras om.
-- **Ingen vy säger vilken plan en bankfilm beställdes mot.** Ordern bär det (`pictures[].drawn.plan` och `drawn.as`);
-  Paows givar ritades med flatQuad på plan e0fb924d. Stänger: en rad i Karta eller Granska.
+- **En giv utan sista bild kan lägga kortet fel:** `paow-giv-2-3-p5-02` landade 32 bildpunkter från P5C1, mot 1,5–13
+  för de andra platserna (efterarbetets gräns är 15). Stänger: A3P5C1 som stillbild först, och given med den som sista bild.
+- **Dockans vändning görs med fingrarna:** i dockfilmerna `svep24d` från A2.3 svänger kortet under stilla fingrar mitt
+  i flykten, och filmmodellen kopierar det (kortet halvgenomskinligt i 4–6 rutor); hans regel är att handleden vänder
+  kortet (BESKED, "Handleden vrider kortet"). Stänger: en omgjord dockfilm med vriden handled och vändningen nära
+  platsen, prövad på en plats först.
+- **Rosen på högra handryggen blir en mandala** i A3P4C1 och i given till A3P3C1 från ruta 46; en retur därifrån byter
+  tillbaka (`paow-retur-2-3-p4-01`). Stänger: A3-bilden rättas mot handen i A2.3 innan fler returer beställs, och
+  granskaren jämför handryggen i slutrutan med ankaret.
+- **Landningsverktyget stoppar ytterplatserna:** i A3P1C1 och A3P2C1 täcker hon ankarets huvud och axlar till 58 och 69
+  % (gränsen är 75 %), och konturen korsar skarven vid skon. Kontrollen är inte sänkt. Stänger: ett beslut om hur en
+  lutning mot en ytterplats mäts, och en skarv som följer armen dit.
+- **H24-P4 är en Variant, ingen färdig helkedja:** given fick 4/5, men en rosa fläck vid skon finns också i det frysta
+  A3-slutankaret, och ingång, retur och nycklad spelbild är inte godkända som kedja
+  (`assets/orders/paow-giv-2-3-p4-h24-03/take-1/review/review.md`).
+- **READY-C-kedjan saknar full rörelsedom och naturlig utgång;** inpass och utpass är bara labbvarianter
+  (`assets/proofs/paow-ready-c-chain-20261118/fixed-review.md`).
+- **Fyra platser och dealerns kort saknar A3, och plats 1 är svag:** `GIV-2.3` går bara att beställa till plats 1, 4
+  och 5, och i given till plats 1 far armen från mitten på en tredjedels sekund (dockan kan inte resa sig). Av tre
+  bildmodeller lämnade bara ideogram-4.5-precise-edit allt utom armen orört (`tools/landing-make.ts`). En plats första
+  tagning utan sista bild kräver en ny mall, och `film-fix` kortar ett stilla slut med högst tre rutor. Stänger: ett A3
+  per plats (25 krediter var) och en docka som kan resa sig för plats 1 och 2; vänsterhandens text blir fel om bara ett
+  A3 för höger hand gäller.
+- **Det bandet inte kan än** ([löpande bandet](../tools/dealer-line.md)): landningsbild, keystone och ankare 1 är inga
+  steg i Beställ (`STEPS` i `src/order-model.ts`), och D.C4 saknas som eget beställningsmål. Stänger: stegen läggs i
+  ordermodellen; metoden per steg står i `data/order-methods.json`.
+- **Produktionslistan räknar en bortmätt tagning som på väg:** `node tools/produce.ts paow` räknar en order som på väg
+  tills varje tagning är GRANSKAD eller INFÖRD (`IN_FLIGHT`), också en tagning på MÄTT med dom i kvittots `review`.
+  Stänger: en tagning med dom i kvittot räknas som avslutad.
+- **Kön läggs bara när en huvudagentchatt är öppen:** vakten `node tools/order-watch.ts` lever med chatten som startade
+  den, och varje ny huvudagent startar den. Stänger: en vakt som inte behöver en öppen chatt; ingen väg vald.
+- **Paow har ingen användbar landningsbild:** `paow-landning-p4-giv-t2` (`gäller` i `data/media-roles.json`) visar
+  handryggen och duger inte för en vändning; sista bilden i en giv tas i stället ur bankens film där returen börjar
+  (`cutFrameOf`, `src/cut-frame.ts`). Stänger: landningsbilder med tatuerade händer för plats 3–5.
+- **Händerna byter mellan gamla och nya filmer:** banken har otatuerade, större händer; keystone, ankare 1, A2.2
+  (`paow-ankare-2-2-blick-a`) och A2.3 (`paow-ankare-2-3-d`) har tatuerade, och att måla tatueringar i färdiga filmer
+  föll två gånger (2/5). Stänger: en hel uppsättning ur de tatuerade bilderna, med ett tatuerat A2.1.
+- **Huvudet hoppar mellan den nya ingången och givarna från A2.3** (2026-11-23): givarna och returen är gjorda från
+  `paow-ankare-2-3-c` (blicken åt sidan), men A2.3 är nu `paow-ankare-2-3-d` (blicken ned). Syns i labbet där Tatuerads
+  steg spelas i följd; de äldre filmerna bär brickan "äldre A2.3", och spelet ger inte från A2.3. Stänger: givarna och
+  returen görs om från den nya bilden.
+- **Skuggan under armarna** sitter i grundbilden och syns i varje film av Paow; keystonebilderna med tatuerade händer
+  saknar den. Stänger: nya ankare och filmer ur dem.
+- **Paow ser lite smal ut** (Pamelas kroppsbredd under ett 8,7 % högre huvud). Stänger: ingen väg vald.
+- **Banken räcker inte till en hel runda med egna filmer:** spelet använder nödlösningar (ersättare, utgången baklänges;
+  `src/game-director.ts`), och nio returer från en plats till vila saknas (`node tools/produce.ts paow`). Stänger:
+  filmerna beställs.
+- **Paows Primär för P1C1 → A2.1 spelas aldrig** (fel hand mot given; syns i Karta). Stänger: Jakob byter Primär.
+- **23 talfilmers `motions/` pekar på kvitton som är flyttade** till `D:/dealer-scratch/tmp/tal/overtaliga/` (i
+  registren, inte i spelet). Stänger: posterna pekas om eller tas ut.
+- **Flera av Paows källor i `data/media-roles.json` ligger på D:** och försvinner om slaskdisken städas. Stänger:
+  filerna flyttas till `assets/` och posterna pekas om.
+- **Kling 4:s färger** läses som BT.601 fast filmen är BT.709-märkt; det syns inte så länge efterarbetet
+  (`tools/film-after.ts`) ger samma bild som de godkända tagningarna. Stänger: en mätning mot en känd färg.
+- **Trailern har ingen som lyssnat på den,** och tre nya tagningar av trappan föll (2–2,5/5, Prov `trailer-noir-3`).
+  Arbetet är pausat (BESKED, "Trailern är pausad"); fortsätter det görs också gränd-glimten och de tre scenerna efter
+  trappan om.
+- **Ingen vy säger vilken plan en bankfilm beställdes mot;** ordern bär det (`pictures[].drawn.plan`, `drawn.as`).
+  Stänger: en rad i Karta eller Granska.
 
 ## Läpparna och rösten
 
-- **Talverktyget tar inte det delade låset.** `tools/speech.ts` renderar på grafikkortet utan att ta låset som headless
-  Chrome och andra renderingar delar (skillen `bredvid-andra-sessioner`), så två körningar kan gå samtidigt på Jakobs
-  dator. Sett 2026-11-21, när två munlappar lades om (104 s och 431 s). Prövat: att ta låset för hand runt körningen.
-
-- **Läpparna i bankens repliker.** Syns: banken har repliker lagda med två recept ([TAL.md](TAL.md), "Kvaliteten"); vid
-  stora öppningar står överläppen högst nio till tolv rutor medan käken rör sig, tysta pauser talas med öppen mun, och
-  munnen är rendererns (matt, mjukare underläpp, strimmiga tänder); `namn` hörs som "Pau". Prövat: omläggningen med
-  hennes egen underläpp och gipor, som är uttagen på hans dom; måtten finns kvar som oanvända val i
-  `src/speech-plan.ts`. Stänger: munnen i realtid, som är huvudmålet.
-- **Ingen granskare kan höra.** Syns: varje dom över en talfilm, trailern och filmen till hans chef gäller bara bilden.
-  Prövat: inget. Stänger: Jakob lyssnar själv innan något med ljud skickas vidare.
-- **Munnen i realtid når inte realtid på hans dator.** Syns: den egna köraren ger 12–13 rutor per sekund i hela kedjan
-  på hans RTX 3060 mot 24 för realtid, och de första rutorna av en replik kommer efter 1,3–2,5 s. Prövat: `bbox_shift`
-  ger inte större läppar (storleken kommer ur inläggningen). Tre profilprov 2026-11-18 med fyra CPU:er gav 5,6–6,7 rutor/s
-  varmt; det är en annan begränsad körning, inte ett nytt mått på maxfart. Stänger: provkvällen på hans pod; en podd kan inte bygga en
+- **Talverktyget tar inte det delade låset:** `tools/speech.ts` renderar på grafikkortet utan låset som headless Chrome
+  och andra renderingar delar (skillen `bredvid-andra-sessioner`). Stänger: verktyget tar låset; till dess tas det för
+  hand runt körningen.
+- **Läpparna i bankens repliker** ([TAL](TAL.md), "Kvaliteten"): överläppen står still 9–12 rutor vid stora öppningar,
+  tysta pauser talas med öppen mun, munnen är rendererns, och `namn` hörs som "Pau". Stänger: munnen i realtid, som är
+  huvudmålet.
+- **Ingen granskare kan höra:** varje dom över en talfilm eller trailern gäller bara bilden. Stänger: Jakob lyssnar
+  själv innan något med ljud skickas vidare.
+- **Munnen i realtid når inte realtid på hans dator:** 12–13 rutor/s på hans RTX 3060 mot 24, och de första rutorna
+  efter 1,3–2,5 s; `bbox_shift` ger inte större läppar. Stänger: provkvällen på hans pod; en pod kan inte bygga en
   image, så Dockerfilens steg måste köras där som ett skript, som inte är skrivet.
-- **Körarens nya Dockerbygge är inte prövat.** Koden, profil, licenser och ursprung finns i `tools/python/mouth-runner`;
-  tre GPU-prov använder dess kod monterad över befintlig image. Stänger: bygg från den pinnade Dockerfilen och jämför samma prov.
-- **Rösten.** Syns: spelet väljer talfilmerna med rösten Paow (`data/speech.json`), och 25 med rösten Jessica spelas
-  inte; rösten ligger i Kevins ElevenLabs-konto, och registret namnger nyckelraden, aldrig nyckeln
-  ([TAL.md](TAL.md), "Rösten"). Jakobs första röst-id är inte färdigtränat hos ElevenLabs. Prövat: inget. Stänger: bara
-  kontots ägare kan göra träningen klar.
-- **Hennes röst på en iPhone är byggd men inte prövad på en telefon.** Syns: Safari låter en film höras bara när den
-  startas i en beröring; en nekad talfilm spelas då ljudlöst och rösten sägs av sidans eget ljud, satt mot filmens rutor
-  (`5ee46d2`, `3de51b5`; [TAL.md](TAL.md), "Rösten på en telefon"). Antaget, inte prövat: att Safari nekar med just det
-  felet och avkodar ljudspåret. Hon hörs med ringsignalen av (`playback` i `src/scene3d-view.ts`). Första gången en
-  replik sägs kommer rösten in sent. Stänger: Jakob prövar på sin telefon, och ett fel där läses med en skärmbild av
-  `/trailer?diagnos=1` ([DRIFT.md](DRIFT.md), "Ett fel som bara syns på en telefon"); en liten ljudfil bredvid varje
-  talfilm tar bort den sena rösten när grunden har hållit.
+- **Körarens nya Dockerbygge är inte prövat** (`tools/python/mouth-runner`; GPU-proven har koden monterad över en
+  befintlig image). Stänger: bygg från den pinnade Dockerfilen och jämför samma prov.
+- **Rösten:** 25 talfilmer med rösten Jessica spelas inte (spelet väljer rösten Paow, `data/speech.json`); rösten ligger
+  i Kevins ElevenLabs-konto, registret namnger nyckelraden och aldrig nyckeln, och Jakobs första röst-id är inte
+  färdigtränat ([TAL](TAL.md), "Rösten"). Stänger: bara kontots ägare kan göra träningen klar.
+- **Hennes röst på en iPhone är byggd men inte prövad på en telefon:** Safari låter en film höras bara när den startas i
+  en beröring, så en nekad talfilm spelas ljudlöst och rösten sägs av sidans eget ljud ([TAL](TAL.md), "Rösten på en
+  telefon"); att Safari nekar just så är antaget, och första repliken kommer in sent. Stänger: Jakob prövar på sin
+  telefon, och ett fel där läses med `/trailer?diagnos=1` ([DRIFT](DRIFT.md), "Ett fel som bara syns på en telefon");
+  en liten ljudfil bredvid varje talfilm tar bort den sena rösten.
 
 ## Spelet och scenen
 
-- **Hopp mellan filmer** (Jakob 2026-11-14: "och att vissa olika hopp görs. inte farlgigt, men lite"). Syns: i spelet,
-  som bilden som står när nästa film inte är färdig; filmerna själva passar varandra (0 bildpunkter i 98 % av 3 474
-  byten). Prövat: vila efter vila och efter replik är rättade (`restFilm` i `src/game-film.ts`). Kvar: vila efter en
-  retur (83 ms), och returerna slutar 2–3 bildpunkter från vilan och 4–9 nivåer ljusare. Stänger, förslag som inte är
-  infört: en retur spelar till sin sista ruta (`IDLE_RULE`, `resolveRound` i `src/clip-graph.ts`). Verktygen ligger i
-  `D:/dealer-scratch/tmp/levande-objekt/ljus/` (`skarv-prov.mjs`, `skarv-vila.mjs`, `retur-slut.mjs`, `hopp/`),
-  mätningarna efter rättningen i `D:/dealer-scratch/tmp/huvudagent11/hopp-efter/`.
-- **Rummets film** `monaco-liv-2.mp4` har ett litet steg i varje nyckelruta (var 8,3 s, 0,57 nivåer av 255). Syns:
-  skattat inte alls. Prövat: en kodning utan nyckelrutor (`D:/dealer-scratch/tmp/levande-objekt/rumsliv/kod-prov-2.sh`).
-  Stänger: filmen kodas om, under ett nytt namn, om någon ser steget.
-- **Filmen före spelet** (`/trailer`). Syns: efter trycket står startbilden still medan filmen hämtas (cirka 0,7–0,8 s),
-  och sidan slutar rita i 0,35–0,57 s; på en stående telefon syns filmens övre kant som en svag linje över hennes hjässa.
-  Prövat: orsaken till uppehållet är inte funnen. Stänger: ingen väg vald. Filmen spelas in på nytt när spelets vilobild
-  ändras ([SYSTEM.md](SYSTEM.md), "En film före spelet").
-- **Spelet säger inte när material saknas eller byts.** Syns: kort utan hand, nödlösningar och återgången via skon står
-  bara i `window.game.gaps` och `?diagnos=1`: varje sista kort går tillbaka via skon (ingen av Paows nio returer till
-  vila har film), dealerns tredje och fjärde kort läggs utan hand, och plats 4:s andra kort spelar första kortets film
-  med kortet flyttat. Det som gäller i Material blandar dessutom två par händer (tatuerade i keystone och ankare 1 och
-  2.3, otatuerade i 2.1, 2.2 och hela banken). Prövat: notiserna om skarv, hand och kortsida ligger nu också i gaps
-  (`ae9e4d9`), och ett test står som vakt för den dag filmer från 2.3 kommer in i spelet. Stänger: filmerna beställs;
-  att visa notiserna på sidan är Jakobs val. Alla fynd med status: `D:/dealer-scratch/tmp/raddning-kedja/FYND.md`.
-- **Ett svar som går förlorat på vägen låser spelet** (nätet, en omstartad server). Syns: sidan visar motorns engelska
-  "The session is at version N; reload and resend", och varje nytt tryck nekas tills sidan laddas om; inget dras
-  eller betalas två gånger. Prövat: motorn svarar en omsändning med samma `requestId` ur sitt kvitto (testat), men
-  sidan gör ett nytt `requestId` per tryck. Stänger: sidan sänder om samma kommando med samma `requestId`, och motorns
-  fel får svensk text på sidan.
-- **En omladdning i kopian är ett nytt bord** (saldo 1000, en pågående runda borta), och labbserverns bord lever bara
-  så länge servern går. Avsiktligt (en spelare i minnet). Stänger: när spelet sparar bordet utanför minnet; projektet
-  är frikopplat från Scoutgaming i nuläget (Jakob 2026-11-23).
-- **Spelet.** Syns: 3D-skon klipper handen i givarna; helkroppsfilmerna har ingen sko; utfallsskyltarna ligger över
-  insatsbrickorna när alla sju platser spelar; dubbling och försäkring är inte sedda ([SYSTEM.md](SYSTEM.md),
-  "Spelet"). Prövat: inget. Stänger: var och en i ett eget steg i spelets bana.
+- **Hopp mellan filmer** (sett av Jakob 2026-11-14): bilden står när nästa film inte är färdig; filmerna passar
+  varandra (0 bildpunkter i 98 % av 3 474 byten). Kvar: vila efter en retur (83 ms), och returerna slutar 2–3
+  bildpunkter från vilan och 4–9 nivåer ljusare. Förslag, inte infört: en retur spelar till sin sista ruta (`IDLE_RULE`,
+  `resolveRound` i `src/clip-graph.ts`); verktygen i `D:/dealer-scratch/tmp/levande-objekt/ljus/`.
+- **Rummets film** `monaco-liv-2.mp4` har ett litet steg var 8,3 s (0,57 nivåer av 255), skattat osynligt. Stänger:
+  filmen kodas om utan nyckelrutor, under ett nytt namn, om någon ser steget.
+- **Filmen före spelet** (`/trailer`): startbilden står still cirka 0,7–0,8 s medan filmen hämtas, sidan slutar rita i
+  0,35–0,57 s, och på en stående telefon syns filmens övre kant som en linje över hjässan. Orsaken är inte funnen.
+  Filmen spelas in på nytt när spelets vilobild ändras ([SYSTEM](SYSTEM.md), "En film före spelet").
+- **Spelet säger inte när material saknas eller byts:** kort utan hand, ersättningsfilm, skarv, fel hand och återgången
+  via skon står bara i `window.game.gaps` och `?diagnos=1` (räknade i `src/game-film.ts`): varje sista kort går via
+  skon, dealerns tredje och fjärde kort läggs utan hand, och plats 4:s andra kort spelar första kortets film. Material
+  blandar två par händer. Stänger: filmerna beställs; att visa luckorna på sidan är Jakobs val (fynden:
+  `D:/dealer-scratch/tmp/raddning-kedja/FYND.md`).
+- **Ett svar som går förlorat låser spelet:** sidan visar motorns engelska "The session is at version N; reload and
+  resend" och nekar varje tryck tills den laddas om; inget dras två gånger. Motorn svarar en omsändning med samma
+  `requestId`, men sidan gör ett nytt per tryck (`src/game-page.ts`). Stänger: sidan sänder om med samma `requestId`,
+  och felet får svensk text.
+- **En omladdning i kopian är ett nytt bord** (saldo 1000), och labbserverns bord lever bara så länge servern går;
+  avsiktligt, en spelare i minnet. Stänger: spelet sparar bordet utanför minnet.
+- **Spelet:** 3D-skon klipper handen i givarna, helkroppsfilmerna har ingen sko, utfallsskyltarna ligger över
+  insatsbrickorna när alla sju platser spelar, och dubbling och försäkring är inte sedda ([SYSTEM](SYSTEM.md), "Spelet").
+  Stänger: var och en i ett eget steg.
 - **3D-scenens hemvy** stämmer inte med `assets/proofs/bakgrund-3d-referens/` (medel 0,96, max 168), eftersom filtens
-  tryck har flyttat med planen. Prövat: inget. Stänger: referensen tas om med Jakobs ögon; den ändras inte för att dölja
-  avvikelsen.
-- **Profilval 1 kapar toppen av hennes huvud** i 93 % av rutorna. Syns: i 3D-scenen med det profilvalet. Prövat: inget.
-  Stänger: ingen väg vald.
-- **Reglage för `cardBack` och `cardFace` finns inte i Bordets läge Scen.** Syns: filmens egna kortfärger kan bara väljas
-  med adressens ord. Prövat: inget. Stänger: två reglage i Scen, när efterarbetet byggs.
-- **Ett stegs luckor syns inte på spelsidan.** Kort lagt utan hand, ersättningsfilm, skarv och fel hand räknas fram i
-  `src/game-film.ts` men visas inte. Stänger: en visning bakom en nyckel i adressen.
+  tryck har flyttat med planen. Stänger: referensen tas om med Jakobs ögon; den ändras inte för att dölja avvikelsen.
+- **Profilval 1 kapar toppen av hennes huvud** i 93 % av rutorna. Stänger: ingen väg vald.
+- **Reglage för `cardBack` och `cardFace` saknas i Bordets läge Scen;** filmens kortfärger väljs bara med adressens
+  ord. Stänger: två reglage i Scen, när efterarbetet byggs.
 
 ## Labbet och verktygen
 
-- **Materials anteckningar har kvar id:n** (2026-11-21). Omkring 180 av Paows 233 anteckningar (Om bilden och
-  sidfoten) har ett id och 135 nämner ElevenLabs. Visaren skriver datum som dag och månad, och raden Gjord ur visas
-  utan kommando, sökväg och kvittonamn (hela raden ligger under pekaren); `tools/order-bring.ts` skriver nya rader
-  utan id. Talfilmernas registrering (`tools/speech.ts`) och de gamla anteckningarna är inte omskrivna.
-- **Ett nytt orderutkast skriver texten innan bilderna ligger på disk** (2026-11-20, sett på piloten
-  `paow-giv-2-3b-p4-pilot-01`). Med en A3 som sista bild säger texten då att kortets blå sida är omärkt, fast bilden
-  bär kryss och prick. `refresh` på utkastet rättar texten; gör det före ett godkännande. Verktyget är inte rättat.
-- **Kling-mellanbilder saknas i aktuellt Codex-MCP-schema** (2026-11-19), trots stöd i Runways API. Start/slut och
-  `referenceVideos` finns nu; D.C3 A/B/C levererades direkt genom Codex, 372 krediter. Tidigare brist på modellstöd
-  är därmed löst. En kontaktbild mellan start och slut kräver fortfarande en anslutning som exponerar fältet.
-  H24-02:s äldre reservation ligger kvar konservativt; ingen automatisk omtagning följer av det nya stödet.
-- **Startflaggan mäter genomsnittlig bildändring, inte stillastående hand.** D.C3-proven ger 125/25/168 flaggade
-  startrutor trots tidigare handrörelse. Texten är förtydligad; tröskeln och kontrollen är oförändrade. Använd
-  rutgranskning för tempo. Efterarbetets äldre planmått läser dessutom rå planfil: D.C3 kan saknas där tills kortet
-  sparats i labbet. `dealCheck` jämför det landade kortet mot orderns faktiska slutbild, även för D.C3; en order utan slutbild mäts
-  mot kortplanens kort (`cardFrom` i kvittot säger vilket).
-
-- **En ordergrupp är inte en filsystemtransaktion.** Förhandsvisningens källor valideras före första skrivningen,
-  labbets Material- och orderskrivningar delar kö och sparomtag returnerar samma ID:n. Ett processavbrott mitt i
-  gruppen kan lämna några utkast på disk; externa skribenter efter sista källkontrollen omfattas inte av kön.
-  Stänger: en återhämtningsbar gruppjournal om flera samtidiga skribenter eller avbrott ska stödjas.
-
-- **Kreditspärren bevakar Dealers beställningsliggare.** `begin` reserverar innan MCP-anropet, även egna importer
-  räknas; en annan vanlig klon har en annan liggare. Verkställaren måste skicka exakt en gång före `validUntil`.
-  Prövat: samtidiga starter, osäkert utfall, import och utgånget mandat. Direkta MCP-anrop utanför linjen omfattas
+- **Materials anteckningar har kvar id:n:** omkring 180 av Paows 233 har ett id och 135 nämner ElevenLabs.
+  `tools/order-bring.ts` skriver nya rader utan id; talfilmernas registrering (`tools/speech.ts`) och de gamla
+  anteckningarna är inte omskrivna. Stänger: de skrivs om.
+- **Ett nytt orderutkast skriver texten innan bilderna ligger på disk:** med en A3 som sista bild säger texten då att
+  blå sidan är omärkt. `refresh` på utkastet rättar texten; gör det före ett godkännande. Stänger: verktyget rättas.
+- **Klings mellanbilder** finns i Runways API men inte i Codex-MCP-schemat, så en kontaktbild mellan start och slut
+  kräver en anslutning som exponerar fältet. H24-02:s äldre reservation ligger kvar; ingen automatisk omtagning följer.
+- **Startflaggan mäter genomsnittlig bildändring, inte stillastående hand** (D.C3-proven: 125, 25 och 168 flaggade
+  startrutor trots handrörelse); använd rutgranskning för tempo. Efterarbetets äldre planmått läser rå planfil, så D.C3
+  kan saknas där tills kortet sparats i labbet.
+- **En ordergrupp är inte en filsystemtransaktion:** ett avbrott mitt i gruppen kan lämna några utkast på disk, och
+  skribenter utanför labbets kö omfattas inte. Stänger: en återhämtningsbar gruppjournal, om det ska stödjas.
+- **Kreditspärren bevakar bara Dealers beställningsliggare:** `begin` reserverar före anropet, en annan klon har en
+  annan liggare, och verkställaren skickar exakt en gång före `validUntil`. Direkta MCP-anrop utanför linjen omfattas
   inte av kodspärren; de ska bokföras och får aldrig användas för att kringgå mandatet.
-
-- **Äldre slaskinventering behöver omprövas.** Listan `D:/dealer-scratch/tmp/stad-1118/` föregår den nya spärren
-  med exakt sökväg och verifierad ägare. Verktyget kontrollerar filernas ändringstid vid körning och städar inte
-  när labbet startar. Inga gamla förslag verkställs automatiskt; välj och verifiera ett eget avslutat arbete i taget.
-- **Borta ur labbet tills det nya har dem:** "Rå | renderad" på en tagning (hör till Efterarbete) och panelen Vila.
-  Syns: det gamla labbet hade dem. Prövat: inget. Stänger: de byggs i Bordets läge Efterarbete.
-- **Sidornas ord:** 72 ställen säger annat än ordlistan. Syns: på studions sidor. Prövat: listan med fil, rad och
-  förslag (`D:/dealer-scratch/tmp/stadning/ord/ORD.md`, del c); radnumren måste kontrolleras, filerna har ändrats sedan
-  dess. Stänger: ställena rättas efter ordlistan.
-- **Inte prövat av en hand i Bordet:** Godkänn i läget Beställ, att dra reglaget Perspektiv och trycka Spara, byte av vy
-  med osparade ändringar och knappen för att läsa in en fil. Syns: ingenstans än. Prövat: sidorna är sedda i headless
-  Chrome, och "Skapa utkast" är tryckt en gång. Stänger: var och en prövas i en webbläsare.
-- **Filmer kan se utfrätta ut i Jakobs flik.** Syns: hos honom, troligen på hans skärm och inte i filerna. Prövat:
-  inget. Stänger: lägg alltid en stillbild bredvid en film han ska döma.
-- **Testerna täcker inte filmerna.** Sedan 2026-11-21 (Jakobs ord, se BESKED, "Arbetet och dokumenten") finns bara
-  de tester kvar som skyddar publiceringen, spelets regler, hans domar och val, beställningarna och dokumentens tak;
-  testerna för kortspår, scenens utseende och bankens filmer är borttagna (de finns i Git före den dagen). Stänger:
-  visuell verifiering på den verkliga banken, i labbet och med hans öga.
-- **Jakobs GitHub-konto är låst av en betalningsfråga** ("your account is locked due to a billing issue"), sedan
-  mellan 2026-11-14 och 2026-11-15; ännu 2026-11-18 kl. 02.46 efter hans två svar att det är ordnat. Syns: inte i det
-  här repot längre, som inte kör något hos GitHub (DRIFT, "Git och kontroller"). Felet är varken en licens eller
-  stora filer här (repot är publikt och 16 MB): det som kostar på kontot är ett annat repos automatiska kontroller
-  (`D:/dealer-scratch/tmp/github-kostnad/siffror.txt`, förslagen bredvid). Stänger: bara han, under Settings, Billing
-  and licensing.
-- **Mobilkopians telefonprov återstår.** Kopians aktuella version står i spelets lägesfil (`docs/lage/spelet.md`).
-  Prövat på `1206c43` (publicerad 2026-11-19 på Jakobs ja till sju filmer): Material-registret, Bordets staplade panel
-  och inloggningslänkarna fungerar i nätkopian; 19/19 nätkontroller, alla sju filmer med Range vid början, mitten och
-  slutet; IAB 390 × 844 och 844 × 390, hand 18 mot 19, saldo 995.
-  Bevis: `assets/proofs/paow-mobile-studio-20261118`. Fysisk telefon och ljud är inte prövade; stående spel beskär
-  ytterplatserna. Material kallar sex av åtta ankare saknade när de inte ingår i publiceringsurvalet, även om de finns
-  lokalt. Stänger: telefonprov och tydlig skillnad mellan opublicerat och saknat material. Äldre kontrollskript i
-  `huvudagent11/look/` använder ett ersatt lösenord och ska inte köras.
-- **Paows ankare 1 visas som "avviker" i Material.** `paow-vila-tatuerad` mäts mot Pamelas händer i
+- **Äldre slaskinventering behöver omprövas:** listan i `D:/dealer-scratch/tmp/stad-1118/` föregår spärren med exakt
+  sökväg och verifierad ägare. Inga gamla förslag verkställs automatiskt; välj och verifiera ett eget avslutat arbete i
+  taget.
+- **Borta ur labbet tills det nya har dem:** "Rå | renderad" på en tagning och panelen Vila. Stänger: de byggs i Bordets
+  läge Efterarbete.
+- **Sidornas ord:** 72 ställen säger annat än ordlistan (`D:/dealer-scratch/tmp/stadning/ord/ORD.md`, del c; radnumren
+  har ändrats sedan). Stänger: ställena rättas efter ordlistan.
+- **Inte prövat av en hand:** i Bordet Godkänn i Beställ, reglaget Perspektiv med Spara, vybyte med osparade ändringar
+  och knappen för att läsa in en fil; i Granska Arkivera och Ta tillbaka. Sidorna är sedda i headless Chrome. Stänger:
+  var och en prövas i en webbläsare.
+- **Filmer kan se utfrätta ut i Jakobs flik,** troligen hans skärm och inte filerna. Lägg alltid en stillbild bredvid en
+  film han ska döma.
+- **Testerna täcker inte filmerna** (BESKED, "Tester: en kärna"): testerna för kortspår, scenens utseende och bankens
+  filmer är borttagna. Stänger: visuell verifiering på den verkliga banken, i labbet och med hans öga.
+- **Jakobs GitHub-konto var låst av en betalningsfråga** (från 2026-11-14, ännu 2026-11-18); det som kostar är ett annat
+  repos automatiska kontroller (`D:/dealer-scratch/tmp/github-kostnad/siffror.txt`), och det här repot kör inget hos
+  GitHub. Stänger: bara han, under Settings, Billing and licensing.
+- **Mobilkopians telefonprov återstår:** nätkopian är prövad utan telefon (19/19 nätkontroller,
+  `assets/proofs/paow-mobile-studio-20261118`), men inte på en fysisk telefon eller med ljud; stående spel beskär
+  ytterplatserna, och Material kallar ankare som inte publiceras för saknade. Äldre kontrollskript i
+  `huvudagent11/look/` använder ett ersatt lösenord och ska inte köras. Stänger: telefonprov, och en tydlig skillnad
+  mellan opublicerat och saknat material.
+- **Paows ankare 1 visas som "avviker" i Material:** `paow-vila-tatuerad` mäts mot Pamelas händer i
   `data/dealer-standard.json`. Stänger: ett mått per dealer.
 
 ## Pamela
 
-- **Pamela och 2D:** det platta överlägget läcker cirka 30 bildpunkter i fyra rutor i två av hennes givar
-  (`node tools/card-coverage.ts --all`), och hennes första dealerkort är 1,76 gånger för stort. Prövat: inget sedan hon
-  pausades. Stänger: tas upp när pausen hävs.
-- **Pamelas material stämmer inte med dagens kortplan.** Syns: i Material, som brickan "äldre plan": 14 av hennes 66
-  bilder med kort stämmer (8 vid första mätningen och sex till, alla på plats 4, efter formregeln i `2a56f08`) och ingen
-  av hennes mätbara givar. Prövat: mätningen i `data/media-fit.json`. Stänger: inget görs medan hon är pausad.
-- **Pamelas giv till plats 1 duger inte som referensfilm:** den visar kortet på kant när det svänger ur fönstret, och
-  Kling lade vändningen där (1/5 två gånger). Hennes plats 4 är ren
-  (`D:/dealer-scratch/tmp/film-standard/referenskontroll.tsv`). Stänger: en egen rörelse för plats 1.
-- **Fyra av Pamelas filmer** från 2026-11-11 ligger på disk utan post. Prövat: inget. Stänger: de registreras eller
-  arkiveras, på hans ord.
+Pamela är pausad (BESKED, "Paow är dealern, Pamela är pausad"); det här tas upp när pausen hävs.
+
+- **Pamela och 2D:** det platta överlägget läcker cirka 30 bildpunkter i fyra rutor i två givar (`node
+  tools/card-coverage.ts --all`), och hennes första dealerkort är 1,76 gånger för stort.
+- **Pamelas material stämmer inte med dagens kortplan:** 14 av 66 bilder med kort stämmer, och ingen av hennes mätbara
+  givar (`data/media-fit.json`).
+- **Pamelas giv till plats 1 duger inte som referensfilm** (kortet på kant när det svänger ur fönstret; Kling lade
+  vändningen där, 1/5 två gånger); plats 4 är ren. Stänger: en egen rörelse för plats 1.
+- **Fyra av Pamelas filmer** från 2026-11-11 ligger på disk utan post. Stänger: de registreras eller arkiveras, på hans
+  ord.
