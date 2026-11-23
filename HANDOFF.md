@@ -13,7 +13,6 @@ Läs AGENTS.md, den här sidan och EN lägesfil för din bana. Ersätt inaktuell
   Docka är en del av Bordet (`?lage=docka`): Docklabbet med Naturlig som förval, och dockans filmer bredvid tagningarna.
 - Den tatuerade uppsättningen är hans förstahandsval, och A2.3 gäller. Trädet Tatuerad fylls från A2.3 med en giv per
   kort och spelare ([film](docs/lage/film.md)). Spelet kan inte välja träd än.
-- Kortplan och order följer B-linsen. **Använd i Casino** sparar visningen, även Bred lins, för Casino och `/casino`.
 - Kopian på nätet är publicerad på `c9d006d` den 2026-11-20 på Jakobs ord, utan nya filmer. Telefonmått, fysisk
   telefon och ljud återstår ([spelet](docs/lage/spelet.md)).
 - Kontrollen före en push körs bara på datorn. Kontots tokengräns delas av alla sessioner: få underagenter.
@@ -23,28 +22,30 @@ Läs AGENTS.md, den här sidan och EN lägesfil för din bana. Ersätt inaktuell
 Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-18), med EN trovärdig giv först ([film](docs/lage/film.md)).
 
 1. Giv och återgång i en film är sättet (Jakob 2026-11-23): plats 1–6, kort 1, ligger i banken; plats 7 görs om och
-   kort 2 återstår. Sista given går direkt till vila, en retur per plats ([film](docs/lage/film.md)).
+   kort 2 återstår. Sista given går direkt till vila, en retur per plats. Hans godkända fria givar förs in i banken
+   som varianter ([film](docs/lage/film.md)).
 2. Dockan: kortet i handen genom vändningen, ingångarna A2.1–A2.3 och handen över skon
    ([LASMIG](dealer3d/LASMIG.md), "Naturlig ställning", Kvar).
 3. Jakobs plan, domar och orderutkast skrivs aldrig över; läs hans anteckningar med `node tools/proof-notes.ts`.
-4. P4.C2 Cykel01 är vald. Ordinarie spel återbrukar spelarnas C1 för C2/C3. Rundans 22 filmbehov täcks.
-   Rundbyggarens P6 går via A2.2; D.C3 är redigerbart och valfritt ([kort](docs/lage/kort.md)).
+4. Rundans 22 filmbehov täcks; P6 går via A2.2 ([kort](docs/lage/kort.md)).
 5. Den neutrala munnen gäller alla Paows repliker utom blackjack, som väntar på hans ja; ingen har hört ljudet ([spelet](docs/lage/spelet.md)).
-6. Grepp, tempo, mask och hela rörelsen återstår ([film](docs/lage/film.md)).
 
 ## Vem äger vad
 
 - **Huvudagentens adress: `dealer-c2`.** Claude-sessionen `dealer-c2` äger commits, push, taggar, studion,
   labbservern, spelet, 3D-scenens filmlager, `src/clip-graph.ts`, registren och styrdokumenten. Allt arbete görs på
   `main` i mappen `dealer`; en gren bara när ett arbete uttryckligen behöver isoleras (AGENTS, "Git och samarbete").
+  Sessionen avslutas 2026-11-23: den som tar över skriver sin adress på raden ovan och säger den till de andra.
 - **Jakob talar helst med huvudagenten, som delegerar** (hans ord 2026-11-17), men öppnar andra chattar när han
   vill. Den som gör något på hans ord säger det till huvudagenten och lämnar en fillista. Ingen skriver i en annans filer.
 - **Huvudagentens banor:** film, kort, labbet och studion, och spelet. Filerna de äger står under Var saker ligger i varje lägesfil.
   Banorna Scen, Tal och Trailer är stängda; deras filer hålls av huvudagenten ([spelet](docs/lage/spelet.md)).
 - **3D-banan** (`dealer3d/`, dockan som styr filmerna) är sedan 2026-11-18 en underagent till huvudagenten (hans
   ord) och börjar från [dealer3d/LASMIG.md](dealer3d/LASMIG.md). Mätningen är stängd; givarna från A2.3 är filmbanans.
-- **Kartabanan** (vyn Karta och dealerns träd) är en egen session sedan 2026-11-23 (hans ord) och börjar från
+- **Kartabanan** (vyn Karta och dealerns träd) är en egen session sedan 2026-11-23 och börjar från
   [docs/lage/karta.md](docs/lage/karta.md).
+- **Andra sessioner 2026-11-23:** `dealer-e7` har grafiken på kortet (kortmodellen, `/kortlandning.html`).
+  `dealer-a4` städar repot (tester som låser form, V6-rester, Pamela ur main) och har sagt att den committar det själv.
 - **Jakobs egna:** planen `placements/default.json` och hans domar i `motions/` (`review`), som skrivs från Granska och
   aldrig skrivs över av ett verktyg. En dom som getts åt honom (`node tools/review-put.ts`) är aldrig hans.
 - **En ny session** arbetar i mappen `dealer` och avgränsar sina filer först. Extra arbetsträd bara vid
@@ -83,4 +84,4 @@ Rutinen står i skillen `avsluta-arbete`. I korthet:
 3. Skriv läget där det hör hemma, och ersätt i stället för att lägga till: banans läge i lägesfilen, ett nytt besked
    i BESKED, en ny brist i BRISTER, en fråga till Jakob som kort i Beslut. Den här sidan ändras bara där en rad inte
    längre gäller.
-4. Läs `npm run stada` som rapport. Utför bara ett kontrollerat eget mål åt gången enligt DRIFT; inga andra sessioners rester.
+4. Läs `npm run stada` som rapport; rör inga andra sessioners rester.

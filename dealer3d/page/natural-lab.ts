@@ -13,6 +13,7 @@ import {layDeal, type PoseFilm, type Recipe, type Steer} from './lay.ts';
 import {poseOnDoll, type PoseOptions} from './pose-on-doll.ts';
 import {natural} from '../src/natural.ts';
 import {LANDING_DEFAULT, landed, landingTimes, type Landing} from '../src/landing.ts';
+import {TURN_DEFAULT, turnedInHand, type TurnId} from '../src/turn-in-hand.ts';
 import {naturalDoll, type Doll} from '../src/doll.ts';
 import {buildReturnCycle, type DealMotion, type ReturnCycleOptions} from '../src/return-cycle.ts';
 import type {Plan} from '../src/world.ts';
@@ -67,10 +68,11 @@ const bodyMore = (body: [number, number, number] | null, asked: [number, number,
  * as the difference from what the deal asks (`lab.bodyAsked`). `bodyShare`: the least share of that steering any frame
  * took (1: all of it; below 1 where her arms would not reach further).
  */
-export function moveNatural(laid: LaidNatural, body: [number, number, number] | null, knobs: Knobs, lens: Lens, landing?: Landing) {
-  const {motion, receipt} = natural(lens, laid.motion as never, laid.doll, {body: bodyMore(body, laid.deal.lab.bodyAsked), ...knobs});
+export function moveNatural(laid: LaidNatural, body: [number, number, number] | null, knobs: Knobs, lens: Lens, landing?: Landing, turn?: TurnId) {
+  const {motion: moved, receipt} = natural(lens, laid.motion as never, laid.doll, {body: bodyMore(body, laid.deal.lab.bodyAsked), ...knobs});
+  const inHand = turnedInHand(moved as never, laid.doll, turn ?? TURN_DEFAULT), motion = inHand.motion as typeof moved;
   const end = landed(motion, laid.doll, landing ?? {id: LANDING_DEFAULT}, landingTimes(motion as never));
-  return {motion: end.motion as unknown as typeof laid.motion, receipt, bodyShare: Math.min(...receipt.frames.map(f => f.bodyShare)), landing: end.receipt};
+  return {motion: end.motion as unknown as typeof laid.motion, receipt, bodyShare: Math.min(...receipt.frames.map(f => f.bodyShare)), landing: end.receipt, turn: inHand.receipt};
 }
 
 /**
@@ -82,12 +84,13 @@ export function moveNatural(laid: LaidNatural, body: [number, number, number] | 
  * read) and in "Naturlig" moved as a person moves, what the sliders steer going out over the return.
  */
 export function withReturn<D extends DealMotion & {lab?: {bodyAsked?: [number, number, number]}}>(deal: D, input: {way: Way | 'read'; body: [number, number, number] | null; knobs: Knobs; lens: Lens; doll: Doll;
-  source: {path: string; sha256: string}; cycle?: ReturnCycleOptions; flatHand?: boolean; before?: AsBefore; landing?: Landing}) {
+  source: {path: string; sha256: string}; cycle?: ReturnCycleOptions; flatHand?: boolean; before?: AsBefore; landing?: Landing; turn?: TurnId}) {
   const {way, lens} = input, read = way === 'read', doll = read ? input.doll : dollFor(way, input.doll, input.before);
   const cycle = buildReturnCycle(deal, input.source, {...input.cycle, ...(read ? {liftHand: 'L' as const} : {})});
   const posed = onDoll(lens, cycle, doll, read ? {hands: 'motion'} : undefined);
-  if (way !== 'naturlig') return {cycle, motion: posed.motion, shortMm: posed.shortMm, bodyShare: null, receipt: null, landing: null};
+  if (way !== 'naturlig') return {cycle, motion: posed.motion, shortMm: posed.shortMm, bodyShare: null, receipt: null, landing: null, turn: null};
   const moved = natural(lens, posed.motion as never, doll, {body: bodyMore(input.body, deal.lab!.bodyAsked!), ...input.knobs, steerOut: [cycle.cycle.liftStarts, cycle.cycle.readyFrom], ...(input.flatHand ? {flatHand: true} : {})});
-  const end = landed(moved.motion, doll, input.landing ?? {id: LANDING_DEFAULT}, landingTimes(moved.motion as never, cycle.cycle));
-  return {cycle, motion: end.motion as unknown as typeof posed.motion, shortMm: posed.shortMm, bodyShare: Math.min(...moved.receipt.frames.map(f => f.bodyShare)), receipt: moved.receipt, landing: end.receipt};
+  const inHand = turnedInHand(moved.motion as never, doll, input.turn ?? TURN_DEFAULT), motion = inHand.motion as typeof moved.motion;
+  const end = landed(motion, doll, input.landing ?? {id: LANDING_DEFAULT}, landingTimes(motion as never, cycle.cycle));
+  return {cycle, motion: end.motion as unknown as typeof posed.motion, shortMm: posed.shortMm, bodyShare: Math.min(...moved.receipt.frames.map(f => f.bodyShare)), receipt: moved.receipt, landing: end.receipt, turn: inHand.receipt};
 }

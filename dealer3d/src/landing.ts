@@ -95,7 +95,7 @@ const LAND = {
 };
 const TIP = NATURAL.tip, TIPS = FINGERS.map(c => c[3]), KNUCKLES = [5, 9, 13, 17];
 /** The radius each point of the hand is drawn with (dealer3d/src/stage.ts): the wrist, the knuckles, the other joints and tips. */
-const BALL = (k: number) => k === 0 ? 0.0125 : k === 1 || KNUCKLES.includes(k) ? 0.0105 : k === 2 ? 0.0088 : 0.0082;
+export const BALL = (k: number) => k === 0 ? 0.0125 : k === 1 || KNUCKLES.includes(k) ? 0.0105 : k === 2 ? 0.0088 : 0.0082;
 const rad = (d: number) => d * Math.PI / 180, deg = (r: number) => Math.round(r * 1800 / Math.PI) / 10, mm = (m: number) => Math.round(m * 10000) / 10;
 const smooth = (x: number) => { const t = Math.max(0, Math.min(1, x)); return t * t * (3 - 2 * t); };
 const round = (v: Vec3): Vec3 => v.map(x => Math.round(x * 10000) / 10000) as Vec3;
@@ -107,7 +107,7 @@ const flexAt = (S: Vec3[], a: number, b: number, c: number) => { const u = [S[b]
 const turnIn = (S: Vec3[], which: number[], pivot: number, by: number, spread = false) => { const o = S[pivot], c = Math.cos(by), s = Math.sin(by);
   for (const k of which) { const d = sub(S[k], o); S[k] = spread ? [o[0] + d[0] * c - d[2] * s, S[k][1], o[2] + d[0] * s + d[2] * c] : [o[0] + d[0] * c - d[1] * s, o[1] + d[0] * s + d[1] * c, S[k][2]]; } };
 /** A shape (hand-pose.ts `local`) with finger f's joints set to `bends` degrees, the outer ones following. */
-function bendFinger(S: Vec3[], f: number, bends: [number, number, number]) {
+export function bendFinger(S: Vec3[], f: number, bends: [number, number, number]) {
   const chain = [0, ...FINGERS[f]]; for (let j = 0; j < 3; j++) turnIn(S, chain.slice(j + 2), chain[j + 1], rad(bends[j]) - flexAt(S, chain[j], chain[j + 1], chain[j + 2]));
 }
 /** The hand `p` turned about `axis` through its wrist `w`. */

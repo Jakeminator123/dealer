@@ -32,8 +32,8 @@ som gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompt
 1. Plats 7: dockan ska hålla kortet genom vändningen ([LASMIG](../../dealer3d/LASMIG.md)); sedan dockans film,
    given igen och dess retur. Därefter kort 2.
 2. Mall 15: mer frihet åt filmen i vändningen; landningens mening skrivs redan i texten.
-3. De tre fria givarna in i banken som varianter; Kortet bakom ryggen igen med en bild av ansiktet som referens.
-   Kastet per stol: en egen tagning ur stolens bilder, inte Aleph.
+3. De tre fria givarna in i banken som varianter: leveranserna och vägen står i `LASMIG.txt` under
+   `assets/proofs/fria-givar-20261123/leveranser/`. Kortet bakom ryggen igen med en bild av ansiktet som referens (95). Kastet per stol: en egen tagning ur stolens bilder, inte Aleph.
 4. Karta, trädens mått (returerna räknas inte) och hur spelet väljer träd är Kartabanans ([karta](karta.md));
    ingången A1 → A2.3 klipps ur ankarets film; hålkortet och dealerns kort.
 

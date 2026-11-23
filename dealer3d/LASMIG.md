@@ -25,8 +25,17 @@ slaskdisken.
   hennes filmer (38 cm bakom bordskanten, egna armbågar och händer); `?docka=paow`, `shoot.ts --doll paow`. Jakob
   2026-11-23 om vändningen vid platsen: "Bättre, men inte än", vänsterarmen ser fel ut mot skon. Scenens sko är rättad
   efter filmens samma dag, och vänsterhandens fingrar böjer mot handflatan (**Vänsterarmen vid skon**). Docklabbet:
-  Naturlig (Som förut kvar), giv från A2.1 eller A2.3, Giv och återgång, Landning (fem förval och egen, inte sedd av
-  Jakob); **Naturlig ställning**, **Ingång och återgång**, **Landningen**.
+  Naturlig (Som förut kvar), giv från A2.1 eller A2.3, Giv och återgång, Landning (fem förval och egen) och Vändning;
+  **Naturlig ställning**, **Ingång och återgång**, **Landningen**.
+- **Vändning "I handen"** (2026-11-23, prov, inte sedd av Jakob; förvalet är "Som förut", rutorna identiska med i dag):
+  `src/turn-in-hand.ts`, valet i Docklabbet (sparas som `lab.turn`), `tools/docka-cykel.ts --vandning i-handen`
+  (skriver `vändning <id> (…)`). Höger hand tar kortet när vänster har släppt det (kortet vilar på filten emellan),
+  tumme under, två fingertoppar på baksidan, och vrider det ungefär 125° med underarm och handled; där det ska ligga
+  ställs det på kanten och fälls, och fingrarna släpper vid cirka 60° från plant. Mätt på Jakobs standarder P7, P6, P4:
+  ingen del av handen genom kortet i någon ruta vändningen ändrar, kortet glider 0–0,2° per ruta i greppet. Svagt:
+  de sista ~60° faller kortet fritt (4–5 rutor), handen rullar tillbaka ~80° på de rutorna, och handleden är mer böjd
+  än förut på P6 (46° mot 29°) och P4 (37° mot 21°), P7 35° mot 31°. Nästa: släppet mjukare (ett ryck på 30 mm första
+  rutan), ett reglage för hur mycket handleden vrider, och renderade remsor (inga gjorda; vänta på GPU-låset).
 - **Provet en giv, två stolar** (2026-11-20, Jakobs "Ja kör" i Beslut; prov `3d-prov-en-giv-tva-stolar-20261120`; hans
   "ja" på kortet samma dag, och 2026-11-21 "SAM-dockan ska in, men inte nu" i BESKED): given till plats 4 med ett 3D-kort från stol 4 och stol 1. SAM 3D Body över filmen
   `paow-giv-2-3-p4-h24-cykel-02-01` (varannan ruta) ser ut som en människa som ger från båda stolarna (underagentens
