@@ -5,8 +5,8 @@ export type Pt = {x: number; y: number};
 export type Side = 'BACK' | 'EDGE' | 'FRONT' | 'NONE';
 export const OTHER = 0, YELLOW = 1, BLUE = 2, TABLE = 3, SKIN = 4, DARK = 5, TINT = 6, SHADE = 7;
 
-// Blue, dark and table are the rules of tools/build-anchor.ts; skin is that rule plus a blue floor.
-// Yellow was measured on pamela-p4-c1-plan-deal-02: lit back 224-240/192-224/0-16, tilted back
+// Blue, dark and table are the rules the old anchor builder used (removed 2026-11-23); skin is that rule plus a blue floor.
+// Yellow was measured on an early deal film to P4 (archived): lit back 224-240/192-224/0-16, tilted back
 // down to 112/144/0-16. Table green has r < 40, hand skin has b > 0.4*r and the tan frame of the
 // shoe window (128-192/96-144/32-80) has g < 0.8*r and b > 0.2*r, so it is neither card nor hand.
 // Shade is the yellow back in the shadow of the fingers (160-208/80-160/0: orange, still no blue).
@@ -212,7 +212,7 @@ export function axisOf(pixels: ArrayLike<number>, w: number) {
 export type Raw = {side: Side; corners: Pt[] | null; segment: [Pt, Pt] | null; area: number; fill: number; thickness: number; shoeShare: number; note: string};
 /** What the earlier frames expect: where the card should be now. `null` instead of a hint means the very first frame. */
 export type Hint = {region: Pt[] | null; size?: number; flat?: boolean}; // size: the area of the last flat card seen, when there was one. flat: the expectation is that card's shape, not the ribbon of an edge-on frame
-export const EDGE_THICKNESS = 9, MIN_AREA = 120, PALE_FILL = 0.6; // PALE_FILL: measured on pamela-p2-c1-plan-deal-01, where good fits of the printed face fill 0.66–0.73 of their quad and fits with a stray corner 0.45–0.49
+export const EDGE_THICKNESS = 9, MIN_AREA = 120, PALE_FILL = 0.6; // PALE_FILL: measured on an early deal film to P2 (archived), where good fits of the printed face fill 0.66–0.73 of their quad and fits with a stray corner 0.45–0.49
 
 /** Side from what one frame shows. A thin shape is edge-on whatever its colour. */
 export function sideOf(yellow: number, blue: number, thick: number, minArea = MIN_AREA, thin = EDGE_THICKNESS): Side {
@@ -333,7 +333,7 @@ export function follower(w: number, h: number, shoe: Uint8Array | null) {
 export type FilmKind = 'DEAL' | 'RETURN' | 'OTHER';
 // A smeared finding: this side's findings around it move more than `step` px a frame as a rule, and its quad's long side is under `small` of the median among
 // the same side's findings within `reach` frames, or two opposite sides differ by more than `lopsided` times. Measured on
-// pamela-p1-c1-plan-deal-01, frames 28-48: long sides 17-63 px among neighbours of about 100, opposite sides 34 against 120.
+// An early deal film to P1 (archived), frames 28-48: long sides 17-63 px among neighbours of about 100, opposite sides 34 against 120.
 export const SMEAR = {step: 12, reach: 10, small: 0.6, lopsided: 1.8};
 const sameWay = (from: Pt[], to: Pt[]): Pt[] => { // `to` begun at the corner nearest `from`'s first, so corners can be joined one to one
   let best = to, least = Infinity; for (const base of [to, [to[0], to[3], to[2], to[1]]]) for (let turn = 0; turn < 4; turn++) { const q = base.map((_, i) => base[(i + turn) % 4]), off = q.reduce((sum, p, i) => sum + dist(p, from[i]), 0); if (off < least) { least = off; best = q; } }

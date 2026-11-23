@@ -149,7 +149,7 @@ export function readFlip(track: FlipTrack, range: [number, number] | null = null
   const length = near.length ? extent(refLength, mean(near.map(f => extentAlong(f.quad!, angle)))) : null, width = near.length ? extent(refWidth, mean(near.map(f => extentAlong(f.quad!, angle + 90)))) : null;
   const shape: FlipReading['shape'] = !length || !width ? null : width.ratio < FLIP.changed && length.ratio >= FLIP.kept ? 'LÅNGSIDAN' : length.ratio < FLIP.changed && width.ratio >= FLIP.kept ? 'KORTSIDAN'
     : width.ratio < FLIP.changed && length.ratio < FLIP.changed ? 'BÅDA' : width.ratio >= FLIP.changed && length.ratio >= FLIP.changed && Math.abs(width.ratio - length.ratio) < FLIP.margin ? 'INGET' : 'SVAGT';
-  // A weak change gives no leaning: read by eye (pamela-p7-c1-plan-deal-02), a card carried fast and already nearly on edge
+  // A weak change gives no leaning: read by eye (an early deal film to P7), a card carried fast and already nearly on edge
   // loses length to blur and foreshortening while its width has nothing left to lose.
   const shapeLeans: Exclude<Axis, 'OKLART'> | null = shape === 'LÅNGSIDAN' || shape === 'KORTSIDAN' ? shape : shape === 'BÅDA' && width && length && Math.abs(width.ratio - length.ratio) >= FLIP.margin ? (width.ratio < length.ratio ? 'LÅNGSIDAN' : 'KORTSIDAN') : null;
   if (oblong > FLIP.narrow) checks.push(`Kortet bärs redan smalt före vändningen (${say2(oblong)} : 1): bredden har lite kvar att förlora.`);
@@ -179,7 +179,7 @@ export function readFlip(track: FlipTrack, range: [number, number] | null = null
 
   // The open face right after the turn, in the same place and perspective as the line: does the line run along the card's
   // length there (its main direction) or across it? The most open sure view of the face within FLIP.side frames counts.
-  // The back before the turn is not asked the same: read by eye (pamela-p5-c1-drawn-deal-02, pamela-arkiv-d-c3-third-join),
+  // The back before the turn is not asked the same: read by eye (two early films: a deal to P5 and the dealer's third card),
   // its most open view lies 8–10 frames back and the hand has turned the card 45–55° in the picture since, so it votes wrong;
   // the followed length (the line against it) already carries that view through the hand's turning.
   const openView = (side: 'BACK' | 'FRONT'): FlipReading['open'][number] | null => {

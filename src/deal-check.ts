@@ -82,7 +82,7 @@ export function realFacingLong(px: { x: number; y: number }, lens: Lens = TABLE_
 export function cardStory(frames: readonly FrameCard[], options: { side?: 'FRONT' | 'BACK'; lens?: Lens; settle?: [number, number] | null; edge?: number } = {}) {
   const T = THRESHOLDS, lens = options.lens ?? TABLE_LENS;
   // The next card in the shoe is no dealt card: a yellow blob on the shoe's side (x over 1050) that stands still through the
-  // last frames is the shoe's card, wherever another dealer's shoe stands (Pamela's window lies outside the bank's window
+  // last frames is the shoe's card, wherever another dealer's shoe stands (it can lie outside the bank's window
   // box), and every yellow blob within 30 px of it is left out.
   const byFrame = [...frames].sort((a, b) => a.f - b.f), tail = byFrame.slice(-8).map((x) => x.dealtYellow).filter((b): b is Blob => !!b && b.centre[0] > 1050);
   const shoe = tail.length >= 6 && tail.every((b) => Math.hypot(b.centre[0] - tail[0].centre[0], b.centre[1] - tail[0].centre[1]) < 4) ? tail[0].centre : null;
@@ -200,7 +200,7 @@ export function checkDeal(frames: readonly FrameCard[], ctx: DealContext): DealC
 export function checkReference(frames: readonly FrameCard[], options: { lens?: Lens } = {}): DealCheck & { clean: boolean } {
   // A rendered film is sharp: its frames sample the turn without motion blur, and the narrowest of them shows 16–29 % of the
   // laid card (the dummy's films to seats 1–6 of 2026-11-18), where a filmed edge frame shows under 20 %. A reference's edge
-  // is therefore any frame under REFERENCE_EDGE of the laid card; Pamela's film to seat 1 narrows only to 65 %.
+  // is therefore any frame under REFERENCE_EDGE of the laid card; an early film to seat 1 narrowed only to 65 %.
   const s = cardStory(frames, { lens: options.lens, edge: REFERENCE_EDGE });
   const fails: Finding[] = [], remarks: Finding[] = [];
   if (!s.laidArea) fails.push({ code: 'inget-kort-sist', text: 'Inget blått kort ligger i de sista rutorna.' });
@@ -209,7 +209,7 @@ export function checkReference(frames: readonly FrameCard[], options: { lens?: L
   if (s.yellowAfterBlue.length) fails.push({ code: 'vant-tillbaka', text: 'Brett gult igen efter det blå.', frames: s.yellowAfterBlue });
   if (s.secondEdge.length) fails.push({ code: 'andra-kanten', text: 'På kant en gång till efter vändningen.', frames: s.secondEdge });
   if (s.layEdge.length) remarks.push({ code: 'lagt-genom-kant', text: 'Kortet passerar kantläget när det läggs ned (samma blå).', frames: s.layEdge });
-  // On edge before the turn (a card swung edge-on out of the window, as Pamela's film to seat 1, frames 29–33): the model
+  // On edge before the turn (a card swung edge-on out of the window, as in an early film to seat 1, frames 29–33): the model
   // turns the card where the reference shows it on edge.
   const edgeEarly = s.lastYellow === null ? [] : s.sorted.filter((x) => x.f < s.lastYellow! && (x.dealtYellow?.n ?? 0) > 0 && (x.dealtYellow!.n < s.laidArea * THRESHOLDS.edge) && s.sorted.some((y) => y.f < x.f && (y.dealtYellow?.n ?? 0) >= s.laidArea * THRESHOLDS.broad)).map((x) => x.f);
   const early = runs(edgeEarly).filter((r) => r.length >= 2).flat();

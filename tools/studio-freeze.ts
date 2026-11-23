@@ -25,7 +25,7 @@ export type Release = {
 };
 
 const ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-/** The dealers the copy carries: Paow while her switch is on (Pamela left main 2026-11-23). */
+/** The dealers the copy carries: Paow while her switch is on. */
 export const releaseDealers = (release: Pick<Release, 'paow'>): string[] => (release.paow ? ['paow'] : []);
 const flag = (v: unknown, what: string) => { if (typeof v !== 'boolean') throw Error(`studio-release: ${what} ska vara true eller false.`); return v; };
 const count = (v: unknown, what: string, lo: number, hi: number) => { if (!Number.isInteger(v) || (v as number) < lo || (v as number) > hi) throw Error(`studio-release: ${what} ska vara ett heltal ${lo}–${hi}.`); return v as number; };

@@ -34,7 +34,7 @@ export const MATTE = {
 // The film card's colours lit, as the video shows them (scene3d-deal.ts COLOUR, scene3d-film.ts BACK_LIT/FACE_LIT): the far end of
 // the line a blurred pixel is unmixed along.
 export const LIT = {BACK: [0.91, 0.82, 0.02], FRONT: [0, 0.475, 0.89]};
-// The shoe window as every film shows it (the shoe is part of the plate; pamela-p4-c1-plan-deal-02's track): film pixels x0, y0, x1, y1.
+// The shoe window as every film shows it (the shoe is part of the plate; measured on a deal film's track): film pixels x0, y0, x1, y1.
 export const SHOE_BOX = [1242, 754, 1339, 855];
 
 // The colour rules, video values 0-255. Written once in the subset JavaScript and GLSL share (numbers with a point, min, && and

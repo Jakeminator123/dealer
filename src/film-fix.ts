@@ -239,7 +239,7 @@ function upscale(field: Float32Array, sw: number, sh: number, w: number, h: numb
  * What level adds to a frame's screen: the reference's green minus the frame's, measured only where both are clean screen, and
  * blurred wide (LIMITS.levelReach, about 190 px at the bank's size). Only a drift of the whole green moves: a shadow in the reference
  * (a hand hovering over a seat) is never painted into a frame where the hand is not, nor a frame's own shadow lifted away. Tried on
- * pamela-p4-c1-plan-deal-02 against its landing anchor: the narrow field of efterarbete.py stamped the anchor's hand shadow onto the
+ * an early deal film to P4 against its landing anchor: the narrow field of efterarbete.py stamped the anchor's hand shadow onto the
  * table of every frame, 58 levels deep.
  */
 function fieldOf(a: ReturnType<typeof eighth>, b: ReturnType<typeof eighth>, w: number, h: number): Float32Array {

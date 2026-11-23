@@ -10,13 +10,13 @@
 //   camera in the window card's angle, larger in the hand than lying. Paow 2.1 → P4 (paow-giv-2-1-p4-04-01, 24 fps, Jakob:
 //   "Kanske den bästa!"): out of the window f13–31, 127–135 × 68–73 px in the hand (f27–34), 83 × 70 px lying from f97.
 // - Släp (DRAG): the window card comes down out of the shoe's mouth and slides flat along the felt under the flat hand.
-//   Pamela 2.2 → P4 (pamela-p4-c1-drawn-deal-01, 30 fps, "Svinbra"): slid flat f24–62.
+//   2.2 → P4 in the first dealer's film (30 fps, "Svinbra"; archived 2026-11-23): slid flat f24–62.
 // - The turn rolls the card about its own long side: the back narrows across the card's width to a line along its length and
-//   the face opens. Paow 2.1: back last f44, edge f45–50, face first f53 (0.36 s); Pamela 2.1 → P4 (pamela-p4-c1-plan-deal-02,
-//   30 fps, "Det ser bra ut."): f52–56, all three measures say the long side. On the way (AIR) it comes mid-way between the
+//   the face opens. Paow 2.1: back last f44, edge f45–50, face first f53 (0.36 s); the first dealer's 2.1 → P4
+//   (30 fps, "Det ser bra ut."): f52–56, all three measures say the long side. On the way (AIR) it comes mid-way between the
 //   shoe and the place; at the place (PLACE) the card is brought there back up and lying, and rolls over its long edge nearest
-//   the shoe, which stays on the felt (the order's turn at the place, src/order-prompts.ts turnAtPlace; Pamela 2.2 turns at
-//   the place f70–75 and lies still f84–92).
+//   the shoe, which stays on the felt (the order's turn at the place, src/order-prompts.ts turnAtPlace; the first dealer's 2.2
+//   turns at the place f70–75 and lies still f84–92).
 // - Then it settles into the plan's landing quad over the last part of the way, and the hand goes back to the window.
 // The hand is a plain shape, a palm with a thumb side. It holds the card's short end for a pinch and lies flat over the card
 // for a drag, and turns with the card: for FREE (the wrist) the palm comes from facing down to facing up, for LONG_EDGE (like
@@ -47,7 +47,7 @@ export const PATH_AT = {
 } as const;
 /** The turn lasts 0.36 s of film, in the air as at the place. */
 const TURN = PATH_AT.turned - PATH_AT.turn;
-/** At the place the turn ends 0.34 s before the card lies still (Pamela 2.2: the turn f70–75, still from f84, 30 fps). */
+/** At the place the turn ends 0.34 s before the card lies still (the first dealer's 2.2: the turn f70–75, still from f84, 30 fps). */
 const PLACE_TURN = PATH_AT.laid - 0.34 - TURN;
 /** The card in the hand: its long side 1.5 × the lying card's near edge (Paow 2.1: 127–135 against 83 px). */
 const CARRY = 1.5;

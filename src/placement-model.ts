@@ -9,7 +9,7 @@ export type Geometry = Point & { width: number; height: number; angle: number; t
 // of its own: it is turn=false with endSide equal to startSide (closed), as the dealer's second card is.
 // flipAxis: how a card turned on the way is turned (Jakob 2026-11-17: both ways are valid, the right side comes up towards the
 // player, yellow to blue). FREE: the wrist turns over with the card, the palm from down to up; LONG_EDGE: hand and card roll
-// together about the card's long side like a key, as Pamela does. A card turned at its place (turnAt PLACE) rolls over its long
+// together about the card's long side like a key (tools/film-prompting.md, Vändning B). A card turned at its place (turnAt PLACE) rolls over its long
 // edge there whatever flipAxis says. An order says the three in one word (src/order-model.ts FlipAxis: AT_PLACE, FREE, LONG_EDGE).
 export type Grip = 'PINCH' | 'DRAG';
 export type TurnAt = 'AIR' | 'PLACE';

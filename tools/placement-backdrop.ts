@@ -46,8 +46,8 @@ export const DOLL_STILLS = 'node dealer3d/tools/doll-still.ts';
 export const REST = {film: 'paow-vila-01-01', frame: 0};
 /**
  * Bank films with their card lying on a place, for the fit: Paow's main round trip to P4 (24 frames a second, the deal cut at
- * frame 109), late in the deal with the hand still on the card, and in the return where it lies free. Chosen 2026-11-23 as
- * Pamela's were (her deal's last frame, her return's frame 40), when her films left main; look at the first run's pictures.
+ * frame 109), late in the deal with the hand still on the card, and in the return where it lies free. Chosen 2026-11-23 the
+ * way the earlier pair was (a deal's last frame, a return's frame 40); look at the first run's pictures.
  */
 export const PROOFS = [{film: 'paow-giv-2-1-p4-04-01', frame: 108, place: 'P4.C1'}, {film: 'paow-giv-2-1-p4-04-01', frame: 141, place: 'P4.C1'}] as const;
 /** The felt's print without the card boxes (FELT_MARKS in src/scene3d-table.ts less 'boxes'). */

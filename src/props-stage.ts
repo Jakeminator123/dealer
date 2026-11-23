@@ -26,7 +26,7 @@ export function stageFit(value: unknown): StageFit | null {
 }
 // pitch and zoom: the game page's lying framing. back: how far behind the edge the film's plane stands when her hands lie behind
 // it, dealer metres (behind the model's own rim). shoe: the film's shoe as a box of film pixels (x0, y0, x1, y1), with room for its
-// shadow: measured in Pamela's idle film (the bank's shoe stands at the same place for every dealer), the shoe's lid begins at row 640 (column 1592) and its left side runs down to column 1192,
+// shadow: measured in an idle film (the bank's shoe stands at the same place for every dealer), the shoe's lid begins at row 640 (column 1592) and its left side runs down to column 1192,
 // while her left sleeve stays left of column 1192 except for 3 pixels about row 710 (a box from 1125, 560 cut up to 70 pixels off
 // her sleeve). The film is Paow's rest film, the one she speaks over (data/speech.json). The rooms are ROOMS below.
 export const STAGE_VIEW = {pitch: -8, zoom: 0.84, back: 0.06, film: 'assets/motions/paow-vila-01-01/source.mp4', shoe: [1192, 635, FILM.width, 960]};
@@ -142,7 +142,7 @@ const linear = (byte: number) => { const c = byte / 255; return c <= 0.04045 ? c
 // a wall it lights), so prefiltered it lights the table too weakly and too evenly; the key gives back the light, the direction
 // and the shadow of its lamps. How strong: as strong as the light on the table in her film, since her hands lie on the felt and
 // the felt under them must be lit as they are. table: that light, linear, a white surface facing up = 1: her hands in
-// pamela-idle-loop-01 (frame 30) measure 0.41 in linear brightness, and light skin gives back about 0.4 of the light that falls on
+// an idle film (frame 30) measure 0.41 in linear brightness, and light skin gives back about 0.4 of the light that falls on
 // it (an estimate, not measured here). softest: the sine of the lowest key that is counted at its height; a lower one (a setting
 // sun) is counted as that high, so that it does not blind the table.
 export const KEY = {share: 0.02, lowest: 12, table: 1, softest: 0.25};

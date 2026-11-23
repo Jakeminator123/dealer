@@ -12,7 +12,7 @@
 //                     data/studio-release.json or a document or instruction, a proof changed today, the card track a
 //                     played film needs, the scene's rooms, table and
 //                     props (data/scene-*.json, data/props.json), the lab's backdrops (src/placement-model.ts)
-//   referens          kept by the rules: what is left of V6, data/manifest.json, evidence/, a
+//   referens          kept by the rules: data/manifest.json, evidence/, a
 //                     reference in Material, and the first or last picture of a film that plays
 //   bara registrerad  a register names it, but nothing plays it, shows it as living work or builds on it
 //   okänd             no register names it
@@ -212,7 +212,7 @@ export function audit(repo: string): {items: Item[]; judged: Map<string, string>
     const id = u.path.split('/').at(-1)!, take = id.startsWith('bank-') ? id.slice(5) : id;
     claims.push({path: u.path, use: playedClips.has(take) ? 'visas' : 'bara registrerad', why: playedClips.has(take) ? `talfilmen ${take} spelas` : `talets arbetsmapp för ${take}, som inte spelas`});
   }
-  // The rules' references: V6, the manifest, evidence.
+  // The rules' references: the manifest, evidence.
   for (const f of ['data/manifest.json']) for (const p of pathsIn(read(f))) claims.push({path: p, use: 'referens', why: f});
   for (const f of readdirSync(path.join(repo, 'evidence')).filter(f => f.endsWith('.json'))) for (const p of pathsIn(read(`evidence/${f}`))) claims.push({path: p, use: 'referens', why: `evidence/${f}`});
   // Anything Beslut, the release, a document or an instruction names by its exact id is living work; a proof also when it changed today.
@@ -286,10 +286,10 @@ export function edgeRowOf(cls: Uint8Array, w: number, h: number): number | null 
 }
 export type Camera = 'bankens' | 'annan';
 /**
- * The camera by the frame's size: the bank's films and anchors are 1764 × 1174; V6 and its raw films are 1762 × 1174 from a
- * wider camera (V6's cards measure about 1.38 times a real card at the same place), and the old lab's pictures 1536 × 1024. The table's edge row was tried as a second
+ * The camera by the frame's size: the bank's films and anchors are 1764 × 1174; an older, wider camera gave
+ * 1762 × 1174 (its cards measure about 1.38 times a real card at the same place), and the old lab's pictures 1536 × 1024. The table's edge row was tried as a second
  * sign and is only reported: on the green anchors the whole background reads as felt, and where the dealer sits in front of
- * the edge the first full row of felt lies about 36 px below the contract's 831.5 (868 on Pamela's own rest frame).
+ * the edge the first full row of felt lies about 36 px below the contract's 831.5 (868 on the first dealer's rest frame).
  */
 export const cameraOf = (w: number, h: number, bank: {width: number; height: number}): Camera => w === bank.width && h === bank.height ? 'bankens' : 'annan';
 /** The card nearest the rule's card in a picture: yellow, blue or shaded yellow pixels around it, the largest piece. */
@@ -385,7 +385,7 @@ export async function fitAll(repo: string, loadPixels = pixels): Promise<{rule: 
         const used = users(e.path), verify = /assets\/(reference|originals)/.test(e.path);
         const forWhat = verify && camera === 'annan' ? 'kontroll' : camera === 'bankens' ? 'rörelse' : 'utseende';
         entries[e.id] = {verdict: camera === 'bankens' ? 'stämmer' : 'annan kamera', for: forWhat, usedBy: used, measured: {width: px.w, height: px.h, edgeRow: edge},
-          words: camera === 'bankens' ? `Bankens kamera (${px.w} × ${px.h}, bordskanten på rad ${edge}): duger som referens för rörelse.` : `En annan kamera än bankens (${px.w} × ${px.h}, bordskanten på rad ${edge ?? '?'} mot ${BANK.edgeRow}): en referens för ${forWhat === 'kontroll' ? 'kontroll av V6' : 'utseende'}, inte för mått eller platser.`};
+          words: camera === 'bankens' ? `Bankens kamera (${px.w} × ${px.h}, bordskanten på rad ${edge}): duger som referens för rörelse.` : `En annan kamera än bankens (${px.w} × ${px.h}, bordskanten på rad ${edge ?? '?'} mot ${BANK.edgeRow}): en referens för ${forWhat === 'kontroll' ? 'kontroll' : 'utseende'}, inte för mått eller platser.`};
         continue;
       }
       if (camera === 'annan') { entries[e.id] = {verdict: 'annan kamera', words: `Inte bankens ruta (${px.w} × ${px.h}, bordskanten på rad ${edge ?? '?'}).`, measured: {width: px.w, height: px.h, edgeRow: edge}}; continue; }
@@ -442,7 +442,7 @@ export async function fitAll(repo: string, loadPixels = pixels): Promise<{rule: 
   }
   return {rule, entries, takes};
 }
-/** What uses a reference or a working picture today: orders that sent it, V6's hashes, the bank's jobs. */
+/** What uses a reference or a working picture today: orders that sent it, the manifest's hashes, the bank's jobs. */
 function referenceUsers(repo: string, read: (f: string) => string): (p: string) => string[] {
   // An order's reference film: its reference field (data/orders/<id>.json reference.from.path), not any mention.
   const orders = readdirSync(path.join(repo, 'data/orders')).filter(f => f.endsWith('.json')).map(f => { let r = ''; try { r = JSON.stringify(JSON.parse(read(`data/orders/${f}`)).reference ?? null); } catch {} return [f.slice(0, -5), r] as const; });
@@ -450,7 +450,7 @@ function referenceUsers(repo: string, read: (f: string) => string): (p: string) 
   return (p: string) => {
     const out: string[] = [];
     const sent = orders.filter(([, t]) => t.includes(`"${p}"`)).map(([o]) => o); if (sent.length) out.push(`${sent.length} beställningar skickade den (${sent.slice(0, 3).join(', ')}${sent.length > 3 ? ' …' : ''})`);
-    if (manifest.includes(`"${p}"`)) out.push('V6, hashen i data/manifest.json (tools/verify.ts)');
+    if (manifest.includes(`"${p}"`)) out.push('manifestet, hashen i data/manifest.json (tools/verify.ts)');
     if (jobs.includes(p)) out.push('första eller sista bild i bankens jobb');
     if (game.includes(p)) out.push('spelet laddar den');
     return out;
