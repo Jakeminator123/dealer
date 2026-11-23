@@ -26,7 +26,7 @@
   },
   "review": {
     "decision": "ACCEPTED",
-    "basis": "NÖDLÖSNING (huvudagenten 2026-11-13, för att visa Paows runda): hennes godkända ingång paow-ingang-2-1-02-01 spelad baklänges som utgång. Inte granskad av Jakob. Uttaget baklänges föll för Pamela (tools/film-prompting.md §5).",
+    "basis": "NÖDLÖSNING (huvudagenten 2026-11-13, för att visa Paows runda): hennes godkända ingång paow-ingang-2-1-02-01 spelad baklänges som utgång. Inte granskad av Jakob. Uttaget baklänges föll för den första dealern (tools/film-prompting.md §5).",
     "limitations": "Sedd i full upplösning (rutor 36–96 och ansiktet): handen släpper kortet, kortet glider tillbaka in i skons fönster och handen går ned till vilan; ansiktet står still. Att kortet glider in medan fingrarna lyfts är det som avslöjar riktningen. De sista tre rutorna (ingångens ljusa första) spelas inte.",
     "userAccepted": true,
     "productionReady": false,
