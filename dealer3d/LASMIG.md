@@ -317,7 +317,8 @@ fingrar ska sitta som hennes innan dockan används.
   **Hans P5.C1** (`standard/paow-p5c1.json`, Som förut, greppets vinkel −30°, kroppen [4,6, 4,5, 5,5]), lagd igen med
   rätt sko: händerna −16 mm (i varandra), tummen 45 mm, ben genom kortet 16 (filen 26), handleden 57°, höger handled
   inom 1 mm från filen. Naturlig orörd: 10 mm, 7,7 mm, 5, 75°. Hans standard vinner där den finns.
-  **Dockfilmer för beställning** (oregistrerade, 2026-11-23), Naturlig till P5.C1 orörd: given
+  **Dockfilmer för beställning** (2026-11-23; registrerade som `docka-paow-2-3-p5c1-naturlig-a` och `-cykel-a`,
+  kopierade in för hand: det ska gå direkt från Docka till Bordets beställning), Naturlig till P5.C1 orörd: given
   `data/giv-fran-2-3-p5c1-naturlig-paow.json` (3,0 s, 30/s; `ut/docka-naturlig-p5c1-a`) och given med retur i samma
   film `…-naturlig-cykel-paow.json` (4 s, 24/s; `ut/docka-naturlig-p5c1-cykel-a`): underlaget `…-naturlig.json`
   (standarddockan) genom `return-cycle.ts` till `…-naturlig-cykel.json`, ställd på paow och rörd som Naturlig av

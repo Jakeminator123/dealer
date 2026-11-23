@@ -13,7 +13,7 @@
   "maxPerOrder": 2000,
   "minBalance": 0,
   "timeZone": "Europe/Stockholm",
-  "balance": { "credits": 2028, "at": "2026-11-23T08:57:05Z", "source": "Runways API (GET /v1/organization), utvecklarprojektet som API-nyckeln drar från, läst av huvudagentens underagent. Av mandatet dealer-b0-20261123 är 352 av 1 600 använda: fyra filmer à 68 (tre givar från A2.3 och ingången paow-ingang-2-3-03) och fyra provbilder à 20 (A2.3 med blicken på kortet och A3P6C1 tre gånger). De 288 krediter som gick mellan 07.31 och 07.54 UTC förklaras av ingen order i data/orders; sessionen dealer-37 har svarat att de inte var dess." },
+  "balance": { "credits": 1717, "at": "2026-11-23T11:13:00Z", "source": "Runways API (GET /v1/organization), utvecklarprojektet som API-nyckeln drar från, läst av huvudagentens klient efter omgången. Av mandatet dealer-b0-20261123 är 511 av 1 600 använda: fem filmer à 68 (tre givar från A2.3, ingången paow-ingang-2-3-03 och given paow-giv-2-3-p5-03), giv och återgång paow-giv-2-3-p5-04 à 91, och fyra provbilder à 20 (A2.3 med blicken på kortet och A3P6C1 tre gånger). Ingen order i data/orders förklarar 288 krediter mellan 07.31 och 07.54 UTC (sessionen dealer-37 har svarat att de inte var dess) och 152 mellan 08.57 och 11.09 UTC." },
   "prices": [
     { "model": "kling-4", "resolution": "1080p", "perSecond": 21.3, "listedPerSecond": 23.5, "source": "Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12." },
     { "model": "kling-4", "resolution": "720p", "perSecond": 15.7, "listedPerSecond": 15.7, "source": "Listpris i verktyget generate_video 2026-11-12; inte mätt i någon liggare." },

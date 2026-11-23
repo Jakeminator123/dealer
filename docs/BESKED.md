@@ -148,6 +148,12 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   som i de filmer som är bra; SAM-dockan byggs på de mätningarna ("Ja bygg den riktiga SAM-dockan").
 - **Dockans vändning längre ut: bättre, men inte än** (2026-11-23): vänster arm mot sko och kort, djupet och avståndet
   till skon stämmer inte ("det syns på hennes handled och armboge"). Dockan styr inte nya givar före hans ja.
+- **Docklabbet** (2026-11-23): "Jag gillar verkligen docklabbet!" Konstiga ställningar blir naturligare som standard,
+  vridning och axlar är reglage, fingrarna visar hur de verkar på kortet; allt "kompatibelt med material skapat".
+- **Dockan framåt** (2026-11-23): en giv till en spelare tar 2 s som förval, valbart i Docka. För framtiden: A2.2 ur
+  fotot, och dockan tar över Siluetten i Scen & Bord med valen som finns där.
+- **Skon** (2026-11-23): "Se över och fixa så allt blir rätt bara": den ritade skon i 3D-scenen flyttas till filmens
+  plats; inga filmer ändras.
 - **3D-labbet har samma standard som allt övrigt** (2026-11-23): "det ska vara och ha samam standard som allt övrigt".
   En egen standard där kan vara skälet till att dockan ser ihoptryckt ut.
 - **Nej till Meshy-modellen av Paow** (2026-11-18); ja till att avlästa leder styr en klädd figur (2026-11-20).
@@ -165,8 +171,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   är rättad; det är hans ord för ett nytt mandat.
 - **Plats 6 och 7** (2026-11-23): "hennes vänsterarm tar ut kortet, och … hennes högerarm tar emot och vänder upp",
   samma tvåhandsgiv som plats 1–5 har från A2.3.
-- **Naturlig rörelse går före dockans** (2026-11-23): filmerna från A2.3 är okej men "robotliknande". Beställningens
-  text säger att dockans film är en grov ledning: "var inte extremt nitsk med dockans rörelse".
+- **Naturlig rörelse går före dockans** (2026-11-23): dockans film är en grov ledning ("var inte extremt nitsk med
+  dockans rörelse"); kortets vändning och hennes rörelser får filmen skapa fritt, "då dockan mest är en grund".
 - **Kortplanen i Bordet gäller** (2026-11-23): har han ställt in korten där "så är det ju det som gäller såklart".
   Receptet för en A3-bild är ett och samma för varje dealer och plats, inte handarbete per dealer.
 - **Handleden vrider kortet** (2026-11-17): "Oavsett om hon nyper eller släpar ut kortet … måste hon vrida över
@@ -194,6 +200,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   används skon med kortet i en öppning snett framtill.
 - **Fria händer med beställningstexterna** (2026-11-17): huvudagenten skriver om dem efter vad proven visar. En giv
   beställs bara dit; returen är en egen film.
+- **Giv och återgång i samma film** (2026-11-23): "kanske ska samtidigt skapa en video som får henne att återkomma till
+  samma possition", klippt i två som standard. Prövas på en plats mot given bara dit innan det blir receptet.
 - **V6 är arkiverad** (2026-11-20): råmaterialet och renderaren ligger i arkivet på D:, filmen och 18 rutor står kvar
   att titta på. V6 är ingen referens "att dö för"; dess kortstorlek kallade han "väldigt bra" (2026-11-12).
 - **Trailern är pausad** (2026-11-17): rollblad 4 med tatuerade händer har hans ja, men inget beställs och inget byts i

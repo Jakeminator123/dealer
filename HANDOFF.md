@@ -9,8 +9,8 @@ Läs AGENTS.md, den här sidan och EN lägesfil för din bana. Ersätt inaktuell
   returer till redo och vila. Paow är dealern; Pamela är pausad (namnet bär också dockans rörelser `giv-pamela-*` och en scenfilm: skriv
   vilken du menar). Projektet är tills vidare frikopplat från Scoutgaming (Jakob 2026-11-23).
 - Labbet är en vy, Bordet, där en film beställs längs en rak linje: kortets plats och steget, receptet ger resten.
-  Kommandot `node tools/order-new.ts` gör samma utkast; Karta visar varje dealers träd och vad som saknas.
-  Vyn Docka (`/studio/docka/`) är Docklabbet: dockan i varje ankare och giv, med reglage.
+  Kommandot `node tools/order-new.ts` gör samma utkast; Karta visar varje dealers träd.
+  Vyn Docka (`/studio/docka/`) är Docklabbet: Paows docka i varje ankare och giv, med Naturlig som förval.
 - Den tatuerade uppsättningen är hans förstahandsval, och A2.3 gäller. Trädet Tatuerad fylls från A2.3 med en giv per
   kort och spelare (plats 4 har hans ja; läget per steg i [film](docs/lage/film.md)). Spelet kan inte välja träd än.
 - Kortplan och order följer B-linsen. **Använd i Casino** sparar visningen, även Bred lins, för Casino och `/casino`.
@@ -22,14 +22,16 @@ Läs AGENTS.md, den här sidan och EN lägesfil för din bana. Ersätt inaktuell
 
 Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-18), med EN trovärdig giv först ([film](docs/lage/film.md)).
 
-1. Jakobs plan, domar och orderutkast checkas in vid avslut och skrivs aldrig över; läs hans anteckningar med
-   `node tools/proof-notes.ts`. Arbeta i mappen `dealer` på `main`; [lokal rutin](tools/local-work.md): äldre träd och mediestädning.
-2. P4.C2 Cykel01 är vald. Ordinarie spel återbrukar spelarnas C1 för C2/C3; egna filmer är nästa steg, inte krav nu.
-   Rundans 22 filmbehov täcks. Rundbyggarens P6 går via A2.2; D.C3 är redigerbart och valfritt ([kort](docs/lage/kort.md)).
-3. Använd automatiska testkvitton och det återbyggbara SQLite-indexet ([evidens](tools/evidence.md)); inga medieblobs.
-4. Den neutrala munnen gäller alla Paows repliker utom blackjack, som väntar på hans ja; ingen har hört ljudet ([spelet](docs/lage/spelet.md)).
-5. Hålkort, native split och READY-C:s tvåkortsprov är kontrollerade inom sina avgränsade prov. Grepp, tempo,
-   mask och hela rörelsen återstår ([film](docs/lage/film.md)).
+1. Provet på A3P5C1 (oberoende granskare): giv och återgång med slutbild, `paow-giv-2-3-p5-04`, håller (3/5 och
+   4/5, delas vid ruta 63); bara dit, `-p5-03`, föll (2/5). Visa honom; sedan nästa omgång ([film](docs/lage/film.md)).
+2. Dockan kopplas till Bordet: dockans film direkt in i beställningen, dockan i stället för Siluetten
+   ([LASMIG](dealer3d/LASMIG.md), "Naturlig ställning", Kvar).
+3. Jakobs plan, domar och orderutkast skrivs aldrig över; läs hans anteckningar med `node tools/proof-notes.ts`.
+4. P4.C2 Cykel01 är vald. Ordinarie spel återbrukar spelarnas C1 för C2/C3. Rundans 22 filmbehov täcks.
+   Rundbyggarens P6 går via A2.2; D.C3 är redigerbart och valfritt ([kort](docs/lage/kort.md)).
+5. Den neutrala munnen gäller alla Paows repliker utom blackjack, som väntar på hans ja; ingen har hört ljudet ([spelet](docs/lage/spelet.md)).
+6. Hålkort, native split och READY-C:s tvåkortsprov är kontrollerade. Grepp, tempo, mask och hela rörelsen
+   återstår ([film](docs/lage/film.md)).
 
 ## Vem äger vad
 

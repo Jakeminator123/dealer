@@ -14,8 +14,8 @@ som gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompt
   i id:n är arbetsnamn: A2.3 är `paow-ankare-2-3-d` (blicken på kortet; givarna hittills börjar på `-c`), A2.2 `paow-ankare-2-2-blick-a`.
 - Trädet Tatuerad (vyn Karta, `/studio/karta/?dealer=paow&trad=tatuerad`) fylls från A2.3 och har 5 av 36 steg. I
   banken: given till A3P4C1 (piloten, Jakobs ja), A3P4C2 (släpet med handbyte, kortad till 70 rutor, 3/5), A3P1C1
-  (4/5), A3P2C1 (4/5) och A3P3C1 (3/5). Alla utom piloten är dömda åt honom; A3P4C2 har ett kort i Beslut. Given
-  till A3P5C1 föll (2/5): kortet 32 px för nära.
+  (4/5), A3P2C1 (4/5) och A3P3C1 (3/5). Alla utom piloten är dömda åt honom; A3P4C2 har ett kort i Beslut. Till A3P5C1
+  (2026-11-23): giv och återgång i en film håller (3/5, 4/5); bara dit föll (2/5). Nästa: dockfilm i 24/s, ny returtext.
 - A3-bilder: A3P4C1 och A3P4C2 är kandidater (A3P4C2 ur ruta 68, oberoende 4/5). För plats 1 och 2 stoppar
   landningsverktyget, och rosen på högra handryggen är en mandala i A3P4C1 ([BRISTER](../BRISTER.md)).
 - Returprovet A3P4C1 → A2.3 föll (2/5): ändarna och kortet höll, men handen strök över filten. Nästa prov byter bara
@@ -25,11 +25,11 @@ som gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompt
   kostar 68 krediter, en retur utan 57; beställningen går genom API-nyckeln (Runway-MCP är inte inloggat).
 
 **Nästa steg.**
-1. Dockans vändning: i dockfilmerna `svep24d` vänder fingrarna kortet mitt i flykten. Gör om den så att handleden
-   vrider kortet nära platsen, pröva på en plats, och beställ sedan resten.
+1. Dockans filmer görs om under nya namn när Naturlig och skon är inne ([LASMIG](../../dealer3d/LASMIG.md)); en plats
+   som prov, sedan resten. Nästa mall säger att kortets vändning är hennes ([BESKED](../BESKED.md)).
 2. Per plats: given, platsens A3 ur filmens sista ruta (`tools/landing-make.ts`), sedan returen. Kommandot beställer
-   en retur först när en godkänd giv har platsens A3 som sista bild: A3P4C2 är redo för en sådan giv. Plats 5
-   behöver en sista bild först. P6 och P7 går inte med höger hand: den måste korsa kroppen.
+   en retur först när en godkänd giv har platsens A3 som sista bild: A3P4C2 är redo för en sådan giv.
+   P6 och P7 går inte med höger hand: den måste korsa kroppen.
 3. Spelet väljer träd: det läser inga i dag (`buildGraph` blandar alla filmer), så Tatuerad spelas inte än. Ingången
    A1 → A2.3 klipps ur ankarets film; sedan A2.3 → A1, hålkortet och dealerns kort.
 
