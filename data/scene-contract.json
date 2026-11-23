@@ -17,13 +17,13 @@
     "framesPerSecond": 30,
     "pixelConvention": "pixel centres, origin top left, x right, y down",
     "v6NativeWidth": 1762,
-    "note": "The plan and V6 use 1762-wide native pixels; film x = native x * 1763 / 1761, as tools/build-anchor.ts scales them."
+    "note": "The plan uses 1762-wide native pixels; film x = native x * 1763 / 1761, as planQuad in tools/order-images.ts scales them."
   },
   "cardMillimetres": {
     "basis": "GIVEN",
     "width": 63,
     "height": 88,
-    "cardEdge": "the blue tracking face, the surface the plan quad and tools/build-anchor.ts place; the pale rim lies outside it",
+    "cardEdge": "the blue tracking face, the surface the plan quad places; the pale rim lies outside it",
     "rim": {
       "basis": "MEASURED",
       "medianWidthPx": 1.33,

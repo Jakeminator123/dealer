@@ -45,7 +45,7 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   `kortet-i-handen-orsaker-20261120`): i vändningen står kortet kvar brett och blir en linje (`settleRaws` i
   `src/card-track.ts` behåller ett skymt korts form), papperets ljus hoppar när `cardBase` i `src/scene3d-film.ts` tar
   reservfärgen, fyrhörningen är färgregelns kärna (under 0,8 av kortet), och kanten mot fingrarna. Labbprovet `kortprov`
-  (bara i Scen, av som förval: `/scene3d.html?cards=1&cardInHand=1&kortprov=1`, delarna `spar`, `skarpa`, `ljus`, `mat`)
+  (bara i Scen, av som förval: `/scene3d.html?cards=1&cardInHand=1&kortprov=1`, delarna `spar`, `skarpa`, `ljus`, `mat`, `styvt`)
   sänker det största ljussteget från 36 till 13 av 255. Stänger: Jakobs ja på Beslut-kortet
   `kortet-i-handen-provet-i-spelet`, sedan skärpan mot handen och mätningen in i `tools/track-card.ts` (i dag ur
   etiketterna i `tools/python/kort-dataset/`).

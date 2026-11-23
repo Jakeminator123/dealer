@@ -3,8 +3,7 @@
 Kontrakt: koordinater, register, scen, spel och klippbank. Engelska systemord, svensk förklaring. Klippbankens rundor
 (`resolveRound` i `src/clip-graph.ts`) spelas i studion, i 3D-scenen och i spelet. Sekvenssträngar och nodvy är
 presentation av samma metadata, aldrig en andra motor; nodvyn visar planerad avsikt och fastställer inte en källfilms
-händelser. V6 (tre ytor: rum, bord och dealer; native 1762 × 1174 och porträtt 1080 × 1920) och renderaren som
-återskapade den är arkiverade sedan 2026-11-23 (README, "Verifierad bas och gräns"; DRIFT, "D: och städning").
+händelser.
 
 ## 3D-scenen (`scene3d.html`)
 
@@ -14,7 +13,7 @@ inget byggsteg. `scene3d.html` är utvecklarens sida med alla reglage; `game.htm
 
 | Lager, bakifrån | Vad | Fil |
 | --- | --- | --- |
-| Rum | Byggd salong, 360°-panoraman ur rumsregistret, V6-plåten som kuliss, och spelhallen (`BuiltRoom`, hämtas första gången den visas). Halv upplösning, oskarpt efter avstånd. | `src/scene3d-room.ts`, `src/scene3d-hall.ts` |
+| Rum | Byggd salong, 360°-panoraman ur rumsregistret, plåten (`assets/scene/room.png`) som kuliss, och spelhallen (`BuiltRoom`, hämtas första gången den visas). Halv upplösning, oskarpt efter avstånd. | `src/scene3d-room.ts`, `src/scene3d-hall.ts` |
 | Bord och rekvisita | Filten är en platt bild sedd uppifrån (linjer, kortrutor och insatsringar ur placeringsplanen, logga); reling och sarg är geometri. Rekvisita ritas före filmen, så att händerna hamnar överst: markerbrädet försänkt i filten (`TRAY`, `table.build(edgeZ, scale, notch)`), spelets föremål med `scene.addProp`, skon som föremål (`?sko=3d`, `loadShoe` i `src/game3d-props.ts`; `scene.hideFilm` lämnar filmens sko oritad, och en hand som sträcks in i rutan klipps med). Ljus på bordet kommer ur rummet. | `src/scene3d-table.ts`, `src/scene3d-props.ts`, `src/scene3d-rail.ts` |
 | Film | Nycklas mot rutans egen gröna nivå (övre och nedre vänstra hörnet; skuggor blir svart med delalfa) och projiceras från filmkameran på ett lodrätt plan vid bordets bakkant och på bordsskivan. En film med egen ruta (`motion.frame = {scale, anchor, layer, shadow}`, `Part.frame`) visar dealern i annan skala: punkten (881,5; 831,5) i standardrutan, dealerkantens mitt, ligger på `anchor`, och `layer: "BEHIND_TABLE"` ritar rutan bakom bordskanten, så att bordet skymmer henne; med `behindFrom` (rutnummer) först från den rutan (`frameAt`). Filmen där hon går: kameran backar längs sin siktlinje (`exitView`). Ett andra kortspår (`card-track-grip.json`, samma format, med `film` och `held` per ruta) spelas när panelen Kort eller `?spar=grepp` säger så. En del med munlapp (`Part.mouth`) spelas i takt 1 ([TAL](TAL.md)). | `src/scene3d-film.ts`, `src/scene3d-mouth.ts`, `src/scene3d-exit.ts` |
 | Renderade kort | "Ritade kort" under Spelet. | `src/scene3d-deal.ts`, `src/card-overlay.ts`, `src/scene3d-matte.ts` |
@@ -69,7 +68,7 @@ skickar inte ordet till spelet.
 
 **Filmkameran** läses ur `data/scene-contract.json` i `src/scene3d-geometry.ts`; med geometrin `lens` är den bordets
 lins (`lensCamera`, "Ritade kort"). Kontraktet skrevs 2026-11-11 av verktyget scene-measure (nu i Git-historiken), som mätte bordets plan,
-ljuset och porträttramen ur verkliga rutor i Pamelas film (`src/scene-geometry.ts`; varje tal bär sin grund i `basisLegend`).
+ljuset och porträttramen ur verkliga filmrutor (`src/scene-geometry.ts`; varje tal bär sin grund i `basisLegend`).
 Från filmkamerans plats är bilden filmen pixel för pixel; vridning och zoom är geometriskt exakta; förflyttning är ett
 närmevärde som bryter vid ungefär en stols avstånd. Verifiering: med allt avslaget är hemvyn (klipp 1 vid 2,9 s,
 1764 × 1174) identisk med en referensbild i `assets/proofs/bakgrund-3d-referens/`, utom filtens guldlinjer (medel 0,02,
@@ -210,7 +209,7 @@ kort nycklas bort så att hennes fingrar ligger över det ritade.
     (`BET.offset`), `tableUnder`, tryckets äldre ordning i `draw` (`src/scene3d-table.ts`), vridningen i `updateView`,
     och `TOTAL_LEFT` och den äldre vinkeln i `aimAt`; och adressordet. Med flit kvar på den äldre regeln:
     `restingQuad`s kontraktsgren med `sceneOf` (för `tools/card-coverage.ts` och kortsättet `film`,
-    `src/scene3d-cards.ts`), `tools/build-anchor.ts` och `tools/placement-backdrop.ts`.
+    `src/scene3d-cards.ts`) och `tools/placement-backdrop.ts`.
 - **En linje för korten** (BESKED, "En linje för korten"): det ritade kortet hela vägen, också i hennes hand (`CARRY` i
   `src/card-overlay.ts`, bärsättet `object`, `kort=hand`), med filmens eget kort omfärgat under det ritade
   (`UNDER`, förval): det som nyckeln och matten lämnar av filmens kort bredvid det ritade färgas om, skons fönster
@@ -288,7 +287,8 @@ filmens skopixlar maskas bort.
 
 ## Bottom-up och koordinatreferenser
 
-Bottom-up betyder att höjd ökar uppåt. V6:s mätningar är bildpixlar från övre vänstra hörnet med y nedåt.
+Bottom-up betyder att höjd ökar uppåt. Bildpixlar (planens och filmernas mätningar) räknas från övre vänstra hörnet med
+y nedåt.
 Originalmätningar och referenshashar bevaras; en adapter konverterar vid en uttrycklig systemgräns.
 
 Normaliserad **bildrymd**: `u` ökar åt höger, `v` uppåt, båda i `[0,1]`. `(0,0)` är nedersta vänstra pixelcentrum och
@@ -356,7 +356,7 @@ sak.
 | `HIDDEN`, `REVEALED` | Vad Scoutmotorn tillåter spelaren att se. En filmvändning ändrar inte detta. |
 | `TAKE`, `PASS`, `TURN` | Ta kortet, överlämna samma kort mellan händer, respektive vända kortet. PASS är inte TURN. |
 | `LAND`, `RELEASE`, `RETURN(IDLE)` | Landning (rutan där kortet når bordet i en giv), släpp (rutan där fingrarna lämnar kortet; returen börjar där) och återgång; de kan ha olika bildrutor. `LAND(<plats>)` är också noden för platsens landningsbild (roll `landning` i Material): stillbilden med handen vid kortet, som en giv bara dit slutar på och en retur som egen film börjar på (`landingOf` i `src/order-model.ts`). |
-| `P4.C2`, `D.C2`, `VAR03` | Placeringsnycklar och rörelsevariant. V6 är historisk renderingsversion. |
+| `P4.C2`, `D.C2`, `VAR03` | Placeringsnycklar och rörelsevariant. |
 
 Målet är P1–P7 och D, två kortplatser vardera: 14 spelarkort plus två dealerkort. Platsnumrering och utdelningsordning
 följer Scout: plats 1 är kamerans vänster, plats = Scouts box + 1, given börjar på plats 7 och går mot plats 1, sedan
@@ -433,10 +433,9 @@ ibland en referensfilm; planen ger målkortets hörn i sista bilden. Studions be
 - Ett filmsteg har receptets modell, längd och tagningar som förval men kan beställas med varje modell i `MODELS` som
   tar första och sista bild (`modelsFor`, `paramsOf`); en ny modell är en post i `MODELS` och ett pris i
   `data/order-policy.json`.
-- Ett utkast följer det ankare som gäller i Material (`picture.replaced` säger vad bilden var), och posebildens gröna
-  görs som ankarets (`cut.matched`); A2.2:s posebild är den andra dealerns underarm och hand lagda på dealerns egen sko
-  och kort (`cut.laid`, `poseOnShoe` i `tools/order-images.ts`). En godkänd beställning ändras aldrig. En hel bild av en
-  annan dealer i ett utkast stoppar godkännandet.
+- Ett utkast följer det ankare som gäller i Material (`picture.replaced` säger vad bilden var). En stillbild
+  (ANKARE-2.1, ANKARE-2.2) går ut med ankaret och texten, utan posebild; dockan är posekällan framåt. En godkänd
+  beställning ändras aldrig. En hel bild av en annan dealer i ett utkast stoppar godkännandet.
 - Prompt och bildhashar står i jobbet i `data/clip-jobs.json` och i `motions`-posten; bilderna och kvittot i
   `assets/motions/<clip-id>/`. Protokollet räknas, aldrig för hand: `node tools/order-ledger.ts` och vyn Protokoll
   (`GET /api/orders/ledger`, `studio/lib/ledger.ts`) ger en rad per tagning ur beställningen, kvittot, bankens poster
@@ -532,8 +531,8 @@ IDLE>READY | READY>P1.C1 | P1.C1>READY | READY>D.C1 | D.C1>READY | READY>P1.C2 |
   kan synas (en giv vänder en gång, en retur visar en sida, ingång och vila har inget utdelat kort), och fynd som strider
   mot det stryks. `node tools/card-coverage.ts --all` mäter per film och ruta hur mycket av filmens eget kort som syns
   utanför skofönstret (`coverage.json` bredvid spåret).
-- **Ett kortformat** (BESKED, "Ett kortformat"): kortet i `pamela-p4-c1-plan-deal-02` är standard och allt annat anpassar
-  sig. Krav på en ny film: kortet har standardstorlek (`scaleNeeded` nära 1,2 i `coverage.json`). Planens kortrutor
+- **Ett kortformat** (BESKED, "Ett kortformat"): kortets mått i planen (`placements/default.json`) är standard och allt
+  annat anpassar sig. Krav på en ny film: kortet har standardstorlek (`scaleNeeded` nära 1,2 i `coverage.json`). Planens kortrutor
   passar ett plan (1,1 px), medan händer, sko och modellens kort är cirka dubbelt så stora (k ≈ 2, skattat; mått per mål
   i `data/scene-contract.json`).
 - **Domar** sätts i tagningen: Primär (`acceptedAs: "MAIN"`, spelas i första hand på sin kant, också en retur direkt
@@ -573,19 +572,14 @@ IDLE>READY | READY>P1.C1 | P1.C1>READY | READY>D.C1 | D.C1>READY | READY>P1.C2 |
 
 ## Återbruk och införande
 
-Pamelas två historiska banker (den vita med fjorton 12-sekunderstagningar och r2-banken med 16 och 17 kort) är
-arkiverade med henne 2026-11-23; filmerna ligger i `D:/dealer-archive/pamela-2026-11-23/`, register och kvitton i
-Git-historiken.
-
 Jakobs fristående blackjack-studio (`local-studio/blackjack-studio`, "Göran"): Görans grundbild är gjord ur ett uppladdat
 foto utan noterat tillstånd, så hans projekt, klipp, kortlägen och ankare används inte, och inte heller
 trä-casinobilden `c7ef9e9c` (BESKED, "Görans material"). Fritt att återbruka: `blackjack/` (regelmotor), `money/`,
 `players/`, `scene/furniture.ts`, `panorama-room.ts`, `atmosphere.ts`, miljöerna Las Vegas och Los Angeles och Poly
-Havens texturer (CC0, `material-sources.json`). Arkivets 3D-utkast med Pamela som platt stillbild visas i Prov
-`pamela-3d-utkast`.
+Havens texturer (CC0, `material-sources.json`).
 
-`materials/source/references/card-materials/new-front2/` är en läsbar syskonreferens, inget runtime-beroende. Namnen
-Pamela och Göran i äldre material kopplas till verifierad filhash och proveniens innan identitet antas. Nya läsningar ur
+`materials/source/references/card-materials/new-front2/` är en läsbar syskonreferens, inget runtime-beroende. Ett namn
+i äldre material (till exempel Göran) kopplas till verifierad filhash och proveniens innan identitet antas. Nya läsningar ur
 arkivet registreras; inga gamla `node_modules` eller junctions importeras. Underlaget från 2026-11-10 (sekvensguiden och
 studioskissen, källor och hashar i `.runtime/documentation-sources.json`) är referensförslag, ingen behörighet att
 ändra runtime.

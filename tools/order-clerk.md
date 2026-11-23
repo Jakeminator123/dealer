@@ -13,8 +13,7 @@ from a picture to a finished dealer, with every format and name: `tools/dealer-l
   (`data/order-methods.json`: a trial one take, a deal bara dit on Kling 4 with a reference film; from A2.1 one
   hand and no handbyte by default, from A2.3 two hands; the turn not a choice) or an exception its notes name (`tools/film-prompting.md` §2).
 - `assets/orders/<id>/`: the pictures that go out (a film: `first.png`, `last.png`, and `reference.mp4` when it has a
-  reference film; a still: `anchor.png` and `pose-figure.png`, the other dealer's forearm and hand cut out, for anchor 2.2
-  laid on the dealer's own shoe and card), and later what you fetch. Outside Git.
+  reference film; a still: `anchor.png`), and later what you fetch. Outside Git.
 - `assets/orders/<id>/receipt.json`: what happened to each take. Written ONLY by `node tools/order-put.ts`, never by hand.
 - The rules for the queue: `data/order-policy.json` (`enabled`, caps, `minBalance`). The approval already checked the caps.
 
@@ -61,8 +60,8 @@ For take n of an order:
    picture of a blackjack dealer for the user's clip bank, approved by the owner"). Change nothing else: no argument added,
    removed or altered, no other model, no shortened text. The call is:
    - **generate_image, `nano-banana-pro`** (a still: an anchor): `model`, `promptText`, `ratio`
-     ("4:3"), `imageSize` ("4K"), `count: 1`, `referenceImages: [{url, tag: "anchor"}, {url, tag: "pose"}]` (the text says
-     `@anchor` and `@pose`), and `confirmRepeat: true` from take 2.
+     ("4:3"), `imageSize` ("4K"), `count: 1`, `referenceImages: [{url, tag: "anchor"}]` (the text says `@anchor`),
+     and `confirmRepeat: true` from take 2.
    - **generate_video, `kling-4`**: `model`, `promptText`, `resolution` ("1080p"), `duration`, `startFrame: {url}`,
      `endFrame: {url}`, and optionally `referenceVideos: [{url, durationSeconds}]` (a reference film: the order's
      `reference.mp4`, listed by `check` with `goesAs: referenceVideo`, a take of the bank copied with its hash; it may be

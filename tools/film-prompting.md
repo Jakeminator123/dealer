@@ -38,7 +38,7 @@ granskaren dömde annorlunda står båda.
 | 2 En handling, få led | Alibaba: "Keep actions simple and short", "One clip = one continuous shot" (V). Runway Gen-4: "Avoid overly complex prompts" (V) | Hela rundan i en tagning: 0 användbara av 7 filmer, cirka 3 500 krediter (V). `paow-giv-p4`: cirka åtta led på 7 s, vändningen i tre; tagning 1 vände kortet två gånger (ruta 61–63 och 90–93) (V). Korta vägar får korta klipp, annars hittar modellen på extra rörelser (DRIFT till `f6f68ef`, V) |
 | 3 Inga förbud | Runway Gen-4: "Negative phrasing is not supported and may produce unpredictable or even opposite results" (V). Kling 4: "Negative prompts can increase the likelihood of errors" (V) | `paow-giv-p4`: åtta förbud, minst tre hände ändå (V). Jakobs godkända givar per stil: Utförlig (med förbud) 2 av 4, Kort 8 av 16, Minimal 1 av 2 (V): sambandet syns inte i våra domar |
 | 4 Bild eller film låser rörelsen | Kling 4: referensfilm för "moves and … timing in @Video1" (V). Alibaba WAN 3: referens "to replicate … action choreography" (V). Kling 4 kopierar referensens rörelse nästan bildpunkt för bildpunkt (DRIFT till `f6f68ef`) | Nyp-giv med Kling 4 och bankens tur och retur till samma plats höll i b6, b17 (P4), b19 (D) och b20 (P1, 2 av 2) (V). `p1-05` följer referensens väg och takt ut till P1 (mätt, V). Samma referens till fel plats: kortet läggs där referensen lägger det (b19 P7) (V) |
-| 5 Bilden följer med | Runway I2V: "Visual artifacts, such as blurry hands or faces, may be intensified" (V) | Ankare 2.2: posebilden visade Pamelas sko med öppen front, båda tagningarna ritade den (0/2) (V). Med Pamelas film som referens tappar Paows givande hand tatueringen i snabb rörelse (Prov `paow-plats-4-som-mall`) (V) |
+| 5 Bilden följer med | Runway I2V: "Visual artifacts, such as blurry hands or faces, may be intensified" (V) | Ankare 2.2: posebilden visade en sko med öppen front, och båda tagningarna ritade den (0/2) (V). Med en annan dealers film som referens tappar Paows givande hand tatueringen i snabb rörelse (Prov `paow-plats-4-som-mall`) (V) |
 | 6 Två tagningar sållar | Jakob: två tagningar per klipp, en tredje om båda faller (`docs/BESKED.md`, "Domar, beställningar och pengar") | Är två metoder lika bra med 50 % lyckade blir utfallet 2–0 mot 0–2 av slump i ungefär 1 fall av 8 (S) |
 
 **Där källorna säger emot varandra (V):** Klings egna exempel innehåller förbud ("Avoid duplicate limbs …") trots rådet.
@@ -102,7 +102,7 @@ sparning; MINIMAL låter referensfilmen beskriva vändningen. Den frysta placeri
 tillåter (receptet för varje steg och kort med receptets eget tillägg, varje undantag, filmerna utan kort och
 stillbilderna) och faller när:
 - ett ämne skrivs i två meningar (kameran, referensfilmen, greppet ur skon, vändningen, läggningen, vägen tillbaka, den
-  vilande handen, blicken, kortets utseende, vad som tas ur `@pose`);
+  vilande handen, blicken, kortets utseende);
 - ett tillstånd sägs i två bisatser: vilken sida som är upp ("yellow side up", "blue side up"), "as in the last frame"
   och "as in the first frame" högst en gång i hela texten, "palm down" högst en gång på vägen dit och en gång på vägen
   tillbaka;
@@ -116,7 +116,7 @@ mall 10 ("lets go of it … her empty hand turn palm down" och sedan "Her hand e
 och ingången sade den vilande handen två gånger. Mall 12 kom ur en sökning efter ordföljder som står två gånger i varje
 text linjen kan sätta ihop (1 640 texter): vilken sida som är upp sägs nu där kortet bärs eller vänds och inte en gång
 till i läggningen (stängda givar och given med två händer från 2.3), "as in the last frame" står en gång i ingången
-till 2.3, en stillbild säger en gång vad som tas ur `@pose`, och returen till 2.3 nämner handen vid skon en gång. Den
+till 2.3, och returen till 2.3 nämner handen vid skon en gång. Den
 öppna given med handen vid skon är oförändrad, ord för ord, liksom varje Minimal text.
 
 Ett tillägg säger bara det mallen inte redan säger. Receptets eget tillägg prövas av testet tillsammans med mallen; en
@@ -152,25 +152,25 @@ frame", vilken sida som är upp, "palm down" på samma väg). Längd: så kort s
 hos modellerna; den enda gräns den håller är tilläggets 600 tecken (`EXTRA_LIMIT`).
 
 Receptens modell och längd står i `data/order-methods.json`; tabellen säger varför, och vad filmerna visade när 172
-filmer mättes 2026-11-20 (128 levererade, 28 ur Pamelas bank, dockans 16; bildskillnad ruta för ruta: hur länge bilden
+filmer mättes 2026-11-20 (128 levererade, 28 äldre bankfilmer, dockans 16; bildskillnad ruta för ruta: hur länge bilden
 står stilla i början och i slutet, och hur länge rörelsen pågår; median och spann, V).
 
 | Steg | Receptet | s | Varför, och vad mätningen visade |
 |---|---|---|---|
-| Ingång 1 → 2.1, 1 → 2.2 | WAN 3, 1080p | 4 | Ger bankens ruta direkt; 4K gav ingen skärpa (V). Rörelsen pågår 3,6–3,9 s, 90 % av den inom 2,4–3,4 s (4 filmer). Pamelas godkända ingång är 2 s. Om 3 s räcker är oprövat |
+| Ingång 1 → 2.1, 1 → 2.2 | WAN 3, 1080p | 4 | Ger bankens ruta direkt; 4K gav ingen skärpa (V). Rörelsen pågår 3,6–3,9 s, 90 % av den inom 2,4–3,4 s (4 filmer). Om 3 s räcker är oprövat |
 | Ingång 1 → 2.3 | Kling 4, 1080p, dockans film | 3 | Referensens längd, det kortaste Kling 4 tar. Rörelsen pågår 1,4 s och bilden står stilla 1,4 s i slutet (1 film); dockans film gör likadant, så stillheten kommer ur referensen |
 | Giv bara dit från 2.1, 2.2 och 2.3 | Kling 4, 1080p, referensfilm | 3 | Receptet för varje giv. Från 2.3 (8 filmer): rörelsen 2,4 s (2,1–3,0), kortet lagt efter 2,1 s (1,8–2,25), stilla 0,5 s i slutet (0–0,6); filmen följer dockans takt. Äldre prov på 4 s med bankens referens: till P4 3 av 4 och 2 av 2, till P1 0 av 2 (§5, givprov 1 och 2) |
 | Giv tur och retur (undantag, inget recept) | Kling 4 eller WAN 3 | 7 från 2.1, 6 från 2.2, 4 från 2.3 | Rörelsen fyller filmen: stilla högst 0,3 s i var ände i median (82 filmer). I Paows bank tar given 4,1 s (2,6–5,7) och returen 2,7 s av en film på 7 s (46 filmer) |
 | Vändningen som egen film | Prov: WAN 3 och Kling 4 | 3 | Oprövat |
-| Retur som egen film | Till 2.3: Kling 4, 1080p. Till 2.1, 2.2 och 1: ingen metod | 3 | Oprövat; kort väg, kort film. Pamelas returer är 3 s och rör sig 2,8 s (8 filmer) |
+| Retur som egen film | Till 2.3: Kling 4, 1080p. Till 2.1, 2.2 och 1: ingen metod | 3 | Oprövat; kort väg, kort film. Äldre returer som egen film är 3 s och rör sig 2,8 s (8 filmer) |
 | Utgång 2.1 → 1, 2.2 → 1 | WAN 3, 1080p | 4 | Rörelsen pågår 3,6–3,8 s (4 filmer) |
-| Hålkortet | WAN 3, 1080p | 5 | Rörelsen pågår 4,2–4,8 s (4 filmer); Pamelas är 4 s och rör sig 3,7 s |
+| Hålkortet | WAN 3, 1080p | 5 | Rörelsen pågår 4,2–4,8 s (4 filmer); en äldre på 4 s rör sig 3,7 s |
 | Vila | WAN 3, 1080p | 4 | Samma bild först och sist. Bilden står stilla 0,4 s i var ände (6 filmer på 4 s): det är skarven texten ber om ("holds still for the last half second"), inte död tid. Längre vilor (5, 6, 8 s) är undantag för en större handling |
-| Stillbild (ankare, landning) | Nano Banana Pro, 4K, 4:3 | – | Redigerar dealerns egen bild med `@anchor` och `@pose` |
+| Stillbild (ankare, landning) | Nano Banana Pro, 4K, 4:3 | – | Redigerar dealerns egen bild (`@anchor`) efter texten, utan posebild |
 
 Ingen film är för lång av sig själv: det som står stilla följer referensfilmen (ingången till 2.3, givens slut) eller
 är en beställd skarv (vilan). Om given på 3 s är för snabb är en smakfråga för Jakob: de givar han har godkänt tar
-cirka 4 s (Paows 4,3 s i median, 16 filmer; Pamelas 4,0 s, 14 filmer; ur bankens register), den nya lägger kortet
+cirka 4 s (Paows 4,3 s i median, 16 filmer; ur bankens register), den nya lägger kortet
 efter cirka 2,1 s i en film på 3 s, och en sekund till kostar cirka 21 krediter per film (Kling 4, 1080p). En längre
 giv är en längre referensfilm, eftersom filmen tar referensens längd.
 
@@ -204,18 +204,17 @@ Orden står i `SAY`; här står vad som har hållit och varför.
   2 ("Ser jättebra ut. Kortet kan möjligen vara lite litet, men jag är osäker.") och underkände tagning 1 ("Kortet kapas
   när det läggs ner, vilket är mycket konstigt.") (V). `paow-giv-2-1-p1-05` (omgång 4, samma referens, fri vändning):
   granskaren 3,5/5, men Jakob underkände: "Här ändrar kortet färg ungefär halvvägs." (V). Referens från en annan
-  startpose (`p2-03`, Pamelas släp ur ankare 2.2): kortet lades framför skon som i referensen och sköts cirka 725 px
+  startpose (`p2-03`, ett släp ur ankare 2.2): kortet lades framför skon som i referensen och sköts cirka 725 px
   till P2; Jakob godkände ("det håller helt klart") (V). Föll: referens till annan plats (b19 P1, P7) (V).
 - **Bara dit med referens (givprov 1 och 2, 2026-11-17):** Kling 4, 4 s, första bild ankare 2.1, sista bild rutan där
   banken delar en godkänd tur och retur till platsen (given slutar, returen börjar på nästa ruta), referensen en rakt
-  godkänd giv till samma plats. Till P4 med `pamela-p4-c1-plan-deal-02`: vänt genom kantläget 4 av 4, granskaren 3 av 4
-  (V). Till P1 med `pamela-p1-c1-plan-deal-01`: 0 av 2 (V): modellen vände kortet där referensen visar kortet på kant,
+  godkänd giv till samma plats. Till P4: vänt genom kantläget 4 av 4, granskaren 3 av 4 (V). Till P1: 0 av 2 (V): modellen vände kortet där referensen visar kortet på kant,
   i svingen upp ur fönstret, och bar det 15–30 % större än ett verkligt kort i bilden. Alltså väljs referensen också
   efter vad den visar: kortet på kant bara i vändningen, och i verklig storlek (S, ur två platser). Modellen kopierar
   referensens väg, takt, kortets skenbara storlek och var kortet är på kant; utseende, sko och var kortet ligger tar den
   ur bilderna (V, nio tagningar med referens). Handen lyfts eller släpper och läggs om i slutet i alla, eftersom sista
   bildens hand är bankens platta hand och referensens slutar med fingertoppen på kortet (V).
-- Risk: referensen är Pamelas, och hennes hand läcker in (tatueringen försvinner i snabb rörelse) (V). Studion stoppar
+- Risk: med en annan dealers film som referens läcker den dealerns hand in (tatueringen försvinner i snabb rörelse) (V). Studion stoppar
   bara hela bilder av en annan dealer; en annan dealers film som referens tillåter Jakob (order-clerk §3).
 - **Utan referens:** `paow-giv-2-1-p4-04` (mall 3, rullas kring långsidan, Kling 4): Jakobs Primär, "Kanske den bästa!",
   fast kortet lyfts till brösthöjd och växer cirka 21 % och skjuts 160 px (mätt, inte granskad, V). `paow-giv-p4` (mall
@@ -244,13 +243,12 @@ uppåt); den yttre långsidan ligger kvar mot filten som gångjärn. Kortet stå
 fäller kortet över gångjärnet och följer med ned på framsidan. Greppet är inte fast: fingrarna lämnar kortet en stund
 medan det står på kant.
 
-**Vändning B, Pamelas nyckelvridning (bankens), giltig.** Jakob fick 2026-11-17 välja mellan Pamelas vändning och en
+**Vändning B, nyckelvridningen, giltig.** Jakob fick 2026-11-17 välja mellan nyckelvridningen och en
 tagning där handleden vrids så att handflatan går uppåt, och svarade: "Båda dessa två sätt är
 giltiga […] Altså både vrida som en nyckel samt den andra. Huvudsaken är att rätt sida kommer upp mot spelaren och att
 korten har symetriskt samma storkel som de rimligen borde ha, och/eller som välj si labbet och att det är gult till
-blått som görs." Belägget för nyckeln är granskningen av Pamelas vändningar
-(`D:/dealer-scratch/tmp/pamela-formel/RAPPORT.md`, nio bra vändningar sedda i full upplösning, V). Formeln:
-1. Korta filmer med en handling var: Pamelas givar var WAN 3-filmer på 4–6 s, bara dit, och returen en egen film (V).
+blått som görs." Belägget för nyckeln är nio bra vändningar sedda i full upplösning (V). Formeln:
+1. Korta filmer med en handling var: given bara dit på 4–6 s och returen som egen film (V).
 2. Kortet hålls i sin kortända mellan tumme och fingrar, som en förlängning av handen, med den breda sidan mot
    kameran (V).
 3. Hand och kort vänds tillsammans, en gång, kring kortets långa axel, som när man vrider om en nyckel: gult smalnar
@@ -260,7 +258,6 @@ blått som görs." Belägget för nyckeln är granskningen av Pamelas vändninga
    skattat (S).
 6. Texten säger det kameran ser ("the broad yellow back is seen, then the thin pale edge, then the broad plain blue
    face"); att den meningen ger kanten är skattat (S).
-Rapporten har en provorder med formeln och vad den ska klara, och den säger var formeln skiljer sig från dagens mall.
 
 **Vad en bild av varje ögonblick visar (A):** *Före:* kortet gult och plant en kortbredd mot hennes mitt från
 landningsplatsen, handflatan ned, två fingertoppar på baksidan. *På kant:* kortet upprätt på sin yttre långsida, en smal
@@ -282,7 +279,7 @@ tagningar vänder kortet en gång vid platsen så som en hand kan, med kortet in
   vänster) (V). Pröva P1 först.
 - **Öppet, bara dit med referens (givprov 2A, 2026-11-17; V):** Kling 4, 4 s, första bild ankare 2.2, sista bild ruta
   126 ur `paow-giv-2-2-p4-01-01` (där returen, som Jakob godkände, börjar; skons tryckta kort ersatt med ankare 1:s),
-  referensen Pamelas släp `pamela-p4-c1-drawn-deal-01` ("Svinbra", från ankaret DRAWN; i arkivet sedan 2026-11-23, DRIFT). 2 av 2 användbara med
+  referensen ett rakt godkänt släp till samma plats. 2 av 2 användbara med
   anmärkningar (granskaren 4/5 och 3/5): kortet släps plant längs filten, reses på kant nära platsen och vänds genom
   kantläget som i referensen (gångjärn mot filten, tumme och pekfinger; texten sade nyckel), läggs 0–1 px från sista
   bilden. Fel: turkos i 3–5 rutor kring kanten, en ljus kant upp till 34 % runt kortet i tagning 2 (ruta 72), kortet
@@ -318,21 +315,19 @@ tagningar vänder kortet en gång vid platsen så som en hand kan, med kortet in
 - Jakob om ordet: "Det är fortfarande oklart vad som ska vara en variant och vad som är godkänt." (`paow-vila-08`, V).
 
 ### 3.7 Stillbilder: ankare 2.1, 2.2, landningsbild
-Nano Banana Pro, 4K, 4:3, `referenceImages` `@anchor` (dealerns egen bild) och `@pose` (bara en utklippt underarm och
-hand, `tools/order-images.ts`). För stillbilder gäller Googles råd: detaljerat får det vara, men det oönskade sägs
-positivt ("one card", inte "no second card"). Orden för ankarna: `SAY.still*` och `STANDARD_STILL`. Vad som tas ur
-`@pose` sägs en gång, i meningen om `@pose` (`SAY.stillPose`); meningen om handen (`SAY.stillChange`) säger bara vad
-handen gör.
+Nano Banana Pro, 4K, 4:3, `referenceImages` `@anchor` (dealerns egen bild) och texten; ingen posebild går med, och
+dockan är posekällan framåt. För stillbilder gäller Googles råd: detaljerat får det vara, men det oönskade sägs
+positivt ("one card", inte "no second card"). Orden för ankarna: `SAY.still*` och `STANDARD_STILL`; meningen om handen
+(`SAY.stillChange`) säger vad handen gör.
 ```
-This is an edit of the picture @anchor. Keep everything in @anchor exactly as it is: the framing and camera, the flat chroma-green background and table, the black card shoe at the right with the yellow card in its window, and the woman's face, hair, clothes, build and her hand at the left of the picture. Change only her hand nearest the shoe: it rests at the blue card lying flat on the felt in front of her, the tips of her forefinger and middle finger on the card's edge nearest her, the wrist raised above the knuckles and the thumb free beside the card. @pose is a cut-out on plain green that shows only a forearm and hand; take from it only where the hand is and how the fingers touch the card. [STANDARD_STILL] There is one card on the felt and one in the shoe, each the size and shape of the card in the window.
+This is an edit of the picture @anchor. Keep everything in @anchor exactly as it is: the framing and camera, the flat chroma-green background and table, the black card shoe at the right with the yellow card in its window, and the woman's face, hair, clothes, build and her hand at the left of the picture. Change only her hand nearest the shoe: it rests at the blue card lying flat on the felt in front of her, the tips of her forefinger and middle finger on the card's edge nearest her, the wrist raised above the knuckles and the thumb free beside the card. [STANDARD_STILL] There is one card on the felt and one in the shoe, each the size and shape of the card in the window.
 ```
-- Exemplet är **landningsbilden** (S, oprövad): `@anchor` = ankare 1 med kortet ritat där planen säger; `@pose` = armen
-  ur Pamelas godkända giv till samma plats, rutan där fingertopparna vilar på kortet. Efteråt ritas kortet om ur planen
-  och skon tas från ankare 1 (`tools/python/skolagning-21.py`, order-clerk §5).
+- Exemplet är **landningsbilden** (S, oprövad): `@anchor` = ankare 1 med kortet ritat där planen säger. Efteråt ritas
+  kortet om ur planen och skon tas från ankare 1 (`tools/python/skolagning-21.py`, order-clerk §5).
 - **Ankare 2.1:** `paow-ankare-2-1` gav 4/5 och 2/5 (dubbla kort); Jakob godkände tagning 1 och underkände tagning 2
-  (V).
+  (V). Ordern hade en posebild; utan den är steget oprövat (S).
 - **Ankare 2.2:** 1 av 6 tagningar i tre ordrar, och bara efter lagning; varje gång ritade bildmodellen om skon, också
-  när ankare 2.1 var `@anchor` (§5, V). `paow-ankare-2-2` tagning 1 (Pamelas öppna sko ritad; ersatt 2026-11-20 av
+  när ankare 2.1 var `@anchor` (§5, V). `paow-ankare-2-2` tagning 1 (posebildens öppna sko ritad; ersatt 2026-11-20 av
   `paow-ankare-2-2-blick-a`) gällde sedan skolagningen satt ankare 1:s sko och kort i fönstret, ett förpass med
   `fillDark` vid snitt 828 fått kroppen att sluta på rad 831 och tre lokala lagningar gjorts (kavajens hörnsteg 24 ×
   10 px, glipan vid pekfingret, manschettskarven): granskaren 3/5 för provfilmer, Jakob: gäller (besked 15:47;
@@ -400,8 +395,8 @@ uppdatera kortspår och domarrutor och granska skarven före införande. Att sna
 ska visa "clear upper body … including all limbs and head", en person, obruten, inte snabb. Vårt verktyg: **ingen sista
 bild** (`kling-3-motion-control` står inte bland modellerna som tar `endFrame`). Om ett föremål i handen: "contact
 points are difficult" (Hörsägen). Vårt prov b1a (2026-11-11, V): 44 av 100; kortet genomskinligt grönt i ruta 30–84,
-skons fönster tomt från ruta 48, kortet landar 73 px fel, 1760 × 1184. **Svar: Pamelas film driver inte Paows ankare via
-Motion Control;** den kan driva Paows rörelse som referensfilm i Kling 4 med första och sista bild (3.2). Act-Two (högst
+skons fönster tomt från ruta 48, kortet landar 73 px fel, 1760 × 1184. **Svar: en annan dealers film driver inte Paows ankare
+via Motion Control;** den kan driva Paows rörelse som referensfilm i Kling 4 med första och sista bild (3.2). Act-Two (högst
 1280 × 720, lägger till "a subtle handheld shake") finns inte i vårt verktyg.
 
 **Jakobs egen hand med telefonen** är bättre när ingen godkänd bankfilm visar rörelsen (vändningen vid platsen, höger
@@ -410,15 +405,15 @@ stativ, låst och liggande där bankens kamera står (rakt framför, något öve
 till höger; ett kort med gul baksida och blå framsida (tejp duger); matt slät duk, jämnt ljus framifrån, lång svart ärm,
 inga ringar. Sitt som dealern, andra handen platt. Verkligt tempo: Kling 4 kopierar referensens takt, och ultrarapid som
 snabbats upp föll (V). Börja och sluta i ankarets pose, en obruten tagning på 4–8 s, kortet till orderns plats, flera
-tagningar; välj en där kortet syns på kant. Risk: Jakobs hand läcker in som Pamelas (S).
+tagningar; välj en där kortet syns på kant. Risk: Jakobs hand läcker in, som referensens hand gör i 3.2 (S).
 
 ### 3.9 Helfigur: hon kommer in och sätter sig, hon reser sig och går
-Den enda beskrivningen av hur en helfigursfilm görs (Beställ har inget steg för den). Gjord 2026-11-13 för Paow efter
-Pamelas godkända par, 552 krediter (V: `assets/motions/paow-table-arrive-wide-01/generation.json`,
+Den enda beskrivningen av hur en helfigursfilm görs (Beställ har inget steg för den). Gjord 2026-11-13 för Paow, 552
+krediter (V: `assets/motions/paow-table-arrive-wide-01/generation.json`,
 `paow-table-leave-wide-01/generation.json`, liggaren `D:/dealer-scratch/tmp/huvudagent11/helfigur/ledger.md`):
-1. Ramen är Pamelas breda: 2088 × 1174 i halv skala, dealerkantens mitt i (1044, 656) (`motion.frame`, SYSTEM).
+1. Ramen är den breda: 2088 × 1174 i halv skala, dealerkantens mitt i (1044, 656) (`motion.frame`, SYSTEM).
 2. Tre stillbilder placeras utan bildmodell (`helfigur/build-stills.py`): tom ram med en ljusare grön skiva, ankare 1 i
-   halv skala utan sko (sittande), och den stående keystonen med ögonen Pamelas stående höjd (165,5 px) över de sittande.
+   halv skala utan sko (sittande), och den stående keystonen med ögonen 165,5 px över de sittande.
 3. Varje film är två delar som möts i den stående bilden: in = går in (tom → stående) + sätter sig (stående →
    sittande); ut = reser sig (sittande → stående) + går ut (stående → tom).
 4. Kling 4, 1080p, 16:9, första och sista bild, kort text utan förbud, 3–6 s per del; ljudet tas bort.

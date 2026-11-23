@@ -74,13 +74,12 @@ Efterarbete: [order-clerk.md §5](order-clerk.md), stillbild. Oberoende granskni
 `assets/anchors/<dealer>-<namn>/anchor.png`), Jakob sätter `gäller`. 40 per bild, två bilder.
 
 **5. Ankare 2.1 (nyp, `READY`).** Beställ, steg `ANKARE-2.1`: Nano Banana Pro 4K 4:3, `@anchor` = ankare 1 som
-gäller, `@pose` = en annan dealers utklippta underarm och hand (ruta 16 ur `pamela-p4-c1-plan-deal-02`) (V). Två
-tagningar, 80 krediter. Sedan station 9–12; stillbilden blir `kandidat` i Material och Jakob sätter `gäller`. Paow: höll
-i första ordern (4/5, Jakob godkände).
+gäller, och texten; ingen posebild går med, och dockan är posekällan framåt. Två tagningar, 80 krediter. Sedan station
+9–12; stillbilden blir `kandidat` i Material och Jakob sätter `gäller`. Paow: höll i första ordern (4/5, Jakob
+godkände), som hade en posebild; utan den är steget oprövat (S).
 
 **5b. Ankare 2.2 (släp, `READY-B`).** Beställ, steg `ANKARE-2.2`: samma modell som 2.1 och `@anchor` = ankare 1 som
-gäller, men handen ligger över kortet vid skons öppning; posebilden är den andra dealerns utklippta underarm och hand
-lagd på dealerns egen sko och kort ur ankaret (`poseOnShoe` i `tools/order-images.ts`) (V). Paows första ankare 2.2
+gäller; texten lägger handen över kortet vid skons öppning, utan posebild (S). Paows första ankare 2.2
 (`paow-ankare-2-2-t1`, nod `READY-B`) gällde 2026-11-13 till 2026-11-20 och bär bankens filmer från 2.2; sedan dess
 gäller det tatuerade `paow-ankare-2-2-blick-a` (Material). Av tagningarna till t1 höll bara 1 av 6 i tre ordrar, och
 bara efter skolagning och lokala lagningar: bildmodellen ritade om skon varje gång (handboken 3.7) (V). Från ankare 2.2 ges en plats i rundan när ingången, given,
@@ -246,7 +245,7 @@ Där en källa bara är text eller ett skript utanför repot står det "inget i 
 | Vad | Värde | Källa (det som avgör) |
 |---|---|---|
 | Bankens ruta, film och ankare | 1764 × 1174 | `FILM` i `src/scene3d-geometry.ts`; `readRgb` i `tools/order-images.ts` (vägrar annan storlek när en order byggs); `image` i `data/scene-contract.json`. Material varnar bara (`sizeWarning`) |
-| Planens ruta (Bordets Kortplan) | 1762 × 1174, V6:s ruta | `VIEWS.native` i `src/placement-model.ts`; film-x = plan-x × 1763/1761 (`image.note` i scenkontraktet, `planQuad` i `tools/order-images.ts`). Glöms faktorn: högst 2 px fel vid högerkanten |
+| Planens ruta (Bordets Kortplan) | 1762 × 1174 | `VIEWS.native` i `src/placement-model.ts`; film-x = plan-x × 1763/1761 (`image.note` i scenkontraktet, `planQuad` i `tools/order-images.ts`). Glöms faktorn: högst 2 px fel vid högerkanten |
 | Bildfrekvens | WAN 3: 30/s. Kling 4 och Kling 3.0 4K: 24/s | `film.fps` i `fetched.json`. Banken behåller varje films takt och rutnummer (`source.fps`, `fpsOf` i `src/game-film.ts`, `Part.fps` i `src/scene3d-film.ts`, förval 30). `tools/film-after.ts` behåller leveransens takt |
 | WAN 3 levererar | 1764 × 1174 med `ratio: "adaptive"`; H.264, inget ljud; 7 s = 210 rutor; de två sista mörknar | `fetched.json` för `paow-giv-2-1-p4-12`; `MODELS.wan3` |
 | Kling 4 levererar | 1764 × 1172, 24/s, 7 s = 169 rutor, H.264, bt709, ljud alltid på; formen följer första bilden | `fetched.json` för `paow-giv-2-1-p4-13`; `MODELS['kling-4']` |
@@ -255,7 +254,7 @@ Där en källa bara är text eller ett skript utanför repot står det "inget i 
 | Stillbild från Nano Banana Pro | 4800 × 3584 (4:3, 4K); 3:2 erbjuds inte | kvittonas `source.png`; `STEPS`; verktygets schema |
 | Ankare | 1764 × 1174 PNG på grönt; fönsterskon; samma sko, grönt, ton och slutrad för kroppen i alla dealerns ankare | `anchors.mustAgree`, `shoe` i `data/dealer-standard.json` |
 | Keystone | Hög upplösning, stående och sittande, på vitt (Paow 3584 × 4800 och 4800 × 3584) | text i `order` i `data/dealer-standard.json`; inget i repot vägrar |
-| Grönt | Ingen fast färg: nyckeln läser varje rutas hörn (`keyLo` 0,12, `keyHi` 0,9). Konvention: RGB 0, 237, 44 (Pamelas viloruta, Paows ankare) | shadern i `src/scene3d-film.ts`; `SCREEN`, `CORNER` i `src/film-fix.ts`; `anchors.mustAgree` |
+| Grönt | Ingen fast färg: nyckeln läser varje rutas hörn (`keyLo` 0,12, `keyHi` 0,9). Konvention: RGB 0, 237, 44 (Paows ankare) | shadern i `src/scene3d-film.ts`; `SCREEN`, `CORNER` i `src/film-fix.ts`; `anchors.mustAgree` |
 | Bordskantsraden | 831,5; kroppen slutar på rad 825–831; inget 10 nivåer mörkare än grönt ovanför | `dealerEdgeImageRow` i scenkontraktet; `FRAME_FIX`; `edgeCheck`, `EDGE` i `src/film-after.ts`; inget i repot vägrar |
 | Kortets färger | Baksida gul, framsida blå, båda släta (en platt färg per sida), likaså nästa kort i fönstret; meningen i texten är `PLAIN_CARD` | `card.colours` i standarden; `PLAIN_CARD` i `src/order-prompts.ts`; spårarens `is.yellow`, `is.blue` |
 | Kortets storlek | Planens kort (P4 86,6 × 71,8 px); i flykten inom ±10 %; landat inom ±10 % yta och 5 px | `placements/default.json`; ±10 % och 5 px är granskningens regel, inget i repot vägrar |
@@ -267,6 +266,6 @@ Där en källa bara är text eller ett skript utanför repot står det "inget i 
 | Tagningsstatus | GODKÄND → LAGD → KLAR → HÄMTAD → EFTERARBETAD → MÄTT → GRANSKAD (granskarens) → INFÖRD; OSÄKER (läggs aldrig om), MISSLYCKAD, AVBRUTEN | `TAKE_FLOW` i `src/order-model.ts` |
 | Domord i banken | Primär (`MAIN`), Godkänd (`ACCEPTED`), Variant (`VARIANT`), Underkänd (`REJECTED`), Väntar (`PENDING`); preliminär dom = `review.provisional`, `userAccepted: false`, i studion "dömd åt dig" (väntar inte i hans kö); `review.inbox` = från en order, inte dömd | `DECISIONS`, `applyProvisional` i `tools/review-store.ts` |
 | Bildtillstånd i Material | `kandidat` → `gäller` eller `ersatt`; `gäller` → `ersatt`; en `gäller` per roll, nod och kort | `STATES` i `studio/lib/media.ts`; `CHANGES` i `studio/components/material/state.ts` |
-| Filer per order | `data/orders/<id>.json`; `assets/orders/<id>/`: `first.png`, `last.png`, `reference.mp4`, `anchor.png`, `pose-figure.png`, `receipt.json`; `take-<n>/`: `source.*`, `fetched.json`, `after.*`, `after.json`, `fixed-<k>.*` | `src/order-model.ts`; `tools/order-collect.ts`; `tools/film-after.ts` |
+| Filer per order | `data/orders/<id>.json`; `assets/orders/<id>/`: `first.png`, `last.png`, `reference.mp4`, `anchor.png`, `receipt.json`; `take-<n>/`: `source.*`, `fetched.json`, `after.*`, `after.json`, `fixed-<k>.*` | `src/order-model.ts`; `tools/order-collect.ts`; `tools/film-after.ts` |
 | Filer i banken | `assets/motions/<klipp>/source.mp4`, `generation.json`; `motions/<klipp>.json`; `assets/tracking/<klipp>/card-track.json`; utanför banken `assets/films/<dealer>/<namn>/` | `tools/register-order.ts`; `tools/track-card.ts`; `tools/order-bring.ts` |
 | Pris och tak | Aktuell prislista och tidsatt mandat i orderpolicyn; nya starter reserverar värsta kostnaden mot tim- och totaltak. Läs saldo med MCP före beställning. | `data/order-policy.json`; egna reservationer i orderkvittona |
