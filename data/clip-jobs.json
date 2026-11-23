@@ -4085,6 +4085,20 @@
       "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
     },
     {
+      "id": "paow-tal-placebets-tat-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-placebets-tat-sv-01",
+      "frames": [
+        0,
+        47
+      ],
+      "purpose": "Talfilm på begäran: Lägg era insatser, tack. Neutral mun på Tatuerads vila paow-vila-tat-01-01 (tools/speech.ts say --rest; bara i labbet).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
       "id": "paow-tal-hej-sv-11",
       "kind": "IDLE",
       "from": "IDLE",
@@ -7409,6 +7423,560 @@
         147
       ],
       "purpose": "Lokalt härledd ur paow-vila-28-01 på ankaret paow-vila-tatuerad (.runtime/vila-kort/del/skarva.ts).",
+      "dealer": "paow",
+      "model": "wan3 + skarva",
+      "duration": 4.933,
+      "first": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      },
+      "last": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      }
+    },
+    {
+      "id": "paow-vila-29-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-29-01",
+      "frames": [
+        0,
+        147
+      ],
+      "purpose": "Beställning paow-vila-29, tagning 1: Tatuerad · vila · två små rörelser (blick åt sidan, ler).",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 5,
+      "promptText": "Locked camera, one continuous shot. She starts and ends exactly as in the first frame, and holds still for the last half second. Two very small movements with a still moment between. First her eyes go to one side, her head following a little, and come back to the camera. Halfway through she is exactly as in the first frame again and holds still for half a second. Then a small closed-lip smile comes and goes with one blink. She ends holding still. Her lips stay closed and her shoulders and torso do not move. Her hands stay exactly where they are. The green background, the shoe and the edges of the picture stay as in the first frame. The tattoos keep their pattern.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-vila-29/first.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Första bilden i beställningen paow-vila-29."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-vila-29/last.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Sista bilden i beställningen paow-vila-29."
+      },
+      "order": {
+        "id": "paow-vila-29",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-vila-30-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-30-01",
+      "frames": [
+        0,
+        147
+      ],
+      "purpose": "Beställning paow-vila-30, tagning 1: Tatuerad · vila · två små rörelser (ser ned, vickar).",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 5,
+      "promptText": "Locked camera, one continuous shot. She starts and ends exactly as in the first frame, and holds still for the last half second. Two very small movements with a still moment between. First she looks down at the felt in front of her and up to the camera again with one blink. Halfway through she is exactly as in the first frame again and holds still for half a second. Then her head tilts a little to one side and comes back upright. She ends holding still. Her lips stay closed and her shoulders and torso do not move. Her hands stay exactly where they are. The green background, the shoe and the edges of the picture stay as in the first frame. The tattoos keep their pattern.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-vila-30/first.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Första bilden i beställningen paow-vila-30."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-vila-30/last.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Sista bilden i beställningen paow-vila-30."
+      },
+      "order": {
+        "id": "paow-vila-30",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-vila-31-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-31-01",
+      "frames": [
+        0,
+        147
+      ],
+      "purpose": "Beställning paow-vila-31, tagning 1: Tatuerad · vila · två små rörelser (blinkar, nickar).",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 5,
+      "promptText": "Locked camera, one continuous shot. She starts and ends exactly as in the first frame, and holds still for the last half second. Two very small movements with a still moment between. First she glances to her right and back to the camera with one slow blink. Halfway through she is exactly as in the first frame again and holds still for half a second. Then she gives one small, slow nod. She ends holding still. Her lips stay closed and her shoulders and torso do not move. Her hands stay exactly where they are. The green background, the shoe and the edges of the picture stay as in the first frame. The tattoos keep their pattern.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-vila-31/first.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Första bilden i beställningen paow-vila-31."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-vila-31/last.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Sista bilden i beställningen paow-vila-31."
+      },
+      "order": {
+        "id": "paow-vila-31",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-tal-goodluck-tat-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-goodluck-tat-sv-01",
+      "frames": [
+        0,
+        82
+      ],
+      "purpose": "Talfilm på begäran: Insatserna är stängda. Lycka till vid mitt bord! Neutral mun på Tatuerads vila paow-vila-tat-01-01 (tools/speech.ts say --rest; bara i labbet).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-insurance-tat-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-insurance-tat-sv-01",
+      "frames": [
+        0,
+        78
+      ],
+      "purpose": "Talfilm på begäran: Försäkringen är öppen. Vill du försäkra din hand? Neutral mun på Tatuerads vila paow-vila-tat-01-01 (tools/speech.ts say --rest; bara i labbet).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-double-tat-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-double-tat-sv-01",
+      "frames": [
+        0,
+        73
+      ],
+      "purpose": "Talfilm på begäran: Du dubblar. Ett kort, nu gör vi det bästa av det. Neutral mun på Tatuerads vila paow-vila-tat-01-01 (tools/speech.ts say --rest; bara i labbet).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-blackjack-tat-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-blackjack-tat-sv-01",
+      "frames": [
+        0,
+        69
+      ],
+      "purpose": "Talfilm på begäran: Blackjack! Vackert spelat. Grattis! Neutral mun på Tatuerads vila paow-vila-tat-01-01 (tools/speech.ts say --rest; bara i labbet).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-dealerblackjack-tat-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-dealerblackjack-tat-sv-01",
+      "frames": [
+        0,
+        87
+      ],
+      "purpose": "Talfilm på begäran: Dealern har blackjack. Den här rundan går till huset. Neutral mun på Tatuerads vila paow-vila-tat-01-01 (tools/speech.ts say --rest; bara i labbet).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-dealerbust-tat-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-dealerbust-tat-sv-01",
+      "frames": [
+        0,
+        78
+      ],
+      "purpose": "Talfilm på begäran: Dealern är över tjugoett! Grattis, bordet vinner. Neutral mun på Tatuerads vila paow-vila-tat-01-01 (tools/speech.ts say --rest; bara i labbet).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-win-tat-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-win-tat-sv-01",
+      "frames": [
+        0,
+        59
+      ],
+      "purpose": "Talfilm på begäran: Bra spelat! Njut av din vinst. Neutral mun på Tatuerads vila paow-vila-tat-01-01 (tools/speech.ts say --rest; bara i labbet).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-push-tat-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-push-tat-sv-01",
+      "frames": [
+        0,
+        75
+      ],
+      "purpose": "Talfilm på begäran: Det är lika. Din insats betalas tillbaka. Neutral mun på Tatuerads vila paow-vila-tat-01-01 (tools/speech.ts say --rest; bara i labbet).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-lose-tat-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-lose-tat-sv-01",
+      "frames": [
+        0,
+        87
+      ],
+      "purpose": "Talfilm på begäran: Dealern vinner den här gången. Bättre lycka nästa runda. Neutral mun på Tatuerads vila paow-vila-tat-01-01 (tools/speech.ts say --rest; bara i labbet).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-dealerplays-tat-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-dealerplays-tat-sv-01",
+      "frames": [
+        0,
+        40
+      ],
+      "purpose": "Talfilm på begäran: Dealern spelar. Neutral mun på Tatuerads vila paow-vila-tat-01-01 (tools/speech.ts say --rest; bara i labbet).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-chat1-tat-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-chat1-tat-sv-01",
+      "frames": [
+        0,
+        47
+      ],
+      "purpose": "Talfilm på begäran: Tack! Lycka till. Neutral mun på Tatuerads vila paow-vila-tat-01-01 (tools/speech.ts say --rest; bara i labbet).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-chat2-tat-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-chat2-tat-sv-01",
+      "frames": [
+        0,
+        50
+      ],
+      "purpose": "Talfilm på begäran: Roligt att du är här. Neutral mun på Tatuerads vila paow-vila-tat-01-01 (tools/speech.ts say --rest; bara i labbet).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-chat3-tat-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-chat3-tat-sv-01",
+      "frames": [
+        0,
+        38
+      ],
+      "purpose": "Talfilm på begäran: Det ordnar vi. Neutral mun på Tatuerads vila paow-vila-tat-01-01 (tools/speech.ts say --rest; bara i labbet).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-chat4-tat-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-chat4-tat-sv-01",
+      "frames": [
+        0,
+        55
+      ],
+      "purpose": "Talfilm på begäran: Lycka till med nästa hand. Neutral mun på Tatuerads vila paow-vila-tat-01-01 (tools/speech.ts say --rest; bara i labbet).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-hej-tat-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-hej-tat-sv-01",
+      "frames": [
+        0,
+        42
+      ],
+      "purpose": "Talfilm på begäran: Hej och välkommen till bordet! Neutral mun på Tatuerads vila paow-vila-tat-01-01 (tools/speech.ts say --rest; bara i labbet).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-namn-tat-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-namn-tat-sv-01",
+      "frames": [
+        0,
+        66
+      ],
+      "purpose": "Talfilm på begäran: Jag heter Paow, och jag är din dealer i kväll. Neutral mun på Tatuerads vila paow-vila-tat-01-01 (tools/speech.ts say --rest; bara i labbet).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-hurmardu-tat-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-hurmardu-tat-sv-01",
+      "frames": [
+        0,
+        78
+      ],
+      "purpose": "Talfilm på begäran: Jag mår fint, tack. Korten verkar vara på gott humör i kväll. Neutral mun på Tatuerads vila paow-vila-tat-01-01 (tools/speech.ts say --rest; bara i labbet).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-regler-tat-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-regler-tat-sv-01",
+      "frames": [
+        0,
+        66
+      ],
+      "purpose": "Talfilm på begäran: Närmast tjugoett vinner, men gå inte över. Neutral mun på Tatuerads vila paow-vila-tat-01-01 (tools/speech.ts say --rest; bara i labbet).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-varsagod-tat-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-varsagod-tat-sv-01",
+      "frames": [
+        0,
+        51
+      ],
+      "purpose": "Talfilm på begäran: Varsågod, det är bara roligt. Neutral mun på Tatuerads vila paow-vila-tat-01-01 (tools/speech.ts say --rest; bara i labbet).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-detsamma-tat-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-detsamma-tat-sv-01",
+      "frames": [
+        0,
+        39
+      ],
+      "purpose": "Talfilm på begäran: Tack detsamma! Neutral mun på Tatuerads vila paow-vila-tat-01-01 (tools/speech.ts say --rest; bara i labbet).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-otur-tat-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-otur-tat-sv-01",
+      "frames": [
+        0,
+        66
+      ],
+      "purpose": "Talfilm på begäran: Det vänder snart, det brukar det göra. Neutral mun på Tatuerads vila paow-vila-tat-01-01 (tools/speech.ts say --rest; bara i labbet).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-grattis-tat-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-grattis-tat-sv-01",
+      "frames": [
+        0,
+        70
+      ],
+      "purpose": "Talfilm på begäran: Grattis! Det där var snyggt spelat. Neutral mun på Tatuerads vila paow-vila-tat-01-01 (tools/speech.ts say --rest; bara i labbet).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-hejda-tat-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-hejda-tat-sv-01",
+      "frames": [
+        0,
+        57
+      ],
+      "purpose": "Talfilm på begäran: Tack för i kväll, välkommen tillbaka! Neutral mun på Tatuerads vila paow-vila-tat-01-01 (tools/speech.ts say --rest; bara i labbet).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-tal-vetej-tat-sv-01",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-tal-vetej-tat-sv-01",
+      "frames": [
+        0,
+        84
+      ],
+      "purpose": "Talfilm på begäran: Det kan jag tyvärr inte svara på, men korten ljuger aldrig. Neutral mun på Tatuerads vila paow-vila-tat-01-01 (tools/speech.ts say --rest; bara i labbet).",
+      "dealer": "paow",
+      "model": "moving-gpu-worker 8b1386c2cd4a (MuseTalk) · eleven_multilingual_v2 Paow"
+    },
+    {
+      "id": "paow-vila-29-01-hel",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-29-01-hel",
+      "frames": [
+        0,
+        147
+      ],
+      "purpose": "Lokalt härledd ur paow-vila-29-01 på ankaret paow-vila-tatuerad (.runtime/vila-kort/del/skarva.ts).",
+      "dealer": "paow",
+      "model": "wan3 + skarva",
+      "duration": 4.933,
+      "first": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      },
+      "last": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      }
+    },
+    {
+      "id": "paow-vila-30-01-del1",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-30-01-del1",
+      "frames": [
+        0,
+        99
+      ],
+      "purpose": "Lokalt härledd ur paow-vila-30-01 rutor 0–99 på ankaret paow-vila-tatuerad (.runtime/vila-kort/del/skarva.ts).",
+      "dealer": "paow",
+      "model": "wan3 + skarva",
+      "duration": 3.333,
+      "first": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      },
+      "last": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      }
+    },
+    {
+      "id": "paow-vila-30-01-del2",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-30-01-del2",
+      "frames": [
+        0,
+        48
+      ],
+      "purpose": "Lokalt härledd ur paow-vila-30-01 rutor 99–147 på ankaret paow-vila-tatuerad (.runtime/vila-kort/del/skarva.ts).",
+      "dealer": "paow",
+      "model": "wan3 + skarva",
+      "duration": 1.633,
+      "first": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      },
+      "last": {
+        "file": {
+          "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Ankaret paow-vila-tatuerad i Material: filmen börjar och slutar på det."
+      }
+    },
+    {
+      "id": "paow-vila-31-01-hel",
+      "kind": "IDLE",
+      "from": "IDLE",
+      "to": "IDLE",
+      "clip": "paow-vila-31-01-hel",
+      "frames": [
+        0,
+        147
+      ],
+      "purpose": "Lokalt härledd ur paow-vila-31-01 på ankaret paow-vila-tatuerad (.runtime/vila-kort/del/skarva.ts).",
       "dealer": "paow",
       "model": "wan3 + skarva",
       "duration": 4.933,

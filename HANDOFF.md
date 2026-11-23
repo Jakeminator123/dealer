@@ -29,7 +29,7 @@ Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-
    ([LASMIG](dealer3d/LASMIG.md), "Naturlig ställning", Kvar).
 3. Jakobs plan, domar och orderutkast skrivs aldrig över; läs hans anteckningar med `node tools/proof-notes.ts`.
 4. Rundans 22 filmbehov täcks; P6 går via A2.2 ([kort](docs/lage/kort.md)).
-5. Den neutrala munnen gäller alla Paows repliker utom blackjack, som väntar på hans ja; ingen har hört ljudet ([spelet](docs/lage/spelet.md)).
+5. Den neutrala munnen gäller alla Paows repliker utom blackjack, som väntar på hans ja; ljudet hörs ([spelet](docs/lage/spelet.md)).
 
 ## Vem äger vad
 
@@ -46,7 +46,7 @@ Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-
   [docs/lage/karta.md](docs/lage/karta.md).
 - **Andra sessioner 2026-11-23:** `dealer-a4` (dockan) och `dealer-e7` (kortet) är stängda; `dealer-19` bygger på hans ord ett ställe
   för dockan, fart bara på korthänderna och revansch (BESKED) och äger Bordets filer, `src/order-*.ts`,
-  `data/order-methods.json` och `dealer3d/`. Filmregistret är `data/motions.jsonl`, läst genom en SQLite-databas under
+  `tools/doll-order.ts`, `tools/revansch-order.ts`, `data/order-methods.json` och `dealer3d/`. Filmregistret är `data/motions.jsonl`, läst genom en SQLite-databas under
   `.runtime/register/` (`node tools/register.ts`; BESKED, "Registren i en databas").
 - **Jakobs egna:** planen `placements/default.json` och hans domar i `data/motions.jsonl` (`review`), som skrivs från Granska och
   aldrig skrivs över av ett verktyg. En dom som getts åt honom (`node tools/review-put.ts`) är aldrig hans.

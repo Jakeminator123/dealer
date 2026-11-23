@@ -23,7 +23,7 @@ en fillista.
 - A1 finns i två bilder: `paow-vila-ung-2` (Casino) och `paow-vila-tatuerad` (Tatuerad; gäller i Material).
 - Jakob arkiverade 2026-11-23 Casinots A1 och A2.2 och den tatuerade A2.2 i Material. Casino behåller sina bilder:
   dess giv till plats 6 (hans Primär) börjar på A2.2, och givarna dit från A2.1 är underkända. Tatuerad har ingen A2.2.
-- Tal räknas för sig: på A1 en bricka (25/25, röd vid 0) och panelen Tal (`studio/lib/tree-talk.ts`); Tatuerad 0/25.
+- Tal räknas för sig: på A1 en bricka (25/25, röd vid 0) och panelen Tal (`studio/lib/tree-talk.ts`); Tatuerad 24/25.
 - Ett steg har en Primär och sekundära filmer ("Gör primär" är hans klick). Ett klipp arkiveras och tas tillbaka i Karta.
 - Ett ankare kan bära `seat` 1–7; ingen vy visar det. Receptet för en annan stol: [FILMMODELLER](../FILMMODELLER.md), "Vinklar, 3D och Runways lista".
 

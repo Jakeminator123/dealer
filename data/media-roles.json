@@ -1707,6 +1707,20 @@
           }
         },
         {
+          "id": "paow-tal-chat1-tat-sv-01",
+          "role": "film",
+          "name": "Tal: Tack! Lycka till. Tatuerad",
+          "path": "assets/motions/paow-tal-chat1-tat-sv-01/source.mp4",
+          "still": 24,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Samma läsning, rendering och neutrala mun som paow-tal-chat1-sv-11, lagd på Tatuerads vila paow-vila-tat-01-01 (Casinots vila med A1:s tatuerade händer), 48 rutor i 24 per sekund. Ett prov för Tatuerads träd; ingen dom.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-chat1-sv-11 --rest paow-vila-tat-01-01 (Paows mun, lips null)",
+            "when": "2026-11-24"
+          }
+        },
+        {
           "id": "paow-tal-chat2-sv-09",
           "role": "film",
           "name": "Tal: Roligt att du är här.",
@@ -1732,6 +1746,20 @@
           "source": {
             "from": "tools/speech.ts say --from paow-tal-chat2-sv-09 (Paows mun, lips null)",
             "when": "2026-11-21"
+          }
+        },
+        {
+          "id": "paow-tal-chat2-tat-sv-01",
+          "role": "film",
+          "name": "Tal: Roligt att du är här. Tatuerad",
+          "path": "assets/motions/paow-tal-chat2-tat-sv-01/source.mp4",
+          "still": 25,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Samma läsning, rendering och neutrala mun som paow-tal-chat2-sv-11, lagd på Tatuerads vila paow-vila-tat-01-01 (Casinots vila med A1:s tatuerade händer), 51 rutor i 24 per sekund. Ett prov för Tatuerads träd; ingen dom.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-chat2-sv-11 --rest paow-vila-tat-01-01 (Paows mun, lips null)",
+            "when": "2026-11-24"
           }
         },
         {
@@ -1791,6 +1819,20 @@
           }
         },
         {
+          "id": "paow-tal-dealerblackjack-tat-sv-01",
+          "role": "film",
+          "name": "Tal: Dealern har blackjack. Den här rundan går till huset. Tatuerad",
+          "path": "assets/motions/paow-tal-dealerblackjack-tat-sv-01/source.mp4",
+          "still": 44,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Samma läsning, rendering och neutrala mun som paow-tal-dealerblackjack-sv-12, lagd på Tatuerads vila paow-vila-tat-01-01 (Casinots vila med A1:s tatuerade händer), 88 rutor i 24 per sekund. Ett prov för Tatuerads träd; ingen dom.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-dealerblackjack-sv-12 --rest paow-vila-tat-01-01 (Paows mun, lips null)",
+            "when": "2026-11-24"
+          }
+        },
+        {
           "id": "paow-tal-dealerbust-sv-10",
           "role": "film",
           "name": "Tal: Dealern är över tjugoett! Grattis, bordet vinner.",
@@ -1816,6 +1858,20 @@
           "source": {
             "from": "tools/speech.ts say --from paow-tal-dealerbust-sv-10 (Paows mun, lips null)",
             "when": "2026-11-21"
+          }
+        },
+        {
+          "id": "paow-tal-dealerbust-tat-sv-01",
+          "role": "film",
+          "name": "Tal: Dealern är över tjugoett! Grattis, bordet vinner. Tatuerad",
+          "path": "assets/motions/paow-tal-dealerbust-tat-sv-01/source.mp4",
+          "still": 39,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Samma läsning, rendering och neutrala mun som paow-tal-dealerbust-sv-12, lagd på Tatuerads vila paow-vila-tat-01-01 (Casinots vila med A1:s tatuerade händer), 79 rutor i 24 per sekund. Ett prov för Tatuerads träd; ingen dom.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-dealerbust-sv-12 --rest paow-vila-tat-01-01 (Paows mun, lips null)",
+            "when": "2026-11-24"
           }
         },
         {
@@ -1858,6 +1914,20 @@
           "source": {
             "from": "tools/speech.ts say --from paow-tal-detsamma-sv-09 (Paows mun, lips null)",
             "when": "2026-11-21"
+          }
+        },
+        {
+          "id": "paow-tal-detsamma-tat-sv-01",
+          "role": "film",
+          "name": "Tal: Tack detsamma! Tatuerad",
+          "path": "assets/motions/paow-tal-detsamma-tat-sv-01/source.mp4",
+          "still": 20,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Samma läsning, rendering och neutrala mun som paow-tal-detsamma-sv-12, lagd på Tatuerads vila paow-vila-tat-01-01 (Casinots vila med A1:s tatuerade händer), 40 rutor i 24 per sekund. Ett prov för Tatuerads träd; ingen dom.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-detsamma-sv-12 --rest paow-vila-tat-01-01 (Paows mun, lips null)",
+            "when": "2026-11-24"
           }
         },
         {
@@ -1917,6 +1987,20 @@
           }
         },
         {
+          "id": "paow-tal-grattis-tat-sv-01",
+          "role": "film",
+          "name": "Tal: Grattis! Det där var snyggt spelat. Tatuerad",
+          "path": "assets/motions/paow-tal-grattis-tat-sv-01/source.mp4",
+          "still": 35,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Samma läsning, rendering och neutrala mun som paow-tal-grattis-sv-12, lagd på Tatuerads vila paow-vila-tat-01-01 (Casinots vila med A1:s tatuerade händer), 71 rutor i 24 per sekund. Ett prov för Tatuerads träd; ingen dom.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-grattis-sv-12 --rest paow-vila-tat-01-01 (Paows mun, lips null)",
+            "when": "2026-11-24"
+          }
+        },
+        {
           "id": "paow-tal-hej-sv-09",
           "role": "film",
           "name": "Tal: Hej och välkommen till bordet!",
@@ -1959,6 +2043,20 @@
           }
         },
         {
+          "id": "paow-tal-hejda-tat-sv-01",
+          "role": "film",
+          "name": "Tal: Tack för i kväll, välkommen tillbaka! Tatuerad",
+          "path": "assets/motions/paow-tal-hejda-tat-sv-01/source.mp4",
+          "still": 29,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Samma läsning, rendering och neutrala mun som paow-tal-hejda-sv-12, lagd på Tatuerads vila paow-vila-tat-01-01 (Casinots vila med A1:s tatuerade händer), 58 rutor i 24 per sekund. Ett prov för Tatuerads träd; ingen dom.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-hejda-sv-12 --rest paow-vila-tat-01-01 (Paows mun, lips null)",
+            "when": "2026-11-24"
+          }
+        },
+        {
           "id": "paow-tal-hurmardu-sv-13",
           "role": "film",
           "name": "Tal: Jag mår fint, tack. Korten verkar vara på gott humör i kväll.",
@@ -1984,6 +2082,20 @@
           "source": {
             "from": "tools/speech.ts say --from paow-tal-hurmardu-sv-13 (Paows mun, lips null)",
             "when": "2026-11-21"
+          }
+        },
+        {
+          "id": "paow-tal-hurmardu-tat-sv-01",
+          "role": "film",
+          "name": "Tal: Jag mår fint, tack. Korten verkar vara på gott humör i kväll. Tatuerad",
+          "path": "assets/motions/paow-tal-hurmardu-tat-sv-01/source.mp4",
+          "still": 39,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Samma läsning, rendering och neutrala mun som paow-tal-hurmardu-sv-15, lagd på Tatuerads vila paow-vila-tat-01-01 (Casinots vila med A1:s tatuerade händer), 79 rutor i 24 per sekund. Ett prov för Tatuerads träd; ingen dom.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-hurmardu-sv-15 --rest paow-vila-tat-01-01 (Paows mun, lips null)",
+            "when": "2026-11-24"
           }
         },
         {
@@ -2015,6 +2127,20 @@
           }
         },
         {
+          "id": "paow-tal-insurance-tat-sv-01",
+          "role": "film",
+          "name": "Tal: Försäkringen är öppen. Vill du försäkra din hand? Tatuerad",
+          "path": "assets/motions/paow-tal-insurance-tat-sv-01/source.mp4",
+          "still": 39,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Samma läsning, rendering och neutrala mun som paow-tal-insurance-sv-13, lagd på Tatuerads vila paow-vila-tat-01-01 (Casinots vila med A1:s tatuerade händer), 79 rutor i 24 per sekund. Ett prov för Tatuerads träd; ingen dom.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-insurance-sv-13 --rest paow-vila-tat-01-01 (Paows mun, lips null)",
+            "when": "2026-11-24"
+          }
+        },
+        {
           "id": "paow-tal-lose-sv-09",
           "role": "film",
           "name": "Tal: Dealern vinner den här gången. Bättre lycka nästa runda.",
@@ -2040,6 +2166,20 @@
           "source": {
             "from": "tools/speech.ts say --from paow-tal-lose-sv-09 (Paows mun, lips null)",
             "when": "2026-11-21"
+          }
+        },
+        {
+          "id": "paow-tal-lose-tat-sv-01",
+          "role": "film",
+          "name": "Tal: Dealern vinner den här gången. Bättre lycka nästa runda. Tatuerad",
+          "path": "assets/motions/paow-tal-lose-tat-sv-01/source.mp4",
+          "still": 44,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Samma läsning, rendering och neutrala mun som paow-tal-lose-sv-11, lagd på Tatuerads vila paow-vila-tat-01-01 (Casinots vila med A1:s tatuerade händer), 88 rutor i 24 per sekund. Ett prov för Tatuerads träd; ingen dom.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-lose-sv-11 --rest paow-vila-tat-01-01 (Paows mun, lips null)",
+            "when": "2026-11-24"
           }
         },
         {
@@ -2082,6 +2222,20 @@
           "source": {
             "from": "tools/speech.ts say --from paow-tal-otur-sv-09 (Paows mun, lips null)",
             "when": "2026-11-21"
+          }
+        },
+        {
+          "id": "paow-tal-otur-tat-sv-01",
+          "role": "film",
+          "name": "Tal: Det vänder snart, det brukar det göra. Tatuerad",
+          "path": "assets/motions/paow-tal-otur-tat-sv-01/source.mp4",
+          "still": 33,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Samma läsning, rendering och neutrala mun som paow-tal-otur-sv-12, lagd på Tatuerads vila paow-vila-tat-01-01 (Casinots vila med A1:s tatuerade händer), 67 rutor i 24 per sekund. Ett prov för Tatuerads träd; ingen dom.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-otur-sv-12 --rest paow-vila-tat-01-01 (Paows mun, lips null)",
+            "when": "2026-11-24"
           }
         },
         {
@@ -2141,6 +2295,20 @@
           }
         },
         {
+          "id": "paow-tal-regler-tat-sv-01",
+          "role": "film",
+          "name": "Tal: Närmast tjugoett vinner, men gå inte över. Tatuerad",
+          "path": "assets/motions/paow-tal-regler-tat-sv-01/source.mp4",
+          "still": 33,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Samma läsning, rendering och neutrala mun som paow-tal-regler-sv-12, lagd på Tatuerads vila paow-vila-tat-01-01 (Casinots vila med A1:s tatuerade händer), 67 rutor i 24 per sekund. Ett prov för Tatuerads träd; ingen dom.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-regler-sv-12 --rest paow-vila-tat-01-01 (Paows mun, lips null)",
+            "when": "2026-11-24"
+          }
+        },
+        {
           "id": "paow-tal-varsagod-sv-09",
           "role": "film",
           "name": "Tal: Varsågod, det är bara roligt.",
@@ -2166,6 +2334,20 @@
           "source": {
             "from": "tools/speech.ts say --from paow-tal-varsagod-sv-09 (Paows mun, lips null)",
             "when": "2026-11-21"
+          }
+        },
+        {
+          "id": "paow-tal-varsagod-tat-sv-01",
+          "role": "film",
+          "name": "Tal: Varsågod, det är bara roligt. Tatuerad",
+          "path": "assets/motions/paow-tal-varsagod-tat-sv-01/source.mp4",
+          "still": 26,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Samma läsning, rendering och neutrala mun som paow-tal-varsagod-sv-12, lagd på Tatuerads vila paow-vila-tat-01-01 (Casinots vila med A1:s tatuerade händer), 52 rutor i 24 per sekund. Ett prov för Tatuerads träd; ingen dom.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-varsagod-sv-12 --rest paow-vila-tat-01-01 (Paows mun, lips null)",
+            "when": "2026-11-24"
           }
         },
         {
@@ -2197,6 +2379,20 @@
           }
         },
         {
+          "id": "paow-tal-vetej-tat-sv-01",
+          "role": "film",
+          "name": "Tal: Det kan jag tyvärr inte svara på, men korten ljuger aldrig. Tatuerad",
+          "path": "assets/motions/paow-tal-vetej-tat-sv-01/source.mp4",
+          "still": 42,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Samma läsning, rendering och neutrala mun som paow-tal-vetej-sv-12, lagd på Tatuerads vila paow-vila-tat-01-01 (Casinots vila med A1:s tatuerade händer), 85 rutor i 24 per sekund. Ett prov för Tatuerads träd; ingen dom.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-vetej-sv-12 --rest paow-vila-tat-01-01 (Paows mun, lips null)",
+            "when": "2026-11-24"
+          }
+        },
+        {
           "id": "paow-tal-win-sv-10",
           "role": "film",
           "name": "Tal: Bra spelat! Njut av din vinst.",
@@ -2222,6 +2418,20 @@
           "source": {
             "from": "tools/speech.ts say --from paow-tal-win-sv-10 (Paows mun, lips null)",
             "when": "2026-11-21"
+          }
+        },
+        {
+          "id": "paow-tal-win-tat-sv-01",
+          "role": "film",
+          "name": "Tal: Bra spelat! Njut av din vinst. Tatuerad",
+          "path": "assets/motions/paow-tal-win-tat-sv-01/source.mp4",
+          "still": 30,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Samma läsning, rendering och neutrala mun som paow-tal-win-sv-12, lagd på Tatuerads vila paow-vila-tat-01-01 (Casinots vila med A1:s tatuerade händer), 60 rutor i 24 per sekund. Ett prov för Tatuerads träd; ingen dom.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-win-sv-12 --rest paow-vila-tat-01-01 (Paows mun, lips null)",
+            "when": "2026-11-24"
           }
         },
         {
@@ -2253,6 +2463,20 @@
           }
         },
         {
+          "id": "paow-tal-blackjack-tat-sv-01",
+          "role": "film",
+          "name": "Tal: Blackjack! Vackert spelat. Grattis! Tatuerad",
+          "path": "assets/motions/paow-tal-blackjack-tat-sv-01/source.mp4",
+          "still": 35,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Samma läsning, rendering och neutrala mun som paow-tal-blackjack-sv-14 (den neutrala tagningen; Casino säger sv-04 med Jakobs egen dom), lagd på Tatuerads vila paow-vila-tat-01-01 (Casinots vila med A1:s tatuerade händer), 70 rutor i 24 per sekund. Ett prov för Tatuerads träd; ingen dom.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-blackjack-sv-14 --rest paow-vila-tat-01-01 (Paows mun, lips null)",
+            "when": "2026-11-24"
+          }
+        },
+        {
           "id": "paow-tal-chat3-sv-11",
           "role": "film",
           "name": "Tal: Det ordnar vi.",
@@ -2278,6 +2502,20 @@
           "source": {
             "from": "tools/speech.ts say --from paow-tal-chat3-sv-11 (Paows mun, lips null)",
             "when": "2026-11-21"
+          }
+        },
+        {
+          "id": "paow-tal-chat3-tat-sv-01",
+          "role": "film",
+          "name": "Tal: Det ordnar vi. Tatuerad",
+          "path": "assets/motions/paow-tal-chat3-tat-sv-01/source.mp4",
+          "still": 19,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Samma läsning, rendering och neutrala mun som paow-tal-chat3-sv-13, lagd på Tatuerads vila paow-vila-tat-01-01 (Casinots vila med A1:s tatuerade händer), 39 rutor i 24 per sekund. Ett prov för Tatuerads träd; ingen dom.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-chat3-sv-13 --rest paow-vila-tat-01-01 (Paows mun, lips null)",
+            "when": "2026-11-24"
           }
         },
         {
@@ -2309,6 +2547,20 @@
           }
         },
         {
+          "id": "paow-tal-chat4-tat-sv-01",
+          "role": "film",
+          "name": "Tal: Lycka till med nästa hand. Tatuerad",
+          "path": "assets/motions/paow-tal-chat4-tat-sv-01/source.mp4",
+          "still": 28,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Samma läsning, rendering och neutrala mun som paow-tal-chat4-sv-13, lagd på Tatuerads vila paow-vila-tat-01-01 (Casinots vila med A1:s tatuerade händer), 56 rutor i 24 per sekund. Ett prov för Tatuerads träd; ingen dom.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-chat4-sv-13 --rest paow-vila-tat-01-01 (Paows mun, lips null)",
+            "when": "2026-11-24"
+          }
+        },
+        {
           "id": "paow-tal-dealerplays-sv-11",
           "role": "film",
           "name": "Tal: Dealern spelar.",
@@ -2337,6 +2589,20 @@
           }
         },
         {
+          "id": "paow-tal-dealerplays-tat-sv-01",
+          "role": "film",
+          "name": "Tal: Dealern spelar. Tatuerad",
+          "path": "assets/motions/paow-tal-dealerplays-tat-sv-01/source.mp4",
+          "still": 20,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Samma läsning, rendering och neutrala mun som paow-tal-dealerplays-sv-14, lagd på Tatuerads vila paow-vila-tat-01-01 (Casinots vila med A1:s tatuerade händer), 41 rutor i 24 per sekund. Ett prov för Tatuerads träd; ingen dom.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-dealerplays-sv-14 --rest paow-vila-tat-01-01 (Paows mun, lips null)",
+            "when": "2026-11-24"
+          }
+        },
+        {
           "id": "paow-tal-double-sv-12",
           "role": "film",
           "name": "Tal: Du dubblar. Ett kort, nu gör vi det bästa av det.",
@@ -2362,6 +2628,20 @@
           "source": {
             "from": "tools/speech.ts say --from paow-tal-double-sv-12 (Paows mun, lips null)",
             "when": "2026-11-21"
+          }
+        },
+        {
+          "id": "paow-tal-double-tat-sv-01",
+          "role": "film",
+          "name": "Tal: Du dubblar. Ett kort, nu gör vi det bästa av det. Tatuerad",
+          "path": "assets/motions/paow-tal-double-tat-sv-01/source.mp4",
+          "still": 37,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Samma läsning, rendering och neutrala mun som paow-tal-double-sv-15, lagd på Tatuerads vila paow-vila-tat-01-01 (Casinots vila med A1:s tatuerade händer), 74 rutor i 24 per sekund. Ett prov för Tatuerads träd; ingen dom.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-double-sv-15 --rest paow-vila-tat-01-01 (Paows mun, lips null)",
+            "when": "2026-11-24"
           }
         },
         {
@@ -2407,6 +2687,20 @@
           }
         },
         {
+          "id": "paow-tal-namn-tat-sv-01",
+          "role": "film",
+          "name": "Tal: Jag heter Paow, och jag är din dealer i kväll. Tatuerad",
+          "path": "assets/motions/paow-tal-namn-tat-sv-01/source.mp4",
+          "still": 33,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Samma läsning, rendering och neutrala mun som paow-tal-namn-sv-13, lagd på Tatuerads vila paow-vila-tat-01-01 (Casinots vila med A1:s tatuerade händer), 67 rutor i 24 per sekund. Ett prov för Tatuerads träd; ingen dom.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-namn-sv-13 --rest paow-vila-tat-01-01 (Paows mun, lips null)",
+            "when": "2026-11-24"
+          }
+        },
+        {
           "id": "paow-tal-push-sv-12",
           "role": "film",
           "name": "Tal: Det är lika. Din insats betalas tillbaka.",
@@ -2432,6 +2726,20 @@
           "source": {
             "from": "tools/speech.ts say --from paow-tal-push-sv-12 (Paows mun, lips null)",
             "when": "2026-11-21"
+          }
+        },
+        {
+          "id": "paow-tal-push-tat-sv-01",
+          "role": "film",
+          "name": "Tal: Det är lika. Din insats betalas tillbaka. Tatuerad",
+          "path": "assets/motions/paow-tal-push-tat-sv-01/source.mp4",
+          "still": 38,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Samma läsning, rendering och neutrala mun som paow-tal-push-sv-15, lagd på Tatuerads vila paow-vila-tat-01-01 (Casinots vila med A1:s tatuerade händer), 76 rutor i 24 per sekund. Ett prov för Tatuerads träd; ingen dom.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-push-sv-15 --rest paow-vila-tat-01-01 (Paows mun, lips null)",
+            "when": "2026-11-24"
           }
         },
         {
@@ -2659,6 +2967,20 @@
           }
         },
         {
+          "id": "paow-tal-placebets-tat-sv-01",
+          "role": "film",
+          "name": "Tal: Lägg era insatser, tack. Tatuerad",
+          "path": "assets/motions/paow-tal-placebets-tat-sv-01/source.mp4",
+          "still": 24,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Samma läsning, rendering och neutrala mun som paow-tal-placebets-sv-15, lagd på Tatuerads vila paow-vila-tat-01-01 (Casinots vila med A1:s tatuerade händer), 48 rutor i 24 per sekund. Ett prov för Tatuerads träd; ingen dom.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-placebets-sv-15 --rest paow-vila-tat-01-01 (Paows mun, lips null)",
+            "when": "2026-11-24"
+          }
+        },
+        {
           "id": "paow-tal-hej-sv-11",
           "role": "film",
           "name": "Tal: Hej och välkommen till bordet! Neutral mun",
@@ -2673,6 +2995,20 @@
           }
         },
         {
+          "id": "paow-tal-hej-tat-sv-01",
+          "role": "film",
+          "name": "Tal: Hej och välkommen till bordet! Tatuerad",
+          "path": "assets/motions/paow-tal-hej-tat-sv-01/source.mp4",
+          "still": 21,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Samma läsning, rendering och neutrala mun som paow-tal-hej-sv-11, lagd på Tatuerads vila paow-vila-tat-01-01 (Casinots vila med A1:s tatuerade händer), 43 rutor i 24 per sekund. Ett prov för Tatuerads träd; ingen dom.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-hej-sv-11 --rest paow-vila-tat-01-01 (Paows mun, lips null)",
+            "when": "2026-11-24"
+          }
+        },
+        {
           "id": "paow-tal-goodluck-sv-16",
           "role": "film",
           "name": "Tal: Insatserna är stängda. Lycka till vid mitt bord! Neutral mun",
@@ -2684,6 +3020,20 @@
           "source": {
             "from": "tools/speech.ts layBack (lips null) ur paow-tal-goodluck-sv-14",
             "when": "2026-11-21"
+          }
+        },
+        {
+          "id": "paow-tal-goodluck-tat-sv-01",
+          "role": "film",
+          "name": "Tal: Insatserna är stängda. Lycka till vid mitt bord! Tatuerad",
+          "path": "assets/motions/paow-tal-goodluck-tat-sv-01/source.mp4",
+          "still": 41,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Samma läsning, rendering och neutrala mun som paow-tal-goodluck-sv-16, lagd på Tatuerads vila paow-vila-tat-01-01 (Casinots vila med A1:s tatuerade händer), 83 rutor i 24 per sekund. Ett prov för Tatuerads träd; ingen dom.",
+          "source": {
+            "from": "tools/speech.ts say --from paow-tal-goodluck-sv-16 --rest paow-vila-tat-01-01 (Paows mun, lips null)",
+            "when": "2026-11-24"
           }
         },
         {

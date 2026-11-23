@@ -165,8 +165,9 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   bildpunkter från vilan och 4–9 nivåer ljusare. Förslag, inte infört: en retur spelar till sin sista ruta (`IDLE_RULE`,
   `resolveRound` i `src/clip-graph.ts`); verktygen i `D:/dealer-scratch/tmp/levande-objekt/ljus/`.
 - **Tatuerad som spel** (`?trad=tatuerad` spelar bara trädets egna filmer): hålkortet D.C2 har ingen egen film (D.C1:s
-  film och ett ritat kort); 0 av 25 talfilmer (raderna kommer som text); ingångsfilmen `paow-film-intro-noir-3` slutar på
-  Casinots A1. Stänger: D.C2 från A2.3 (film), tal med den egna munnen (MuseTalk), en ingångsfilm på Tatuerads A1.
+  film och ett ritat kort; två prov i WAN 3 gjorda 2026-11-24, inget infört); talfilmen goodluck väntar på hans Godkänn
+  (24 av 25 spelas); ingångsfilmen `paow-film-intro-noir-3` slutar på Casinots A1. Stänger: D.C2 från A2.3 (film), en
+  ingångsfilm på Tatuerads A1.
 - **Rummets film** `monaco-liv-2.mp4` har ett litet steg var 8,3 s (0,57 nivåer av 255), skattat osynligt. Stänger:
   filmen kodas om utan nyckelrutor, under ett nytt namn, om någon ser steget.
 - **Filmen före spelet** (`/trailer`): startbilden står still cirka 0,7–0,8 s medan filmen hämtas, sidan slutar rita i

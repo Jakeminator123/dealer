@@ -56,6 +56,8 @@ belägget.
 | Kort vila ur en film: `paow-vila-27-01-del1` (ler, 3,4 s), WAN 3, 5 s, 100 krediter | klippt ur en film som kom tillbaka till A1 mitt i; granskaren 4/5 (halv blinkning med särade läppar) | Jakob: underkänd ("Osäker på om det finns ljud?"; vilorna har inget ljudspår) |
 | Kort vila: `paow-vila-27-01-del2` (nickar, 1,5 s), samma film som `-del1` | den andra halvan; granskaren 4/5 | Jakob: godkänd, "gillar dessa korta klipp!" |
 | Hel vila: `paow-vila-28-01-hel` (andas, 4,9 s), WAN 3, 5 s, 100 krediter | en bit: hon kom aldrig tillbaka till A1 mitt i; granskaren 3/5 (bålen höjs, ljusare band vid bordskanten) | Jakob: godkänd, men källan `paow-vila-28-01` underkänd: hon "sitter i bordet litegranna", bordskanten syns bakom henne |
+| Korta vilor, omgång 2 (2026-11-24): `paow-vila-29` (blickar), `-30` (nedblick, lutar; klippt vid ruta 99), `-31` (sneglar), WAN 3, 5 s, 100 var, texten "Her lips stay closed and her shoulders and torso do not move" | läpparna stängda i alla; 29 och 31 kom inte tillbaka till A1 mitt i (hela filmer); 30:s snitt sämre än omgång 1 (kantindex 0,79 mot 0,89–0,93, ett öga svagt dubbelt) och bålen rör sig 7 px; inget band vid bordskanten (≤1,7 mot 12–18 i `-28`) | Jakob: godkända, hela filmer och bitar |
+| Dealerns hålkort D.C2 från Tatuerads A2.3, stängt, giv och återgång i en film, utanför Beställ (2026-11-24): WAN 3 4 s (80), Kling 4 (76), sedan WAN 3 tagning 2 (80) med "The card never leaves the felt" först i texten | t1: kortet lyfts och lämnas över i luften (rutor 29–65), 3/5; Kling 4: fönstret tomt, kortet glider ut av sig självt, 2/5; t2: kortet på filten hela vägen, men en hand gör hela läggningen och returen är suddig (0,57 s), 3/5 | inget infört |
 
 **Det som föll**
 
