@@ -408,6 +408,10 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   innan vi använder dockan? Samma sak - fingrar och armboge etc ser itne helt ut som hon gör i de filmer som är bra".
   Dockan rättas alltså mot hennes filmer innan den styr en beställning, och SAM-dockan byggs på de mätningarna.
   Ersätter "SAM-dockan ska in, men inte nu" (Ersatta besked).
+- **Dockan tar över Siluetten i studion, efter vald dealer** (2026-11-23): "Sätt in dockan för dealern istället för
+  siluetten. Dockan övertar altså siluetten, men ska vara utifrån vilken dealer som vi har valt - i detta fall är det
+  ju PAOW." Siluett finns alltså inte kvar som val: under korten i Bordets Kortplan ligger den valda dealerns docka
+  (en dealer utan egen docka får standarddockan), och det är hans val som beskedet 2026-11-21 väntade på.
 - **Ett tredje och fjärde dealerkort** (2026-11-13): "Skapa då ett tredje och fjärde till dealer". Inte byggt: planen
   har sexton platser, så en film dit går inte att beställa; hur det ska byggas är en fråga för ett kort i Beslut.
 - **Önskemål för senare** (hans lista 2026-11-11 och 2026-11-13; inget är beställt): mer av höger arm, kaffe ur en mugg
