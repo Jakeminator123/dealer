@@ -11,7 +11,7 @@ som gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompt
   UTDRAGEN takt (given över drygt 2 s, en obruten rörelse). Finns platsens A3 inte än beställs en tagning utan sista
   bild (`--no-end`); efterarbetet mäter då kortet mot kortplanen.
 - Ett ankare heter alltid A och numret (A1, A2.3, A3P4C1), aldrig med en bokstav efter (Jakob 2026-11-21); bokstäverna
-  i id:n är arbetsnamn: A2.3 är `paow-ankare-2-3-c` och tatuerade A2.2 `paow-ankare-2-2-blick-a`.
+  i id:n är arbetsnamn: A2.3 är `paow-ankare-2-3-d` (blicken på kortet; givarna hittills börjar på `-c`), A2.2 `paow-ankare-2-2-blick-a`.
 - Trädet Tatuerad (vyn Karta, `/studio/karta/?dealer=paow&trad=tatuerad`) fylls från A2.3 och har 5 av 36 steg. I
   banken: given till A3P4C1 (piloten, Jakobs ja), A3P4C2 (släpet med handbyte, kortad till 70 rutor, 3/5), A3P1C1
   (4/5), A3P2C1 (4/5) och A3P3C1 (3/5). Alla utom piloten är dömda åt honom; A3P4C2 har ett kort i Beslut. Given

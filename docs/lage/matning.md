@@ -10,7 +10,7 @@ men är ersatt, och given från det till plats 5 har fyra tagningar, där den fj
   kant med det öppna. Andra kortet läggs ovanpå det första, 6–7,5 cm mot dealern, och rör det inte. Huvudet följer
   platsen. Filmen visar inte tummens läge eller ögonens riktning.
 - Banans A2.3: `assets/anchors/paow-ankare-2-3-a/` (kvitto bredvid), ruta 94 ur ingångsfilmen från ankare 1. Jakob
-  arkiverade det 2026-11-20 (Material); gällande A2.3 är `paow-ankare-2-3-c` sedan 2026-11-21 ([film](film.md)).
+  arkiverade det 2026-11-20 (Material); gällande A2.3 är `paow-ankare-2-3-d` sedan 2026-11-23 ([film](film.md)).
 - Kostnad: ankaret 105 krediter (20 för ett utsnitt som föll, 85 för filmen); given 256 (fyra tagningar à 64).
   Saldot hos Runway var 5 392 när banan stängdes.
 

@@ -9301,6 +9301,40 @@
         "id": "paow-giv-2-3-p3-03",
         "take": 1
       }
+    },
+    {
+      "id": "paow-ingang-2-3-03-01",
+      "kind": "ENTRY",
+      "from": "IDLE",
+      "to": "READY-C",
+      "clip": "paow-ingang-2-3-03-01",
+      "frames": [
+        0,
+        72
+      ],
+      "purpose": "Beställning paow-ingang-2-3-03, tagning 1: Paow · Från vila till båda händerna vid skon.",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 3,
+      "promptText": "Locked camera, one continuous shot. Video 1 shows only the movement, as a rough guide: her hands go the way the hands go in video 1, at about the same moments. Above all she moves naturally, like a practised dealer, with soft, relaxed arms and hands. Both her hands rise calmly: her hand nearest the shoe goes to the shoe and lays its fingertips on the yellow card in the window, ready to stroke it out, and her other hand comes to rest flat on the felt in front of her, as in the last frame. Her eyes go down to her hand at the card and stay there.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-ingang-2-3-03/first.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Första bilden i beställningen paow-ingang-2-3-03."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-ingang-2-3-03/last.png",
+          "sha256": "8e60b0eae86e271f5fd191dc16a37bc8256f2b5fb2a58a2fe65206623927e386"
+        },
+        "note": "Sista bilden i beställningen paow-ingang-2-3-03."
+      },
+      "order": {
+        "id": "paow-ingang-2-3-03",
+        "take": 1
+      }
     }
   ],
   "edits": [

@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "title": "Paow · Från vila till båda händerna vid skon",
+  "summary": "Gör en film av Paow: från ankare 1 till ankare 2.3.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "INGANG-2.3",
+    "label": "Från vila till båda händerna vid skon",
+    "edge": "IDLE>READY-C",
+    "shape": "ONE_WAY",
+    "cutInto": [],
+    "makes": null
+  },
+  "motion": null,
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows A1",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-ingang-2-3-03/first.png",
+      "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-vila-tatuerad",
+        "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+        "note": "Vila, tatuerade händer (gäller)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Slutbild · Paows A2.3",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-ingang-2-3-03/last.png",
+      "sha256": "8e60b0eae86e271f5fd191dc16a37bc8256f2b5fb2a58a2fe65206623927e386",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-ankare-2-3-d",
+        "path": "assets/anchors/paow-ankare-2-3-d/anchor.png",
+        "note": "Blicken ned mot kortet, vänster hand uppifrån på kortet (gäller)"
+      },
+      "waits": null
+    }
+  ],
+  "reference": {
+    "status": "FINNS",
+    "clips": [
+      "docka-vila-till-2-3-c"
+    ],
+    "path": "assets/orders/paow-ingang-2-3-03/reference.mp4",
+    "sha256": "65e0169eb4840fd8dde96904797dd86dc22422688e4a22dfc5019e0ab8431d42",
+    "seconds": 3,
+    "goesTo": "IDLE>READY-C",
+    "approvedStraight": false,
+    "dealer": "docka",
+    "from": {
+      "film": "docka-vila-till-2-3-c",
+      "path": "assets/references/docka/docka-vila-till-2-3-c/source.mp4",
+      "sha256": "65e0169eb4840fd8dde96904797dd86dc22422688e4a22dfc5019e0ab8431d42",
+      "edge": "IDLE>READY-C",
+      "verdict": "EJ_DÖMD",
+      "words": null,
+      "frames": null,
+      "also": []
+    }
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "kling-4",
+    "params": {
+      "resolution": "1080p",
+      "duration": 3
+    }
+  },
+  "prompt": {
+    "template": "film-ingang-kort@14",
+    "style": "KORT",
+    "text": "Locked camera, one continuous shot. Video 1 shows only the movement, as a rough guide: her hands go the way the hands go in video 1, at about the same moments. Above all she moves naturally, like a practised dealer, with soft, relaxed arms and hands. Both her hands rise calmly: her hand nearest the shoe goes to the shoe and lays its fingertips on the yellow card in the window, ready to stroke it out, and her other hand comes to rest flat on the felt in front of her, as in the last frame. Her eyes go down to her hand at the card and stay there.",
+    "sha256": "7ce2348c71dfa97359cf97cf63e70aaa160d9c8d7b33618d132d66931408832a",
+    "extra": null,
+    "middle": false
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 64,
+    "total": 64,
+    "worstPerTake": 71,
+    "worstTotal": 71,
+    "basis": "21,3 krediter per s × 3 s. Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12."
+  },
+  "limits": {
+    "maxCredits": 71,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Recept ingang-2.3 (prov)."
+  ],
+  "createdBy": "huvudagenten, tools/order-new.ts",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-23T08:31:02.306Z",
+    "orderSha256": "a4d1c9c79a4e9cd4bdaaf3c290dddf7f7e5d45b593070a2c8b4e15c394d8888d",
+    "mandate": "Jakob 2026-11-23: ja i Beslut på A2.3 med blicken på kortet; ingången beställs på nytt med den som sista bild"
+  },
+  "status": "GODKÄND",
+  "id": "paow-ingang-2-3-03",
+  "created": "2026-11-23T08:29:49.697Z"
+}

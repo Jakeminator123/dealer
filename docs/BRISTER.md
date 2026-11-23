@@ -194,8 +194,13 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 - **Händerna byter mellan gamla och nya filmer.** Syns: varje film i banken har otatuerade, större händer, medan
   keystonebilderna och ankare 1 som gäller har tatuerade; en skarv mellan gammalt och nytt visar bytet. Prövat: att måla
   tatueringar i färdiga filmer har fallit två gånger (2 av 5). Stänger: en hel uppsättning ur de tatuerade bilderna.
-  A2.2 (`paow-ankare-2-2-blick-a`) och A2.3 (`paow-ankare-2-3-c`) har dem (rättat 2026-11-21); A2.1 med de händerna
+  A2.2 (`paow-ankare-2-2-blick-a`) och A2.3 (`paow-ankare-2-3-d`) har dem (rättat 2026-11-21); A2.1 med de händerna
   finns inte än.
+- **Huvudet hoppar mellan den nya ingången och givarna från A2.3** (2026-11-23). A2.3 är sedan Jakobs ja
+  `paow-ankare-2-3-d`, med blicken ned mot kortet; givarna och returen i banken är gjorda från `paow-ankare-2-3-c`, samma
+  bild med blicken åt sidan (bara huvudet skiljer). Syns: där Tatuerads steg spelas i följd i labbet (Karta, Bordet,
+  Scen), i skarven mellan en film som slutar på den nya bilden och en som börjar på den gamla; i studion bär de äldre
+  filmerna brickan "äldre A2.3". Spelet ger inte från A2.3 i dag. Stänger: givarna och returen görs om från den nya bilden.
 - **Skuggan under armarna** sitter i grundbilden (armbågarna på ett bord bakom kanten, 40–44 bildpunkter ovanför rad
   831,5). Syns: i varje film av Paow. Prövat: keystonebilderna med tatuerade händer är gjorda utan skuggan. Stänger: nya
   ankare och filmer ur dem.

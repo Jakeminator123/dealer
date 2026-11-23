@@ -51,11 +51,12 @@
           "root": "paow-vila-tatuerad",
           "anchors": [
             {"entry": "paow-vila-tatuerad"},
-            {"entry": "paow-ankare-2-3-c"},
+            {"entry": "paow-ankare-2-3-d"},
             {"entry": "paow-ankare-2-2-blick-a"},
-            {"entry": "paow-a3-p4-ur-film-1120"}
+            {"entry": "paow-a3-p4-ur-film-1120"},
+            {"entry": "paow-ankare-2-3-c"}
           ],
-          "note": "The tattooed set (Jakob 2026-11-21): A1 paow-vila-tatuerad; A2.3 paow-ankare-2-3-c with two hands, the anchor at the shoe; A2.2 paow-ankare-2-2-blick-a (\"A2.2 ska vara som 2.1 fast med tatueringarna\"). The A3 anchor for P4 is taken from the first deal of the current A2.3."
+          "note": "The tattooed set (Jakob 2026-11-21): A1 paow-vila-tatuerad; A2.3 paow-ankare-2-3-d with two hands, the anchor at the shoe, her gaze down on the card (Jakob 2026-11-23 in Beslut: \"Ja, byt blicken\"); A2.2 paow-ankare-2-2-blick-a (\"A2.2 ska vara som 2.1 fast med tatueringarna\"). paow-ankare-2-3-c was the A2.3 until then, the same picture with her gaze to the side: it stays among the anchors, after the one that holds, so that the films that begin or end on it stay in the tree until they are remade (the first anchor given for a node is the node's picture). The A3 anchor for P4 is taken from the first deal of that earlier A2.3."
         }
       ]
     }

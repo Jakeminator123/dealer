@@ -4272,6 +4272,20 @@
           }
         },
         {
+          "id": "paow-film-ingang-2-3-03-t1",
+          "role": "film",
+          "name": "Paow · Från vila till båda händerna vid skon, tagning 1",
+          "path": "assets/films/paow/ingang-2-3-03-t1/source.mp4",
+          "still": 40,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i Kön. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-23"
+          }
+        },
+        {
           "id": "paow-film-intro-noir-3-startruta",
           "role": "arbetsmaterial",
           "name": "Startrutan till filmen före spelet",
@@ -4652,7 +4666,7 @@
           "name": "Vänster hand uppifrån på kortet, rak bål",
           "path": "assets/anchors/paow-ankare-2-3-c/anchor.png",
           "node": "READY-C",
-          "state": "gäller",
+          "state": "ersatt",
           "builtOn": [
             "paow-vila-tatuerad"
           ],
@@ -4661,7 +4675,7 @@
             "from": "ruta 45 ur filmen ankare 1 → 2.3 C, tagning 3 (Runway-uppdrag 13c3a3b6; receipt.json bredvid bilden)",
             "when": "2026-11-20"
           },
-          "stateBy": "Jakob 2026-11-21 16:02: kandidat → gäller (hans svar i Beslut 2026-11-21 kl. 15.56, kortet paow-ankare-2-3-c: \"Ja, använd C\")"
+          "stateBy": "Jakob 2026-11-23 09:29: gäller → ersatt (Blicken ned mot kortet, vänster hand uppifrån på kortet godkändes, hans svar i Beslut 2026-11-23 kl. 09.16, kortet a2-3-blick-pa-kortet: \"Ja, byt blicken\")"
         },
         {
           "id": "paow-a3-p4-23b",
@@ -4735,7 +4749,7 @@
           "name": "A2.3 utan vit linje runt kortet i skon, prov",
           "path": "assets/anchors/paow-ankare-2-3-utan-vit-linje/anchor.png",
           "node": "READY-C",
-          "state": "kandidat",
+          "state": "ersatt",
           "builtOn": [
             "paow-ankare-2-3-c"
           ],
@@ -4743,7 +4757,25 @@
           "source": {
             "from": "A2.3:s bild, ändrad i skons fönster (receipt.json bredvid bilden)",
             "when": "2026-11-23"
-          }
+          },
+          "stateBy": "Jakob 2026-11-23 09:29: kandidat → ersatt (Blicken ned mot kortet, vänster hand uppifrån på kortet godkändes, hans svar i Beslut 2026-11-23 kl. 09.16, kortet a2-3-blick-pa-kortet: \"Ja, byt blicken\")"
+        },
+        {
+          "id": "paow-ankare-2-3-d",
+          "role": "ankare-2.3",
+          "name": "Blicken ned mot kortet, vänster hand uppifrån på kortet",
+          "path": "assets/anchors/paow-ankare-2-3-d/anchor.png",
+          "node": "READY-C",
+          "state": "gäller",
+          "note": "A2.3 med blicken ned mot det gula kortet under fingertopparna: huvudet är böjt lite mot skon. Bara huvudet, håret och halsens övre del är nya; händerna, skon, kortet, kavajen och det gröna är den förra A2.3-bildens, bildpunkt för bildpunkt. Ögonlocken är sänkta och ansiktet allvarligare. Halsens tatuering är skarvad under hakan. Kvittot ligger bredvid bilden.",
+          "source": {
+            "from": "A2.3:s förra bild med nytt huvud ur en bildmodell (Runway-uppdrag 63f501aa; receipt.json bredvid bilden)",
+            "when": "2026-11-23"
+          },
+          "builtOn": [
+            "paow-ankare-2-3-c"
+          ],
+          "stateBy": "Jakob 2026-11-23 09:29: kandidat → gäller (hans svar i Beslut 2026-11-23 kl. 09.16, kortet a2-3-blick-pa-kortet: \"Ja, byt blicken\")"
         }
       ]
     },
