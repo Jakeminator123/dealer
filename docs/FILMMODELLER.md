@@ -211,7 +211,7 @@ gränserna utom där det står.
 | Ställe | Fält | Vem skriver | Vem läser |
 |---|---|---|---|
 | Ordern `data/orders/<id>.json` | `generation.model` | Beställ | `tools/film-after.ts` (väljer efterarbetet), `tools/register-order.ts`, Protokoll, `tools/verdicts-per-method.ts` |
-| Posten `motions/<klipp>.json` | `source.model` | `tools/register-order.ts` ur ordern; äldre poster för hand | Spelet: `filmModel` i `src/game-film.ts` skickar det med varje filmdel till 3D-scenen; en talfilm får sin vilas |
+| Filmens post i filmregistret (`node tools/register.ts get <klipp>`) | `source.model` | `tools/register-order.ts` ur ordern; äldre poster för hand | Spelet: `filmModel` i `src/game-film.ts` skickar det med varje filmdel till 3D-scenen; en talfilm får sin vilas |
 | Kvittot `assets/motions/<klipp>/generation.json` | `model`, `orderedAs` | `tools/register-order.ts`; äldre av arkivet | labbservern läser läget, krediterna och filmens mått (`clipBank` i `tools/preview.ts`), inte modellen |
 | Jobbfilen `data/clip-jobs.json` | `model` på jobb och utsnitt | `tools/register-order.ts`, `tools/speech.ts` | `buildGraph` bär det i tagningens `job.model`; ett utsnitt utan modell heter `utsnitt` |
 
@@ -239,7 +239,7 @@ gränserna utom där det står.
 
 ## Källor och skript
 
-- Register (M): `motions/`, `data/clip-jobs.json`, `data/orders/`, `data/order-methods.json`, `data/order-policy.json`,
+- Register (M): `data/motions.jsonl`, `data/clip-jobs.json`, `data/orders/`, `data/order-methods.json`, `data/order-policy.json`,
   kvittona `assets/orders/*/receipt.json` och `fetched.json`, `assets/motions/*/generation.json`; koden
   `src/film-after.ts`, `tools/film-after.ts`, `src/order-model.ts`, `src/speech-plan.ts`, `src/clip-graph.ts`.
 - Jakobs domar per metod: `node tools/verdicts-per-method.ts paow`; protokollet: `node tools/order-ledger.ts`.

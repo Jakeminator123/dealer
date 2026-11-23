@@ -5,7 +5,7 @@ och namn), [order-clerk.md](order-clerk.md) säger hur en beställning läggs, [
 granskas, och den här hur beställningen sätts ihop (bilder, referensfilm, text, modell, längd, tagningar) och **vad som
 har hållit och vad som har fallit** (§5). Skriven 2026-11-13 ur tillverkarnas guider, våra liggare
 (`D:/dealer-scratch/tmp/paow/`), kvittona `assets/orders/*/receipt.json`, protokollet (`node tools/order-ledger.ts`) och
-Jakobs domar (`review.userReview` i `motions/paow-*.json`). Underlaget i längre form:
+Jakobs domar (`review.userReview` i filmregistrets poster för Paow). Underlaget i längre form:
 `D:/dealer-scratch/tmp/huvudagent11/recept/RAPPORT.md`.
 
 **Märkning.** (V) = verifierat: läst i källan, i liggaren, i kvittot eller sett i rutor. (S) = skattat: egen slutsats,
@@ -25,7 +25,7 @@ granskaren dömde annorlunda står båda.
    det.
 6. **Två tagningar sållar, de avgör inget.** En metod blir regel först efter fler tagningar (§5).
 7. **Jakob dömer kortet, granskaren måtten.** Han har godkänt 11 av 22 givar och 16 av 21 returer (räknat ur
-   `motions/paow-giv-*` 2026-11-13 på morgonen), och underkänt för kortets färg och vändning ("Här ändrar kortet färg
+   filmregistrets poster `paow-giv-*` 2026-11-13 på morgonen), och underkänt för kortets färg och vändning ("Här ändrar kortet färg
    ungefär halvvägs", "två vridningsmoment", "ett blått spelkort"), för ett gult kort i slutet och för stelhet ("Hon är
    väldigt stel"); ett kort som skjuts längs filten har han godkänt (`p1-04`, cirka 790 px) (V). Mönstret är skattat
    (S).
@@ -423,7 +423,7 @@ krediter (V: `assets/motions/paow-table-arrive-wide-01/generation.json`,
 7. Delarna sätts ihop i den stående bilden; skarven syns inte i utgången (granskaren 4/5).
 8. Posten får `motion.frame` med `layer: "BEHIND_TABLE"`, så att bordet skymmer henne tills hon sitter.
 9. Utfall: utgången godkänd preliminärt; ingången Variant preliminärt: hon står stilla i drygt 20 rutor innan hon sätter
-   sig och bär pumps där keystonen har platta skor (`review.provisional` i `motions/`).
+   sig och bär pumps där keystonen har platta skor (`review.provisional` i filmregistret).
 10. Används inte: sätter sig t1 (armarna ut), går in t2 (snabbare gång, lika lång paus), reser sig t2 (sjunker 12 px).
 
 ## 4. Felsökning
@@ -469,7 +469,7 @@ krediter (V: `assets/motions/paow-table-arrive-wide-01/generation.json`,
   anmärkningar. Sedan oberoende granskare enligt [film-review.md](film-review.md); poäng 0–5 per del (giv, retur) och
   domordet. För en giv alltid: ett kort? vänds det en gång, och var? lämnar kortet filten eller fingrarna före platsen?
   håller storleken ±10 %? enfärgat hela vägen? går handen tillbaka lågt?
-- **Jakobs dom** skrivs bara av honom i Granska (`motions/<id>.json`, `review`); citera hans ord, skriv inte om dem.
+- **Jakobs dom** skrivs bara av honom i Granska (`review` i filmens post i registret); citera hans ord, skriv inte om dem.
 - **Tabellerna förlängs** av den som provar: en rad per metod, belägget med order och tagning. Ingen dagbok; en ersatt
   rad skrivs om. Order-id förkortas `p4-11` = `paow-giv-2-1-p4-11`.
 
@@ -536,4 +536,4 @@ Lästa 2026-11-13 om inget annat sägs.
   (`order/`, `b17/`, `bestallningar-b*.json`, `matt/film/paow-p4-motion-control.summary.json`); kvitton
   `assets/orders/*/receipt.json` (MÄTT- och GRANSKAD-noterna); protokollet `node tools/order-ledger.ts`; Prov
   `paow-plats-4-som-mall`, `paow-kavaj-filmer`, `paow-samma-film`, `hel-runda-i-en-tagning`; Jakobs domar i
-  `motions/paow-*.json`; DRIFT, "Lärdomar som gäller" till och med `f6f68ef` (git).
+  filmregistret (`data/motions.jsonl`); DRIFT, "Lärdomar som gäller" till och med `f6f68ef` (git).

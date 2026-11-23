@@ -119,7 +119,7 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   `src/game-director.ts`), och nio returer från en plats till vila saknas (`node tools/produce.ts paow`). Stänger:
   filmerna beställs.
 - **Paows Primär för P1C1 → A2.1 spelas aldrig** (fel hand mot given; syns i Karta). Stänger: Jakob byter Primär.
-- **23 talfilmers `motions/` pekar på kvitton som är flyttade** till `D:/dealer-scratch/tmp/tal/overtaliga/` (i
+- **23 talfilmers poster i filmregistret pekar på kvitton som är flyttade** till `D:/dealer-scratch/tmp/tal/overtaliga/` (i
   registren, inte i spelet). Stänger: posterna pekas om eller tas ut.
 - **Flera av Paows källor i `data/media-roles.json` ligger på D:** och försvinner om slaskdisken städas. Stänger:
   filerna flyttas till `assets/` och posterna pekas om.
