@@ -13,9 +13,9 @@ Rutinen står i [`AGENTS.md`](../../../AGENTS.md), "Git och samarbete" och "Regl
 
 1. **Bara huvudagenten committar, taggar och pushar** (vem det är: HANDOFF, "Vem äger vad"). Andra lämnar en
    fillista till huvudagenten (AGENTS, "Git och samarbete").
-2. **Ordningen och push medan andra skriver** står i DRIFT, "Git och kontroller": egna filer stagas med namn, commit,
-   `npm run check` en gång, push, fjärrens SHA; från byggträdet med `tools/push-clean.ts` när andra har öppna filer.
-   En ny testfil skrivs in i `test`-skriptet i `package.json`.
+2. **Ordningen** står i DRIFT, "Git och kontroller": egna filer stagas med namn, commit, `npm run check` en gång,
+   push, fjärrens SHA. Andras öppna filer stoppar inte: kontrollen testar då commiten i byggträdet. Det som stoppar är
+   ett fynd i commitarna eller ett rött test på commiten.
 3. **Ingen force-push och ingen `--no-verify`** (AGENTS). Råd: "Try running Pull first" i Cursor betyder att
    pre-push-kontrollen blev röd; läs varför i stället för att dra.
 4. **Rött stoppar; utred orsaken** (AGENTS, "Regler och spärrar"). Ett test som bara låser hur kod eller text ser ut i

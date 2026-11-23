@@ -34,30 +34,28 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
 - `.githooks/pre-push` kontrollerar hela intervallet av nya commits, även känsliga filer som lagts till och senare
   tagits bort. Lokala media/env-mappar, binärt material, filer över 5 MiB och vissa tokenmönster stoppar push.
   Mönsterkontrollen är ett extra skydd, ingen garanti att alla hemligheter upptäcks; granska alltid diffen.
-- Testerna ska avse exakt HEAD. Ändrade, nya eller ospårade kod- och testfiler stoppar kontrollen tills ägaren samordnat
-  dem. Studions kod, register och dokument omfattas också: annars kan testet bli grönt på andra filer än de som
-  pushas. `placements/default.json` är det uttryckliga undantaget för användarutkast och inkluderas inte automatiskt.
-  Ett oincheckat orderutkast bevaras; kör kontroll och push från ett rent träd med `push-clean` i det fallet.
-  Kontrollen kör testfilerna som `test`-skriptet i `package.json` namnger, läst ur den commit som kontrolleras (bland
-  dem `studio/tests/*.test.ts`), alltså samma filer som `npm test`; ett vakttest i `tools/publication-check.test.ts`
-  fäller en testfil i `tools/` som skriptet inte namnger. Högst fyra arbetare, utan Runway, media eller deploy; tester
-  som gör en liten film med FFmpeg hoppas över där FFmpeg saknas. En ny testfil skrivs in i `test`-skriptet i
-  `package.json`, och bara där.
+- Testerna avser exakt den commit som pushas. Öppna filer i arbetsmappen stoppar aldrig en push (Jakob 2026-11-23):
+  har commiten ett grönt körkvitto (högst 6 timmar) går pushen direkt, annars ställer kontrollen byggträdet
+  `../dealer-bygg` på commiten och kör `npm run check` där. Det som stoppar är ett fynd i de utgående commitarna eller
+  ett rött test på just den commiten. De öppna filerna rörs inte och följer inte med.
+  Kontrollen kör testfilerna som `test`-skriptet i `package.json` namnger, läst ur den commit som kontrolleras, alltså
+  samma filer som `npm test`: `tools/*.test.ts`, `studio/tests/*.test.ts` och dockans. En ny testfil i de mapparna
+  körs utan att skrivas in någonstans. Högst fyra arbetare, utan Runway, media eller deploy; tester som gör en liten
+  film med FFmpeg hoppas över där FFmpeg saknas. Node: samma huvudversion som i `package.json` räcker.
 - GitHub kör ingen kontroll för det här repot (Jakob 2026-11-18: det som gäller dealer görs lokalt, inte på GitHub;
   arbetsflödet `.github/workflows/check.yml` är borttaget). Kontrollen är pre-push-hooken och `push-clean`, på den här
   datorn. Sviten är sedan 2026-11-21 en kärna (BESKED, "Arbetet och dokumenten"): publiceringen, spelets regler,
   Jakobs domar och val, beställningarna och dokumentens tak. Den behöver varken media, FFmpeg eller
   `studio/node_modules`. Före PR kör agenten `npm run check`.
-- **Push medan andra skriver** (2026-11-13). I huvudträdet stoppar kontrollen så länge någon sessions testindata
-  skiljer sig från HEAD eller en ospårad fil ligger där, och det gör den nästan alltid en dag med flera
-  sessioner. Huvudagenten pushar då från ett uttryckligen valt rent arbetsträd (byggträdet) med `node tools/push-clean.ts
-  [<commit>] --trad <mapp> [--dry-run]`: trädet ställs detached på commiten (förval `main`) och måste vara rent, `npm
+- **Push medan andra skriver.** En vanlig `git push` från huvudträdet går också med andras öppna filer: pre-push
+  testar då commiten i byggträdet. `node tools/push-clean.ts [<commit>] --trad <mapp> [--dry-run]` behövs bara för en
+  annan commit än utcheckad HEAD eller en torrkörning: trädet ställs detached på commiten (förval `main`) och måste vara rent, `npm
   ci` körs om paketlistan har ändrats eller `node_modules` saknas, sedan `npm run check` (sviten en gång) och `git push
   origin HEAD:main`, och sist lokal och fjärrens SHA. Verktyget stannar vid första steg som faller med en rad som börjar
   STOPP och lägger varje stegs logg i `push-logg` bredvid trädet; `--dry-run` gör allt utom `git push`. Trädet är byggträdet
-  `C:/Users/jakem/dev/super-feature-sg/dealer-bygg` (AGENTS), som står kvar mellan gångerna. Ingen disk väljs automatiskt;
-  verktyget vägrar huvudträdet och ett träd ur ett annat repo. Det som pushas är
-  incheckade commits, aldrig någons öppna filer.
+  `C:/Users/jakem/dev/super-feature-sg/dealer-bygg` (AGENTS), som står kvar mellan gångerna. `push-clean` kräver `--trad`;
+  pre-push använder alltid `../dealer-bygg`. Båda vägrar huvudträdet, ett träd ur ett annat repo och ett byggträd som
+  inte är rent. Det som pushas är incheckade commits, aldrig någons öppna filer.
   Förkontrollen får fjärrens verifierade `main`-SHA som `--base`, så ett detached träd inte behöver granska hela
   historiken igen. Pre-push kontrollerar fortfarande Git:s verkliga pushintervall. Sammanfattningen skiljer
   godkänt, fel, avbrutet, överhoppat och TODO; efter push måste fjärrens SHA motsvara den avsedda committen.
@@ -72,10 +70,8 @@ inte med av misstag. Git-push är separat från webbdeploy, mediauppladdning och
   300 000 tokens (`autoCompactWindow`) i stället för vid fönstrets slut, eftersom varje tur läser om hela kontexten.
   Kontorsskillerna listas bara med namn (`skillOverrides`). En ändring gäller nya sessioner; i en pågående session
   läses den in med `/hooks`. Sökningens motsvarighet är `.ignore` och `.cursorignore`.
-- **Rött:** stoppa, undersök orsak och rätta innan nytt försök. **Gult:** granska och åtgärda eller förklara kvarvarande
-  begränsning kort i `docs/BRISTER.md` före push/PR. Varningarna visas i agentens terminal och som CI-annoteringar. Granska även
-  hook/testens relevans och falsklarm; vid verkligt kontrollfel, rätta med ett avgränsat regressionstest. Hoppa inte
-  över kontrollen för att få grönt.
+- **Rött:** stoppa och rätta orsaken (AGENTS, "Regler och spärrar"). **Gult:** åtgärda, eller skriv en kvarvarande
+  begränsning kort i `docs/BRISTER.md`.
 - Känd Node-varning: `stripTypeScriptTypes` (`forBrowser` i `tools/lab-routes.ts`, som labbservern, kopians bygge och
   `tools/lab-modules.test.ts` använder) är ett experimentellt Node-API. Varningen är spårad till detta API och testerna passerar. Den bevaras synlig; utred
   kompatibiliteten vid ändrat API/Node, utan att stänga av varningar generellt.

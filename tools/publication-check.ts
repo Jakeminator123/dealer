@@ -2,6 +2,8 @@ import {execFileSync, spawnSync} from 'node:child_process';
 import {existsSync, readFileSync, readdirSync, mkdirSync, statSync} from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {Stop} from './clean-tree.ts';
+import {checkClean, fileIo} from './push-clean.ts';
 
 export type Finding = {level:'RED'|'YELLOW'; path:string; message:string};
 // The tests the push check runs are the ones "npm test" runs: the test files named in the test script of package.json,
@@ -51,17 +53,25 @@ export function parsePush(input:string):Array<{local:string;remote:string}> {
 }
 
 // The gate claims to test HEAD, including studio code, fixtures and register/document checks. A test may import any
-// tracked source or read JSON/Markdown, so an extension whitelist cannot establish that claim. Only Jakob's card plan
-// has the explicit committed-input exception. While another session or the UI writes, use push-clean's clean checkout.
+// tracked source or read JSON/Markdown, so an extension whitelist cannot establish that claim: a run in a working tree
+// with a changed or untracked file tests something other than the commit. Only Jakob's card plan has the explicit
+// committed-input exception. Open files never stop a push for that (Jakob 2026-11-23): the suite is then not run in that
+// tree, and the commit is tested in the clean build tree instead (testInBuildTree).
 export function dirtyTestInputs(names:string[]):string[] {
   return names.filter(name=>name!=='placements/default.json');
 }
 
+/** The Node that runs and the Node the project pins are the same major version; Volta holds the exact one where it is installed. */
+export function sameNodeMajor(running:string,pinned:string):boolean {
+  const major=(version:string)=>version.replace(/^v/,'').split('.')[0];
+  return major(running)===major(pinned);
+}
+
 // A push runs the suite once (Jakob 2026-11-21: the tests are to be run seldom, not three times for one push). The
-// pre-push hook does not run it again when the check (npm run check, also inside push-clean) has already passed it for
-// this very HEAD: a receipt of kind publication with status pass, the same revision, no dirty input but the card plan
-// and at most REUSE_HOURS old. The scan of the outgoing commits and the stop for dirty inputs still run on every push,
-// and npm run check itself always runs the suite.
+// pre-push hook does not run it again when the check (npm run check, here or in the build tree) has already passed it
+// for this very HEAD: a receipt of kind publication with status pass, the same revision, no dirty input but the card plan
+// and at most REUSE_HOURS old. With such a receipt the working tree is not asked about: what was tested is the commit.
+// The scan of the outgoing commits still runs on every push, and npm run check itself always runs the suite.
 export const REUSE_HOURS=6;
 export type PassReceipt={id?:string;kind?:string;status?:string;revision?:string;dirtyInputs?:string[];finishedAt?:string;counts?:{fail?:number}};
 export function reusablePass(receipts:PassReceipt[],head:string,now:number):PassReceipt|null {
@@ -74,8 +84,9 @@ export function reusablePass(receipts:PassReceipt[],head:string,now:number):Pass
 }
 // The receipts of the last REUSE_HOURS in the main checkout's journal (tools/evidence-store.ts writes them there, also
 // from a linked worktree). A receipt that cannot be read is skipped: the suite then simply runs.
+const mainCheckoutOf=(root:string)=>path.dirname(git(root,'rev-parse','--path-format=absolute','--git-common-dir').trim());
 function recentReceipts(root:string,now:number):PassReceipt[] {
-  const runs=path.join(path.dirname(git(root,'rev-parse','--path-format=absolute','--git-common-dir').trim()),'.runtime','evidence','runs');
+  const runs=path.join(mainCheckoutOf(root),'.runtime','evidence','runs');
   if(!existsSync(runs))return [];
   return readdirSync(runs).filter(name=>name.endsWith('.json')).flatMap(name=>{
     try{
@@ -108,6 +119,27 @@ export function scanRange(root:string,head:string,base:string):Finding[] {
   return [...new Map(findings.map(f=>[JSON.stringify(f),f])).values()];
 }
 
+// The clean build tree beside the main checkout (AGENTS, "Git och samarbete": ../dealer-bygg): it stands between the
+// times, and no session writes there.
+export const buildTreeOf=(mainCheckout:string)=>path.join(path.dirname(mainCheckout),'dealer-bygg');
+const samePath=(a:string,b:string)=>path.resolve(a).toLowerCase()===path.resolve(b).toLowerCase();
+
+// The commit tested where nothing is open: the build tree is set to it and the check runs there (push-clean's steps
+// without its push), so the open files of the tree the check was started in are neither tested nor touched. `base` is
+// the commit the outgoing interval starts after, or '' when the remote's main is to be read.
+function testInBuildTree(root:string,head:string,base:string,open:string[]) {
+  const tree=buildTreeOf(mainCheckoutOf(root)),short=head.slice(0,7);
+  const names=open.slice(0,5).join(', ')+(open.length>5?` och ${open.length-5} till`:'');
+  if(samePath(tree,root))throw Error(`Byggträdet ${tree} har öppna filer (${names}). Det ska vara rent: ingen arbetar där.`);
+  if(!existsSync(tree))throw Error(`Arbetsmappen har öppna filer (${names}), och byggträdet där committen då testas saknas. Skapa det en gång med: git worktree add --detach "${tree}" main`);
+  console.log(`Arbetsmappen har öppna filer (${names}). De rörs inte och följer inte med: committen ${short} testas i byggträdet ${tree}. Det tar lika lång tid som testerna och visar inget förrän de är klara.`);
+  try{checkClean(root,{commit:head,tree,dryRun:true,base},fileIo(tree));}
+  catch(error){
+    if(!(error instanceof Stop))throw error;
+    throw Error(`Kontrollen av committen ${short} i byggträdet ${tree} stannade; stegens loggar ligger i ${path.join(path.dirname(tree),'push-logg')}.\n${error.message}`);
+  }
+}
+
 function emit(f:Finding) {
   console.log(`[${f.level==='RED'?'RÖD':'GUL'}] ${f.path}: ${f.message}`);
   if(process.env.GITHUB_ACTIONS==='true') {
@@ -119,7 +151,7 @@ function emit(f:Finding) {
 function main() {
   const root=git(process.cwd(),'rev-parse','--show-toplevel').trim();
   const pkg=JSON.parse(readFileSync(path.join(root,'package.json'),'utf8'));
-  if(process.version!==`v${pkg.volta.node}`)throw Error(`Använd projektets Volta Node ${pkg.volta.node}; aktuell ${process.version}.`);
+  if(!sameNodeMajor(process.version,String(pkg.volta.node)))throw Error(`Använd samma huvudversion av Node som projektet (${pkg.volta.node}); aktuell ${process.version}.`);
   if(process.argv.includes('--install')){
     let current='';try{current=git(root,'config','--get','core.hooksPath').trim();}catch{}
     if(current&&current!=='.githooks')throw Error('Befintlig hooksPath måste samordnas först: '+current);
@@ -141,21 +173,32 @@ function main() {
     ranges=[{local:head,remote:base??''}];
   }
   if(!ranges.length){console.log('Ingen ny commit att kontrollera.');return;}
-  const dirty=changedTestInputs(root);
-  if(dirty.length)throw Error('Testindata skiljer sig från HEAD: '+dirty.join(', ')+'. Samordna arbetet; återställ inte någon annans filer.');
   const findings=ranges.flatMap(r=>scanRange(root,r.local,r.remote));
   const names=git(root,'ls-tree','-r','--name-only','-z',head).split('\0');
   for(const name of CANONICAL)if(!names.includes(name))findings.push({level:'RED',path:name,message:'Ett kanoniskt dokument saknas; återställ eller samordna dokumentstrukturen.'});
   findings.forEach(emit);
   if(findings.some(f=>f.level==='RED'))throw Error('Publiceringen stoppad. Utred fynd och eventuell felaktig kontroll; använd inte --no-verify.');
-  const env={...process.env,DEALER_TEST_KIND:'publication',DEALER_TEST_REVISION:head};
-  const scratch=path.join(root,'.runtime','tmp');mkdirSync(scratch,{recursive:true});env.TEMP=scratch;env.TMP=scratch;
+  // From here on only a red test run on exactly this commit stops, never a file that lies open in the working tree.
   const tests=listedTests(git(root,'show',`${head}:package.json`));
+  const sameHead=()=>{if(git(root,'rev-parse','HEAD').trim()!==head)throw Error('HEAD ändrades under kontrollen; kör om på stabil version.');};
   const reused=prePush?reusablePass(recentReceipts(root,Date.now()),head,Date.now()):null;
   if(reused)console.log(`Testsviten gick grön för samma HEAD i kontrollen ${reused.finishedAt} (körkvitto ${reused.id}); den körs inte en gång till.`);
-  const test=reused?{error:undefined,status:0}:spawnSync(process.execPath,['--test','--test-concurrency=4','--test-reporter=spec','--test-reporter=./tools/test-receipt-reporter.ts','--test-reporter-destination=stdout','--test-reporter-destination=stderr',...tests],{cwd:root,env,stdio:'inherit'});
-  if(test.error||test.status!==0)throw Error('Testkörningen misslyckades. Kontrollera både produktkod och test/hook innan publicering.');
-  if(git(root,'rev-parse','HEAD').trim()!==head||changedTestInputs(root).length)throw Error('Kod eller HEAD ändrades under kontrollen; kör om på stabil version.');
+  else{
+    let open=changedTestInputs(root);
+    if(!open.length){
+      const env={...process.env,DEALER_TEST_KIND:'publication',DEALER_TEST_REVISION:head};
+      const scratch=path.join(root,'.runtime','tmp');mkdirSync(scratch,{recursive:true});env.TEMP=scratch;env.TMP=scratch;
+      const test=spawnSync(process.execPath,['--test','--test-concurrency=4','--test-reporter=spec','--test-reporter=./tools/test-receipt-reporter.ts','--test-reporter-destination=stdout','--test-reporter-destination=stderr',...tests],{cwd:root,env,stdio:'inherit'});
+      sameHead();
+      // A file written here while the suite ran makes that run say nothing about the commit, green or red: the commit
+      // is tested once more where nothing is open.
+      open=changedTestInputs(root);
+      if(open.length)console.log('Filer ändrades i arbetsmappen medan testerna gick; den körningen räknas inte.');
+      else if(test.error||test.status!==0)throw Error('Testkörningen misslyckades. Kontrollera både produktkod och test/hook innan publicering.');
+    }
+    if(open.length)testInBuildTree(root,head,ranges.length===1&&!zero.test(ranges[0].remote)?ranges[0].remote:'',open);
+  }
+  sameHead();
   console.log(`Kontrollerad HEAD ${head}; ${findings.filter(f=>f.level==='YELLOW').length} varningar. Eventuella Node-varningar visas separat. Detta verifierar inte media, rendering eller deploy.`);
 }
 

@@ -3,20 +3,52 @@ import assert from 'node:assert/strict';
 import {mkdtempSync,writeFileSync,mkdirSync,rmSync,readFileSync,readdirSync,existsSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
-import {execFileSync} from 'node:child_process';
+import {execFileSync,spawnSync} from 'node:child_process';
 import {stripTypeScriptTypes} from 'node:module';
-import {inspectBlob,parsePush,dirtyTestInputs,scanRange,listedTests,reusablePass,REUSE_HOURS,CANONICAL} from './publication-check.ts';
+import {inspectBlob,parsePush,dirtyTestInputs,scanRange,listedTests,reusablePass,sameNodeMajor,buildTreeOf,REUSE_HOURS,CANONICAL} from './publication-check.ts';
 
 function fixture(t:TestContext){
-  const root=mkdtempSync(path.join(tmpdir(),'dealer-publication-test-'));
-  t.after(()=>{assert.equal(path.dirname(root),path.resolve(tmpdir()));assert.ok(path.basename(root).startsWith('dealer-publication-test-'));rmSync(root,{recursive:true,force:true});});
+  // The repository lies one folder down, as dealer does: what the check puts beside it (the build tree, push-logg) then
+  // stays inside the test's own folder.
+  const top=mkdtempSync(path.join(tmpdir(),'dealer-publication-test-')),root=path.join(top,'dealer');
+  mkdirSync(root);
+  t.after(()=>{assert.equal(path.dirname(top),path.resolve(tmpdir()));assert.ok(path.basename(top).startsWith('dealer-publication-test-'));rmSync(top,{recursive:true,force:true,maxRetries:5,retryDelay:100});});
   const env={...process.env};for(const key of ['GIT_DIR','GIT_WORK_TREE','GIT_INDEX_FILE','GIT_COMMON_DIR','GIT_OBJECT_DIRECTORY','GIT_ALTERNATE_OBJECT_DIRECTORIES'])delete env[key];
-  const git=(...args:string[])=>execFileSync('git',args,{cwd:root,env,encoding:'utf8',stdio:['ignore','pipe','pipe']}).trim();
+  const gitIn=(cwd:string,...args:string[])=>execFileSync('git',args,{cwd,env,encoding:'utf8',stdio:['ignore','pipe','pipe']}).trim();
+  const git=(...args:string[])=>gitIn(root,...args);
   git('init');git('config','user.name','Publication test');git('config','user.email','test@example.invalid');git('config','core.hooksPath',path.join(root,'no-hooks'));
+  const write=(name:string,text:string)=>{mkdirSync(path.dirname(path.join(root,name)),{recursive:true});writeFileSync(path.join(root,name),text);};
   // add -f: the fixture commits names that a machine's own ignore rules may hold back (.env.local in a global excludes
   // file, as in an outside sandbox); what is tested is the scan of the history, not what git add lets through.
-  const commit=(name:string,text:string)=>{mkdirSync(path.dirname(path.join(root,name)),{recursive:true});writeFileSync(path.join(root,name),text);git('add','-f','--',name);git('commit','-m','Fixture');return git('rev-parse','HEAD');};
-  return {root,git,commit};
+  const commitAll=(files:Record<string,string>)=>{for(const [name,text] of Object.entries(files))write(name,text);git('add','-f','--',...Object.keys(files));git('commit','-m','Fixture');return git('rev-parse','HEAD');};
+  const commit=(name:string,text:string)=>commitAll({[name]:text});
+  return {top,root,env,git,gitIn,write,commit,commitAll};
+}
+
+// A repository the check can judge from start to end, and the check run in it as the pre-push hook runs it: the script is
+// this repository's, the repository it judges is the folder it is started in. The suite the fixture names does not
+// exist, so a run of it there would be red; its "npm run check" is a script that is green or red on the test's word.
+const SCRIPT=path.resolve('tools/publication-check.ts');
+function pushFixture(t:TestContext){
+  const f=fixture(t);
+  // The Node this repository pins, so that npm in the fixture's build tree is the one already installed.
+  const pinned=JSON.parse(readFileSync('package.json','utf8')).volta.node as string;
+  const base=f.commitAll({
+    ...Object.fromEntries(CANONICAL.map(name=>[name,'# Fixture\n'])),
+    '.gitignore':'.runtime/\nnode_modules/\n',
+    'package.json':JSON.stringify({private:true,volta:{node:pinned},scripts:{test:'node --test tools/missing.test.ts',check:'node tools/fixture-check.mjs'}}),
+    'tools/fixture-check.mjs':"if(process.env.FIXTURE_CHECK==='red'){console.log('fixture test fails');process.exit(1);}\nconsole.log('fixture check green');\n",
+  });
+  const hook=(head:string,extra:Record<string,string>={})=>{
+    const run=spawnSync(process.execPath,[SCRIPT,'--pre-push','origin','https://github.com/Jakeminator123/dealer.git'],{cwd:f.root,env:{...f.env,...extra},input:`refs/heads/main ${head} refs/heads/main ${base}\n`,encoding:'utf8'});
+    return {code:run.status,out:`${run.stdout}${run.stderr}`};
+  };
+  // The receipt the check leaves in the main checkout's journal when the suite has gone green for a commit.
+  const passed=(head:string)=>f.write(`.runtime/evidence/runs/${head}.json`,JSON.stringify({id:'fixture',kind:'publication',status:'pass',revision:head,dirtyInputs:[],finishedAt:new Date().toISOString(),counts:{fail:0}}));
+  // Someone else's work in the tree: a changed tracked file and a new one.
+  const open=()=>{f.write('README.md','# Someone is writing here\n');f.write('src/draft.ts','export const draft=1;\n');};
+  const stillOpen=()=>{assert.equal(readFileSync(path.join(f.root,'README.md'),'utf8'),'# Someone is writing here\n');assert.equal(readFileSync(path.join(f.root,'src/draft.ts'),'utf8'),'export const draft=1;\n');assert.equal(f.git('status','--porcelain'),'M README.md\n?? src/draft.ts');};
+  return {...f,base,hook,passed,open,stillOpen};
 }
 
 test('private paths, media and token-like values block without exposing the value',()=>{
@@ -41,7 +73,7 @@ test('the canonical documents, whose absence stops a push, are all in the reposi
   assert.deepEqual(CANONICAL.filter(name=>!existsSync(name)),[]);
 });
 
-test('the HEAD gate includes studio, registers and documents, with only the user card plan exempt',()=>{
+test('every file but the user card plan counts as open: studio, registers and documents too',()=>{
   assert.deepEqual(dirtyTestInputs(['placements/default.json','HANDOFF.md']),['HANDOFF.md']);
   assert.deepEqual(dirtyTestInputs(['src/sound.ts','package-lock.json','placements/default.json']),['src/sound.ts','package-lock.json']);
   const studio=['studio/app/page.tsx','studio/package.json','studio/lib/api.ts','src/studio/x.ts'];
@@ -83,15 +115,12 @@ test('a hook inherited GIT_DIR cannot redirect an explicit repository scan',t=>{
   }
 });
 
-test('the push check runs the tests that npm test runs, and every test file is among them',()=>{
+test('the push check runs the tests that npm test runs, and every test file of tools/ and the studio is among them',()=>{
   // The push check reads its tests from the test script in package.json (listedTests), so it and "npm test" run the
-  // same files; a test file that the script does not name runs in neither. The studio's tests go as one pattern, which
-  // node --test expands itself.
+  // same files. The tests of tools/ and of the studio go as one pattern each, which node --test expands itself: a new
+  // test file there runs without being written into a list, so none can be forgotten.
   const listed=listedTests(readFileSync('package.json','utf8'));
-  assert.ok(listed.includes('studio/tests/*.test.ts'),'the tests of the studio are part of the run');
-  const onDisk=readdirSync('tools').filter(name=>name.endsWith('.test.ts')).map(name=>'tools/'+name).sort();
-  assert.deepEqual(onDisk.filter(name=>!listed.includes(name)),[],'a test file in tools/ that the test script in package.json does not name');
-  assert.deepEqual(listed.filter(name=>name.startsWith('tools/')&&!onDisk.includes(name)),[],'a listed test that is not there');
+  for(const pattern of ['tools/*.test.ts','studio/tests/*.test.ts'])assert.ok(listed.includes(pattern),pattern+' is part of the run');
   assert.throws(()=>listedTests(JSON.stringify({scripts:{test:'node --test'}})),/inga testfiler/,'a test script that names no file stops the check');
   assert.throws(()=>listedTests(JSON.stringify({scripts:{}})),/inga testfiler/,'so does a package.json without one');
 });
@@ -131,4 +160,51 @@ test('the pre-push hook reuses only a passing check of this very HEAD, clean and
     ['no time',{...good,finishedAt:'x'}],
   ] as const) assert.equal(reusablePass([bad],head,now),null,why);
   assert.equal(reusablePass([],head,now),null);
+});
+
+test('the check asks for the same major version of Node as the project pins, not the same patch',()=>{
+  assert.ok(sameNodeMajor('v24.22.3','24.22.3'));
+  assert.ok(sameNodeMajor('v24.5.0','24.22.3'),'another patch of the same major version is the same Node here');
+  assert.ok(!sameNodeMajor('v22.20.0','24.22.3'));
+  assert.ok(!sameNodeMajor('v2.4.0','24.22.3'));
+});
+
+test('open files do not stop a push whose commit has passed the check, and a finding in the commits still stops it',t=>{
+  const f=pushFixture(t),head=f.commit('src/done.ts','export const done=1;\n');
+  f.open();f.passed(head);
+  const pushed=f.hook(head);
+  assert.equal(pushed.code,0,pushed.out);
+  assert.match(pushed.out,/den körs inte en gång till/,'the green run of this commit is reused');
+  assert.match(pushed.out,new RegExp(`Kontrollerad HEAD ${head}`));
+  f.stillOpen();
+  // The same open files and a passed suite, and a commit that carries what must not go out.
+  const secret=f.commit('.env.local','{}');
+  f.passed(secret);
+  const stopped=f.hook(secret);
+  assert.equal(stopped.code,1,stopped.out);
+  assert.match(stopped.out,/\[RÖD\] \.env\.local: /);
+  assert.match(stopped.out,/Publiceringen stoppad/);
+  f.stillOpen();
+});
+
+test('with open files and no passed check the commit is tested in the build tree, and only a red check there stops the push',t=>{
+  const f=pushFixture(t),head=f.commit('src/done.ts','export const done=1;\n'),tree=buildTreeOf(f.root);
+  assert.equal(path.dirname(tree),f.top,'the build tree lies beside the repository');
+  f.open();
+  const missing=f.hook(head);
+  assert.equal(missing.code,1,missing.out);
+  assert.match(missing.out,/byggträdet där committen då testas saknas\. Skapa det en gång med: git worktree add --detach ".*dealer-bygg" main/);
+  f.git('worktree','add','--detach',tree,f.base);mkdirSync(path.join(tree,'node_modules'));
+  const green=f.hook(head);
+  assert.equal(green.code,0,green.out);
+  assert.match(green.out,/testas i byggträdet/);
+  assert.match(green.out,/fixture check green/);
+  assert.equal(f.gitIn(tree,'rev-parse','HEAD'),head,'what was tested is the pushed commit');
+  assert.ok(!existsSync(path.join(tree,'src/draft.ts')),'and not the open files');
+  f.stillOpen();
+  const red=f.hook(head,{FIXTURE_CHECK:'red'});
+  assert.equal(red.code,1,red.out);
+  assert.match(red.out,/Kontrollen av committen [a-f0-9]{7} i byggträdet .*dealer-bygg stannade/);
+  assert.match(red.out,/STOPP: npm run check \(kod 1\)/);
+  f.stillOpen();
 });

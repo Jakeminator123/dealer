@@ -97,7 +97,7 @@ behöver veta och namnger högst tre filer eller avsnitt att läsa.
 ## Git och samarbete
 
 - Allt arbete görs i mappen `dealer` på C:, på `main`, den enda långlivade grenen; en gren eller ett eget träd bara
-  när ett arbete uttryckligen behöver isoleras, och den slås sedan ihop i `main` eller tas bort. Byggträdet `../dealer-bygg` är bara för `push-clean` och `studio-from-commit` (DRIFT).
+  när ett arbete uttryckligen behöver isoleras, och den slås sedan ihop i `main` eller tas bort. Byggträdet `../dealer-bygg` är bara för kontrollen och `studio-from-commit` (DRIFT).
 - Checka in egna färdiga filer direkt, i små commits, så att `dealer` oftast är rent.
 - Tillfälliga arbetsfiler hör hemma i `.runtime/<uppgift>/`; städa egna kopior och byggrester efteråt. Medier städas
   enligt `tools/local-work.md` (en gammal fil är inte automatiskt oanvänd); `npm run media:status` visar läget.
@@ -106,7 +106,7 @@ behöver veta och namnger högst tre filer eller avsnitt att läsa.
 - Installera kontrollen en gång per checkout: `npm run hooks:install` (pre-push kör då publiceringskontrollen,
   `tools/publication-check.ts`).
 - Avsluta färdigt arbete så här: uttrycklig staging av egna filer, commit, `npm run check` (hela sviten, en gång),
-  push och fjärrens SHA. Stoppar kontrollen på andras öppna filer: `push-clean` från byggträdet. GitHub kör ingen.
+  push och fjärrens SHA. Andras öppna filer stoppar ingen push: commiten testas då i byggträdet. GitHub kör ingen.
 - Ingen force-push, ingen `--no-verify`, ingen filbevakare och ingen automatisk commit av utkast.
 - Städa löpande: det som en ändring gör överflödigt (kod som inget anropar, ersatt status, döda sökvägar) tas bort i
   samma ändring, och det nya beteendet beskrivs där det hör hemma.
@@ -114,7 +114,7 @@ behöver veta och namnger högst tre filer eller avsnitt att läsa.
 ## Kod
 
 - Ny kod skrivs i TypeScript. Undantaget är skripten i `tools/python/`, som kräver MediaPipe.
-- Node enligt `package.json` (Volta, `v24.22.3`); kontrollera med `node -p process.version`.
+- Node 24 enligt `package.json` (Volta); kontrollera med `node -p process.version`.
 - Högst fyra render- eller testarbetare samtidigt: datorn delas med labbservern och andra sessioner.
 - Verifiera en ändring med en körning eller de berörda testfilerna, inte hela sviten. Nya tester bara för det som ska
   bestå: kontrakt, spelregler, Jakobs godkända resultat, publiceringsskyddet. Rendering och deploy verifieras för sig.

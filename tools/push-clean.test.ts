@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {parseArgs, pushClean, testSummary, testFailures, checkRed, type Options} from './push-clean.ts';
+import {parseArgs, pushClean, checkClean, testSummary, testFailures, checkRed, type Options} from './push-clean.ts';
 import type {Exec} from './clean-tree.ts';
 
 const ROOT = 'C:/repo', TREE = 'D:/scratch/push-trad', SHA = 'a'.repeat(40), OLD = 'b'.repeat(40);
@@ -24,8 +24,10 @@ function world(answers: Record<string, Answer> = {}, present = (p: string) => tr
     if (key.startsWith('git ls-remote')) return {code: 0, out: `${calls.some(c => c.includes('git push')) ? SHA : OLD}\trefs/heads/main\n`};
     return {code: 0, out: ''};
   };
-  const go = (options: Partial<Options> = {}) => pushClean(ROOT, {commit: 'main', tree: TREE, dryRun: false, ...options}, {run, say: l => said.push(l), log: (n, t) => { logs[n] = t; }, exists: present});
-  return {calls, said, logs, go, text: () => said.join('\n')};
+  const io = {run, say: (l: string) => said.push(l), log: (n: string, t: string) => { logs[n] = t; }, exists: present};
+  const go = (options: Partial<Options> = {}) => pushClean(ROOT, {commit: 'main', tree: TREE, dryRun: false, ...options}, io);
+  const check = (options: Partial<Options> = {}) => checkClean(ROOT, {commit: 'main', tree: TREE, dryRun: false, ...options}, io);
+  return {calls, said, logs, go, check, text: () => said.join('\n')};
 }
 
 test('the arguments require an explicitly selected worktree', () => {
@@ -59,6 +61,16 @@ test('a real run pushes HEAD to main, without force or --no-verify', () => {
   assert.equal(w.go(), 0, w.text());
   const pushes = w.calls.filter(c => c.includes('git push'));
   assert.deepEqual(pushes, ['tree: git push origin HEAD:main']);
+});
+
+test('the check alone, as the publication check uses it: the commit is tested in the tree, a given base is used as it is, and nothing is pushed', () => {
+  const w = world();
+  assert.equal(w.check({base: OLD}), SHA);
+  assert.ok(w.calls.includes(`tree: git checkout -q --detach ${SHA}`) && w.calls.includes(`tree: npm run check -- --base ${OLD}`), w.calls.join('\n'));
+  assert.ok(!w.calls.some(c => c.includes('git push') || c.includes('ls-remote')), w.calls.join('\n'));
+  const red = world({'npm run check': {code: 1, out: '✖ a test fails\n'}});
+  assert.throws(() => red.check({base: OLD}), /STOPP: npm run check \(kod 1\)\n✖ a test fails$/);
+  assert.ok(!red.calls.some(c => c.includes('git push')));
 });
 
 test('an occupied or unreadable worktree is rejected before checkout changes its HEAD', () => {
