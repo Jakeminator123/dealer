@@ -2,68 +2,6 @@
   "schemaVersion": 1,
   "about": "Vad som är vad per dealer: varje bild, ruta ur en film eller grupp av filer får en roll i Jakobs kedja (ingångsbild, keystone, ankare 1, 2.1, 2.2, landning, film, referens, prov, övrigt). Studions vy Material läser registret genom GET /api/media (tools/media-roles.ts), som lägger till om filen finns, dess storlek och vilka filmer i banken som börjar eller slutar på den. Bankens filmer listas inte här: de räknas ur data/clip-jobs.json. Filmer utanför banken har rollen film och ligger i assets/films/<dealer>/ eller i det prov där de granskades, med receipt.json bredvid (importen 2026-11-12). Fylld 2026-11-12 ur D:/dealer-scratch/tmp/huvudagent/original/RAPPORT.md, D:/dealer-scratch/tmp/paow/LASMIG.md och filerna själva.",
   "dealers": {
-    "pamela": {
-      "name": "Pamela",
-      "missing": {},
-      "films": {
-        "from": null,
-        "note": "Pamela lämnade main 2026-11-23 (Jakob: \"Du ska ta bort Pamela ur main\"); hennes filmer, bilder och bank ligger i D:/dealer-archive/pamela-2026-11-23. Kvar här är bara det Beställ lånar, tills beställningsvägen klarar sig utan det; V6 och originalen ligger i D:/dealer-archive/v6-2026-11-23."
-      },
-      "outside": null,
-      "entries": [
-        {
-          "id": "pamela-slap",
-          "role": "ankare-2.2",
-          "name": "Handen över kortet",
-          "path": "assets/motions/pamela-ready-b-shoe-plate-01/source.mp4",
-          "frame": 112,
-          "fps": 30,
-          "node": "READY-B",
-          "state": "gäller",
-          "note": "Armen och handen i A2.2 för Beställ: tools/order-store.ts POSE ANKARE-2.2 lägger dem på dealerns egen sko. Kallas READY-B i koden: fingertopparna plant på kortet i skons öppning. Hel riktig ruta ur skoplåtsklippet.",
-          "source": {
-            "from": "skoplåtsklippet pamela-ready-b-shoe-plate-01 (WAN 3)",
-            "when": "2026-11-10"
-          }
-        },
-        {
-          "id": "pamela-ruta-p4-c1-plan-deal-02-105",
-          "role": "referens",
-          "name": "P4-given, armen vid skon (ruta 16)",
-          "path": "assets/motions/pamela-p4-c1-plan-deal-02/source.mp4",
-          "frame": 16,
-          "fps": 30,
-          "note": "Posbilden för A2.1 i Beställ: tools/order-store.ts POSE ANKARE-2.1, ruta 16 ur den godkända P4-given (nypet på kortet, kortet en bit ur fönstret). Samma film var landningen på ruta 105 och given i banken till 2026-11-23.",
-          "source": {
-            "from": "given pamela-p4-c1-plan-deal-02",
-            "when": "2026-11-10"
-          }
-        },
-        {
-          "id": "pamela-retur-p4-vila",
-          "role": "referens",
-          "name": "Returen till vila från P4",
-          "path": "assets/motions/pamela-p4-c1-plan-return-idle-01/source.mp4",
-          "fps": 30,
-          "note": "Filmen vars sista bild ger kortets textur i Paows beställningar (tools/order-images.ts); omkring 110 ordrar i data/orders/ bär den som härkomst. I banken till 2026-11-23.",
-          "source": {
-            "from": "returen pamela-p4-c1-plan-return-idle-01",
-            "when": "2026-11-10"
-          }
-        },
-        {
-          "id": "pamela-idle-p4-c1-plan-01",
-          "role": "referens",
-          "name": "Vila, kort P4",
-          "path": "assets/anchors/pamela-idle-p4-c1-plan-01/anchor.png",
-          "note": "Kortets textur i Paows beställningar: tools/order-images.ts tar kortet ur sista bilden av pamela-p4-c1-plan-return-idle-01 med konturen i receipt.json bredvid den här bilden; omkring 110 ordrar i data/orders/ bär filen och hashen som härkomst. Vila med kortet kvar på planens plats. Samma kortpixlar som givens slutbild.",
-          "source": {
-            "from": "gamla labbets vilobild med kort (direct/end.png), kortet ur pamela-p4-c1-deal-calm-01 ruta 119",
-            "when": "2026-11-10"
-          }
-        }
-      ]
-    },
     "paow": {
       "name": "Paow",
       "missing": {
@@ -3924,6 +3862,17 @@
           "note": "Prov: A2.3 ändrad bara i skons fönster. Det vita runt kortet är borta och gula sidan har ett märke, fylld röd cirkel i mitten och rosa kryss nära kortänden (Jakobs val 2026-11-23, Prov kort-marke-gula-sidan-20261123). För en provfilm; A2.3 gäller oförändrat. Inte sedd av en oberoende granskare.",
           "source": {
             "from": "A2.3:s bild, ändrad i skons fönster (a2-3-utan-vitt-fylld-cirkel.png; receipt.json bredvid bilden)",
+            "when": "2026-11-23"
+          }
+        },
+        {
+          "id": "kortets-textur",
+          "role": "referens",
+          "name": "Kortets textur",
+          "path": "assets/cards/kortets-textur.png",
+          "note": "Kortet som ritas in på nya beställningars bilder (TEXTURE i tools/order-images.ts): ruta 89 ur en äldre bankfilm, kortet med 6 px runt och resten svart, 1764 × 1174, sha256 8a027a00d7f4…; fryst 2026-11-23 när filmen arkiverades. En kopia ligger i arkivet från samma dag (DRIFT, \"Arkiven\").",
+          "source": {
+            "from": "sista bilden av en äldre retur till vila från P4 (arkiverad 2026-11-23)",
             "when": "2026-11-23"
           }
         }

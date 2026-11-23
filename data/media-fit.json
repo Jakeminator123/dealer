@@ -8,33 +8,6 @@
     "handsPx": 8
   },
   "entries": {
-    "pamela-idle-p4-c1-plan-01": {
-      "verdict": "stämmer",
-      "words": "Kortet ligger 7 px från platsen P4.C1 och är 11 % mindre än kortet dagens plan ritar (planCardQuad).",
-      "measured": {
-        "card": {
-          "distancePx": 6.9,
-          "size": 0.889,
-          "card": "P4.C1"
-        }
-      }
-    },
-    "pamela-slap": {
-      "verdict": "går inte att mäta",
-      "words": "Handmått saknas för den här ankarrollen.",
-      "measured": {}
-    },
-    "pamela-ruta-p4-c1-plan-deal-02-105": {
-      "verdict": "stämmer",
-      "words": "Kortet ligger 8 px från platsen P4.C1 och är 10 % mindre än kortet dagens plan ritar (planCardQuad).",
-      "measured": {
-        "card": {
-          "distancePx": 8.4,
-          "size": 0.901,
-          "card": "P4.C1"
-        }
-      }
-    },
     "paow-vila-tatuerad": {
       "verdict": "stämmer",
       "words": "Båda händerna mätta i gällande ankare 1 (paow-vila-tatuerad), dealerns kalibreringsbild.",
