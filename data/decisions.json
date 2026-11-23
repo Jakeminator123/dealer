@@ -3,6 +3,33 @@
   "about": "What waits for Jakob: one entry per question (kind beslut) or per thing only he can do (kind gora), shown as one card each in the studio's view Beslut (/studio/beslut/, lab only). The list's order is the order of urgency, the most urgent first. An entry: id, kind, question (at most 14 words), leads (one sentence: what his answer leads to), optionally proof (a folder under assets/proofs/) with file, page (an address in the lab, e.g. game.html?table=casino), link (an address outside, shown as text to open on his phone) and cost (free text), chips (two to four {value, label} for beslut, one to four for gora), asked (date), from (the lane that asks) and answer. An agent adds an entry with answer null, changes only its own entries, reads the file right before editing it and keeps the form JSON.stringify gives with two spaces; it closes an entry by taking it out once his answer is carried out, and the commit says what he answered. Only the page writes answer ({value, note, at}, tools/decision-store.ts); no agent sets, changes or clears an answer he has given. The strict reader is tools/decision-register.ts. The repo is public: no secret, personal detail or path of this machine.",
   "decisions": [
     {
+      "id": "a2-3-blick-pa-kortet",
+      "kind": "beslut",
+      "question": "Ska A2.3 få den här blicken, ned mot kortet vid skon?",
+      "leads": "Ja gör bilden till A2.3 för ingången och alla nya givar; filmer som redan börjar eller slutar i A2.3 får ett litet huvudhopp tills de görs om.",
+      "proof": "a2-3-blick-20261123",
+      "file": "3-ansiktena-bredvid-varandra.png",
+      "page": "studio/granska/?prov=a2-3-blick-20261123&fil=4-den-nya-bilden-i-spelets-storlek.png",
+      "cost": "Bilden kostade 20 krediter; en ny ingång kostar cirka 68",
+      "chips": [
+        {
+          "value": "ja",
+          "label": "Ja, byt blicken"
+        },
+        {
+          "value": "allvar",
+          "label": "Nej, för allvarlig"
+        },
+        {
+          "value": "nej",
+          "label": "Nej, behåll dagens"
+        }
+      ],
+      "asked": "2026-11-23",
+      "from": "film",
+      "answer": null
+    },
+    {
       "id": "a3p6c1-som-bild",
       "kind": "beslut",
       "question": "Duger A3P6C1 som sista bild för filmen från A2.3 till plats 6?",
@@ -58,7 +85,11 @@
       ],
       "asked": "2026-11-23",
       "from": "3d",
-      "answer": null
+      "answer": {
+        "value": "nastan",
+        "note": "Bättre! mnen allt sitter nu i detalkjer, jag tror at dockan lixom inte är 100% bra med hennes elelr själva djuper för i hennes vridningar av korten och så vidare så blir det som att hennes arm måste vridas väldigt ihoptryckt, vilket resulterar i att hon frår lite konstig vridning i hennes arm som skulle se narurligare om hon sträkte ut armen mer",
+        "at": "2026-11-23T08:09:59.983Z"
+      }
     },
     {
       "id": "paow-giv-2-3-p4c2",

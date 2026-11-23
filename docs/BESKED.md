@@ -412,6 +412,14 @@ Innehåll: [Arbetet och dokumenten](#arbetet-och-dokumenten) · [Labbet och stud
   siluetten. Dockan övertar altså siluetten, men ska vara utifrån vilken dealer som vi har valt - i detta fall är det
   ju PAOW." Siluett finns alltså inte kvar som val: under korten i Bordets Kortplan ligger den valda dealerns docka
   (en dealer utan egen docka får standarddockan), och det är hans val som beskedet 2026-11-21 väntade på.
+- **Paows rättade docka: bättre, men armen viks för trångt i vändningen** (2026-11-23, hans svar i Beslut, "Bättre,
+  men inte än"): "Bättre! mnen allt sitter nu i detalkjer, jag tror at dockan lixom inte är 100% bra med hennes elelr
+  själva djuper för i hennes vridningar av korten och så vidare så blir det som att hennes arm måste vridas väldigt
+  ihoptryckt, vilket resulterar i att hon frår lite konstig vridning i hennes arm som skulle se narurligare om hon
+  sträkte ut armen mer". Dockan styr alltså inte nya givar än: vändningen görs med armen mer utsträckt, och djupet
+  (hur långt bakom bordskanten hon sitter) prövas på nytt mot hennes filmer.
+- **A3P6C1 som bild: armen ser fel ut** (2026-11-23, Beslut och Prov): "Hon fick ne väldig lång underarm här". Ingen
+  film beställs med den bilden; nästa provbild görs där hon lutar sig fram mot platsen.
 - **Ett tredje och fjärde dealerkort** (2026-11-13): "Skapa då ett tredje och fjärde till dealer". Inte byggt: planen
   har sexton platser, så en film dit går inte att beställa; hur det ska byggas är en fråga för ett kort i Beslut.
 - **Önskemål för senare** (hans lista 2026-11-11 och 2026-11-13; inget är beställt): mer av höger arm, kaffe ur en mugg

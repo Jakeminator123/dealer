@@ -13,7 +13,7 @@
   "maxPerOrder": 2000,
   "minBalance": 0,
   "timeZone": "Europe/Stockholm",
-  "balance": { "credits": 2136, "at": "2026-11-23T07:56:21Z", "source": "Runways API (GET /v1/organization), utvecklarprojektet som API-nyckeln drar från, läst av huvudagenten dealer-b0. Sedan läsningen 2 464 kl. 07.28 UTC har 328 krediter gått: 40 för två provbilder av A3P6C1 (Nano Banana Pro, 2K, 20 var, utanför Beställ) och 288 som ingen order i data/orders förklarar. Av mandatet dealer-b0-20261123 är 244 av 1 200 använda (tre filmer à 68 och de två bilderna)." },
+  "balance": { "credits": 2116, "at": "2026-11-23T08:10:32Z", "source": "Runways API (GET /v1/organization), utvecklarprojektet som API-nyckeln drar från, läst av huvudagentens underagent. Sedan 2 136 kl. 07.56 UTC har 20 krediter gått: en provbild av A2.3 med blicken på kortet (Nano Banana Pro, 2K, utanför Beställ). Av mandatet dealer-b0-20261123 är 264 av 1 200 använda (tre filmer à 68 och tre provbilder à 20). De 288 krediter som gick mellan 07.31 och 07.54 UTC förklaras inte av någon order i data/orders." },
   "prices": [
     { "model": "kling-4", "resolution": "1080p", "perSecond": 21.3, "listedPerSecond": 23.5, "source": "Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12." },
     { "model": "kling-4", "resolution": "720p", "perSecond": 15.7, "listedPerSecond": 15.7, "source": "Listpris i verktyget generate_video 2026-11-12; inte mätt i någon liggare." },
