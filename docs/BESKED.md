@@ -150,6 +150,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   till skon stämmer inte; handen över skon är "fel i grunden … typ lillfingret". Givarna från A2.3 beställs ändå med dockans film.
 - **En sparad rörelse per kort och ankare** (2026-11-23): A2.1, A2.2 och A2.3 är olika in- och utgångar; dockan ska ha en
   sparad giv per spelare och per ingång. Uppdraget: fyll A2.3 → spelarnas C1 och tillbaka, återgången sparad.
+- **Handens vinkel −30 är det normala** (2026-11-23): han satte −30 för plats 4 och 5; Återställ ska ge den vridningen
+  ("ser naturligare ut"). Återgången ska gå att välja i Docklabbet.
 - **Docklabbet** (2026-11-23): "Jag gillar verkligen docklabbet!" Konstiga ställningar blir naturligare som standard,
   vridning och axlar är reglage, fingrarna visar hur de verkar på kortet; allt "kompatibelt med material skapat".
 - **Dockan framåt** (2026-11-23): en giv till en spelare tar 2 s som förval, valbart i Docka. För framtiden: A2.2 ur
@@ -203,7 +205,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
 - **Fria händer med beställningstexterna** (2026-11-17): huvudagenten skriver om dem efter vad proven visar.
 - **Giv och återgång i samma film** (2026-11-23): provet till plats 5 fick "Rätt … i övrigt - perfekt". Återgången
   klipps ut och sparas i banken automatiskt: "dessa är faktist nästa alltid bra".
-- **Högerhanden vid nedsläppet** (2026-11-23): den ska inte vara "så vriden vid nedsläpp"; given till plats 5 görs om så.
+- **Högerhanden vid nedsläppet** (2026-11-23): den ska inte vara "så vriden vid nedsläpp". Given till plats 5 gjordes
+  om så, och givarna till plats 1–5, kort 1, med återgång fick hans "Ja, alla håller" i Beslut.
 - **V6 är arkiverad** (2026-11-20): råmaterialet och renderaren ligger i arkivet på D:, filmen och 18 rutor står kvar
   att titta på. V6 är ingen referens "att dö för"; dess kortstorlek kallade han "väldigt bra" (2026-11-12).
 - **Trailern är pausad** (2026-11-17): rollblad 4 med tatuerade händer har hans ja, men inget beställs och inget byts i

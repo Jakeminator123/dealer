@@ -36,12 +36,11 @@
     "colorDoesNotProvePhysicalSide": true,
     "userAccepted": false,
     "productionReady": false,
-    "acceptedAs": "VARIANT",
     "provisional": {
-      "by": "huvudagenten dealer-c2 och en oberoende granskare",
-      "at": "2026-11-23T13:27:44.415Z",
-      "mandate": "Jakob 2026-11-13: \"Med andra ord vill jag inte se en sån här lista när jag är tillbaka!\"; 2026-11-23: fyll givarna från A2.3 till spelarnas C1 och tillbaka",
-      "note": "Given 3/5, variant: inte vriden, men handen nyper kortets kant i stället för att ligga plan; kortet 0,6 px från sista bilden."
+      "by": "huvudagenten dealer-c2",
+      "at": "2026-11-23T13:33:07.213Z",
+      "mandate": "Jakob 2026-11-23 i Beslut om givarna från A2.3 till plats 1–5, kort 1, med återgång: \"Ja, alla håller\"",
+      "note": "Granskaren gav given 3/5 och föreslog variant (handen nyper kortets kant); Jakob har sett provmappen givar-2-3-c1-20261123 och svarat att alla håller."
     }
   },
   "order": {

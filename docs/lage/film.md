@@ -14,7 +14,7 @@ som gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompt
 - Ett ankare heter alltid A och numret (A1, A2.3, A3P4C1), aldrig med en bokstav efter (Jakob 2026-11-21); bokstäverna
   i id:n är arbetsnamn: A2.3 är `paow-ankare-2-3-d` (blicken på kortet; givarna hittills börjar på `-c`), A2.2 `paow-ankare-2-2-blick-a`.
 - Trädet Tatuerad (vyn Karta, `/studio/karta/?dealer=paow&trad=tatuerad`) fylls från A2.3. I banken: giv och återgång
-  till plats 1–5, kort 1 (mall 15, dömda åt honom: plats 4 och 5 4/5, plats 3 4/5 och 3/5, plats 1 och 2 varianter, 3/5),
+  till plats 1–5, kort 1 (mall 15, Jakobs "Ja, alla håller"; granskaren: plats 4 och 5 4/5, plats 1 och 2 3/5),
   och sedan förut given till A3P4C1 (piloten, Jakobs ja), A3P4C2 (kort i Beslut), A3P1C1, A3P2C1 och A3P3C1 bara dit.
 - A3-bilder: A3P4C1 och A3P4C2 är kandidater (A3P4C2 ur ruta 68, oberoende 4/5). För plats 1 och 2 stoppar
   landningsverktyget, och rosen på högra handryggen är en mandala i A3P4C1 ([BRISTER](../BRISTER.md)).
@@ -32,7 +32,7 @@ som gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompt
 3. Spelet väljer träd: det läser inga i dag (`buildGraph` blandar alla filmer), så Tatuerad spelas inte än. Ingången
    A1 → A2.3 klipps ur ankarets film; sedan A2.3 → A1, hålkortet och dealerns kort.
 
-**Väntar på Jakob.** Kort i Beslut: givarna till plats 1–5 (kort 1) med återgång, given till A3P4C2 och dockan med Paows
+**Väntar på Jakob.** Kort i Beslut: given till A3P4C2 och dockan med Paows
 mått. Frågor i chatten 2026-11-21: egen film för kort 2 (36 steg) eller kort 1:s (22), om tatuerade A2.2 är blickbilden
 eller en ny nypbild, och hur spelet väljer träd.
 

@@ -22,7 +22,7 @@ Läs AGENTS.md, den här sidan och EN lägesfil för din bana. Ersätt inaktuell
 
 Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-18), med EN trovärdig giv först ([film](docs/lage/film.md)).
 
-1. Giv och återgång i en film är sättet (Jakob 2026-11-23): plats 1–5, kort 1, ligger i banken med kort i Beslut;
+1. Giv och återgång i en film är sättet (Jakob 2026-11-23): plats 1–5, kort 1, ligger i banken med hans ja;
    plats 6 och 7 och kort 2 återstår ([film](docs/lage/film.md)).
 2. Dockan: en beställningsknapp i Scen & bord, Docka; −30 som handens förval, ingångarna A2.1–A2.3, återgång
    och handen över skon ([LASMIG](dealer3d/LASMIG.md), "Naturlig ställning", Kvar).
