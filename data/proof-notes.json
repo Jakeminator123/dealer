@@ -501,7 +501,34 @@
       "file": null,
       "choice": null,
       "text": "den andra av dessa ska in som standard för alla hennes repliker överallt och som standard-läppsynk för PAOW men vara vi vet att detta är just i ett annat fpormat OM det är andra format i denna än de som tex finns i andra proejkt elelr som den dära stora imagen elelr vad det är använder som standards för cashe elelr vad det är",
-      "at": "2026-11-21T17:38:59.619Z"
+      "at": "2026-11-21T17:38:59.619Z",
+      "read": "2026-11-23T08:06:38.182Z"
+    },
+    {
+      "id": 44,
+      "proof": "a3p6c1-20261123",
+      "file": "1-a3p6c1.png",
+      "choice": null,
+      "text": "Hon fick ne väldig lång underarm här",
+      "at": "2026-11-23T08:04:16.051Z",
+      "answer": {
+        "text": "Ja, armen blev för lång: hon sitter kvar rak och måste då sträcka sig hela vägen till plats 6. Nästa provbild görs där hon lutar sig fram mot platsen, så att armen får sin riktiga längd. Ingen film beställs med den här bilden.",
+        "at": "2026-11-23T08:06:13.092Z"
+      },
+      "read": "2026-11-23T08:06:13.092Z"
+    },
+    {
+      "id": 45,
+      "proof": "a3p6c1-20261123",
+      "file": "2-a2.3.png",
+      "choice": null,
+      "text": "Detta är altså A2.3? Bra i sf",
+      "at": "2026-11-23T08:05:10.521Z",
+      "answer": {
+        "text": "Ja, det är A2.3 (ankaret som filmerna börjar i), lagd bredvid för att jämföra.",
+        "at": "2026-11-23T08:06:13.295Z"
+      },
+      "read": "2026-11-23T08:06:13.295Z"
     }
   ]
 }
