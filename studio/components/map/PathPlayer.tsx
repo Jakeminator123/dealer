@@ -21,11 +21,13 @@ import { TakeChip } from "../takes";
 import { usePlaySlot } from "../takes/play-slot.ts";
 import type { PathPic } from "./PathBar";
 
-/** A step without a film: its first node's picture, with why over it. Every gap's is drawn from the start, so it is ready. */
+/** A step without a film: its first node's picture, with why over it. Every gap's is drawn from the start, so it is ready.
+ *  Shown, it lies at z 3: the flat stage lifts its two films to z 1 and 2 (engines.ts raise), above anything laid on the stage
+ *  without a z, and the film last shown would otherwise stay on top of the held picture. */
 function Held({ pic, word, shown }: { pic: PathPic; word: string; shown: boolean }) {
   const cover = pic.entry ? coverOfEntry(pic.entry) : null;
   return (
-    <PictureBox className={shown ? undefined : "opacity-0"}>
+    <PictureBox className={shown ? "z-[3]" : "opacity-0"}>
       <div className="absolute inset-0 overflow-hidden bg-black">
         {cover ? (
           <ProofStill cover={cover} fps={pic.entry?.fps ?? 30} fit="contain" className="absolute inset-0" />

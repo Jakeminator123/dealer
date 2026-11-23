@@ -38,7 +38,8 @@ export function FlatStage({ onEngine, className }: { onEngine?: (engine: Engine 
   }, []);
   return (
     <PictureBox className={className}>
-      <div className="absolute inset-0 overflow-hidden bg-black">
+      {/* isolate: the engine lifts the two films to z 1 and 2; kept inside this frame, so a sign laid over the stage shows. */}
+      <div className="absolute inset-0 isolate overflow-hidden bg-black">
         {[a, b].map((ref, i) => (
           <video key={i} ref={ref} muted playsInline preload="auto" disablePictureInPicture className="absolute inset-0 size-full object-contain" />
         ))}
