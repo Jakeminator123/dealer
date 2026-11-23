@@ -62,7 +62,10 @@ sökning till sin första ruta, och en film som väntar på sin första ruta sta
 
 **Casino** (`/studio/game/`) bär spelets uttryckliga adressval vidare till spelet i ramen, genom förvalsbyte och nytt
 bord: `diagnos=0|1`, `kort=hand|liggande|matt`, `cardBack=film|dark`, `cardFace=film|paper`, `dealTempo=1…1.15` och
-`geometri`. Ogiltiga värden lämnas utanför och redovisas som okända (`studio/lib/casino.ts`).
+`geometri`. Ogiltiga värden lämnas utanför och redovisas som okända (`studio/lib/casino.ts`). `trad=<id>` (Kartas
+Prova i Casino) spelar bara det trädets filmer och de som inget träd äger; ett kort utan film läggs utan hand, och
+spelets rad säger träd och tal (`src/dealer-trees.ts` treePlay, `GET /api/trees?dealer=&trad=`). Kopians Casino
+skickar inte ordet till spelet.
 
 **Filmkameran** läses ur `data/scene-contract.json` i `src/scene3d-geometry.ts`; med geometrin `lens` är den bordets
 lins (`lensCamera`, "Ritade kort"). Kontraktet skrevs 2026-11-11 av verktyget scene-measure (nu i Git-historiken), som mätte bordets plan,

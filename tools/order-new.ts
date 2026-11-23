@@ -32,8 +32,8 @@ import { STEPS, edgeOf, stepOfEdge, type Order, type RenderedReference, type Ste
 import { parseJakob } from '../studio/lib/names.ts';
 
 const VALUED = ['--mall', '--takes', '--title', '--extra', '--extra-efter', '--reference', '--end', '--base', '--continues', '--trad', '--docka', '--sekunder'];
-const ALONE = ['--no-reference', '--no-end', '--tur-retur', '--dry'];
-const USE = 'Använd: node tools/order-new.ts <dealer> <steg> [<plats>] (eller <dealer> "A2.3 - A3P4C2") [--mall 12|13|14|15] [--takes <n>] [--title "<namn>"] [--extra "<tillägg>"] [--extra-efter "<mening>"] [--reference <id> | --no-reference] [--end <A3-kandidat> | --no-end] [--tur-retur] [--sekunder <n>] [--base <post>] [--continues <order>] [--trad <träd>] [--docka <namn>] [--dry]';
+const ALONE = ['--no-reference', '--no-end', '--tur-retur', '--marke-gul', '--dry'];
+const USE = 'Använd: node tools/order-new.ts <dealer> <steg> [<plats>] (eller <dealer> "A2.3 - A3P4C2") [--mall 12|13|14|15] [--takes <n>] [--title "<namn>"] [--extra "<tillägg>"] [--extra-efter "<mening>"] [--reference <id> | --no-reference] [--end <A3-kandidat> | --no-end] [--tur-retur] [--marke-gul] [--sekunder <n>] [--base <post>] [--continues <order>] [--trad <träd>] [--docka <namn>] [--dry]';
 
 /** His notation ("A2.3 - A3P4C2", "A2.3 → A1"): the step and the card of the one film it names. */
 export function stepOfNotation(text: string): { step: StepKey; target: string | null } {
@@ -70,7 +70,7 @@ export function newOrderOf(args: readonly string[]): { input: NewOrder; dry: boo
     dealer, step, target,
     template: number('--mall'), takes: number('--takes'), title: flags.get('--title'), extra: flags.get('--extra'), extraAfter: flags.get('--extra-efter'),
     reference: alone.has('--no-reference') ? null : flags.get('--reference'), end: alone.has('--no-end') ? null : flags.get('--end'), base: flags.get('--base'), continues: flags.get('--continues'),
-    shape: alone.has('--tur-retur') ? 'ROUND_TRIP' : undefined, duration: number('--sekunder'),
+    shape: alone.has('--tur-retur') ? 'ROUND_TRIP' : undefined, duration: number('--sekunder'), backMark: alone.has('--marke-gul') || undefined,
     createdBy: 'huvudagenten, tools/order-new.ts',
   };
   for (const key of Object.keys(input) as (keyof NewOrder)[]) if (input[key] === undefined) delete input[key];

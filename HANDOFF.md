@@ -12,7 +12,8 @@ Läs AGENTS.md, den här sidan och EN lägesfil för din bana. Ersätt inaktuell
   Kommandot `node tools/order-new.ts` gör samma utkast; Karta visar varje dealers träd.
   Docka är en del av Bordet (`?lage=docka`): Docklabbet med Naturlig som förval, och dockans filmer bredvid tagningarna.
 - Den tatuerade uppsättningen är hans förstahandsval, och A2.3 gäller. Trädet Tatuerad fylls från A2.3 med en giv per
-  kort och spelare ([film](docs/lage/film.md)). Spelet kan inte välja träd än.
+  plats ([film](docs/lage/film.md)). Casinot spelar ett träd med `?trad=<id>` (Karta, "Prova i Casino"); kompositionen av
+  flera träd byggs.
 - Kopian på nätet är publicerad på `c9d006d` den 2026-11-20 på Jakobs ord, utan nya filmer. Telefonmått, fysisk
   telefon och ljud återstår ([spelet](docs/lage/spelet.md)).
 - Kontrollen före en push körs bara på datorn. Kontots tokengräns delas av alla sessioner: få underagenter.
@@ -21,8 +22,8 @@ Läs AGENTS.md, den här sidan och EN lägesfil för din bana. Ersätt inaktuell
 
 Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-18), med EN trovärdig giv först ([film](docs/lage/film.md)).
 
-1. Giv och återgång i en film är sättet (Jakob 2026-11-23): plats 1–6, kort 1, ligger i banken; plats 7 görs om och
-   kort 2 återstår. Sista given går direkt till vila, en retur per plats. Hans godkända fria givar ligger i banken
+1. Giv och återgång i en film är sättet (Jakob 2026-11-23): plats 1–6, kort 1, ligger i banken; plats 7 görs om;
+   kort 2–7 återbrukar platsens film. Sista given går direkt till vila, en retur per plats. Hans godkända fria givar ligger i banken
    som varianter ([film](docs/lage/film.md)).
 2. Dockan: kortet i handen genom vändningen, ingångarna A2.1–A2.3 och handen över skon
    ([LASMIG](dealer3d/LASMIG.md), "Naturlig ställning", Kvar).
@@ -44,8 +45,8 @@ Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-
 - **Kartabanan** (vyn Karta och dealerns träd) är en egen session sedan 2026-11-23 och börjar från
   [docs/lage/karta.md](docs/lage/karta.md).
 - **Andra sessioner 2026-11-23:** `dealer-e7` har grafiken på kortet (kortmodellen, `/kortlandning.html`) och lämnar
-  fillistor till huvudagenten. `dealer-a4` har städat repot (Pamela ur main, pushat `cd66c09`) och gör inget
-  mer där. `data/clip-jobs.json` och `data/media-roles.json` skrivs av en i taget, efter fråga.
+  fillistor till huvudagenten. `dealer-a4` arkiverar resten av Pamela (hans ord 2026-11-23) och pushar efter
+  huvudagentens "kör". `data/clip-jobs.json` och `data/media-roles.json` skrivs av en i taget, efter fråga.
 - **Jakobs egna:** planen `placements/default.json` och hans domar i `motions/` (`review`), som skrivs från Granska och
   aldrig skrivs över av ett verktyg. En dom som getts åt honom (`node tools/review-put.ts`) är aldrig hans.
 - **En ny session** arbetar i mappen `dealer` och avgränsar sina filer först. Extra arbetsträd bara vid

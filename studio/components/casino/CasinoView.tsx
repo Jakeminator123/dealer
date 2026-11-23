@@ -8,7 +8,8 @@
 // wrote cards= in the address, and the two could say different things (the investigation of 2026-11-13). In the online copy the game page runs the engine itself (cloud/studio/game-local.ts), so the view plays there too. The game plays the
 // dealer chosen in the rail (?dealer=, passed on to the game page, src/game-page.ts), with her own films only: a step she has no
 // film for is cut or laid without a hand, never played with another dealer's film. The address's ?dealer= is the rail's word:
-// it is neither a look key nor dropped when the view writes its address.
+// it is neither a look key nor dropped when the view writes its address. ?trad=<id> (Karta's Prova i Casino) narrows her films
+// to one tree's; the game page says on its own line which tree and how far it has come.
 import { Expand, Globe, Plus, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -52,7 +53,9 @@ function Casino() {
   // The look the address asks for. A choice here writes the address, and the look and the frame follow it.
   const look = useMemo(() => readCasino(new URLSearchParams(query)), [query]);
   const [dropped] = useState(() => readCasino(new URLSearchParams(query)).ignored);
-  const go = (next: CasinoLook) => write(casinoSearch({ ...next, geometri: look.geometri, playback: look.playback })); // geometry and playback survive a look or table choice
+  const go = (next: CasinoLook) => write(casinoSearch({ ...next, geometri: look.geometri, playback: look.playback, trad: look.trad })); // geometry, playback and the tree survive a look or table choice
+  // The one tree the game plays (?trad=, Karta's Prova i Casino). The online copy has no trees and plays all her films.
+  const trad = isSnapshot ? null : (look.trad ?? null);
   // The address says it all (preset, keys, table) from the start, so that it can be sent as it stands.
   useEffect(() => {
     const want = casinoSearch(look);
@@ -83,12 +86,12 @@ function Casino() {
 
   // ── the game in the frame: a new address loads it anew (a new element, so the studio's back button is not the frame's) ──
   // The dealer is the rail's: the game page reads it as its own word (?dealer=), so another dealer is another game in the frame.
-  const src = `${gameSrc(look)}&${new URLSearchParams({ [DEALER_PARAM]: dealer })}`;
+  const src = `${gameSrc({ ...look, trad })}&${new URLSearchParams({ [DEALER_PARAM]: dealer })}`;
   const frame = useRef<HTMLIFrameElement | null>(null);
   const [loaded, setLoaded] = useState<string | null>(null);
 
   const changed = Object.keys(look.patch).length;
-  useViewContext({ vy: "Casino", val: { forval: look.forval, bord: look.table, dealer: name } });
+  useViewContext({ vy: "Casino", val: { forval: look.forval, bord: look.table, dealer: name, ...(trad ? { trad } : {}) } });
 
   return (
     <Page
@@ -99,6 +102,14 @@ function Casino() {
           <span className={changed ? "text-brass-hi" : undefined}>{changed ? `${changed} reglage utöver förvalet` : "som förvalet"}</span>
           <span>·</span>
           <span>{name}</span>
+          {trad ? (
+            <>
+              <span>·</span>
+              <span className="text-brass-hi" title="Spelet spelar bara det här trädets filmer; ett kort utan film läggs utan hand. Spelet säger på sin rad hur långt trädet är.">
+                träd {trad}
+              </span>
+            </>
+          ) : null}
           <span>·</span>
           <span className="tabular-nums">bord {look.table}</span>
           {perspective ? (

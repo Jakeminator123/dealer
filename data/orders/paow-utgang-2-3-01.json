@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "title": "Paow · Båda händerna lämnar skon och vilar",
+  "summary": "Gör en film av Paow: från ankare 2.3 till ankare 1.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "UTGANG-2.3",
+    "label": "Båda händerna lämnar skon och vilar",
+    "edge": "READY-C>IDLE",
+    "shape": "ONE_WAY",
+    "cutInto": [],
+    "makes": null
+  },
+  "motion": null,
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows A2.3",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-utgang-2-3-01/first.png",
+      "sha256": "8e60b0eae86e271f5fd191dc16a37bc8256f2b5fb2a58a2fe65206623927e386",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-ankare-2-3-d",
+        "path": "assets/anchors/paow-ankare-2-3-d/anchor.png",
+        "note": "Blicken ned mot kortet, vänster hand uppifrån på kortet (gäller)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Slutbild · Paows A1",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-utgang-2-3-01/last.png",
+      "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-vila-tatuerad",
+        "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+        "note": "Vila, tatuerade händer (gäller)"
+      },
+      "waits": null
+    }
+  ],
+  "reference": {
+    "status": "INGEN",
+    "why": "WAN 3 tar ingen referensfilm tillsammans med första och sista bild."
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "wan3",
+    "params": {
+      "resolution": "1080p",
+      "duration": 4,
+      "ratio": "adaptive",
+      "generateAudio": false
+    }
+  },
+  "prompt": {
+    "template": "film-utgang-kort@12",
+    "style": "KORT",
+    "text": "Locked camera, one continuous shot. Her fingertips lift off the yellow card in the shoe's window, which stays where it lies, and both her hands come back low over the felt, palms down, and rest flat on the felt, as in the last frame. Her eyes come up from the shoe towards the players. The yellow card in the window is plain, one flat solid yellow from edge to edge.",
+    "sha256": "43f0af72b49b1fc0c437948493ffceeab5ce74643d60b27ede7e339fdd156e0f",
+    "extra": "The yellow card in the window is plain, one flat solid yellow from edge to edge.",
+    "middle": false
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 80,
+    "total": 80,
+    "worstPerTake": 80,
+    "worstTotal": 80,
+    "basis": "20 krediter per s × 4 s. DRIFT, Lärdomar som gäller, som sidan stod till commit f6f68ef (git show f6f68ef:docs/DRIFT.md): 20 per s i full storlek; en ingång på 4 s kostade 80 (handboken, tools/film-prompting.md §5)."
+  },
+  "limits": {
+    "maxCredits": 80,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Recept utgang-2.3: inte prövat än."
+  ],
+  "createdBy": "huvudagenten, tools/order-new.ts",
+  "approval": {
+    "by": "jakob",
+    "at": "2026-11-23T17:45:17.021Z",
+    "orderSha256": "f545b5c8c88bb5bde519d7aab8f8cedb430bed8d1fe8ce5cc1d8ddc2d3b24139"
+  },
+  "status": "GODKÄND",
+  "id": "paow-utgang-2-3-01",
+  "created": "2026-11-23T14:40:26.332Z"
+}

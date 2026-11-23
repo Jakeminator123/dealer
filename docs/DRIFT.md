@@ -82,8 +82,7 @@ automatisk commit. En push är skild från deploy, mediauppladdning och genereri
   skärmbild per sida i en egen headless Chrome (port 9591, `robot=1`, aldrig i Jakobs flik), under det delade låset
   `D:/dealer-scratch/tmp/gpu-och-headless.lock` (regeln i [TAL](TAL.md), "Så skickas ett jobb"); den väntar högst 20
   minuter på låset. Listan trycker bara på det som ställer vyn, aldrig det som sparar.
-- Andra portar hör till syskonsessioner: 4320 Pamela-filmens sida, 4331 den frysta 3D-scenen v1, 9391 Jakobs inloggade
-  Meshy-Chrome.
+- Andra portar hör till syskonsessioner: 4331 den frysta 3D-scenen v1, 9391 Jakobs inloggade Meshy-Chrome.
 
 ## Headless Chrome och verktyg på D:
 
@@ -92,7 +91,7 @@ Sökvägarna gäller under `D:/dealer-scratch/tmp/`. Bilder och filmer som anvä
 - **Sidor och headless Chrome:** en inspelning av 3D-sidan belastar Jakobs dator: en körning i taget, kort, aviserad,
   och den som startar ett fönster stänger det. Spelsidan körs med `spelagent/drive.mjs` (en `stacked` sko i `POST
   /api/game/new` ger samma runda); spelet med Paow spelas in med `huvudagent11/spel/drive.mjs` och `mix.mjs`. 3D-scenens
-  skärmbild och provfilm: `bakgrund-3d/` (`LÄSMIG.txt`); Pamela-filmens regisida: `reel/` (`LASMIG.md`).
+  skärmbild och provfilm: `bakgrund-3d/` (`LÄSMIG.txt`).
 - **Meshy:** Jakobs inloggade Chrome styrs med `spelagent/meshy.mjs` (DevTools på 127.0.0.1:9391); profilen
   `chrome-meshy` bredvid får inte raderas. Inga lösenord hanteras av agenten.
 - **Källbevis, ingen arbetsväg:** filmvägen före Beställ i `filmagent/` och `paow/order/` (orderfiler, liggare, mallar),
@@ -105,7 +104,7 @@ Sökvägarna gäller under `D:/dealer-scratch/tmp/`. Bilder och filmer som anvä
 | GitHub connector och CLI | Autentiserade som `Jakeminator123`; repot är publikt sedan 2026-11-10. CLI använder sin egen inloggning. |
 | Runway connector | Workspace `Jakob`, ID `67037521`. Inloggning och skrivschema kontrolleras var för sig: modellistan från `whoami` visar inte att klienten kan skicka modellens parametrar. |
 | Runway MCP-server | `https://mcp.runwayml.com/mcp`, appkontots krediter. Claude har den som `runway`, Codex som `Runway`; inloggningen är klientens egen. `https://dev.runwayml.com/mcp/claude` är utvecklarportalen, inte för generering. |
-| Direkt API | När MCP-inloggningen saknas (BESKED, "API-nyckeln"): klienten och liggaren i `.runtime/ankare-2-3-c/api/`, `RUNWAY_API_KEY` i den Git-ignorerade `.env.local`, developer-projektets krediter, en annan pott än appkontots. Ingen kod i repot anropar API:t. |
+| Direkt API | När MCP-inloggningen saknas (BESKED, "API-nyckeln"): klienten och liggaren i `.runtime/natt-1121/api/` (`lagg.sh`, `lagg-godkand.sh` för en order han själv har godkänt, `hamta-2.sh`), `RUNWAY_API_KEY` i den Git-ignorerade `.env.local`, developer-projektets krediter, en annan pott än appkontots. Kling 4 och sedan 2026-11-23 WAN 3 (`wan3`: första och sista bild i `promptImage` med `position`, `ratio: auto_1080p`, `audio: false`; ger bankens 1764 × 1174 utan ljud, 20 krediter per s). Ingen kod i repot anropar API:t. |
 
 - Saknar Codex-klientens schema Kling 4 eller `referenceVideos` kan huvudagenten använda Claude-klientens `runway`-MCP:
   `claude mcp get runway`, `whoami`, det faktiska schemat, och ett enda godkänt anrop med samma `order-put begin/placed`

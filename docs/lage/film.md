@@ -14,30 +14,29 @@ som gäller nu; varje prov och dess utfall står i handboken (`tools/film-prompt
 - Ett ankare heter alltid A och numret (A1, A2.3, A3P4C1), aldrig med en bokstav efter (Jakob 2026-11-21); bokstäverna
   i id:n är arbetsnamn: A2.3 är `paow-ankare-2-3-d` (blicken på kortet; givarna hittills börjar på `-c`); A2.2 är arkiverad.
 - Trädet Tatuerad (`/studio/karta/?dealer=paow&trad=tatuerad`) fylls från A2.3. I banken: giv och återgång till plats
-  1–6, kort 1 (mall 15; plats 1–5 Jakobs "Ja, alla håller", plats 6 "Bra"). Plats 7 är
-  underkänd: kortet vänds inte av händerna (BESKED, "Kortet vänds av hennes händer").
+  1–6, kort 1 (mall 15; plats 1–5 Jakobs "Ja, alla håller", plats 6 "Bra"), utgången A2.3 → A1 (godkänd åt honom, 3/5)
+  och hålkortet upp (variant åt honom: vänds över kortsidan), båda i WAN 3. Plats 7 är underkänd: händerna vänder inte kortet.
 - Sista given går direkt till vila: `node tools/order-new.ts paow RETUR-1 P4.C1` gör en film på 3 s som
   fortsätter givens sista ruta. I banken: plats 2, 3 och 4 godkända åt honom, plats 1 (visar
   handflatorna) och 5 (sveper över filten) som varianter; plats 6 fick hans "Inte bra". Receptet bär meningen om den korta vägen.
 - A3-bilder: A3P4C1 och A3P4C2 är kandidater; för plats 1 och 2 stoppar landningsverktyget ([BRISTER](../BRISTER.md)).
-- Fria givar (Kling 4, bankens första och sista bild, ingen dockfilm): takt och väg styrs inte. I banken som varianter
-  på hans ord: plats 4, Kortet i luften och plats 7 (`tools/order-import.ts`, delade för hand med `--split`); i de två
-  sista glider kortet den sista biten själv.
-- En annan stol: 3D-scenen ritar dockan från stolens öga; receptet i [FILMMODELLER](../FILMMODELLER.md), "Vinklar, 3D och Runways lista". Stol 1 fick "nästan": kortet byter sida utan skäl.
+- Fria givar (Kling 4, ingen dockfilm): takt och väg styrs inte. I banken som varianter på hans ord: plats 4, Kortet i
+  luften och plats 7 (`tools/order-import.ts`, delade med `--split`).
+- En annan stol: receptet i [FILMMODELLER](../FILMMODELLER.md), "Vinklar, 3D och Runways lista"; stol 1 fick "nästan".
 - Pengar: gränser, mandat och saldo i `data/order-policy.json`. Giv med återgång 91 krediter, giv på 3 s 68, retur till
-  vila 57, genom API-nyckeln.
+  vila 57, WAN 3 20 per s, genom API-nyckeln.
 
 **Nästa steg.**
 1. Plats 7: dockan ska hålla kortet genom vändningen ([LASMIG](../../dealer3d/LASMIG.md)); sedan dockans film,
-   given igen och dess retur. Därefter kort 2.
+   given igen och dess retur. Kort 2–7 återbrukar platsens film (BESKED, "Hela trädet från A2.3").
 2. Mall 15: mer frihet åt filmen i vändningen; landningens mening skrivs redan i texten.
 3. Kortet bakom ryggen igen med en bild av ansiktet som referens (95). Kastet per stol: egen tagning, inte Aleph.
-4. Det vita i skons fönster bort (BESKED, "Ingen vit kant"): kandidaten A2.3 utan det vita (Prov
-   `kort-marke-gula-sidan-20261123`), genomgång av ankare, skoplatta och filmer, provfilm (91) med märket före byte.
-5. Karta, trädens mått (returerna räknas inte) och hur spelet väljer träd är Kartabanans ([karta](karta.md));
-   ingången A1 → A2.3 klipps ur ankarets film; hålkortet och dealerns kort.
+4. Det vita i skons fönster bort (BESKED, "Ingen vit kant"): kandidaten `paow-ankare-2-3-marke` bär också märket på gula
+   sidan. Provfilmen `paow-giv-2-3-p4-03` (`--marke-gul` säger märket i texten) avgör före byte av ankare, skoplatta och filmer.
+5. Dealerns kort: A3DC1 (hans "Skapa A3D1 och DC2 upp") väntar på dockans film för D.C1. Casinot spelar ett träd med
+   `?trad=<id>`; kompositionen av flera träd byggs ([karta](karta.md)).
 
-**Väntar på Jakob.** I chatten: nytt mandat, en bild av hennes ansikte, märkets läsning, felet i plats 6, film för kort 2.
+**Väntar på Jakob.** I chatten: en bild av hennes ansikte, felet i plats 6, och en pilot för tatueringar på A2.1-trädets filmer.
 
 **Var saker ligger.** Vägen för en ny dealer i [tools/dealer-line.md](../../tools/dealer-line.md), handboken i
 [tools/film-prompting.md](../../tools/film-prompting.md), granskningen i `tools/film-review.md`, läget per dealer med

@@ -2,7 +2,8 @@
 // A3 per player and card) and its 36 steps against his measure (Jakob 2026-11-21: "en giv per kort för respektive
 // spelare"), each with its state, and the one number per tree ("Casino 22/36"). Pure: no file system, no DOM, no network.
 // The lab server places the films in the trees (tools/dealer-tree.ts, GET /api/trees) and calls treeView; the studio draws
-// the answer (Karta) and counts with treeCount (the rail). Tests: studio/tests/dealer-trees.test.ts.
+// the answer (Karta) and counts with treeCount (the rail); the game plays one tree with cutBank (?trad=<id>, src/game-page.ts).
+// Tests: studio/tests/dealer-trees.test.ts.
 //
 // The measure, per tree, with the tree's anchor at the shoe (its first A2.x anchor; A2.1 when it has none):
 //   vila A1 → A1 · ingång A1 → A2.x · 16 givar A2.x → A3 (P1–P7 kort 1 och 2, dealerns DC1 och DC2) · 16 returer A3 → A2.x
@@ -211,3 +212,47 @@ export function defaultTree<T extends Pick<TreeDef, 'id' | 'state' | 'shares'>>(
 
 /** GET /api/trees?dealer=<id>: every tree of the dealer, drawn. */
 export type TreeAnswer = { schemaVersion: 1; dealer: string; made: string; trees: TreeView[] };
+
+// ── One tree in the game (?trad=<id>) ───────────────────────────────────────
+/**
+ * GET /api/trees?dealer=<id>&trad=<tree>: what the game needs to play one tree (tools/dealer-tree.ts treeCut). home: the tree
+ * whose films it plays; hub: that tree's anchor at the shoe; count: its number (as Karta shows it); own: the takes placed in
+ * home; drop: the takes placed in another tree of the dealer. A take placed in no tree (Borta, an older attempt) is in neither.
+ */
+export type TreeCut = { schemaVersion: 1; dealer: string; tree: string; name: string; home: string; hub: string; count: TreeCount; own: string[]; drop: string[] };
+/** A tree's id as the address and the lab server take it (?trad=<id>). */
+export const TREE_ID = /^[a-z0-9-]{1,40}$/;
+
+type CutTake = { id?: unknown; from?: unknown; to?: unknown };
+type CutBank = { jobs?: CutTake[]; derived?: CutTake[]; edits?: CutTake[] };
+/**
+ * The bank with one tree in it: the takes of the dealer's other trees left out, and the tree's anchor at the shoe played as
+ * the game's shoe (READY) in the tree's own takes, so that its entry, deals and returns are the ones the game plays. A take of
+ * no tree, and every other dealer's, stays as it was. With hub READY nothing is renamed.
+ */
+export function cutBank<B extends CutBank>(bank: B, cut: Pick<TreeCut, 'hub' | 'own' | 'drop'>): B {
+  const drop = new Set(cut.drop), own = new Set(cut.own), hub = cut.hub;
+  const atShoe = <T extends CutTake>(t: T): T =>
+    hub === 'READY' || !own.has(String(t.id)) || (t.from !== hub && t.to !== hub) ? t : { ...t, ...(t.from === hub ? { from: 'READY' } : {}), ...(t.to === hub ? { to: 'READY' } : {}) };
+  const keep = <T extends CutTake>(list: T[] | undefined): T[] | undefined => (Array.isArray(list) ? list.filter((t) => !drop.has(String(t?.id))).map(atShoe) : list);
+  return { ...bank, jobs: keep(bank.jobs), derived: keep(bank.derived), edits: keep(bank.edits) };
+}
+
+/** The lab's reply to GET /api/trees?dealer=<id>&trad=<id>: its status and its JSON (answer null: none). Null: no reply at all. */
+export type TreeReply = { status: number; answer: unknown } | null;
+/**
+ * The bank the game plays for ?trad=<word>, and the page's line (src/game-page.ts). Without the word: the bank as it is, no
+ * line. A tree with films: its cut (cutBank) and "Tatuerad 15/36: kort utan film läggs utan hand", the number Karta shows. An
+ * unknown tree, one without films, or no usable reply: the bank as it is, and why in plain words.
+ */
+export function treePlay<B extends CutBank>(bank: B, word: string | null, reply: TreeReply, dealerName: string): { bank: B; line: string | null } {
+  if (word === null) return { bank, line: null };
+  const usual = ' Spelet spelar som vanligt, med alla hennes filmer.';
+  const cut = (reply?.answer ?? null) as (Partial<TreeCut> & { error?: unknown }) | null;
+  if (!TREE_ID.test(word)) return { bank, line: `"${word.slice(0, 40)}" är inget träd.${usual}` };
+  if (reply?.status === 404 && cut?.error) return { bank, line: `${dealerName} har inget träd "${word}".${usual}` };
+  if (reply?.status !== 200 || !cut || !Array.isArray(cut.own) || !Array.isArray(cut.drop) || typeof cut.hub !== 'string' || !cut.count) return { bank, line: `Trädet "${word}" kunde inte läsas.${usual}` };
+  const name = cut.name ?? word;
+  if (!(cut.count.have > 0)) return { bank, line: `${name} har inga filmer än.${usual}` };
+  return { bank: cutBank(bank, { hub: cut.hub, own: cut.own, drop: cut.drop }), line: `${name} ${countWord(cut.count)}: kort utan film läggs utan hand` };
+}

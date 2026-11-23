@@ -3389,6 +3389,34 @@
           }
         },
         {
+          "id": "paow-film-utgang-2-3-01-t1",
+          "role": "film",
+          "name": "Paow · Båda händerna lämnar skon och vilar, tagning 1",
+          "path": "assets/films/paow/utgang-2-3-01-t1/source.mp4",
+          "still": 65,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Oberoende granskare (Opus, full upplösning) 2026-11-23: användbar med anmärkningar, 3/5. Fingrarna lämnar kortet i ruta 43–44, kortet ligger kvar och båda händerna landar i vilans läge med 0 px avvikelse vid klippet. Högra handen glider ut cirka 50–130 px åt sidan och vilar där i ruta 59–77 innan den går hem; ansiktet i slutet har grönare ögon och smalare läppar än A1 och kan ge ett litet ryck in…",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-23"
+          }
+        },
+        {
+          "id": "paow-film-halkort-05-t1",
+          "role": "film",
+          "name": "Paow · Hålkortet vänds upp från vila, handen tillbaka, tagning 1",
+          "path": "assets/films/paow/halkort-05-t1/source.mp4",
+          "still": 81,
+          "fps": 30,
+          "state": "kandidat",
+          "note": "Oberoende granskare (Opus, full upplösning) 2026-11-23: möjlig variant, given 3/5, returen 4/5. Handen vänder kortet verkligt, gult till blått, och det landar på planens plats med samma storlek (mitten 1,3 px från planen); handen är hemma i ruta 128. Men kortet dras cirka 68 px bakåt, ställs upp och fälls fram över kortsidan i ruta 57–86 i stället för att rullas över långsidan, handleden vrids in…",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-23"
+          }
+        },
+        {
           "id": "paow-film-intro-noir-3-startruta",
           "role": "arbetsmaterial",
           "name": "Startrutan till filmen före spelet",
@@ -3879,6 +3907,22 @@
             "paow-ankare-2-3-c"
           ],
           "stateBy": "Jakob 2026-11-23 09:29: kandidat → gäller (hans svar i Beslut 2026-11-23 kl. 09.16, kortet a2-3-blick-pa-kortet: \"Ja, byt blicken\")"
+        },
+        {
+          "id": "paow-ankare-2-3-marke",
+          "role": "ankare-2.3",
+          "name": "A2.3 utan det vita i skon, med märke (prov)",
+          "path": "assets/anchors/paow-ankare-2-3-marke/anchor.png",
+          "node": "READY-C",
+          "state": "kandidat",
+          "builtOn": [
+            "paow-ankare-2-3-d"
+          ],
+          "note": "Prov: A2.3 ändrad bara i skons fönster. Det vita runt kortet är borta och gula sidan har ett märke, fylld röd cirkel i mitten och rosa kryss nära kortänden (Jakobs val 2026-11-23, Prov kort-marke-gula-sidan-20261123). För en provfilm; A2.3 gäller oförändrat. Inte sedd av en oberoende granskare.",
+          "source": {
+            "from": "A2.3:s bild, ändrad i skons fönster (a2-3-utan-vitt-fylld-cirkel.png; receipt.json bredvid bilden)",
+            "when": "2026-11-23"
+          }
         }
       ]
     },

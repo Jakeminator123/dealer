@@ -1,0 +1,193 @@
+{
+  "schemaVersion": 1,
+  "title": "Paow · prov: märke på gula sidan, utan det vita i skon · A3P4C1 · tur och retur",
+  "summary": "Gör en film av Paow: ett kort från ankare 2.3 till plats 4, tur och retur.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "GIV-2.3",
+    "label": "Två händer, ett kort till platsen",
+    "edge": "READY-C>P4.C1",
+    "shape": "ROUND_TRIP",
+    "cutInto": [
+      "READY-C>P4.C1",
+      "P4.C1>READY-C"
+    ],
+    "makes": null
+  },
+  "motion": {
+    "grip": "TWO_HANDS",
+    "hand": "LH",
+    "pass": true,
+    "turn": true,
+    "flipAxis": "FREE",
+    "target": "P4.C1",
+    "side": "FRONT",
+    "fromPlan": true,
+    "planned": {
+      "grip": "PINCH",
+      "flipAxis": "AT_PLACE"
+    }
+  },
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows A2.3 · kandidat",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-giv-2-3-p4-03/first.png",
+      "sha256": "e348b657b167edb725a96d5063ceb671bf93c542e4190aacdda6dae397acb9b8",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-ankare-2-3-marke",
+        "path": "assets/anchors/paow-ankare-2-3-marke/anchor.png",
+        "note": "A2.3 utan det vita i skon, med märke (prov) (kandidat)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Slutbild · samma + kortet öppet på plats 4",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-giv-2-3-p4-03/last.png",
+      "sha256": "a084e76ea31042fcbd9c2ed284d085f05f8e51d5f1c0afa0bbc933cc8c9cd958",
+      "from": {
+        "built": "första bilden + kortet P4.C1 där planen säger"
+      },
+      "waits": null,
+      "width": 1764,
+      "height": 1174,
+      "drawn": {
+        "target": "P4.C1",
+        "side": "FRONT",
+        "as": "verkligt perspektiv: ett verkligt kort genom bordets lins, formen 87 % (src/card-plan.ts)",
+        "plan": {
+          "path": "placements/default.json",
+          "sha256": "461541d5db823936e5e29a32970c2b60e8a88b9352d213cfc8e094f6e7747a62",
+          "updatedAt": "2026-11-21T18:16:55.501Z"
+        },
+        "texture": {
+          "video": "assets/motions/pamela-p4-c1-plan-return-idle-01/source.mp4",
+          "frame": 89,
+          "sha256": "0b3cba9be4a969334bf1ba23623b80be6d0bd119a3c4dd8236db27145d479aa7",
+          "quadFrom": "assets/anchors/pamela-idle-p4-c1-plan-01/receipt.json"
+        },
+        "quad": [
+          [
+            820.4,
+            1066.2
+          ],
+          [
+            893.9,
+            1066.2
+          ],
+          [
+            898.3,
+            1138.1
+          ],
+          [
+            813.8,
+            1138.1
+          ]
+        ],
+        "centre": [
+          856.6,
+          1102.2
+        ],
+        "measured": {
+          "centre": [
+            856.7,
+            1103.5
+          ],
+          "area": 6180,
+          "box": [
+            85,
+            75
+          ],
+          "changedElsewhere": 0
+        },
+        "measuredOffsetPx": 1.3,
+        "mark": {
+          "cross": [
+            255,
+            120,
+            200
+          ],
+          "dot": [
+            225,
+            30,
+            35
+          ]
+        }
+      }
+    }
+  ],
+  "reference": {
+    "status": "FINNS",
+    "clips": [
+      "docka-paow-2-3-p4c1-naturlig-cykel-a"
+    ],
+    "path": "assets/orders/paow-giv-2-3-p4-03/reference.mp4",
+    "sha256": "fb136d8b0d9ad67c97a179d4c110e242962c9537c49f298581d77f66dfd98124",
+    "seconds": 4,
+    "goesTo": "P4.C1",
+    "approvedStraight": false,
+    "dealer": "docka",
+    "from": {
+      "film": "docka-paow-2-3-p4c1-naturlig-cykel-a",
+      "path": "assets/references/docka/docka-paow-2-3-p4c1-naturlig-cykel-a/source.mp4",
+      "sha256": "fb136d8b0d9ad67c97a179d4c110e242962c9537c49f298581d77f66dfd98124",
+      "edge": "READY-C>P4.C1",
+      "verdict": "EJ_DÖMD",
+      "words": null,
+      "frames": null,
+      "also": []
+    }
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "kling-4",
+    "params": {
+      "resolution": "1080p",
+      "duration": 4
+    }
+  },
+  "prompt": {
+    "template": "film-giv-kort@15",
+    "style": "KORT",
+    "text": "Locked camera, one continuous shot. Video 1 shows only the movement, as a rough guide: her hands go the way the hands go in video 1, at about the same moments. Above all she moves naturally, like a practised dealer, with soft, relaxed arms and hands. Her hand at the shoe strokes the yellow card out of the window and slides it flat on the felt a short way out from the shoe, where her other hand meets it. There both hands tip the card up onto its short end, and her other hand, palm down, carries it on towards its place in the middle of the picture, where the last frame shows it; on that way the card goes on over the same short end, end over end, in one unbroken turn that begins with the yellow side up and ends with the blue side up. She lays the card flat at its place. As the card comes down her hand lies flat above it, with a straight, relaxed wrist. Then the hand that laid it glides back low over the felt, palm down, and comes to rest flat on the felt in front of her, as in the first frame. The hand from the shoe lets go once the card stands on its end and settles back at the shoe. A yellow card shows in the window of the shoe all the time: as she strokes one out, the next one is already there. Her head stays bowed and turns towards the place where the card will lie. Only one card moves: a small card, about half as long as her hand, which keeps the size it has in the last frame all the way from the shoe to its place. Its back is solid yellow, right out to its corners, with a filled red circle in the middle and a small pink cross near one end, as the first frame shows it in the shoe's window, and its face is solid blue with a small pink cross in the middle and a small red dot in one corner, as the last frame shows it; the next card in the window has the same yellow back with the same two marks.",
+    "sha256": "17eeaea2f6a69f1023e9fe630036b8825df286a6f1fecc3d26b02c89b32b9bc5",
+    "extra": null,
+    "middle": false,
+    "faceMark": true,
+    "backMark": true
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 86,
+    "total": 86,
+    "worstPerTake": 94,
+    "worstTotal": 94,
+    "basis": "21,3 krediter per s × 4 s. Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12."
+  },
+  "limits": {
+    "maxCredits": 94,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Recept giv-2.3: prövat i 6 beställningar.",
+    "Undantag från receptet: tur och retur i stället för bara dit; mall 15 i stället för 14; referensfilmen är dockan paows egen film (docka-paow-2-3-p4c1-naturlig-cykel-a), vald med namn: en dockas film är aldrig förvald."
+  ],
+  "createdBy": "huvudagenten, tools/order-new.ts",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-23T18:46:46.410Z",
+    "orderSha256": "91269ed8ad8b7dc5875812b10387d4d58700645b73e9df3ebaaa562720ae571d",
+    "mandate": "Jakob 2026-11-23 i chatten: \"Du har nytt mandat\" (läst som 1 000 krediter till och med 2026-11-24). Provfilmen med märket på gula sidan sa han ja till samma kväll i dealer-e7:s chatt."
+  },
+  "status": "GODKÄND",
+  "id": "paow-giv-2-3-p4-03",
+  "created": "2026-11-23T18:46:25.070Z"
+}

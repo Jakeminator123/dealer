@@ -22,6 +22,9 @@ import {
   type TreeTake,
 } from "../../src/dealer-trees.ts";
 import { treeLayout } from "../lib/map-layout.ts";
+import { buildGraph, type BankData } from "../../src/clip-graph.ts";
+import { treePlay } from "../../src/dealer-trees.ts";
+import { judgedBank } from "../../src/game-director.ts";
 
 const take = (id: string, from: string, to: string, verdict: TreeTake["verdict"], more: Partial<TreeTake> = {}): TreeTake => ({ id, tree: "t", from, to, verdict, byJakob: true, provisional: false, ...more });
 const byId = <T extends { id: string }>(list: readonly T[], id: string): T => {
@@ -155,5 +158,47 @@ test("the tree map draws one line per step, between boxes it draws", () => {
     assert.equal(chips.size, MEASURE_SIZE, "no two chips on the same spot");
     assert.ok(layout.lines.every((l) => l.chip.x >= 0 && l.chip.x <= layout.width && l.chip.y >= 0 && l.chip.y <= layout.height));
     assert.equal(layout.boxes.filter((b) => b.kind === "annan").length, others.length);
+  }
+});
+
+// The game with one tree (?trad=<id>, src/game-page.ts; Jakob 2026-11-23): the contract, on made-up takes. Tree "t" stands on
+// A2.3 (READY-C), tree "c" on A2.1; Borta and an older A2.3 attempt are placed in no tree; "x-p1" is another dealer's.
+test("one tree in the game: without the word the bank is untouched; with it the tree's takes and the ownerless ones play, never another tree's", () => {
+  const take = (id: string, from: string, to: string, dealer?: string) => ({ id, clip: id, frames: [0, 40] as [number, number], from, to, ...(dealer ? { dealer } : {}) });
+  const derived = [
+    take("t-in", "IDLE", "READY-C"), take("t-p1", "READY-C", "P1.C1"), take("t-p1-back", "P1.C1", "READY-C"),
+    take("c-in", "IDLE", "READY"), take("c-p1", "READY", "P1.C1"), take("c-rest", "IDLE", "IDLE"), take("c-p6", "READY-B", "P6.C1"),
+    take("borta", "IDLE", "AWAY"), take("old-23", "READY-C", "P2.C1"), take("x-p1", "READY", "P1.C1", "nova"),
+  ];
+  const bank = { jobs: [], edits: [], derived, motions: Object.fromEntries(derived.map((d) => [d.id, { review: { decision: "ACCEPTED" } }])) } as unknown as BankData;
+  const before = structuredClone(bank);
+  const cut = { schemaVersion: 1, dealer: "paow", tree: "t", name: "Tatuerad", home: "t", hub: "READY-C", count: { have: 3, total: 36 }, own: ["t-in", "t-p1", "t-p1-back"], drop: ["c-in", "c-p1", "c-rest", "c-p6"] };
+  const takes = (b: BankData, dealer = "paow") => Object.keys(buildGraph(judgedBank(b), { dealer }).takes).sort();
+
+  const plain = treePlay(bank, null, null, "Paow");
+  assert.equal(plain.bank, bank, "without ?trad= the game plays the bank it read");
+  assert.equal(plain.line, null);
+
+  const one = treePlay(bank, "t", { status: 200, answer: cut }, "Paow");
+  assert.equal(one.line, "Tatuerad 3/36: kort utan film läggs utan hand");
+  assert.deepEqual(takes(one.bank), ["borta", "old-23", "t-in", "t-p1", "t-p1-back"], "the tree's takes and the ones no tree owns; none of tree c");
+  const graph = buildGraph(judgedBank(one.bank), { dealer: "paow" });
+  assert.deepEqual([graph.takes["t-in"].edge, graph.takes["t-p1"].edge, graph.takes["t-p1"].hub], ["IDLE>READY", "READY>P1.C1", null], "the tree's A2.3 is the game's shoe");
+  assert.equal(graph.takes["old-23"].hub, "READY-C", "a take of no tree stays as it was");
+  assert.deepEqual(takes(one.bank, "nova"), ["x-p1"], "another dealer's takes are not touched");
+  assert.deepEqual(bank, before, "the bank read is not changed");
+
+  // An unknown tree, a tree without films, an answer that is no cut (a lab server not yet restarted) or none: as without the word.
+  const usual = " Spelet spelar som vanligt, med alla hennes filmer.";
+  for (const [word, reply, line] of [
+    ["nej", { status: 404, answer: { error: 'paow har inget träd "nej".' } }, `Paow har inget träd "nej".${usual}`],
+    ["t", { status: 200, answer: { ...cut, count: { have: 0, total: 36 } } }, `Tatuerad har inga filmer än.${usual}`],
+    ["t", { status: 200, answer: { schemaVersion: 1, dealer: "paow", trees: [] } }, `Trädet "t" kunde inte läsas.${usual}`],
+    ["t", null, `Trädet "t" kunde inte läsas.${usual}`],
+    ["T Ä", null, `"T Ä" är inget träd.${usual}`],
+  ] as const) {
+    const out = treePlay(bank, word, reply, "Paow");
+    assert.equal(out.bank, bank, `${word}: the bank as it is`);
+    assert.equal(out.line, line);
   }
 });

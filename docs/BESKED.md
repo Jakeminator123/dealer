@@ -91,8 +91,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   Huvudagenten godkänner på hans uppdrag inom `data/order-policy.json`, genom Beställ och `tools/film-prompting.md`.
 - **Två tagningar per klipp** (2026-11-12, 2026-11-13): en ändring och en tagning per metodprov; två per klipp när
   metoden är vald, en tredje bara om båda faller. Varje omgång granskas oberoende i full upplösning före nästa.
-- **Mandatet** (2026-11-18): "Ja du får generera tills kontot är typ tomta!", 800 krediter per timme (1 000 den
-  2026-11-23, då också "mandat till 1000 till"). En granskad pilot föregår en serie; kostnaden sägs efter varje omgång.
+- **Mandatet** (2026-11-18): "Ja du får generera tills kontot är typ tomta!". 2026-11-23 kväll: "Du har nytt mandat", läst som
+  1 000 krediter till 2026-11-24 (`data/order-policy.json`). En granskad pilot föregår en serie; kostnaden sägs efteråt.
 - **Kvalitet före kvantitet** (2026-11-18): "men om allt sitter, får du gärna gå vidare och skapa mycket material så
   länge det är bra."
 - **API-nyckeln** (2026-11-20): beställningar får gå genom nyckeln i `.env.local` (utvecklarprojektets krediter) när
@@ -130,8 +130,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   kanske musens hjul, byter till kamera 1–7. En film från en annan stol sparas i sitt träd där.
 - **En film från en annan stol** (2026-11-23): "Detta skulle kunna vara en bra video", men kortet ska byta sida efter
   hur det ses från stolen, "inte tidpunkt", och kameran "känns högre än kamera frammifrån".
-- **Träd läggs ihop** (2026-11-23): "lägga ihop flera olika typer av nodträd för att sedan skapa … variationer". Casino
-  spelas tills vidare och binds samman med Ingången; Tatuerad byggs vidare från A2.3. Alla vyer ska hänga ihop med träden.
+- **Träd läggs ihop till en komposition** (2026-11-23): nodträd kombineras med andelar ("A2.3 … 20% och 80% A2.1"), varianter
+  likaså; en retur går hem till sitt eget A2, med skarv eller kort brygga emellan. Alla vyer ska hänga ihop med träden.
 - **Flera namngivna träd per dealer** (2026-11-21): omkring tre träd, och löst material för sig som är lätt att radera,
   på hans ord. Datorn och nätet ska kunna läsa samma Blob; uppladdning kräver hans ord.
 - **Den tatuerade uppsättningen är förstahandsvalet** (2026-11-17, 2026-11-18): tatuerade händer, 10 % mindre. Nya
@@ -182,8 +182,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
 
 ## Filmerna och given
 
-- **Hela trädet från A2.3** (2026-11-23): varje plats och kort får sin egen giv i trädet Tatuerad, beställda när dockan
-  är rättad; det är hans ord för ett nytt mandat.
+- **Hela trädet från A2.3** (2026-11-23): en giv per plats i trädet Tatuerad. Kort 2–7 och dealerns kort återbrukar
+  filmer, också mellan träd: "överflödigt med helt nya klipp för respektive kort".
 - **Plats 6 och 7** (2026-11-23): "hennes vänsterarm tar ut kortet, och … hennes högerarm tar emot och vänder upp",
   samma tvåhandsgiv som plats 1–5 har från A2.3.
 - **Naturlig rörelse går före dockans** (2026-11-23): dockans film är en grov ledning ("var inte extremt nitsk med
@@ -237,8 +237,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   kort); utan vit kant, "bara … blåa, med rundade kanter".
 - **Märket på blå sidan** (2026-11-20): ett litet rosa kryss och en liten röd cirkel i ett hörn, så att filmen inte kan
   "fuska med vilken sida av kortet som syns".
-- **Märke på gula sidan, som prov** (2026-11-23, till dealer-e7): en cirkel i "den gula sidans mittpunkt" och kanske ett X
-  i hörnet, blå sidans färger "men motsatta symboler": "Om du tycker om detta så gör vi så." Prövas på en film först.
+- **Märke på gula sidan, som prov** (2026-11-23, till dealer-e7): fylld röd cirkel i mitten och rosa kryss nära kortänden,
+  blå sidans färger "men motsatta symboler". Prövas på en film först (`paow-giv-2-3-p4-03`); A2.3 gäller oförändrat.
 - **Kortens färger** (2026-11-20) står på ett ställe, `CARD_RGB` (`src/placement-model.ts`): gul 241, 216, 0 · blå
   0, 130, 218 · kryss 255, 120, 200 · cirkel 225, 30, 35.
 - **Rent tills efterarbetet** (2026-11-18): "Du kan behålla SG-ryggen. men so msagt vill jag allt ska vara rent tills

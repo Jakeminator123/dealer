@@ -2,7 +2,8 @@
 // the registers; its report goes to .runtime/dealer-trad/ (LASMIG.md in Jakob's words, trad.json with everything).
 //   node tools/dealer-tree.ts [--dealer <id>]
 // The same placing answers Karta's trees (GET /api/trees?dealer=<id>, serveTrees): each tree's nodes and its 36 steps against
-// his measure with their state (src/dealer-trees.ts treeView), and for a step without a film what an order of it has and lacks.
+// his measure with their state (src/dealer-trees.ts treeView), and for a step without a film what an order of it has and lacks;
+// with &trad=<tree>, one tree for the game (treeCut: its takes and the other trees' takes, src/dealer-trees.ts cutBank).
 //
 // A tree is a set of anchors from Material (data/media-roles.json): A1, A2.x and, where one is chosen, an A3 per player and card.
 // Names come from the graph's nodes (src/dealer-trees.ts nodeCode, the studio's words): IDLE = A1, READY = A2.1, READY-B = A2.2,
@@ -27,7 +28,7 @@ import type {IncomingMessage, ServerResponse} from 'node:http';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {buildGraph, type BankData, type Take} from '../src/clip-graph.ts';
-import {countWord, isCard, isTreeHub, levelOf, nodeCode, nodesOf, orderCommand, stepName as stepWords, treeView, type Delivery, type MeasureStep, type Need, type OrderFacts, type TreeAnswer, type TreeDef, type TreeRegister, type TreeState, type TreeStep, type TreeTake, type TreeView, type Verdict as TreeVerdict} from '../src/dealer-trees.ts';
+import {TREE_ID, countWord, isCard, isTreeHub, levelOf, nodeCode, nodesOf, orderCommand, stepName as stepWords, treeView, type Delivery, type MeasureStep, type Need, type OrderFacts, type TreeAnswer, type TreeCut, type TreeDef, type TreeRegister, type TreeState, type TreeStep, type TreeTake, type TreeView, type Verdict as TreeVerdict} from '../src/dealer-trees.ts';
 import {ANCHOR_NODE, costOf, modelFor, paramsOf, stepOf, type Policy, type StepKey} from '../src/order-model.ts';
 import {NO_RECIPE, methodFor, readMethods, recipeFor, referenceAbsent, secondsOf, triedWords, type MethodRegister} from '../src/order-methods.ts';
 import {GAME_VOICE, PHASE_LINE, spokenFilms, type SpeechTake} from '../src/speech-lines.ts';
@@ -570,12 +571,29 @@ export async function treeAnswer(dealer: string): Promise<TreeAnswer> {
   return {schemaVersion: 1, dealer, made: new Date().toISOString(), trees: viewsOf(await readWorld(dealer), dealer)};
 }
 
+/**
+ * GET /api/trees?dealer=<id>&trad=<tree>: one tree for the game (src/dealer-trees.ts cutBank). The takes placed in the tree it
+ * plays, the takes placed in the dealer's other trees, and its number as Karta counts it. Null: the dealer has no such tree.
+ */
+export async function treeCut(dealer: string, id: string): Promise<TreeCut | null> {
+  const w = await readWorld(dealer), defs = w.register.dealers[dealer]?.trees ?? [], def = defs.find(t => t.id === id);
+  if (!def) return null;
+  const takes = placedTakes(w, dealer), view = treeView(dealer, def, defs, w.entries, takes);
+  return {schemaVersion: 1, dealer, tree: def.id, name: def.name, home: view.home, hub: view.hub, count: view.count,
+    own: takes.filter(t => t.tree === view.home).map(t => t.id), drop: takes.filter(t => t.tree !== null && t.tree !== view.home).map(t => t.id)};
+}
+
 export async function serveTrees(req: IncomingMessage, res: ServerResponse, url: URL): Promise<void> {
   const send = (status: number, body: unknown) => { res.writeHead(status, {'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store'}); res.end(JSON.stringify(body)); };
   if (req.method !== 'GET') return send(405, {error: 'Bara GET.'});
-  const dealer = url.searchParams.get('dealer') ?? '';
+  const dealer = url.searchParams.get('dealer') ?? '', tree = url.searchParams.get('trad');
   if (!/^[a-z0-9-]+$/.test(dealer)) return send(400, {error: 'Ange ?dealer=<id>.'});
-  try { send(200, await treeAnswer(dealer)); } catch (e) { send(500, {error: e instanceof Error ? e.message : String(e)}); }
+  if (tree !== null && !TREE_ID.test(tree)) return send(400, {error: `Trädet "${tree.slice(0, 40)}" är inget träd-id.`});
+  try {
+    if (tree === null) return send(200, await treeAnswer(dealer));
+    const cut = await treeCut(dealer, tree);
+    send(cut ? 200 : 404, cut ?? {error: `${dealer} har inget träd "${tree}".`});
+  } catch (e) { send(500, {error: e instanceof Error ? e.message : String(e)}); }
 }
 
 // ── The report in his words ─────────────────────────────────────────────────

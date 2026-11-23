@@ -297,8 +297,8 @@ export type Order = {
    * its own (an A3, a bank film's frame): a sent text is history, so it is reproduced from this and never from the plan of
    * now (tools/order-store.ts textOf, src/order-prompts.ts orderPrompt). Absent on orders written before 2026-11-18.
    */
-  /** faceMark: the last picture showed the blue side's marks when the text was written, and the text says them (tools/order-store.ts textOf). */
-  prompt: { template: string; style?: TextStyle; text: string; sha256: string; extra: string | null; middle: boolean; place?: [number, number] | null; faceMark?: boolean };
+  /** faceMark: the last picture showed the blue side's marks when the text was written, and the text says them (tools/order-store.ts textOf). backMark: the order was made for a first picture with a mark on the yellow back, and the text says it (a trial; set when the draft is made). */
+  prompt: { template: string; style?: TextStyle; text: string; sha256: string; extra: string | null; middle: boolean; place?: [number, number] | null; faceMark?: boolean; backMark?: boolean };
   takes: number;
   cost: { perTake: number; total: number; worstPerTake: number; worstTotal: number; basis: string };
   limits: { maxCredits: number; stopBelowCredits: number };

@@ -6737,6 +6737,74 @@
         "id": "paow-fri-giv-p7-01",
         "take": 1
       }
+    },
+    {
+      "id": "paow-utgang-2-3-01-01",
+      "kind": "RETURN",
+      "from": "READY-C",
+      "to": "IDLE",
+      "clip": "paow-utgang-2-3-01-01",
+      "frames": [
+        0,
+        117
+      ],
+      "purpose": "Beställning paow-utgang-2-3-01, tagning 1: Paow · Båda händerna lämnar skon och vilar.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 4,
+      "promptText": "Locked camera, one continuous shot. Her fingertips lift off the yellow card in the shoe's window, which stays where it lies, and both her hands come back low over the felt, palms down, and rest flat on the felt, as in the last frame. Her eyes come up from the shoe towards the players. The yellow card in the window is plain, one flat solid yellow from edge to edge.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-utgang-2-3-01/first.png",
+          "sha256": "8e60b0eae86e271f5fd191dc16a37bc8256f2b5fb2a58a2fe65206623927e386"
+        },
+        "note": "Första bilden i beställningen paow-utgang-2-3-01."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-utgang-2-3-01/last.png",
+          "sha256": "83c8b3541dc4f293d679b8bb286c6a70d399dd3f2fa73c41e534268b4802b3a0"
+        },
+        "note": "Sista bilden i beställningen paow-utgang-2-3-01."
+      },
+      "order": {
+        "id": "paow-utgang-2-3-01",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-halkort-05-01",
+      "kind": "REVEAL",
+      "from": "IDLE",
+      "to": "REVEAL(D.C2)",
+      "clip": "paow-halkort-05-01",
+      "frames": [
+        0,
+        147
+      ],
+      "purpose": "Beställning paow-halkort-05, tagning 1: Paow · Hålkortet vänds upp från vila, handen tillbaka.",
+      "dealer": "paow",
+      "model": "wan3",
+      "duration": 5,
+      "promptText": "Locked camera, one continuous shot. Her hand nearest the shoe goes low over the felt to the yellow card lying close in front of her, in the middle of the picture, where the last frame shows it. There her thumb slides under the long edge nearest it and lifts it as her wrist turns thumb side up; the card rolls over on its opposite long edge, which stays on the felt, and her thumb comes over onto the blue face. Her open hand glides back low over the felt, palm down, and comes to rest flat on the felt. The other hand rests on the felt. Only one card moves. The card is plain, one flat solid yellow from edge to edge on its back and one flat solid blue from edge to edge on its face, and the next card in the window is the same plain solid yellow.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-halkort-05/first.png",
+          "sha256": "2d613a189d918a3a3ee02d34476bfa13eb501ed351aded0d177dbe87bf16224b"
+        },
+        "note": "Första bilden i beställningen paow-halkort-05."
+      },
+      "last": {
+        "file": {
+          "path": "assets/orders/paow-halkort-05/last.png",
+          "sha256": "92ddacdb85e4c4f26e17cf85fa11d96369731584c0d317cc10944fd97e001cf9"
+        },
+        "note": "Sista bilden i beställningen paow-halkort-05."
+      },
+      "order": {
+        "id": "paow-halkort-05",
+        "take": 1
+      }
     }
   ],
   "edits": []

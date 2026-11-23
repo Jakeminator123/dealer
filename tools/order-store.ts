@@ -106,6 +106,8 @@ export type NewOrder = {
   extra?: string | null;
   /** One more sentence after the addition, the recipe's own included (extra replaces the recipe's; this never does). */
   extraAfter?: string | null;
+  /** The first picture carries a mark on the yellow back, and the text says it (a trial; src/order-prompts.ts backMark). */
+  backMark?: boolean;
   /** The register entry a still is made from, or a film starts on (default: the dealer's anchor that holds). */
   base?: string | null;
   /** RETUR-2.3: approved GIV-2.3 order whose frozen last picture is used as the first picture. */
@@ -604,8 +606,9 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       if (giv && drawn) faceMark = !!drawn.mark;
       else if (kept || shows.path) { try { faceMark = markSeen(await readRgb(kept ?? path.join(root, ...shows.path!.split('/'))), planQuad((snapshot ?? await readPlan(root)).plan, target)); } catch { faceMark = false; } }
     }
-    const { template, style, text } = orderPrompt({ ...order, prompt: { ...order.prompt, extra, faceMark } }, dealer, planPlace);
-    return { template, style, text, sha256: sha(text), extra, middle: false, ...(planPlace ? { place: [planPlace.x, planPlace.y] as [number, number] } : {}), ...(faceMark ? { faceMark: true } : {}) };
+    const backMark = !!order.prompt?.backMark;
+    const { template, style, text } = orderPrompt({ ...order, prompt: { ...order.prompt, extra, faceMark, backMark } }, dealer, planPlace);
+    return { template, style, text, sha256: sha(text), extra, middle: false, ...(planPlace ? { place: [planPlace.x, planPlace.y] as [number, number] } : {}), ...(faceMark ? { faceMark: true } : {}), ...(backMark ? { backMark: true } : {}) };
   }
 
   /** The short two-hand prompt turns a face-up deal over the short end (template 11). */
@@ -936,7 +939,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       pictures,
       reference,
       generation: { provider: 'runway-app', tool: model.tool, model: model.id, params },
-      prompt: { template: mall !== TEMPLATE_VERSION ? `@${mall}` : '', style, text: '', sha256: '', extra, middle: false },
+      prompt: { template: mall !== TEMPLATE_VERSION ? `@${mall}` : '', style, text: '', sha256: '', extra, middle: false, ...(input.backMark === true ? { backMark: true } : {}) },
       takes,
       cost,
       limits: { maxCredits: cost.worstTotal, stopBelowCredits: policy.minBalance },

@@ -742,6 +742,190 @@
       "choice": "inte-bra",
       "text": "från ruta 29 till 30 så ändrar kortet bara sida utan någon egentlgin anledning. kanske är detta för att en referensfilm finns som gör att den, från den kameran frammifrån, visas somm andra sidan just då, men i och med att detta är en annan vinkel ska det ju vara och utgå efter sidan på kortet och inte tidpunkt. Känns också som att denna kameravinkel är högre än kamera frammifrån",
       "at": "2026-11-23T16:41:10.207Z"
+    },
+    {
+      "id": 72,
+      "proof": "styvt-kort-20261123",
+      "file": "1-p4-under-fingrarna-ruta13.png",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-23T18:25:29.806Z"
+    },
+    {
+      "id": 73,
+      "proof": "styvt-kort-20261123",
+      "file": "10-p6-vands-ruta30.png",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-23T18:25:35.945Z"
+    },
+    {
+      "id": 74,
+      "proof": "styvt-kort-20261123",
+      "file": "11-p5-fort-utan-oskarpa-ruta34.png",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-23T18:25:44.682Z"
+    },
+    {
+      "id": 75,
+      "proof": "styvt-kort-20261123",
+      "file": "12-p5-fort-med-oskarpa-ruta34.png",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-23T18:25:50.204Z"
+    },
+    {
+      "id": 76,
+      "proof": "styvt-kort-20261123",
+      "file": "13-p5-efter-vandningen-ruta40.png",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-23T18:25:52.907Z"
+    },
+    {
+      "id": 77,
+      "proof": "styvt-kort-20261123",
+      "file": "14-p3-bars-ruta24.png",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-23T18:25:55.023Z"
+    },
+    {
+      "id": 78,
+      "proof": "styvt-kort-20261123",
+      "file": "15-p3-vands-ruta38.png",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-23T18:26:00.654Z"
+    },
+    {
+      "id": 79,
+      "proof": "styvt-kort-20261123",
+      "file": "16-p3-fore-landning-ruta54.png",
+      "choice": "inte-bra",
+      "text": "",
+      "at": "2026-11-23T18:26:11.220Z"
+    },
+    {
+      "id": 80,
+      "proof": "styvt-kort-20261123",
+      "file": "17-p2-vands-ruta40.png",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-23T18:26:15.881Z"
+    },
+    {
+      "id": 81,
+      "proof": "styvt-kort-20261123",
+      "file": "18-p2-fore-landning-ruta53.png",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-23T18:26:23.570Z"
+    },
+    {
+      "id": 82,
+      "proof": "styvt-kort-20261123",
+      "file": "19-p4-kort2-vands-ruta40.png",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-23T18:26:25.730Z"
+    },
+    {
+      "id": 83,
+      "proof": "styvt-kort-20261123",
+      "file": "2-p4-bars-ruta24.png",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-23T18:26:30.521Z"
+    },
+    {
+      "id": 84,
+      "proof": "styvt-kort-20261123",
+      "file": "20-p4-kort2-fore-landning-ruta52.png",
+      "choice": "inte-bra",
+      "text": "",
+      "at": "2026-11-23T18:26:33.743Z"
+    },
+    {
+      "id": 85,
+      "proof": "styvt-kort-20261123",
+      "file": "21-p4-halkort-cykel-vands-ruta40.png",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-23T18:26:36.776Z"
+    },
+    {
+      "id": 86,
+      "proof": "styvt-kort-20261123",
+      "file": "22-p4-halkort-cykel-fore-landning-ruta66.png",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-23T18:26:39.468Z"
+    },
+    {
+      "id": 87,
+      "proof": "styvt-kort-20261123",
+      "file": "23-p1-fore-landning-ruta54.png",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-23T18:26:42.451Z"
+    },
+    {
+      "id": 88,
+      "proof": "styvt-kort-20261123",
+      "file": "3-p4-vands-ruta34.png",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-23T18:26:45.809Z"
+    },
+    {
+      "id": 89,
+      "proof": "styvt-kort-20261123",
+      "file": "4-p4-vands-ruta44.png",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-23T18:26:48.031Z"
+    },
+    {
+      "id": 90,
+      "proof": "styvt-kort-20261123",
+      "file": "5-p4-fore-landning-ruta51.png",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-23T18:26:50.619Z"
+    },
+    {
+      "id": 91,
+      "proof": "styvt-kort-20261123",
+      "file": "6-p4-ligger-ruta58.png",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-23T18:26:52.249Z"
+    },
+    {
+      "id": 92,
+      "proof": "styvt-kort-20261123",
+      "file": "7-p1-bars-ruta22.png",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-23T18:26:54.762Z"
+    },
+    {
+      "id": 93,
+      "proof": "styvt-kort-20261123",
+      "file": "9-p6-bars-ruta18.png",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-23T18:27:02.204Z"
+    },
+    {
+      "id": 94,
+      "proof": "styvt-kort-20261123",
+      "file": "8-p1-vands-ruta38.png",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-23T18:27:06.746Z"
     }
   ]
 }

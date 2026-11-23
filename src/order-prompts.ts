@@ -155,6 +155,8 @@ export type PromptInput = {
   cardScale?: number;
   /** The last picture shows the blue side's marks, the pink cross and the red circle (tools/order-images.ts markSeen): an open deal's text then says them instead of a blank blue side. */
   faceMark?: boolean;
+  /** The first picture shows a mark on the yellow back in the shoe's window (a trial, Jakob 2026-11-23: a filled red circle in the middle and a pink cross near the card's end): the text then says it instead of a blank yellow back. Set per order, never read from the picture. */
+  backMark?: boolean;
 };
 /** What a part of the text comes from: a choice in the sheet, Jakob's addition, the reference film, or the bans. */
 export type Choice = 'hand' | 'side' | 'turn' | 'place' | 'shape' | 'reference' | 'extra' | 'bans';
@@ -913,8 +915,16 @@ function restText(input: PromptInput, style: TextStyle = 'UTFÖRLIG'): Prompt {
  * The text for an order in its style (absent: Kort, as for every new order; a stored order says its own, orderPrompt),
  * the template it came from ("film-giv-kort@4", "film-giv@3") and its parts with the choices they come from.
  */
+/** The yellow back said with its mark where the order's first picture carries it (PromptInput.backMark): the two places a text says the back is blank, in the text and in its parts alike. */
+const BACK_WORDS: [string, string][] = [
+  ['back is blank solid yellow, right out to its corners,', "back is solid yellow, right out to its corners, with a filled red circle in the middle and a small pink cross near one end, as the first frame shows it in the shoe's window,"],
+  ['the next card in the window is the same blank yellow.', 'the next card in the window has the same yellow back with the same two marks.'],
+];
+const backSaid = (text: string) => BACK_WORDS.reduce((t, [blank, marked]) => t.replace(blank, marked), text);
+const backLook = (input: PromptInput, p: Prompt): Prompt => (input.backMark ? { ...p, text: backSaid(p.text), parts: p.parts.map((part) => ({ ...part, text: backSaid(part.text) })) } : p);
+
 export function promptFor(input: PromptInput): Prompt {
-  const p = written(input);
+  const p = backLook(input, written(input));
   // An older version's text is today's but for what the version changed (the place words of 5, the card's sides by colour
   // of 6, the way back after two hands of 7, her body in 7 alone, the wrist, the drag and the plain card of 9); its name
   // keeps its number.
@@ -1011,7 +1021,7 @@ export function orderPrompt(
     motion: (DealMotion & { target?: string | null; cardScale?: number }) | null;
     generation: { model: string };
     pictures: readonly { goesAs: string; drawn?: { centre: [number, number] } | null }[];
-    prompt: { extra: string | null; style?: TextStyle | null; template?: string; place?: readonly [number, number] | null; faceMark?: boolean };
+    prompt: { extra: string | null; style?: TextStyle | null; template?: string; place?: readonly [number, number] | null; faceMark?: boolean; backMark?: boolean };
     reference?: { status: string } | null;
   },
   dealer: Dealer,
@@ -1045,6 +1055,7 @@ export function orderPrompt(
     reference: order.reference?.status === 'FINNS',
     cardScale: m?.cardScale ?? 1,
     faceMark: !!order.prompt.faceMark,
+    backMark: !!order.prompt.backMark,
     version: stored,
   });
   return open ? withoutLastFrame(p) : p;

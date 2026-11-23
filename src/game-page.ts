@@ -10,6 +10,7 @@
 //
 // The game plays only takes with a verdict (judgedBank in src/game-director.ts): Jakob's, or a provisional one given in his place.
 // The one exception is a talk film, a rest take on request, which is played only when the dealer says its line (src/speech-lines.ts).
+// ?trad=<id> (Karta's Prova i Casino) narrows them to one tree's films (below, treeCut).
 import {DEALER, buildGraph, effectOf, type Graph} from './clip-graph.ts';
 import {createScene, DEFAULTS, type SceneState} from './scene3d-view.ts';
 import {readRegister} from './scene3d-room.ts';
@@ -63,9 +64,23 @@ const table = /^[a-z0-9-]{1,40}$/.test(query.get('table') ?? '') ? `?table=${que
 // taking the lab tab by itself. The game's own words: src/game-own.ts OWN_WORDS.
 const forval = query.get('forval');
 const lookAsked = [...query.keys()].some(word => !OWN_WORDS.includes(word) && !['kort', 'cardBack', 'cardFace'].includes(word)); // kort, cardBack, cardFace: how the card in her hand is shown (below), not a look
+// The dealers the game offers, each with her own films. ?dealer=paow (the studio's word, which the Casino view passes on) or the
+// choice remembered from the console's Dealer menu; without either the first dealer (DEALER in src/clip-graph.ts: Paow).
+const DEALERS = [{id: 'paow', label: 'Paow', note: 'Ny dealer, inte alla filmer än', thumb: 'assets/anchors/paow-vila-ung-2/anchor.png'}];
+const dealerMemory = (() => { try { return localStorage.getItem('dealer.dealer'); } catch { return null; } })();
+let dealer = DEALERS.find(d => d.id === query.get('dealer'))?.id ?? DEALERS.find(d => d.id === dealerMemory)?.id ?? DEALER;
+const nameOf = (id: string) => DEALERS.find(d => d.id === id)?.label ?? id;
+// One tree (?trad=<id>, Karta's Prova i Casino; Jakob 2026-11-23): her films cut to that tree's (src/dealer-trees.ts cutBank,
+// from GET /api/trees?dealer=<id>&trad=<id>, tools/dealer-tree.ts treeCut). The tree's anchor at the shoe is played as the shoe,
+// a take placed in no tree (Borta) follows, a take of another tree never plays, and a card the tree has no film for is laid
+// without a hand. An unknown tree, a tree without films or no answer is said on the page, and the game plays as without the
+// word. Without it nothing is read and the page is as before.
+const treeWord = query.get('trad');
+const treeRead = treeWord === null ? null : Promise.all([fetch(`api/trees?dealer=${encodeURIComponent(dealer)}&trad=${encodeURIComponent(treeWord)}`).then(async res => ({status: res.status, answer: await res.json().catch(() => null)}), () => null),
+  import('./dealer-trees.ts').catch(() => null)]);
 
-const [contract, placements, bank, first, register, lookCode, presetAnswer] = await Promise.all([read('data/scene-contract.json', 'Scenkontraktet'), read('api/placements', 'Placeringsplanen'), read('api/clip-bank', 'Klippbanken'), read(`api/game${table}`, 'Spelet'), read('data/scene-rooms.json', 'Rumsregistret'),
-  lookAsked ? import('./game-look.ts').catch(() => null) : null, forval ? fetch(`api/scene-presets/${encodeURIComponent(forval)}`).then(res => res.ok ? res.json() : null, () => null) : null]);
+const [contract, placements, bank, first, register, lookCode, presetAnswer, treeAnswer] = await Promise.all([read('data/scene-contract.json', 'Scenkontraktet'), read('api/placements', 'Placeringsplanen'), read('api/clip-bank', 'Klippbanken'), read(`api/game${table}`, 'Spelet'), read('data/scene-rooms.json', 'Rumsregistret'),
+  lookAsked ? import('./game-look.ts').catch(() => null) : null, forval ? fetch(`api/scene-presets/${encodeURIComponent(forval)}`).then(res => res.ok ? res.json() : null, () => null) : null, treeRead]);
 const registered = readRegister(register).rooms, roomIds = lookCode ? [...lookCode.BUILT_ROOMS, ...registered.map(r => r.id)] : [];
 // The look over the game's own settings: with a preset its whole look, else the address's keys; {} when none is asked for.
 // What could not be used is said in one line on the page, and the game plays with its own look in its place.
@@ -80,13 +95,10 @@ const geometry = tableGeometry(location.search, preset?.geometri ?? null);
 const panoramas = registered.filter(r => r.game || r.id === asked.room);
 // ?fan=<px>: one fan step for every seat, for trying values; 0 and 1 are the scene's fan shadow when a look is read.
 const fanWord = query.get('fan'), fanStep = fanWord !== null && Number.isFinite(Number(fanWord)) && !(lookCode && ['0', '1'].includes(fanWord)) ? Math.max(0, Math.min(80, Number(fanWord))) : null;
-// The dealers the game offers, each with her own films. ?dealer=paow (the studio's word, which the Casino view passes on) or the
-// choice remembered from the console's Dealer menu; without either the first dealer (DEALER in src/clip-graph.ts: Paow).
-const DEALERS = [{id: 'paow', label: 'Paow', note: 'Ny dealer, inte alla filmer än', thumb: 'assets/anchors/paow-vila-ung-2/anchor.png'}];
-const dealerMemory = (() => { try { return localStorage.getItem('dealer.dealer'); } catch { return null; } })();
-let dealer = DEALERS.find(d => d.id === query.get('dealer'))?.id ?? DEALERS.find(d => d.id === dealerMemory)?.id ?? DEALER;
-const nameOf = (id: string) => DEALERS.find(d => d.id === id)?.label ?? id;
-const plan = placements.plan ?? placements, judged = judgedBank(bank), graphs = new Map<string, Graph>(), layout = createLayout(plan, {fan: fanStep, geometry});
+// The tree's cut (treeRead above, src/dealer-trees.ts treePlay), or in plain words why the game plays as without it.
+const treeCut = treeWord === null ? {bank, line: null as string | null}
+  : treeAnswer![1]?.treePlay(bank, treeWord, treeAnswer![0], nameOf(dealer)) ?? {bank, line: `Trädet "${treeWord.slice(0, 40)}" kunde inte läsas. Spelet spelar som vanligt, med alla hennes filmer.`};
+const plan = placements.plan ?? placements, judged = judgedBank(treeCut.bank), graphs = new Map<string, Graph>(), layout = createLayout(plan, {fan: fanStep, geometry});
 const graphOf = (id: string) => { let g = graphs.get(id); if (!g) { g = buildGraph(judged, {dealer: id}); graphs.set(id, g); } return g; };
 const graph = graphOf(dealer);
 // A rest film can ask the scene to show another room for a moment (FilmEffect in src/clip-graph.ts: the champagne film's flash turns
@@ -139,7 +151,9 @@ scene.set({format: GAME_OWN.format, room: room as never, blur: ROOMS.find(r => r
 // and the look's own way of changing rooms holds from then on.
 if (Object.keys(asked).length) { scene.set({...asked, roomShift: 'cut'}); if (asked.roomShift) scene.set({roomShift: asked.roomShift}); room = asked.room ?? room; }
 scene.set({cards: cardsNow.cards}); // over the look: see cardsNow
-if (lookNote) { const note = Object.assign(document.createElement('p'), {textContent: lookNote}); note.setAttribute('role', 'status');
+// The page's one line: which tree it plays (or why none), and what of the look could not be used.
+const pageNote = [treeCut.line, lookNote].filter(Boolean).join(' · ');
+if (pageNote) { const note = Object.assign(document.createElement('p'), {textContent: pageNote}); note.setAttribute('role', 'status');
   note.style.cssText = 'position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:30;margin:0;max-width:min(92%,680px);padding:6px 14px;border:1px solid rgba(226,191,109,.32);border-radius:999px;background:rgba(8,7,6,.84);color:#f6eedc;font-size:13px;pointer-events:none'; stage.append(note); }
 // Under a film before the game the room's own film waits (roomLife off until the lead, roomLifeBack): it was read and played for
 // the whole of that film without being seen, the heaviest thing on a phone beside the dealer's film, and begun at the lead the
