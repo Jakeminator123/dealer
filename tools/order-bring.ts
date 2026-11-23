@@ -1,6 +1,8 @@
 // Brings one delivered, after-worked take of an order to where Jakob judges it, the same way every time (it replaces
 // D:/dealer-scratch/tmp/huvudagent11/look/in-i-banken.mjs and lagg-till-ankare.ts):
-//   a film:  1. the clip bank's inbox (tools/register-order.ts; a round trip is split where the hand starts back, --split),
+//   a film:  1. the clip bank's inbox (tools/register-order.ts; a round trip is split where the hand starts back: the frame is
+//               found in the film, tools/round-trip-split.ts, and --split <frame> goes before it; no safe frame and none given
+//               stops the run before anything is written), and the card track of a film with a card (tools/track-card.ts),
 //            2. Material, row Filmer, as a candidate: a copy under assets/films/<dealer>/<name>/ with a receipt, role film,
 //               state kandidat, in data/media-roles.json,
 //   a still: the after-worked picture into Material as a candidate of the role the order makes (ankare-2.1, ankare-2.2),
@@ -16,6 +18,7 @@
 import { readFile, writeFile, mkdir, rename, copyFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { createHash, randomUUID } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { probe } from './film-fix.ts';
@@ -30,7 +33,14 @@ const sha = (b: Buffer) => createHash('sha256').update(b).digest('hex');
 const posix = (root: string, file: string) => path.relative(root, file).split(path.sep).join('/');
 const NOTE_LIMIT = 400;
 
-export type BringOptions = { split?: number; film?: string; name?: string; title?: string; note?: string; proof?: string; inford?: boolean; dry?: boolean; now?: () => Date; who?: string };
+export type BringOptions = { split?: number; film?: string; name?: string; title?: string; note?: string; proof?: string; inford?: boolean; dry?: boolean; now?: () => Date; who?: string; track?: (root: string, clip: string) => void };
+/** The kinds of film that carry a card to follow (tools/track-card.ts). */
+const CARD_KINDS = ['DEAL', 'REVEAL', 'RETURN'];
+/** Runs the card tracker on a clip in the bank, as its own process: it is a script that reads its clip from the command line. */
+function trackCard(root: string, clip: string): void {
+  try { execFileSync(process.execPath, [fileURLToPath(new URL('./track-card.ts', import.meta.url)), clip], { cwd: root, stdio: ['ignore', 'ignore', 'pipe'], windowsHide: true }); }
+  catch (error) { throw Error(String((error as { stderr?: Buffer }).stderr ?? '').split('\n').find((line) => /^\w*Error: /.test(line))?.trim() ?? (error as Error).message); }
+}
 export type Brought = { order: string; take: number; kind: 'FILM' | 'STILL'; bank: string[] | null; material: { id: string; done: 'införd' | 'fanns' | 'skulle föras in' } | null; proof: string | null; receipt: string; notes: string[] };
 
 /** The default name of the copy in Material: the order without the dealer in front, and the take ("giv-2-1-p1-05-t1"). */
@@ -110,21 +120,30 @@ export async function bring(root: string, id: string, take: number, options: Bri
   const fullReceipt = JSON.parse(await readFile(path.join(folder, 'receipt.json'), 'utf8')) as { takes?: { take: number; history?: unknown; review?: unknown }[] };
   const verdict = reviewed(fullReceipt.takes?.find((t) => t.take === take));
   const title = (options.title ?? `${full.title ?? id}, tagning ${take}`).trim();
-  const note = (options.note ?? verdict ?? 'Efterarbetad tagning ur en beställning i Kön. Kandidat tills Jakob har dömt.').trim();
+  // The reviewer's verdict is often longer than Material's note takes: its beginning is kept (the whole stands in the receipt). A note given is never cut.
+  const short = (text: string) => (text.length > NOTE_LIMIT ? `${text.slice(0, NOTE_LIMIT - 1).trimEnd()}…` : text);
+  const note = (options.note ?? short((verdict ?? 'Efterarbetad tagning ur en beställning i Kön. Kandidat tills Jakob har dömt.').trim())).trim();
   if (note.length > NOTE_LIMIT) throw new OrderError(`Noten är ${note.length} tecken; registret tar högst ${NOTE_LIMIT}.`);
   const out: Brought = { order: id, take, kind: still ? 'STILL' : 'FILM', bank: null, material: null, proof: null, receipt: entry.status, notes: [] };
   const who = options.who ?? `huvudagenten: beställningen ${id}, tagning ${take}, efterarbetad (tools/order-bring.ts)`;
 
   if (!still) {
     // 1. The bank's inbox, unless this take is there already.
-    const bank = JSON.parse(await readFile(path.join(root, 'data', 'clip-jobs.json'), 'utf8')) as { derived?: { id: string; order?: { id?: string; take?: number; fix?: number } }[] };
-    const ours = (bank.derived ?? []).filter((d) => d.order?.id === id && d.order.take === take && !d.order.fix).map((d) => d.id);
+    const bank = JSON.parse(await readFile(path.join(root, 'data', 'clip-jobs.json'), 'utf8')) as { derived?: { id: string; clip?: string; kind?: string; order?: { id?: string; take?: number; fix?: number } }[] };
+    const there = (bank.derived ?? []).filter((d) => d.order?.id === id && d.order.take === take && !d.order.fix), ours = there.map((d) => d.id);
+    let clip = there[0]?.clip ?? there[0]?.id, card = there.some((d) => CARD_KINDS.includes(d.kind ?? ''));
     if (ours.length) { out.bank = ours; out.notes.push(`Banken: finns redan (${ours.join(', ')}).`); }
     else {
       const plan = await planRegistration(root, id, take, { split: options.split, film });
       if (!options.dry) await register(root, plan);
-      out.bank = plan.takes.map((t) => t.id);
+      out.bank = plan.takes.map((t) => t.id); clip = plan.clip; card = plan.takes.some((t) => CARD_KINDS.includes(t.kind));
       out.notes.push(`Banken: ${options.dry ? 'skulle föras in' : 'införd'} i inkorgen (${out.bank.join(', ')}). ${plan.notes.join(' ')}`.trim());
+    }
+    // 1b. The card track of the clip, once: what the overlay draws the card from, and what the card's turn is read from.
+    if (clip && card && !existsSync(path.join(root, 'assets', 'tracking', clip, 'card-track.json'))) {
+      if (options.dry) out.notes.push(`Kortspåret: skulle göras (tools/track-card.ts ${clip}).`);
+      else try { (options.track ?? trackCard)(root, clip); out.notes.push(`Kortspåret: assets/tracking/${clip}/card-track.json.`); }
+      catch (error) { out.notes.push(`Kortspåret gick inte att göra (${String((error as Error).message).split('\n')[0].slice(0, 200)}): node tools/track-card.ts ${clip}`); }
     }
     // 2. Material, row Filmer, as a candidate.
     const dealer = order.dealer, materialId = `${dealer}-film-${name}`, dir = path.join(root, 'assets', 'films', dealer, name), copy = path.join(dir, 'source.mp4');

@@ -83,7 +83,7 @@ export async function collectTake(root: string, id: string, take: number, source
     const fetched = path.join(dir, 'fetched.json');
     if (!already || !existsSync(fetched)) await writeFile(fetched, JSON.stringify(record, null, 2) + '\n');
     const rel = posix(root, target);
-    return {path: rel, sha256, bytes, already, record, next: [`node tools/order-put.ts status ${id} ${take} HÄMTAD --file ${rel}`, `node tools/register-order.ts ${id} ${take}${order.step?.shape === 'ROUND_TRIP' ? ' --split <första rutan i returen>' : ''}`, `node tools/film-fix.ts ${rel} <fixes.json>`]};
+    return {path: rel, sha256, bytes, already, record, next: [`node tools/order-put.ts status ${id} ${take} HÄMTAD --file ${rel}`, `node tools/film-after.ts ${id} ${take}`, `node tools/order-bring.ts ${id} ${take}`, `node tools/film-fix.ts ${rel} <fixes.json>`]};
   } finally {
     await rm(part, {force: true});
   }

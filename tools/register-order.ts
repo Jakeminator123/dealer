@@ -6,8 +6,10 @@
 // API by a tool that is gone since c1b0ab2), so it enters the bank the way register-mcp.mjs brought films in: as frames of its own clip, a derived take in
 // data/clip-jobs.json, here carrying what it was ordered with (dealer, model, duration, text, first and last picture, the order).
 //   - The film is copied to assets/motions/<clip>/source.mp4 with generation.json beside it (the order, the task id, the hashes).
-//   - ONE_WAY: one take. ROUND_TRIP (a deal and its return in one film): two takes, split where the return begins (--split, the
-//     first frame of the return, from the review); the return starts on that frame of the deal (motion.startsOn).
+//   - ONE_WAY: one take. ROUND_TRIP (a deal and its return in one film): two takes, split where the return begins. The frame
+//     is found in the film itself (tools/round-trip-split.ts: the first frame that moves after the hand has stood still at
+//     the lying card); --split <frame>, the first frame of the return as a reader saw it, goes before what is found. No safe
+//     frame found and none given: nothing is written. The return starts on that frame of the deal (motion.startsOn).
 //   - Every take gets a record motions/<id>.json with review PENDING and review.inbox true: it plays only where its step has no
 //     other film until Jakob decides (src/clip-graph.ts); his decision takes the flag away (tools/review-store.ts).
 //   - --fixed <k>: the fixed copy fixed-<k>.mp4 beside the film (tools/film-fix.ts) becomes a corrected copy of each of the
@@ -21,6 +23,7 @@ import {parseEdge, nodeName, buildGraph, type DerivedTake, type ImageRef} from '
 import {probe, sha256File} from './film-fix.ts';
 import {orderTake, OrderError, ORDER_ID, type OrderLike} from './order-collect.ts';
 import {endsOnOf} from '../src/order-model.ts';
+import {splitOfFilm, type Found} from './round-trip-split.ts';
 
 const CLIP = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 /**
@@ -69,7 +72,7 @@ function takeOf(id: string, edge: string, clip: string, frames: [number, number]
 }
 
 /** Works out everything a registration writes, and refuses before anything is written. */
-export async function planRegistration(root: string, id: string, take: number, options: {split?: number; film?: string; clip?: string; fixed?: number} = {}): Promise<Plan> {
+export async function planRegistration(root: string, id: string, take: number, options: {split?: number; film?: string; clip?: string; fixed?: number; find?: (film: string) => Promise<Pick<Found, 'split' | 'why'>>} = {}): Promise<Plan> {
   const {order, entry, folder} = await orderTake(root, id, take), notes: string[] = [];
   if (order.kind !== 'FILM') throw new OrderError(`${id} är en stillbild: den förs in i Material, inte i klippbanken.`);
   // Jakob's click, or the main agent on his mandate (2026-11-13), the same rule as tools/order-put.ts check.
@@ -119,15 +122,19 @@ export async function planRegistration(root: string, id: string, take: number, o
   else {
     // The original's two takes in film order: the deal, then the return, split where the return begins.
     const [first0, second0] = [...ours].sort((a, b) => a.frames[0] - b.frames[0]), originalDeal = first0?.id, originalBack = second0?.id;
-    const split = ref.fix ? (second0 ? second0.frames[0] - shift : NaN) : options.split;
-    if (!Number.isInteger(split) || split! < 1 || split! > frames - 1) throw new OrderError(ref.fix ? `Originalets delningsruta saknas eller ligger utanför den rättade kopian (${frames} rutor).` : `En tur och retur delas där returen börjar: ange --split <ruta> (1–${frames - 1}), den första rutan i returen enligt granskningen.`);
+    // Where the return begins: a fixed copy keeps its original's frame, a frame given goes first, and else the film says it itself.
+    const found = ref.fix || options.split !== undefined ? null : await (options.find ?? splitOfFilm)(film);
+    const byHand = `node tools/register-order.ts ${id} ${take} --split <första rutan i returen, 1–${frames - 1}>`;
+    if (found && found.split === null) throw new OrderError(`Ingen säker delningsruta i ${posix(root, film)}: ${found.why} Inget förs in. Läs rutorna (tools/film-review.md) och dela för hand: ${byHand}`);
+    const split = ref.fix ? (second0 ? second0.frames[0] - shift : NaN) : found?.split ?? options.split;
+    if (!Number.isInteger(split) || split! < 1 || split! > frames - 1) throw new OrderError(ref.fix ? `Originalets delningsruta saknas eller ligger utanför den rättade kopian (${frames} rutor).` : `Delningsrutan ${split} ligger utanför filmen (${frames} rutor): ${byHand}`);
     const [dealEdge, backEdge] = edges, backTo = nodeName(backEdge.split('>')[1]).toLowerCase(), deal = `${target}-deal`, back = `${target}-return-${backTo}`;
     takes.push(takeOf(deal, dealEdge, target, [0, split! - 1], order, ref, {...(first ? {first} : {}), ...(ref.fix && originalDeal ? {editOf: originalDeal} : {})}));
     takes.push(takeOf(back, backEdge, target, [split!, frames - 1], order, ref, {...(last ? {last} : {}), ...(ref.fix && originalBack ? {editOf: originalBack} : {})}));
     // The return starts on the frame the deal ends after. A fixed copy keeps the original's frame numbers, so its return follows
     // the original deal and, through it, the fixed one.
     records[back] = {startsOn: {clip: ref.fix && originalDeal ? originalDeal : deal, frame: split}};
-    notes.push(`Delad vid ruta ${split}: given ${deal} rutor 0–${split! - 1}, returen ${back} rutor ${split}–${frames - 1}.`);
+    notes.push(`Delad vid ruta ${split}${found ? ' (funnen i filmen, tools/round-trip-split.ts)' : ref.fix ? '' : ' (angiven med --split)'}: given ${deal} rutor 0–${split! - 1}, returen ${back} rutor ${split}–${frames - 1}.`);
   }
   // Ids must be new, or ours from an earlier run of the same take.
   const others = new Set([...(bank.jobs ?? []), ...(bank.edits ?? [])].map(x => x?.id)), existing = new Map((bank.derived ?? []).map(d => [d?.id, d]));

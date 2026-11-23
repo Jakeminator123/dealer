@@ -29,7 +29,7 @@ Skriven ur kod, register och kvitton. (V) = läst i kod, data eller kvitto; (S) 
 10. Lägg och hämta: en beställningsagent enligt `tools/order-clerk.md` (`tools/order-put.ts`, `tools/order-collect.ts`).
 11. Efterarbeta: `node tools/film-after.ts <id> <n>`; en stillbild med `tools/still-after.ts` och `tools/python/`.
 12. Granska: en oberoende granskare enligt `tools/film-review.md`; domen in med `node tools/order-put.ts review`.
-13. In i banken och Material: `node tools/order-bring.ts <id> <n> [--split <ruta>]`; kortspåret med `node tools/track-card.ts`.
+13. In i banken och Material: `node tools/order-bring.ts <id> <n>`; en tur och retur delas av sig själv och kortspåret görs i samma körning.
 14. Jakob dömer i Granska; har han lämnat över domen för vissa filmer: `node tools/review-put.ts` (preliminär dom).
 15. Spela en runda: `game.html?dealer=<id>` eller studions Casino; börja om från rad 6 tills listan säger att rundan är klar.
 
@@ -145,15 +145,25 @@ returen 1/5" så att Protokoll läser den (`reviewerNote`, `scoresOf` i `studio/
 `node tools/film-fix.ts <film> <fixes.json>` skriver `fixed-<k>.mp4` bredvid originalet, som granskas på nytt
 ([order-clerk.md §6](order-clerk.md)).
 
-**13. In i banken eller Material.** `node tools/order-bring.ts <id> <n> [--split <ruta>] [--prov <prov-id>] [--inford]
-[--dry]` tar `after.mp4` eller `after.png` när de finns (V). En film går genom `tools/register-order.ts` till
+**13. In i banken eller Material.** `node tools/order-bring.ts <id> <n> [--prov <prov-id>] [--inford] [--dry]` tar
+`after.mp4` eller `after.png` när de finns (V). En film går genom `tools/register-order.ts` till
 `assets/motions/<klipp>/source.mp4` med `generation.json`, `motions/<klipp>.json` med `review.inbox: true` och en härledd
-tagning i `data/clip-jobs.json`, och en kopia blir `kandidat` i Material (`assets/films/<dealer>/<namn>/`). Tur och retur
-delas vid granskarens delningsruta. En stillbild blir `kandidat` i Material under den roll ordern gör. Status INFÖRD
-sätts när granskarens dom finns på tagningen (eller med `--inford`) (V). Kortspåret per tagning:
-`node tools/track-card.ts <klipp>` skriver `assets/tracking/<klipp>/card-track.json` (V). `register-order.ts` skriver i
-posten vilken hand som tar kortet och vilken som lägger det (`motion.takeHand`, `motion.releaseHand`), så att rundan
-väljer en retur som kommer tillbaka med den hand som är ute (`src/clip-graph.ts`) (V).
+tagning i `data/clip-jobs.json`, och en kopia blir `kandidat` i Material (`assets/films/<dealer>/<namn>/`). En stillbild
+blir `kandidat` i Material under den roll ordern gör. Status INFÖRD sätts när granskarens dom finns på tagningen (eller
+med `--inford`) (V). Kortspåret görs i samma körning för en film med kort (`tools/track-card.ts` skriver
+`assets/tracking/<klipp>/card-track.json`); går det inte står raden som gör det för hand i svaret.
+
+Tur och retur (giv och återgång i samma film) delas av sig själv i giv och retur, båda i inkorgen (Jakob 2026-11-23).
+`tools/round-trip-split.ts` hittar returens första ruta i filmen: den första rutan som rör sig efter att handen har stått
+still vid det liggande kortet. Given slutar alltså på en stilla ruta med kortet på sin plats och handen kvar, och returen
+börjar aldrig innan kortet ligger. Hittas ingen säker ruta (kortet kommer aldrig till ro, handen stannar aldrig, släpper
+kortet i farten eller går tillbaka över det) förs inget in och kommandot säger varför; då läser en granskare rutorna, och
+`--split <ruta>` anger returens första ruta. `--split` går alltid före det funna. Prövat mot bankens 37 filmer av det
+slaget: de fem från ankare 2.3 delas 0–3 rutor före den ruta en läsare valde, de äldre från 2.1 och 2.2 oftast 1–7 rutor
+före (läsaren valde rutan där kortet är fritt, verktyget rutan där handen börjar), och tio av de 32 äldre vägras (V).
+
+`register-order.ts` skriver i posten vilken hand som tar kortet och vilken som lägger det (`motion.takeHand`,
+`motion.releaseHand`), så att rundan väljer en retur som kommer tillbaka med den hand som är ute (`src/clip-graph.ts`) (V).
 
 **14. Jakobs dom.** Granska (`/studio/granska/?dealer=<id>`): Primär, Godkänd, Variant eller Underkänd med hans ord,
 skrivet bara i `review` i `motions/<klipp>.json` (`tools/review-store.ts`). Bilder: Material, `gäller` eller `ersatt`.

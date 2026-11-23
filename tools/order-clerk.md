@@ -81,7 +81,7 @@ For take n of an order:
      (`step.shape: ONE_WAY`) ends on it: that picture is `first.png` or `last.png` like any other, copied from the register.
      The call is the same; the bank edge is `step.edge` (`P4.C1>READY` for a return), and `step.cutInto` has one edge.
    - `GIV-2.1` to `D.C2` (the hole card) is a deal like any other; it lands closed. `UTGANG` (`READY>IDLE`) and `HALKORT`
-     (`IDLE>REVEAL(D.C2)`) are films of one edge (`step.edge`, `cutInto` empty): they go into the bank without `--split`.
+     (`IDLE>REVEAL(D.C2)`) are films of one edge (`step.edge`, `cutInto` empty): they go into the bank as one take.
      HALKORT's `first.png` and `last.png` are her anchor 1 with both dealer cards drawn, the hole card closed and then open.
 3. **After the call:**
    - It answered with a task id: `node tools/order-put.ts placed <id> <n> <taskId> <creditsRemaining> --via mcp` at once
@@ -142,12 +142,16 @@ Look at every frame of every take yourself in full size, and fix what is easy to
   and writes the list of faults, each LAGBAR or not, with the fix list as JSON. Then `node tools/film-fix.ts <film.mp4>
   <fixes.json>` writes the fixed copy; a list beyond the limits (src/film-fix.ts) is refused whole and nothing is written. The
   fixed copy is a film of its own and is reviewed again.
-- Into the bank, waiting for Jakob in the inbox: `node tools/order-bring.ts <id> <n> [--split <frame>] [--prov <proof id>]
-  [--inford] [--dry]`. It takes `take-<n>/after.mp4` (or `after.png`) when there is one, registers a film through
-  `tools/register-order.ts` (a round trip split at `--split`, the first frame of the return), copies it to Material as a
-  candidate (`assets/films/<dealer>/<name>/`), brings a still into Material as a candidate of the role the order makes, and
-  sets `INFÖRD` once the reviewer's verdict is on the take (or with `--inford`). A part already there is left alone, so it can
-  be run again. A fixed copy: `node tools/register-order.ts <id> <n> --fixed <k>`. Neither writes over a take Jakob has decided on.
+- Into the bank, waiting for Jakob in the inbox: `node tools/order-bring.ts <id> <n> [--prov <proof id>] [--inford] [--dry]`.
+  It takes `take-<n>/after.mp4` (or `after.png`) when there is one, registers a film through `tools/register-order.ts`,
+  makes its card track, copies it to Material as a candidate (`assets/films/<dealer>/<name>/`), brings a still into Material
+  as a candidate of the role the order makes, and sets `INFÖRD` once the reviewer's verdict is on the take (or with
+  `--inford`). A part already there is left alone, so it can be run again. A fixed copy:
+  `node tools/register-order.ts <id> <n> --fixed <k>`. Neither writes over a take Jakob has decided on.
+- A round trip (`step.shape: ROUND_TRIP`) is split into its deal and its return by itself (Jakob 2026-11-23): the first frame
+  of the return is found in the film (`tools/round-trip-split.ts`, the first frame that moves after the hand has stood still
+  at the lying card). When no safe frame is found nothing is brought in and the command says why: read the frames, or take
+  the reviewer's split frame, and run it again with `--split <frame>`, which always goes before what is found.
 
 ## 7. Measure
 Then `status … MÄTT`. Every measure is written in the report; a take outside a limit is **marked, not hidden**.
