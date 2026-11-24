@@ -67,8 +67,12 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
 
 ## Filmerna och banken
 
-- **En giv utan sista bild kan lägga kortet fel:** `paow-giv-2-3-p5-02` landade 32 bildpunkter från P5C1, mot 1,5–13
-  för de andra platserna (efterarbetets gräns är 15). Stänger: A3P5C1 som stillbild först, och given med den som sista bild.
+- **En giv utan sista bild lägger kortet med vit karm och kan lägga det fel:** karmen syntes i 6 av 6 sådana tagningar
+  och i 0 av 50 med sista bild (mätt 2026-11-24), och `paow-giv-2-3-p5-02` landade 32 bildpunkter från P5C1, mot 1,5–13
+  för de andra platserna (efterarbetets gräns är 15). Skons vita linje är inte orsaken; den ger en vitkantad gul rygg i
+  handen (9 av 26 tagningar med linjen, 0 av 31 utan), som i Casinos Primär till P6.C1 (`paow-giv-2-2-p6-02-01`).
+  Stänger: varje giv med sista bild (mallen gör det; för P5 A3P5C1 som stillbild först), och `tools/card-rim.ts` på en
+  vitkantad film efter hans ja.
 - **Dockans vändning görs med fingrarna:** i dockfilmerna `svep24d` från A2.3 svänger kortet under stilla fingrar mitt
   i flykten, och filmmodellen kopierar det (kortet halvgenomskinligt i 4–6 rutor); hans regel är att handleden vänder
   kortet (BESKED, "Handleden vrider kortet"). Stänger: en omgjord dockfilm med vriden handled och vändningen nära

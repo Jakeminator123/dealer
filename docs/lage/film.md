@@ -36,6 +36,7 @@ utfall står i handboken (`tools/film-prompting.md` §5), historien i Git.
 5. Kortet bakom ryggen igen med en bild av ansiktet som referens (95). Kastet per stol: egen tagning, inte Aleph.
 6. Det vita i skons fönster: [kort](kort.md), Nästa steg 3.
 7. Fler vilor för Tatuerad: lokalt ur Casinots, och korta vilor ur en film (handboken §3.6, inom taket).
+8. Vilan `paow-vila-28-01`: bordskanten är lagad med `plate` (`fixed-1.mp4` bredvid originalet, `-hel` i `.runtime/kant-27/`); granska oberoende, för in; originalet arkiverar Jakob.
 
 **Väntar på Jakob.** I chatten: ansiktsbilden, felet i plats 6, och om Tatuerad ska byta till A2.3 med märke (gäller i
 Material).
