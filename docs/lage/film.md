@@ -15,11 +15,11 @@ utfall står i handboken (`tools/film-prompting.md` §5), historien i Git.
   bokstäver är arbetsnamn: Tatuerads A2.3 är `paow-ankare-2-3-d` (givarna börjar på `-c`); i Material gäller `-marke`.
 - Trädet Tatuerad (`/studio/karta/?dealer=paow&trad=tatuerad`, 22/36) är det spelet spelar och fylls från A2.3. I banken: giv och återgång till
   plats 1–6, kort 1 (mall 15; plats 1–5 Jakobs "Ja, alla håller", plats 6 "Bra"), dealerns kort (godkända åt honom):
-  D.C1 stängt `paow-giv-2-3-d-03` (mall 16) och D.C2 öppet `paow-giv-2-3-d-c2-02`, utgången A2.3 → A1, hålkortet upp
-  och vilorna (`paow-vila-20-01`, `paow-vila-tat-…`). Plats 7 är underkänd: händerna vänder inte kortet.
+  D.C1 stängt `paow-giv-2-3-d-03` (mall 16) och D.C2 öppet `paow-giv-2-3-d-c2-02`, utgången A2.3 → A1 och vilorna
+  (`paow-vila-20-01`, `paow-vila-tat-…`). Plats 7 är underkänd: händerna vänder inte kortet.
 - Sista given går direkt till vila (`order-new.ts paow RETUR-1 P4.C1`, 3 s): plats 2–4 godkända åt honom, 1 och 5
   varianter, plats 6 hans "Inte bra".
-- A3-bilder: A3P4C1 och A3P4C2 är kandidater; för plats 1 och 2 stoppar landningsverktyget ([BRISTER](../BRISTER.md)).
+- A3-bilder görs inte: landningsbilderna är arkiverade (Jakob 2026-11-24).
 - Fria givar (Kling 4, ingen dockfilm): takt och väg styrs inte; plats 4, Kortet i luften och plats 7 är varianter i
   banken. En annan stol: [FILMMODELLER](../FILMMODELLER.md), "Vinklar, 3D och Runways lista"; stol 1 fick "nästan".
 - Tatuerads A2.1 är `paow-nyp-tatuerad` (trädet Tatuerad nyp). Sex givar därifrån 2026-11-24 (816 krediter, avlästa
@@ -33,8 +33,8 @@ utfall står i handboken (`tools/film-prompting.md` §5), historien i Git.
    har bara givsteg med ett kort ([LASMIG](../../dealer3d/LASMIG.md)).
 3. Plats 7 från A2.3: dockan ska hålla kortet genom vändningen; sedan dockans film, given igen och dess retur.
 4. Bryggorna för Tatuerad nyp: utgången A2.1 → A1 (ingången baklänges) och A2.1 ↔ A2.3 vid skon ([karta](karta.md)).
-5. Avslöjandet av dealerns stängda kort (D.C1) behöver en film (hålkortsfilmerna vänder D.C2); mall 15: mer frihet i vändningen.
-6. Det vita i skons fönster: [kort](kort.md), Nästa steg 3. Fler vilor för Tatuerad (handboken §3.6, inom taket).
+5. Filmen som vänder upp D.C1: utkastet `paow-halkort-06` (WAN 3, 100 krediter); först hans dom över `paow-halkort-05-01`.
+6. Skons fönster: [kort](kort.md), Nästa steg 3. Fler vilor (handboken §3.6). Mall 15: friare vändning.
 7. Vilan `paow-vila-28-01-fix-1` är införd (godkänd åt honom); originalet arkiverar Jakob.
 
 **Väntar på Jakob.** Hans egen dom i Granska på `paow-giv-2-3-d-03-01` (stängt kort, mall 16) och på piloten med
