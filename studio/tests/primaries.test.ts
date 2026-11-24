@@ -81,7 +81,7 @@ test("the node tree's order: seat by seat (deal, return to A2.1, return to A1), 
   const order = treeOrder(graph);
   assert.equal(order.length, graph.summary.films.required.length);
   assert.deepEqual(order.slice(0, 3), ["READY>P1.C1", "P1.C1>READY", "P1.C1>IDLE"]);
-  assert.deepEqual(order.slice(21, 28), ["READY>D.C1", "D.C1>READY", "D.C1>IDLE", "READY>D.C2", "D.C2>READY", "D.C2>IDLE", "IDLE>REVEAL(D.C2)"]);
+  assert.deepEqual(order.slice(21, 28), ["READY>D.C1", "D.C1>READY", "D.C1>IDLE", "IDLE>REVEAL(D.C1)", "READY>D.C2", "D.C2>READY", "D.C2>IDLE"]);
   assert.deepEqual(order.slice(28).map((id) => roleOf(graph.edge[id])), ["entry", "exit", "rest", "arrive", "leave"]);
 });
 

@@ -399,7 +399,7 @@ export default function Kit() {
               <span className="text-faint">·</span>
               <span className="text-sm text-ink">{edgeName("READY>P4.C1")}</span>
               <span className="text-faint">·</span>
-              <span className="text-sm text-ink">{edgeName("IDLE>REVEAL(D.C2)")}</span>
+              <span className="text-sm text-ink">{edgeName("IDLE>REVEAL(D.C1)")}</span>
               <span className="text-faint">·</span>
               <span className="text-sm text-dim">{formatJakob(parsed.steps)}</span>
             </Row>

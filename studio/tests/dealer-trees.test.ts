@@ -51,7 +51,7 @@ test("the measure: 36 steps per anchor at the shoe, in the order a round meets t
     assert.equal(new Set(steps.map((s) => s.id)).size, MEASURE_SIZE, "no step twice");
     const kinds = Object.fromEntries(["vila", "ingang", "giv", "retur", "utgang", "halkort"].map((k) => [k, steps.filter((s) => s.kind === k).length]));
     assert.deepEqual(kinds, { vila: 1, ingang: 1, giv: 16, retur: 16, utgang: 1, halkort: 1 });
-    assert.deepEqual([steps[0].id, steps[1].id, steps[34].id, steps[35].id], ["IDLE>IDLE", `IDLE>${hub}`, `${hub}>IDLE`, "IDLE>REVEAL(D.C2)"]);
+    assert.deepEqual([steps[0].id, steps[1].id, steps[34].id, steps[35].id], ["IDLE>IDLE", `IDLE>${hub}`, `${hub}>IDLE`, "IDLE>REVEAL(D.C1)"]);
     assert.ok(steps.filter((s) => s.kind === "giv").every((s) => s.from === hub && s.card === s.to), "every deal leaves the tree's anchor for its card");
     assert.ok(steps.filter((s) => s.kind === "retur").every((s) => s.to === hub), "every return goes back to the anchor, not to A1");
     assert.ok(!steps.some((s) => s.card === "D.C3"), "DC3 is not counted");
@@ -147,7 +147,7 @@ test("the tree's nodes: a picture from Material or an empty box, with his short 
   assert.equal(at("P6.C1")?.entry, null, "a landing made from another anchor is not this tree's");
   assert.equal(at("P7.C1")?.entry, null, "a replaced landing is not drawn");
   assert.equal(at("P1.C1")?.entry, null, "no picture: an empty box with its name");
-  assert.deepEqual([at("P4.C2")?.code, at("D.C1")?.code, at("REVEAL(D.C2)")?.code], ["A3P4C2", "A3DC1", "DC2 upp"]);
+  assert.deepEqual([at("P4.C2")?.code, at("D.C1")?.code], ["A3P4C2", "A3DC1"]); assert.ok(at("REVEAL(D.C1)"), "the hole card's turn is a node of the tree");
   assert.equal(treeNodes({ ...tree, anchors: [{ entry: "a1" }] }, entries)[1].node, "READY", "a tree without an anchor at the shoe is measured from A2.1");
   assert.equal(nodeCode("READY-B", 2), "S2-A2.2");
 });

@@ -43,8 +43,8 @@ test("where the path may go next: along the tree's steps from its last node", ()
   const steps = treeSteps("READY", [], world(rows).takes);
   const first = nextNodes(steps, []);
   assert.ok(first.has("IDLE") && first.has("READY") && first.has("P1.C1"), "any node a step leaves from starts a path");
-  assert.ok(!first.has("REVEAL(D.C2)"), "the hole card turned up leads nowhere");
-  assert.deepEqual([...nextNodes(steps, ["IDLE"])].sort(), ["IDLE", "READY", "REVEAL(D.C2)"]);
+  assert.ok(!first.has("REVEAL(D.C1)"), "the hole card turned up leads nowhere");
+  assert.deepEqual([...nextNodes(steps, ["IDLE"])].sort(), ["IDLE", "READY", "REVEAL(D.C1)"]);
   assert.equal(nextNodes(steps, ["IDLE", "READY"]).size, 17, "the 16 cards and back to A1");
   assert.deepEqual([...nextNodes(steps, ["READY", "P1.C1"])], ["READY"], "a card goes back to the anchor at the shoe");
 });
@@ -98,10 +98,10 @@ test("a step given from another anchor at the shoe plays that anchor's film", ()
 });
 
 test("the path in the address is his codes, and a code the tree lacks is left out", () => {
-  const nodes = ["IDLE", "READY-C", "P4.C1", "REVEAL(D.C2)"].map((node) => ({ node, code: { IDLE: "A1", "READY-C": "A2.3", "P4.C1": "A3P4C1", "REVEAL(D.C2)": "DC2 upp" }[node]! }));
+  const nodes = ["IDLE", "READY-C", "P4.C1", "REVEAL(D.C1)"].map((node) => ({ node, code: { IDLE: "A1", "READY-C": "A2.3", "P4.C1": "A3P4C1", "REVEAL(D.C1)": "DC1 upp" }[node]! }));
   const path = ["IDLE", "READY-C", "P4.C1", "READY-C"];
   assert.equal(pathText(path), "A1-A2.3-A3P4C1-A2.3");
   assert.deepEqual(parsePath(pathText(path), nodes), path);
-  assert.deepEqual(parsePath("A1-A9-DC2 upp", nodes), ["IDLE", "REVEAL(D.C2)"]);
+  assert.deepEqual(parsePath("A1-A9-DC1 upp", nodes), ["IDLE", "REVEAL(D.C1)"]);
   assert.deepEqual(parsePath(null, nodes), []);
 });

@@ -146,7 +146,7 @@ test('the bank as text: what plays, verdicts with Jakob\'s words cleaned, what w
   const all = sections.map(s => s.text).join('\n');
   for (const gone of ['Kevin', 'credits', 'kostade', 'someone', 'estimatedCredits']) assert.ok(!all.includes(gone), gone);
   assert.equal(sections.find(s => s.id === 'banken/filmer')!.prio, 4);
-  assert.match(placeWords('D.C2'), /hålkort/, 'the hole card is called so, as the search knows it'); assert.notEqual(placeWords('D.C1'), placeWords('D.C2'));
+  assert.match(placeWords('D.C1'), /hålkort/, 'the hole card is called so, as the search knows it'); assert.doesNotMatch(placeWords('D.C2'), /hålkort/); assert.notEqual(placeWords('D.C1'), placeWords('D.C2'));
 });
 
 test('proofs: blocked and trailer proofs are left out whole; the list says what is in the copy', () => {

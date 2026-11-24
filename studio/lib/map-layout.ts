@@ -2,12 +2,12 @@
 //
 // The table as a player sees it (tableLayout in src/clip-graph.ts): the seats in an arc, P1 left to P7 right, the
 // dealer's cards above them, A1 (vila) at the upper left, A2.1 (nyp) and A2.2 (hand över) by the shoe at the upper right,
-// Borta above A1 and "DC2 upp" beside the dealer. Each anchor has a rail: A2.1's runs down the
+// Borta above A1 and "DC1 upp" beside the dealer. Each anchor has a rail: A2.1's runs down the
 // right and across between the dealer and the seats, A1's down the left, under the seats and over the dealer. A film is
 // a short line of its own between a card and a rail, so no two films lie on top of each other, and its label sits on it.
 // A card's deal and return to A2.1 stand side by side with their labels on two rows; its return to A1 leaves from the
 // card's other side. One film per seat: only C1's three films are drawn; C2 says how far its card is moved.
-import { SEATS, bankEdges, filmCard, parseEdge, tableLayout } from "../../src/clip-graph.ts";
+import { OLDER_REVEAL_EDGE, REVEAL_NODE, SEATS, bankEdges, filmCard, parseEdge, tableLayout } from "../../src/clip-graph.ts";
 import { measure } from "../../src/dealer-trees.ts";
 
 export type Pt = { x: number; y: number };
@@ -58,10 +58,10 @@ const H = (x: number) => `H${r(x)}`;
 /** Each card's centre from the placement plan, in the film's pixels. */
 export type PlanPoints = Record<string, Pt> | null | undefined;
 
-/** The edges the bank's map draws: every model edge except a seat's second card (one film per seat). */
+/** The edges the bank's map draws: every model edge except a seat's second card (one film per seat) and the older turn of the card at D.C2, which no round plays. */
 export function drawnEdges(): string[] {
   return bankEdges()
-    .filter((e) => !e.target || e.kind === "REVEAL" || filmCard(e.target, true) === e.target)
+    .filter((e) => e.id !== OLDER_REVEAL_EDGE && (!e.target || e.kind === "REVEAL" || filmCard(e.target, true) === e.target))
     .map((e) => e.id);
 }
 
@@ -128,7 +128,7 @@ export function mapLayout({ points }: { points?: PlanPoints }): MapLayout {
   nodes.push({ id: "IDLE", type: "hub", node: "IDLE", box: a1 });
   nodes.push({ id: "READY", type: "hub", node: "READY", box: a21 });
   nodes.push({ id: "READY-B", type: "hub", node: "READY-B", box: a22 });
-  nodes.push({ id: "REVEAL", type: "hub", node: "REVEAL(D.C2)", box: reveal });
+  nodes.push({ id: "REVEAL", type: "hub", node: REVEAL_NODE, box: reveal });
 
   // ── Seat and dealer nodes ──
   // A field sits under the node's name row (24 high). C1 is a small box and C2 the words beside it (one film per seat).
@@ -211,14 +211,14 @@ export function mapLayout({ points }: { points?: PlanPoints }): MapLayout {
 
 // ── A tree (Karta's trees, src/dealer-trees.ts) ─────────────────────────────
 // The same table, drawn for one tree against his measure: A1 at the upper left and the tree's anchor at the shoe at the upper
-// right as pictures, its other A2.x anchors under it, "DC2 upp" beside A1, the dealer's two cards at the top middle and the
+// right as pictures, its other A2.x anchors under it, "DC1 upp" beside A1, the dealer's two cards at the top middle and the
 // seven seats in an arc below, every card a picture. The anchor at the shoe has one rail between the dealer and the seats; a
 // card's deal and its return are two short lines from it, with the step's chip on each. Entry and exit run between A1 and the
 // anchor above the dealer; the rest is a chip inside A1.
 
 /** One step on the tree map: its own line, the whole way along the rail, its arrow and the centre of its chip. */
 export type TreeLine = { id: string; path: string; route: string; arrow: Pt & { dir: Dir }; chip: Pt; nodes: string[] };
-/** A box of the tree map: an anchor's picture, "DC2 upp", or a seat's (or the dealer's) two card pictures. */
+/** A box of the tree map: an anchor's picture, "DC1 upp", or a seat's (or the dealer's) two card pictures. */
 export type TreeBox = { id: string; node: string | null; kind: "vila" | "skon" | "annan" | "halkort" | "plats" | "dealer"; box: Box; cards: { card: string; box: Box }[] };
 export type TreeLayout = { width: number; height: number; boxes: TreeBox[]; lines: TreeLine[]; rails: Rail[] };
 
@@ -287,7 +287,7 @@ export function treeLayout({ hub, others, points, railText }: { hub: string; oth
   boxes.push({ id: "IDLE", node: "IDLE", kind: "vila", box: a1, cards: [] });
   boxes.push({ id: hub, node: hub, kind: "skon", box: hubBox, cards: [] });
   others.forEach((o, k) => boxes.push({ id: o, node: o, kind: "annan", box: { x: hubBox.x + hubBox.w - TREE.other.w, y: hubBottom + 14 + k * (TREE.other.h + 10), w: TREE.other.w, h: TREE.other.h }, cards: [] }));
-  boxes.push({ id: "REVEAL", node: "REVEAL(D.C2)", kind: "halkort", box: reveal, cards: [] });
+  boxes.push({ id: "REVEAL", node: REVEAL_NODE, kind: "halkort", box: reveal, cards: [] });
   boxes.push(dealer, ...seats);
 
   // ── Lines ──

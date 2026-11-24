@@ -128,7 +128,7 @@ flera spelare. Hållet av `tools/game-session.test.ts` och `tools/game-view.test
   `spelas` (`data/dealer-trees.json`, `gameCut` i `tools/dealer-tree.ts`); är det ETT träd spelar det trädets snitt som
   `?trad=<id>`, och kopians frusna bank får samma snitt.
 - En retur till vila som saknar film spelas som returen till skon och utgången (`READY>IDLE`). Ett kort vars giv saknar
-  film ges med filmen i `STAND_IN_FILM` (per dealer; hålkortet med första kortets film, ritat med ryggen upp), och
+  film ges med filmen i `STAND_IN_FILM` (per dealer; dealerns andra kort med första kortets film), och
   ersättaren viker när kortets egen film finns. Dealerns tredje och fjärde kort läggs utan hand. Det ett steg inte kan
   spela som banken har det, och det klippbanken säger om en film det spelar (skarv, retur med den andra handen, fel
   kortsida), står i stegets `gaps` (`play()` i `src/game-film.ts`, `window.game.gaps`). Dealerbytet (`swap()`) spelar
@@ -457,7 +457,7 @@ ibland en referensfilm; planen ger målkortets hörn i sista bilden. Studions be
   Produktionslistan (`node tools/produce.ts <dealer>`, Bordets Beställ, `GET /api/production`) säger för vart och ett av
   grafens steg vad som spelas, vad som är på väg, om en runda kräver det och dess metod, och gör utkast där metoden
   gäller (`--draft`; aldrig ett godkännande). Alla steg står i `STEPS` i `src/order-model.ts`, bland dem hålkortets giv
-  (`GIV-2.1` till `D.C2`), dess vändning (`HALKORT`, `IDLE>REVEAL(D.C2)`, med bara hålkortet ritat på båda bilderna) och
+  (en giv till `D.C1`, dealerns första kort), dess vändning (`HALKORT`, `IDLE>REVEAL(D.C1)`, med bara hålkortet ritat på båda bilderna) och
   utgångarna (`UTGANG`, `UTGANG-2.2`). Hela vägen från bild till färdig dealer: [löpande bandet](../tools/dealer-line.md).
 
 ## Material: bilder, tillstånd och vad som bygger på vad
@@ -490,10 +490,10 @@ IDLE>READY | READY>P1.C1 | P1.C1>READY | READY>D.C1 | D.C1>READY | READY>P1.C2 |
 ```
 
 - Banken är 54 kanter: 16 kort × giv, retur till READY och retur till IDLE, samt `IDLE>READY`, `READY>IDLE`,
-  `IDLE>IDLE`, `AWAY>IDLE`, `IDLE>AWAY` och `IDLE>REVEAL(D.C2)`, vändningen av hålkortet. `AWAY` är bilden utan dealer;
+  `IDLE>IDLE`, `AWAY>IDLE`, `IDLE>AWAY` och `IDLE>REVEAL(D.C1)`, vändningen av hålkortet (dealerns första kort, 2026-11-24). `AWAY` är bilden utan dealer;
   filmen där hon går beställs med enbart första bild, och dess sista rutor ger rutan som filmen där hon kommer börjar
-  på. Hålkortets vändning går från vila till vila (`REVEAL(D.C2)` är vila med kortet uppvänt) och spelas från ruta 3
-  till tre rutor före slutet. `D.C3` är tre valfria kanter utöver dem. `@<klipp-id>` efter en kant låser en tagning.
+  på. Hålkortets vändning går från vila till vila (`REVEAL(D.C1)` är vila med kortet uppvänt) och spelas från ruta 3
+  till tre rutor före slutet. `D.C3` är tre valfria kanter utöver dem, och `IDLE>REVEAL(D.C2)` en fjärde: de äldre filmerna som vänder kortet på D.C2, där hålkortet låg förut; ingen runda ber om dem. `@<klipp-id>` efter en kant låser en tagning.
   Jobbfilens `LAND(P4.C1)`/`RELEASE(P4.C1)` och VILA/REDO läses som samma noder.
 - READY kan ha namngivna varianter (`READY-B`): `READY-B>P4.C1` är en tagning av kanten `READY>P4.C1` med annan
   startpose, spelad bara när rundan skriver den så. Jobb med andra noder tappas aldrig: de bildar gruppen Experiment.

@@ -7,11 +7,11 @@
 //
 // What she says: a talk film (a rest take on request, with sound) is played whole at rest, before a step's chain of cards or after
 // it (speakMoments), or between rounds (say). A line without a film is said at the same moment, in the chat only.
-import {ARRIVE_EDGE, LEAVE_EDGE, HOLE_CARD, REVEAL_NODE, dealHub, formatEdge, parseEdge, playable, resolveRound, pickIdle, idleRange, idleExit, effectOf, IDLE_RULE, type FilmEffect, type Graph, type Step, type Take, type Segment} from './clip-graph.ts';
+import {ARRIVE_EDGE, LEAVE_EDGE, dealHub, formatEdge, parseEdge, playable, resolveRound, pickIdle, idleRange, idleExit, effectOf, IDLE_RULE, type FilmEffect, type Graph, type Step, type Take, type Segment} from './clip-graph.ts';
 import {CARRY, plausible, restFade, restOf, type CardRecord, type CardTrack} from './card-overlay.ts';
 import type {OverlayOptions} from './card-overlay-view.ts';
 import {slotOf, slotLabel, slotFilm, type Layout, type Pt, type TableCards} from './game-table.ts';
-import {hubChain, inTurn, lyingAfter, planBeats, SEAT_HUB, STAND_IN_FILM, type Beat, type FilmSignal} from './game-director.ts';
+import {hubChain, inTurn, lyingAfter, planBeats, revealStep, SEAT_HUB, STAND_IN_FILM, type Beat, type FilmSignal} from './game-director.ts';
 import type {Composer, Move, WovenBridge} from './composition.ts';
 import {placeLines, type MouthPatch} from './speech-patch.ts';
 
@@ -309,15 +309,17 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     // Whether the tree whose graph is read deals a card by hand: as planBeats decides it (its pose's four films, its own film, its stand-in).
     const hubsOf = new Map<Graph, Record<string, string>>(), hubs = () => { let h = hubsOf.get(graph); if (!h) { h = seatHubs(); hubsOf.set(graph, h); } return h; }; // per tree, read once a step
     const dealable = (film: string) => { const hub = dealHub(film, hubs()), other = standIn[film]; return (hub !== 'READY' && fromHub(hub, film)) || !filmless(film) || (!!other && !filmless(other)); };
-    // A turn is a tree's only when its film turns the card that is turned (the hole card where the bank's film has one); else no tree's.
-    const can = (tree: string, move: Move) => { const of = graphs[tree]; return !!of && within(of, () => 'reveal' in move ? turned.get(move) === HOLE_CARD && !!resolveRound(of, [{from: 'IDLE', to: REVEAL_NODE}], {places})[0]?.video : dealable(move.deal)); };
+    // A turn is a tree's only when it has a film that turns a card at the place of the card that is turned (the hole card, D.C1); else no tree's.
+    const can = (tree: string, move: Move) => { const of = graphs[tree]; return !!of && within(of, () => { if (!('reveal' in move)) return dealable(move.deal);
+      const step = revealStep(turned.get(move) ?? ''); return !!step && !!resolveRound(of, [step], {places})[0]?.video; }); };
     const trees = composer.assign(asked, can), legs: {tree: string; beats: Beat[]}[] = [];
     let lies = [...lying];
     for (let i = 0; i < moves.length;) {
       let j = i; while (j < moves.length && trees[j] === trees[i]) j++;
       const tree = trees[i], of = tree ? graphs[tree] : undefined, run = moves.slice(i, j);
-      // Cards no tree can play from where the hand is are laid without a hand, as in a tree alone.
-      const beats = of ? within(of, () => planBeats(nextTable, lies, run, filmless, toRest, standIn, hubs(), fromHub)) : planBeats(nextTable, lies, run, () => true);
+      // Cards no tree can play from where the hand is are laid without a hand, as in a tree alone; a turn no tree has a film for
+      // is no step of any tree (the card is turned where it lies), so the hand stays where it is.
+      const beats = of ? within(of, () => planBeats(nextTable, lies, run, filmless, toRest, standIn, hubs(), fromHub)) : planBeats(nextTable, lies, run, () => true).map(b => b.kind === 'REVEAL' ? {...b, step: null} : b);
       legs.push({tree: of ? tree! : home, beats}); lies = lyingAfter(lies, beats); i = j;
     }
     const woven = composer.weave(legs, (tree, card) => !!graphs[tree] && !!resolveRound(graphs[tree], [{from: card, to: 'READY'}], {places})[0]?.video);
@@ -356,7 +358,7 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
     // the clip bank says of a film it does play (a seam, the other hand coming back, the other side of the card, a landing frame it
     // does not know), which until 2026-11-18 lay only in the segment. Where the drawn card is moved to is the card layer's, not a gap.
     const named = (s: Segment | null) => (s?.notes ?? []).filter(note => !note.startsWith('Kortets flytt')).map(note => `${s!.id}: ${note}`);
-    const gaps = beats.flatMap((b, i) => [...(b.kind === 'PLACE' ? [`${b.own!.label}: ingen spelbar film, kortet läggs utan hand`] : b.kind === 'REVEAL' && !b.step ? [`${b.own!.label}: ingen film vänder ett kort där, kortet vänds utan hand`] : !segments[i]?.video ? [`${segments[i]?.id}: ${segments[i]?.gap ?? 'ingen film'}`]
+    const gaps = beats.flatMap((b, i) => [...(b.kind === 'PLACE' ? [`${b.own!.label}: ingen spelbar film, kortet läggs utan hand`] : b.kind === 'REVEAL' && !segments[i]?.video ? [`${b.own!.label}: ingen film vänder ett kort där, kortet vänds utan hand`] : !segments[i]?.video ? [`${segments[i]?.id}: ${segments[i]?.gap ?? 'ingen film'}`]
       : b.kind === 'DEAL' && b.own && b.step!.to !== slotFilm(b.own.slot) && standIn[slotFilm(b.own.slot)] === b.step!.to ? [`${b.own.label}: nödlösning, given med ${b.step!.to}s film, kortet ritat på sin egen plats`] : []), ...named(segments[i])]);
     gaps.push(...(plan?.breaks ?? [])); // a composition's seams no bridge covers
     const loaded = await Promise.all(segments.map(s => trackOf(s?.video ? s.take : null)));

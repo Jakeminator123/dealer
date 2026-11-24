@@ -1398,7 +1398,7 @@ test('the steps a round needs: a deal to the hole card, its turn from rest and t
   assert.equal(turn.status, 201);
   const o = turn.json.order;
   assert.equal(o.id, 'paow-halkort-01');
-  assert.deepEqual([o.step.edge, o.step.shape, o.step.cutInto, o.motion], ['IDLE>REVEAL(D.C2)', 'ONE_WAY', [], null]);
+  assert.deepEqual([o.step.edge, o.step.shape, o.step.cutInto, o.motion], ['IDLE>REVEAL(D.C1)', 'ONE_WAY', [], null]);
   assert.deepEqual(o.pictures.map((p: { name: string; goesAs: string; path: string | null; waits: { label: string } | null }) => [p.name, p.goesAs, p.path, p.waits?.label]), [['first.png', 'startFrame', null, 'ankare 1'], ['last.png', 'endFrame', null, 'ankare 1']]);
   assert.match(o.pictures[0].label, /hålkortet stängt$/);
   assert.match(o.pictures[1].label, /hålkortet öppet$/);
@@ -1421,8 +1421,8 @@ test('the steps a round needs: a deal to the hole card, its turn from rest and t
   const list = await call('GET', '/api/production?dealer=paow');
   assert.equal(list.status, 200);
   assert.equal(list.json.list.rows.length, 33);
-  assert.deepEqual(list.json.list.rows.find((r: { edge: string }) => r.edge === 'IDLE>REVEAL(D.C2)').orders.map((x: { id: string }) => x.id), ['paow-halkort-01'], 'the draft is in flight for its step');
-  assert.equal(list.json.list.rows.find((r: { edge: string }) => r.edge === 'IDLE>REVEAL(D.C2)').state, 'UTKAST');
+  assert.deepEqual(list.json.list.rows.find((r: { edge: string }) => r.edge === 'IDLE>REVEAL(D.C1)').orders.map((x: { id: string }) => x.id), ['paow-halkort-01'], 'the draft is in flight for its step');
+  assert.equal(list.json.list.rows.find((r: { edge: string }) => r.edge === 'IDLE>REVEAL(D.C1)').state, 'UTKAST');
   assert.equal((await call('GET', '/api/production?dealer=nobody')).status, 400);
 });
 

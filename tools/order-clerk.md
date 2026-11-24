@@ -79,8 +79,8 @@ For take n of an order:
    - A return (`RETUR-2.1`, `RETUR-2.2`, `RETUR-1`) starts on the seat's landing picture and a deal "bara dit"
      (`step.shape: ONE_WAY`) ends on it: that picture is `first.png` or `last.png` like any other, copied from the register.
      The call is the same; the bank edge is `step.edge` (`P4.C1>READY` for a return), and `step.cutInto` has one edge.
-   - `GIV-2.1` to `D.C2` (the hole card) is a deal like any other; it lands closed. `UTGANG` (`READY>IDLE`) and `HALKORT`
-     (`IDLE>REVEAL(D.C2)`) are films of one edge (`step.edge`, `cutInto` empty): they go into the bank as one take.
+   - A deal to `D.C1` (the hole card) is a deal like any other; it lands closed, as the plan says. `UTGANG` (`READY>IDLE`) and `HALKORT`
+     (`IDLE>REVEAL(D.C1)`) are films of one edge (`step.edge`, `cutInto` empty): they go into the bank as one take.
      HALKORT's `first.png` and `last.png` are her anchor 1 with both dealer cards drawn, the hole card closed and then open.
 3. **After the call:**
    - It answered with a task id: `node tools/order-put.ts placed <id> <n> <taskId> <creditsRemaining> --via mcp` at once

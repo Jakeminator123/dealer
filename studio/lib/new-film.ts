@@ -7,7 +7,7 @@
 // The address: /bordet/?lage=bestall&trad=<tree>&film=<the step in his notation>[&komposition=<id>]&dealer=<id>, for example
 // ?lage=bestall&trad=tatuerad&film=A2.3-A3P4C2&dealer=paow. Karta's "Beställ" writes it (guideHref); Bordet writes the same
 // words while the guide is open, so a reload keeps it. The way back is kartaHref.
-import { REVEAL_NODE } from "../../src/clip-graph.ts";
+import { HOLE_CARD, REVEAL_NODE } from "../../src/clip-graph.ts";
 import { TREE_ID, isCard, type StepKind, type StepState, type TreeView, type ViewStep } from "../../src/dealer-trees.ts";
 import { ANCHOR_NODE, ANCHOR_ROLE, stepOf, stepOfEdge } from "../../src/order-model.ts";
 import type { FilmWish } from "./bordet.ts";
@@ -24,7 +24,7 @@ export type Guide = { tree: string | null; pick: StepPick | null; composition: s
 
 type Params = { get(name: string): string | null };
 
-/** "A2.3-A3P4C2", "A1-DC2 upp": a step in his notation, as the address carries it. */
+/** "A2.3-A3P4C2", "A1-DC1 upp": a step in his notation, as the address carries it. */
 export const filmCode = (p: StepPick): string => `${nodeCode(p.from)}-${nodeCode(p.to)}`;
 
 /** The one step a film word names ("A2.3-A3P4C2"), or null where it names none or more than one. */
@@ -57,7 +57,7 @@ export function kartaHref(dealer: string, tree: string, step: string | null, com
 }
 
 /** The card a step is about: the card it goes to or comes from, the hole card for its turn; null for a step without one. */
-export const cardOf = (p: StepPick): string | null => (isCard(p.from) ? p.from : isCard(p.to) ? p.to : p.to === REVEAL_NODE ? "D.C2" : null);
+export const cardOf = (p: StepPick): string | null => (isCard(p.from) ? p.from : isCard(p.to) ? p.to : p.to === REVEAL_NODE ? HOLE_CARD : null);
 
 /** The same step for another card chosen on the board ("A2.3 → A3P4C2" for P5C1 is "A2.3 → A3P5C1"); a step without a card stays. */
 export function swapCard(p: StepPick, place: string): StepPick {

@@ -1,6 +1,6 @@
 "use client";
 
-// The node map's nodes: an anchor (A1, A2.1, A2.2, Borta, DC2 upp), a seat with its two cards C1 and C2, the dealer with
+// The node map's nodes: an anchor (A1, A2.1, A2.2, Borta, DC1 upp), a seat with its two cards C1 and C2, the dealer with
 // DC1, DC2 and the optional DC3. Their size and their fields' places come from lib/map-layout.ts; the lines are edges.
 // A click on a seat (or an anchor) shows only its films; a second click shows all again.
 import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
@@ -13,6 +13,7 @@ import { REACH_LIMIT } from "@/lib/map-layout";
 import { nodeCode } from "@/lib/names";
 import { CountSigns } from "./EdgeChip";
 import { restLine } from "./rest.ts";
+import { HOLE_CARD } from "../../../src/clip-graph.ts";
 
 type Common = {
   box: Box;
@@ -124,7 +125,7 @@ export function SeatNode({ data }: NodeProps<SeatNodeType>) {
 }
 
 export function DealerNode({ data }: NodeProps<DealerNodeType>) {
-  const word = (card: string) => (card === "D.C2" ? "stängt" : card === "D.C3" ? "valfri" : "öppet");
+  const word = (card: string) => (card === HOLE_CARD ? "stängt" : card === "D.C3" ? "valfri" : "öppet");
   return (
     <Frame data={data}>
       <Pick data={data} />

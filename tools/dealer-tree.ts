@@ -32,7 +32,7 @@ import {existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSyn
 import type {IncomingMessage, ServerResponse} from 'node:http';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {buildGraph, type BankData, type Take} from '../src/clip-graph.ts';
+import {HOLE_CARD, REVEAL_NODE, buildGraph, type BankData, type Take} from '../src/clip-graph.ts';
 import {STRAIGHT_CAMERA, TREE_ID, cameraOf, countWord, cutBank, cutTakes, filmCamera, isCard, isTreeHub, levelOf, nodeCode, nodesOf, orderCommand, playedCut, stepName as stepWords, treeHubs, treeView, type Delivery, type GameCut, type MeasureStep, type Need, type OrderFacts, type TreeAnswer, type TreeCut, type TreeDef, type TreeRegister, type TreeState, type TreeStep, type TreeTake, type TreeView, type Verdict as TreeVerdict} from '../src/dealer-trees.ts';
 import {judgedBank} from '../src/game-director.ts';
 import {ANCHOR_NODE, costOf, modelFor, paramsOf, stepOf, type Policy, type StepKey} from '../src/order-model.ts';
@@ -81,9 +81,9 @@ export function checkTrees(register: TreeRegister, entries: Map<string, Entry>, 
 }
 
 // ── His notation (src/dealer-trees.ts) ──────────────────────────────────────
-const OUTER = new Set(['AWAY', 'REVEAL(D.C2)']);
+const OUTER = new Set(['AWAY', REVEAL_NODE, 'REVEAL(D.C2)']); // REVEAL(D.C2): the older films that turn the card at D.C2
 export {isCard, nodesOf};
-/** A node as he writes it: A1, A2.1, A2.3, A3P4C1, A3DC1, Borta, DC2 upp; seen from a seat, S2-A2.2. */
+/** A node as he writes it: A1, A2.1, A2.3, A3P4C1, A3DC1, Borta, DC1 upp; seen from a seat, S2-A2.2. */
 export const code = nodeCode;
 /** A take's step in his words: the edge, with the anchor variant it was written from put back ("A2.3 → A3P4C1"). */
 export const stepName = (edge: string, hub?: string | null) => { const [a, b] = nodesOf(edge, hub); return stepWords(a, b); };
@@ -530,7 +530,7 @@ type Facts = {dealer: string; methods: MethodRegister | null; prices: Policy['pr
 /** What an order of a step has and lacks, its estimated price and the command for a draft: read, never ordered. */
 function orderFacts(f: Facts, view: Pick<TreeView, 'hub' | 'nodes'>, step: TreeStep): OrderFacts {
   const key = stepKeyOf(step, view.hub), def = key ? stepOf(key) : null;
-  const target = step.kind === 'halkort' ? 'D.C2' : step.card;
+  const target = step.kind === 'halkort' ? HOLE_CARD : step.card;
   const method = key ? methodFor(f.methods, key, target) : null, recipe = key ? recipeFor(f.methods, key, target) : null;
   const pic = (node: string) => view.nodes.find(n => n.node === node)?.entry ?? null;
   // The picture by its name in Material ("A2.3: vänster hand uppifrån på kortet, rak bål"), never its id.
@@ -548,7 +548,7 @@ function orderFacts(f: Facts, view: Pick<TreeView, 'hub' | 'nodes'>, step: TreeS
   // the seat's picture is made from the film's last frame.
   const seatEnd = (node: string): Need => pic(node) ? has(node) : {ok: true, what: `ingen, ${nodeCode(node)} görs efteråt ur filmens sista ruta`};
   const [first, end]: [Need, Need] =
-    step.kind === 'halkort' ? [drawn('IDLE', 'D.C2'), drawn('IDLE', 'D.C2')]
+    step.kind === 'halkort' ? [drawn('IDLE', HOLE_CARD), drawn('IDLE', HOLE_CARD)]
     : step.kind === 'giv' ? [has(step.from), last === 'platsens-slutbild' ? seatEnd(step.to) : drawn(step.from, step.to)]
     : [has(step.from), has(step.to)];
 

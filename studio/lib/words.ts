@@ -33,6 +33,8 @@ export const ANCHOR_WORDS = {
   "READY-B": { code: "A2.2", name: "A2.2 hand över" },
   "READY-C": { code: "A2.3", name: "A2.3 två händer" },
   AWAY: { code: "Borta", name: "Borta" },
+  "REVEAL(D.C1)": { code: "DC1 upp", name: "DC1 upp" },
+  // The films made before 2026-11-24 turn the card at D.C2, where the hole card lay then (src/clip-graph.ts OLDER_REVEAL_EDGE).
   "REVEAL(D.C2)": { code: "DC2 upp", name: "DC2 upp" },
 } as const;
 
@@ -44,9 +46,10 @@ export const WORDS: readonly Word[] = [
   { grupp: "Ankare och platser", ord: "A2.3 två händer", betyder: "Ankare 2.3: båda händerna vid skon precis före draget. Vänster hand stryker ut kortet och för det plant på filten till höger hand, som vänder det och lägger det.", sager: ["ankare 2.3"], aven: ["READY-C", "TWO_HANDS"] },
   { grupp: "Ankare och platser", ord: "A3P4C1", betyder: "Ankare 3: bilden där ett kort har landat, skriven ihop med spelare och kort. A3P4C1 är ankare 3, spelare 4, kort 1; dealerns heter A3DC1, A3DC2 och A3DC3.", sager: ["A3P2C1", "ankare 3, player 2, card 1"], aven: ["P4.C1", "landningsbild", "slutbildsankare"] },
   { grupp: "Ankare och platser", ord: "Borta", betyder: "Bordet utan dealern: innan hon har kommit och sedan hon har gått.", sager: [], aven: ["AWAY", "tomt bord"] },
-  { grupp: "Ankare och platser", ord: "DC2 upp", betyder: "Dealerns hålkort (DC2) vänt med framsidan upp medan hon vilar; rundan går vidare som från A1.", sager: [], aven: ["REVEAL(D.C2)", "hålkortet vänt"] },
+  { grupp: "Ankare och platser", ord: "DC1 upp", betyder: "Dealerns hålkort (DC1, hennes första kort) vänt med framsidan upp medan hon vilar; rundan går vidare som från A1.", sager: [], aven: ["REVEAL(D.C1)", "hålkortet vänt"] },
+  { grupp: "Ankare och platser", ord: "DC2 upp", betyder: "Äldre filmer, gjorda före 2026-11-24 när hålkortet låg på DC2: handen vänder upp kortet på DC2. De spelas inte när hålkortet (DC1) vänds.", sager: [], aven: ["REVEAL(D.C2)"] },
   { grupp: "Ankare och platser", ord: "Plats och kort", betyder: "P1–P7 är spelarnas platser från kamerans vänster, C1 och C2 deras två kort: P4C1 är plats 4, första kortet.", sager: [], aven: ["P4.C1", "box 3 i Scout (box = plats − 1)", "kortplats", "placeringsnyckel"] },
-  { grupp: "Ankare och platser", ord: "Dealerns kort", betyder: "DC1 (öppet), DC2 (hålkortet, stängt tills det vänds) och DC3, ett tredje kort som en runda kan ha.", sager: ["hålkortet"], aven: ["D.C1", "D.C2", "D.C3"] },
+  { grupp: "Ankare och platser", ord: "Dealerns kort", betyder: "DC1 (hålkortet, hennes första kort: stängt tills det vänds), DC2 (öppet) och DC3, ett tredje kort som en runda kan ha.", sager: ["hålkortet"], aven: ["D.C1", "D.C2", "D.C3"] },
   { grupp: "Ankare och platser", ord: "Skon", betyder: "Den svarta lådan med korten, till höger i bilden; kortet syns i ett fönster snett framtill. En sko per dealer, samma i alla ankare.", sager: [], aven: ["SHOE", "skobild"] },
   // ── Steps and films ──
   { grupp: "Steg och filmer", ord: "Steg", betyder: "En rörelse mellan två lägen, och filmen som gör den: steget A2.1 → A3P4C1. En linje på Kartan.", sager: [], aven: ["kant", "edge", "READY>P4.C1"] },
@@ -61,7 +64,7 @@ export const WORDS: readonly Word[] = [
   { grupp: "Steg och filmer", ord: "Retur", betyder: "Filmen där handen går tillbaka från kortet på bordet: till nypet (A2.1), över skon (A2.2) eller till vila (A1).", sager: ["tillbakagången", "retreat"], aven: ["RETURN", "P4.C1>READY", "RETUR-2.1"] },
   { grupp: "Steg och filmer", ord: "Utgång", betyder: "Filmen från skon tillbaka till vilan, utan kort: A2.1 → A1, A2.2 → A1 eller A2.3 → A1 (båda händerna).", sager: [], aven: ["exit", "READY>IDLE", "UTGANG-2.2", "UTGANG-2.3"] },
   { grupp: "Steg och filmer", ord: "Vilan", betyder: "Filmerna A1 → A1 där hon vilar: lugna klipp är grunden, och gesterna (hosta, sträcka på sig, le, dricka …) slumpas in emellan.", sager: ["grundloopen"], aven: ["IDLE>IDLE", "idle-loopen", "gester"] },
-  { grupp: "Steg och filmer", ord: "Hålkortets vändning", betyder: "Filmen där hon vänder upp hålkortet från vila och handen går tillbaka till vila: A1 → DC2 upp.", sager: [], aven: ["HALKORT", "IDLE>REVEAL(D.C2)"] },
+  { grupp: "Steg och filmer", ord: "Hålkortets vändning", betyder: "Filmen där hon vänder upp hålkortet från vila och handen går tillbaka till vila: A1 → DC1 upp.", sager: [], aven: ["HALKORT", "IDLE>REVEAL(D.C1)"] },
   { grupp: "Steg och filmer", ord: "Hon kommer", betyder: "Filmen där hon kommer in och sätter sig: Borta → A1.", sager: [], aven: ["AWAY>IDLE", "ARRIVE"] },
   { grupp: "Steg och filmer", ord: "Hon går", betyder: "Filmen där hon reser sig och går från bordet: A1 → Borta.", sager: [], aven: ["IDLE>AWAY", "LEAVE"] },
   { grupp: "Steg och filmer", ord: "Runda", betyder: "En väg genom stegen, skriven med streck: A1 - A2.1 - A3P4C1 - A2.1 - A1. I Scen, Råfilm och Efterarbete väljer eller skriver man en i rutan Bygg en runda.", sager: [], aven: ["round", "sekvens", "kedja"] },

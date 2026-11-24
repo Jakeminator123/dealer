@@ -369,10 +369,10 @@ export type StepDef = {
   /** Why the step cannot be ordered here (yet). */
   off?: string;
   makes?: { role: string; node?: string; label: string };
-  /** The graph's edge when it is not an anchor-to-anchor one (the hole card's turn: IDLE>REVEAL(D.C2)). */
+  /** The graph's edge when it is not an anchor-to-anchor one (the hole card's turn: IDLE>REVEAL(D.C1)). */
   edge?: string;
   /**
-   * A step about one card of the plan that is not chosen (the hole card's turn: D.C2), and the cards both of its pictures
+   * A step about one card of the plan that is not chosen (the hole card's turn: D.C1), and the cards both of its pictures
    * draw on the anchor it starts on: the first with the card as it lies before (`before`), the last as it lies after.
    */
   target?: string;
@@ -397,7 +397,7 @@ export const STEPS: readonly StepDef[] = [
   { key: 'RETUR-1', group: 'Retur från landningen', label: 'Tillbaka till vila', kind: 'FILM', from: '1', to: '1', start: 'LAND', card: true, grip: 'PINCH' },
   // The steps a round needs that Beställ could not order before 2026-11-13 (the dealer's second card is GIV-2.1 to D.C2):
   // the hand leaving the shoe for rest (READY>IDLE), and the hole card turned open from rest and the hand back to rest
-  // (IDLE>REVEAL(D.C2)), whose pictures are anchor 1 with only the hole card drawn where the plan says: the game draws
+  // (IDLE>REVEAL(D.C1), her first card since 2026-11-24), whose pictures are anchor 1 with only the hole card drawn where the plan says: the game draws
   // every lying card itself, and with both drawn she lifted both together (round 6, 2026-11-13).
   { key: 'UTGANG', group: 'Utgång', label: 'Handen lämnar skon och vilar', kind: 'FILM', from: '2.1', to: '1', card: false, styles: ['KORT', 'MINIMAL'] },
   // The way out from the drag at the shoe (READY-B>IDLE, anchor 2.2 to anchor 1), so that a round can go through 2.2 by rest
@@ -407,8 +407,8 @@ export const STEPS: readonly StepDef[] = [
   // rest (the main agent on Jakob's order 2026-11-21, "A2.3 → A1"): both hands leave the shoe and come to rest.
   { key: 'UTGANG-2.3', group: 'Utgång', label: 'Båda händerna lämnar skon och vilar', kind: 'FILM', from: '2.3', to: '1', card: false, styles: ['KORT', 'MINIMAL'] },
   {
-    key: 'HALKORT', group: 'Hålkortet', label: 'Hålkortet vänds upp från vila, handen tillbaka', kind: 'FILM', from: '1', to: '1', card: false, target: 'D.C2', edge: 'IDLE>REVEAL(D.C2)',
-    cards: [{ target: 'D.C2', before: 'BACK', after: 'FRONT' }], styles: ['KORT', 'MINIMAL'],
+    key: 'HALKORT', group: 'Hålkortet', label: 'Hålkortet vänds upp från vila, handen tillbaka', kind: 'FILM', from: '1', to: '1', card: false, target: 'D.C1', edge: 'IDLE>REVEAL(D.C1)',
+    cards: [{ target: 'D.C1', before: 'BACK', after: 'FRONT' }], styles: ['KORT', 'MINIMAL'],
   },
   { key: 'VILA', group: 'Vila', label: 'Vila, samma bild först och sist', kind: 'FILM', from: '1', to: '1', card: false },
   { key: 'ANKARE-2.1', group: 'Bild', label: 'Bild av nypet', kind: 'STILL', from: '1', to: null, card: false, ratio: '4:3', imageSize: '4K', makes: { role: 'ankare-2.1', node: 'READY', label: 'ankare 2.1' } },
@@ -418,7 +418,7 @@ export const stepOf = (key: string): StepDef | null => STEPS.find((s) => s.key =
 /**
  * The step a film between two of the graph's nodes is ordered as, and its card: "READY-C" → "P4.C2" is GIV-2.3 to P4.C2 (the
  * anchor chooses the step), "P4.C2" → "READY-C" RETUR-2.3, "P4.C2" → "IDLE" RETUR-1, "IDLE" → "READY-C" INGANG-2.3,
- * "READY-C" → "IDLE" UTGANG-2.3, "IDLE" → "IDLE" VILA, "IDLE" → "REVEAL(D.C2)" HALKORT. Null where no step makes it. For
+ * "READY-C" → "IDLE" UTGANG-2.3, "IDLE" → "IDLE" VILA, "IDLE" → "REVEAL(D.C1)" HALKORT. Null where no step makes it. For
  * his notation ("A2.3 - A3P4C2", read by parseJakob in studio/lib/names.ts) in tools/order-new.ts.
  */
 export function stepOfEdge(from: string, to: string): { step: StepKey; target: string | null } | null {
@@ -606,12 +606,13 @@ export const cutFrameWords = (c: Pick<CutFrame, 'clip' | 'frame' | 'words'>) => 
 
 /** "Paows", "Agnes". */
 export const genitive = (name: string) => (/[sxz]$/i.test(name) ? name : `${name}s`);
-/** "plats 4", "plats 4, andra kortet", "dealerns plats". */
+/** "plats 4", "plats 4, kort 2", "dealerns hålkort". */
 export function seatWords(target: string | null | undefined): string {
   const m = /^P(\d)\.C(\d)$/.exec(target ?? '');
   if (m) return `plats ${m[1]}${m[2] === '1' ? '' : ', kort ' + m[2]}`;
-  // The dealer's second card is the hole card (it lands closed); her first keeps the words it was ordered with.
-  if (target === 'D.C2') return 'dealerns hålkort';
+  // The dealer's first card is the hole card (it lands closed, Jakob 2026-11-24); her second lies open.
+  if (target === 'D.C1') return 'dealerns hålkort';
+  if (target === 'D.C2') return 'dealerns andra kort';
   if (target === 'D.C3') return 'dealerns tredje kort';
   return /^D\./.test(target ?? '') ? 'dealerns plats' : 'platsen';
 }

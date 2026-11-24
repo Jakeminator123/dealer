@@ -236,7 +236,7 @@ test('one line on what an order makes: the pictures it goes between, never how s
   assert.equal(summaryOf(stepOf('ANKARE-2.2')!, 'Paow', null), 'Gör Paows ankare 2.2 ur hennes ankare 1.');
   assert.equal(summaryOf(stepOf('GIV-2.1')!, 'Paow', { target: 'P4.C1' }, 'ONE_WAY'), 'Gör en film av Paow: ett kort från ankare 2.1 till plats 4, bara dit.');
   assert.equal(summaryOf(stepOf('GIV-2.2')!, 'Paow', { target: 'P1.C1' }, 'ROUND_TRIP'), 'Gör en film av Paow: ett kort från ankare 2.2 till plats 1, tur och retur.');
-  assert.equal(summaryOf(stepOf('GIV-2.3')!, 'Paow', { target: 'D.C2' }, 'ONE_WAY'), 'Gör en film av Paow: ett kort från ankare 2.3 till dealerns hålkort, bara dit.');
+  assert.equal(summaryOf(stepOf('GIV-2.3')!, 'Paow', { target: 'D.C1' }, 'ONE_WAY'), 'Gör en film av Paow: ett kort från ankare 2.3 till dealerns hålkort, bara dit.');
   assert.equal(summaryOf(stepOf('RETUR-2.2')!, 'Paow', { target: 'P4.C1' }), 'Gör en film av Paow: från kortet på plats 4 till ankare 2.2.');
   assert.equal(summaryOf(stepOf('INGANG-2.3')!, 'Paow', null), 'Gör en film av Paow: från ankare 1 till ankare 2.3.');
   assert.equal(summaryOf(stepOf('UTGANG-2.2')!, 'Paow', null), 'Gör en film av Paow: från ankare 2.2 till ankare 1.');
@@ -249,7 +249,7 @@ test('one line on what an order makes: the pictures it goes between, never how s
   // The names of the choices stay: a name, not a description.
   assert.deepEqual([FLIP_LABEL.FREE, HAND_LABEL.PASS, LANDS_LABEL.FRONT, SHAPE_LABEL.ONE_WAY], ['Handleden vänder kortet på vägen', 'Handbyte', 'Stängt → öppet', 'Bara dit']);
   assert.equal(genitive('Agnes'), 'Agnes');
-  assert.equal(seatWords('D.C1'), 'dealerns plats');
+  assert.equal(seatWords('D.C1'), 'dealerns hålkort');
   assert.equal(seatWords('P2.C2'), 'plats 2, kort 2');
 });
 
@@ -303,7 +303,7 @@ test('the seats where the left hand would cross her body, from the plan alone', 
   assert.deepEqual(bodyLine({}, {}), { midline: 881.5, halfCard: 43.5 });
   assert.equal(seatList(['P1.C1', 'P2.C1', 'P3.C1']), 'plats 1–3');
   assert.equal(seatList(['P1.C1', 'P3.C1']), 'plats 1 och 3');
-  assert.equal(seatList(['P5.C1', 'D.C1']), 'plats 5 och dealerns plats');
+  assert.equal(seatList(['P5.C1', 'D.C1']), 'plats 5 och dealerns hålkort');
 });
 
 test('a group of drafts against the limits: what all cost and how many fit today', async () => {
@@ -512,22 +512,22 @@ test('a card size for one order: grown about its centre, stopped at the picture\
 });
 
 test('the steps a round needs: the hole card as a deal\'s target, its turn from rest with only the hole card drawn, and the way out', () => {
-  // The dealer's second card is a seat a deal goes to; it lands closed, as the plan says, and is the hole card in words.
+  // The dealer's cards are seats a deal goes to; her first lands closed and is the hole card in words (Jakob 2026-11-24), her second lies open.
   assert.ok(SEAT_TARGETS.includes('D.C2'));
   assert.ok(!ALL_SEVEN.includes('D.C2'), '"Alla sju" stays the players');
-  assert.equal(seatWords('D.C2'), 'dealerns hålkort');
-  assert.equal(seatWords('D.C1'), 'dealerns plats', 'the dealer\'s first card keeps its words');
+  assert.equal(seatWords('D.C1'), 'dealerns hålkort');
+  assert.equal(seatWords('D.C2'), 'dealerns andra kort');
   const give = stepOf('GIV-2.1')!;
   assert.equal(edgeOf(give, 'D.C2'), 'READY>D.C2');
   assert.deepEqual(cutIntoOf(give, 'D.C2', 'ROUND_TRIP'), ['READY>D.C2', 'D.C2>READY']);
-  assert.match(summaryOf(give, 'Paow', { target: 'D.C2' }, 'ONE_WAY'), /ett kort från ankare 2\.1 till dealerns hålkort, bara dit/);
-  // The hole card turned open from rest and back to rest: IDLE>REVEAL(D.C2), the card fixed, both pictures with that card
+  assert.match(summaryOf(give, 'Paow', { target: 'D.C2' }, 'ONE_WAY'), /ett kort från ankare 2\.1 till dealerns andra kort, bara dit/);
+  // The hole card turned open from rest and back to rest: IDLE>REVEAL(D.C1) (her first card, 2026-11-24), the card fixed, both pictures with that card
   // alone (the game draws every lying card itself; with both drawn she lifted both, round 6).
   const turn = stepOf('HALKORT')!;
-  assert.deepEqual([turn.kind, turn.from, turn.to, turn.card, turn.target], ['FILM', '1', '1', false, 'D.C2']);
-  assert.equal(edgeOf(turn, null), 'IDLE>REVEAL(D.C2)');
+  assert.deepEqual([turn.kind, turn.from, turn.to, turn.card, turn.target], ['FILM', '1', '1', false, 'D.C1']);
+  assert.equal(edgeOf(turn, null), 'IDLE>REVEAL(D.C1)'); assert.deepEqual(stepOfEdge('IDLE', 'REVEAL(D.C1)'), { step: 'HALKORT', target: null }); assert.equal(stepOfEdge('IDLE', 'REVEAL(D.C2)'), null, 'the older films\' step is not ordered');
   assert.deepEqual(cutIntoOf(turn, null, 'ONE_WAY'), [], 'one edge, its step.edge');
-  assert.deepEqual(turn.cards, [{ target: 'D.C2', before: 'BACK', after: 'FRONT' }]);
+  assert.deepEqual(turn.cards, [{ target: 'D.C1', before: 'BACK', after: 'FRONT' }]);
   assert.match(summaryOf(turn, 'Paow', null), /hålkortet vänds upp, från och till ankare 1/);
   // The way out: anchor 2.1 to anchor 1, READY>IDLE.
   const out = stepOf('UTGANG')!;
@@ -553,7 +553,7 @@ test('the steps a round needs: the hole card as a deal\'s target, its turn from 
   assert.deepEqual(stylesFor('FILM', stepOf('VILA')), ['KORT', 'MINIMAL']);
   assert.deepEqual(stylesFor('STILL'), ['KORT']);
   // A reference film is chosen from the bank's takes of that edge.
-  const bank: BankFacts = { jobs: [{ id: 'ada-reveal-01', from: 'IDLE', to: 'REVEAL(D.C2)', duration: 4 }], motions: { 'ada-reveal-01': { source: { frames: 120, fps: 30 }, review: { decision: 'ACCEPTED', userAccepted: true } } } };
+  const bank: BankFacts = { jobs: [{ id: 'ada-reveal-01', from: 'IDLE', to: 'REVEAL(D.C1)', duration: 4 }], motions: { 'ada-reveal-01': { source: { frames: 120, fps: 30 }, review: { decision: 'ACCEPTED', userAccepted: true } } } };
   assert.deepEqual(referenceCandidates(bank, { dealer: 'paow', step: turn, target: null, model: MODELS['kling-4'] }).map((c) => [c.take, c.match, c.approvedStraight]), [['ada-reveal-01', 0, true]]);
 });
 

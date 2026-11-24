@@ -131,16 +131,16 @@ const ANCHOR_22 = "READY-B";
 /** The poses at the shoe: A2.1, A2.2 and any other the bank has films from. */
 const shoePoses = (graph: Pick<Graph, "edges"> | null): string[] => ["READY", ...new Set([ANCHOR_22, ...(graph?.edges ?? []).flatMap((e) => e.hubVariants)].sort())];
 
-/** The anchors in the order "Nästa steg" shows them: the poses at the shoe first (where a step from rest goes), then A1, DC2 upp, Borta. */
+/** The anchors in the order "Nästa steg" shows them: the poses at the shoe first (where a step from rest goes), then A1, DC1 upp, Borta. */
 const roundAnchors = (graph: Pick<Graph, "edges"> | null): string[] => [...shoePoses(graph), "IDLE", REVEAL_NODE, AWAY];
 
 /** Every node a round can pass: the anchors, then the 16 card places and the dealer's third card. The experiments' own poses are not his notation. */
 export const roundNodes = (graph: Pick<Graph, "edges"> | null): string[] => [...roundAnchors(graph), ...CARDS, ...OPTIONAL_TARGETS];
 
-/** Where a round can start: at rest, at the shoe or away (DC2 upp is rest after the turn, reached from A1). */
+/** Where a round can start: at rest, at the shoe or away (DC1 upp is rest after the turn, reached from A1). */
 export const startNodes = (graph: Pick<Graph, "edges"> | null): string[] => ["IDLE", ...shoePoses(graph), AWAY];
 
-/** The nodes the model has a step to from `from`, films or not. The hole card is turned once: after DC2 upp comes what follows rest. */
+/** The nodes the model has a step to from `from`, films or not. The hole card is turned once: after DC1 upp comes what follows rest. */
 export const followers = (graph: Pick<Graph, "edges"> | null, from: string): string[] =>
   roundNodes(graph).filter((to) => !(from === REVEAL_NODE && to === REVEAL_NODE) && !!parseEdge(`${from}>${to}`));
 
@@ -213,7 +213,7 @@ export function stepWord(step: Step): string {
 }
 
 const fold = (text: string) => text.trim().toLowerCase().replace(/\s+/g, " ");
-/** The node a word names in his notation ("A1", "a2.1 nyp", "A3P4C1" or "P4C1", "DC2 upp", "Borta") or the lab's ("IDLE", "P4.C1", "VILA"), or null. */
+/** The node a word names in his notation ("A1", "a2.1 nyp", "A3P4C1" or "P4C1", "DC1 upp", "Borta") or the lab's ("IDLE", "P4.C1", "VILA"), or null. */
 export function nodeOf(word: string, graph: Pick<Graph, "edges"> | null = null): string | null {
   const nodes = roundNodes(graph);
   const want = fold(word);
@@ -225,7 +225,7 @@ export function nodeOf(word: string, graph: Pick<Graph, "edges"> | null = null):
 
 const orList = (words: readonly string[]) => (words.length < 2 ? words.join("") : `${words.slice(0, -1).join(", ")} eller ${words.at(-1)}`);
 
-/** What can follow a node, in a few words: "A2.1, A2.2, A1, DC2 upp eller Borta"; the cards as one ("ett kort eller A1"). */
+/** What can follow a node, in a few words: "A2.1, A2.2, A1, DC1 upp eller Borta"; the cards as one ("ett kort eller A1"). */
 export function followWords(graph: Pick<Graph, "edges"> | null, from: string): string {
   const next = followers(graph, from);
   const cards = new Set<string>([...CARDS, ...OPTIONAL_TARGETS]);
@@ -236,7 +236,7 @@ export function followWords(graph: Pick<Graph, "edges"> | null, from: string): s
 /**
  * What he typed, as a path: the steps of his notation, one node alone as the start, or the first thing that could not be
  * read, in one line. Two neighbours with no step between them also say what can follow the first:
- * "A1 → P4C1 går inte: efter A1 kommer A2.1, A2.2, A1, DC2 upp eller Borta."
+ * "A1 → P4C1 går inte: efter A1 kommer A2.1, A2.2, A1, DC1 upp eller Borta."
  */
 export function readPath(text: string, graph: Pick<Graph, "edges"> | null = null): { path: Path | null; error: string | null } {
   const source = text.trim();

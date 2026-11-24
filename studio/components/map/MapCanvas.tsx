@@ -6,7 +6,7 @@
 import "@xyflow/react/dist/style.css";
 import { Background, BackgroundVariant, ReactFlow, useReactFlow, useStore, type Edge, type Node } from "@xyflow/react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import type { Graph } from "../../../src/clip-graph.ts";
+import { REVEAL_EDGE, REVEAL_NODE, type Graph } from "../../../src/clip-graph.ts";
 import type { EdgeInfo } from "@/lib/edge-stats";
 import { seatReach, type MapLayout, type PlanPoints } from "@/lib/map-layout";
 import { nodeCode } from "@/lib/names";
@@ -15,7 +15,7 @@ import { experimentLines } from "./experiment-lines.ts";
 import { edgeTypes, type ExperimentEdgeType, type FilmEdgeType, type RailEdgeType } from "./MapEdges";
 import { nodeTypes, type DealerNodeType, type HubNodeType, type SeatNodeType } from "./MapNodes";
 
-const HUB_WORD: Record<string, string> = { IDLE: "vila", READY: "nyp vid skon", "READY-B": "hand över", AWAY: "tomt bord", "REVEAL(D.C2)": "" };
+const HUB_WORD: Record<string, string> = { IDLE: "vila", READY: "nyp vid skon", "READY-B": "hand över", AWAY: "tomt bord", [REVEAL_NODE]: "" };
 const PAD = { top: 16, side: 20, bottom: 56 }; // the legend sits under the map
 
 export type MapView = {
@@ -111,7 +111,7 @@ export function MapCanvas(view: MapView) {
   const nodes = useMemo<Node[]>(() => {
     const touched = new Set(layout.edges.filter((e) => inFocus(e.id, e.nodes)).flatMap((e) => e.nodes));
     const filled = (cards: string[]) => {
-      const ids = layout.edges.filter((e) => cards.some((c) => e.id.includes(c)) && e.id !== "IDLE>REVEAL(D.C2)").map((e) => e.id);
+      const ids = layout.edges.filter((e) => cards.some((c) => e.id.includes(c)) && e.id !== REVEAL_EDGE).map((e) => e.id);
       return { filled: ids.filter((id) => infos.get(id)?.now.take).length, of: ids.length };
     };
     return layout.nodes.map((n): Node => {
@@ -156,7 +156,7 @@ export function MapCanvas(view: MapView) {
           node: n.node,
           code: nodeCode(n.node),
           word: HUB_WORD[n.node] ?? "",
-          note: n.node === "READY-B" ? `${starts} ${starts === 1 ? "tagning startar" : "tagningar startar"} här` : n.node === "REVEAL(D.C2)" ? "hålkortet vänt upp" : null,
+          note: n.node === "READY-B" ? `${starts} ${starts === 1 ? "tagning startar" : "tagningar startar"} här` : n.node === REVEAL_NODE ? "hålkortet vänt upp" : null,
           loop: loopInfo ? { ...loopInfo, active: active === "IDLE>IDLE", dim: !!focus && focus !== "IDLE", onPick: () => onPick("IDLE>IDLE") } : null,
           label: `${nodeCode(n.node)} ${HUB_WORD[n.node] ?? ""}: visa bara filmerna hit och härifrån.`,
         },

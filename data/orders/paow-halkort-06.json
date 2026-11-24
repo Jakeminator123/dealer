@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 1,
+  "title": "Paow · Hålkortet (DC1) vänds upp från vila, handen tillbaka",
+  "summary": "Gör en film av Paow: hålkortet vänds upp, från och till ankare 1.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "HALKORT",
+    "label": "Hålkortet vänds upp från vila, handen tillbaka",
+    "edge": "IDLE>REVEAL(D.C1)",
+    "shape": "ONE_WAY",
+    "cutInto": [],
+    "makes": null
+  },
+  "motion": null,
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows A1 + hålkortet stängt",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-halkort-06/first.png",
+      "sha256": "a2e46a18ab99be2556a64efc211f4dec0d61986dc2f1e73e0fdcc6a2e5628144",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-vila-tatuerad",
+        "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+        "note": "Vila, tatuerade händer (gäller); dealerns kort ritade där planen säger"
+      },
+      "waits": null,
+      "drawn": {
+        "target": "D.C1",
+        "side": "BACK",
+        "as": "verkligt perspektiv: ett verkligt kort genom bordets lins, formen 87 % (src/card-plan.ts)",
+        "plan": {
+          "path": "placements/default.json",
+          "sha256": "a4f84f4a7039b78ae252eac980738fc2f25ce8f3ff06e712499316e7338ade86",
+          "updatedAt": "2026-11-23T23:42:05.513Z"
+        },
+        "texture": {
+          "image": "assets/cards/kortets-textur.png",
+          "sha256": "8a027a00d7f4dad1428b8db2c8b5a7ca283db92b8b93d96eb23cf77ce55df5a9"
+        },
+        "quad": [
+          [
+            817.5,
+            902.1
+          ],
+          [
+            884.6,
+            902.1
+          ],
+          [
+            887.5,
+            959.5
+          ],
+          [
+            812.2,
+            959.5
+          ]
+        ],
+        "centre": [
+          850.4,
+          930.8
+        ],
+        "measured": {
+          "centre": [
+            850.6,
+            931.7
+          ],
+          "area": 4475,
+          "box": [
+            76,
+            60
+          ],
+          "changedElsewhere": 0
+        },
+        "measuredOffsetPx": 0.9
+      },
+      "drawnBeside": []
+    },
+    {
+      "name": "last.png",
+      "label": "Slutbild · samma, hålkortet öppet",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-halkort-06/last.png",
+      "sha256": "240663c2d6696248301ae80ce0abecce97da3a0e6e050ed663a4ac0388ce8b5e",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-vila-tatuerad",
+        "path": "assets/anchors/paow-vila-tatuerad/anchor.png",
+        "note": "Vila, tatuerade händer (gäller); dealerns kort ritade där planen säger"
+      },
+      "waits": null,
+      "drawn": {
+        "target": "D.C1",
+        "side": "FRONT",
+        "as": "verkligt perspektiv: ett verkligt kort genom bordets lins, formen 87 % (src/card-plan.ts)",
+        "plan": {
+          "path": "placements/default.json",
+          "sha256": "a4f84f4a7039b78ae252eac980738fc2f25ce8f3ff06e712499316e7338ade86",
+          "updatedAt": "2026-11-23T23:42:05.513Z"
+        },
+        "texture": {
+          "image": "assets/cards/kortets-textur.png",
+          "sha256": "8a027a00d7f4dad1428b8db2c8b5a7ca283db92b8b93d96eb23cf77ce55df5a9"
+        },
+        "quad": [
+          [
+            817.5,
+            902.1
+          ],
+          [
+            884.6,
+            902.1
+          ],
+          [
+            887.5,
+            959.5
+          ],
+          [
+            812.2,
+            959.5
+          ]
+        ],
+        "centre": [
+          850.4,
+          930.8
+        ],
+        "measured": {
+          "centre": [
+            850.4,
+            931.7
+          ],
+          "area": 4443,
+          "box": [
+            76,
+            60
+          ],
+          "changedElsewhere": 0
+        },
+        "measuredOffsetPx": 0.9,
+        "mark": {
+          "cross": [
+            255,
+            120,
+            200
+          ],
+          "dot": [
+            225,
+            30,
+            35
+          ]
+        }
+      },
+      "drawnBeside": []
+    }
+  ],
+  "reference": {
+    "status": "INGEN",
+    "why": "WAN 3 tar ingen referensfilm tillsammans med första och sista bild."
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "wan3",
+    "params": {
+      "resolution": "1080p",
+      "duration": 5,
+      "ratio": "adaptive",
+      "generateAudio": false
+    }
+  },
+  "prompt": {
+    "template": "film-halkort-kort@12",
+    "style": "KORT",
+    "text": "Locked camera, one continuous shot. Her hand nearest the shoe goes low over the felt to the yellow card lying close in front of her, in the middle of the picture, where the last frame shows it. There her thumb slides under the long edge nearest it and lifts it as her wrist turns thumb side up; the card rolls over on its opposite long edge, which stays on the felt, and her thumb comes over onto the blue face. Her open hand glides back low over the felt, palm down, and comes to rest flat on the felt. The other hand rests on the felt. Only one card moves. The card is plain, one flat solid yellow from edge to edge on its back and one flat solid blue from edge to edge on its face, and the next card in the window is the same plain solid yellow.",
+    "sha256": "ad36ff55398535f755a8ebbee6756ac34acf6e06fd12e34cec50ea7cb549d587",
+    "extra": null,
+    "middle": false
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 100,
+    "total": 100,
+    "worstPerTake": 100,
+    "worstTotal": 100,
+    "basis": "20 krediter per s × 5 s. DRIFT, Lärdomar som gäller, som sidan stod till commit f6f68ef (git show f6f68ef:docs/DRIFT.md): 20 per s i full storlek; en ingång på 4 s kostade 80 (handboken, tools/film-prompting.md §5)."
+  },
+  "limits": {
+    "maxCredits": 100,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Recept halkort: prövat i 3 beställningar."
+  ],
+  "createdBy": "huvudagenten, tools/order-new.ts",
+  "approval": null,
+  "status": "UTKAST",
+  "id": "paow-halkort-06",
+  "created": "2026-11-24T04:19:56.725Z"
+}

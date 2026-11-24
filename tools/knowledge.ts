@@ -196,8 +196,8 @@ const short = (text: string, max: number) => text.length > max ? `${text.slice(0
 export function placeWords(node: string): string {
   const seat = /^P([1-7])\.C([1-3])$/.exec(node), dealer = /^D\.C([1-3])$/.exec(node);
   if (seat) return `plats ${seat[1]}, kort ${seat[2]}`;
-  if (dealer) return `dealerns kort ${dealer[1]}${dealer[1] === '2' ? ' (hålkortet)' : ''}`;
-  return ({IDLE: 'A1 (vila)', READY: 'A2.1 (nyp)', 'READY-B': 'A2.2 (hand över)', AWAY: 'borta från bordet', 'REVEAL(D.C2)': 'hålkortet vänt upp'} as Record<string, string>)[node] ?? node;
+  if (dealer) return `dealerns kort ${dealer[1]}${dealer[1] === '1' ? ' (hålkortet)' : ''}`;
+  return ({IDLE: 'A1 (vila)', READY: 'A2.1 (nyp)', 'READY-B': 'A2.2 (hand över)', AWAY: 'borta från bordet', 'REVEAL(D.C1)': 'hålkortet vänt upp', 'REVEAL(D.C2)': 'dealerns kort 2 vänt upp (äldre film, kortet låg stängt där)'} as Record<string, string>)[node] ?? node;
 }
 const verdictWord = (t: Take) => { const v = verdictOf(t); return `${v.label.toLowerCase()}${v.detail ? ` (${v.detail})` : ''}${v.byJakob ? ' av Jakob' : v.verdict === 'vantar' ? '' : ' av granskare'}`; };
 

@@ -16,7 +16,7 @@
 // landing picture. A reference film adds one sentence (SAY.reference) in every style: it shows the movement only (template
 // 14 says it as a rough guide, in the short text: SAY.v14.reference). The way out (UTGANG, READY>IDLE; UTGANG-2.2,
 // READY-B>IDLE, from the drag; UTGANG-2.3, READY-C>IDLE, both hands) and the hole card's turn from rest (HALKORT,
-// IDLE>REVEAL(D.C2)) came after template 3 and are written Kort or Minimal only.
+// IDLE>REVEAL(D.C1)) came after template 3 and are written Kort or Minimal only.
 //
 // A deal follows the hand chosen: the left hand all the way, the right hand all the way, or handbyte (the left hand takes
 // the card and gives it to the right hand low in front of her body; the right lays it). Every sentence that names a hand
@@ -366,7 +366,7 @@ export const SAY = {
   leaveBothMinimal: 'Both her hands go from the shoe back to the table, as in the last frame.',
   eyesUp: 'Her eyes come up from the shoe towards the players.',
   leaveMinimal: 'Her hand goes from the yellow card in the shoe back to the table, as in the last frame.',
-  // The hole card turned open from rest (IDLE>REVEAL(D.C2)): the reach, the turn at the place (turnAtPlace), the way back.
+  // The hole card turned open from rest (IDLE>REVEAL(D.C1)): the reach, the turn at the place (turnAtPlace), the way back.
   revealReach: (where: string | null) => `Her hand nearest the shoe goes low over the felt to the yellow card lying ${where ?? 'in front of her'}.`,
   revealMinimal: 'One card in front of her turns from yellow to blue, as in the last frame, and her hand goes back to rest.',
   // A rest: the fixed part; Jakob's addition says what happens.
@@ -895,7 +895,7 @@ function exitText(input: PromptInput, style: TextStyle, from: '2.1' | '2.2' | '2
 }
 
 /**
- * The hole card turned open from rest (IDLE>REVEAL(D.C2)): the hand nearest the shoe goes low to the closed card where the
+ * The hole card turned open from rest (IDLE>REVEAL(D.C1)): the hand nearest the shoe goes low to the closed card where the
  * plan lays it (said in words, as a deal says its place), turns it at the place as the handbook's turn A (SAY.turnAtPlace),
  * and glides back to rest. One card moves. Written Kort or Minimal only.
  */

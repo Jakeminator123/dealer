@@ -23,7 +23,7 @@ import { readFile } from 'node:fs/promises';
 import { existsSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SEATS, bankEdges, buildGraph, parseEdge, roundSequence, type BankData, type EdgeKind, type Graph } from '../src/clip-graph.ts';
+import { HOLE_CARD, SEATS, bankEdges, buildGraph, parseEdge, roundSequence, wantedSide, type BankData, type EdgeKind, type Graph } from '../src/clip-graph.ts';
 import { ANCHOR_NODE, ANCHOR_ROLE, LANDING_ROLE, MODELS, SHOWN_LABEL, giveEndOf, landingNode, readCutChecks, seatEndOf, seatWords, stepOf, type Anchor as AnchorKey, type BankFacts, type Order, type Shown, type StepKey } from '../src/order-model.ts';
 import { methodFor, readMethods, recipeFor, recipeHands, recipeWords, referenceAbsent, referenceByRule, type Method, type MethodRegister } from '../src/order-methods.ts';
 import { bankSummary, hubAnchor, playing, type Hubs, type Summary } from '../studio/lib/edge-stats.ts';
@@ -56,10 +56,10 @@ export type Have = Verdict | 'saknas';
 const IN_FLIGHT: readonly Shown[] = ['UTKAST', 'VÄNTAR', 'KLAR_ATT_TRYCKA', 'GODKÄND', 'LAGD', 'OSÄKER', 'KLAR', 'HÄMTAD', 'EFTERARBETAD', 'MÄTT'];
 const DELIVERED: readonly Shown[] = ['HÄMTAD', 'EFTERARBETAD', 'MÄTT'];
 
-/** "plats 2", "dealerns kort", "hålkortet": a card of the round in Jakob's words. */
+/** "plats 2", "hålkortet" (her first card, dealt closed), "dealerns öppna kort": a card of the round in Jakob's words. */
 export function cardWords(target: string): string {
-  if (target === 'D.C1') return 'dealerns kort';
-  if (target === 'D.C2') return 'hålkortet';
+  if (target === HOLE_CARD) return 'hålkortet';
+  if (target === 'D.C2') return 'dealerns öppna kort';
   return seatWords(target);
 }
 /** A step of the graph in Jakob's words: "Giv · plats 2", "Retur · plats 2 → ankare 2.1", "Hålkortet vänds upp". */
@@ -71,7 +71,7 @@ export function stepLabel(edge: { id: string; kind: EdgeKind | null; target: str
     case 'REVEAL': return 'Hålkortet vänds upp';
     case 'ARRIVE': return 'Kommer in och sätter sig';
     case 'LEAVE': return 'Reser sig och går';
-    case 'DEAL': return `Giv · ${cardWords(t!)}${t === 'D.C2' ? ' (stängt)' : ''}`;
+    case 'DEAL': return `Giv · ${cardWords(t!)}${t === HOLE_CARD ? ' (stängt)' : ''}`;
     case 'RETURN': return t ? `Retur · ${cardWords(t)} → ${edge.to === 'READY' ? 'ankare 2.1' : 'vila'}` : 'Utgång · ankare 2.1 → 1';
     default: return edge.id;
   }
@@ -285,7 +285,7 @@ export function productionList(input: ProductionInput): Production {
     // view loads no film for it.
     const shownAnchor = def ? (def.start === 'LAND' ? (def.to ?? def.from) : edge.kind === 'ENTRY' ? '2.1' : def.kind === 'FILM' && def.to && !def.card && !def.cards ? def.to : def.from) : null;
     const anchor = shownAnchor ? anchorHolding(entries, shownAnchor) : null;
-    const cards = def?.cards ? def.cards.map((c) => ({ target: c.target, side: c.after })) : edge.target && edge.kind !== 'REVEAL' ? [{ target: edge.target, side: seats[edge.target]?.side ?? (edge.target === 'D.C2' ? 'BACK' : 'FRONT') }] : [];
+    const cards = def?.cards ? def.cards.map((c) => ({ target: c.target, side: c.after })) : edge.target && edge.kind !== 'REVEAL' ? [{ target: edge.target, side: seats[edge.target]?.side ?? wantedSide(edge.target) }] : [];
     const picture: RowPicture = anchor && anchor.frame === undefined
       ? { path: anchor.path ?? null, frame: null, waits: null, cards }
       : { path: null, frame: null, waits: def ? anchorWords(shownAnchor!) : 'bild utan henne', cards };

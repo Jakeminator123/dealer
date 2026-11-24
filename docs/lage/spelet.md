@@ -4,7 +4,7 @@ Huvudagentens bana: spelet, scenens filmlager, nätkopian och stängda banor. Ko
 
 **Läget.**
 - Spelet i studion står på egna ben i nuläget (Jakob 2026-11-23), med den fristående spelmotorn i `game/`; inget
-  flyttas från Scoutgaming. Paow är dealern; utan trädord spelas trädet Tatuerad, och hennes stängda kort är D.C1 (2026-11-24), vänt utan film än. Spelets nödlösningar (en ersättare där en film saknas,
+  flyttas från Scoutgaming. Paow är dealern; utan trädord spelas trädet Tatuerad, och hennes stängda kort är D.C1 (2026-11-24): vändningen (`IDLE>REVEAL(D.C1)`) väntar på film (utkast `paow-halkort-06`), tills dess vänds kortet utan hand. Spelets nödlösningar (en ersättare där en film saknas,
   utgången baklänges) ger vika när banken har egna filmer (`src/game-director.ts`). Kärnans gräns mot sidan är prövad
   (`docs/SYSTEM.md`, "Gränsen mellan kärnan och presentationen"; `de1883c`) och sedd i en webbläsare 2026-11-18.
 - Dela ut går före väntande vilor: vilan som visas spelas klart (hon står på A1) och ingången är nästa film; 0,55–3,9 s från klick till ingång ([SYSTEM](../SYSTEM.md), "Spelet"). Inte byggt: utgångsrutor i en vila där hon passerar A1.

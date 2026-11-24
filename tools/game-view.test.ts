@@ -6,7 +6,7 @@ import {createSession, type Snapshot} from '../game/session.ts';
 import {defaultPlan} from '../src/placement-model.ts';
 import {createLayout, slotOf, slotLabel, slotFilm, FAN} from '../src/game-table.ts';
 import {planBeats, cardRecords, lyingAfter, SEAT_HUB} from '../src/game-director.ts';
-import {buildGraph, formatSequence, roundSequence} from '../src/clip-graph.ts';
+import {HOLE_CARD, buildGraph, formatSequence, roundSequence} from '../src/clip-graph.ts';
 import {cardOptions, createFilm, placedCards} from '../src/game-film.ts';
 import {cardFace, cardRecord} from '../src/card-overlay.ts';
 import {createRng} from '../game/rng.ts';
@@ -208,9 +208,10 @@ test('every card the engine deals is the one shown on its place: seeded rounds w
 // The film module (src/game-film.ts) over a fake film queue that records what it is handed: Paow's films for seat 4 only (the dealer's
 // cards are laid without a hand) and a rest film. step() plays one engine answer as the page does and returns the parts played.
 type Part = {path: string; rest?: boolean; cards?: unknown};
-function fixtureFilm() {
-  const jobs = [['in', 'IDLE', 'READY', 'ENTRY'], ['deal', 'READY', 'P4.C1', 'DEAL'], ['back', 'P4.C1', 'READY', 'RETURN'], ['rest-4', 'P4.C1', 'IDLE', 'RETURN'], ['ut', 'READY', 'IDLE', 'RETURN'], ['vila', 'IDLE', 'IDLE', 'IDLE']]
-    .map(([id, from, to, kind]) => ({id, kind, target: kind === 'DEAL' ? to : null, from, to, model: 'wan3', duration: 4, ratio: 'auto_1080p', audio: false, promptText: 'fixture', first: {file: {path: 'assets/anchors/x/anchor.png', sha256: 'a'.repeat(64)}}, purpose: 'fixture', dealer: 'paow'}));
+function fixtureFilm(turned?: string) {
+  const jobs = [['in', 'IDLE', 'READY', 'ENTRY'], ['deal', 'READY', 'P4.C1', 'DEAL'], ['back', 'P4.C1', 'READY', 'RETURN'], ['rest-4', 'P4.C1', 'IDLE', 'RETURN'], ['ut', 'READY', 'IDLE', 'RETURN'], ['vila', 'IDLE', 'IDLE', 'IDLE'],
+    ...turned ? [['turn', 'IDLE', `REVEAL(${turned})`, 'REVEAL']] : []]
+    .map(([id, from, to, kind]) => ({id, kind, target: kind === 'DEAL' ? to : kind === 'REVEAL' ? turned : null, from, to, model: 'wan3', duration: 4, ratio: 'auto_1080p', audio: false, promptText: 'fixture', first: {file: {path: 'assets/anchors/x/anchor.png', sha256: 'a'.repeat(64)}}, purpose: 'fixture', dealer: 'paow'}));
   const bank = {jobs, motions: Object.fromEntries(jobs.map(j => [j.id, {source: {fps: 30, frames: 120, sha256: 'a'.repeat(64)}, review: {decision: 'ACCEPTED'}, motion: j.id === 'vila' ? {idle: {calm: true, weight: 20}} : {physicalEndSide: 'FRONT'}}])),
     receipts: Object.fromEntries(jobs.map(j => [j.id, {status: 'SUCCEEDED'}])), media: Object.fromEntries(jobs.map(j => [j.id, {video: `assets/motions/${j.id}/source.mp4`}]))};
   const parts: Part[][] = []; let end: () => void = () => {};
@@ -242,6 +243,22 @@ test('the hole card goes to the film closed, and only the step that turns it ope
   assert.ok(after.length > 0, 'rest follows the chain');
   const open = ten(after[0]);
   assert.deepEqual([open.record!.r, open.record!.faceDown, open.placed!.back, open.placed!.shoeDraw], ['10', false, false, holeDraw], 'after its turn the same card lies open, on its place');
+});
+
+test('the closed card is D.C1, and a film that turns the card at D.C1 turns it when there is one (Jakob 2026-11-24)', async () => {
+  // The same round as above, with no film for the turn, with one for D.C1, and with an older one made when the closed card lay at D.C2.
+  const round = async (turned?: string) => {
+    const {step} = fixtureFilm(turned), s = session('K♠ 10♣ 6♥ 7♦ 5♦'), dealt = run(s, {op: 'start', bets: [{seat: 4, main: 10}]});
+    const lying = lyingAfter([], planBeats(tableCards(dealt), [], dealt.events)); await step(dealt);
+    const hit = run(s, {op: 'act', seat: 4, handIndex: 0, action: 'hit', roundId: dealt.view.roundId, turnSeq: dealt.view.turnSeq});
+    return {dealt, beat: planBeats(tableCards(hit), lying, hit.events).find(b => b.kind === 'REVEAL')!, chain: (await step(hit)).filter(p => !p.rest).map(p => p.path.split('/')[2])};
+  };
+  const none = await round();
+  assert.equal(HOLE_CARD, 'D.C1'); assert.equal(tableCards(none.dealt).dealer.indexOf(none.dealt.view.round!.holeDraw!), 0, 'the engine lays her first card closed');
+  assert.deepEqual([none.beat.own!.label, none.beat.step], ['D.C1', {from: 'IDLE', to: 'REVEAL(D.C1)'}], 'the turn asks for the film of the place where the closed card lies');
+  assert.deepEqual(none.chain, ['in', 'deal', 'rest-4'], 'no film: the card is turned without a hand');
+  assert.deepEqual((await round('D.C1')).chain, ['in', 'deal', 'rest-4', 'turn'], 'a film for D.C1 turns it');
+  assert.deepEqual((await round('D.C2')).chain, ['in', 'deal', 'rest-4'], 'a film that turns the card at D.C2 is never played as the turn of D.C1');
 });
 
 // ── What the page may ask the engine, and when (src/game-page.ts controls, mayAsk) ──

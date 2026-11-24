@@ -1,6 +1,6 @@
 // Jakob's names for what the clip bank holds: anchors (nodes), films between them (edges), single takes, and his way of
 // writing a round ("A2.1 - A3P4C1 - A2.1 - A3P4C2 - A2.1"). Pure: no DOM, no network; tested through studio/tests/archive.test.ts and tools/chain-consistency.test.ts.
-import { REVEAL_NODE, parseEdge, parseNode, parseSequence, type EdgeKind, type Step, type Take } from "../../src/clip-graph.ts";
+import { OLDER_REVEAL_EDGE, REVEAL_NODE, parseEdge, parseNode, parseSequence, type EdgeKind, type Step, type Take } from "../../src/clip-graph.ts";
 import { ANCHOR_WORDS } from "./words.ts";
 
 // ── Anchors ─────────────────────────────────────────────────────────────────
@@ -9,13 +9,16 @@ import { ANCHOR_WORDS } from "./words.ts";
 // 2026-11-21: "'A3P2C1' är t.ex. 'Ankare 3, Player 2, card 1'": the anchor where a card has landed is written together with
 // the player and the card. The card's place on the table, without a dealer in the picture, stays "P4C1" (cardCode).
 // The words themselves live in lib/words.ts, the studio's one table of words (the rail's Ordlista and the bot read it too).
+// The node of the older films that turn the card at D.C2 (made before 2026-11-24, when the hole card lay there).
+const OLDER_TURN = OLDER_REVEAL_EDGE.slice(OLDER_REVEAL_EDGE.indexOf(">") + 1);
 const ANCHORS: Record<string, { code: string; name: string }> = {
   IDLE: ANCHOR_WORDS.IDLE,
   READY: ANCHOR_WORDS.READY,
   "READY-B": ANCHOR_WORDS["READY-B"],
   "READY-C": ANCHOR_WORDS["READY-C"],
   AWAY: ANCHOR_WORDS.AWAY,
-  [REVEAL_NODE]: ANCHOR_WORDS["REVEAL(D.C2)"],
+  [REVEAL_NODE]: ANCHOR_WORDS["REVEAL(D.C1)"],
+  [OLDER_TURN]: ANCHOR_WORDS["REVEAL(D.C2)"],
 };
 
 /** A card's place on the table as its short code: P4.C1 → "P4C1", D.C1 → "DC1"; null for anything that is no card. */
@@ -24,7 +27,7 @@ export function cardCode(node: string): string | null {
   return card ? `${card[1]}C${card[2]}` : null;
 }
 
-/** The short code of a node: IDLE → "A1", READY → "A2.1", READY-B → "A2.2", P4.C1 → "A3P4C1", D.C1 → "A3DC1", REVEAL(D.C2) → "DC2 upp". */
+/** The short code of a node: IDLE → "A1", READY → "A2.1", READY-B → "A2.2", P4.C1 → "A3P4C1", D.C1 → "A3DC1", REVEAL(D.C1) → "DC1 upp". */
 export function nodeCode(node: string): string {
   const known = ANCHORS[node];
   if (known) return known.code;
@@ -209,7 +212,7 @@ export function factsLine(facts: TakeFacts): string {
 // "A2.1 - A3P4C1 - A2.1 - A3P4C2 - A2.1": anchors in the order the hand passes them (a card also without its "A3", as he
 // wrote rounds before 2026-11-21: "A2.1 - P4C1 - A2.1"). Between two of them stands
 // -, –, →, > or just a space; "|", "," or a new line starts a new chain. Accepted names: A1 (vila), A2.1 (nyp),
-// A2.2 (hand över), P1C1…P7C2, DC1…DC3 (with or without the dot), "DC2 upp", Borta, and the lab's own words (IDLE, READY,
+// A2.2 (hand över), P1C1…P7C2, DC1…DC3 (with or without the dot), "DC1 upp" (and the older films' "DC2 upp"), Borta, and the lab's own words (IDLE, READY,
 // READY-B, VILA, REDO, P4.C1). The lab's own notation with pinned takes ("READY>P4.C1@<take> | …") is passed to
 // parseSequence. Nothing is guessed: what cannot be read, or two neighbours with no film between them, is reported.
 export type JakobRound = { steps: Step[]; errors: string[] };
@@ -219,8 +222,10 @@ const TOKENS: [RegExp, string | null][] = [
   [/A2\.1(?:\s*nyp)?(?![\p{L}\d.])/iuy, "READY"],
   [/A2\.2(?:\s*hand\s*över)?(?![\p{L}\d.])/iuy, "READY-B"],
   [/A2\.3(?:\s*två\s*händer)?(?![\p{L}\d.])/iuy, "READY-C"],
-  [/D\.?C2\s+upp(?![\p{L}\d.])/iuy, REVEAL_NODE],
-  [/REVEAL\(\s*D\.?C2\s*\)/iuy, REVEAL_NODE],
+  [/D\.?C1\s+upp(?![\p{L}\d.])/iuy, REVEAL_NODE],
+  [/REVEAL\(\s*D\.?C1\s*\)/iuy, REVEAL_NODE],
+  [/D\.?C2\s+upp(?![\p{L}\d.])/iuy, OLDER_TURN],
+  [/REVEAL\(\s*D\.?C2\s*\)/iuy, OLDER_TURN],
   [/READY-[A-Z](?![\p{L}\d.])/iuy, null], // a hub variant, written out: READY-B
 ];
 const A3_CARD = /^A3(?=(?:P[1-7]|D)\.?C[1-3]$)/i; // "A3P4C1" names the card's node P4.C1

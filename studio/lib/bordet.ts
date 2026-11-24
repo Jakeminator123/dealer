@@ -257,7 +257,7 @@ export const otherWishes = (): FilmWish[] => OTHER_STEPS.filter((k) => stepOf(k)
 /** The bank's edges a film is filed under, as nodes: a deal tur och retur gives anchor → card → anchor. */
 function nodesOf(step: StepDef, target: string | null, shape: Shape | null): string[] {
   const from = ANCHOR_NODE[step.from], to = ANCHOR_NODE[step.to ?? step.from];
-  if (step.edge === "IDLE>REVEAL(D.C2)") return ["IDLE", "REVEAL(D.C2)", "IDLE"];
+  if (step.edge?.startsWith("IDLE>REVEAL(")) return ["IDLE", step.edge.slice("IDLE>".length), "IDLE"];
   if (step.card && target) {
     if (step.start === "LAND") return [target, to];
     return shape === "ROUND_TRIP" ? [from, target, from] : [from, target];

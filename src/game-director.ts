@@ -16,7 +16,7 @@
 // A card on the dealer's SEAT_HUB is dealt from that other pose at the shoe (READY-B) when the films for it can be played, and the
 // chain goes through rest around it: IDLE>READY-B, the deal, the return to READY-B and READY-B>IDLE (roundSequence in the clip bank
 // does the same).
-import {HOLE_CARD, REVEAL_NODE, buildGraph, dealersOf, dealHub, judgedRecord, parseEdge, playable, resolveRound, returnFits, type BankData, type Graph, type Segment, type Step, type Why} from './clip-graph.ts';
+import {REVEAL_NODE, revealNode, buildGraph, dealersOf, dealHub, judgedRecord, parseEdge, playable, resolveRound, returnFits, type BankData, type Graph, type Segment, type Step, type Why} from './clip-graph.ts';
 import {slotOf, slotFilm, slotLabel, type Slot, type TableCards} from './game-table.ts';
 
 // The signals this file reads; everything else in the engine's list is for the overlay.
@@ -25,14 +25,17 @@ export type BeatKind = 'ENTRY' | 'DEAL' | 'RETURN' | 'EXIT' | 'REVEAL' | 'PLACE'
 // step: the edge to play. own: the card the film itself carries (null on the way to the shoe). lying: the cards at rest on
 // the table while the beat plays, by draw number, without the film's own card. PLACE is a card that has no film to deal
 // it (none made yet, or the only one rejected): it has no step and is simply laid on its place when its turn comes. A REVEAL
-// of a card the bank's turn film does not turn has no step either: the drawn card is turned where it lies, without a hand.
+// asks for the film that turns a card at the place where the card lies (revealStep); a card at a place no step turns one at has
+// no step. Where the step has no film that can be played, the drawn card is turned where it lies, without a hand (src/game-film.ts).
 export type Beat = {kind: BeatKind; step: Step | null; own: {shoeDraw: number; slot: Slot; label: string} | null; lying: number[]};
 
-// The hole card's turn is the clip bank's edge IDLE>REVEAL(D.C2), a film of her hand turning the card that lies at D.C2 (HOLE_CARD);
-// its node is passed on to those who read it here. Since 2026-11-24 the hole card is her first card and lies at D.C1 (BESKED,
-// "Dealerns första kort ligger stängt"): no film turns a card there yet, so that turn is played without a hand (planBeats), and
-// the film plays again by itself for a hole card that lies where it turns one.
+// The hole card's turn is the clip bank's edge IDLE>REVEAL(D.C1), a film of her hand turning the card that lies at D.C1 (HOLE_CARD:
+// her first card, closed; BESKED, "Dealerns första kort ligger stängt", 2026-11-24); its node is passed on to those who read it
+// here. The films made before that day turn the card at D.C2 (IDLE>REVEAL(D.C2), an optional step no round asks for): a hand turning a card at
+// another place than the one that is turned, so they are never played for D.C1. Until a film turns D.C1 the turn has no hand.
 export {REVEAL_NODE};
+/** The step that turns the card lying at `label` (D.C1: the hole card's turn), or null where no step turns a card. */
+export const revealStep = (label: string): Step | null => { const to = revealNode(label); return to ? {from: 'IDLE', to} : null; };
 
 // STOPGAP (huvudagenten 2026-11-13, for showing Paow's round): a card whose own deal has no film that can be played is dealt with
 // the film named here, the drawn card laid at its own place. The dealer's second card: when READY>D.C2 has no film, it is dealt
@@ -119,7 +122,7 @@ export function planBeats(table: TableCards, lying: number[], signals: FilmSigna
     const slot = slots[i];
     const own = {shoeDraw: move.shoeDraw, slot, label: slotLabel(slot)}, others = () => rest.filter(n => n !== move.shoeDraw);
     if (move.type === 'reveal') {
-      beats.push({kind: 'REVEAL', step: own.label === HOLE_CARD ? {from: 'IDLE', to: REVEAL_NODE} : null, own, lying: others()});
+      beats.push({kind: 'REVEAL', step: revealStep(own.label), own, lying: others()});
       if (!rest.includes(move.shoeDraw)) rest.push(move.shoeDraw);
       return;
     }

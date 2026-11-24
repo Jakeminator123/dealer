@@ -65,10 +65,10 @@ test('notation: nodes and edges parse tolerantly and print in one canonical form
 test('the bank is 54 edges: three per planned card, entry, exit, idle, the turn of the hole card, her coming and her leaving, with the third dealer card kept apart', () => {
   assert.deepEqual(graph.TARGETS, PLAN_TARGETS);
   const g = graph.buildGraph({});
-  assert.equal(g.summary.total, 54); assert.equal(g.summary.optional.total, 3);
+  assert.equal(g.summary.total, 54); assert.equal(g.summary.optional.total, 4); // the third dealer card's three, and the older turn of the card at D.C2
   assert.equal(g.summary.done, 0); assert.equal(g.summary.byStatus.MISSING, 54);
-  assert.equal(new Set(g.edges.map(e => e.id)).size, 57);
-  assert.deepEqual(g.edges.filter(e => e.optional).map(e => e.id), ['READY>D.C3', 'D.C3>READY', 'D.C3>IDLE']);
+  assert.equal(new Set(g.edges.map(e => e.id)).size, 58);
+  assert.deepEqual(g.edges.filter(e => e.optional).map(e => e.id), ['READY>D.C3', 'D.C3>READY', 'D.C3>IDLE', graph.OLDER_REVEAL_EDGE]);
   assert.equal(g.summary.credits.committed, null);
 });
 
@@ -119,7 +119,7 @@ test('a job outside the model becomes an experiment with its own takes; nothing 
   // Known node names are written the model's way, unknown ones as the job wrote them.
   assert.deepEqual(g.experiments.map(e => [e.id, e.kind, e.takes.length, e.status, e.experiment]), [['READY-B>READY-B', 'IDLE', 2, 'UNREVIEWED', true], ['P1.C1>P2.C1', 'RETURN', 1, 'PREPARED', true], ['READY>LAND(P9.C1)', 'DEAL', 1, 'PREPARED', true]]);
   assert.equal(g.summary.experiments.total, 3); assert.equal(g.summary.experiments.done, 1);
-  assert.equal(g.edges.length, 57); assert.equal(g.edges.some(e => e.experiment), false);
+  assert.equal(g.edges.length, 58); assert.equal(g.edges.some(e => e.experiment), false);
   // Same take logic as inside the model: the rejected take is never the main one.
   const shoe = g.edge['READY-B>READY-B'];
   assert.equal(shoe.main?.id, 'paow-ready-b-shoe-plate-02'); assert.deepEqual(shoe.takes.map(t => graph.takeRole(shoe, t)), ['REJECTED', 'MAIN']);
@@ -228,7 +228,7 @@ test('a standard round is IDLE>READY, each deal with its return, and IDLE after 
   assert.equal(graph.roundSequence({seats: graph.SEATS}).length, 1 + 16 * 2);
   for (const steps of [graph.roundSequence({seats: graph.SEATS, thirdDealerCard: true}), graph.roundSequence({seats: ['P3'], cards: 1})])
     steps.forEach((s, i) => assert.equal(s.from, i ? steps[i - 1].to : 'IDLE'));
-  assert.equal(graph.wantedSide('D.C2'), 'BACK'); assert.equal(graph.wantedSide('D.C2', false), 'FRONT'); assert.equal(graph.wantedSide('P4.C2'), 'FRONT');
+  assert.equal(graph.wantedSide('D.C1'), 'BACK'); assert.equal(graph.wantedSide('D.C1', false), 'FRONT'); assert.equal(graph.wantedSide('D.C2'), 'FRONT'); assert.equal(graph.wantedSide('P4.C2'), 'FRONT');
 });
 
 test('a round can deal a seat from READY-B: through rest around it, staying at READY-B between two of its cards', () => {
@@ -244,7 +244,7 @@ test('a round can deal a seat from READY-B: through rest around it, staying at R
   assert.equal(round({seats: ['P6'], dealer: false, hubs}), 'IDLE>READY-B | READY-B>P6.C1 | P6.C1>READY-B | READY-B>P6.C2 | P6.C2>READY-B | READY-B>IDLE');
   // The hole card's turn and the third dealer card start from rest, after READY-B's exit as after any return to rest.
   assert.deepEqual(graph.roundSequence({seats: ['P6'], reveal: true, thirdDealerCard: true, hubs}).map(e => e.id).slice(-8),
-    ['READY-B>IDLE', 'IDLE>READY', 'READY>D.C2', 'D.C2>IDLE', 'IDLE>REVEAL(D.C2)', 'IDLE>READY', 'READY>D.C3', 'D.C3>IDLE']);
+    ['READY-B>IDLE', 'IDLE>READY', 'READY>D.C2', 'D.C2>IDLE', 'IDLE>REVEAL(D.C1)', 'IDLE>READY', 'READY>D.C3', 'D.C3>IDLE']);
   // Every step is an edge of the model, and each starts where the one before it ended (rest with the hole card turned is rest).
   for (const options of [{seats: graph.SEATS, hubs}, {seats: ['P6'], dealer: false, hubs}, {seats: ['P5', 'P6', 'P7'], reveal: true, thirdDealerCard: true, hubs}]) {
     const steps = graph.roundSequence(options), pose = (node: string) => node === graph.REVEAL_NODE ? 'IDLE' : node;
@@ -308,16 +308,16 @@ test('a round resolves to one take per step, cuts each deal at its landing frame
   const refused = graph.resolveRound(g, [{from: 'READY', to: 'P4.C1', take: 'paow-p4-c1-plan-deal-01'}])[0];
   assert.equal(refused.take?.id, 'paow-p4-c1-plan-deal-02'); assert.match(refused.notes[0], /Låst tagning/);
   // Unknown edges, broken chains and unfinished work never throw.
-  const odd = graph.resolveRound(g, [{from: 'P1.C1', to: 'P2.C1'}, {from: 'READY', to: 'P7.C1'}, {from: 'P7.C1', to: 'IDLE'}, {from: 'READY', to: 'D.C2'}]);
+  const odd = graph.resolveRound(g, [{from: 'P1.C1', to: 'P2.C1'}, {from: 'READY', to: 'P7.C1'}, {from: 'P7.C1', to: 'IDLE'}, {from: 'READY', to: 'D.C1'}]);
   assert.deepEqual(odd.map(s => s.gap), ['INVALID', null, 'MISSING', 'MISSING']);
   assert.match(odd[1].notes.join(' '), /Bryter kedjan/); assert.match(odd[1].notes.join(' '), /Landningsrutan/); assert.equal(odd[3].side, 'BACK');
   // Without local media (public site) a finished take is a named gap, not a broken player.
   const remote = bank(); remote.media = {}; remote.receipts = {};
   assert.equal(graph.resolveRound(graph.buildGraph(remote), [{from: 'READY', to: 'P4.C1'}])[0].gap, 'LOCAL_ONLY');
   // The hole card wants a closed take; an open one is used with a warning rather than hidden.
-  const hole = bank(); hole.jobs!.push(job('paow-d-c2-plan-deal-01', 'READY', 'LAND(D.C2)')); hole.motions!['paow-d-c2-plan-deal-01'] = done();
-  assert.match(graph.resolveRound(graph.buildGraph(hole), [{from: 'READY', to: 'D.C2'}])[0].notes.join(' '), /rundan vill ha stängt/);
-  assert.deepEqual(graph.resolveRound(graph.buildGraph(hole), [{from: 'READY', to: 'D.C2'}], {holeCardDown: false})[0].notes.filter(n => /vill ha/.test(n)), []);
+  const hole = bank(); hole.jobs!.push(job('paow-d-c1-plan-deal-01', 'READY', 'LAND(D.C1)')); hole.motions!['paow-d-c1-plan-deal-01'] = done();
+  assert.match(graph.resolveRound(graph.buildGraph(hole), [{from: 'READY', to: 'D.C1'}])[0].notes.join(' '), /rundan vill ha stängt/);
+  assert.deepEqual(graph.resolveRound(graph.buildGraph(hole), [{from: 'READY', to: 'D.C1'}], {holeCardDown: false})[0].notes.filter(n => /vill ha/.test(n)), []);
 });
 
 test('anchor rule: a return from the landing anchor follows every take of the deal, each played to its last frame', () => {
@@ -392,7 +392,7 @@ test('every tracked take is shown: known nodes map to model edges, unknown nodes
   assert.ok(all.length > 0, 'the bank has takes of the first dealer');
   assert.deepEqual(g.unplaced, []);
   assert.equal(Object.keys(g.takes).length, all.length);
-  assert.equal(g.summary.total, 54); assert.equal(g.edges.length, 57);
+  assert.equal(g.summary.total, 54); assert.equal(g.edges.length, 58);
   for (const job of all) {
     const take = g.takes[job.id], ref = graph.parseEdge(`${job.from}>${job.to}`), edge = g.edge[take.edge];
     assert.ok(edge.takes.includes(take), job.id);
@@ -428,7 +428,7 @@ test('a corrected copy is a further take of its source\'s edge, and a slow-motio
   const e = g.edge['READY>P1.C1']; if (e.main !== copy) { assert.equal(graph.takeRole(e, copy), 'OTHER'); assert.equal(graph.isCurrent(e, copy), true); }
   data.motions = {...data.motions, [copy.id]: done('REJECTED')}; const after = graph.buildGraph(data); assert.equal(graph.isCurrent(after.edge['READY>P1.C1'], after.takes[copy.id]), false);
   // A copy whose source is unknown is named, not shown, and breaks nothing; the 54 edges are still 54.
-  assert.deepEqual(g.unplaced.filter(u => /källklipp/.test(u.reason)).map(u => u.id), ['orphan-edit-01', 'undefined']); assert.equal(g.edges.length, 57);
+  assert.deepEqual(g.unplaced.filter(u => /källklipp/.test(u.reason)).map(u => u.id), ['orphan-edit-01', 'undefined']); assert.equal(g.edges.length, 58);
   // The viewing speed is the job's own, within reason; everything else plays at 1.
   assert.deepEqual([g.takes['paow-p1-c1-plan-deal-slow-01'].speed, g.takes['paow-p1-c1-plan-deal-odd-01'].speed, original.speed, copy.speed], [2, 1, 1, 1]);
   // The real job file: every edit lands on the edge of the clip it corrects.
@@ -441,7 +441,7 @@ test('a corrected copy is a further take of its source\'s edge, and a slow-motio
 // A small bank built here, so the counts do not move with the real job file.
 function seatBank(): BankData {
   const jobs = [job('entry-01', 'IDLE', 'READY', {kind: 'ENTRY', target: null}), job('p4-deal-01', 'READY', 'LAND(P4.C1)'), job('p4-back-ready-01', 'LAND(P4.C1)', 'READY', from('p4-deal-01', 100)),
-    job('p4-back-idle-01', 'LAND(P4.C1)', 'IDLE', from('p4-deal-01', 100)), job('p1-deal-01', 'READY', 'LAND(P1.C1)'), job('p4-second-01', 'READY', 'LAND(P4.C2)'), job('hole-deal-01', 'READY', 'LAND(D.C2)')];
+    job('p4-back-idle-01', 'LAND(P4.C1)', 'IDLE', from('p4-deal-01', 100)), job('p1-deal-01', 'READY', 'LAND(P1.C1)'), job('p4-second-01', 'READY', 'LAND(P4.C2)'), job('hole-deal-01', 'READY', 'LAND(D.C1)')];
   const decisions: Record<string, string> = {'p4-back-ready-01': 'ACCEPTED', 'p4-back-idle-01': 'SECONDARY', 'p1-deal-01': 'REJECTED'};
   return {jobs, motions: Object.fromEntries(jobs.map(j => [j.id, done(decisions[j.id] ?? 'PENDING', j.id === 'hole-deal-01' ? {motion: {physicalEndSide: 'BACK'}} : {})])), media: Object.fromEntries(jobs.map(j => [j.id, {video: video(j.id)}]))};
 }
@@ -453,7 +453,7 @@ test('one film per seat is the default: a second card shares the first card\'s f
   const g = graph.buildGraph(seatBank()), f = g.summary.films;
   assert.equal(graph.FILM_MODE, 'SEAT'); assert.equal(g.mode, 'SEAT');
   // 3 hub films, the turn of the hole card, her coming and leaving, three per seat, and both dealer cards on their own: 3 + 1 + 2 + 7 × 3 + 3 + 3.
-  assert.equal(f.total, 33); assert.equal(f.required.length, 33); assert.ok(!f.required.some(id => /P\d\.C2|D\.C3/.test(id))); assert.ok(f.required.includes('READY>D.C2')); assert.ok(f.required.includes('IDLE>REVEAL(D.C2)'));
+  assert.equal(f.total, 33); assert.equal(f.required.length, 33); assert.ok(!f.required.some(id => /P\d\.C2|D\.C3/.test(id))); assert.ok(f.required.includes('READY>D.C2')); assert.ok(f.required.includes('IDLE>REVEAL(D.C1)')); assert.ok(!f.required.includes(graph.OLDER_REVEAL_EDGE));
   for (const seat of graph.SEATS) for (const [own, first] of [[`READY>${seat}.C2`, `READY>${seat}.C1`], [`${seat}.C2>READY`, `${seat}.C1>READY`], [`${seat}.C2>IDLE`, `${seat}.C1>IDLE`]]) assert.equal(g.edge[own].shares, first);
   for (const id of ['READY>D.C2', 'D.C2>READY', 'D.C2>IDLE', 'READY>D.C3', 'READY>P4.C1', 'IDLE>READY']) assert.equal(g.edge[id].shares, null, id);
   assert.equal(g.edge['READY>D.C3'].optional, true);
@@ -469,7 +469,7 @@ test('one film per seat is the default: a second card shares the first card\'s f
   assert.deepEqual([card.summary.films.total, card.summary.films.done, card.summary.films.candidates, card.summary.films.flaws, card.summary.films.missing], [54, 6, 5, 1, 48]);
   // With the hole card open the dealer's second card shares too, and no film is needed to turn it.
   const open = graph.buildGraph(seatBank(), {holeCardDown: false});
-  assert.equal(open.edge['READY>D.C2'].shares, 'READY>D.C1'); assert.equal(open.summary.films.total, 29); assert.ok(!open.summary.films.required.includes('IDLE>REVEAL(D.C2)'));
+  assert.equal(open.edge['READY>D.C2'].shares, 'READY>D.C1'); assert.equal(open.summary.films.total, 29); assert.ok(!open.summary.films.required.some(id => /REVEAL/.test(id)));
 });
 
 test('a second card without a matching own pair shares the seat films; explicit locks still choose a take', () => {
@@ -492,8 +492,8 @@ test('a second card without a matching own pair shares the seat films; explicit 
   const blind = graph.resolveRound(g, [{from: 'READY', to: 'P4.C2'}])[0];
   assert.equal(blind.take?.id, 'p4-deal-01'); assert.equal(blind.shift, null); assert.match(blind.notes.join(' '), /flytt är okänd utan placeringsplan/);
   // The dealer's hole card is not shared: it plays its own film, unshifted, and a seat without a film is a gap for both its cards.
-  const dealer = graph.resolveRound(g, graph.parseSequence('READY>D.C2 | READY>P1.C2 | READY>P2.C2').steps, {places});
-  assert.deepEqual(dealer.map(s => [s.film?.id, s.take?.id ?? null, s.shift, s.gap]), [['READY>D.C2', 'hole-deal-01', null, null], ['READY>P1.C1', null, null, 'REJECTED'], ['READY>P2.C1', null, null, 'MISSING']]);
+  const dealer = graph.resolveRound(g, graph.parseSequence('READY>D.C1 | READY>P1.C2 | READY>P2.C2').steps, {places});
+  assert.deepEqual(dealer.map(s => [s.film?.id, s.take?.id ?? null, s.shift, s.gap]), [['READY>D.C1', 'hole-deal-01', null, null], ['READY>P1.C1', null, null, 'REJECTED'], ['READY>P2.C1', null, null, 'MISSING']]);
   // One film per card: the same step plays the card's own film or is a gap, never the seat's.
   const card = graph.buildGraph(seatBank(), {mode: 'CARD'}), each = graph.resolveRound(card, graph.parseSequence('READY>P4.C2 | P4.C2>IDLE').steps, {places});
   assert.deepEqual(each.map(s => [s.film?.id, s.take?.id ?? null, s.shift, s.gap]), [['READY>P4.C2', 'p4-second-01', null, null], ['P4.C2>IDLE', null, null, 'MISSING']]);
@@ -579,37 +579,40 @@ test('an idle loop that starts on frame 0 of the entry clip, and a deal that end
 });
 
 test('the turn of the hole card is an edge of the model: from rest, back to rest, and the round goes on from IDLE', () => {
-  const ref = graph.parseEdge('vila > reveal(dc2)')!;
-  assert.deepEqual([ref.id, ref.kind, ref.target, ref.base, ref.hub], ['IDLE>REVEAL(D.C2)', 'REVEAL', 'D.C2', graph.REVEAL_EDGE, null]);
+  const ref = graph.parseEdge('vila > reveal(dc1)')!, older = graph.parseEdge('vila > reveal(dc2)')!;
+  assert.deepEqual([ref.id, ref.kind, ref.target, ref.base, ref.hub], ['IDLE>REVEAL(D.C1)', 'REVEAL', 'D.C1', graph.REVEAL_EDGE, null]);
+  // The older films turn the card at D.C2, where the closed card lay before 2026-11-24: their step is its own and nothing a round needs.
+  assert.deepEqual([older.id, older.kind, older.target, older.base], [graph.OLDER_REVEAL_EDGE, 'REVEAL', 'D.C2', graph.OLDER_REVEAL_EDGE]);
+  assert.match(graph.describeEdge(older), /äldre film/);
   // Only the hole card is turned on the table, and only from rest. The pose after it is rest.
-  assert.equal(graph.parseNode('REVEAL(P4.C1)'), null); assert.equal(graph.parseEdge('READY>REVEAL(D.C2)'), null); assert.equal(graph.parseEdge('D.C2>REVEAL(D.C2)'), null);
-  assert.equal(graph.hubOf(graph.REVEAL_NODE), 'IDLE'); assert.equal(graph.parseEdge('REVEAL(D.C2)>READY')?.base, 'IDLE>READY');
+  assert.equal(graph.parseNode('REVEAL(P4.C1)'), null); assert.equal(graph.parseEdge('READY>REVEAL(D.C1)'), null); assert.equal(graph.parseEdge('D.C1>REVEAL(D.C1)'), null);
+  assert.equal(graph.hubOf(graph.REVEAL_NODE), 'IDLE'); assert.equal(graph.parseEdge('REVEAL(D.C1)>READY')?.base, 'IDLE>READY');
   assert.match(graph.describeEdge(ref), /vänds upp/); assert.match(graph.describeNode(graph.REVEAL_NODE), /hålkortet/);
   // Without a film the edge is there and missing, not unknown; it never shares another card's film.
   const empty = graph.buildGraph({}), bare = empty.edge[graph.REVEAL_EDGE];
-  assert.deepEqual([bare.status, bare.experiment, bare.optional, bare.shares, bare.kind, bare.target], ['MISSING', false, false, null, 'REVEAL', 'D.C2']);
+  assert.deepEqual([bare.status, bare.experiment, bare.optional, bare.shares, bare.kind, bare.target], ['MISSING', false, false, null, 'REVEAL', 'D.C1']);
   assert.equal(graph.resolveRound(empty, [{from: 'IDLE', to: graph.REVEAL_NODE}])[0].gap, 'MISSING');
   assert.equal(graph.buildGraph({}, {holeCardDown: false}).edge[graph.REVEAL_EDGE].shares, null);
   // A take cut out of an older film and a generated one land on the same edge, never among the experiments.
-  const data: BankData = {jobs: [{...job('turn-01', 'IDLE', 'REVEAL(D.C2)'), kind: 'REVEAL', target: 'D.C2', duration: 4}, job('entry-01', 'IDLE', 'READY', {kind: 'ENTRY', target: null})],
-    derived: [{id: 'turn-cut-01', kind: 'REVEAL', from: 'IDLE', to: 'REVEAL(D.C2)', clip: 'old-turn', frames: [0, 119]}],
+  const data: BankData = {jobs: [{...job('turn-01', 'IDLE', 'REVEAL(D.C1)'), kind: 'REVEAL', target: 'D.C1', duration: 4}, job('entry-01', 'IDLE', 'READY', {kind: 'ENTRY', target: null})],
+    derived: [{id: 'turn-cut-01', kind: 'REVEAL', from: 'IDLE', to: 'REVEAL(D.C1)', clip: 'old-turn', frames: [0, 119]}],
     motions: {'turn-01': done('REJECTED'), 'entry-01': done()}, media: {'turn-cut-01': {video: video('old-turn')}, 'turn-01': {video: video('turn-01')}, 'entry-01': {video: video('entry-01')}}};
   let g = graph.buildGraph(data);
   assert.deepEqual(g.experiments, []); assert.deepEqual(g.unplaced, []);
   assert.deepEqual(g.edge[graph.REVEAL_EDGE].takes.map(t => [t.id, t.kind, t.endSide]), [['turn-01', 'REVEAL', 'FRONT'], ['turn-cut-01', 'REVEAL', null]]);
   // Like an idle clip it is played without its first three and last three frames, whether the film's length is known or only the cut's.
-  const steps = [{from: 'IDLE', to: 'REVEAL(D.C2)'}, {from: 'IDLE', to: 'READY'}];
+  const steps = [{from: 'IDLE', to: 'REVEAL(D.C1)'}, {from: 'IDLE', to: 'READY'}];
   let [turn, entry] = graph.resolveRound(g, steps);
-  assert.deepEqual([turn.kind, turn.take?.id, turn.video, turn.start, turn.end, turn.side, turn.gap, turn.edge?.target], ['REVEAL', 'turn-cut-01', video('old-turn'), 3, 117, 'FRONT', null, 'D.C2']);
+  assert.deepEqual([turn.kind, turn.take?.id, turn.video, turn.start, turn.end, turn.side, turn.gap, turn.edge?.target], ['REVEAL', 'turn-cut-01', video('old-turn'), 3, 117, 'FRONT', null, 'D.C1']);
   // The step after it leaves from IDLE: that is where the turn ends, so the chain is not broken.
   assert.equal(entry.take?.id, 'entry-01'); assert.deepEqual(entry.notes, []);
   data.motions!['turn-01'] = done('ACCEPTED'); g = graph.buildGraph(data); [turn] = graph.resolveRound(g, steps);
   assert.deepEqual([turn.take?.id, turn.start, turn.end, turn.notes], ['turn-01', 3, 117, []]);
   assert.equal(g.edge[graph.REVEAL_EDGE].status, 'ACCEPTED'); assert.ok(g.summary.films.required.includes(graph.REVEAL_EDGE));
   // A round may ask for it: after the last return to rest, before a third dealer card.
-  assert.deepEqual(graph.roundSequence({seats: ['P4'], reveal: true, thirdDealerCard: true}).map(e => e.id).slice(-5), ['D.C2>IDLE', 'IDLE>REVEAL(D.C2)', 'IDLE>READY', 'READY>D.C3', 'D.C3>IDLE']);
+  assert.deepEqual(graph.roundSequence({seats: ['P4'], reveal: true, thirdDealerCard: true}).map(e => e.id).slice(-5), ['D.C2>IDLE', 'IDLE>REVEAL(D.C1)', 'IDLE>READY', 'READY>D.C3', 'D.C3>IDLE']);
   assert.ok(!graph.roundSequence({seats: ['P4']}).some(e => e.kind === 'REVEAL')); assert.ok(!graph.roundSequence({seats: ['P4'], cards: 1, reveal: true}).some(e => e.kind === 'REVEAL'));
-  assert.deepEqual(graph.parseSequence('D.C2>IDLE | IDLE>REVEAL(D.C2) | IDLE>READY').errors, []);
+  assert.deepEqual(graph.parseSequence('D.C2>IDLE | IDLE>REVEAL(D.C1) | IDLE>READY').errors, []);
 });
 
 test('she comes to the table and leaves it: two edges with rest as their fixed end, and AWAY as the picture without her', () => {
@@ -617,8 +620,8 @@ test('she comes to the table and leaves it: two edges with rest as their fixed e
   assert.deepEqual([arrive.id, arrive.kind, arrive.target, arrive.base, arrive.hub], ['AWAY>IDLE', 'ARRIVE', null, graph.ARRIVE_EDGE, null]);
   assert.deepEqual([leave.id, leave.kind, leave.target, leave.base], ['IDLE>AWAY', 'LEAVE', null, graph.LEAVE_EDGE]);
   // Away is left for rest only and reached from rest only; rest with the hole card open counts as rest.
-  for (const id of ['AWAY>READY', 'READY>AWAY', 'P4.C1>AWAY', 'AWAY>P4.C1', 'AWAY>AWAY', 'AWAY>REVEAL(D.C2)']) assert.equal(graph.parseEdge(id), null, id);
-  assert.equal(graph.parseEdge('REVEAL(D.C2)>AWAY')?.base, graph.LEAVE_EDGE); assert.equal(graph.hubOf(graph.AWAY), null);
+  for (const id of ['AWAY>READY', 'READY>AWAY', 'P4.C1>AWAY', 'AWAY>P4.C1', 'AWAY>AWAY', 'AWAY>REVEAL(D.C1)']) assert.equal(graph.parseEdge(id), null, id);
+  assert.equal(graph.parseEdge('REVEAL(D.C1)>AWAY')?.base, graph.LEAVE_EDGE); assert.equal(graph.hubOf(graph.AWAY), null);
   assert.match(graph.describeEdge(arrive), /sätter sig/); assert.match(graph.describeEdge(leave), /reser sig/); assert.match(graph.describeNode(graph.AWAY), /utan dealer/);
   const empty = graph.buildGraph({});
   for (const id of [graph.ARRIVE_EDGE, graph.LEAVE_EDGE]) { const e = empty.edge[id]; assert.deepEqual([e.status, e.experiment, e.optional, e.shares, e.target], ['MISSING', false, false, null, null], id); assert.ok(empty.summary.films.required.includes(id)); }
@@ -645,8 +648,8 @@ test('the real job file in seat mode: 33 needed films, every entry placed, and e
   for (const dealer of new Set(Object.values(owner))) assert.deepEqual(graph.buildGraph({jobs: file.jobs, derived: file.derived, edits: file.edits, motions}, {dealer}).unplaced, [], dealer);
   // The numbers move as films arrive; what holds is how they add up.
   assert.equal(f.mode, 'SEAT'); assert.equal(f.total, 33); assert.equal(f.done + f.missing, f.total); assert.equal(f.candidates + f.flaws, f.done); assert.equal(g.summary.total, 54);
-  // A turn of the hole card is a take of the model's edge, not an experiment.
-  assert.ok(g.edge['IDLE>REVEAL(D.C2)'].takes.length > 0); assert.ok(!g.experiments.some(e => /REVEAL/.test(e.id)));
+  // The older turns, of the card at D.C2, are takes of their own step of the model, not experiments.
+  assert.ok(g.edge[graph.OLDER_REVEAL_EDGE].takes.length > 0); assert.ok(!g.experiments.some(e => /REVEAL/.test(e.id)));
   const shared = g.edges.filter(e => e.shares);
   assert.equal(shared.length, 21);
   for (const e of shared) { const seat = g.edge[e.shares!]; assert.equal(seat.target, e.target!.replace('C2', 'C1')); assert.equal(seat.kind, e.kind); assert.equal(seat.shares, null); assert.ok(!f.required.includes(e.id)); }
@@ -660,8 +663,8 @@ test('the real job file in seat mode: 33 needed films, every entry placed, and e
 test('films recovered from a longer film chain like any others: a derived return follows the derived deal whose range ends where it begins', () => {
   const old = 'paow-arkiv-table-01', film = video(old), long = {fps: 30, frames: 500, sha256: sha}, take = (id: string, from: string, to: string, kind: string, frames: [number, number]) => ({id, kind, from, to, clip: old, frames});
   for (const named of ['film', 'take'] as const) {
-    const deal = 'paow-d-c1-arkiv-deal-01', back = 'paow-d-c1-arkiv-return-ready-01', other = 'paow-d-c2-arkiv-deal-01';
-    const data: BankData = {jobs: [], derived: [take(deal, 'READY', 'LAND(D.C1)', 'DEAL', [100, 219]), take(back, 'LAND(D.C1)', 'READY', 'RETURN', [220, 300]), take(other, 'READY', 'LAND(D.C2)', 'DEAL', [301, 420])],
+    const deal = 'paow-d-c2-arkiv-deal-01', back = 'paow-d-c2-arkiv-return-ready-01', other = 'paow-d-c3-arkiv-deal-01';
+    const data: BankData = {jobs: [], derived: [take(deal, 'READY', 'LAND(D.C2)', 'DEAL', [100, 219]), take(back, 'LAND(D.C2)', 'READY', 'RETURN', [220, 300]), take(other, 'READY', 'LAND(D.C3)', 'DEAL', [301, 420])],
       motions: {[deal]: done('PENDING', {source: long}), [other]: done('PENDING', {source: long}), [back]: done('PENDING', {source: long, motion: {startsOn: {clip: named === 'film' ? old : deal, frame: 220}}})}, media: {[deal]: {video: film}, [back]: {video: film}, [other]: {video: film}}};
     const g = graph.buildGraph(data);
     assert.deepEqual(g.unplaced, [], named);
@@ -669,9 +672,9 @@ test('films recovered from a longer film chain like any others: a derived return
     assert.deepEqual(g.takes[back].startsOn, {clip: named === 'film' ? old : deal, video: null, frame: 220});
     assert.equal(graph.returnFits(g.takes[back], g.takes[deal]), true, named); assert.equal(graph.returnFits(g.takes[back], g.takes[other]), false, named);
     assert.equal(g.takes[deal].landingFrame, 220); assert.equal(g.takes[other].landingFrame, null);
-    assert.equal(g.edge['READY>D.C1'].main?.id, deal); assert.equal(g.edge['D.C1>READY'].main?.id, back);
+    assert.equal(g.edge['READY>D.C2'].main?.id, deal); assert.equal(g.edge['D.C2>READY'].main?.id, back);
     // In a round each plays its own frames of the old film, one after the other, without a note about the seam.
-    const round = graph.resolveRound(g, graph.parseSequence('READY>D.C1 | D.C1>READY').steps);
+    const round = graph.resolveRound(g, graph.parseSequence('READY>D.C2 | D.C2>READY').steps);
     assert.deepEqual(round.map(s => [s.take?.id, s.video, s.start, s.end, s.cut]), [[deal, film, 100, 220, 'FRAME'], [back, film, 220, 301, null]], named);
     assert.ok(round.every(s => s.notes.length === 0), JSON.stringify(round.map(s => s.notes)));
   }
@@ -700,7 +703,7 @@ test('a deal bara dit that ends on a round trip\'s cut frame is continued by tha
 function primaryBank(marks: Record<string, string> = {}): BankData {
   const jobs = [job('entry-01', 'IDLE', 'READY', {kind: 'ENTRY', target: null}), job('p4-deal-01', 'READY', 'LAND(P4.C1)'), job('p4-deal-02', 'READY', 'LAND(P4.C1)'), job('p4-readyb-deal-01', 'READY-B', 'LAND(P4.C1)'),
     job('p4-back-ready-01', 'LAND(P4.C1)', 'READY', from('p4-deal-01', 96)), job('p4-back-ready-02', 'LAND(P4.C1)', 'READY', from('p4-deal-02', 104)), job('p4-back-idle-01', 'LAND(P4.C1)', 'IDLE', from('p4-deal-02', 104)),
-    job('hole-open-01', 'READY', 'LAND(D.C2)'), job('hole-closed-01', 'READY', 'LAND(D.C2)'), job('hole-back-idle-01', 'LAND(D.C2)', 'IDLE', from('hole-open-01', 90))];
+    job('hole-open-01', 'READY', 'LAND(D.C1)'), job('hole-closed-01', 'READY', 'LAND(D.C1)'), job('hole-back-idle-01', 'LAND(D.C1)', 'IDLE', from('hole-open-01', 90))];
   const marked: Record<string, string> = {'p4-deal-02': 'ACCEPTED', 'p4-readyb-deal-01': 'ACCEPTED', 'p4-back-ready-01': 'ACCEPTED', 'p4-back-ready-02': 'VARIANT', 'p4-back-idle-01': 'VARIANT', 'hole-closed-01': 'ACCEPTED', ...marks};
   const review = (mark = 'PENDING') => mark === 'MAIN' || mark === 'VARIANT' ? {decision: 'ACCEPTED', acceptedAs: mark} : {decision: mark};
   return {jobs, motions: Object.fromEntries(jobs.map(j => [j.id, done('PENDING', {review: review(marked[j.id]), motion: {physicalEndSide: j.id === 'hole-closed-01' ? 'BACK' : 'FRONT'}})])),
@@ -792,13 +795,13 @@ test('a READY-B start is unaffected by a Primär return after it, and the closed
   assert.deepEqual(deal(marked[0]), deal(plain[0])); assert.equal(marked[0].take?.id, 'p4-readyb-deal-01');
   assert.deepEqual([plain[1].take?.id, marked[1].take?.id, marked[1].why], ['p4-back-ready-02', 'p4-back-ready-01', 'PRIMARY']); assert.match(marked[1].notes.join(' '), /^Skarv/);
   // The hole card stays closed: the Primär return was cut from an open deal, so the closed deal plays and the seam is said.
-  const hole = graph.buildGraph(primaryBank({'hole-back-idle-01': 'MAIN'})), last = graph.parseSequence('READY>D.C2 | D.C2>IDLE').steps;
+  const hole = graph.buildGraph(primaryBank({'hole-back-idle-01': 'MAIN'})), last = graph.parseSequence('READY>D.C1 | D.C1>IDLE').steps;
   const closed = graph.resolveRound(hole, last);
-  assert.deepEqual(played(closed), [['READY>D.C2', 'hole-closed-01', 'MAIN', null, null], ['D.C2>IDLE', 'hole-back-idle-01', 'PRIMARY', null, null]]);
+  assert.deepEqual(played(closed), [['READY>D.C1', 'hole-closed-01', 'MAIN', null, null], ['D.C1>IDLE', 'hole-back-idle-01', 'PRIMARY', null, null]]);
   assert.equal(closed[0].side, 'BACK'); assert.match(closed[1].notes.join(' '), /^Skarv/);
   // Dealt open, the deal the Primär return continues may play.
   const open = graph.resolveRound(hole, last, {holeCardDown: false});
-  assert.deepEqual(played(open), [['READY>D.C2', 'hole-open-01', 'FITS_PRIMARY_RETURN', 90, 'FRAME'], ['D.C2>IDLE', 'hole-back-idle-01', 'PRIMARY', null, null]]); assert.deepEqual(open.flatMap(s => s.notes), []);
+  assert.deepEqual(played(open), [['READY>D.C1', 'hole-open-01', 'FITS_PRIMARY_RETURN', 90, 'FRAME'], ['D.C1>IDLE', 'hole-back-idle-01', 'PRIMARY', null, null]]); assert.deepEqual(open.flatMap(s => s.notes), []);
 });
 
 test('the main deal: among equals, the one a Primär return continues; rank and a Primär deal still come first', () => {
@@ -844,7 +847,7 @@ test('a bank without any Primär resolves as before: the takes of the rule befor
   for (const motion of Object.values(motions)) if (motion.review?.acceptedAs === 'MAIN') delete motion.review.acceptedAs;
   const real: BankData = {jobs: file.jobs, derived: file.derived, edits: file.edits, motions}, whole = graph.roundSequence({seats: graph.SEATS, reveal: true, thirdDealerCard: true});
   const cases: [string, BankData, graph.Step[]][] = [['bank', bank(), whole], ['seat bank', seatBank(), whole], ['seat bank, both cards', seatBank(), graph.parseSequence('READY>P4.C1 | P4.C1>READY | READY>P4.C2 | P4.C2>IDLE').steps],
-    ['primary bank unmarked', primaryBank(), whole], ['primary bank, READY-B and hole card', primaryBank(), graph.parseSequence('READY-B>P4.C1 | P4.C1>READY | READY>P4.C2 | P4.C2>IDLE | READY>D.C2 | D.C2>IDLE').steps], ['real bank', real, whole]];
+    ['primary bank unmarked', primaryBank(), whole], ['primary bank, READY-B and hole card', primaryBank(), graph.parseSequence('READY-B>P4.C1 | P4.C1>READY | READY>P4.C2 | P4.C2>IDLE | READY>D.C1 | D.C1>IDLE').steps], ['real bank', real, whole]];
   const view = (round: graph.Segment[]) => round.map(s => [s.id, s.take?.id ?? null, s.film?.id ?? null, s.shift, s.start, s.end, s.cut, s.gap, s.side, s.notes]);
   for (const [name, data, steps] of cases) {
     const g = graph.buildGraph(data);
@@ -864,9 +867,9 @@ test('every segment of a whole round says why its take plays, with a short Swedi
   assert.ok(words.every(w => w.trim() && w.split(/\s+/).length <= 4), words.join(' | ')); assert.equal(new Set(words).size, words.length, 'one word for each reason');
   const whole = graph.roundSequence({seats: graph.SEATS, reveal: true}), round = graph.resolveRound(graph.buildGraph(primaryBank({'p4-back-ready-01': 'MAIN'})), whole);
   assert.deepEqual(round.filter(s => s.take).map(s => [s.id, s.take!.id, s.why]), [['IDLE>READY', 'entry-01', 'MAIN'], ['READY>P4.C1', 'p4-deal-01', 'FITS_PRIMARY_RETURN'], ['P4.C1>READY', 'p4-back-ready-01', 'PRIMARY'],
-    ['READY>P4.C2', 'p4-deal-01', 'FITS_PRIMARY_RETURN'], ['P4.C2>READY', 'p4-back-ready-01', 'PRIMARY'], ['READY>D.C2', 'hole-closed-01', 'MAIN'], ['D.C2>IDLE', 'hole-back-idle-01', 'MAIN']]);
+    ['READY>D.C1', 'hole-closed-01', 'MAIN'], ['READY>P4.C2', 'p4-deal-01', 'FITS_PRIMARY_RETURN'], ['P4.C2>READY', 'p4-back-ready-01', 'PRIMARY']]);
   // The other reasons: the side the round wants, the return that continues the deal before it, a named take.
-  const sided = graph.resolveRound(graph.buildGraph(primaryBank({'hole-closed-01': 'PENDING'})), [{from: 'READY', to: 'D.C2'}])[0];
+  const sided = graph.resolveRound(graph.buildGraph(primaryBank({'hole-closed-01': 'PENDING'})), [{from: 'READY', to: 'D.C1'}])[0];
   assert.deepEqual([sided.take?.id, sided.why], ['hole-closed-01', 'SIDE']);
   const fit = graph.resolveRound(graph.buildGraph(primaryBank()), graph.parseSequence('READY>P4.C1@p4-deal-01 | P4.C1>READY').steps);
   assert.deepEqual(played(fit), [['READY>P4.C1', 'p4-deal-01', 'LOCKED', 96, 'FRAME'], ['P4.C1>READY', 'p4-back-ready-01', 'FITS_DEAL', null, null]]);

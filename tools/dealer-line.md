@@ -110,10 +110,10 @@ och retur, slag av referensfilm) som håller, föll eller är oprövade; godkän
 steget (som säger ankaret) och kortets plats; allt annat är stegets enda recept i `data/order-methods.json`, visat som
 det som kommer att skickas, och ett avsteg görs medvetet under "Receptet · gör ett undantag" (handboken §2). Stegen som kan
 beställas står i `STEPS` i `src/order-model.ts` (vad en film går mellan, aldrig hur den beställs), och de kort en giv kan
-gå till i `SEAT_TARGETS`; en giv är bara dit, och `GIV-2.1` går också till hålkortet `D.C2`, som landar stängt (V).
+gå till i `SEAT_TARGETS`; en giv är bara dit, och en giv till hålkortet `D.C1` landar stängt, som kortplanen säger (V).
 Ankare 2.3 har två steg: ingången `INGANG-2.3` (ankare 1 → 2.3) och given med två händer `GIV-2.3`; given tas med
 3D-banans dockfilm som referensfilm och ett A3 per plats som sista bild. Till plats 4 har den Jakobs ja (2026-11-21);
-övriga platser görs likadant ([läget](../docs/lage/film.md)). Hålkortets vändning (`HALKORT`, `IDLE>REVEAL(D.C2)`) har bara hålkortet ritat på sina bilder (V).
+övriga platser görs likadant ([läget](../docs/lage/film.md)). Hålkortets vändning (`HALKORT`, `IDLE>REVEAL(D.C1)`) har bara hålkortet ritat på sina bilder (V).
 `node tools/produce.ts <dealer> --draft` gör utkast där metoden gäller, `--draft --trial <steg|plats>` ett provutkast;
 den godkänner aldrig (V). Utkastet blir `data/orders/<id>.json` med bilderna i `assets/orders/<id>/`. Texten skrivs av
 `promptFor` (`src/order-prompts.ts`) med dagens mall, aldrig för hand; orden står i `SAY`, och vilken mall som gäller
@@ -200,7 +200,7 @@ Ankare 1 → ankare 2.1 (och 2.2 när en plats ska ges därifrån) → ingången
 (P1 eller P7) i metodprov → samma metod till alla platser → returer → dealerns kort, hålkortet och dess vändning →
 utgången. Färdig för en runda är hon när
 produktionslistan säger att de 21 steg en runda kräver är klara; hela banken är 33 filmer (`summary.films` i
-`buildGraph`, `src/clip-graph.ts`): 6 utan kort (`IDLE>READY`, `READY>IDLE`, `IDLE>IDLE`, `IDLE>REVEAL(D.C2)`,
+`buildGraph`, `src/clip-graph.ts`): 6 utan kort (`IDLE>READY`, `READY>IDLE`, `IDLE>IDLE`, `IDLE>REVEAL(D.C1)`,
 `AWAY>IDLE`, `IDLE>AWAY`), 3 per plats P1–P7 och 3 var för `D.C1` och `D.C2` (V). Grafens 54 kanter blir 33 filmer
 eftersom en spelarplats andra kort spelar platsens första korts filmer (SYSTEM, "Klippbank och nodnotation"). Hur
 långt en dealer har kommit, och vad som är kvar för en runda, räknar `node tools/produce.ts <dealer>`.
@@ -261,7 +261,7 @@ Där en källa bara är text eller ett skript utanför repot står det "inget i 
 | Mall | `<sort>-<stil>@<version>`, till exempel `film-giv-kort@…`; Utförlig skrivs utan stil (`film-giv@…`). Vilken mall som gäller: handboken §2 | `templateOf`, `TEMPLATE_VERSION`, `LONG_VERSION`, `PromptInput.version` i `src/order-prompts.ts` |
 | Order-id | `<dealer>-<steg>-<plats>-<nn>`, till exempel `paow-giv-2-1-p4-15`, `paow-halkort-02` | `nextId` i `tools/order-store.ts` |
 | Klipp-id | `<order-id>-<tagning nn>`; tur och retur ger `…-deal` och `…-return-ready` (eller `-idle`); rättad kopia `…-fix-<k>` | `clipIdOf` i `tools/register-order.ts` |
-| Kant och nod | `A>B`; `IDLE` ankare 1, `READY` ankare 2.1 (nyp), `READY-B` ankare 2.2 (släp), `P1.C1` … `P7.C2`, `D.C1`, `D.C2`, `LAND(P4.C1)`, `REVEAL(D.C2)`, `AWAY` | `parseEdge` i `src/clip-graph.ts`; `ANCHOR_NODE`, `edgeOf` i `src/order-model.ts` |
+| Kant och nod | `A>B`; `IDLE` ankare 1, `READY` ankare 2.1 (nyp), `READY-B` ankare 2.2 (släp), `P1.C1` … `P7.C2`, `D.C1`, `D.C2`, `LAND(P4.C1)`, `REVEAL(D.C1)`, `AWAY` | `parseEdge` i `src/clip-graph.ts`; `ANCHOR_NODE`, `edgeOf` i `src/order-model.ts` |
 | Orderstatus | UTKAST, GODKÄND (fryst), AVBRUTEN | `OrderStatus` i `src/order-model.ts` |
 | Tagningsstatus | GODKÄND → LAGD → KLAR → HÄMTAD → EFTERARBETAD → MÄTT → GRANSKAD (granskarens) → INFÖRD; OSÄKER (läggs aldrig om), MISSLYCKAD, AVBRUTEN | `TAKE_FLOW` i `src/order-model.ts` |
 | Domord i banken | Primär (`MAIN`), Godkänd (`ACCEPTED`), Variant (`VARIANT`), Underkänd (`REJECTED`), Väntar (`PENDING`); preliminär dom = `review.provisional`, `userAccepted: false`, i studion "dömd åt dig" (väntar inte i hans kö); `review.inbox` = från en order, inte dömd | `DECISIONS`, `applyProvisional` i `tools/review-store.ts` |

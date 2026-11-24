@@ -1,6 +1,6 @@
 // Pure clip-bank graph for the lab. Nodes are anchor poses: IDLE, READY and one landing
 // anchor per card (P4.C1, D.C2 ...). Every clip is one action, so every clip is one edge "A>B".
-// Two more poses have a name: REVEAL(D.C2) is rest with the dealer's hole card turned open, and AWAY is the picture without the dealer.
+// Two more poses have a name: REVEAL(D.C1) is rest with the dealer's hole card turned open, and AWAY is the picture without the dealer.
 // No DOM, network or file access here. Scout owns rules, order and card values; this only plans motion.
 
 export type EdgeKind = 'DEAL' | 'RETURN' | 'ENTRY' | 'IDLE' | 'REVEAL' | 'ARRIVE' | 'LEAVE';
@@ -71,13 +71,21 @@ export const SEATS = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7'];
 // Same 16 placement keys as src/placement-model.ts; D.C3 is the optional third dealer card.
 export const TARGETS = [...SEATS, 'D'].flatMap(p => [`${p}.C1`, `${p}.C2`]);
 export const OPTIONAL_TARGETS = ['D.C3'];
-// The hole card is turned open from rest, by a hand that goes back to rest: one film, IDLE>REVEAL(D.C2). The pose it ends in
-// is rest, so whatever follows it starts from IDLE. HOLE_CARD is the place the bank's turn films turn a card at. In the game the
-// hole card is the dealer's first card, at D.C1, since 2026-11-24 (game/round.ts): the game plays this film only for a card that
-// lies at HOLE_CARD (src/game-director.ts planBeats), and the model here (this place, wantedSide) waits for a film that turns D.C1.
-export const HOLE_CARD = 'D.C2';
+// The hole card is the dealer's first card, at D.C1 (Jakob 2026-11-24; game/round.ts): it is dealt closed (wantedSide) and turned
+// open from rest, by a hand that goes back to rest: one film, IDLE>REVEAL(D.C1). The pose it ends in is rest, so whatever follows
+// it starts from IDLE.
+export const HOLE_CARD = 'D.C1';
 export const REVEAL_NODE = `REVEAL(${HOLE_CARD})`;
 export const REVEAL_EDGE = `IDLE>${REVEAL_NODE}`;
+// The films made before that day turn the card that lies at D.C2, the hole card's place until then. They are what they are and
+// keep their own step, IDLE>REVEAL(D.C2): an optional edge of the model, like the third dealer card's. No round asks for it and
+// no dealer needs it, and it is never played as the turn of a card at D.C1 (a hand turning a card somewhere else).
+export const OLDER_REVEAL_EDGE = 'IDLE>REVEAL(D.C2)';
+const TURNED = [HOLE_CARD, 'D.C2'];
+/** Rest with the card at that place turned open, as a node: REVEAL(D.C1), or the older films' REVEAL(D.C2). Null: no step turns a card there. */
+export const revealNode = (card: string): string | null => TURNED.includes(card) ? `REVEAL(${card})` : null;
+/** The card a node shows turned open ("REVEAL(D.C1)" → "D.C1"), or null for every other node. */
+export const turnedCard = (node: string): string | null => { const card = /^REVEAL\((.+)\)$/.exec(node)?.[1]; return card && TURNED.includes(card) ? card : null; };
 // AWAY is the picture without the dealer: table, shoe and background. She comes in and sits down (AWAY>IDLE) and she stands
 // up and leaves (IDLE>AWAY); rest is the fixed end of both.
 export const AWAY = 'AWAY';
@@ -89,16 +97,16 @@ export type EdgeRef = {id: string; from: string; to: string; kind: EdgeKind; tar
 // READY may have named variants (READY-B: another hand pose at the shoe). They are the same hub in the
 // graph: "READY-B>P4.C1" is a take of the edge READY>P4.C1 that starts from that other pose.
 const HUB_VARIANT = /^READY-[A-Z0-9]{1,12}$/;
-export const hubOf = (node: string): 'IDLE' | 'READY' | null => node === 'IDLE' || node === REVEAL_NODE ? 'IDLE' : node === 'READY' || HUB_VARIANT.test(node) ? 'READY' : null;
+export const hubOf = (node: string): 'IDLE' | 'READY' | null => node === 'IDLE' || turnedCard(node) ? 'IDLE' : node === 'READY' || HUB_VARIANT.test(node) ? 'READY' : null;
 export const isHub = (node: string) => hubOf(node) !== null;
 export const formatEdge = (from: string, to: string) => `${from}>${to}`;
 
-// Accepts p4.c1, P4C1, LAND(P4.C1), RELEASE(P4.C1), READY-B, REVEAL(D.C2), AWAY and the older aliases VILA/REDO.
+// Accepts p4.c1, P4C1, LAND(P4.C1), RELEASE(P4.C1), READY-B, REVEAL(D.C1), AWAY and the older aliases VILA/REDO.
 export function parseNode(text: unknown): string | null {
   if (typeof text !== 'string') return null;
   let s = text.trim().toUpperCase().replace(/\s+/g, '');
   const turned = /^REVEAL\((.+)\)$/.exec(s);
-  if (turned) return parseNode(turned[1]) === HOLE_CARD ? REVEAL_NODE : null; // only the hole card is turned on the table
+  if (turned) { const card = parseNode(turned[1]); return card ? revealNode(card) : null; } // only the hole card is turned on the table (and, in the older films, the card at D.C2)
   const wrapped = /^(?:LAND|RELEASE)\((.+)\)$/.exec(s);
   if (wrapped) s = wrapped[1];
   if (s === 'IDLE' || s === 'VILA') return 'IDLE';
@@ -112,7 +120,7 @@ export function parseNode(text: unknown): string | null {
 
 export function edgeKind(from: string, to: string): EdgeKind | null {
   const a = hubOf(from), b = hubOf(to);
-  if (to === REVEAL_NODE) return a === 'IDLE' ? 'REVEAL' : null; // the hole card is turned from rest only
+  if (turnedCard(to)) return a === 'IDLE' ? 'REVEAL' : null; // the hole card is turned from rest only
   if (from === AWAY || to === AWAY) return from === AWAY ? (to === 'IDLE' ? 'ARRIVE' : null) : a === 'IDLE' ? 'LEAVE' : null; // she is away from rest and comes back to rest
   if (a === 'IDLE') return b === 'READY' ? 'ENTRY' : b === 'IDLE' ? 'IDLE' : null;
   if (a === 'READY') return b === 'IDLE' ? 'RETURN' : b === 'READY' ? null : 'DEAL'; // READY to READY, also between variants, is not a model edge
@@ -126,7 +134,7 @@ export function parseEdge(text: unknown): EdgeRef | null {
   const from = parseNode(parts[0]), to = parseNode(parts[1]);
   if (!from || !to) return null;
   const kind = edgeKind(from, to);
-  if (kind === 'REVEAL') return {id: formatEdge(from, to), from, to, kind, target: HOLE_CARD, base: REVEAL_EDGE, hub: null};
+  if (kind === 'REVEAL') return {id: formatEdge(from, to), from, to, kind, target: turnedCard(to), base: `IDLE>${to}`, hub: null};
   if (kind === 'ARRIVE' || kind === 'LEAVE') return {id: formatEdge(from, to), from, to, kind, target: null, base: kind === 'ARRIVE' ? ARRIVE_EDGE : LEAVE_EDGE, hub: null};
   return kind ? {id: formatEdge(from, to), from, to, kind, target: !isHub(from) ? from : !isHub(to) ? to : null,
     base: formatEdge(hubOf(from) ?? from, hubOf(to) ?? to), hub: [from, to].find(n => HUB_VARIANT.test(n)) ?? null} : null;
@@ -153,6 +161,7 @@ export const formatSequence = (steps: {from: string; to: string; take?: string}[
 export function describeNode(node: string): string {
   if (node === 'IDLE') return 'Vila · båda händerna på bordet';
   if (node === REVEAL_NODE) return 'Vila · hålkortet vänt upp';
+  if (turnedCard(node)) return `Vila · dealerns kort ${node.slice(-2, -1)} vänt upp (äldre film, kortet låg stängt där)`;
   if (node === AWAY) return 'Borta · bordet utan dealer';
   if (node === 'READY') return 'Redo · handen vid skon';
   if (hubOf(node) === 'READY') return `Redo, variant ${node.slice(6)} · annan handställning vid skon`;
@@ -160,7 +169,7 @@ export function describeNode(node: string): string {
   return `${seat === 'D' ? 'Dealer' : `Spelare ${seat[1]}`} · kort ${card[1]}`;
 }
 export function describeEdge(edge: {from: string; to: string; kind: EdgeKind | null; target: string | null}): string {
-  if (edge.kind === 'REVEAL') return 'Hålkortet vänds upp: från vila och tillbaka till vila';
+  if (edge.kind === 'REVEAL') return edge.target && edge.target !== HOLE_CARD ? `Dealerns kort ${edge.target.slice(-1)} vänds upp (äldre film, kortet låg stängt där): från vila och tillbaka till vila` : 'Hålkortet vänds upp: från vila och tillbaka till vila';
   if (edge.kind === 'ARRIVE') return 'Hon kommer in och sätter sig: från tomt bord till vila';
   if (edge.kind === 'LEAVE') return 'Hon reser sig och går: från vila till tomt bord';
   if (edge.kind === 'ENTRY') return 'Ingång: från vila till skon';
@@ -231,9 +240,10 @@ export const STATUSES: Status[] = ['ACCEPTED', 'UNREVIEWED', 'VARIANT', 'ORDERED
 const CREDITS_PER_SECOND: Record<string, number> = {auto_1080p: 20, auto_720p: 10, auto_480p: 5};
 
 // The 54 edges of the bank (entry, exit, the idle clip, the turn of the hole card, her coming to the table and her leaving
-// it, then 16 cards × deal, return to READY, return to IDLE) followed by the three optional D.C3 edges.
+// it, then 16 cards × deal, return to READY, return to IDLE) followed by the optional ones: the three D.C3 edges and the older
+// turn of the card at D.C2.
 export function bankEdges(): EdgeRef[] {
-  return ['IDLE>READY', 'READY>IDLE', 'IDLE>IDLE', REVEAL_EDGE, ARRIVE_EDGE, LEAVE_EDGE, ...[...TARGETS, ...OPTIONAL_TARGETS].flatMap(t => [`READY>${t}`, `${t}>READY`, `${t}>IDLE`])].map(id => parseEdge(id)!);
+  return ['IDLE>READY', 'READY>IDLE', 'IDLE>IDLE', REVEAL_EDGE, ARRIVE_EDGE, LEAVE_EDGE, ...[...TARGETS, ...OPTIONAL_TARGETS].flatMap(t => [`READY>${t}`, `${t}>READY`, `${t}>IDLE`]), OLDER_REVEAL_EDGE].map(id => parseEdge(id)!);
 }
 
 export const clipOfVideo = (video: unknown): string | null => typeof video === 'string' ? /^assets\/motions\/([a-z0-9-]+)\/source\.mp4$/.exec(video)?.[1] ?? null : null;
@@ -287,7 +297,7 @@ function best(takes: Take[], ...keys: ((t: Take) => number)[]): Take | null {
 
 const KINDS = ['DEAL', 'RETURN', 'ENTRY', 'IDLE', 'REVEAL', 'ARRIVE', 'LEAVE'];
 export function buildGraph(data: BankData, options: {mode?: FilmMode; holeCardDown?: boolean; dealer?: string} = {}): Graph {
-  const blank = (ref: Omit<EdgeRef, 'kind'> & {kind: EdgeKind | null}, experiment: boolean): Edge => ({...ref, optional: !!ref.target && OPTIONAL_TARGETS.includes(ref.target), experiment, shares: null, takes: [], main: null, variants: [], status: 'MISSING', hasVariant: false, hubVariants: [], inProgress: 0, rendering: 0});
+  const blank = (ref: Omit<EdgeRef, 'kind'> & {kind: EdgeKind | null}, experiment: boolean): Edge => ({...ref, optional: ref.id === OLDER_REVEAL_EDGE || (!!ref.target && OPTIONAL_TARGETS.includes(ref.target)), experiment, shares: null, takes: [], main: null, variants: [], status: 'MISSING', hasVariant: false, hubVariants: [], inProgress: 0, rendering: 0});
   const edges: Edge[] = bankEdges().map(e => blank(e, false)), experiments: Edge[] = [];
   const edge: Record<string, Edge> = Object.fromEntries(edges.map(e => [e.id, e]));
   const takes: Record<string, Take> = {}, unplaced: {id: string; reason: string}[] = [], segments = new Map<string, {clip: string; start: number; end: number}>();
@@ -525,11 +535,11 @@ export function roundSequence(options: RoundOptions): EdgeRef[] {
   if (options.thirdDealerCard && dealer) ids.push('IDLE>READY', 'READY>D.C3', 'D.C3>IDLE');
   return ids.map(id => parseEdge(id)!);
 }
-// D.C2 is the hole card and stays closed unless the round says otherwise; every other card is turned open.
-export const wantedSide = (target: string, holeCardDown = true): Side => target === 'D.C2' && holeCardDown ? 'BACK' : 'FRONT';
+// The hole card (D.C1) is dealt closed and stays so unless the round says otherwise; every other card is turned open.
+export const wantedSide = (target: string, holeCardDown = true): Side => target === HOLE_CARD && holeCardDown ? 'BACK' : 'FRONT';
 
 // The card whose films a card plays in seat mode. The rule is the side, not the name: a second card shares the first card's films
-// only when it ends on the same side. The dealer's hole card stays closed while the first dealer card is turned, so it keeps its own.
+// only when it ends on the same side. The dealer's hole card stays closed while her second card is turned, so the second keeps its own.
 export function filmCard(target: string, holeCardDown = true): string {
   const [seat, card] = target.split('.');
   return card === 'C2' && wantedSide(target, holeCardDown) === wantedSide(`${seat}.C1`, holeCardDown) ? `${seat}.C1` : target;

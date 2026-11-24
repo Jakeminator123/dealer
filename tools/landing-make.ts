@@ -447,7 +447,7 @@ export function composeLanding(source: Rgb, anchor: Rgb, draw: (base: Rgb) => Rg
 /**
  * The cards an A3 is made for: a player's first and second card and the dealer's first, each laid open with a film of its own
  * (the second since 2026-11-21, when Jakob ordered the deal from anchor 2.3 to P4.C2). The picture shows only that card: the
- * game draws the cards that already lie. The hole card (D.C2) is laid closed, and a third card plays the seat's film.
+ * game draws the cards that already lie. The second card (D.C2) is laid open by its own film, and a third card plays the seat's film.
  */
 export const LANDING_TARGET = /^(?:P[1-7]\.C[12]|D\.C1)$/;
 
