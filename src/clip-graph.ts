@@ -72,7 +72,9 @@ export const SEATS = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7'];
 export const TARGETS = [...SEATS, 'D'].flatMap(p => [`${p}.C1`, `${p}.C2`]);
 export const OPTIONAL_TARGETS = ['D.C3'];
 // The hole card is turned open from rest, by a hand that goes back to rest: one film, IDLE>REVEAL(D.C2). The pose it ends in
-// is rest, so whatever follows it starts from IDLE.
+// is rest, so whatever follows it starts from IDLE. HOLE_CARD is the place the bank's turn films turn a card at. In the game the
+// hole card is the dealer's first card, at D.C1, since 2026-11-24 (game/round.ts): the game plays this film only for a card that
+// lies at HOLE_CARD (src/game-director.ts planBeats), and the model here (this place, wantedSide) waits for a film that turns D.C1.
 export const HOLE_CARD = 'D.C2';
 export const REVEAL_NODE = `REVEAL(${HOLE_CARD})`;
 export const REVEAL_EDGE = `IDLE>${REVEAL_NODE}`;

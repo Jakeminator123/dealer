@@ -24,11 +24,16 @@ export type PageState = {stage: Stage; busy: boolean; dealerPlays: boolean; bets
 const sum = (list: number[]) => list.reduce((a, b) => a + b, 0);
 export const betTotal = (bets: Record<number, number[]>) => sum(Object.values(bets).map(sum));
 
-/** The cards on the table by draw number, for the director and the layout. The hole card lies second in the dealer's hand whether it is open or not. */
+/**
+ * The cards on the table by draw number, for the director and the layout. The dealer's cards lie in the order they were dealt,
+ * the hole card on its own place whether it is open or not. Which of her cards that is, is the engine's (holeDraw: her first
+ * card, D.C1, since 2026-11-24); nothing here or in the page names it.
+ */
 export function tableCards(snapshot: Snapshot): TableCards {
   const round = snapshot.view.round; if (!round) return {hands: [], dealer: []};
   const dealer = round.dealer.map(c => c.shoeDraw);
-  if (round.holeDraw !== null && !dealer.includes(round.holeDraw)) dealer.splice(1, 0, round.holeDraw);
+  if (round.holeDraw !== null && !dealer.includes(round.holeDraw)) dealer.push(round.holeDraw);
+  dealer.sort((a, b) => a - b);
   return {hands: round.hands.map(h => ({seat: h.seat, cards: h.cards.map(c => c.shoeDraw)})), dealer};
 }
 /** Every card's face as the view knows it; the hole card has none before its reveal. */
@@ -41,7 +46,8 @@ export function cardFaces(snapshot: Snapshot): CardFace[] {
 export function shownBy(event: SeatSignalEvent): {key: string; total: number; soft: boolean; natural: boolean} | null {
   if (event.type === 'reveal') return {key: DEALER_KEY, total: event.total, soft: event.soft, natural: event.blackjack === true};
   if (event.type !== 'deal') return null;
-  if (event.to === 'dealer') return {key: DEALER_KEY, total: event.total, soft: event.soft, natural: false};
+  // A card dealt closed shows nothing: the dealer's total comes with her open card (the closed one is dealt first).
+  if (event.to === 'dealer') return event.faceDown ? null : {key: DEALER_KEY, total: event.total, soft: event.soft, natural: false};
   return event.seat === null || event.hand === null ? null : {key: handKey(event.seat, event.hand), total: event.total, soft: event.soft, natural: event.natural === true};
 }
 

@@ -7,7 +7,8 @@
 //
 // Rules of the chain, the same as the lab's round builder: the hand goes from rest to the shoe once (IDLE>READY), deals card
 // after card with a return to the shoe between them, and goes back to rest after the last card of the run. The hole card is
-// turned from rest. Nothing here knows rules, values or outcomes.
+// turned from rest. Nothing here knows rules, values or outcomes: which of the dealer's cards is the hole card is the engine's
+// (the card its reveal signal names), and its place on the table follows from the order the cards were dealt in.
 //
 // A return to rest the bank has no film for is played as the return to the shoe and the shoe's exit (READY>IDLE), so the hand never
 // jumps from the card to rest; where the exit has no film either, the cut is from the shoe to rest, between two anchors.
@@ -15,7 +16,7 @@
 // A card on the dealer's SEAT_HUB is dealt from that other pose at the shoe (READY-B) when the films for it can be played, and the
 // chain goes through rest around it: IDLE>READY-B, the deal, the return to READY-B and READY-B>IDLE (roundSequence in the clip bank
 // does the same).
-import {REVEAL_NODE, buildGraph, dealersOf, dealHub, judgedRecord, parseEdge, playable, resolveRound, returnFits, type BankData, type Graph, type Segment, type Step, type Why} from './clip-graph.ts';
+import {HOLE_CARD, REVEAL_NODE, buildGraph, dealersOf, dealHub, judgedRecord, parseEdge, playable, resolveRound, returnFits, type BankData, type Graph, type Segment, type Step, type Why} from './clip-graph.ts';
 import {slotOf, slotFilm, slotLabel, type Slot, type TableCards} from './game-table.ts';
 
 // The signals this file reads; everything else in the engine's list is for the overlay.
@@ -23,18 +24,22 @@ export type FilmSignal = {type: string; shoeDraw?: number | null};
 export type BeatKind = 'ENTRY' | 'DEAL' | 'RETURN' | 'EXIT' | 'REVEAL' | 'PLACE';
 // step: the edge to play. own: the card the film itself carries (null on the way to the shoe). lying: the cards at rest on
 // the table while the beat plays, by draw number, without the film's own card. PLACE is a card that has no film to deal
-// it (none made yet, or the only one rejected): it has no step and is simply laid on its place when its turn comes.
+// it (none made yet, or the only one rejected): it has no step and is simply laid on its place when its turn comes. A REVEAL
+// of a card the bank's turn film does not turn has no step either: the drawn card is turned where it lies, without a hand.
 export type Beat = {kind: BeatKind; step: Step | null; own: {shoeDraw: number; slot: Slot; label: string} | null; lying: number[]};
 
-// The hole card's turn is the clip bank's edge IDLE>REVEAL(D.C2); its node is passed on to those who read it here.
+// The hole card's turn is the clip bank's edge IDLE>REVEAL(D.C2), a film of her hand turning the card that lies at D.C2 (HOLE_CARD);
+// its node is passed on to those who read it here. Since 2026-11-24 the hole card is her first card and lies at D.C1 (BESKED,
+// "Dealerns första kort ligger stängt"): no film turns a card there yet, so that turn is played without a hand (planBeats), and
+// the film plays again by itself for a hole card that lies where it turns one.
 export {REVEAL_NODE};
 
 // STOPGAP (huvudagenten 2026-11-13, for showing Paow's round): a card whose own deal has no film that can be played is dealt with
-// the film named here, the drawn card laid at its own place. The hole card: when READY>D.C2 has no film, the dealer's second card is
-// dealt with the film of her first (READY>D.C1 and its return), the card laid closed at D.C2, 63 px (about a card's width) right of
-// where the film's hand lays its card, the same compromise as a seat's second card; the film's card turns on the way as the first
-// card's does, and the card drawn on it shows its back on both sides (a closed card wins over the film's side, src/card-overlay.ts
-// cardFace), so no value is shown. It gives way by itself when the bank has a playable film of D.C2 (planBeats).
+// the film named here, the drawn card laid at its own place. The dealer's second card: when READY>D.C2 has no film, it is dealt
+// with the film of her first (READY>D.C1 and its return), the card laid at D.C2, 63 px (about a card's width) right of where the
+// film's hand lays its card, the same compromise as a seat's second card. Since 2026-11-24 her second card is the open one and
+// her first the closed one: a closed card drawn on a film shows its back on both sides (it wins over the film's side,
+// src/card-overlay.ts cardFace), so no value is shown. It gives way by itself when the bank has a playable film of D.C2 (planBeats).
 // NOT D.C3 (and so not D.C4 and later, which play the D.C3 film): with the first card's film the drawn card would lie 219 px (D.C3)
 // and 243 px (D.C4) right of her hand, measured for Paow 2026-11-13; that is a hand laying a card somewhere else, which Jakob calls
 // cheating with the card. Those cards are laid without a hand until a film of their own exists; D.C3 now has an editable place.
@@ -114,7 +119,7 @@ export function planBeats(table: TableCards, lying: number[], signals: FilmSigna
     const slot = slots[i];
     const own = {shoeDraw: move.shoeDraw, slot, label: slotLabel(slot)}, others = () => rest.filter(n => n !== move.shoeDraw);
     if (move.type === 'reveal') {
-      beats.push({kind: 'REVEAL', step: {from: 'IDLE', to: REVEAL_NODE}, own, lying: others()});
+      beats.push({kind: 'REVEAL', step: own.label === HOLE_CARD ? {from: 'IDLE', to: REVEAL_NODE} : null, own, lying: others()});
       if (!rest.includes(move.shoeDraw)) rest.push(move.shoeDraw);
       return;
     }

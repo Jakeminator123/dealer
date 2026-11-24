@@ -29,7 +29,7 @@ test('the editable third dealer card drives its film position and later cards',(
 });
 
 // A stacked lab shoe: the cards in draw order from draw 2 (draw 1 is the burn card). One seat plays, seat 4:
-// seat 4 gets K and 6, the dealer shows 7 and hides a 10, and the next card in the shoe is a 5.
+// seat 4 gets K and 6, the dealer's first card is a hidden 10 and her second an open 7, and the next card in the shoe is a 5.
 const card = (text: string) => ({r: text.slice(0, -1), s: text.slice(-1)});
 const session = (cards: string, balance = 1000) => createSession({balance, shoe: {mode: 'stacked', seed: 'view', cards: cards.split(' ').map(card)}});
 let request = 0;
@@ -37,7 +37,7 @@ const run = (s: ReturnType<typeof createSession>, command: Record<string, unknow
 const page = (patch: Partial<PageState> = {}): PageState => ({stage: 'ROUND', busy: false, dealerPlays: false, bets: {}, last: null, chip: 25, balance: 1000, shown: {}, settled: null, line: null, error: null, ...patch});
 
 test('betting: the overlay shows the chips laid, and dealing needs a bet the balance and the limits allow', () => {
-  const s = session('K♠ 7♦ 6♥ 10♣ 5♦'), snapshot = s.state();
+  const s = session('K♠ 10♣ 6♥ 7♦ 5♦'), snapshot = s.state();
   const empty = tableView(snapshot, page({stage: 'BETTING'}));
   assert.equal(empty.phase, 'BETTING'); assert.equal(empty.canDeal, false); assert.equal(empty.seats.length, 7);
   assert.deepEqual(empty.seats.map(x => x.seat), [1, 2, 3, 4, 5, 6, 7]);
@@ -49,17 +49,18 @@ test('betting: the overlay shows the chips laid, and dealing needs a bet the bal
 });
 
 test('opening deal: beats in the engine\'s order, totals only as the cards land, the hole card never shown', () => {
-  const s = session('K♠ 7♦ 6♥ 10♣ 5♦'), dealt = run(s, {op: 'start', bets: [{seat: 4, main: 10}]});
+  const s = session('K♠ 10♣ 6♥ 7♦ 5♦'), dealt = run(s, {op: 'start', bets: [{seat: 4, main: 10}]});
   const table = tableCards(dealt);
   assert.deepEqual(table, {hands: [{seat: 4, cards: [2, 4]}], dealer: [3, 5]});
   const beats = planBeats(table, [], dealt.events);
   assert.deepEqual(beats.map(b => `${b.step!.from}>${b.step!.to}`), ['IDLE>READY', 'READY>P4.C1', 'P4.C1>READY', 'READY>D.C1', 'D.C1>READY', 'READY>P4.C2', 'P4.C2>READY', 'READY>D.C2', 'D.C2>IDLE']);
   // What each landed card showed, straight from the engine's signals.
-  const shown = dealt.events.filter(e => e.type === 'deal').map(e => shownBy(e)!);
-  assert.deepEqual(shown.map(x => [x.key, x.total]), [[handKey(4, 0), 10], [DEALER_KEY, 7], [handKey(4, 0), 16], [DEALER_KEY, 7]]);
+  const shown = dealt.events.filter(e => e.type === 'deal').map(e => shownBy(e));
+  assert.deepEqual(shown.map(x => x && [x.key, x.total]), [[handKey(4, 0), 10], null, [handKey(4, 0), 16], [DEALER_KEY, 7]], 'the closed first card shows nothing of the dealer');
   // The hole card has no face anywhere the page reads.
   const faces = cardFaces(dealt), records = cardRecords(table, faces);
-  assert.deepEqual(records.find(r => r.shoeDraw === 5), {shoeDraw: 5, target: 'D.C2', r: null, s: null, faceDown: true});
+  assert.deepEqual(records.find(r => r.shoeDraw === 3), {shoeDraw: 3, target: 'D.C1', r: null, s: null, faceDown: true});
+  assert.deepEqual(records.find(r => r.shoeDraw === 5), {shoeDraw: 5, target: 'D.C2', r: '7', s: 'diamonds', faceDown: false});
   assert.ok(!JSON.stringify(dealt).includes('"r":"10"'), 'the ten is not in the answer');
   assert.deepEqual(records.find(r => r.shoeDraw === 2), {shoeDraw: 2, target: 'P4.C1', r: 'K', s: 'spades', faceDown: false});
   // While the film plays, the overlay shows what has landed, not what the engine already knows.
@@ -76,7 +77,7 @@ test('opening deal: beats in the engine\'s order, totals only as the cards land,
 });
 
 test('opening deal at seat 6 from anchor 2.2: the engine\'s signals give the clip bank\'s round through rest, beat for beat', () => {
-  const s = session('K♠ 7♦ 6♥ 10♣ 5♦'), dealt = run(s, {op: 'start', bets: [{seat: 6, main: 10}]}), table = tableCards(dealt);
+  const s = session('K♠ 10♣ 6♥ 7♦ 5♦'), dealt = run(s, {op: 'start', bets: [{seat: 6, main: 10}]}), table = tableCards(dealt);
   const beats = planBeats(table, [], dealt.events, () => false, () => true, {}, SEAT_HUB.paow, () => true), steps = beats.map(b => `${b.step!.from}>${b.step!.to}`);
   assert.deepEqual(steps, ['IDLE>READY-B', 'READY-B>P6.C1', 'P6.C1>READY-B', 'READY-B>IDLE', 'IDLE>READY', 'READY>D.C1', 'D.C1>IDLE',
     'IDLE>READY-B', 'READY-B>P6.C2', 'P6.C2>READY-B', 'READY-B>IDLE', 'IDLE>READY', 'READY>D.C2', 'D.C2>IDLE']);
@@ -87,7 +88,7 @@ test('opening deal at seat 6 from anchor 2.2: the engine\'s signals give the cli
 });
 
 test('a hit, the dealer\'s turn and the result', () => {
-  const s = session('K♠ 7♦ 6♥ 10♣ 5♦'), dealt = run(s, {op: 'start', bets: [{seat: 4, main: 10}]});
+  const s = session('K♠ 10♣ 6♥ 7♦ 5♦'), dealt = run(s, {op: 'start', bets: [{seat: 4, main: 10}]});
   const lying = lyingAfter([], planBeats(tableCards(dealt), [], dealt.events));
   const r = dealt.view.round!, hit = run(s, {op: 'act', seat: 4, handIndex: r.active, action: 'hit', roundId: dealt.view.roundId, turnSeq: dealt.view.turnSeq});
   const beats = planBeats(tableCards(hit), lying, hit.events);
@@ -105,11 +106,11 @@ test('a hit, the dealer\'s turn and the result', () => {
   assert.equal(done.phase, 'SETTLED'); assert.equal(done.seats[3].hands[0].outcome, 'win'); assert.equal(done.seats[3].hands[0].net, 10);
   assert.equal(done.dealer!.total, 17); assert.equal(done.balance, 1010); assert.match(done.message, /17/);
   // The turned card is open in the records after the step.
-  assert.equal(cardRecords(tableCards(hit), cardFaces(hit)).find(x => x.shoeDraw === 5)!.r, '10');
+  assert.equal(cardRecords(tableCards(hit), cardFaces(hit)).find(x => x.shoeDraw === 3)!.r, '10');
 });
 
 test('a natural is marked by the engine, not by the overlay', () => {
-  const s = session('A♠ 7♦ K♥ 9♣'), dealt = run(s, {op: 'start', bets: [{seat: 4, main: 10}]});
+  const s = session('A♠ 9♣ K♥ 7♦'), dealt = run(s, {op: 'start', bets: [{seat: 4, main: 10}]});
   const last = dealt.events.filter(e => e.type === 'deal' && e.to === 'seat').map(e => shownBy(e)!).pop()!;
   assert.equal(last.natural, true); assert.equal(last.total, 21);
   const view = tableView(dealt, page({busy: true, shown: {[last.key]: last}}));
@@ -117,12 +118,12 @@ test('a natural is marked by the engine, not by the overlay', () => {
 });
 
 test('card layer options: the lying cards on their own places, the film\'s card with its landing quad and draw number', () => {
-  const s = session('K♠ 7♦ 6♥ 10♣ 5♦'), dealt = run(s, {op: 'start', bets: [{seat: 4, main: 10}]}), table = tableCards(dealt), records = cardRecords(table, cardFaces(dealt));
+  const s = session('K♠ 10♣ 6♥ 7♦ 5♦'), dealt = run(s, {op: 'start', bets: [{seat: 4, main: 10}]}), table = tableCards(dealt), records = cardRecords(table, cardFaces(dealt));
   const layout = createLayout(defaultPlan()), beats = planBeats(table, [], dealt.events), second = beats.find(b => b.kind === 'DEAL' && b.own!.shoeDraw === 4)!;
   const options = cardOptions(second, table, records, layout) as {placed: {shoeDraw: number; back: boolean; target: string; quad: unknown[]}[]; land: unknown[]; shoeDraw: number; target: string; cards: unknown[]};
-  assert.deepEqual(options.placed.map(p => [p.shoeDraw, p.target, p.back]), [[2, 'P4.C1', false], [3, 'D.C1', false]]);
+  assert.deepEqual(options.placed.map(p => [p.shoeDraw, p.target, p.back]), [[2, 'P4.C1', false], [3, 'D.C1', true]], 'the dealer’s first card lies closed');
   assert.equal(options.shoeDraw, 4); assert.equal(options.target, 'P4.C2'); assert.equal(options.land.length, 4); assert.equal(options.cards.length, 4);
-  assert.deepEqual(placedCards(table, records, [5], layout).map(p => p.back), [true], 'the lying hole card shows its back');
+  assert.deepEqual(placedCards(table, records, [3, 5], layout).map(p => [p.target, p.back]), [['D.C1', true], ['D.C2', false]], 'the lying hole card shows its back, the card beside it its face');
 });
 
 // ── The engine's card is the card the presentation shows, from the signal to the card layer ──
@@ -157,7 +158,7 @@ test('every card the engine deals is the one shown on its place: seeded rounds w
         const shown = cardFace(cardRecord(records, {shoeDraw: e.shoeDraw}), false, LAB_CARD);
         if (e.type === 'deal' && e.faceDown) {
           hole = {shoeDraw: e.shoeDraw, label};
-          assert.equal(label, 'D.C2');
+          assert.equal(label, 'D.C1');
           // Turned in a later step: closed and without a value. Turned in this one (a dealer blackjack at the deal): open in the step's
           // records, which the film module closes for every part before the turn (the test below).
           if (revealAt < 0) assert.deepEqual([shown.back, cardRecord(records, {shoeDraw: e.shoeDraw})!.r], [true, null], 'the hole card lies closed, without a value');
@@ -222,10 +223,10 @@ function fixtureFilm() {
 }
 
 test('the hole card goes to the film closed, and only the step that turns it opens it, after its turn', async () => {
-  // Paow's films for seat 4 only (the dealer's cards are laid without a hand): K♠ 6♥ against 7♦ over 10♣; a hit draws 5♦ to 21,
+  // Paow's films for seat 4 only (the dealer's cards are laid without a hand): K♠ 6♥ against a closed 10♣ and an open 7♦; a hit draws 5♦ to 21,
   // which ends the hand, so the same step turns the hole card (17) and settles.
   const {step} = fixtureFilm();
-  const s = session('K♠ 7♦ 6♥ 10♣ 5♦'), dealt = run(s, {op: 'start', bets: [{seat: 4, main: 10}]}), holeDraw = dealt.view.round!.holeDraw!;
+  const s = session('K♠ 10♣ 6♥ 7♦ 5♦'), dealt = run(s, {op: 'start', bets: [{seat: 4, main: 10}]}), holeDraw = dealt.view.round!.holeDraw!;
   const ten = (part: {cards?: unknown}) => { const c = part.cards as {cards: {shoeDraw: number; r: string | null; faceDown: boolean}[]; placed: {shoeDraw: number; back: boolean}[]};
     return {record: c.cards.find(r => r.shoeDraw === holeDraw), placed: c.placed.find(p => p.shoeDraw === holeDraw)}; };
   for (const part of await step(dealt)) { const {record} = ten(part); if (record) assert.deepEqual([record.r, record.faceDown], [null, true], `${part.path}: the hole card has no value in the deal`); }
@@ -248,7 +249,7 @@ const ASKS: Ask[] = ['bet', 'take', 'undo', 'clear', 'rebet', 'deal', 'hit', 'st
 const allowed = (snapshot: Snapshot, state: PageState) => ASKS.filter(ask => mayAsk(snapshot, state, ask));
 
 test('a control does only what the overlay offers in that phase, however it is reached (a late press, the recorder\'s window.game.controls)', () => {
-  const s = session('K♠ 7♦ 6♥ 10♣ 5♦'), idle = s.state(), laid = {4: [25]};
+  const s = session('K♠ 10♣ 6♥ 7♦ 5♦'), idle = s.state(), laid = {4: [25]};
   assert.deepEqual(allowed(idle, page({stage: 'BETTING', bets: laid, last: laid})), ['bet', 'take', 'undo', 'clear', 'deal'], 'betting, chips laid');
   assert.deepEqual(allowed(idle, page({stage: 'BETTING', last: laid})), ['bet', 'take', 'clear', 'rebet'], 'betting, the ring empty: the same bet again');
   assert.deepEqual(allowed(idle, page({stage: 'BETTING', busy: true, bets: laid, last: laid})), [], 'the deal is sent and its answer awaited: the chips stay as they were sent');
@@ -258,13 +259,13 @@ test('a control does only what the overlay offers in that phase, however it is r
   const settled = run(s, {op: 'act', seat: 4, handIndex: 0, action: 'stand', roundId: dealt.view.roundId, turnSeq: dealt.view.turnSeq});
   // The page leaves the round's bets laid until Ny runda, so a deal from here would start a round with them.
   assert.deepEqual(allowed(settled, page({stage: 'SETTLED', bets: laid, last: laid})), ['next'], 'settled: only Ny runda');
-  const insured = session('10♠ A♦ 9♥ 6♣'), offered = run(insured, {op: 'start', bets: [{seat: 4, main: 10}]});
+  const insured = session('10♠ 6♣ 9♥ A♦'), offered = run(insured, {op: 'start', bets: [{seat: 4, main: 10}]});
   assert.deepEqual(allowed(offered, page({bets: {4: [10]}, last: {4: [10]}})), ['insurance'], 'insurance offered: only its answer');
 });
 
 test('a reload lays every card where it lay, the hole card closed, and offers the controls of the phase the engine is in', async () => {
-  // Seat 4: 10♠ 9♥ (19) against A♦ over 6♣: insurance is offered, declined, the hand stands and wins.
-  const s = session('10♠ A♦ 9♥ 6♣ 5♦');
+  // Seat 4: 10♠ 9♥ (19) against a closed 6♣ and an open A♦: insurance is offered, declined, the hand stands and wins.
+  const s = session('10♠ 6♣ 9♥ A♦ 5♦');
   const reload = (snapshot: Snapshot) => ({stage: stageOf(snapshot), asks: allowed(snapshot, page({stage: stageOf(snapshot), balance: snapshot.balance}))});
   assert.deepEqual(reload(s.state()), {stage: 'BETTING', asks: ['bet', 'take', 'clear']}, 'no round');
   const offered = run(s, {op: 'start', bets: [{seat: 4, main: 10}]});
@@ -277,7 +278,7 @@ test('a reload lays every card where it lay, the hole card closed, and offers th
   await new Promise(r => setTimeout(r, 0));
   const laid = (parts.at(-1)![0].cards as {placed: {shoeDraw: number; back: boolean; target: string}[]; cards: {shoeDraw: number; r: string | null; s: string | null}[]});
   const face = (n: number) => { const c = laid.cards.find(x => x.shoeDraw === n)!; return c.r === null ? 'closed' : `${c.r} ${c.s}`; };
-  assert.deepEqual(laid.placed.map(p => [p.target, p.back, face(p.shoeDraw)]), [['P4.C1', false, '10 spades'], ['P4.C2', false, '9 hearts'], ['D.C1', false, 'A diamonds'], ['D.C2', true, 'closed']]);
+  assert.deepEqual(laid.placed.map(p => [p.target, p.back, face(p.shoeDraw)]), [['P4.C1', false, '10 spades'], ['P4.C2', false, '9 hearts'], ['D.C1', true, 'closed'], ['D.C2', false, 'A diamonds']]);
   run(s, {op: 'act', seat: 4, handIndex: 0, action: 'stand', roundId: turn.view.roundId, turnSeq: turn.view.turnSeq});
   assert.deepEqual(reload(s.state()), {stage: 'SETTLED', asks: ['next']}, 'settled, not yet collected: only Ny runda, which collects');
 });
@@ -301,7 +302,7 @@ test('seat, deal target and camera are three things, and seats 1-7 map the same 
 test('a total stays with its hand through a split, and a hand shows none until a card of its own has landed', () => {
   // Four eights to seat 4: 8♠ 8♥ split; the split-off 8♥ draws 8♣ and splits again (8♥ 2♠ and 8♣ 9♠, both stand); then 8♠ draws 8♦
   // and splits a third time (8♠ 3♥ and 8♦ K♠), which moves the two hands to its right one place along.
-  const s = session('8♠ 6♦ 8♥ 10♣ 8♦ 8♣ 2♠ 9♠ 3♥ K♠ 4♣ 2♦'), steps: Snapshot[] = [run(s, {op: 'start', bets: [{seat: 4, main: 10}]})];
+  const s = session('8♠ 10♣ 8♥ 6♦ 8♦ 8♣ 2♠ 9♠ 3♥ K♠ 4♣ 2♦'), steps: Snapshot[] = [run(s, {op: 'start', bets: [{seat: 4, main: 10}]})];
   const act = (action: string) => { const at = steps.at(-1)!, r = at.view.round!; steps.push(run(s, {op: 'act', seat: 4, handIndex: r.active, action, roundId: at.view.roundId, turnSeq: at.view.turnSeq})); };
   act('split'); act('split'); act('stand'); act('stand'); act('split');
   assert.deepEqual(steps.at(-1)!.view.round!.hands.map(h => h.cards.map(c => c.r + c.s).join(' ')), ['8♠ 3♥', '8♦ K♠', '8♥ 2♠', '8♣ 9♠']);
@@ -326,7 +327,7 @@ test('a total stays with its hand through a split, and a hand shows none until a
 });
 
 test('the round is collected once, however often the page asks: when it is settled, and from Ny runda while that ask is under way', async () => {
-  const s = session('10♠ 7♦ 9♥ 10♣'), refused: string[] = [];
+  const s = session('10♠ 10♣ 9♥ 7♦'), refused: string[] = [];
   let held: Snapshot = s.state(), n = 0, fail = 0;
   // The page's send (src/game-page.ts): the body is written as the press is made (a new requestId, the version the page holds), the
   // engine answers a moment later; a refusal is shown and the press answered with null. fail: lose that many answers on the way.
@@ -341,7 +342,7 @@ test('the round is collected once, however often the page asks: when it is settl
   assert.equal(settledAsk?.balance, 1010); assert.deepEqual(nextAsk, settledAsk, 'Ny runda gets the paid round');
   assert.deepEqual(s.ledger().map(e => e.op), ['start', 'act', 'collect'], 'collected once');
   // A collect whose answer was lost on the way is asked for again.
-  const t = session('10♠ 7♦ 9♥ 10♣'); held = t.state();
+  const t = session('10♠ 10♣ 9♥ 7♦'); held = t.state();
   const on = (cmd: Record<string, unknown>) => { held = t.command({...cmd, requestId: `t${++n}`, expectedVersion: held.ver}); return held; };
   on({op: 'start', bets: [{seat: 4, main: 10}]}); on({op: 'act', seat: 4, handIndex: 0, action: 'stand', roundId: held.view.roundId, turnSeq: held.view.turnSeq});
   const again = collector(cmd => { if (fail-- > 0) return Promise.resolve(null); return Promise.resolve(t.command({...cmd, requestId: `t${++n}`, expectedVersion: held.ver})); });

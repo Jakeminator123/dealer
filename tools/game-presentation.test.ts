@@ -16,7 +16,7 @@ const fam = (e: SignalEvent) => (withFamily(e) as { family?: string }).family;
 const order = (events: Ev[]) => events.filter(e => e.type === 'deal' || e.type === 'reveal')
   .map(e => `${e.type === 'reveal' ? 'reveal' : e.to === 'dealer' ? (e.faceDown ? 'hole' : 'dealer') : `box${e.box}`}#${e.shoeDraw}`);
 const SUIT = ['♠', '♦', '♥', '♣'];
-// Ranks in draw order (deal: player, dealer up, player, hole, then hits/dealer draws), suits cycling as in Scout's test.
+// Ranks in draw order (deal: player, hole, player, dealer up, then hits/dealer draws), suits cycling as in Scout's test.
 const stack = (ranks: string[]) => stackedRandom('presentation', ranks.map((r, i) => ({ r, s: SUIT[i % 4] })));
 const funding = { available: 1e6, reserved: { stake: { 0: 1e3, 1: 1e3, 2: 1e3, 3: 1e3, 4: 1e3, 5: 1e3, 6: 1e3 }, insurance: { 0: 1e3, 1: 1e3, 2: 1e3, 3: 1e3, 4: 1e3, 5: 1e3, 6: 1e3 } } };
 const betsOn = (boxes: number[], main = 10) => Array.from({ length: 7 }, (_, i) => ({ main: boxes.includes(i) ? main : 0, pp: 0, tp: 0 }));
@@ -63,47 +63,47 @@ test('settlement line: one line for the table, never false for most of the hands
   }
 });
 
-test('an immediate dealer blackjack: hidden hole deal, then the reveal, then settle; goodluck first', () => {
-  const t = driver(stack(['10', '10', '9', 'A']));
+test('an immediate dealer blackjack: hidden hole deal first, the up-card, then the reveal, then settle; goodluck first', () => {
+  const t = driver(stack(['10', 'A', '9', '10']));
   const { events, after } = t.send({ op: 'start', bets: betsOn([3]) });
   assert.equal(after.round!.phase, 'settled');
   assert.deepEqual(events.map(e => e.type), ['speak', 'deal', 'deal', 'deal', 'deal', 'reveal', 'settle', 'speak']);
-  assert.deepEqual(order(events), ['box3#2', 'dealer#3', 'box3#4', 'hole#5', 'reveal#5']);
+  assert.deepEqual(order(events), ['box3#2', 'hole#3', 'box3#4', 'dealer#5', 'reveal#3']);
   const hole = events.find(e => e.type === 'deal' && e.faceDown)!;
-  assert.deepEqual(hole, { type: 'deal', to: 'dealer', box: null, handIndex: null, card: null, faceDown: true, shoeDraw: 5, clip: { action: 'deal-dealer', fallback: 'slide' } });
+  assert.deepEqual(hole, { type: 'deal', to: 'dealer', box: null, handIndex: null, card: null, faceDown: true, shoeDraw: 3, clip: { action: 'deal-dealer', fallback: 'slide' } });
   assert.equal((events[0] as { line: string }).line, 'goodluck');
   assert.equal((events.at(-1) as { line: string }).line, 'dealerblackjack');
 });
 
 test('a hit that ends the turn: player card, then reveal, then extra dealer cards; a stand reveals first', () => {
-  let t = driver(stack(['10', '6', '6', '10', '5', '8']));
+  let t = driver(stack(['10', '10', '6', '6', '5', '8']));
   t.send({ op: 'start', bets: betsOn([3]) });
   let { events } = t.act('hit');
-  assert.deepEqual(order(events), ['box3#6', 'reveal#5', 'dealer#7']);
+  assert.deepEqual(order(events), ['box3#6', 'reveal#3', 'dealer#7']);
   assert.deepEqual(events.slice(-2).map(e => e.type), ['settle', 'speak']);
-  t = driver(stack(['10', '6', '9', '10', '5']));
+  t = driver(stack(['10', '10', '9', '6', '5']));
   t.send({ op: 'start', bets: betsOn([3]) });
   ({ events } = t.act('stand'));
-  assert.deepEqual(order(events), ['reveal#5', 'dealer#6']);
+  assert.deepEqual(order(events), ['reveal#3', 'dealer#6']);
 });
 
 test('a two-card 21 after a split settles as win, never blackjack', () => {
-  const t = driver(stack(['A', '6', 'A', '10', '10', 'K', '9']));
+  const t = driver(stack(['A', '10', 'A', '6', '10', 'K', '9']));
   t.send({ op: 'start', bets: betsOn([3]) });
   const { events, after } = t.act('split');
   assert.ok(after.round!.hands.every(h => h.cards.length === 2 && h.splitFrom === 3));
-  assert.deepEqual(order(events), ['box3#6', 'box3#7', 'reveal#5', 'dealer#8']);
+  assert.deepEqual(order(events), ['box3#6', 'box3#7', 'reveal#3', 'dealer#8']);
   assert.deepEqual(events.find(e => e.type === 'settle')!.hands.map(h => h.outcome), ['win', 'win']);
   assert.equal((events.at(-1) as { line: string }).line, 'dealerbust');
 });
 
 test('insurance, double, turn and collect cues', () => {
-  let t = driver(stack(['10', 'A', '9', '6', '2']));
+  let t = driver(stack(['10', '6', '9', 'A', '2']));
   let step1 = t.send({ op: 'start', bets: betsOn([3]) });
   assert.deepEqual(step1.events.slice(-1), [{ type: 'speak', line: 'insurance' }], 'insurance offered, no turn yet');
   const ins = t.send({ op: 'insurance', take: false, roundId: t.state.roundId });
   assert.deepEqual(ins.events, [{ type: 'turn', box: 3, handIndex: 0, legalActions: ['hit', 'stand', 'double'] }]);
-  t = driver(stack(['6', '9', '5', '7', '10', 'K']));
+  t = driver(stack(['6', '7', '5', '9', '10', 'K']));
   t.send({ op: 'start', bets: betsOn([3]) });
   const dbl = t.act('double');
   // Scout's raw generator queues the double line after the deals, so the reveal and dealer draw land
@@ -152,7 +152,9 @@ test('the generator follows server draw order and reveals the hole exactly once 
       assert.equal(events.filter(e => e.type === 'reveal').length, shouldReveal ? 1 : 0);
       if (shouldReveal) {
         assert.equal((events[reveal] as { shoeDraw: number }).shoeDraw, after.round!.holeDraw);
-        assert.ok(events.every((e, i) => e.type !== 'deal' || (e.to === 'dealer' && e.shoeDraw > (after.round!.holeDraw as number) ? i > reveal : i < reveal)));
+        // The two opening cards (the hole card first, then the up-card) lie before the reveal, her draws after it.
+        const opening = after.round!.dealer.map(c => c.shoeDraw as number).sort((a, b) => a - b)[1];
+        assert.ok(events.every((e, i) => e.type !== 'deal' || (e.to === 'dealer' && e.shoeDraw > opening ? i > reveal : i < reveal)));
       }
       compared++; reveals += Number(shouldReveal);
       state = out.state; before = after;

@@ -30,7 +30,7 @@ test('seatOf and boxOf: seat = box + 1, a full round trip, and nothing outside 1
   assert.throws(() => betsForSeats([]), SeatError);
 });
 
-test('opening deal with all seven seats: seat 7 → 1, the up-card, seat 7 → 1, the hole card; play starts at seat 7', () => {
+test('opening deal with all seven seats: seat 7 → 1, the hole card, seat 7 → 1, the up-card; play starts at seat 7', () => {
   const s = createSession({ shoe: { mode: 'seeded', seed: 'seven' }, balance: 1e5 });
   let n = 0, last: Snapshot;
   const send = (cmd: Record<string, unknown>) => (last = s.command({ ...cmd, requestId: `q${++n}`, expectedVersion: s.state().ver }));
@@ -43,14 +43,14 @@ test('opening deal with all seven seats: seat 7 → 1, the up-card, seat 7 → 1
     send({ op: 'collect', roundId: s.state().view.roundId });
   }
   const deals = last!.events.filter(e => e.type === 'deal') as SeatDealEvent[];
-  assert.deepEqual(deals.map(e => e.target), ['7', '6', '5', '4', '3', '2', '1', 'dealer', '7', '6', '5', '4', '3', '2', '1', 'hole']);
+  assert.deepEqual(deals.map(e => e.target), ['7', '6', '5', '4', '3', '2', '1', 'hole', '7', '6', '5', '4', '3', '2', '1', 'dealer']);
   assert.deepEqual(deals.map(e => e.seat), [7, 6, 5, 4, 3, 2, 1, null, 7, 6, 5, 4, 3, 2, 1, null]);
   assert.deepEqual(deals.map(e => e.to), [...Array(7).fill('seat'), 'dealer', ...Array(7).fill('seat'), 'dealer']);
   const first = deals[0].shoeDraw;
   assert.deepEqual(deals.map(e => e.shoeDraw), Array.from({ length: 16 }, (_, i) => first + i), 'consecutive shoe draws');
   assert.deepEqual(deals.map(e => e.family), ['deal.player.right/box6', 'deal.player.right/box5', 'deal.player.centre/box4', 'deal.player.centre/box3', 'deal.player.centre/box2',
-    'deal.player.left/box1', 'deal.player.left/box0', 'deal.dealer/dealer-up', 'deal.player.right/box6', 'deal.player.right/box5', 'deal.player.centre/box4', 'deal.player.centre/box3',
-    'deal.player.centre/box2', 'deal.player.left/box1', 'deal.player.left/box0', 'deal.dealer/dealer-hole'], 'Scout clip slots, box<n> = seat n+1');
+    'deal.player.left/box1', 'deal.player.left/box0', 'deal.dealer/dealer-hole', 'deal.player.right/box6', 'deal.player.right/box5', 'deal.player.centre/box4', 'deal.player.centre/box3',
+    'deal.player.centre/box2', 'deal.player.left/box1', 'deal.player.left/box0', 'deal.dealer/dealer-up'], 'Scout clip slots, box<n> = seat n+1');
   assert.deepEqual(last!.view.round!.hands.map(h => h.seat), [1, 2, 3, 4, 5, 6, 7], 'hands listed seat 1 → 7');
   // Turn order: the highest seat still to act goes first (naturals are skipped by the core).
   const turns: number[] = [];

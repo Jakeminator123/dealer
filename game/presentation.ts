@@ -10,6 +10,7 @@
 //   (git blob e2055293255bcb47cdf931573678294fe68c3836); resolver/inventory functions not ported.
 // - filmedDealTarget: packages/presentation/contracts/filmed-profile.mjs (git blob 93a688025460c5c18b8a3c483af0e28b3061cf49).
 // Events here still carry Scout's `box` 0–6; seats.ts converts them to seats 1–7.
+// One lab deviation in the logic: where the reveal is put among a step's events (see presentationEvents).
 import type { Action, Rank, Suit } from './round.ts';
 
 export type SpeakLine = 'goodluck' | 'insurance' | 'double' | 'placebets' | 'blackjack' | 'dealerblackjack' | 'dealerbust' | 'win' | 'push' | 'lose';
@@ -91,10 +92,12 @@ export function presentationEvents(prevView: PresentationView, view: Presentatio
     const dealerTotal = handTotal(r.dealer); const dealerBJ = (r.dealer?.length === 2 && dealerTotal === 21);
     const outs = hands.map(handOutcome), line = settlementLine(r);
     // The reveal follows the card that triggered it (the player's last card, or the initial hidden deal) and comes before any
-    // extra dealer card (draw after the hole), never ahead of the whole instruction list.
+    // extra dealer card (a draw after her two opening cards), never ahead of the whole instruction list. Lab deviation: the hole
+    // card is her first card here (round.ts), so "after the hole" would also name the up-card dealt at the start.
     const hole = r.dealer?.find(c => c.shoeDraw === holeDraw);
     if (prevDealerHidden && hole) {
-      const extra = ev.findIndex(e => e.type === 'deal' && e.to === 'dealer' && e.shoeDraw > (hole.shoeDraw as number));
+      const opening = (r.dealer ?? []).map(c => c.shoeDraw as number).sort((a, b) => a - b)[1] ?? (hole.shoeDraw as number);
+      const extra = ev.findIndex(e => e.type === 'deal' && e.to === 'dealer' && e.shoeDraw > opening);
       const at = extra >= 0 ? extra : ev.reduce((last, e, i) => e.type === 'deal' ? i + 1 : last, 0);
       ev.splice(at, 0, { type: 'reveal', to: 'dealer', card: { r: hole.r as Rank, s: hole.s as Suit }, shoeDraw: hole.shoeDraw as number });
     }

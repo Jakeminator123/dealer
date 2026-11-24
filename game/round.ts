@@ -3,7 +3,11 @@
 // (git blob 3be88ff2e2395ad3038c3c76c187c770ece95d66). Logic unchanged; only types added.
 // Class fields are `declare`d so the runtime object keeps exactly the JavaScript shape
 // (no field initialisers run before the constructor), and draw() has one type-only `!`.
-// One lab deviation: isBJ and isNatural are exported (seats.ts reports naturals with them).
+// Lab deviations: isBJ and isNatural are exported (seats.ts reports naturals with them), and the dealer's FIRST card is the
+// hole card (Jakob 2026-11-24, BESKED "Dealerns första kort ligger stängt": D.C1 closed, D.C2 open, as his card plan and the
+// films). Scout deals the up-card first and the hole card second. Rules and payouts are Scout's: the up-card (insurance, peek,
+// 21+3) is still the dealer's open card, now the second one dealt, and `dealer` holds the cards in table order once the hole
+// card is turned (hole card first).
 //
 // Scout's header, kept: ported from Kevin's vendor/croupier/public/blackjack.mjs @ 5aa7ed1.
 // Changes: the shuffle (and its crypto randomness) lives in core.mjs behind an explicit
@@ -135,12 +139,12 @@ export class Round {
     // right-to-left off the shoe: the rightmost seat receives first
     const order = [...this.live()].reverse();
     for (const b of order) b.cards.push(this.draw());
-    this.dealer.push(this.draw());             // upcard
+    this.holeCard = this.draw();               // the dealer's first card: face down, dealt but hidden
     for (const b of order) b.cards.push(this.draw());
-    this.holeCard = this.draw();               // face down, dealt but hidden
+    this.dealer.push(this.draw());             // the dealer's second card: the upcard
     this.settleSideBets();
     this.emit('round.dealt');
-    const up = this.dealer[0];
+    const up = this.dealer[0];               // the only card in `dealer` until the hole card is turned
     if (up.r === 'A') { this.phase = 'insurance'; this.emit('insurance.offered'); return; }
     this.afterInsurance();
   }
@@ -191,7 +195,7 @@ export class Round {
     if (up.r === 'A' || tenVal(up)) {
       this.emit('dealer.peek');
       if (isBJ([up, this.holeCard])) {
-        this.dealer.push(this.holeCard);
+        this.dealer.unshift(this.holeCard);  // table order: the hole card is the first card
         this.emit('dealer.blackjack');
         this.settle();
         return;
@@ -278,7 +282,7 @@ export class Round {
 
   dealerPlay() {
     this.phase = 'dealer';
-    this.dealer.push(this.holeCard);
+    this.dealer.unshift(this.holeCard);      // table order: the hole card is the first card
     this.emit('dealer.reveal');
     // true if ANY hand on ANY box can still be beaten or beaten by a draw
     const anyLive = this.live().some(b => !b.busted && handValue(b.cards).total <= 21 && !isNatural(b));

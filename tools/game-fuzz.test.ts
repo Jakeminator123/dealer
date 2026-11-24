@@ -122,10 +122,10 @@ test(`fuzz: ${ROUNDS} seeded rounds with random legal play keep every invariant`
     assert.equal(reveals[0].total, handValue(settled.dealer.slice(0, 2) as Card[]).total);
     const revealAt = results.findIndex(res => res.events.some(e => e.type === 'reveal'));
     for (let i = 0; i < revealAt; i++) assert.equal(holeLeaks(results[i], hole), 0, `round ${round}: hole card in result ${i} before its reveal`);
-    const up = settled.dealer[0];
+    const up = settled.dealer.find(c => c.shoeDraw !== settled.holeDraw)!;
     for (const res of results.slice(0, revealAt + 1)) for (const e of res.events) {
       if (e.type === 'reveal') break;
-      if (e.type === 'deal' && e.to === 'dealer') assert.equal(e.total, handValue([up as Card]).total, 'a dealer total before the reveal is the up-card alone');
+      if (e.type === 'deal' && e.to === 'dealer') assert.equal(e.total, handValue(e.faceDown ? [] : [up as Card]).total, 'a dealer total before the reveal is the up-card alone, and nothing while only the hole card lies');
     }
     if (settled.dealer.length === 2 && settled.dealerTotal === 21) counts.dealerBlackjacks++;
 

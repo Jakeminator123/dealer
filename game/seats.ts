@@ -1,7 +1,7 @@
 // Seat boundary of the local engine: the ONE place that converts between Scout's `box`
 // (0–6, used unchanged inside round.ts, core.ts and presentation.ts) and the lab's seats
 // 1–7 (seat = box + 1). Seat 1 is camera-left, seat 7 camera-right; the opening deal goes
-// seat 7 → seat 1, then the dealer's up-card, then seat 7 → seat 1 again, then the hole card.
+// seat 7 → seat 1, then the dealer's hole card (her first card, closed), then seat 7 → seat 1 again, then her up-card.
 // Everything the session returns passes through here and carries `seat`, never `box`.
 // New code. It also adds what the overlay must not compute itself: hand totals in the view,
 // and on every deal/reveal event the total of the receiving hand's visible cards right after
@@ -90,7 +90,7 @@ export interface SeatDealEvent {
   seat: number | null; handIndex: number | null;
   /** Ordinal among the seat's hands right after this card (null for the dealer). */
   hand: number | null;
-  /** 0-based position of this card in its hand (dealer: up-card 0, hole card 1, draws 2…). */
+  /** 0-based position of this card in its hand (dealer, in dealing order: hole card 0, up-card 1, draws 2…). */
   cardIndex: number;
   /** null for the face-down hole card. */
   card: CardFace | null; faceDown: boolean; shoeDraw: number;
@@ -102,7 +102,7 @@ export interface SeatDealEvent {
 }
 export interface SeatRevealEvent {
   type: 'reveal'; to: 'dealer'; card: CardFace; shoeDraw: number;
-  /** Dealer cardIndex of the hole card (1). */
+  /** Dealer cardIndex of the hole card (0: it is her first card). */
   cardIndex: number;
   /** handValue of the dealer's two cards. */
   total: number; soft: boolean;
@@ -127,13 +127,15 @@ const visibleValue = (cards: readonly Card[]) => { const { total, soft } = handV
 export function seatEvents(events: readonly SignalEvent[], after: PublicView): SeatSignalEvent[] {
   const round = after?.round ?? null, hands = round?.hands ?? [], dealer = round?.dealer ?? [];
   const holeDraw = round?.holeDraw ?? null;
-  return events.map((event): SeatSignalEvent => {
+  // The view is the one after the step, so it holds the hole card when the step turns it; the events before that turn must not count it.
+  const revealAt = events.findIndex(e => e.type === 'reveal');
+  return events.map((event, at): SeatSignalEvent => {
     if (event.type === 'deal') {
       const target = filmedDealTarget(event) as string;
       if (event.to === 'dealer') {
-        const hole = event.faceDown === true;
-        // Visible after this card: dealer cards dealt up to it; the hole card counts only once revealed,
-        // and the reveal always comes before any later dealer card (presentationEvents).
+        const hole = event.faceDown === true || (revealAt >= 0 && at < revealAt);
+        // Visible after this card: dealer cards dealt up to it; the hole card counts only once revealed (it is dealt before the
+        // up-card), and the reveal always comes before any later dealer card (presentationEvents).
         const visible = dealer.filter(c => (c.shoeDraw as number) <= event.shoeDraw && !(hole && c.shoeDraw === holeDraw));
         const before = dealer.filter(c => (c.shoeDraw as number) < event.shoeDraw).length
           + (holeDraw != null && holeDraw < event.shoeDraw && !dealer.some(c => c.shoeDraw === holeDraw) ? 1 : 0);
@@ -151,9 +153,10 @@ export function seatEvents(events: readonly SignalEvent[], after: PublicView): S
         target, clip: event.clip, ...(event.family ? { family: event.family } : {}) };
     }
     if (event.type === 'reveal') {
-      const visible = dealer.filter(c => (c.shoeDraw as number) <= event.shoeDraw);
+      // Her two opening cards, whichever of them is the hole card: the first two she drew.
+      const visible = [...dealer].sort((a, b) => (a.shoeDraw as number) - (b.shoeDraw as number)).slice(0, 2);
       return { type: 'reveal', to: 'dealer', card: event.card, shoeDraw: event.shoeDraw,
-        cardIndex: dealer.findIndex(c => c.shoeDraw === event.shoeDraw), ...visibleValue(visible), blackjack: isBJ(visible),
+        cardIndex: dealer.filter(c => (c.shoeDraw as number) < event.shoeDraw).length, ...visibleValue(visible), blackjack: isBJ(visible),
         target: filmedDealTarget(event) as string, ...(event.family ? { family: event.family } : {}) };
     }
     if (event.type === 'turn') return { type: 'turn', seat: event.box == null ? null : seatOf(event.box), handIndex: event.handIndex, legalActions: [...event.legalActions] };

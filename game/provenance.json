@@ -7,7 +7,7 @@
       "file": "game/round.ts",
       "scoutPath": "services/game/games/blackjack/round.mjs",
       "blob": "3be88ff2e2395ad3038c3c76c187c770ece95d66",
-      "deviations": "types added; class fields as `declare` (no runtime fields); type-only `!`/`as` in draw(), act(), split(); isBJ and isNatural exported (module-private in Scout) so seats.ts reports naturals and dealer blackjack with the core's own test"
+      "deviations": "types added; class fields as `declare` (no runtime fields); type-only `!`/`as` in draw(), act(), split(); isBJ and isNatural exported (module-private in Scout) so seats.ts reports naturals and dealer blackjack with the core's own test; the dealer's FIRST card is the hole card and her second the up-card (Jakob 2026-11-24; Scout deals the up-card first): deal() draws the hole card first, and the hole card is put first in `dealer` when it is turned. Insurance, the peek and 21+3 read the up-card as before"
     },
     {
       "file": "game/shoe-rules.ts",
@@ -49,7 +49,7 @@
         { "scoutPath": "packages/presentation/runtime/media-family-resolver.mjs", "blob": "e2055293255bcb47cdf931573678294fe68c3836", "use": "mediaSituationForEvent" },
         { "scoutPath": "packages/presentation/contracts/filmed-profile.mjs", "blob": "93a688025460c5c18b8a3c483af0e28b3061cf49", "use": "filmedDealTarget" }
       ],
-      "deviations": "types added; withFamily exported; not ported: withMovingOpening, presentationForRow, lineIdOf, reconnectPresentation, resolveMediaFamily*, the rest of filmed-profile"
+      "deviations": "types added; withFamily exported; presentationEvents puts the reveal after the dealer's two opening cards instead of before every dealer card drawn after the hole card (the hole card is dealt first here); not ported: withMovingOpening, presentationForRow, lineIdOf, reconnectPresentation, resolveMediaFamily*, the rest of filmed-profile"
     }
   ],
   "new": [
