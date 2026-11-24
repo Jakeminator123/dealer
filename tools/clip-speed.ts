@@ -4,8 +4,8 @@
 // never past 2× (src/game-film.ts filmRate). Set in Karta, in a step's panel beside the film (studio/components/map/ClipSpeed.tsx).
 //   PUT /api/clip-speed   {"id": "<take id>", "speed": 1.5}   from the lab only; speed 1 takes the field away
 // The file is written as the tools that register a film write it (tools/register-order.ts: two spaces, a last newline, a
-// temporary file renamed into place), so nothing but the one field changes. A file that is not in that form is left as it is,
-// and the reason is said. Tests: tools/clip-speed.test.ts.
+// temporary file renamed into place), so nothing but the one field changes. A file someone wrote in another form (another
+// indent or line ending) gets the tools' form by the save: the speed is saved all the same. Tests: tools/clip-speed.test.ts.
 import {randomUUID} from 'node:crypto';
 import {readFile, rename, writeFile} from 'node:fs/promises';
 import type {IncomingMessage, ServerResponse} from 'node:http';
@@ -28,14 +28,12 @@ export function withClipSpeed(text: string, id: unknown, speed: unknown): {ok: t
   if (typeof speed !== 'number' || !CLIP_SPEEDS.includes(speed)) return {ok: false, status: 422, error: 'Farten är 1×, 1,25×, 1,5× eller 2×.'};
   let data: Jobs;
   try { data = JSON.parse(text) as Jobs; } catch { return {ok: false, status: 500, error: `${JOBS} kunde inte läsas.`}; }
-  const write = (of: Jobs) => `${JSON.stringify(of, null, 2)}\n`;
-  if (write(data) !== text) return {ok: false, status: 409, error: `${JOBS} är inte skriven som verktygen skriver den. Farten sparades inte, så att filen inte formateras om.`};
   const list = (of: unknown): Entry[] => Array.isArray(of) ? of as Entry[] : [];
   const entry = [...list(data.jobs), ...list(data.derived)].find(e => e?.id === id);
   if (!entry) return list(data.edits).some(e => e?.id === id) ? {ok: false, status: 422, error: 'En rättad kopia har sin källfilms fart: sätt farten på källfilmen.'} : {ok: false, status: 404, error: `Filmen ${id} finns inte i ${JOBS}.`};
   if (entry.kind === 'IDLE' || (entry.from === 'IDLE' && entry.to === 'IDLE')) return {ok: false, status: 422, error: 'Vila och tal går alltid som filmat.'};
   if (speed === 1) delete entry.playbackSpeed; else entry.playbackSpeed = speed;
-  return {ok: true, text: write(data), id, speed};
+  return {ok: true, text: `${JSON.stringify(data, null, 2)}\n`, id, speed};
 }
 
 /** Sets one film's speed in data/clip-jobs.json; nothing is written when the answer is no, or when nothing would change. */

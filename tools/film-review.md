@@ -185,7 +185,7 @@ LAGBART, få rutor, få bildpunkter, en färg, en nivå eller en vilofilms skär
 INTE LAGBART, beställ om eller underkänn: en hands eller kropps rörelse (väg, stopp i rörelsen, extra gest, fel hand,
 handbyte), ett kort som byter form eller storlek i handen, färgbyte utan vändning, fingrar genom kortet, fel väg eller
 fel landningsplats, ansikte eller identitet som glider, och allt där något rör sig i den yta som skulle målas. Tempot
-ändras aldrig (`speed` vägras alltid).
+ändras aldrig i filens bildrutor (`speed` vägras); filmens egen fart väljs i Karta, i stegets panel.
 
 Skriv ut listan färdig för verktyget, som JSON och som `fixes.json` i dumpmappen. Rutnumren är filmens egna, även efter
 en `trim`. Sökvägar till bilder (`level`:s `reference`, `patch`:s `mask`) skrivs från repots rot.

@@ -1,6 +1,6 @@
 // tools/clip-speed.ts, the contract of a film's own speed (Jakob 2026-11-23: "den nya standarden för respektive klipp"): only
 // the field playbackSpeed on the one film changes in data/clip-jobs.json, 1× takes the field away, and a rest film, an unknown
-// film, another speed or a file in another form is refused with nothing written.
+// film or another speed is refused with nothing written.
 import assert from 'node:assert/strict';
 import {mkdtemp, mkdir, readFile, readdir, rm, writeFile} from 'node:fs/promises';
 import os from 'node:os';
@@ -29,16 +29,13 @@ test('farten sätts på filmen: bara fältet ändras, och 1× tar bort det', () 
   assert.ok(cut.ok); assert.equal(JSON.parse(cut.text).derived[0].playbackSpeed, 1.5); assert.equal(JSON.parse(cut.text).jobs[0].playbackSpeed, undefined);
 });
 
-test('farten sätts inte: vila, okänd film, annan fart, och en fil som inte är skriven som verktygen skriver den', () => {
+test('farten sätts inte: vila, okänd film och annan fart', () => {
   const no = (of: string, id: unknown, speed: unknown) => { const r = withClipSpeed(of, id, speed); assert.equal(r.ok, false); return r.ok ? null : [r.status, r.error]; };
   assert.deepEqual(no(text, 'vila', 2), [422, 'Vila och tal går alltid som filmat.']);
   assert.equal(no(text, 'finns-inte', 2)![0], 404);
   assert.equal(no(text, 'giv-plats-4-fix', 2)![0], 422, 'en rättad kopia har källfilmens fart');
   for (const speed of [3, 0.5, 1.1, '2', null]) assert.deepEqual(no(text, 'giv-plats-4', speed), [422, 'Farten är 1×, 1,25×, 1,5× eller 2×.']);
   assert.equal(no(text, '../x', 2)![0], 400);
-  // Another indent or line ending would be rewritten whole by a save: refused instead.
-  assert.equal(no(JSON.stringify(data), 'giv-plats-4', 2)![0], 409);
-  assert.equal(no(text.replaceAll('\n', '\r\n'), 'giv-plats-4', 2)![0], 409);
 });
 
 test('filen skrivs bara när något ändras, och ingen tillfällig fil blir kvar', async () => {

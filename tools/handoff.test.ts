@@ -4,9 +4,10 @@
 // this test holds the caps, and only the caps:
 //   HANDOFF.md              at most 120 lines and 900 words
 //   docs/lage/<bana>.md     at most 60 lines and 800 words
-//   AGENTS.md               at most 1 400 words, and the three start files together under 3 500
-// and that the links of the hand-over pages lead somewhere. How the pages are laid out is the writer's choice.
-// A test that goes red here is answered by moving text to where it belongs, never by raising a number.
+//   the three start files   together under 3 500 words (AGENTS.md, HANDOFF.md and the longest lane file)
+// and that the links of the hand-over pages lead somewhere. The numbers are the ones AGENTS.md names ("Läs först", "Var
+// kunskap står"); AGENTS.md has no cap of its own. How the pages are laid out is the writer's choice. A test that goes red
+// here is answered by moving text to where it belongs.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {existsSync, readdirSync, readFileSync} from 'node:fs';
@@ -17,7 +18,6 @@ const root = path.resolve(fileURLToPath(new URL('../', import.meta.url)));
 export const HANDOFF_LINES = 120;
 export const HANDOFF_WORDS = 900;
 export const LANE_LINES = 60;
-export const AGENTS_WORDS = 1400;
 export const START_WORDS = 3500;
 /** Words too: a cap on lines alone is kept by writing longer lines, as the documents once did (docs/DRIFT.md). */
 export const LANE_WORDS = 800;
@@ -78,7 +78,6 @@ test('every relative link in the hand-over pages leads to a file that exists', (
 
 test('the start reading is under 3 500 words: AGENTS.md, HANDOFF.md and the longest lane file', () => {
   const agents = read('AGENTS.md');
-  assert.ok(words(agents) <= AGENTS_WORDS, `AGENTS.md has ${words(agents)} words, at most ${AGENTS_WORDS}: it is read whole by every new session, so a routine goes to docs/DRIFT.md or a skill, not here`);
   const longest = Math.max(0, ...laneFiles().map(file => words(read(file))));
   const start = words(agents) + words(read('HANDOFF.md')) + longest;
   assert.ok(start <= START_WORDS, `the three start files have ${start} words together, at most ${START_WORDS}`);

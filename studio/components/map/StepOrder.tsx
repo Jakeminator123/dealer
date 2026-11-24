@@ -3,14 +3,16 @@
 // The panel of a step of a tree that has no film (saknas) or one that waits (prov): its first and last picture side by side
 // (a click opens one large),
 // what an order of it has and lacks (first and last picture, reference film, recipe) as the lab reads them
-// (tools/dealer-tree.ts orderFacts), and, unless the tree rests, "Beställ" (Bordet's guide Ny film on this tree and step,
-// lib/new-film.ts guideHref), the estimated price and the command that makes a draft of it, with a copy button. The step's
-// takes that did not hold lie in Granska, a link away. The panel only shows: it orders nothing, approves nothing and runs
-// no command (the guide and tools/order-new.ts make drafts, Kön approves them).
+// (tools/dealer-tree.ts orderFacts), "Beställ" (Bordet's guide Ny film on this tree and step, lib/new-film.ts guideHref),
+// the estimated price and the command that makes a draft of it, with a copy button. A tree that rests says so, as the
+// guide does, and is ordered to like any other. From another camera than the straight one the panel says why it has no
+// Beställ: the guide makes the straight camera's films. The step's takes that did not hold lie in Granska, a link away.
+// The panel only shows: it orders nothing, approves nothing and runs no command (the guide and tools/order-new.ts make
+// drafts, Kön approves them).
 import { ArrowRight, ArrowUpRight, Check, Copy, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import type { Need, TreeView, ViewStep } from "../../../src/dealer-trees.ts";
+import { STRAIGHT_CAMERA, type Need, type TreeView, type ViewStep } from "../../../src/dealer-trees.ts";
 import { Button, Sheet, buttonClasses, cn, useToast } from "@/components/ui";
 import { useBank } from "@/lib/bank";
 import type { EntryAnswer } from "@/lib/media";
@@ -65,7 +67,7 @@ function Command({ text }: { text: string }) {
   );
 }
 
-/** camera: the seat the step is seen from when not the straight camera's; the guide orders the straight camera's films only, so no Beställ there. */
+/** camera: the seat the step is seen from when not the straight camera's; the guide makes the straight camera's films, and the panel says so in place of Beställ. */
 export function StepOrder({ view, step, media, camera = null, onClose, onOpen }: { view: TreeView; step: ViewStep | null; media: ReadonlyMap<string, EntryAnswer>; camera?: number | null; onClose: () => void; onOpen?: (entry: EntryAnswer) => void }) {
   const toast = useToast();
   const { graph } = useBank();
@@ -114,8 +116,11 @@ export function StepOrder({ view, step, media, camera = null, onClose, onOpen }:
             </div>
           ) : null}
 
-          {camera ? null : view.tree.state === "vilar" ? (
-            <p className="text-sm text-dim">{view.tree.name} vilar: inget beställs till trädet nu.</p>
+          {view.tree.state === "vilar" ? <p className="text-sm text-dim">{view.tree.name} vilar: spelet spelar inte trädet nu.</p> : null}
+          {camera ? (
+            <p className="text-sm text-dim">
+              Kamera {camera}: steget beställs inte härifrån. Guiden gör filmerna från kamera {STRAIGHT_CAMERA}, rakt framifrån.
+            </p>
           ) : (
             <Link href={guideHref(view.dealer, view.tree.id, { from: shown.from, to: shown.to })} className={cn(buttonClasses({ variant: "primary", size: "md" }), "self-start")}>
               Beställ
@@ -131,31 +136,27 @@ export function StepOrder({ view, step, media, camera = null, onClose, onOpen }:
                 <Row label="Referensfilm" need={order.reference} />
                 <Row label="Recept" need={order.recipe} />
               </ul>
-              {view.tree.state !== "vilar" ? (
-                <>
-                  <p className="text-sm text-dim">
-                    {order.price !== null ? (
-                      <>
-                        Pris: <span className="font-medium tabular-nums text-ink">≈ {order.price} krediter</span> (skattat, värsta fallet)
-                      </>
-                    ) : (
-                      "Pris: kan inte skattas utan recept."
-                    )}
-                  </p>
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-xs text-dim">Ett utkast av steget görs med</span>
-                    <div className="flex items-stretch gap-2">
-                      <code className="min-w-0 flex-1 select-all break-words rounded-md border border-line bg-well px-2.5 py-2 font-mono text-[12.5px] leading-5 text-ink">
-                        <Command text={order.command} />
-                      </code>
-                      <Button variant="secondary" size="md" icon={copied === order.command ? <Check /> : <Copy />} onClick={() => void copy(order.command)} className="h-auto">
-                        Kopiera
-                      </Button>
-                    </div>
-                    <span className="text-xs text-faint">Utkastet godkänns i Kön; panelen beställer inget.</span>
-                  </div>
-                </>
-              ) : null}
+              <p className="text-sm text-dim">
+                {order.price !== null ? (
+                  <>
+                    Pris: <span className="font-medium tabular-nums text-ink">≈ {order.price} krediter</span> (skattat, värsta fallet)
+                  </>
+                ) : (
+                  "Pris: kan inte skattas utan recept."
+                )}
+              </p>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs text-dim">Ett utkast av steget görs med</span>
+                <div className="flex items-stretch gap-2">
+                  <code className="min-w-0 flex-1 select-all break-words rounded-md border border-line bg-well px-2.5 py-2 font-mono text-[12.5px] leading-5 text-ink">
+                    <Command text={order.command} />
+                  </code>
+                  <Button variant="secondary" size="md" icon={copied === order.command ? <Check /> : <Copy />} onClick={() => void copy(order.command)} className="h-auto">
+                    Kopiera
+                  </Button>
+                </div>
+                <span className="text-xs text-faint">Utkastet godkänns i Kön; panelen beställer inget.</span>
+              </div>
             </>
           ) : null}
 

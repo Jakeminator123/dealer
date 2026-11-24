@@ -5,7 +5,8 @@
 // What can be fixed this way: a few frames (trim, hold, blend), a few pixels where nothing moves (patch), a colour (key), a level
 // (level) and, in a rest film, a screen that changes behind her (plate). What cannot: a hand's or a body's motion, a card that
 // changes shape in the hand, a wrong path. Every operation has a limit that keeps it a repair (LIMITS); beyond it the whole list is
-// refused with the reason, in Swedish, and nothing is written. The tempo is never changed: speed is always refused.
+// refused with the reason, in Swedish, and nothing is written. The file is never re-timed here: a film's speed is its own field,
+// set in Karta (tools/clip-speed.ts, Jakob 2026-11-23), and speed answers with that way.
 //
 // Frame numbers are always the delivered film's, the numbers a reviewer reads off it. trim drops frames only when the copy is
 // written, so frame f of the film is frame f - (frames trimmed at the start) of the copy.
@@ -38,6 +39,8 @@ export type PlateOp = {op: 'plate'; frames?: Range; from?: number; near?: number
 export type SpeedOp = {op: 'speed'; why?: string; [key: string]: unknown};
 export type FixOp = TrimOp | HoldOp | BlendOp | PatchOp | KeyOp | LevelOp | PlateOp | SpeedOp;
 export const OPS = ['trim', 'hold', 'blend', 'patch', 'key', 'level', 'plate', 'speed'] as const;
+/** speed is no repair of the file: the answer names where a film's speed is set. */
+const SPEED_WAY = 'farten sätts inte i filen. Filmens egen fart väljs i Karta, i stegets panel (1×, 1,25×, 1,5× eller 2×).';
 const FIELDS: Record<string, string[]> = {trim: ['start', 'end'], hold: ['frames', 'from'], blend: ['frames'], patch: ['frames', 'from', 'area', 'mask'],
   key: ['frames', 'area', 'colour', 'to', 'tolerance'], level: ['frames', 'reference', 'tone', 'toneFrame'], plate: ['frames', 'from', 'near'], speed: []};
 
@@ -95,7 +98,7 @@ export function readFixes(value: unknown): {ops: FixOp[]; refusals: string[]} {
     if (!isObject(raw) || typeof raw.op !== 'string') return void refusals.push(`Steg ${i + 1}: varje steg är ett objekt med op.`);
     const op = raw.op, at = label(i, op);
     if (!(OPS as readonly string[]).includes(op)) return void refusals.push(`${at}: okänd åtgärd; de som finns är ${OPS.join(', ')}.`);
-    if (op === 'speed') return void refusals.push(`${at}: tempot ändras aldrig. En film som går för fort eller för långsamt beställs om.`);
+    if (op === 'speed') return void refusals.push(`${at}: ${SPEED_WAY}`);
     const extra = Object.keys(raw).filter(k => k !== 'op' && k !== 'why' && !FIELDS[op].includes(k));
     if (extra.length) refusals.push(`${at}: okänt fält ${extra.join(', ')}.`);
     if (raw.why !== undefined && typeof raw.why !== 'string') refusals.push(`${at}: why är en text.`);
@@ -143,7 +146,7 @@ export function checkFixes(ops: readonly FixOp[], film: Film, pictures: Record<s
   if (film.count - start - end < 2) refusals.push('trim: filmen måste ha minst två rutor kvar.');
   ops.forEach((op, i) => {
     const at = label(i, op.op), range = targetsOf(op, film, ops);
-    if (op.op === 'speed') refusals.push(`${at}: tempot ändras aldrig.`);
+    if (op.op === 'speed') refusals.push(`${at}: ${SPEED_WAY}`);
     if (range) {
       if (range[1] > last) refusals.push(`${at}: ruta ${range[1]} finns inte; filmen har rutorna 0–${last}.`);
       else if (!kept(range[0]) || !kept(range[1])) refusals.push(`${at}: rutorna ${range[0]}–${range[1]} klipps bort av trim.`);
