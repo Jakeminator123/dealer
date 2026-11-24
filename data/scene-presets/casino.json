@@ -7,11 +7,15 @@
     "room": "panorama",
     "roomShift": "shimmer",
     "blur": 5,
+    "cloth": "runway-2",
     "tray": true,
     "cards": true,
-    "pitch": -8,
+    "yaw": -0.06656804733727811,
+    "pitch": -9.697485207100591,
     "zoom": 0.84,
-    "format": "fill"
+    "format": "fill",
+    "scale": 2
   },
-  "updatedAt": "2026-11-19T17:14:04.461Z"
+  "geometri": "kontrakt",
+  "updatedAt": "2026-11-24T03:29:47.938Z"
 }
