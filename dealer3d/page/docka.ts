@@ -15,9 +15,12 @@
 // Everything is laid here, with the shoe the films have (src/table-lens.ts SHOE): a stored file began in the shoe of before
 // 2026-11-23, 3 cm off, and is not played. A standard he has saved is laid again from its recipe and his sliders, the way
 // he saved it in, whichever way is chosen; the file stays as it is.
+// The dealer's own cards lie closed or open as he chooses (lay.ts Steer.side, Jakob 2026-11-24), the plan's side (its
+// intent.endSide, read as it stands) where nothing is chosen or saved: a closed card is slid face down and never turned, so
+// it has no turn, landing or turning sliders of its own. Embedded in the studio the doll is the dealer chosen there.
 // window.docklabb is for a test that looks at the page: ready, and facts() of what is shown.
 import {createLabStage, type LabStage, type Touch, type ViewName} from './lab-stage.ts';
-import {NO_STEER, PAOW_READS, TURN_AT_PLACE, cardInFilmsShoe, cardTempoMost, cardTempoOf, layDeal, placeFrom, readClip, readDeal, recipeOf, shares, standardName, type Entry, type LaidDeal, type PoseFilm, type ReadDeal, type ReadStored, type Recipe, type Steer, type Stored} from './lay.ts';
+import {DEALER_CARD, NO_STEER, PAOW_READS, TURN_AT_PLACE, cardInFilmsShoe, cardTempoMost, cardTempoOf, layDeal, placeFrom, readClip, readDeal, recipeOf, shares, sideOf, sideOfPlan, standardName, type Entry, type Side, type LaidDeal, type PoseFilm, type ReadDeal, type ReadStored, type Recipe, type Steer, type Stored} from './lay.ts';
 import {NO_KNOBS, dollFor, gripYawsOf, layNatural, moveNatural, onDoll, withReturn, type Knobs, type LaidNatural, type Way} from './natural-lab.ts';
 import {LANDINGS, LANDING_DEFAULT, SHAPING_KNOBS, asBefore, landingOf, landingWords, type Landing, type LandingReceipt} from '../src/landing.ts';
 import {TURNS, TURN_DEFAULT, turnOf, type TurnId, type TurnReceipt} from '../src/turn-in-hand.ts';
@@ -45,7 +48,7 @@ const sums = new Map<string, Promise<{path: string; sha256: string}>>(), sourceO
   return p; };
 const comma = (n: number, digits = 0) => n.toFixed(digits).replace('.', ',').replace('-', '−');
 const DOLLS: Record<string, string> = {paow: 'Paow', standard: 'Standarddockan'}, LENT = {'seat 5': 'receptet lånat av plats 5', 'her first card': 'receptet lånat av kort 1'};
-const WHY = {reach: 'når inte', closed: 'stängt kort', unread: 'ingen giv från A2.1 är läst dit', unbuilt: 'A2.2 är inte byggd'};
+const WHY = {reach: 'når inte', unread: 'ingen giv från A2.1 är läst dit', unbuilt: 'A2.2 är inte byggd'};
 const WAYS: Record<How, string> = {naturlig: 'Naturlig', forut: 'Som förut', read: 'Avläst giv'};
 // The pose films: A1 is the first frame of the film to A2.3 and A2.3 its last (dealer3d/tools/doll-still.ts); A2.1, the
 // pinch at the shoe, is the first frame of the read deals (lay.ts READ_DEALS; Paow's, of her clip chosen to P4.C1), in
@@ -57,6 +60,10 @@ const placeWords = (id: string) => { const m = /^(?:P([1-7])|D)\.C([123])$/.exec
 const knobsOf = (k?: Partial<Knobs>): Knobs => ({shoulderR: [...(k?.shoulderR ?? NO_KNOBS.shoulderR)] as [number, number], shoulderL: [...(k?.shoulderL ?? NO_KNOBS.shoulderL)] as [number, number], elbowOut: [...(k?.elbowOut ?? NO_KNOBS.elbowOut)] as [number, number]});
 
 const plan = await get('/dealer3d/plan').catch(e => { $('note').textContent = 'Docklabbet kunde inte läsa kortplanen.'; throw e; }) as Plan, lens = filmLens();
+/** The side the plan has a dealer's card lie with (null for a player's card, or where the plan says none). */
+const planSide = (id: string): Side | null => DEALER_CARD.test(id) ? sideOfPlan(plan, id) : null;
+/** The steering where nothing is moved: the recipe as it is, and a dealer's card on the side the plan has it. */
+const baseSteer = (id: string): Steer => ({...NO_STEER, ...(planSide(id) === 'BACK' ? {side: 'BACK' as const} : {})});
 const state = {doll: 'paow', way: 'naturlig' as Way, entry: 'A2.3' as Entry, back: false, clip: null as string | null, clipChosen: false, shown: {kind: 'deal'} as Shown, place: 'P4.C1', steer: {...NO_STEER} as Steer, knobs: knobsOf(), landing: {id: LANDING_DEFAULT} as Landing, turn: TURN_DEFAULT as TurnId, touched: false, playing: false, speed: 1, loop: false, joints: false, view: 'film' as ViewName, t: 0};
 /** Whether a deal goes from `entry` to the place `id` (for the chosen doll: from A2.1 Paow has her own clips where she has them). */
 const opens = (entry: Entry, id: string) => { const r = placeFrom(entry, id, state.doll); return !!r && !('none' in r); };
@@ -69,7 +76,7 @@ const asked = new URLSearchParams(location.search);
 { if (Object.hasOwn(DOLLS, asked.get('docka') ?? '')) state.doll = asked.get('docka')!; if (asked.get('fran') === 'a2-1') state.entry = 'A2.1';
   const m = /^(?:p([1-7])|d)c([123])$/.exec(asked.get('plats') ?? ''), id = m ? `${m[1] ? `P${m[1]}` : 'D'}.C${m[2]}` : null;
   if (id && Object.hasOwn(plan.targets, id) && opens(state.entry, id)) state.place = id; else if (!opens(state.entry, state.place)) state.place = Object.keys(plan.targets).find(k => opens(state.entry, k)) ?? state.place;
-  const k = asked.get('klipp'); if (k) { state.clip = k; state.clipChosen = true; } }
+  const k = asked.get('klipp'); if (k) { state.clip = k; state.clipChosen = true; } state.steer = baseSteer(state.place); }
 /** The way a deal from A2.3 is shown now: "Naturlig" is Paow's (the standard doll is locked, and keeps "Som förut"). */
 const wayOf = (): Way => state.doll === 'standard' ? 'forut' : state.way;
 // What is on the stage now: the motion, and for a deal what it was laid from. `from`: a saved standard (laid again from what it was saved with), laid here as steered, or a pose. `fault`: why the last laying did not go (the motion is then the last that did).
@@ -91,7 +98,7 @@ async function dealOfPlace(entry: Entry, place: string, doll: string, clip: stri
   if ('read' in r) return {read: r.read, clip: r.clip ?? null, lent: null};
   return {...await recipeNamed(r.recipe), lent: r.lent ? LENT[r.lent] : null};
 }
-const untouched = () => JSON.stringify(state.steer) === JSON.stringify(NO_STEER) && JSON.stringify(state.knobs) === JSON.stringify(NO_KNOBS) && asBefore(state.landing) && state.turn === TURN_DEFAULT;
+const untouched = () => JSON.stringify(state.steer) === JSON.stringify(baseSteer(state.place)) && JSON.stringify(state.knobs) === JSON.stringify(NO_KNOBS) && asBefore(state.landing) && state.turn === TURN_DEFAULT;
 type Laid = {motion: Motion; deal: LaidDeal | ReadDeal; shortMm: number; bodyShare: number | null; receipt: Now['receipt']; landed: LandingReceipt | null; turned: TurnReceipt | null};
 /**
  * Lays the deal from the chosen entry to the chosen place the chosen way, as steered, on the doll, alone or with its return;
@@ -150,7 +157,7 @@ const show = (keepTime = false) => state.shown.kind === 'deal' ? showDeal(keepTi
 
 /** A stage for the chosen doll on a canvas of its own (a stage's doll is fixed when it is made). */
 async function setDoll(name: string) {
-  state.doll = name; state.touched = false; state.steer = {...NO_STEER}; state.knobs = knobsOf(); state.landing = {id: LANDING_DEFAULT}; state.turn = TURN_DEFAULT;
+  state.doll = name; state.touched = false; state.steer = baseSteer(state.place); state.knobs = knobsOf(); state.landing = {id: LANDING_DEFAULT}; state.turn = TURN_DEFAULT;
   const first = posedOn(await stored<Motion>('till-ankare-2-3-c'), dollNamed(name)).motion, old = $('stage'), canvas = document.createElement('canvas'); canvas.id = 'stage';
   stage?.dispose(); old.replaceWith(canvas); size(canvas); stage = createLabStage(canvas, plan, dollNamed(name), first); stage.setJoints(state.joints); stage.setGrips(gripsShown()); stage.setTarget(state.place); stage.view(state.view);
   await show();
@@ -161,7 +168,9 @@ function size(canvas = $<HTMLCanvasElement>('stage')) { const box = $('frame').g
 const gripsShown = () => state.joints || state.view === 'card';
 
 // The sliders: each shows the recipe's own value until it is moved (the hand's angle on the card: in "Naturlig" 17° as her right hand takes it and −30° once it is turned, natural-lab.ts gripYawsOf), and lays the deal again when it is. From A2.1 none: the deal is as read.
-type Knob = {name: string; group?: string; min: () => number; max: () => number; step: number; on: () => boolean; value: () => number; set: (v: number) => void; text: (v: number) => string; only?: string};
+type Knob = {name: string; group?: string; min: () => number; max: () => number; step: number; on: () => boolean; value: () => number; set: (v: number) => void; text: (v: number) => string; only?: string; turns?: boolean};
+/** Whether the card shown is laid closed (lay.ts Steer.side): it is never turned. */
+const closedNow = () => sideOf(state.steer) === 'BACK';
 const R = () => now?.recipe ?? null, bodyNow = (): [number, number, number] => state.steer.body ?? ((now?.deal?.lab as {bodyAsked?: [number, number, number]} | undefined)?.bodyAsked ?? ((now?.motion.lab as {bodyAsked?: [number, number, number]} | undefined)?.bodyAsked) ?? [0, 0, 0]);
 /** The way the deal on the stage was laid in (a saved standard is laid in its own), or the chosen one. */
 const wayShown = (): Way => now && now.way !== 'read' && state.shown.kind === 'deal' ? now.way : wayOf();
@@ -174,9 +183,9 @@ const natural = (key: keyof Knobs, j: 0 | 1, name: string, min: number, max: num
   set: v => { const k = [...state.knobs[key]] as [number, number]; k[j] = v; state.knobs = {...state.knobs, [key]: k}; }, text, only: 'Bara i Naturlig'});
 const cm = (up: string, down: string) => (v: number) => v ? `${comma(Math.abs(v), 1)} cm ${v > 0 ? up : down}` : '0', out = (v: number) => v ? `${comma(Math.abs(v))}° ${v > 0 ? 'ut' : 'in'}` : '0°';
 const KNOBS: Knob[] = [
-  {name: 'Var kortet vänds', group: 'Kortet', min: () => 0, max: () => 90, step: 5, on: () => !!R()?.pace.single, value: () => Math.round((state.steer.turnNear ?? R()?.pace.turnNear ?? 0) * 100), set: v => { state.steer.turnNear = v / 100; }, text: v => v ? `${v} % av vägen` : 'från handbytet'},
-  {name: 'Vändningen börjar', min: () => R() && shares(R()!) ? -(R()!.pace.shared?.wait ?? 1) : -6, max: () => R() && shares(R()!) ? 20 : 10, step: 1, on: () => !!R(), value: () => state.steer.turnLater, set: v => { state.steer.turnLater = v; }, text: v => v ? `${v > 0 ? '+' : ''}${comma(v / 30, 2)} s` : 'som receptet'},
-  {name: 'Handens höjd', min: () => 1, max: () => 12, step: 0.5, on: () => !!R()?.pace.single, value: () => (state.steer.carry ?? R()?.pace.carry ?? TWO_HAND.heights.carry) * 100, set: v => { state.steer.carry = v / 100; }, text: v => `${comma(v, 1)} cm`},
+  {name: 'Var kortet vänds', group: 'Kortet', turns: true, min: () => 0, max: () => 90, step: 5, on: () => !!R()?.pace.single, value: () => Math.round((state.steer.turnNear ?? R()?.pace.turnNear ?? 0) * 100), set: v => { state.steer.turnNear = v / 100; }, text: v => v ? `${v} % av vägen` : 'från handbytet'},
+  {name: 'Vändningen börjar', turns: true, min: () => R() && shares(R()!) ? -(R()!.pace.shared?.wait ?? 1) : -6, max: () => R() && shares(R()!) ? 20 : 10, step: 1, on: () => !!R(), value: () => state.steer.turnLater, set: v => { state.steer.turnLater = v; }, text: v => v ? `${v > 0 ? '+' : ''}${comma(v / 30, 2)} s` : 'som receptet'},
+  {name: 'Handens höjd', turns: true, min: () => 1, max: () => 12, step: 0.5, on: () => !!R()?.pace.single, value: () => (state.steer.carry ?? R()?.pace.carry ?? TWO_HAND.heights.carry) * 100, set: v => { state.steer.carry = v / 100; }, text: v => `${comma(v, 1)} cm`},
   yawKnob(0, 'Handens vinkel när högerhanden tar kortet'),
   yawKnob(1, 'Handens vinkel när kortet är vänt och läggs'),
   body(2, 'Lutning framåt', -5, 30, v => `${comma(v, 1)}°`, 'Kroppen'),
@@ -199,12 +208,15 @@ const knobs = KNOBS.map(k => { const box = $('knobs'); if (k.group) { const h = 
   return {k, label, out, input}; });
 // The landing (dealer3d/src/landing.ts, "Naturlig" only): her right hand's end pose at the laid card, one of LANDINGS, and
 // his own shaping on top of it (how far onto the card, the hand rolled, the wrist bent, the fingers spread, the free fingers curled).
-const landingOn = () => state.shown.kind === 'deal' && !!R() && wayShown() === 'naturlig';
+const landingOn = () => state.shown.kind === 'deal' && !!R() && wayShown() === 'naturlig' && !closedNow();
 const landingButtons = LANDINGS.map(l => { const b = document.createElement('button'); b.dataset.landing = l.id; b.textContent = l.label; $('landings').append(b);
   b.addEventListener('click', () => { if (b.disabled || state.landing.id === l.id) return; state.landing = {...state.landing, id: l.id}; state.touched = true; showDeal(true); }); return b; });
 // The turn (dealer3d/src/turn-in-hand.ts, "Naturlig" only): how her right hand turns the card face up, one of TURNS.
 const turnButtons = TURNS.map(t => { const b = document.createElement('button'); b.dataset.turn = t.id; b.textContent = t.label; $('turns').append(b);
   b.addEventListener('click', () => { if (b.disabled || state.turn === t.id) return; state.turn = t.id; state.touched = true; showDeal(true); }); return b; });
+// The side of a dealer's card (lay.ts Steer.side): closed or open, the plan's where nothing is chosen. A closed card has the turn and the landing as before.
+for (const b of document.querySelectorAll<HTMLButtonElement>('#sides button')) b.addEventListener('click', () => { const side = b.dataset.side as Side; if (b.disabled || side === sideOf(state.steer)) return;
+  const steer = {...state.steer}; if (side === 'BACK') { steer.side = 'BACK'; state.landing = {id: LANDING_DEFAULT}; state.turn = TURN_DEFAULT; } else delete steer.side; state.steer = steer; state.touched = true; showDeal(true); });
 const shapers = SHAPING_KNOBS.map(k => { const label = document.createElement('label'), name = document.createElement('span'), out = document.createElement('output'), input = document.createElement('input');
   label.className = 'knob'; name.textContent = k.label; input.type = 'range'; input.min = String(k.min); input.max = String(k.max); input.step = String(k.step); label.append(name, out, input); $('shaping').append(label);
   const said = (v: number) => v ? `${comma(Math.abs(v), k.step < 1 ? 1 : 0)}${k.unit === '°' ? '°' : ` ${k.unit}`} ${v > 0 ? k.plus : k.minus}` : '0';
@@ -234,18 +246,24 @@ function paint() {
   $('closed').textContent = read && state.doll === 'paow' ? 'Från A2.1: Paows egna givar, lästa ur hennes filmer, till plats 4, kort 1; till plats 1, 3 och 5, kort 1, de gamla avlästa.' : read ? 'Från A2.1 finns bara de avlästa givarna: plats 1, 3, 4 och 5, kort 1.' : closed.map(c => c[0].toUpperCase() + c.slice(1)).join('. ') + (closed.length ? '.' : '');
   for (const b of document.querySelectorAll<HTMLButtonElement>('#views button')) b.setAttribute('aria-pressed', String(b.dataset.view === state.view));
   for (const b of document.querySelectorAll<HTMLButtonElement>('#speed button')) b.setAttribute('aria-pressed', String(Number(b.dataset.speed) === state.speed));
-  for (const {k, label, out, input} of knobs) { const on = deal && k.on(); input.disabled = !on; label.classList.toggle('off', !on); label.title = !on && deal ? (read ? 'Från A2.1 är given som den är läst' : k.only ?? '') : ''; input.min = String(k.min()); input.max = String(k.max());
+  const sideOn = deal && !read && DEALER_CARD.test(state.place) && !!R(), side = sideOf(state.steer), ps = planSide(state.place), SIDE = {BACK: 'stängt', FRONT: 'öppet'};
+  $('sideBox').hidden = !sideOn;
+  if (sideOn) { for (const b of document.querySelectorAll<HTMLButtonElement>('#sides button')) { b.setAttribute('aria-pressed', String(b.dataset.side === side)); b.textContent = `${b.dataset.side === 'BACK' ? 'Stängt' : 'Öppet'}${b.dataset.side === ps ? ' · planen' : ''}`; }
+    const sideNote = $('sideNote'); sideNote.className = ps && ps !== side ? 'small warn' : 'small';
+    sideNote.textContent = `${side === 'BACK' ? 'Kortet skjuts med baksidan upp och vänds aldrig.' : 'Kortet vänds med framsidan upp.'}${ps && ps !== side ? ` Kortplanen säger ${SIDE[ps]}: en beställning går med planens sida.` : !ps ? ' Kortplanen säger ingen sida.' : ''}`; }
+  for (const {k, label, out, input} of knobs) { const on = deal && k.on() && !(k.turns && closedNow()); input.disabled = !on; label.classList.toggle('off', !on); label.title = !on && deal ? (read ? 'Från A2.1 är given som den är läst' : k.turns && closedNow() ? 'Ett stängt kort vänds inte' : k.only ?? '') : ''; input.min = String(k.min()); input.max = String(k.max());
     if (on) { const v = Math.max(k.min(), Math.min(k.max(), k.value())); input.value = String(v); out.textContent = k.text(k.value()); } else out.textContent = ''; }
   const lon = landingOn(), ld = lon ? now?.landed ?? null : null, landingNote = $('landingNote');
-  for (const b of landingButtons) { b.disabled = !lon; b.setAttribute('aria-pressed', String(lon && b.dataset.landing === state.landing.id)); b.title = !lon && deal ? 'Bara i Naturlig' : ''; }
-  for (const {k, label, out, input, said} of shapers) { const v = state.landing[k.key] ?? 0; input.disabled = !lon; label.classList.toggle('off', !lon); label.title = !lon && deal ? 'Bara i Naturlig' : ''; input.value = String(v); out.textContent = lon ? said(v) : ''; }
+  const shut = deal && closedNow(), why = shut ? 'Ett stängt kort vänds inte' : 'Bara i Naturlig';
+  for (const b of landingButtons) { b.disabled = !lon; b.setAttribute('aria-pressed', String(lon && b.dataset.landing === state.landing.id)); b.title = !lon && deal ? why : ''; }
+  for (const {k, label, out, input, said} of shapers) { const v = state.landing[k.key] ?? 0; input.disabled = !lon; label.classList.toggle('off', !lon); label.title = !lon && deal ? why : ''; input.value = String(v); out.textContent = lon ? said(v) : ''; }
   landingNote.className = ld && (ld.liftedMm || ld.shortMm) ? 'small warn' : 'small';
-  landingNote.textContent = !deal ? '' : !lon ? 'Landningen finns bara i Naturlig.' : !ld ? 'Förvalet: långfingret på kortet, som hon alltid har lagt det.'
+  landingNote.textContent = !deal ? '' : shut ? 'Ett stängt kort har ingen egen landning: handen ligger kvar där den skjutit kortet.' : !lon ? 'Landningen finns bara i Naturlig.' : !ld ? 'Förvalet: långfingret på kortet, som hon alltid har lagt det.'
     : [`På kortet: ${ld.touching.length ? ld.touching.join(', ') : 'inget finger'}`, ld.liftedMm ? `handen lyft ${comma(ld.liftedMm)} mm så att ingen led går in i kortet` : '', ld.shortMm ? `armen räcker inte hela vägen, ${comma(ld.shortMm)} mm kortare` : ''].filter(Boolean).join(' · ') + '.';
   const td = lon ? now?.turned ?? null : null, turnNote = $('turnNote');
-  for (const b of turnButtons) { b.disabled = !lon; b.setAttribute('aria-pressed', String(lon && b.dataset.turn === state.turn)); b.title = !lon && deal ? 'Bara i Naturlig' : ''; }
+  for (const b of turnButtons) { b.disabled = !lon; b.setAttribute('aria-pressed', String(lon && b.dataset.turn === state.turn)); b.title = !lon && deal ? why : ''; }
   turnNote.className = td && (!td.laid || td.shortMm) ? 'small warn' : 'small';
-  turnNote.textContent = !deal ? '' : !lon ? 'Vändningen finns bara i Naturlig.' : !td ? 'Förvalet: kortet vänds som förut.' : !td.laid ? `Går inte här: ${td.why}.`
+  turnNote.textContent = !deal ? '' : shut ? 'Ett stängt kort vänds inte.' : !lon ? 'Vändningen finns bara i Naturlig.' : !td ? 'Förvalet: kortet vänds som förut.' : !td.laid ? `Går inte här: ${td.why}.`
     : [`Höger hand tar kortet i ${td.edge === 'long' ? 'långsidan' : 'kortsidan'} när vänster har släppt det, vrider det ${Math.round(td.heldInAll!)}° i greppet och släpper det strax före det ligger`,
       `handleden böjd högst ${comma(td.wrist!.most)}° (förut ${comma(td.wristBefore!.most)}°)`, td.shortMm ? `armen räcker inte hela vägen, ${comma(td.shortMm)} mm kortare` : ''].filter(Boolean).join(' · ') + '.';
   const steered = !untouched(), recipe = R();
@@ -261,6 +279,7 @@ function paint() {
   const what = deal ? `${state.entry} → ${placeWords(state.place)}${state.back ? ` → ${state.entry}` : ''}` : (state.shown as {pose: string}).pose, notes: string[] = [], warns: string[] = [];
   if (deal && now) notes.push(now.saved ? 'sparad standard' : WAYS[now.way]);
   if (deal && now?.back) notes.push('med återgång');
+  if (deal && now?.recipe && DEALER_CARD.test(state.place)) notes.push(closedNow() ? 'stängt' : 'öppet');
   if (deal && now?.turned?.laid) notes.push('vändning: i handen');
   if (deal && now?.landed) notes.push(`landning: ${landingWords({id: now.landed.id, ...now.landed.shaping}).toLowerCase()}`);
   if (deal && now?.clip) notes.push(`klipp ${now.clip}`); if (now?.said) notes.push(now.said); if (deal && now?.lent) notes.push(now.lent);
@@ -292,7 +311,7 @@ function grip(force = false) {
   for (const card of [1, 2, 3]) { cell(`Kort ${card}`, true);
     for (const seat of ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'D']) { const id = `${seat}.C${card}`, r = ids.includes(id) ? placeFrom('A2.3', id) : null; if (!r) { cell(''); continue; }
       const b = document.createElement('button'); b.dataset.place = id; b.textContent = '●'; b.title = placeWords(id); b.setAttribute('aria-label', placeWords(id));
-      b.addEventListener('click', () => { if (!opens(state.entry, id)) return; if (id !== state.place) state.clipChosen = false; state.place = id; state.touched = false; state.steer = {...NO_STEER}; state.knobs = knobsOf(); state.landing = {id: LANDING_DEFAULT}; state.turn = TURN_DEFAULT; state.shown = {kind: 'deal'}; state.playing = false; showDeal().then(() => { if (state.view === 'player') stage!.view('player'); if (state.shown.kind === 'deal' && !fault) { state.t = 0; state.playing = true; paint(); } }); });
+      b.addEventListener('click', () => { if (!opens(state.entry, id)) return; if (id !== state.place) state.clipChosen = false; state.place = id; state.touched = false; state.steer = baseSteer(id); state.knobs = knobsOf(); state.landing = {id: LANDING_DEFAULT}; state.turn = TURN_DEFAULT; state.shown = {kind: 'deal'}; state.playing = false; showDeal().then(() => { if (state.view === 'player') stage!.view('player'); if (state.shown.kind === 'deal' && !fault) { state.t = 0; state.playing = true; paint(); } }); });
       grid.append(b); } } }
 
 for (const b of document.querySelectorAll<HTMLButtonElement>('#dolls button')) b.addEventListener('click', () => { if (b.dataset.doll !== state.doll) setDoll(b.dataset.doll!); });
@@ -301,7 +320,7 @@ for (const b of document.querySelectorAll<HTMLButtonElement>('#poses button')) i
 // The entry: the place stays where a deal goes there from the new one, else the first that has one.
 for (const b of document.querySelectorAll<HTMLButtonElement>('#entries button')) if (!b.disabled) b.addEventListener('click', () => { const entry = b.dataset.entry as Entry; if (entry === state.entry && state.shown.kind === 'deal') return;
   state.entry = entry; if (!opens(entry, state.place)) state.place = Object.keys(plan.targets).find(id => opens(entry, id)) ?? state.place;
-  state.touched = false; state.steer = {...NO_STEER}; state.knobs = knobsOf(); state.landing = {id: LANDING_DEFAULT}; state.turn = TURN_DEFAULT; state.shown = {kind: 'deal'}; state.playing = false; showDeal(); });
+  state.touched = false; state.steer = baseSteer(state.place); state.knobs = knobsOf(); state.landing = {id: LANDING_DEFAULT}; state.turn = TURN_DEFAULT; state.shown = {kind: 'deal'}; state.playing = false; showDeal(); });
 // Paow's clip (lay.ts PAOW_READS): the deal from A2.1 to the place read off another of her films.
 $('clips').addEventListener('click', e => { const id = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-clip]')?.dataset.clip; if (!id || id === clipNow()?.clip) return;
   state.clip = id; state.clipChosen = true; state.shown = {kind: 'deal'}; state.playing = false; showDeal().then(() => { if (state.shown.kind === 'deal' && !fault) { state.t = 0; state.playing = true; paint(); } }); });
@@ -314,7 +333,7 @@ const play = async () => { if (state.shown.kind !== 'deal') { await showDeal(); 
 $('play').addEventListener('click', play);
 addEventListener('keydown', e => { if (e.code === 'Space' && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLButtonElement)) { e.preventDefault(); play(); } });
 $<HTMLInputElement>('scrub').addEventListener('input', e => { state.playing = false; state.t = Number((e.target as HTMLInputElement).value) / 1000 * stage!.duration(); stage!.setTime(state.t); transport(); grip(); });
-$('reset').addEventListener('click', () => { state.steer = {...NO_STEER}; state.knobs = knobsOf(); state.landing = {id: LANDING_DEFAULT}; state.turn = TURN_DEFAULT; state.touched = true; showDeal(true); });
+$('reset').addEventListener('click', () => { state.steer = baseSteer(state.place); state.knobs = knobsOf(); state.landing = {id: LANDING_DEFAULT}; state.turn = TURN_DEFAULT; state.touched = true; showDeal(true); });
 $('atplace').addEventListener('click', () => { const r = R(); if (!r) return; const {gripYawEnd: _end, ...steer} = state.steer; state.steer = {...steer, turnNear: TURN_AT_PLACE.turnNear, turnLater: TURN_AT_PLACE.wait - (r.pace.shared?.wait ?? 1), gripYaw: TURN_AT_PLACE.gripYaw}; state.touched = true; showDeal(true); });
 $('save').addEventListener('click', async () => {
   if (!now?.deal || state.shown.kind !== 'deal' || fault) return; const name = standardName(state.doll, state.entry, state.place), button = $<HTMLButtonElement>('save'); button.disabled = true;
@@ -342,7 +361,7 @@ function tick(ms: number) {
 }
 try { await setDoll(state.doll); } catch (e) { $('note').textContent = `Docklabbet kunde inte starta: ${String((e as Error).message ?? e)}`; throw e; }
 requestAnimationFrame(tick);
-(window as unknown as {docklabb: unknown}).docklabb = {ready: true, facts: () => ({doll: state.doll, way: wayOf(), entry: state.entry, back: state.back, clip: now?.clip ?? null, shown: state.shown, place: state.place, steer: state.steer, knobs: state.knobs, playing: state.playing, t: state.t, duration: stage?.duration(), fault, saved: now?.saved ?? false, from: now?.from ?? null, savedWay: now?.savedWay ?? null, shortMm: now?.shortMm ?? 0,
+(window as unknown as {docklabb: unknown}).docklabb = {ready: true, facts: () => ({doll: state.doll, way: wayOf(), entry: state.entry, back: state.back, clip: now?.clip ?? null, shown: state.shown, place: state.place, steer: state.steer, side: sideOf(state.steer), planSide: planSide(state.place), knobs: state.knobs, playing: state.playing, t: state.t, duration: stage?.duration(), fault, saved: now?.saved ?? false, from: now?.from ?? null, savedWay: now?.savedWay ?? null, shortMm: now?.shortMm ?? 0,
   frames: now?.motion.frameCount, forced: (now?.deal as LaidDeal | null)?.elbowForced ?? null, throughShoe: now?.deal?.throughShoe ?? null, note: $('note').textContent, status: $('status').textContent, grip: $('grip').textContent, standards: standards.map(s => s.name), camera: stage?.camera(), bodyShare: now?.bodyShare ?? null,
   gripYaw: R() ? gripYawsOf(R()!, state.steer, wayShown()) : null, cycle: (now?.motion.cycle as {readyFrom?: number} | undefined) ?? null, landing: state.landing, landed: now?.landed ?? null, landingNote: $('landingNote').textContent, turn: state.turn, turned: now?.turned ?? null, turnNote: $('turnNote').textContent,
   // What "Naturlig" did, over the whole deal: the hands' least gap, the wrists' most bend, the thumb's most gap from the card while the forefinger is on it (to the beat the card lies), and the fingertips on the card now.

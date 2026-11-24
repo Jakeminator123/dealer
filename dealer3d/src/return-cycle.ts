@@ -49,9 +49,9 @@ function sameCard(a: CardAt, b: CardAt): boolean {
 }
 
 function atRest(card: CardAt): boolean {
-  // World coordinates are in metres. A laid card is flat on the felt at y=0.
+  // World coordinates are in metres. A laid card is flat on the felt at y=0, face up or (a card laid closed) face down.
   return Math.abs(card.c[1]) <= 0.001 && Math.abs(card.l[1]) <= 0.001 && Math.abs(length(card.l) - 1) <= 0.001 &&
-    Math.abs(card.n[0]) <= 0.001 && Math.abs(card.n[1] - 1) <= 0.001 && Math.abs(card.n[2]) <= 0.001;
+    Math.abs(card.n[0]) <= 0.001 && Math.abs(Math.abs(card.n[1]) - 1) <= 0.001 && Math.abs(card.n[2]) <= 0.001;
 }
 
 function validateMotion(motion: DealMotion): void {

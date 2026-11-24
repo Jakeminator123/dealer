@@ -45,9 +45,23 @@ export type Recipe = {from: string; frames: number; beats: number[]; poseFilm: s
  * Her free hand goes back to the shoe in the time it takes without it, and her gaze turns as it does without it
  * (two-hand.ts turns it over a window of frames of its own). The body's lean goes with the reach, which it is part of: it
  * is what lets her arm reach the place as the card gets there. Left out (as in every steering saved before it): 1.
+ * `side` (Jakob 2026-11-24: the dealer's cards closed or open as he chooses): the side up when one of her own cards lies,
+ * 'BACK' laid closed (slid face down and never turned, two-hand.ts OneTurn.closed), 'FRONT' turned face up as every deal
+ * here is. Left out (as in every steering saved before it): 'FRONT'. Only her own cards (DEALER_CARD) are laid closed.
  */
-export type Steer = {turnNear: number | null; turnLater: number; carry: number | null; gripYaw: number | null; gripYawEnd?: number | null; body: [number, number, number] | null; tempo: number; cardTempo?: number};
+export type Steer = {turnNear: number | null; turnLater: number; carry: number | null; gripYaw: number | null; gripYawEnd?: number | null; body: [number, number, number] | null; tempo: number; cardTempo?: number; side?: Side};
 export const NO_STEER: Steer = {turnNear: null, turnLater: 0, carry: null, gripYaw: null, body: null, tempo: 1};
+/** The side of a card up as it lies: the plan's words (placements/default.json, a place's intent.endSide). */
+export type Side = 'FRONT' | 'BACK';
+/** The dealer's own cards: the places whose side is a choice (Steer.side). */
+export const DEALER_CARD = /^D.C[1-3]$/;
+/** The side a steering lays the card with ('FRONT' where it has none). */
+export const sideOf = (steer: Partial<Steer> | null | undefined): Side => steer?.side === 'BACK' ? 'BACK' : 'FRONT';
+/** The side the plan has a place's card lie with, read as it stands (its intent's endSide); null where it says none. */
+export function sideOfPlan(plan: unknown, target: string): Side | null {
+  const side = (plan as {targets?: Record<string, {intent?: {endSide?: unknown}}>} | null)?.targets?.[target]?.intent?.endSide;
+  return side === 'BACK' || side === 'FRONT' ? side : null;
+}
 /** The turn at the place, as the trial of 2026-11-23 has it for the doll paow (dealer3d/LASMIG.md, "Vändningen vid platsen"): --turn-near 0.7, wait=14 and --grip-yaw -20, on a sweep recipe. */
 export const TURN_AT_PLACE = {turnNear: 0.7, wait: 14, gripYaw: -20};
 /** Whether both hands have the card through the change in this recipe: then the turn waits on `wait`, and the contact grip has a yaw to steer. */
@@ -90,9 +104,9 @@ export function cardTempoMost(recipe: Recipe, steer: Steer): number {
   return 1;
 }
 
-/** The real card whose moments and hand change a place takes, as the tool chooses it: a seat's own (the real dealer's S1 is the plan's seat 7), her own first card, and for the second card of a seat its first card's. Beyond the tool: her own third card, an open card as her first, takes her first card's (the tool has no flags for it yet). Her second card is laid closed, which no deal here does. */
+/** The real card whose moments and hand change a place takes, as the tool chooses it: a seat's own (the real dealer's S1 is the plan's seat 7), her own first card, and for the second card of a seat its first card's. Beyond the tool: her own second and third card take her first card's (the tool has no flags for them yet). */
 export function realOf(id: string): RealCard {
-  const m = /^P([1-7]).C[12]$/.exec(id), real = /^D.C[13]$/.test(id) ? REAL_DEAL[7] : m ? REAL_DEAL[7 - Number(m[1])] : null;
+  const m = /^P([1-7]).C[12]$/.exec(id), real = DEALER_CARD.test(id) ? REAL_DEAL[7] : m ? REAL_DEAL[7 - Number(m[1])] : null;
   if (!real) throw Error(`No real card to take the moments of for ${id}.`);
   return real;
 }
@@ -127,6 +141,7 @@ export function layDeal(input: {plan: Plan; target: string; recipe: Recipe; pose
   if (steer.gripYaw !== null && pace.contactGrip) pace.gripYaw = steer.gripYaw;
   if (steer.gripYawEnd != null && pace.contactGrip) pace.gripYawEnd = steer.gripYawEnd;
   if (steer.turnLater && shares(recipe)) pace.shared = {...pace.shared, wait: Math.max(0, (pace.shared?.wait ?? 1) + steer.turnLater)};
+  if (sideOf(steer) === 'BACK') { if (!DEALER_CARD.test(target)) throw Error(`${target}: only the dealer's own cards are laid closed.`); pace.closed = true; }
   if (recipe.poseFilm && pose.body) pace.base = [pose.body.lean, pose.body.twist];
   const last = pose.frames[pose.frameCount - 1], posed: Still = {L: last.L, R: last.R, h: last.h, ...(recipe.poseFilm ? {g: last.g} : {})};
   const start = recipe.rightAt ? startOnAnchor(lens, posed, {x: recipe.rightAt.x, y: recipe.rightAt.y}, recipe.rightAt.yaw, shoe) : posed;
@@ -173,10 +188,10 @@ export function cardInFilmsShoe<M extends {frames: {card: {c: number[]; l: numbe
  * - Seats 6 and 7, first card, and her own first card: the older roll (-f), the only deal made for them.
  * - Seat 6, second card: a seat's second card is laid with the sweep only, and none is made for seat 6; seat 5's sweep
  *   reaches it (`lent`). Seat 7's second card: no sweep reaches it (the right arm, 0.54 m from the shoulder).
- * - Her own third card: her first card's roll (`lent`; the tool has no flags for it). Her second card is laid closed,
- *   and every deal here turns the card.
+ * - Her own second and third card: her first card's roll (`lent`; the tool has no flags for them). Laid closed or open as
+ *   steered (Steer.side): the roll lays either, the closed card slid face down and never turned (2026-11-24).
  */
-export type PlaceRecipe = {recipe: string; lent?: 'seat 5' | 'her first card'} | {none: 'reach' | 'closed'};
+export type PlaceRecipe = {recipe: string; lent?: 'seat 5' | 'her first card'} | {none: 'reach'};
 export function recipeFor(target: string): PlaceRecipe | null {
   const m = /^P([1-7])\.C([12])$/.exec(target), sweep = (n: number | string) => `giv-fran-2-3-p${n}-grepp-svep-d`;
   if (m) { const n = Number(m[1]), second = m[2] === '2';
@@ -184,8 +199,8 @@ export function recipeFor(target: string): PlaceRecipe | null {
     if (!second) return {recipe: `giv-fran-2-3-p${n}-f`};
     return n === 6 ? {recipe: sweep(5), lent: 'seat 5'} : {none: 'reach'}; }
   if (target === 'D.C1') return {recipe: 'giv-fran-2-3-d-f'};
-  if (target === 'D.C3') return {recipe: 'giv-fran-2-3-d-f', lent: 'her first card'};
-  return target === 'D.C2' ? {none: 'closed'} : null;
+  if (target === 'D.C2' || target === 'D.C3') return {recipe: 'giv-fran-2-3-d-f', lent: 'her first card'};
+  return null;
 }
 
 /**

@@ -1,5 +1,5 @@
 // The order from Scen & bord, Kortplan's step 3 (Jakob 2026-11-23: "hur beställer jag nu härifrån då?"): the doll's saved
-// movement to one player's card becomes a draft in Kön, in one go. Four steps, each the tool that already does it:
+// movement to one player's card, or one of her own (D.C1 to D.C3, 2026-11-24), becomes a draft in Kön, in one go. Four steps, each the tool that already does it:
 //   1. dealer3d/tools/docka-cykel.ts    the give from A2.3 and the way back in one movement, laid as the doll lab lays it:
 //                                       his saved standard for the doll and card where there is one, else "Naturlig"
 //   2. dealer3d/tools/render-reference.ts   the doll's film of it (headless Chrome under the shared lock, about a minute)
@@ -8,7 +8,10 @@
 //                                       a landing other than the default (dealer3d/src/landing.ts) adds its sentence to the text,
 //                                       and so does a card's tempo over 100 % (Kortets fart: only the card's hands are quicker)
 //
-//   node tools/doll-order.ts <dealer> <P6.C1> [--mall 15] [--flat-hand] [--dry]
+//   node tools/doll-order.ts <dealer> <P6.C1|D.C2> [--mall 15] [--flat-hand] [--dry]
+//
+// Her own card lies closed or open as the doll laid it (the cycle tool's line "sida ..."), and the order's text says the
+// side the plan says (placements/default.json): where the two differ nothing is rendered and the draft is not made.
 //
 // It makes a draft only: nothing here approves, places or pays (tools/order-approve.ts, tools/order-put.ts). What is saved in
 // the lab is what is ordered: sliders moved and not saved are not in the film. The lab server calls dollOrder for the
@@ -30,10 +33,11 @@ export type DollOrderPlan = { dealer: string; doll: string; place: string; notat
 
 /** What the order will be called and where its files go: a new name each time, since a film made again gets a new id. */
 export function dollOrderPlan(root: string, ask: DollOrderAsk): DollOrderPlan {
-  const m = /^p([1-7])\.?c([1-9])$/i.exec(ask.place.trim());
-  if (!m) throw new StoreError(400, `${ask.place}: välj en spelares kort (P1.C1 till P7.C2).`);
+  const m = /^(?:p([1-7])\.?c([1-9])|d\.?c([1-3]))$/i.exec(ask.place.trim());
+  if (!m) throw new StoreError(400, `${ask.place}: välj en spelares kort (P1.C1 till P7.C2) eller dealerns (D.C1 till D.C3).`);
   if (!/^[a-z0-9]+$/.test(ask.dealer)) throw new StoreError(400, 'Okänd dealer.');
-  const place = `P${m[1]}.C${m[2]}`, code = `p${m[1]}c${m[2]}`, notation = `A2.3 - A3P${m[1]}C${m[2]}`, doll = ask.dealer;
+  const seat = m[3] ? 'D' : `P${m[1]}`, card = m[3] ?? m[2];
+  const place = `${seat}.C${card}`, code = `${seat.toLowerCase()}c${card}`, notation = `A2.3 - A3${seat}C${card}`, doll = ask.dealer;
   const found = stepOfNotation(notation), def = STEPS.find((s) => s.key === found.step);
   const edge = def ? edgeOf(def, found.target) : null;
   if (!edge) throw new StoreError(400, `Inget steg i Beställ ger ${notation}.`);
@@ -43,7 +47,7 @@ export function dollOrderPlan(root: string, ask: DollOrderAsk): DollOrderPlan {
     const name = `giv-fran-2-3-${code}-bestalld-${letter}-${doll}`, film = `docka-${doll}-2-3-${code}-bestalld-${letter}`;
     const motion = `dealer3d/data/${name}.json`;
     if (taken.has(film) || existsSync(path.join(root, motion)) || existsSync(path.join(root, 'assets', 'references', 'docka', film))) continue;
-    const title = `${doll[0].toUpperCase()}${doll.slice(1)} · A3P${m[1]}C${m[2]} · giv och återgång, dockans sparade rörelse`;
+    const title = `${doll[0].toUpperCase()}${doll.slice(1)} · A3${seat}C${card} · giv och återgång, dockans sparade rörelse`;
     return { dealer: ask.dealer, doll, place, notation, edge, name, film, motion, title };
   }
   throw new StoreError(409, `${place} har redan 26 beställda filmer av dockan.`);
@@ -69,6 +73,9 @@ export async function dollOrder(root: string, ask: DollOrderAsk, options: { dry?
   try {
     const seconds = /--seconds (\d+(?:\.\d+)?) --fps 24/.exec(laid)?.[1];
     if (!seconds) throw new StoreError(500, 'Dockans rörelse sade inte hur lång den är.');
+    // (her own card: the side the doll laid it with against the plan's, which the order's text says)
+    const sides = /^sida (\S+) \(planen: ([^)]+)\)/m.exec(laid);
+    if (sides && sides[1] !== sides[2]) throw new StoreError(409, `${plan.place}: dockan lägger kortet ${sides[1]}, men kortplanen säger ${sides[2]}, och beställningens text följer planen. Välj samma sida i docklabbet och spara, eller ändra kortplanen.`);
     mkdirSync(folder, { recursive: true });
     rmSync(out, { recursive: true, force: true });
     await node('Dockans film', ['dealer3d/tools/render-reference.ts', '--motion', plan.motion, '--out', out, '--seconds', seconds, '--fps', '24']);
@@ -99,7 +106,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     if (path.resolve(process.cwd()).toLowerCase() !== root.toLowerCase()) throw new StoreError(400, 'Kör från dealer-katalogen.');
     const args = process.argv.slice(2), at = args.indexOf('--mall'), template = at > 0 ? Number(args[at + 1]) : undefined;
     const plain = args.filter((a, i) => !a.startsWith('--') && (at < 0 || i !== at + 1));
-    if (plain.length !== 2 || (at > 0 && !Number.isInteger(template))) throw new StoreError(400, 'Använd: node tools/doll-order.ts <dealer> <P6.C1> [--mall 15] [--flat-hand] [--dry]');
+    if (plain.length !== 2 || (at > 0 && !Number.isInteger(template))) throw new StoreError(400, 'Använd: node tools/doll-order.ts <dealer> <P6.C1|D.C2> [--mall 15] [--flat-hand] [--dry]');
     console.log(JSON.stringify(await dollOrder(root, { dealer: plain[0], place: plain[1], template, flatHand: args.includes('--flat-hand') }, { dry: args.includes('--dry') }), null, 2));
   } catch (error) { console.error(`[RÖD] ${(error as Error).message}`); process.exitCode = 1; }
 }

@@ -24,7 +24,17 @@ const plan = JSON.parse((await readFile(path.join(ROOT, 'placements/default.json
 test('every place of the plan has a recipe that is a file here, or a reason', () => {
   const ids = Object.keys(plan.targets); assert.ok(ids.length >= 17);
   for (const id of ids) { const r = recipeFor(id); assert.ok(r, `${id} is not a place the lab knows`);
-    if ('recipe' in r) assert.ok(existsSync(path.join(ROOT, 'dealer3d/data', `${r.recipe}.json`)), `${id}: ${r.recipe} is not a file`); else assert.match(r.none, /^(reach|closed)$/); }
+    if ('recipe' in r) assert.ok(existsSync(path.join(ROOT, 'dealer3d/data', `${r.recipe}.json`)), `${id}: ${r.recipe} is not a file`); else assert.equal(r.none, 'reach'); }
+});
+
+// Jakob 2026-11-24: the dealer's cards closed or open as he chooses. Closed, the card is never turned: face down from the shoe until it lies.
+test('a dealer\'s card laid closed is never turned and lies face down', async () => {
+  const r = recipeFor('D.C2'); assert.ok(r && 'recipe' in r);
+  const stored = await read(r.recipe), recipe = recipeOf(r.recipe, stored), pose = await read(recipe.poseFilm ?? 'till-ankare-2-3');
+  const deal = layDeal({plan, target: 'D.C2', recipe, pose, steer: {...NO_STEER, side: 'BACK'}}), cards = deal.frames.map(f => f.card);
+  assert.ok(cards.every(c => c.n[1] < 0), 'face down in every frame');
+  const lies = cards[deal.rests]; assert.ok(Math.abs(lies.n[1] + 1) < 1e-3 && Math.abs(lies.c[1]) < 1e-3, 'flat on the felt when it lies');
+  assert.throws(() => layDeal({plan, target: 'P4.C1', recipe, pose, steer: {...NO_STEER, side: 'BACK'}}), /only the dealer's own cards/);
 });
 
 test('a stored deal laid again from its own recipe is the stored deal', async () => {

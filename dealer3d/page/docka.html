@@ -55,7 +55,8 @@
   .acts { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
   #entries, #backs { margin-bottom: 6px; }
   #clips { margin-top: 4px; } #clips button { padding: 5px 9px; font-size: 13px; }
-  #landings button, #turns button { padding: 5px 9px; font-size: 13px; }
+  #landings button, #turns button, #sides button { padding: 5px 9px; font-size: 13px; }
+  #sideNote.warn { color: var(--warn); }
   #turnNote.warn { color: var(--warn); }
   #shaping { margin-top: 4px; }
   #landingNote.warn { color: var(--warn); }
@@ -72,7 +73,7 @@
   .inbaddad section { min-width: 0; min-height: 0; container-type: size; }
   .inbaddad .frame, .inbaddad .hint, .inbaddad .transport { width: min(100%, calc((100cqh - 70px) * 1764 / 1174)); }
   .inbaddad aside { position: static; align-self: start; max-height: 100%; }
-  .inbaddad h1 { display: none; }
+  .inbaddad .head { display: none; } /* (the doll is the dealer chosen in the studio) */
   @media (max-width: 900px) {
     .inbaddad body { overflow: auto; } .inbaddad main { height: auto; grid-template-rows: none; } .inbaddad section { container-type: normal; }
     .inbaddad .frame, .inbaddad .hint, .inbaddad .transport { width: 100%; } .inbaddad aside { max-height: none; }
@@ -113,6 +114,7 @@
       <div class="seg" id="entries" role="group" aria-label="Giv från"><button data-entry="A2.1">Från A2.1</button><button data-entry="A2.2" disabled title="Inte byggd: bara ankarbilden finns, ingen ställning är läst ur den och ingen giv börjar där">Från A2.2</button><button data-entry="A2.3">Från A2.3</button></div>
       <div class="seg" id="backs" role="group" aria-label="Given"><button data-back="0">Giv</button><button data-back="1">Giv och återgång</button></div>
       <div class="grid" id="places"></div><p class="small" id="closed"></p>
+      <div id="sideBox" hidden><h3>Kortet ligger</h3><div class="seg" id="sides" role="group" aria-label="Kortet ligger"><button data-side="BACK">Stängt</button><button data-side="FRONT">Öppet</button></div><p class="small" id="sideNote"></p></div>
       <div id="clipsBox" hidden><h3>Paows klipp</h3><div class="seg" id="clips" role="group" aria-label="Paows klipp"></div><p class="small" id="clipNote"></p></div></div>
     <div><h2>Vändning</h2>
       <div class="seg" id="turns" role="group" aria-label="Vändning"></div>

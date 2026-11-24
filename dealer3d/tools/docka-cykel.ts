@@ -8,7 +8,7 @@
 // does. Writes the motion to a new file only, and prints what to read beside it and the render command.
 //   node dealer3d/tools/docka-cykel.ts --to P5.C1 --out dealer3d/data/<new>.json [--from A2.3|A2.1] [--doll paow] [--klipp 11]
 //     [--way naturlig|forut] [--no-standard] [--flat-hand] [--sam-hand] [--recipe-grip-yaw] [--fingrar-som-forut] [--en-vinkel] [--hold 76] [--ready 116]
-//     [--duration 4] [--lift 0.022] [--kortets-fart 150]
+//     [--duration 4] [--lift 0.022] [--kortets-fart 150] [--sida stangt|oppet]
 // --from: the pose the deal begins and ends in (A2.3 if left out; A2.2 is not built). --way: the way where no standard is
 // used (the standard doll has only "forut"; from A2.1 there is one way, as read). --no-standard: lay the place as if no
 // standard were saved. --flat-hand: the right hand flat as it lays the card (natural.ts `flatHand`; "Naturlig" only).
@@ -28,6 +28,11 @@
 // The card's tempo (lay.ts Steer.cardTempo, Jakob 2026-11-23: only the hands with the card go faster) is the standard's,
 // 100 % where it has none; --kortets-fart <percent> lays that one instead (100 to the most the recipe's turn allows; from
 // A2.3 only). Its return then comes as natural-lab.ts quickReturn times it, unless --hold, --ready or --duration say otherwise.
+// The side a dealer's card lies with (lay.ts Steer.side, Jakob 2026-11-24: closed or open as he chooses; D.C1 to D.C3 only)
+// is the standard's (open where it says none, as every standard saved before it was laid), and where no standard is used the
+// plan's as it stands (placements/default.json, the place's intent.endSide); --sida stangt|oppet lays that side instead. A
+// closed card is slid face down and never turned, so it has no turn and no landing of its own. It prints one line
+// `sida stängt|öppet (planen: ...)` for a dealer's card, and the side is in `made.side`.
 import {createHash} from 'node:crypto';
 import {existsSync} from 'node:fs';
 import {readFile, writeFile} from 'node:fs/promises';
@@ -36,15 +41,15 @@ import {fileURLToPath} from 'node:url';
 import {parseArgs} from 'node:util';
 import {filmLens} from '../src/world.ts';
 import {dollNamed} from '../src/doll.ts';
-import {NO_STEER, PAOW_READS, cardTempoMost, cardTempoOf, layDeal, placeFrom, readClip, readDeal, recipeOf, standardName, type Entry, type ReadStored, type Recipe, type Steer, type Stored} from '../page/lay.ts';
+import {DEALER_CARD, NO_STEER, PAOW_READS, cardTempoMost, cardTempoOf, layDeal, placeFrom, readClip, readDeal, recipeOf, sideOf, sideOfPlan, standardName, type Entry, type ReadStored, type Recipe, type Steer, type Stored} from '../page/lay.ts';
 import {NO_KNOBS, gripYawsOf, layNatural, withReturn, type AsBefore, type Knobs, type Way} from '../page/natural-lab.ts';
 import {LANDINGS, asBefore, landingOf, landingWords, shaped, type Landing} from '../src/landing.ts';
 import {TURNS, TURN_DEFAULT, turnOf, type TurnId} from '../src/turn-in-hand.ts';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
-const USAGE = 'node dealer3d/tools/docka-cykel.ts --to <place, e.g. P5.C1> --out dealer3d/data/<new>.json [--from A2.3|A2.1] [--doll paow|standard] [--klipp <clip, from A2.1>] [--way naturlig|forut] [--no-standard] [--flat-hand] [--sam-hand] [--recipe-grip-yaw] [--fingrar-som-forut] [--en-vinkel] [--landning <id>] [--vandning forut|i-handen] [--hold <frame>] [--ready <frame>] [--duration <seconds>] [--lift <metres>] [--kortets-fart <percent>]';
+const USAGE = 'node dealer3d/tools/docka-cykel.ts --to <place, e.g. P5.C1> --out dealer3d/data/<new>.json [--from A2.3|A2.1] [--doll paow|standard] [--klipp <clip, from A2.1>] [--way naturlig|forut] [--no-standard] [--flat-hand] [--sam-hand] [--recipe-grip-yaw] [--fingrar-som-forut] [--en-vinkel] [--landning <id>] [--vandning forut|i-handen] [--hold <frame>] [--ready <frame>] [--duration <seconds>] [--lift <metres>] [--kortets-fart <percent>] [--sida stangt|oppet]';
 const {values} = parseArgs({options: {to: {type: 'string'}, out: {type: 'string'}, from: {type: 'string'}, doll: {type: 'string'}, klipp: {type: 'string'}, way: {type: 'string'}, 'no-standard': {type: 'boolean'}, 'flat-hand': {type: 'boolean'},
-  'sam-hand': {type: 'boolean'}, 'recipe-grip-yaw': {type: 'boolean'}, 'fingrar-som-forut': {type: 'boolean'}, 'en-vinkel': {type: 'boolean'}, landning: {type: 'string'}, vandning: {type: 'string'}, hold: {type: 'string'}, ready: {type: 'string'}, duration: {type: 'string'}, lift: {type: 'string'}, 'kortets-fart': {type: 'string'}, help: {type: 'boolean', short: 'h'}}});
+  'sam-hand': {type: 'boolean'}, 'recipe-grip-yaw': {type: 'boolean'}, 'fingrar-som-forut': {type: 'boolean'}, 'en-vinkel': {type: 'boolean'}, landning: {type: 'string'}, vandning: {type: 'string'}, hold: {type: 'string'}, ready: {type: 'string'}, duration: {type: 'string'}, lift: {type: 'string'}, 'kortets-fart': {type: 'string'}, sida: {type: 'string'}, help: {type: 'boolean', short: 'h'}}});
 if (values.help) { console.log(USAGE); process.exit(0); }
 function fail(why: string): never { console.error(why); process.exit(1); }
 const place = values.to, out = values.out, dollName = values.doll ?? 'paow', entry = (values.from ?? 'A2.3') as Entry;
@@ -56,6 +61,8 @@ const number = (v: string | undefined, flag: string) => { if (v === undefined) r
 const before: AsBefore = {...(values['sam-hand'] ? {samHand: true} : {}), ...(values['recipe-grip-yaw'] ? {recipeGripYaw: true} : {}), ...(values['fingrar-som-forut'] ? {fingers: true} : {}), ...(values['en-vinkel'] ? {oneGripYaw: true} : {})};
 if (values.landning !== undefined && !LANDINGS.some(l => l.id === values.landning)) fail(`--landning ska vara en av ${LANDINGS.map(l => l.id).join(', ')}.`);
 if (values.vandning !== undefined && !TURNS.some(t => t.id === values.vandning)) fail(`--vandning ska vara en av ${TURNS.map(t => t.id).join(', ')}.`);
+if (values.sida !== undefined && (values.sida !== 'stangt' && values.sida !== 'oppet')) fail('--sida ska vara stangt eller oppet.');
+if (values.sida !== undefined && (!DEALER_CARD.test(place) || entry !== 'A2.3')) fail('--sida gäller dealerns egna kort (D.C1 till D.C3) från A2.3.');
 
 const file = (rel: string) => path.join(ROOT, rel), rel = (p: string) => path.relative(ROOT, path.resolve(p)).split(path.sep).join('/');
 const bytesOf = (rel: string) => readFile(file(rel)), sha = (b: Buffer | string) => createHash('sha256').update(b).digest('hex');
@@ -92,6 +99,10 @@ else {
   if (values['flat-hand'] && way !== 'naturlig') fail(`--flat-hand finns bara i Naturlig; ${place} läggs ${standard ? `som hans sparade standard (${standard}), ` : ''}i Som förut.`);
   if (values.landning && way !== 'naturlig') fail(`--landning finns bara i Naturlig; ${place} läggs ${standard ? `som hans sparade standard (${standard}), ` : ''}i Som förut.`);
   if (values.vandning && way !== 'naturlig') fail(`--vandning finns bara i Naturlig; ${place} läggs ${standard ? `som hans sparade standard (${standard}), ` : ''}i Som förut.`);
+  // (the side: the flag's, else the standard's, else the plan's as it stands; only 'BACK' is kept in the steering, so an open card is laid and written as before)
+  if (DEALER_CARD.test(place)) { const side = values.sida ? (values.sida === 'stangt' ? 'BACK' : 'FRONT') : saved ? sideOf(steer) : sideOfPlan(plan, place) ?? 'FRONT';
+    if (side === 'BACK') steer.side = 'BACK'; else delete steer.side;
+    if (side === 'BACK' && (values.landning || values.vandning || !asBefore(landing) || turn !== TURN_DEFAULT)) fail(`${place} läggs stängt: kortet skjuts med baksidan upp och vänds aldrig, så det har ingen egen landning eller vändning.`); }
   laid = (way === 'naturlig' ? layNatural({plan, target: place, recipe: recipe!, pose, steer, lens, doll, before}).deal : layDeal({plan, target: place, recipe: recipe!, pose, steer})) as never;
   source = `dealer3d/data/${recipe!.from}.json`;
 }
@@ -103,9 +114,9 @@ const cycle = done.cycle, motion = done.motion as typeof done.motion & {frames: 
 
 const words = place.replace(/^P(\d)\.C(\d)$/, 'plats $1 kort $2').replace(/^D\.C(\d)$/, 'dealerns kort $1'), WAY = {naturlig: 'Naturlig', forut: 'Som förut', read: 'som given är avläst'};
 const how = standard ? `hans sparade standard ${standard} (${way === 'read' ? WAY.read : `i ${WAY[way]}`})` : way === 'read' ? WAY.read : `${WAY[way]}, inget reglage rört`;
-const about = `${doll.name === 'paow' ? 'Paow' : 'Standarddockan'}, ${entry} till ${words} och tillbaka till ${entry} i samma film, lagd som docklabbet lägger den: ${how}${cardTempoOf(steer) !== 1 ? `, kortets fart ${Math.round(cardTempoOf(steer) * 100)} % (bara händerna med kortet går fortare)` : ''}${values['flat-hand'] ? ', högerhanden plan vid nedsläppet (natural.ts flatHand)' : ''}${before.samHand ? ', vänsterhanden vid skon som SAM läste den' : ''}${before.recipeGripYaw ? ', handens vinkel på kortet receptets' : ''}${before.oneGripYaw && !before.recipeGripYaw ? ', en vinkel för handen på kortet hela vägen' : ''}${landingSaid && !asBefore(landingSaid) ? `, landningen: ${landingWords(landingSaid).toLowerCase()}` : ''}${done.turn?.laid ? ', kortet vänt i högerhanden av handleden (turn-in-hand.ts)' : ''}. Skriven av dealer3d/tools/docka-cykel.ts; filmas med render-reference.ts --seconds ${cycle.frameCount / cycle.fps} --fps 24.`;
+const about = `${doll.name === 'paow' ? 'Paow' : 'Standarddockan'}, ${entry} till ${words} och tillbaka till ${entry} i samma film, lagd som docklabbet lägger den: ${how}${cardTempoOf(steer) !== 1 ? `, kortets fart ${Math.round(cardTempoOf(steer) * 100)} % (bara händerna med kortet går fortare)` : ''}${values['flat-hand'] ? ', högerhanden plan vid nedsläppet (natural.ts flatHand)' : ''}${before.samHand ? ', vänsterhanden vid skon som SAM läste den' : ''}${before.recipeGripYaw ? ', handens vinkel på kortet receptets' : ''}${before.oneGripYaw && !before.recipeGripYaw ? ', en vinkel för handen på kortet hela vägen' : ''}${landingSaid && !asBefore(landingSaid) ? `, landningen: ${landingWords(landingSaid).toLowerCase()}` : ''}${done.turn?.laid ? ', kortet vänt i högerhanden av handleden (turn-in-hand.ts)' : ''}${sideOf(steer) === 'BACK' ? ', lagt stängt (baksidan upp hela vägen, aldrig vänt)' : ''}. Skriven av dealer3d/tools/docka-cykel.ts; filmas med render-reference.ts --seconds ${cycle.frameCount / cycle.fps} --fps 24.`;
 const made = {tool: 'dealer3d/tools/docka-cykel.ts', place, from: entry, doll: doll.name, way, standard, recipe: recipe?.from ?? null, read: 'read' in found ? found.read : null, ...('read' in found && found.clip ? {clip: found.clip} : {}), poseFilm: recipe ? recipe.poseFilm ?? 'till-ankare-2-3' : null, steer, knobs,
-  gripYaw: recipe && way !== 'read' ? gripYawsOf(recipe, steer, way, before) : null, flatHand: !!values['flat-hand'], before, landing: landingSaid, landed: done.landing, ...(turnSaid && turnSaid !== TURN_DEFAULT ? {turn: turnSaid, turned: done.turn} : {}), cycle: options, sources: used};
+  gripYaw: recipe && way !== 'read' ? gripYawsOf(recipe, steer, way, before) : null, ...(DEALER_CARD.test(place) && !read ? {side: sideOf(steer)} : {}), flatHand: !!values['flat-hand'], before, landing: landingSaid, landed: done.landing, ...(turnSaid && turnSaid !== TURN_DEFAULT ? {turn: turnSaid, turned: done.turn} : {}), cycle: options, sources: used};
 await writeFile(out, JSON.stringify({...motion, about, made}) + '\n', {flag: 'wx'});
 
 type Limb = {s: number[]; e: number[]; w: number[]; p: number[][]};
@@ -114,6 +125,8 @@ const first = motion.frames[0], last = motion.frames.at(-1)!, c = cycle.cycle;
 console.log(`skrev ${rel(out)}: ${motion.frames.length} rutor à ${cycle.fps}/s (${cycle.frameCount / cycle.fps} s); ${standard ? `hans standard ${standard}, ` : ''}${way === 'read' ? `från A2.1, ${'read' in found ? `${found.read}${found.clip ? ` (klipp ${found.clip})` : ''}` : ''}` : `${WAY[way]}, receptet ${recipe!.from}${'lent' in found && found.lent && !standard ? ` (lånat: ${found.lent})` : ''}`}`);
 console.log(`landning ${landingSaid ? `${landingSaid.id}${shaped(landingSaid) ? ` (egen: ${landingWords(landingSaid).split(', egen: ')[1]})` : ''}` : 'ingen'}`);
 console.log(`kortets fart ${way === 'read' ? 100 : Math.round(cardTempoOf(steer) * 100)} %`);
+const SIDE = {BACK: 'stängt', FRONT: 'öppet'} as const, planSide = sideOfPlan(plan, place);
+if (DEALER_CARD.test(place) && !read) console.log(`sida ${SIDE[sideOf(steer)]} (planen: ${planSide ? SIDE[planSide] : 'säger inget'})`);
 const td = done.turn;
 console.log(`vändning ${turnSaid ?? 'ingen'}${td ? td.laid ? ` (höger hand tar kortet i ${td.edge === 'long' ? 'långsidan' : 'kortsidan'} i ruta ${td.take}, vrider det ${Math.round(td.heldInAll!)}° i greppet, släpper i ruta ${td.letGo}; handleden högst ${td.wrist!.most}°, förut ${td.wristBefore!.most}°)` : ` (går inte här: ${td.why}; kortet vänds som förut)` : ''}`);
 console.log(`kortet ligger från ruta ${cycle.rests}, given hålls t.o.m. ruta ${c.holdThrough}, lyftet ${c.liftStarts}-${c.liftEnds}, åter i ${entry} från ruta ${c.readyFrom}${'gazeReadyFrom' in c ? `, blicken åter från ruta ${c.gazeReadyFrom}` : ''}; armen för kort ${done.shortMm} mm${done.bodyShare === null ? '' : `; kroppen tar ${Math.round(done.bodyShare * 100)} % av styrningen`}`);

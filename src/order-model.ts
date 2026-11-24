@@ -241,8 +241,11 @@ export type Reference =
  * ändringar" to definitively make it good, and "Nya filmer: snabbare och bättre, inte kopior"). The predecessor's delivered
  * film (its take's untouched source.mp4) goes with the call as the LAST reference video — after the order's own reference
  * film where there is one (video 1), so the previous film is video 2; without one it is the only video (video 1) — and the
- * text keeps what it did well and names the faults to fix (fixes, in the text's own words; tools/revansch-order.ts writes
- * the draft, and swaps in a model that takes reference videos where the predecessor's does not). of: what it remakes.
+ * text keeps what it did well and names the faults to fix (fixes, in the text's own words). of: what it remakes.
+ * The one trial (paow-giv-2-3-p4-c2-02-revansch-1, 2026-11-24; tools/film-prov.md) gave the previous film again, within a
+ * pixel, and none of the fixes: a film that goes with the call is copied. Nothing writes this block any more (the tool
+ * that did is gone); it stays so that the stored order reads. A take is remade by correcting the film that steers it,
+ * the doll's (tools/doll-order.ts).
  */
 export type Revansch = { of: { order: string; take: number }; path: string; sha256: string; seconds: number; fixes: string[] };
 export type Generation = {
