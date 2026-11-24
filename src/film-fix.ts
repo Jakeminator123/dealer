@@ -2,10 +2,10 @@
 // person can read (tools/film-review.md). Pure: frames come and go through a FrameStore (8-bit RGB, rows top down, no padding) and
 // pictures as Picture; no files, no FFmpeg (tools/film-fix.ts decodes, applies, encodes and writes the receipt).
 //
-// What can be fixed this way: a few frames (trim, hold, blend), a few pixels where nothing moves (patch), a colour (key) and a level
-// (level). What cannot: a hand's or a body's motion, a card that changes shape in the hand, a wrong path. Every operation has a limit
-// that keeps it a repair (LIMITS); beyond it the whole list is refused with the reason, in Swedish, and nothing is written. The tempo
-// is never changed: speed is always refused.
+// What can be fixed this way: a few frames (trim, hold, blend), a few pixels where nothing moves (patch), a colour (key), a level
+// (level) and, in a rest film, a screen that changes behind her (plate). What cannot: a hand's or a body's motion, a card that
+// changes shape in the hand, a wrong path. Every operation has a limit that keeps it a repair (LIMITS); beyond it the whole list is
+// refused with the reason, in Swedish, and nothing is written. The tempo is never changed: speed is always refused.
 //
 // Frame numbers are always the delivered film's, the numbers a reviewer reads off it. trim drops frames only when the copy is
 // written, so frame f of the film is frame f - (frames trimmed at the start) of the copy.
@@ -27,11 +27,19 @@ export type BlendOp = {op: 'blend'; frames: Range; why?: string};
 export type PatchOp = {op: 'patch'; frames: Range; from: number; area?: Rect; mask?: string; why?: string};
 export type KeyOp = {op: 'key'; frames?: Range; area?: Rect; colour?: RGB; to?: RGB | 'key'; tolerance?: number; why?: string};
 export type LevelOp = {op: 'level'; frames?: Range; reference: string; tone?: boolean; toneFrame?: number; why?: string};
+/**
+ * plate: for a REST film whose screen changes behind her (a table top the model drew into the green of paow-vila-28-01, a lighter
+ * band with a sharp edge). Frame `from`'s screen (the first kept frame when none is given) replaces the screen more than `near` px
+ * from her; within `near` px the row's deviation is taken off in proportion to how much of the pixel is screen; a pixel that is
+ * wholly hers is never touched. Not for a deal film: there it would take the shadows of the cards and the hand, and a frame with
+ * such things in its open screen is refused (LIMITS.plateLost).
+ */
+export type PlateOp = {op: 'plate'; frames?: Range; from?: number; near?: number; why?: string};
 export type SpeedOp = {op: 'speed'; why?: string; [key: string]: unknown};
-export type FixOp = TrimOp | HoldOp | BlendOp | PatchOp | KeyOp | LevelOp | SpeedOp;
-export const OPS = ['trim', 'hold', 'blend', 'patch', 'key', 'level', 'speed'] as const;
+export type FixOp = TrimOp | HoldOp | BlendOp | PatchOp | KeyOp | LevelOp | PlateOp | SpeedOp;
+export const OPS = ['trim', 'hold', 'blend', 'patch', 'key', 'level', 'plate', 'speed'] as const;
 const FIELDS: Record<string, string[]> = {trim: ['start', 'end'], hold: ['frames', 'from'], blend: ['frames'], patch: ['frames', 'from', 'area', 'mask'],
-  key: ['frames', 'area', 'colour', 'to', 'tolerance'], level: ['frames', 'reference', 'tone', 'toneFrame'], speed: []};
+  key: ['frames', 'area', 'colour', 'to', 'tolerance'], level: ['frames', 'reference', 'tone', 'toneFrame'], plate: ['frames', 'from', 'near'], speed: []};
 
 /** The limits that keep each operation a repair. A pixel "moves" when a channel differs by more than `moved` levels. */
 export const LIMITS = {
@@ -52,6 +60,13 @@ export const LIMITS = {
   levelReach: 190,        // px: how wide the level's correction is smoothed, so that it carries a drift and never a shadow
   levelGain: [0.85, 1.15] as const,
   levelLift: 25,
+  plateNear: 12,          // px round her that keep the frame's own pixels when the list says nothing: soft edges, hair, contact shadow
+  plateNearRange: [4, 32] as const,
+  plateSolid: 0.5,        // a pixel under this share of screen is her (or a thing), and the open screen begins `near` px from it
+  plateThing: 0.7,        // in the open screen a pixel under this share of screen is a thing (a blur, a strand of hair), not a tint
+  plateLost: 0.00005,     // per frame at most 0.005 % of the picture (about 100 px at the bank's size) of the open screen may be a thing
+                          // or a shadow (its green more than `moved` levels under the plate's, where the scene's key begins to draw
+                          // it). Measured: six rest films 0 px, the band of paow-vila-28-01 included; two deal films 8 800 and 10 000
 };
 // The scene's key (src/scene3d-film.ts): s = (G - max(R, B)) / (keyG - max(keyR, keyB)), with the key read from the frame itself in a
 // corner that stays empty; a pixel is all screen from s >= hi. Here the same rule is taken about the key colour's strongest channel.
@@ -86,8 +101,9 @@ export function readFixes(value: unknown): {ops: FixOp[]; refusals: string[]} {
     if (raw.why !== undefined && typeof raw.why !== 'string') refusals.push(`${at}: why är en text.`);
     if (op === 'trim' && (!(raw.start === undefined || (int(raw.start) && raw.start >= 0)) || !(raw.end === undefined || (int(raw.end) && raw.end >= 0)) || !(Number(raw.start ?? 0) + Number(raw.end ?? 0) > 0))) refusals.push(`${at}: start och end är antal rutor (heltal), minst en av dem över 0.`);
     if (['hold', 'blend', 'patch'].includes(op) && !isRange(raw.frames)) refusals.push(`${at}: frames ska vara [första, sista] ruta.`);
-    if (['key', 'level'].includes(op) && raw.frames !== undefined && !isRange(raw.frames)) refusals.push(`${at}: frames ska vara [första, sista] ruta eller utelämnas (hela filmen).`);
-    if ((op === 'hold' && raw.from !== undefined || op === 'patch') && !(int(raw.from) && raw.from >= 0)) refusals.push(`${at}: from är en ruta i filmen.`);
+    if (['key', 'level', 'plate'].includes(op) && raw.frames !== undefined && !isRange(raw.frames)) refusals.push(`${at}: frames ska vara [första, sista] ruta eller utelämnas (hela filmen).`);
+    if (((op === 'hold' || op === 'plate') && raw.from !== undefined || op === 'patch') && !(int(raw.from) && raw.from >= 0)) refusals.push(`${at}: from är en ruta i filmen.`);
+    if (op === 'plate' && raw.near !== undefined && !(int(raw.near) && raw.near >= LIMITS.plateNearRange[0] && raw.near <= LIMITS.plateNearRange[1])) refusals.push(`${at}: near är ${LIMITS.plateNearRange[0]}–${LIMITS.plateNearRange[1]} bildpunkter.`);
     if (op === 'patch' && (raw.area === undefined) === (raw.mask === undefined)) refusals.push(`${at}: ange antingen area {x, y, w, h} eller mask (en PNG).`);
     if ((op === 'patch' || op === 'key') && raw.area !== undefined && !isRect(raw.area)) refusals.push(`${at}: area ska vara {x, y, w, h} i bildpunkter.`);
     if (op === 'patch' && raw.mask !== undefined && (typeof raw.mask !== 'string' || !raw.mask)) refusals.push(`${at}: mask är sökvägen till en PNG.`);
@@ -111,11 +127,11 @@ export const picturesOf = (ops: readonly FixOp[]): string[] => [...new Set(ops.f
 // ── What a list does, before any pixel is touched ───────────────────────────
 type Film = {count: number; width: number; height: number};
 const trimOf = (ops: readonly FixOp[]) => { const t = ops.find((o): o is TrimOp => o.op === 'trim'); return {start: t?.start ?? 0, end: t?.end ?? 0}; };
-/** The frames each step changes (trim: none; key and level: their range, the whole kept film when none is given). */
+/** The frames each step changes (trim: none; key, level and plate: their range, the whole kept film when none is given). */
 export function targetsOf(op: FixOp, film: Film, ops: readonly FixOp[]): Range | null {
   const {start, end} = trimOf(ops), whole: Range = [start, film.count - 1 - end];
   if (op.op === 'hold' || op.op === 'blend' || op.op === 'patch') return op.frames;
-  if (op.op === 'key' || op.op === 'level') return op.frames ?? whole;
+  if (op.op === 'key' || op.op === 'level' || op.op === 'plate') return op.frames ?? whole;
   return null;
 }
 
@@ -156,6 +172,7 @@ export function checkFixes(ops: readonly FixOp[], film: Film, pictures: Record<s
       if (!pictures[op.reference]) refusals.push(`${at}: referensbilden ${op.reference} saknas.`);
       if (op.toneFrame !== undefined && (op.toneFrame > last || !kept(op.toneFrame))) refusals.push(`${at}: toneFrame ${op.toneFrame} är ingen kvarvarande ruta.`);
     }
+    if (op.op === 'plate' && op.from !== undefined && (op.from > last || !kept(op.from))) refusals.push(`${at}: from ${op.from} är ingen kvarvarande ruta.`);
   });
   return refusals;
 }
@@ -274,6 +291,86 @@ export function resize(picture: Picture, w: number, h: number): Uint8Array {
   return out;
 }
 
+// ── The plate ───────────────────────────────────────────────────────────────
+// How many open pixels a row's deviation is averaged over (a running mean) on its way into the near zone.
+const PLATE_ROW = 8;
+/**
+ * How much of each pixel is screen (s, the scene's measure against the frame's own corner green), and where the frame is open
+ * screen: farther than `near` px from every pixel under LIMITS.plateSolid.
+ */
+function openScreen(frame: Uint8Array, w: number, h: number, near: number): {s: Float32Array; open: Uint8Array} {
+  const key = cornerColour(frame, w, h), dk = Math.max(key[1] - Math.max(key[0], key[2]), 0.05 * 255), s = new Float32Array(w * h), solid = new Uint8Array(w * h);
+  for (let p = 0, i = 0; p < w * h; p++, i += 3) { s[p] = (frame[i + 1] - Math.max(frame[i], frame[i + 2])) / dk; solid[p] = s[p] < LIMITS.plateSolid ? 1 : 0; }
+  const open = dilate(solid, w, h, near);
+  for (let p = 0; p < w * h; p++) open[p] = open[p] ? 0 : 1;
+  return {s, open};
+}
+/** The plate a frame gives: its own pixel where it is open screen, its smooth green field where she stands. notScreen: things in its open screen. */
+function plateOf(frame: Uint8Array, w: number, h: number, near: number): {data: Uint8Array; own: number; notScreen: number} {
+  const {s, open} = openScreen(frame, w, h, near), field = smoothGreen(frame, w, h), data = new Uint8Array(w * h * 3);
+  let own = 0, notScreen = 0;
+  for (let p = 0, i = 0; p < w * h; p++, i += 3) {
+    if (open[p]) { data[i] = frame[i]; data[i + 1] = frame[i + 1]; data[i + 2] = frame[i + 2]; own++; if (s[p] < LIMITS.plateThing) notScreen++; }
+    else { data[i] = clamp(field[i]); data[i + 1] = clamp(field[i + 1]); data[i + 2] = clamp(field[i + 2]); }
+  }
+  return {data, own, notScreen};
+}
+type Plated = {next: Uint8Array; notScreen: number; removed: number; rowMean: number; row: number; nearChanged: number; nearMax: number; unfilled: number};
+/**
+ * One frame on a plate. The open screen takes the plate's pixels. In the near zone a pixel keeps its own grain and edge:
+ * c' = c - t * D, where D is what the frame's screen differs from the plate on that row (the running mean of the nearest open
+ * screen on the same row: the fault is a level per row, and a row-wise fill keeps its sharp edge) and t is how much of the pixel is
+ * screen, 0 at the scene's lower threshold and 1 at the local screen colour. A pixel the scene shows as wholly her (s <= SCREEN.lo)
+ * is left as it is. notScreen: the open pixels that are a thing or a shadow; removed: the largest step taken out of the open
+ * screen; rowMean and row: the largest mean of a row's open screen minus the plate (the fault as a level).
+ */
+function onPlate(frame: Uint8Array, plate: Uint8Array, w: number, h: number, near: number): Plated {
+  const {s, open} = openScreen(frame, w, h, near), next = frame.slice(), L = new Float32Array(w * 3), R = new Float32Array(w * 3), Ld = new Int32Array(w), Rd = new Int32Array(w), FAR = 1 << 30;
+  const out: Plated = {next, notScreen: 0, removed: 0, rowMean: 0, row: -1, nearChanged: 0, nearMax: 0, unfilled: 0};
+  for (let y = 0; y < h; y++) {
+    const row = y * w, sum = [0, 0, 0];
+    let n = 0, have = false, a0 = 0, a1 = 0, a2 = 0, last = 0;
+    for (let x = 0; x < w; x++) {
+      const i = (row + x) * 3;
+      if (open[row + x]) {
+        const d0 = frame[i] - plate[i], d1 = frame[i + 1] - plate[i + 1], d2 = frame[i + 2] - plate[i + 2];
+        if (have) { a0 += (d0 - a0) / PLATE_ROW; a1 += (d1 - a1) / PLATE_ROW; a2 += (d2 - a2) / PLATE_ROW; } else { a0 = d0; a1 = d1; a2 = d2; have = true; }
+        last = x; sum[0] += d0; sum[1] += d1; sum[2] += d2; n++;
+      } else if (have) { L[x * 3] = a0; L[x * 3 + 1] = a1; L[x * 3 + 2] = a2; Ld[x] = x - last; } else Ld[x] = FAR;
+    }
+    have = false;
+    for (let x = w - 1; x >= 0; x--) {
+      const i = (row + x) * 3;
+      if (open[row + x]) {
+        const d0 = frame[i] - plate[i], d1 = frame[i + 1] - plate[i + 1], d2 = frame[i + 2] - plate[i + 2];
+        if (have) { a0 += (d0 - a0) / PLATE_ROW; a1 += (d1 - a1) / PLATE_ROW; a2 += (d2 - a2) / PLATE_ROW; } else { a0 = d0; a1 = d1; a2 = d2; have = true; }
+        last = x;
+      } else if (have) { R[x * 3] = a0; R[x * 3 + 1] = a1; R[x * 3 + 2] = a2; Rd[x] = last - x; } else Rd[x] = FAR;
+    }
+    if (n >= w / 16) { const mean = Math.max(Math.abs(sum[0]), Math.abs(sum[1]), Math.abs(sum[2])) / n; if (mean > out.rowMean) { out.rowMean = mean; out.row = y; } }
+    for (let x = 0; x < w; x++) {
+      const p = row + x, i = p * 3;
+      if (open[p]) {
+        const d = Math.max(Math.abs(frame[i] - plate[i]), Math.abs(frame[i + 1] - plate[i + 1]), Math.abs(frame[i + 2] - plate[i + 2]));
+        if (d > out.removed) out.removed = d;
+        if (s[p] < LIMITS.plateThing || frame[i + 1] < plate[i + 1] - LIMITS.moved) out.notScreen++;
+        next[i] = plate[i]; next[i + 1] = plate[i + 1]; next[i + 2] = plate[i + 2];
+        continue;
+      }
+      if (s[p] <= SCREEN.lo) continue;
+      if (Ld[x] === FAR && Rd[x] === FAR) { out.unfilled++; continue; }
+      const side = Ld[x] <= Rd[x] ? L : R, D0 = side[x * 3], D1 = side[x * 3 + 1], D2 = side[x * 3 + 2];
+      const dk = Math.max(plate[i + 1] + D1 - Math.max(plate[i] + D0, plate[i + 2] + D2), 0.05 * 255);
+      const t = Math.min(1, Math.max(0, ((frame[i + 1] - Math.max(frame[i], frame[i + 2])) / dk - SCREEN.lo) / (1 - SCREEN.lo)));
+      const n0 = clamp(frame[i] - t * D0), n1 = clamp(frame[i + 1] - t * D1), n2 = clamp(frame[i + 2] - t * D2);
+      const d = Math.max(Math.abs(n0 - frame[i]), Math.abs(n1 - frame[i + 1]), Math.abs(n2 - frame[i + 2]));
+      if (d) { out.nearChanged++; if (d > out.nearMax) out.nearMax = d; }
+      next[i] = n0; next[i + 1] = n1; next[i + 2] = n2;
+    }
+  }
+  return out;
+}
+
 // ── Applying a list ─────────────────────────────────────────────────────────
 /**
  * Applies the list to the store, step by step, each step on the frames as the steps before it left them. The store is changed in
@@ -369,6 +466,31 @@ export function applyFixes(store: FrameStore, ops: readonly FixOp[], pictures: R
         put(f, next);
       }
       report.measures = {...report.measures, reference: op.reference, largestGreenShift: Math.round(largest * 10) / 10, limit: LIMITS.levelGreen};
+      continue;
+    }
+    if (op.op === 'plate') {
+      const from = op.from ?? start, near = op.near ?? LIMITS.plateNear, limit = Math.max(1, Math.round(LIMITS.plateLost * pixels)), plate = plateOf(store.get(from), w, h, near), seen = (f: number) => f < 0 ? null : f;
+      const top = {removed: 0, removedFrame: -1, rowMean: 0, row: -1, rowFrame: -1, near: 0, nearFrame: -1, nearMax: 0, notScreen: 0, notScreenFrame: -1, unfilled: 0};
+      report.measures = {from, near, plateOwnShare: round4(plate.own / pixels), notScreen: {mostPixels: plate.notScreen, frame: from, limit}};
+      if (plate.notScreen > limit) return refuse(`ruta ${from} duger inte som platta: ${plate.notScreen} bildpunkter mer än ${near} px från henne är inte skärm (högst ${limit}).`);
+      for (let f = range![0]; f <= range![1]; f++) {
+        const r = onPlate(store.get(f), plate.data, w, h, near);
+        if (r.notScreen > limit) {
+          report.measures.notScreen = {mostPixels: r.notScreen, frame: f, limit};
+          return refuse(`i ruta ${f} är ${r.notScreen} bildpunkter mer än ${near} px från henne inte skärm (en skugga eller en oskärpa; högst ${limit}): plattan skulle ta bort dem. Steget är för vilofilmer, inte för en giv.`);
+        }
+        if (r.removed > top.removed) { top.removed = r.removed; top.removedFrame = f; }
+        if (r.rowMean > top.rowMean) { top.rowMean = r.rowMean; top.row = r.row; top.rowFrame = f; }
+        if (r.nearChanged > top.near) { top.near = r.nearChanged; top.nearFrame = f; }
+        if (r.notScreen > top.notScreen) { top.notScreen = r.notScreen; top.notScreenFrame = f; }
+        top.nearMax = Math.max(top.nearMax, r.nearMax); top.unfilled += r.unfilled;
+        put(f, r.next);
+      }
+      report.measures = {from, near, plateOwnShare: round4(plate.own / pixels),
+        largestRemoved: {levels: top.removed, frame: seen(top.removedFrame)}, largestRowMean: {levels: Math.round(top.rowMean * 10) / 10, row: seen(top.row), frame: seen(top.rowFrame)},
+        nearZone: {mostChangedPixels: top.near, frame: seen(top.nearFrame), largestChange: top.nearMax, leftForNoOpenScreenOnTheRow: top.unfilled},
+        notScreen: {mostPixels: top.notScreen, frame: seen(top.notScreenFrame), limit},
+        rule: `öppen skärm: mer än ${near} px från allt under ${LIMITS.plateSolid} skärm, och den får plattans bildpunkter; inte skärm där: under ${LIMITS.plateThing} skärm eller grönt mer än ${LIMITS.moved} nivåer under plattans; hennes bildpunkter (högst ${SCREEN.lo} skärm) rörs aldrig`};
       continue;
     }
   }

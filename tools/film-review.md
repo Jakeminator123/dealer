@@ -170,7 +170,7 @@ Lista varje fel med rutor, plats och sort, och säg för varje om det är **LAGB
 **INTE**. Verktyget har gränser som håller en lagning ärlig (`LIMITS` i `src/film-fix.ts`) och vägrar hela listan om ett
 steg går utöver dem; skriv ingen lagning du väntar dig att det vägrar.
 
-LAGBART, få rutor, få bildpunkter, en färg eller en nivå:
+LAGBART, få rutor, få bildpunkter, en färg, en nivå eller en vilofilms skärm:
 
 | Åtgärd | När | Gräns |
 | --- | --- | --- |
@@ -180,6 +180,7 @@ LAGBART, få rutor, få bildpunkter, en färg eller en nivå:
 | `patch` | en fläck, ett märke eller en skada på en yta där inget rör sig, kopierad ur en god ruta i samma film | högst 2 % av bilden; kanten runt ytan får inte röra sig (högst 2 % av kanten, i snitt högst 6 nivåer) |
 | `key` | bakgrundens grönt ojämnt, kortets platta blå 0,0,254 som ska vara 0,0,255 | bakgrund enligt scenens nyckelregel; tolerans 8 om inget anges, högst 40 (en vid nyckel plattar ett grönt med gradient och ritar dess kontur); ny färg högst 24 nivåer från nyckeln |
 | `level` | grönnivå och ton som glider bort från ankaret | bara en jämn drift: rättningen mäts där båda bilderna är rent grönt och jämnas ut över cirka 190 px, så en skugga i referensen målas aldrig in; grönt högst 30 nivåer bort; tonens förstärkning 0,85–1,15 och lyft högst 25 |
+| `plate` | en vilofilm där skärmen bakom henne ändras (en bordskant eller ett ljusare band som modellen ritat i grönt) | bara vilofilm: rutan `from` (annars första kvarvarande) ger skärmen mer än `near` px från henne (12, 4–32); närmare tas radens avvikelse bort efter hur mycket skärm bildpunkten är, och hennes egna bildpunkter rörs aldrig; vägras om skugga, kort eller hand ligger i den öppna skärmen (högst 0,005 % av bilden per ruta) |
 
 INTE LAGBART, beställ om eller underkänn: en hands eller kropps rörelse (väg, stopp i rörelsen, extra gest, fel hand,
 handbyte), ett kort som byter form eller storlek i handen, färgbyte utan vändning, fingrar genom kortet, fel väg eller
