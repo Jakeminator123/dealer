@@ -168,10 +168,14 @@ const homeOf = (trees: readonly {tree: string; share: number; restFilms: boolean
   [...trees].filter(t => t.restFilms).sort((a, b) => b.share - a.share)[0]?.tree ?? null;
 const round1 = (n: number) => Math.round(n * 10) / 10;
 
-/** A film's share among the films of its step: the composition's numbers where it names one of them, else all on the best film. */
-function filmShares(ids: readonly string[], verdicts: ReadonlyMap<string, Verdict>, shares: Readonly<Record<string, number>>, best: string | null): FilmChoice[] {
-  const named = ids.filter(id => (shares[id] ?? 0) > 0), total = named.reduce((s, id) => s + shares[id], 0), main = best && ids.includes(best) ? best : ids[0] ?? null;
-  return ids.map(id => ({id, verdict: verdicts.get(id) ?? 'godkand', percent: named.length ? round1(100 * (shares[id] ?? 0) / total) : id === main ? 100 : 0}));
+/**
+ * A film's share among the films of its step: the composition's numbers where it names one of them, else all on a Primär, else the
+ * same for each, as the game plays a step's films in turn (src/game-director.ts inTurn; BESKED "Godkända filmer spelas i tur").
+ */
+function filmShares(ids: readonly string[], verdicts: ReadonlyMap<string, Verdict>, shares: Readonly<Record<string, number>>): FilmChoice[] {
+  const named = ids.filter(id => (shares[id] ?? 0) > 0), total = named.reduce((s, id) => s + shares[id], 0), primary = ids.find(id => verdicts.get(id) === 'primar');
+  const even = (id: string) => primary ? (id === primary ? 100 : 0) : round1(100 / ids.length);
+  return ids.map(id => ({id, verdict: verdicts.get(id) ?? 'godkand', percent: named.length ? round1(100 * (shares[id] ?? 0) / total) : even(id)}));
 }
 
 /**
@@ -193,8 +197,8 @@ export function compositionView(def: CompositionDef, views: readonly TreeView[],
     for (const {view, share} of list) {
       const mine = stepsOf.get(view.tree.id)!, own = mine.get(key), ownIds = own?.state === 'finns' ? good(own.ids) : [];
       const first = (m.kind === 'giv' || m.kind === 'retur') && from ? mine.get(stepKey({kind: m.kind, card: from})) : undefined, firstIds = !ownIds.length && first?.state === 'finns' ? good(first.ids) : [];
-      if (ownIds.length) able.push({tree: view.tree.id, how: 'eget', films: filmShares(ownIds, verdicts, shares, own!.take), of: null, via: own!.via ? nodeCode(own!.via) : null});
-      else if (firstIds.length) able.push({tree: view.tree.id, how: 'aterbruk', films: filmShares(firstIds, verdicts, shares, first!.take), of: from, via: first!.via ? nodeCode(first!.via) : null});
+      if (ownIds.length) able.push({tree: view.tree.id, how: 'eget', films: filmShares(ownIds, verdicts, shares), of: null, via: own!.via ? nodeCode(own!.via) : null});
+      else if (firstIds.length) able.push({tree: view.tree.id, how: 'aterbruk', films: filmShares(firstIds, verdicts, shares), of: from, via: first!.via ? nodeCode(first!.via) : null});
       else if (share > 0) lacking.push(view.tree.id); // a tree without a share only lends: what it lacks, nobody misses
     }
     // The share among the trees that can play the step; a tree without a share plays it only when no tree with one can.

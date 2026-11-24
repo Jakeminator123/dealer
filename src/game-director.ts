@@ -15,7 +15,7 @@
 // A card on the dealer's SEAT_HUB is dealt from that other pose at the shoe (READY-B) when the films for it can be played, and the
 // chain goes through rest around it: IDLE>READY-B, the deal, the return to READY-B and READY-B>IDLE (roundSequence in the clip bank
 // does the same).
-import {REVEAL_NODE, buildGraph, dealersOf, dealHub, judgedRecord, parseEdge, resolveRound, type BankData, type Graph, type Segment, type Step, type Why} from './clip-graph.ts';
+import {REVEAL_NODE, buildGraph, dealersOf, dealHub, judgedRecord, parseEdge, playable, resolveRound, returnFits, type BankData, type Graph, type Segment, type Step, type Why} from './clip-graph.ts';
 import {slotOf, slotFilm, slotLabel, type Slot, type TableCards} from './game-table.ts';
 
 // The signals this file reads; everything else in the engine's list is for the overlay.
@@ -135,6 +135,31 @@ export function planBeats(table: TableCards, lying: number[], signals: FilmSigna
 
 /** The draw numbers that lie on the table once the beats have played. */
 export const lyingAfter = (lying: number[], beats: Beat[]): number[] => [...new Set([...lying, ...beats.filter(b => b.own).map(b => b.own!.shoeDraw)])];
+
+/**
+ * A step of the hand (a deal, the entry, the exit, the turn of the hole card) plays its approved films in turn, each with the same
+ * chance, where no Primär locks the step (Jakob 2026-11-24, BESKED "Godkända filmer spelas i tur"). A film takes part where the
+ * round plays it as it plays the bank's own choice: the same edge and pose at the shoe, a video, the side of the card the round
+ * wants, and a return after it that continues it. The bank's choice is the first, so random 0 plays it. A beat that names its take
+ * (a composition's share) keeps it, a return follows its deal (resolveRound), and the rest has its own draw (pickIdle).
+ * next: the beat after it in the same tree. random(): numbers in [0, 1).
+ */
+export function inTurn(graph: Graph, beat: Beat, next: Beat | null | undefined, random: () => number, places?: Record<string, {x: number; y: number}> | null): Beat {
+  const step = beat.step;
+  if (beat.kind === 'RETURN' || beat.kind === 'PLACE' || !step || step.take) return beat;
+  const after = next?.step && next.step.from === step.to ? next.step : null;
+  const round = (take?: string) => resolveRound(graph, after ? [{...step, take}, after] : [{...step, take}], {places});
+  const plays = ([deal, back]: Segment[]) => !!deal?.video && !!deal.take && !(deal.side && deal.take.endSide && deal.take.endSide !== deal.side)
+    && (!back || back.kind !== 'RETURN' || (!!back.take && returnFits(back.take, deal.take)));
+  const chosen = round(), main = chosen[0]?.take;
+  if (!main || main.explicitMain || !plays(chosen)) return beat;
+  const turns = [main.id, ...(graph.edge[main.edge]?.takes ?? [])
+    .filter(t => t.id !== main.id && t.hub === main.hub && t.decision === 'ACCEPTED' && !t.inbox && !t.explicitMain && playable(t))
+    .filter(t => { const r = round(t.id); return r[0]?.take?.id === t.id && plays(r); }).map(t => t.id)];
+  if (turns.length < 2) return beat;
+  const pick = turns[Math.min(turns.length - 1, Math.floor(Math.max(0, random()) * turns.length))];
+  return pick === main.id ? beat : {...beat, step: {...step, take: pick}};
+}
 
 // The engine writes suits as symbols; the card printer names them.
 const SUIT: Record<string, string> = {'♠': 'spades', '♥': 'hearts', '♦': 'diamonds', '♣': 'clubs'};

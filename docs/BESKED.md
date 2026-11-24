@@ -321,6 +321,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
 - **Görans material** används inte (`docs/SYSTEM.md`, "Återbruk och införande").
 - **Dela ut går före köade vilor** (2026-11-23 kl. 23.45): klickar spelaren på Deal efter sin insats "ska de köade
   viloklippen ignoreras" så att A1 → A2.n får företräde. Och nodträdet binds ihop "så att vi kan lätt få ut PAOW i spel nu".
+- **Godkända filmer spelas i tur** (2026-11-24; han lät huvudagenten bestämma, "vikta dessa internt"): utan Primär spelar
+  spelet ett stegs godkända filmer med lika chans, och returen följer sin giv. Primär låser steget till den filmen.
 
 ## Kopian och nätet
 

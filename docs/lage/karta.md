@@ -24,7 +24,7 @@ en fillista.
 - Jakob arkiverade 2026-11-23 Casinots A1 och A2.2 och den tatuerade A2.2 i Material. Casino behåller sina bilder:
   dess giv till plats 6 (hans Primär) börjar på A2.2, och givarna dit från A2.1 är underkända. Tatuerad har ingen A2.2.
 - Tal räknas för sig: på A1 en bricka (25/25, röd vid 0) och panelen Tal (`studio/lib/tree-talk.ts`); Tatuerad 24/25.
-- Ett steg visar filmen spelet spelar där; returen fortsätter given. "Gör primär" är hans klick. Klipp arkiveras och tas tillbaka i Karta.
+- Ett steg visar spelets förstaval; utan Primär (hans klick, låser steget) spelar spelet stegets godkända filmer i tur, returen efter sin giv (BESKED). Klipp arkiveras och tas tillbaka i Karta.
 - Ett ankare kan bära `seat` 1–7; ingen vy visar det. Receptet för en annan stol: [FILMMODELLER](../FILMMODELLER.md), "Vinklar, 3D och Runways lista".
 
 **Nästa steg.**
@@ -33,8 +33,8 @@ en fillista.
    via A2.2, och `SEAT_HUB` i `src/game-director.ts`.
 2. Kartas rad med träd och kompositioner görs om (hans ord 2026-11-23: "denna fula meny"), träden som nivåer man
    rullar mellan i den sammanlagda vyn, och bryggorna går att klicka fram. Sedan Ingången som väg in i Casino.
-3. Varianter: en variant är en sekundär film på sitt steg och får sin andel i kompositionen; ett eget träd bara när
-   bilderna är andra. De fria givarna (Prov `fria-givar-20261123`) förs in av filmbanan och ska synas så.
+3. Varianter spelas i tur med stegets andra godkända filmer; ett eget träd bara när bilderna är andra. De fria
+   givarna (Prov `fria-givar-20261123`) ska synas så.
 4. Kameran som dimension. Karta öppnar på plats 4:s kamera; ett reglage, och musens hjul, byter till kamera 1–7 och
    visar samma träd med de ankare och filmer som finns från den stolen. Tomt där inget är gjort.
 5. Kort 3–7: spelet återbrukar bara kort 2. Förslaget är en givfilm till per plats, vid kort 5, och en egen film för

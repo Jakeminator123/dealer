@@ -11,7 +11,7 @@ import {ARRIVE_EDGE, LEAVE_EDGE, REVEAL_NODE, dealHub, formatEdge, parseEdge, pl
 import {CARRY, plausible, restFade, restOf, type CardRecord, type CardTrack} from './card-overlay.ts';
 import type {OverlayOptions} from './card-overlay-view.ts';
 import {slotOf, slotLabel, slotFilm, type Layout, type Pt, type TableCards} from './game-table.ts';
-import {hubChain, lyingAfter, planBeats, SEAT_HUB, STAND_IN_FILM, type Beat, type FilmSignal} from './game-director.ts';
+import {hubChain, inTurn, lyingAfter, planBeats, SEAT_HUB, STAND_IN_FILM, type Beat, type FilmSignal} from './game-director.ts';
 import type {Composer, Move, WovenBridge} from './composition.ts';
 import {placeLines, type MouthPatch} from './speech-patch.ts';
 
@@ -320,8 +320,10 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
       legs.push({tree: of ? tree! : home, beats}); lies = lyingAfter(lies, beats); i = j;
     }
     const woven = composer.weave(legs, (tree, card) => !!graphs[tree] && !!resolveRound(graphs[tree], [{from: card, to: 'READY'}], {places})[0]?.video);
-    // A film's share among its step's films; a return follows its deal, as always.
-    const beats = woven.beats.map((b, i) => { if (!b.step || b.kind === 'RETURN') return b; const pick = composer.film(stepFilms(graphs[woven.tree[i]], b.step)); return pick ? {...b, step: {...b.step, take: pick}} : b; });
+    // A film's share among its step's films; a step the composition names none of plays its approved films in turn (inTurn); a
+    // return follows its deal, as always.
+    const shared = woven.beats.map((b, i) => { if (!b.step || b.kind === 'RETURN') return b; const pick = composer.film(stepFilms(graphs[woven.tree[i]], b.step)); return pick ? {...b, step: {...b.step, take: pick}} : b; });
+    const beats = shared.map((b, i) => inTurn(graphs[woven.tree[i]], b, woven.tree[i + 1] === woven.tree[i] ? shared[i + 1] : null, random, places));
     const filmed = beats.map((b, i) => b.step ? i : -1).filter(i => i >= 0), resolved: Segment[] = [];
     for (let k = 0; k < filmed.length;) {
       let j = k; const tree = woven.tree[filmed[k]]; while (j < filmed.length && woven.tree[filmed[j]] === tree) j++;
@@ -343,7 +345,8 @@ export function createFilm(players: FilmPlayers, bank: Graph, layout: Layout, re
   async function play(signals: FilmSignal[], next: {table: TableCards; records: CardRecord[]}, landed: (beat: Beat, index: number) => void = () => {}, said: {before?: Said[]; after?: Said[]} = {}): Promise<{gaps: string[]; beats: Beat[]}> {
     const still = leave(); stood = null; const mine = ++token, rate = dealTempo;
     const standIn = STAND_IN_FILM[graph.dealer] ?? {}, plan = composing ? composed(next.table, signals, standIn) : null;
-    const beats = plan?.beats ?? planBeats(next.table, lying, signals, filmless, toRest, standIn, seatHubs(), fromHub);
+    const planned = plan?.beats ?? planBeats(next.table, lying, signals, filmless, toRest, standIn, seatHubs(), fromHub);
+    const beats = plan ? planned : planned.map((b, i) => inTurn(graph, b, planned[i + 1], random, places)); // a step's approved films in turn
     table = next.table; records = next.records;
     // PLACE beats have no edge; the others are resolved as one chain, so each deal is cut where its return begins.
     const filmed = beats.map((b, i) => b.step ? i : -1).filter(i => i >= 0), resolved: Segment[] = plan?.resolved ?? resolveRound(graph, filmed.map(i => beats[i].step!), {places});

@@ -5,6 +5,7 @@ import {readFile} from 'node:fs/promises';
 import {motionRegister} from './register-store.ts';
 import * as graph from '../src/clip-graph.ts';
 import type {BankData, BankJob, MotionRecord} from '../src/clip-graph.ts';
+import {inTurn, type Beat} from '../src/game-director.ts';
 import {INITIAL_TARGETS as PLAN_TARGETS, defaultPlan, toPixels} from '../src/placement-model.ts';
 import {applyChange} from './review-store.ts';
 
@@ -718,6 +719,16 @@ test('a Primär return plays right after a deal, and the deal before it is the o
   assert.deepEqual(round.flatMap(s => s.notes), []);
   // The other return keeps its own chain: a Primär to READY does not move the deal before a return to IDLE.
   assert.deepEqual(played(graph.resolveRound(g, graph.parseSequence('READY>P4.C1 | P4.C1>IDLE').steps)), [['READY>P4.C1', 'p4-deal-02', 'MAIN', 104, 'FRAME'], ['P4.C1>IDLE', 'p4-back-idle-01', 'MAIN', null, null]]);
+});
+
+test('a step plays its approved films in turn, each with its own return; a Primär locks it (Jakob 2026-11-24)', () => {
+  const beats: Beat[] = [{kind: 'DEAL', step: {from: 'READY', to: 'P4.C1'}, own: null, lying: []}, {kind: 'RETURN', step: {from: 'P4.C1', to: 'READY'}, own: null, lying: []}];
+  const takeAt = (g: graph.Graph, r: number) => { const deal = inTurn(g, beats[0], beats[1], () => r); return played(graph.resolveRound(g, [deal.step!, beats[1].step!])).map(s => s[1]); };
+  const both = graph.buildGraph(primaryBank({'p4-deal-01': 'ACCEPTED'}));
+  assert.deepEqual(takeAt(both, 0), ['p4-deal-02', 'p4-back-ready-02'], 'random 0: the bank\'s own choice');
+  assert.deepEqual(takeAt(both, 0.99), ['p4-deal-01', 'p4-back-ready-01'], 'the other approved deal, and the return cut from it');
+  assert.deepEqual(takeAt(graph.buildGraph(primaryBank()), 0.99), ['p4-deal-02', 'p4-back-ready-02'], 'a deal that waits for a verdict takes no turn');
+  assert.deepEqual(takeAt(graph.buildGraph(primaryBank({'p4-deal-01': 'ACCEPTED', 'p4-deal-02': 'MAIN'})), 0.99), ['p4-deal-02', 'p4-back-ready-02'], 'Primär locks the step');
 });
 
 test('two Primär takes that do not fit both play: the deal to its own landing frame, and the seam is named', () => {
