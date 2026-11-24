@@ -91,6 +91,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   Huvudagenten och en oberoende granskare dömer i hans ställe (`node tools/review-put.ts`), märkt som inte hans.
 - **Mandatet natten 2026-11-24** (kl. 02.25, till huvudagenten dealer-d1): "Du har hög budget, säg 2000krediter p årunway i 2h
   from nu"; mandatet `dealer-d1-20261124` i `data/order-policy.json` slutar kl. 04.25 och ersätter dealer-ac:s.
+- **Bara sätt som håller, och en pilot först** (2026-11-24, efter fem fällda givar): "Se till att fel som detta med metod inte
+  kan göas typ. Det ska vara klagklar vilka sätt vi kan använda oss av för att producera filmer!" Sätten står i `data/order-methods.json`.
 - **Betald generering utan hans klick** (2026-11-13): "beställer lämpliga filmer automatiskt utan mitt godkännande".
   Huvudagenten godkänner på hans uppdrag inom `data/order-policy.json`, genom Beställ och `tools/film-prompting.md`.
 - **Två tagningar per klipp** (2026-11-12, 2026-11-13): en ändring och en tagning per metodprov; två per klipp när
@@ -193,6 +195,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   vridning och axlar är reglage, fingrarna visar hur de verkar på kortet; allt "kompatibelt med material skapat".
 - **Ett ställe för dockan** (2026-11-23, i dealer-19:s chatt): Kortplan och Docka "känns som typ samma sak"; "EN väg
   och ETT ställe man använder dockan".
+- **Dockan från A2.1 görs om, ett sätt, samma kort** (2026-11-24): dockans filmer från A2.1 är "svindåliga"; rörelserna rättas, inga "dubbla sätt
+  att generera sådana filmer", prickar och kryss på dockans kort som i Kortplan, och planens val följer "vad so mär anatomiskt möjligt".
 - **Dockan framåt** (2026-11-23): en giv till en spelare tar 2 s som förval, valbart i Docka. För framtiden: A2.2 ur
   fotot, och dockan tar över Siluetten i Scen & Bord med valen som finns där.
 - **Skon** (2026-11-23): "Se över och fixa så allt blir rätt bara": den ritade skon i 3D-scenen flyttas till filmens
