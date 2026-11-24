@@ -11,9 +11,9 @@ Läs AGENTS.md, den här sidan och EN lägesfil för din bana. Ersätt inaktuell
 - Labbet är en vy, Bordet, där en film beställs längs en rak linje: kortets plats och steget, receptet ger resten.
   Kommandot `node tools/order-new.ts` gör samma utkast; Karta visar varje dealers träd.
   Dockan är Kortplans steg 2 (`?lage=docka`), med Docklabbet och dockans filmer; steg 3 sparar given ur den.
-- Den tatuerade uppsättningen är hans förstahandsval, och A2.3 gäller. Trädet Tatuerad fylls från A2.3 med en giv per
-  plats ([film](docs/lage/film.md)). Casinot spelar ett träd med `?trad=<id>` (Karta, "Prova i Casino") och en
-  komposition av flera träd med `?komposition=<id>` ([karta](docs/lage/karta.md)).
+- Spelet körs enbart med hennes tatuerade händer (Jakob 2026-11-24), i två träd: skjutet från A2.3 och nypet från
+  A2.1, som görs om tatuerat och snabbare ([film](docs/lage/film.md)). Karta binder dem till en viktad komposition;
+  Casinot spelar `?trad=<id>` eller `?komposition=<id>` ([karta](docs/lage/karta.md)). Dealerns första kort ligger stängt.
 - Kopian på nätet är publicerad på `c9d006d` den 2026-11-20 på Jakobs ord, utan nya filmer. Telefonmått, fysisk
   telefon och ljud återstår ([spelet](docs/lage/spelet.md)).
 - Kontrollen före en push körs bara på datorn. Kontots tokengräns delas av alla sessioner: få underagenter.
@@ -33,7 +33,7 @@ Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-
 
 ## Vem äger vad
 
-- **Huvudagentens adress: `dealer-ac`.** Claude-sessionen `dealer-ac` äger commits, push, taggar, studion,
+- **Huvudagentens adress: `dealer-d1`.** Claude-sessionen `dealer-d1` äger commits, push, taggar, studion,
   labbservern, spelet, 3D-scenens filmlager, `src/clip-graph.ts`, registren och styrdokumenten.
   En i taget kör kontrollen och pushar: den som ska pusha säger det till den andre och väntar på "kör".
 - **Jakob talar helst med huvudagenten, som delegerar** (hans ord 2026-11-17), men öppnar andra chattar när han
@@ -42,9 +42,9 @@ Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-
   Banorna Scen, Tal och Trailer är stängda; deras filer hålls av huvudagenten ([spelet](docs/lage/spelet.md)).
 - **3D-banan** (`dealer3d/`, dockan som styr filmerna) är sedan 2026-11-18 en underagent till huvudagenten (hans
   ord) och börjar från [dealer3d/LASMIG.md](dealer3d/LASMIG.md). Mätningen är stängd; givarna från A2.3 är filmbanans.
-- **Kartabanan** (vyn Karta och dealerns träd) är en egen session sedan 2026-11-23 och börjar från
+- **Kartabanan** (vyn Karta och dealerns träd) är huvudagentens sedan 2026-11-24 och börjar från
   [docs/lage/karta.md](docs/lage/karta.md).
-- **Andra sessioner:** `dealer-a4`, `dealer-e7` och `dealer-19` (2026-11-24) är stängda. Bordets filer, `src/order-*.ts`,
+- **Andra sessioner:** `dealer-ac`, `dealer-a4`, `dealer-e7` och `dealer-19` är stängda (2026-11-24). Bordets filer, `src/order-*.ts`,
   `tools/doll-order.ts`, `data/order-methods.json` och `dealer3d/` är huvudagentens tills en ny session tar över från
   [LASMIG](dealer3d/LASMIG.md), "Överlämning", och säger till. Filmregistret är `data/motions.jsonl`, läst genom en SQLite-databas under
   `.runtime/register/` (`node tools/register.ts`; BESKED, "Registren i en databas").

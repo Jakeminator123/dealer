@@ -89,6 +89,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   tagning han själv har dömt rörs aldrig, och hans beslut ersätter en dom som gjorts åt honom.
 - **Domar åt honom, och ingen kö** (2026-11-13): "Med andra ord vill jag inte se en sån här lista när jag är tillbaka!"
   Huvudagenten och en oberoende granskare dömer i hans ställe (`node tools/review-put.ts`), märkt som inte hans.
+- **Mandatet natten 2026-11-24** (kl. 02.25, till huvudagenten dealer-d1): "Du har hög budget, säg 2000krediter p årunway i 2h
+  from nu"; mandatet `dealer-d1-20261124` i `data/order-policy.json` slutar kl. 04.25 och ersätter dealer-ac:s.
 - **Betald generering utan hans klick** (2026-11-13): "beställer lämpliga filmer automatiskt utan mitt godkännande".
   Huvudagenten godkänner på hans uppdrag inom `data/order-policy.json`, genom Beställ och `tools/film-prompting.md`.
 - **Två tagningar per klipp** (2026-11-12, 2026-11-13): en ändring och en tagning per metodprov; två per klipp när
@@ -138,6 +140,12 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   nu" (olika händer). Det tatuerade trädet byggs vidare; A2.1 görs om med hennes mindre händer och tatueringar.
 - **Tatuerads A2.1 och vilor** (2026-11-23 kl. 22.46 och 23.01, Beslut): ja till A2.1-bilden (`paow-nyp-tatuerad`; givarna från
   A2.1 görs om från den genom dockan) och till Casinots vilor med de tatuerade händerna inlagda ("Myckert bra").
+- **Bara de tatuerade filmerna i spelet** (2026-11-24 kl. 02): "vi ska köra enbart med hennes nya händer och de tatuerade klippen".
+  Casinots filmer prövas in "om det går … eller inte"; små filmer som binder samman ankare kan "öppna upp för massor av" tilläggsklipp.
+- **Två träd, bundna i Karta** (2026-11-24 kl. 03): "två olika nodträd … Både från 2.1 och från 2.3"; från A2.3 skjuter hon kortet,
+  från A2.1 nyper hon. A2.1 görs om tatuerat, snabbare; en komposition där man kan "vikta olika utgivningar" mellan sätten.
+- **Dealerns första kort ligger stängt** (2026-11-24 kl. 02, hans val i chatten): D.C1 stängt och D.C2 öppet, som hans plan;
+  dockan och filmerna till dealerns kort görs efter det.
 - **Vilorna in, och korta varianter** (2026-11-23 kl. 23.40–23.45): vilorna förs in "givet att de itne är dubeltter bara".
   Korta varianter klipps ur en film där hon återvänder till A1, vävda mot ankaret; i Granska 2026-11-24: "gillar dessa korta klipp!"
 - **Fart** (2026-11-23): klipp ska kunna spelas i 1,5× eller 2×, sparat i en komposition och som klippets egen standard;
