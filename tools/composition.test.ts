@@ -16,7 +16,7 @@ import {cardFaces, tableCards} from '../src/game-view.ts';
 import {MEASURE_SIZE, cutBank, gameBank, measure, playedCut, treeView, unplayedTakes, type TreeDef, type TreeEntry, type TreeTake} from '../src/dealer-trees.ts';
 import {assign, checkComposition, compositionPlay, compositionView, createComposer, handsProblem, linkOf, pickFilm, seams, soloComposition, tempoOf, trace, treeBank, weave,
   type BridgeDef, type CompositionCut, type CompositionDef, type CutTree, type LegBeat, type Move} from '../src/composition.ts';
-import {compositionToSave} from './dealer-composition.ts';
+import {compositionToSave, cutOf} from './dealer-composition.ts';
 
 // ── Made-up trees: Casino (A1, A2.1, everything) and Tatuerad (its own A1 and A2.3, the seats' first cards and the hole card) ──
 const SEATS = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7'];
@@ -285,6 +285,55 @@ test('träd med olika händer sätts inte samman: sparas inte, och ett träd ens
   assert.equal(save({id: 'casino', name: 'Casino', trees: [{tree: 'casino', share: 100}]}).ok, false);
   assert.ok(checkComposition({...pair, tempo: 3}, ['casino', 'kvall']).some(p => p.includes('fart')));
   assert.ok(checkComposition({...pair, trees: [{tree: 'casino', share: 1, tempo: 0.5}]}, ['casino', 'kvall']).some(p => p.includes('Farten')));
+});
+
+// Jakob 2026-11-24: "två olika nodträd ... Både från 2.1 och från 2.3", bound together so that one can "vikta olika utgivningar som
+// växlar mellan de olika utdelningssätten". The two ways of dealing have the same hands: one A1, another anchor at the shoe.
+test('två sätt att dela ut med samma händer: sätts samman utan brygga, nypet lånar av skjutet där det saknar film, och bara den raka kamerans filmer spelas', () => {
+  const pictures = new Map<string, TreeEntry>([...entries, ['a21t', {id: 'a21t', role: 'ankare-2.1', node: 'READY'}], ['a23s', {id: 'a23s', role: 'ankare-2.3', node: 'READY-C'}]]);
+  const two: TreeDef[] = [
+    {id: 'skjut', name: 'Skjut', state: 'byggs', root: 'a1t', anchors: [{entry: 'a1t'}, {entry: 'a23'}, {entry: 'a23s', seat: 2}]},
+    {id: 'nyp', name: 'Nyp', state: 'byggs', root: 'a1t', anchors: [{entry: 'a1t'}, {entry: 'a21t'}]},
+  ];
+  const films: TreeTake[] = [
+    placed('s-vila', 'skjut', 'IDLE', 'IDLE'), placed('s-in', 'skjut', 'IDLE', 'READY-C'), placed('s-ut', 'skjut', 'READY-C', 'IDLE'),
+    ...SEATS.flatMap(p => [placed(`s-${p}`, 'skjut', 'READY-C', `${p}.C1`), placed(`s-${p}-r`, 'skjut', `${p}.C1`, 'READY-C')]),
+    placed('n-in', 'nyp', 'IDLE', 'READY'), placed('n-ut', 'nyp', 'READY', 'IDLE'), placed('n-P4', 'nyp', 'READY', 'P4.C1'), placed('n-P4-r', 'nyp', 'P4.C1', 'READY'),
+    {...placed('s2-P4', 'skjut', 'READY-C', 'P4.C1'), seat: 2}, // the same tree from seat 2's camera
+  ];
+  const drawn = two.map(def => treeView('paow', def, two, pictures, films));
+  const def: CompositionDef = {id: 'skjut-nyp', name: 'Skjut + nyp', trees: [{tree: 'skjut', share: 50}, {tree: 'nyp', share: 50}]};
+  assert.deepEqual(compositionToSave(def, drawn, films, () => true), {ok: true, def});
+  const view = compositionView(def, drawn, films), at = (key: string) => view.steps.find(s => s.key === key)!;
+  assert.equal(handsProblem(view), null); assert.equal(view.home, 'skjut');
+  assert.deepEqual(view.joins.map(j => [j.rest.how, j.shoe.how]), [['samma', 'ingen']]);
+  assert.deepEqual(at('giv:P4.C1').parts.map(p => [p.tree, p.how, p.percent]), [['skjut', 'eget', 50], ['nyp', 'eget', 50]]);
+  assert.deepEqual([at('giv:P5.C1').state, at('giv:P5.C1').lacking, at('giv:P5.C1').reach], ['lanat', ['nyp'], 'vila']);
+  assert.deepEqual([at('vila:').state, at('vila:').reach], ['lanat', 'vila']);
+  // The cut: a film seen from another seat is in no tree's own films and is left out, as ?trad= leaves it out.
+  const cut = cutOf('paow', view, films);
+  assert.deepEqual(cut.trees.map(t => [t.tree, t.hub, t.own.includes('s2-P4')]), [['skjut', 'READY-C', false], ['nyp', 'READY', false]]);
+  assert.deepEqual(cut.drop, ['s2-P4']);
+  assert.ok(compositionPlay('skjut-nyp', {status: 200, answer: cut}, 'Paow').cut, 'spelas: händerna är desamma');
+  // The game: the pinch deals only what it has a film for, the push everything else; every film begins on the picture before it.
+  const able = (tree: string, move: Move) => tree === 'skjut' ? 'deal' in move && /^P[1-7]\.C1$/.test(move.deal) : 'deal' in move && move.deal === 'P4.C1';
+  const s = {trees: cut.trees, bridges: cut.bridges, shares: cut.shares, home: cut.home}, random = seeded(24), moves: Move[] = SEATS.map(p => ({deal: `${p}.C1`}));
+  let pinched = 0, hit = 0;
+  for (let round = 0; round < 2000; round++) {
+    const trees = assign(s, moves, able, random);
+    trees.forEach((t, i) => assert.ok(t === 'skjut' || (t === 'nyp' && i === 3), `kort ${i + 1} gavs av ${t}`));
+    assert.deepEqual(seams(trace(s, weave(s, legsOf(moves, trees))), 'a1t'), []);
+    assert.deepEqual(weave(s, legsOf(moves, trees)).breaks, []);
+    if (trees.includes('nyp')) pinched++;
+    if (assign(s, [{deal: 'P4.C1'}], able, random)[0] === 'nyp') hit++; // a card of its own, from rest: by the share
+  }
+  assert.equal(pinched, 0, 'utan brygga vid skon stannar handen i skjutet så länge det har film');
+  assert.ok(Math.abs(hit / 2000 - 0.5) < 0.04, `nypet gav ${(hit / 20).toFixed(1)} % av de ensamma korten till plats 4, 50 % var satt`);
+  // With the two anchors at the shoe allowed to meet (a bridge, here a cut), the share holds card by card where both have a film.
+  const met = {...s, bridges: [{a: 'a23', b: 'a21t'}]};
+  let both4 = 0;
+  for (let round = 0; round < 2000; round++) { const trees = assign(met, moves, able, random); if (trees[3] === 'nyp') both4++; assert.deepEqual(seams(trace(met, weave(met, legsOf(moves, trees))), 'a1t'), []); }
+  assert.ok(Math.abs(both4 / 2000 - 0.5) < 0.04, `med brygga vid skon gav nypet ${(both4 / 20).toFixed(1)} % av korten till plats 4`);
 });
 
 test('tempot: trädets går före kompositionens, som går före utseendets', () => {

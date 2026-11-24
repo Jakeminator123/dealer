@@ -14,7 +14,7 @@ import { Ban, ChevronDown, Layers, Play, Plus, Speech } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { compositionWord, handsProblem, type CompositionView } from "../../../src/composition.ts";
+import { HANDS_WORD, compositionWord, handsProblem, type CompositionView } from "../../../src/composition.ts";
 import { countWord, type TreeView } from "../../../src/dealer-trees.ts";
 import { casinoAddress } from "@/lib/casino";
 import { withDealer } from "@/lib/dealer";
@@ -267,6 +267,7 @@ function CompositionMenu({ compositions, composition, media, onCompose }: { comp
                     <Thumbs entries={c.trees.map((t) => t.rest)} media={media} />
                     <Words name={c.def.name}>
                       <Meter have={c.count.have} total={c.count.total} stopped={!!stop} />
+                      {stop ? <span className="text-[11px] leading-tight text-underkand first-letter:uppercase">{HANDS_WORD}</span> : null}
                     </Words>
                     {stop ? <span className="ml-auto"><StopMark /></span> : null}
                   </button>

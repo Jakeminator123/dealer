@@ -74,6 +74,21 @@
               "seconds": 0.2
             }
           ]
+        },
+        {
+          "id": "tatuerad-skjut-nyp",
+          "name": "Tatuerad: skjut + nyp",
+          "trees": [
+            {
+              "tree": "tatuerad",
+              "share": 50
+            },
+            {
+              "tree": "tatuerad-nyp",
+              "share": 50
+            }
+          ],
+          "note": "Två sätt att dela ut med samma händer (Jakob 2026-11-24): skjutet från A2.3 och nypet från A2.1. Samma A1, så träden möts i vilan utan brygga; där nypet saknar film spelar skjutet. Andelen per sätt sätts här."
         }
       ]
     }

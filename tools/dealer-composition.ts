@@ -15,7 +15,7 @@ import {fileURLToPath} from 'node:url';
 import {TABLE_GEOMETRY} from '../src/card-plan.ts';
 import {COMPOSITION_ID, HANDS_WORD, checkComposition, compositionView, compositionWord, handsProblem, soloComposition, tempoValue, tempoWord,
   type CompositionAnswer, type CompositionCut, type CompositionDef, type CompositionRegister, type CompositionView, type ReuseRow} from '../src/composition.ts';
-import type {TreeTake, TreeView} from '../src/dealer-trees.ts';
+import {cutTakes, type TreeTake, type TreeView} from '../src/dealer-trees.ts';
 import {createLayout, slotLabel, type Slot} from '../src/game-table.ts';
 import {treeWorld} from './dealer-tree.ts';
 
@@ -63,12 +63,15 @@ export async function compositionAnswer(dealer: string, root = ROOT): Promise<Co
     pictures: Object.fromEntries([...used].map(id => [id, pictures.get(id) ?? {path: null, name: null}])), reuse: reuseRows(root)};
 }
 
-/** The cut the game plays from a drawn composition: its trees with their films, and the films of the dealer's other trees to leave out. */
-function cutOf(dealer: string, view: CompositionView, takes: Awaited<ReturnType<typeof treeWorld>>['takes']): CompositionCut {
-  const inside = new Set(view.trees.map(t => t.tree));
+/**
+ * The cut the game plays from a drawn composition: its trees with their films, and the films to leave out: those of the dealer's
+ * other trees, and those of any tree seen from another seat than the straight camera's (src/dealer-trees.ts cutTakes, as ?trad=).
+ */
+export function cutOf(dealer: string, view: CompositionView, takes: readonly Pick<TreeTake, 'id' | 'tree' | 'seat'>[]): CompositionCut {
+  const own = new Map(view.trees.map(t => [t.tree, cutTakes(t.tree, takes).own] as const)), kept = new Set([...own.values()].flat());
   return {schemaVersion: 1, dealer, id: view.def.id, name: view.def.name,
-    trees: view.trees.map(t => ({tree: t.tree, name: t.name, share: t.share, hub: t.hub, rest: t.rest, shoe: t.shoe, own: takes.filter(x => x.tree === t.tree).map(x => x.id), ...(t.tempo !== undefined ? {tempo: t.tempo} : {})})),
-    drop: takes.filter(x => x.tree !== null && !inside.has(x.tree)).map(x => x.id),
+    trees: view.trees.map(t => ({tree: t.tree, name: t.name, share: t.share, hub: t.hub, rest: t.rest, shoe: t.shoe, own: own.get(t.tree)!, ...(t.tempo !== undefined ? {tempo: t.tempo} : {})})),
+    drop: takes.filter(x => x.tree !== null && !kept.has(x.id)).map(x => x.id),
     bridges: view.def.bridges ?? [], shares: view.def.shares ?? {},
     home: view.home ?? [...view.trees].sort((a, b) => b.share - a.share)[0]?.tree ?? null, count: view.count, looks: view.looks, ...(tempoValue(view.def.tempo) !== null ? {tempo: tempoValue(view.def.tempo)!} : {})};
 }

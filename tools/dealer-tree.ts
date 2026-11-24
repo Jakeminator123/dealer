@@ -17,7 +17,9 @@
 //                (startsOn), the clip it is cut from, the film it was made from on this machine (localDerivation.sourceClip,
 //                only while its job names no first and last picture of its own), or the rest film a talk film is laid on
 //                (speech.restFilm). Where a node has no picture at all and only one tree of the dealer has that level, the
-//                tree follows from the node (marked "härledd ur noden").
+//                tree follows from the node (marked "härledd ur noden"). Where every picture of a film is common to several
+//                trees (two trees that rest on the same A1: its rest, talk and hole-card films), it is the first of them in
+//                the register; the others borrow it in a composition (src/composition.ts), over the common picture.
 //   halvkopplad  an anchor that is no tree's (an older attempt, a replaced or archived picture), an experiment's node, no
 //                picture where two trees share the level, or a record without a take in the bank; with the likely step as a
 //                proposal.
@@ -52,13 +54,16 @@ type Entry = {id: string; dealer: string; role: string; node?: string; card?: st
 const STATES: TreeState[] = ['spelas', 'byggs', 'vilar'];
 const MAX_TREES = 3;
 
-/** The register, checked against Material: every anchor an entry of that dealer, the root among the anchors, at most three trees. */
+/**
+ * The register, checked against Material: every anchor an entry of that dealer, the root among the anchors, at most three trees
+ * with films of their own (a tree that shares another's, as Ingången the Casino's, is that tree seen another way and not counted).
+ */
 export function checkTrees(register: TreeRegister, entries: Map<string, Entry>, dealers: string[]): string[] {
   const out: string[] = [];
   if (register?.schemaVersion !== 1) out.push('schemaVersion ska vara 1');
   for (const [dealer, d] of Object.entries(register?.dealers ?? {})) {
     if (!dealers.includes(dealer)) out.push(`${dealer} finns inte i data/dealers.json`);
-    if ((d.trees ?? []).length > MAX_TREES) out.push(`${dealer} har fler än ${MAX_TREES} träd`);
+    if ((d.trees ?? []).filter(t => !t.shares).length > MAX_TREES) out.push(`${dealer} har fler än ${MAX_TREES} träd med egna filmer`);
     const ids = new Set((d.trees ?? []).map(t => t.id));
     for (const t of d.trees ?? []) {
       if (!STATES.includes(t.state)) out.push(`${dealer}/${t.id}: okänt läge ${t.state}`);
@@ -176,13 +181,13 @@ type Placed = {group: Group; tree: Tree | null; via: string | null; reason: stri
  * What the placing reads (the registers and the bank the lab serves, JSON only: no folder is walked, no size counted) and the
  * placing itself: the pictures a record stands on (evidence) and where a step with those pictures lands (place).
  */
-async function readWorld(only: string | null) {
+async function readWorld(only: string | null, given: TreeRegister | null = null) {
   const dealersFile = json<{dealers: {id: string; name?: string}[]}>('data/dealers.json');
   const dealers = (dealersFile?.dealers ?? []).map(d => d.id).filter(d => !only || d === only);
   const roles = json<{dealers: Record<string, {entries: Omit<Entry, 'dealer'>[]}>}>('data/media-roles.json');
   const entries = new Map<string, Entry>();
   for (const [dealer, d] of Object.entries(roles?.dealers ?? {})) for (const e of d.entries ?? []) entries.set(e.id, {...e, dealer});
-  const register = json<TreeRegister>('data/dealer-trees.json');
+  const register = given ?? json<TreeRegister>('data/dealer-trees.json');
   if (!register) throw new Error('data/dealer-trees.json saknas eller går inte att läsa');
   const problems = checkTrees(register, entries, (dealersFile?.dealers ?? []).map(d => d.id));
   if (problems.length) throw new Error(`data/dealer-trees.json håller inte:\n  ${problems.join('\n  ')}`);
@@ -256,6 +261,7 @@ async function readWorld(only: string | null) {
     const nodes = [...new Set(nodesOf(edge, hub))], anchors = [...ev.keys()];
     let cands = owners(dealer), likely = owners(dealer);
     const foreign: string[] = [], derived: string[] = [], experiments: string[] = [];
+    let told = 0; // the nodes a picture placed
     for (const n of nodes) {
       if (!isTreeHub(n) && !OUTER.has(n) && !isCard(n)) { experiments.push(n); continue; }
       if (OUTER.has(n)) continue;
@@ -263,7 +269,7 @@ async function readWorld(only: string | null) {
       if (isTreeHub(n)) likely = likely.filter(t => t.at.has(n));
       if (here.length) {
         const ok = cands.filter(t => here.some(e => fits(e, t, n)));
-        if (ok.length) { cands = ok; continue; }
+        if (ok.length) { cands = ok; told++; continue; }
         cands = [];
         for (const e of here) {
           const old = lineageOld(e), other = likely.some(t => t.at.has(n) && t.at.get(n) !== e.id);
@@ -276,6 +282,8 @@ async function readWorld(only: string | null) {
     if (experiments.length) return {group: 'halvkopplad', tree: null, via: null, reason: `experimentets nod ${experiments.join(', ')}: ingen nivå i ett träd`, proposal: propose(likely), anchors};
     if (foreign.length) return {group: 'halvkopplad', tree: null, via: null, reason: foreign.join('; '), proposal: propose(likely), anchors};
     if (cands.length === 1) return {group: 'kopplad', tree: cands[0], via: derived.length ? (derived.length === nodes.filter(n => isTreeHub(n)).length ? 'härledd ur noden' : `bild, ${derived.map(n => code(n)).join(' och ')} härledd ur noden`) : 'bild', reason: null, proposal: null, anchors};
+    // Every node placed by a picture, and the pictures are several trees' (they rest on the same A1): the first of them in the register.
+    if (cands.length > 1 && told && !derived.length) return {group: 'kopplad', tree: cands[0], via: `bild, gemensam med ${cands.slice(1).map(t => t.name).join(' och ')}`, reason: null, proposal: null, anchors};
     if (cands.length > 1) return {group: 'halvkopplad', tree: null, via: null, reason: `ingen bild för ${derived.map(n => code(n)).join(' och ')}, som flera träd har`, proposal: propose(cands), anchors};
     const missing = nodes.filter(n => isTreeHub(n) && !owners(dealer).some(t => t.at.has(n)));
     return {group: 'halvkopplad', tree: null, via: null, reason: missing.length ? `dealern har inget träd med ${missing.map(n => code(n)).join(', ')}` : 'ankarna hör till olika träd', proposal: null, anchors};
@@ -636,10 +644,11 @@ function playedCutOf(w: World, dealer: string, register: TreeRegister = w.regist
 
 /**
  * What a composition of trees is drawn from (tools/dealer-composition.ts): the dealer's trees drawn, her takes placed in them,
- * and Material's pictures by entry id (the file and the name).
+ * and Material's pictures by entry id (the file and the name). register: the trees as they would stand (in memory), to try a
+ * change of data/dealer-trees.json before it is written; without it the register as it is.
  */
-export async function treeWorld(dealer: string): Promise<{views: TreeView[]; takes: TreeTake[]; pictures: Map<string, {path: string | null; name: string | null}>}> {
-  const w = await readWorld(dealer), pictures = new Map<string, {path: string | null; name: string | null}>();
+export async function treeWorld(dealer: string, register: TreeRegister | null = null): Promise<{views: TreeView[]; takes: TreeTake[]; pictures: Map<string, {path: string | null; name: string | null}>}> {
+  const w = await readWorld(dealer, register), pictures = new Map<string, {path: string | null; name: string | null}>();
   for (const e of w.entries.values()) if (e.dealer === dealer) pictures.set(e.id, {path: e.path ?? null, name: e.name ?? null});
   return {views: viewsOf(w, dealer), takes: placedTakes(w, dealer), pictures};
 }
