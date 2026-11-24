@@ -10,6 +10,9 @@
 // button "Kompositioner" lists them, and the open one is a tab beside the trees. Her talk is a group of its own on A1: the
 // Tal chip opens the tree's lines and the talk film the game plays for each (TalkSheet, ?replik=<key>; lib/tree-talk.ts),
 // and the rest's films panel leaves the talk films out.
+// The camera is one more dimension of a tree (Jakob 2026-11-23): Karta opens on seat 4's camera, the straight one, and the
+// strip at the map's left edge (CameraRail: a click, a drag or the wheel over it) changes to camera 1–7 (?kamera=2). The same
+// tree is then drawn with the pictures and films made from that seat (src/dealer-trees.ts cameraView), empty where nothing is.
 // Where the lab has no trees to give (the online copy; an older lab server until it is restarted) Karta draws the bank's own
 // map instead (BankKarta): every step of the bank with what the game plays on it, one film per seat.
 import { ReactFlowProvider, useReactFlow } from "@xyflow/react";
@@ -17,7 +20,7 @@ import { ChevronRight, Route, Scan, ZoomIn, ZoomOut } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { TARGETS, buildGraph } from "../../../src/clip-graph.ts";
-import { nodeCode, type TreeAnswer, type ViewStep } from "../../../src/dealer-trees.ts";
+import { CAMERAS, STRAIGHT_CAMERA, cameraFromWord, cameraMade, cameraView, nodeCode, type TreeAnswer, type ViewStep } from "../../../src/dealer-trees.ts";
 import { hubDeals, judgedBank } from "../../../src/game-director.ts";
 import { toPixels, type PlacementPlan } from "../../../src/placement-model.ts";
 import { spokenLine, type SpeechTake } from "../../../src/speech-lines.ts";
@@ -33,6 +36,7 @@ import { takeName } from "@/lib/names";
 import { talkOf, talkWord } from "@/lib/tree-talk";
 import { nextNodes, parsePath, pathClips, pathParts, pathText } from "@/lib/tree-path";
 import { primarCount } from "@/lib/verdict";
+import { CAMERA_RAIL_SPACE, CameraNote, CameraRail, type CameraStop } from "./CameraRail";
 import { EdgeSheet, type Around } from "./EdgeSheet";
 import { ExperimentTray } from "./ExperimentTray";
 import { Legend } from "./Legend";
@@ -135,11 +139,24 @@ function TreeKarta({ answer }: { answer: TreeAnswer }) {
   const compositions = useCompositions(dealer, readAt).answer?.compositions;
   const points = usePlanPoints();
   const [hover, setHover] = useState<string | null>(null);
-  const view = answer.trees.find((v) => v.tree.id === params.get("trad")) ?? firstTree(answer) ?? answer.trees[0];
+  const tree = answer.trees.find((v) => v.tree.id === params.get("trad")) ?? firstTree(answer) ?? answer.trees[0];
+  // The camera the tree is seen from: the straight one unless the address names another. view is the tree from that camera.
+  const camera = cameraFromWord(params.get("kamera"));
+  const straight = camera === STRAIGHT_CAMERA;
+  const view = useMemo(() => cameraView(tree, camera), [tree, camera]);
+  const stops = useMemo<CameraStop[]>(
+    () =>
+      CAMERAS.map((c) => {
+        const { first, ...made } = cameraMade(tree, c);
+        return { camera: c, entry: first ? media.get(first) : undefined, ...made };
+      }),
+    [tree, media],
+  );
   const stepId = params.get("steg");
   const edgeId = params.get("kant");
   const takeId = params.get("tagning");
-  const step = view.steps.find((s) => s.id === stepId) ?? null;
+  // From another camera a step nothing is made for opens nothing (TreeCanvas draws it as the tree's shape only).
+  const step = view.steps.find((s) => s.id === stepId && (straight || s.state !== "saknas")) ?? null;
   const layout = useMemo(() => treeLayout({ hub: view.hub, others: view.others, points, railText: `${nodeCode(view.hub)} · ${SHOE_WORD[view.hub] ?? "vid skon"}` }), [view.hub, view.others, points]);
 
   // A step with a film opens its films on the bank's graph, one film per card, as the game reads the bank (judged takes only).
@@ -177,12 +194,13 @@ function TreeKarta({ answer }: { answer: TreeAnswer }) {
   }, [view.steps]);
   const at = edgeId ? order.indexOf(edgeId) : -1;
   const around: Around = { prev: at > 0 ? order[at - 1] : null, next: at >= 0 && at < order.length - 1 ? order[at + 1] : null, unchosen: null, names };
-  // What plays now is the game's: a tree the game does not play has no "Spelas nu" of its own (the game's edge plays A2.1).
-  const idle = view.tree.state === "spelas" ? null : `Spelet spelar inte ${view.tree.name} ${view.tree.state === "byggs" ? "än" : "nu"}.`;
+  // What plays now is the game's: a tree the game does not play has no "Spelas nu" of its own (the game's edge plays A2.1),
+  // and neither has another camera than the straight one.
+  const idle = !straight ? `Spelet spelar kamera ${STRAIGHT_CAMERA}, inte kamera ${camera}.` : view.tree.state === "spelas" ? null : `Spelet spelar inte ${view.tree.name} ${view.tree.state === "byggs" ? "än" : "nu"}.`;
 
   // Tal (?replik=<key>): the tree's lines and the talk film the game plays for each; open beside no step's panel. It stays open
-  // when another tree is chosen, so that the trees' talk can be compared.
-  const talk = talkOf(view);
+  // when another tree is chosen, so that the trees' talk can be compared. Her talk is the straight camera's.
+  const talk = straight ? talkOf(view) : null;
   const replik = params.get("replik");
   const talkOpen = replik !== null && !!talk;
   const openTalk = useCallback(() => set({ replik: talkOpen ? null : (talk?.lines.find((l) => l.clip) ?? talk?.lines[0])?.key ?? null, steg: null, kant: null, tagning: null }), [set, talk, talkOpen]);
@@ -190,12 +208,14 @@ function TreeKarta({ answer }: { answer: TreeAnswer }) {
   const talkElsewhere = talk && talk.have === 0 ? answer.trees.filter((v) => v.tree.id !== view.tree.id && !v.tree.shares && (talkOf(v)?.have ?? 0) > 0).map((v) => `${v.tree.name} har ${talkWord(talkOf(v)!)}`).join(", ") || null : null;
 
   const sheetOpen = !!films || (!!step && step.state !== "finns") || talkOpen;
-  const fit = useFitMap(layout, false);
+  const fit = useFitMap(layout, false, CAMERA_RAIL_SPACE);
   const pick = useCallback(
     (s: ViewStep) => set({ steg: s.id, kant: s.state === "finns" && graph?.edge[s.edge] ? s.edge : null, tagning: null, replik: null }),
     [set, graph],
   );
   const choose = useCallback((id: string) => set({ trad: id, steg: null, kant: null, tagning: null, vag: null }), [set]);
+  // Another camera: the same tree; the step, the take and the path chosen were the camera's that is left.
+  const chooseCamera = useCallback((c: number) => set({ kamera: c === STRAIGHT_CAMERA ? null : String(c), steg: null, kant: null, tagning: null, vag: null, replik: null }), [set]);
 
   // The tree's pictures in its own order (A1, the anchors at the shoe, the cards), each once: what the large viewer walks.
   const stills = useMemo(() => {
@@ -262,8 +282,9 @@ function TreeKarta({ answer }: { answer: TreeAnswer }) {
   return (
     <Page title="Karta" full status={<TreeRow trees={answer.trees} chosen={view.tree.id} onChoose={choose} compositions={compositions} onCompose={(id) => set({ komposition: id })} />} actions={actions}>
       <div className="absolute inset-0">
-        <TreeCanvas view={view} layout={layout} media={media} active={step?.id ?? null} hover={hover} sheetOpen={sheetOpen} path={marks} onPick={pick} onHover={setHover} onOpen={open} talk={talk} talkOn={talkOpen} onTalk={openTalk} />
+        <TreeCanvas view={view} layout={layout} media={media} active={step?.id ?? null} hover={hover} sheetOpen={sheetOpen} path={marks} onPick={pick} onHover={setHover} onOpen={open} talk={talk} talkOn={talkOpen} onTalk={openTalk} camera={straight ? null : camera} />
       </div>
+      <CameraRail className="absolute left-3 top-1/2 z-10 -translate-y-1/2" stops={stops} value={camera} total={view.count.total} onChange={chooseCamera} />
       {picking ? (
         <PathBar
           className="absolute bottom-3 left-3 z-10 max-w-[calc(100%-24px)]"
@@ -276,12 +297,16 @@ function TreeKarta({ answer }: { answer: TreeAnswer }) {
           onClose={leave}
         />
       ) : (
-        <TreeLegend className="absolute bottom-3 left-3 z-10 max-w-[calc(100%-24px)] overflow-hidden" />
+        <div className="pointer-events-none absolute bottom-3 left-3 z-10 flex max-w-[calc(100%-24px)] items-center gap-2 overflow-hidden">
+          <TreeLegend className="min-w-0 overflow-hidden" />
+          {straight ? null : <CameraNote stop={stops[CAMERAS.indexOf(camera)]} total={view.count.total} className="shrink-0" />}
+        </div>
       )}
       <StepOrder
         view={view}
         step={films ? null : step}
         media={media}
+        camera={straight ? null : camera}
         onClose={() => set({ steg: null })}
         onOpen={openStill}
       />

@@ -35,8 +35,8 @@ export type MapView = {
   onHover: (id: string | null) => void;
 };
 
-/** Fits the whole map (the bank's or a tree's) into the free part of the canvas. */
-export function useFitMap(layout: Pick<MapLayout, "width" | "height">, sheetOpen: boolean) {
+/** Fits the whole map (the bank's or a tree's) into the free part of the canvas. left: room kept free at the left edge (a tree's camera strip). */
+export function useFitMap(layout: Pick<MapLayout, "width" | "height">, sheetOpen: boolean, left = 0) {
   const { setViewport } = useReactFlow();
   const width = useStore((s) => s.width);
   const height = useStore((s) => s.height);
@@ -44,12 +44,12 @@ export function useFitMap(layout: Pick<MapLayout, "width" | "height">, sheetOpen
     (duration = 0) => {
       if (!width || !height) return;
       const right = PAD.side + (sheetOpen && width > SHEET_W + 640 ? SHEET_W : 0);
-      const w = width - PAD.side - right;
+      const w = width - PAD.side - left - right;
       const h = height - PAD.top - PAD.bottom;
       const zoom = Math.max(0.3, Math.min(1.15, w / layout.width, h / layout.height));
-      void setViewport({ x: PAD.side + (w - layout.width * zoom) / 2, y: PAD.top + (h - layout.height * zoom) / 2, zoom }, { duration });
+      void setViewport({ x: PAD.side + left + (w - layout.width * zoom) / 2, y: PAD.top + (h - layout.height * zoom) / 2, zoom }, { duration });
     },
-    [width, height, layout.width, layout.height, sheetOpen, setViewport],
+    [width, height, layout.width, layout.height, sheetOpen, left, setViewport],
   );
 }
 

@@ -6,13 +6,23 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   MEASURE_SIZE,
+  STRAIGHT_CAMERA,
+  cameraFromWord,
+  cameraMade,
+  cameraOf,
+  cameraView,
   countWord,
+  cutTakes,
   defaultTree,
+  filmCamera,
   homeOf,
   measure,
   nodeCode,
   orderCommand,
+  pictureCamera,
+  playedCut,
   treeCount,
+  unplayedTakes,
   treeNodes,
   treeSteps,
   treeView,
@@ -270,4 +280,67 @@ test("one tree in the game: without the word the bank is untouched; with it the 
     assert.equal(out.bank, bank, `${word}: the bank as it is`);
     assert.equal(out.line, line);
   }
+});
+
+// The camera as a dimension (Jakob 2026-11-23: Karta starts on "standard-plats 4-kameran", and a control changes to camera
+// 1–7): the contract, on a made-up tree. Tree "t" has A1 and A2.3 from the straight camera, and from seat 2 an A2.3 of its own,
+// an A2.2 only that seat has and a landing built on its A2.3; one film from seat 2 and one that waits.
+test("the camera: a tree is the straight camera's, another seat's pictures and films are that camera's, and an unmade camera is the same tree empty", () => {
+  const tree: TreeDef = { id: "t", name: "T", state: "spelas", root: "a1", anchors: [{ entry: "a1" }, { entry: "a23" }, { entry: "s2-a23", seat: 2 }, { entry: "s2-a22", seat: 2 }] };
+  const entries = new Map<string, TreeEntry>([
+    ["a1", { id: "a1", role: "ankare", node: "IDLE" }],
+    ["a23", { id: "a23", role: "ankare", node: "READY-C" }],
+    ["s2-a23", { id: "s2-a23", role: "ankare", node: "READY-C" }],
+    ["s2-a22", { id: "s2-a22", role: "ankare", node: "READY-B" }],
+    ["l-p4c1", { id: "l-p4c1", role: "landning", card: "P4.C1", builtOn: ["a1", "a23"] }],
+    ["s2-p2c1", { id: "s2-p2c1", role: "landning", card: "P2.C1", builtOn: ["s2-a23"] }],
+  ]);
+  assert.deepEqual([undefined, null, "", "0", "8", "2x", "4", "7"].map(cameraFromWord), [4, 4, 4, 4, 4, 4, 4, 7], "an address without a camera, or with no camera's word, is the straight one");
+  assert.deepEqual([cameraOf({}), cameraOf({ seat: 2 }), cameraOf(undefined)], [STRAIGHT_CAMERA, 2, STRAIGHT_CAMERA]);
+  assert.deepEqual(["a23", "s2-a23", "l-p4c1", "s2-p2c1", "elsewhere"].map((id) => pictureCamera(tree, entries.get(id) ?? { id })), [4, 2, 4, 2, 4], "a landing is seen from the seat of the anchor it is built on");
+  assert.equal(filmCamera(tree, [entries.get("a1")!, entries.get("s2-a23")!]), 2, "a film that stands on a seat's picture is that seat's");
+  assert.equal(filmCamera(tree, [entries.get("a1")!, entries.get("a23")!]), STRAIGHT_CAMERA);
+
+  const takes: TreeTake[] = [
+    take("in", "IDLE", "READY-C", "godkand"),
+    take("p4c1", "READY-C", "P4.C1", "primar"),
+    take("s2-p2c1", "READY-C", "P2.C1", "godkand", { seat: 2 }),
+    take("s2-p3c1", "READY-B", "P3.C1", "godkand", { seat: 2 }),
+    take("s2-wait", "READY-C", "P5.C1", "vantar", { seat: 2, byJakob: false }),
+  ];
+  const view = treeView("paow", tree, [tree], entries, takes);
+
+  // The straight camera: as the tree always was, with nothing of seat 2 in it.
+  assert.deepEqual([view.hub, view.others], ["READY-C", []], "an A2.x that only a seat has is not the straight tree's");
+  assert.deepEqual(view.count, { have: 2, total: 36 });
+  assert.equal(byId(view.steps, "READY-C>P2.C1").state, "saknas", "a film from seat 2 is no film of the straight camera");
+  assert.deepEqual(view.nodes.slice(0, 2).map((n) => n.entry), ["a1", "a23"]);
+  assert.equal(view.nodes.find((n) => n.node === "P2.C1")?.entry, null);
+  assert.equal(cameraView(view, STRAIGHT_CAMERA), view, "camera 4 is the view itself");
+  assert.equal(treeView("paow", { ...tree, anchors: tree.anchors.slice(0, 2) }, [tree], entries, takes.slice(0, 2)).cameras, undefined, "a tree with nothing from a seat answers as before");
+
+  // Seat 2: the same tree, with the pictures and films made from there.
+  assert.deepEqual(view.cameras?.map((c) => c.seat), [2]);
+  const two = cameraView(view, 2), at = (n: string) => two.nodes.find((x) => x.node === n)?.entry;
+  assert.deepEqual([two.tree.id, two.hub, two.others], ["t", "READY-C", ["READY-B"]], "measured from the tree's own anchor at the shoe");
+  assert.deepEqual([at("IDLE"), at("READY-C"), at("READY-B"), at("P2.C1"), at("P4.C1")], [null, "s2-a23", "s2-a22", "s2-p2c1", null]);
+  assert.deepEqual(two.count, { have: 2, total: 36 });
+  assert.deepEqual([byId(two.steps, "READY-C>P2.C1").take, byId(two.steps, "READY-C>P3.C1").via, byId(two.steps, "READY-C>P5.C1").state], ["s2-p2c1", "READY-B", "prov"]);
+  assert.equal(byId(two.steps, "READY-C>P4.C1").state, "saknas", "the straight camera's film is not seat 2's");
+  assert.deepEqual(cameraMade(view, 2), { pictures: 3, films: 2, waiting: 1, first: "s2-a23" });
+  assert.deepEqual(cameraMade(view, 4), { pictures: 3, films: 2, waiting: 0, first: "a1" });
+
+  // A camera nothing is made from: the same tree, empty.
+  const six = cameraView(view, 6);
+  assert.deepEqual(six.nodes.map((n) => n.node), view.nodes.map((n) => n.node), "the same nodes");
+  assert.ok(six.nodes.every((n) => n.entry === null) && six.steps.every((s) => s.state === "saknas" && s.take === null));
+  assert.deepEqual([six.steps.length, six.count], [MEASURE_SIZE, { have: 0, total: 36 }]);
+  assert.deepEqual(cameraMade(view, 6), { pictures: 0, films: 0, waiting: 0, first: null });
+  const layout = treeLayout({ hub: two.hub, others: two.others, railText: "x" });
+  assert.deepEqual(layout.lines.map((l) => l.id), two.steps.map((s) => s.id), "the map draws the camera's steps");
+
+  // The game plays the straight camera: a film from a seat is dropped also in its own tree, with or without ?trad=.
+  assert.deepEqual(cutTakes("t", takes), { own: ["in", "p4c1"], drop: ["s2-p2c1", "s2-p3c1", "s2-wait"] });
+  assert.deepEqual(unplayedTakes([tree], takes), ["s2-p2c1", "s2-p3c1", "s2-wait"]);
+  assert.deepEqual(playedCut("paow", [tree], takes, () => "READY-C").own, ["in", "p4c1"]);
 });

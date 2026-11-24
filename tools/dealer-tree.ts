@@ -31,7 +31,7 @@ import type {IncomingMessage, ServerResponse} from 'node:http';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {buildGraph, type BankData, type Take} from '../src/clip-graph.ts';
-import {TREE_ID, countWord, cutBank, cutTakes, isCard, isTreeHub, levelOf, nodeCode, nodesOf, orderCommand, playedCut, stepName as stepWords, treeHubs, treeView, type Delivery, type GameCut, type MeasureStep, type Need, type OrderFacts, type TreeAnswer, type TreeCut, type TreeDef, type TreeRegister, type TreeState, type TreeStep, type TreeTake, type TreeView, type Verdict as TreeVerdict} from '../src/dealer-trees.ts';
+import {STRAIGHT_CAMERA, TREE_ID, cameraOf, countWord, cutBank, cutTakes, filmCamera, isCard, isTreeHub, levelOf, nodeCode, nodesOf, orderCommand, playedCut, stepName as stepWords, treeHubs, treeView, type Delivery, type GameCut, type MeasureStep, type Need, type OrderFacts, type TreeAnswer, type TreeCut, type TreeDef, type TreeRegister, type TreeState, type TreeStep, type TreeTake, type TreeView, type Verdict as TreeVerdict} from '../src/dealer-trees.ts';
 import {judgedBank} from '../src/game-director.ts';
 import {ANCHOR_NODE, costOf, modelFor, paramsOf, stepOf, type Policy, type StepKey} from '../src/order-model.ts';
 import {NO_RECIPE, methodFor, readMethods, recipeFor, referenceAbsent, secondsOf, triedWords, type MethodRegister} from '../src/order-methods.ts';
@@ -188,8 +188,9 @@ async function readWorld(only: string | null) {
   if (problems.length) throw new Error(`data/dealer-trees.json håller inte:\n  ${problems.join('\n  ')}`);
   const trees: Tree[] = [];
   for (const [dealer, d] of Object.entries(register.dealers)) for (const t of d.trees) {
+    // The tree's levels are the straight camera's (src/dealer-trees.ts): an anchor seen from a seat is the tree's (ids), not its node's picture.
     const map = new Map<string, string>();
-    for (const a of t.anchors) { const e = entries.get(a.entry)!, n = levelOf(e); if (n && !map.has(n)) map.set(n, a.entry); }
+    for (const a of t.anchors) { const e = entries.get(a.entry)!, n = levelOf(e); if (n && !map.has(n) && cameraOf(a) === STRAIGHT_CAMERA) map.set(n, a.entry); }
     trees.push({...t, dealer, at: map, ids: new Set(t.anchors.map(a => a.entry))});
   }
   const treeOf = (id: string | null) => trees.find(t => t.id === id) ?? null;
@@ -450,7 +451,9 @@ export async function buildReport(only: string | null = null) {
       .filter(x => seatWords.test(`${x.p?.title ?? ''} ${(x.p?.description ?? '').slice(0, 400)}`)).map(x => ({id: x.id, title: x.p?.title ?? '', made: x.p?.createdAt ?? '', plays: x.use === 'spelas'})),
   };
 
-  return {made: new Date().toISOString(), only, dealers, trees: trees.map(({at: m, ids: _ids, ...t}) => ({...t, levels: Object.fromEntries([...m].map(([n, e]) => [code(n, t.anchors.find(a => a.entry === e)?.seat), e]))})),
+  // A tree's levels in the report: the straight camera's, then its anchors seen from a seat (S2-A2.2).
+  const fromSeats = (anchors: TreeDef['anchors']) => anchors.filter(a => cameraOf(a) !== STRAIGHT_CAMERA).flatMap((a): [string, string][] => { const n = levelOf(entries.get(a.entry)!); return n ? [[code(n, a.seat), a.entry]] : []; });
+  return {made: new Date().toISOString(), only, dealers, trees: trees.map(({at: m, ids: _ids, ...t}) => ({...t, levels: Object.fromEntries<string>([...[...m].map(([n, e]): [string, string] => [code(n), e]), ...fromSeats(t.anchors)])})),
     counts, entries, rows, outside, unknownElsewhere, receiptsOnly, motionsNoFilm, kept, dolls: dollRows, ways, seats};
 }
 
@@ -465,13 +468,22 @@ function treeVerdict(take: Take): Pick<TreeTake, 'verdict' | 'byJakob' | 'provis
   return {verdict: take.stage === 'FAILED' ? 'underkand' : v.verdict as TreeVerdict, byJakob: v.byJakob, provisional: v.provisional};
 }
 
-/** The dealer's takes of the bank, each placed in the tree its pictures say (null: in none). */
+/**
+ * The seat a film placed in a tree is seen from, by the pictures it stands on (src/dealer-trees.ts filmCamera); nothing for the
+ * straight camera, so that the answer is as before where no anchor has a seat.
+ */
+function seatOf(w: World, tree: Tree | null, pictures: Map<string, string>): {seat?: number} {
+  const camera = tree ? filmCamera(tree, [...pictures.keys()].flatMap(id => w.entries.get(id) ?? [])) : STRAIGHT_CAMERA;
+  return camera === STRAIGHT_CAMERA ? {} : {seat: camera};
+}
+
+/** The dealer's takes of the bank, each placed in the tree its pictures say (null: in none), with the seat it is seen from. */
 function placedTakes(w: World, dealer: string): TreeTake[] {
   const out: TreeTake[] = [];
   for (const [id, {take, dealer: d}] of w.takes) {
     if (d !== dealer) continue;
-    const p = w.place(dealer, take.edge, take.hub, w.evidence(id)), [from, to] = nodesOf(take.edge, take.hub);
-    out.push({id, tree: p.group === 'kopplad' ? p.tree!.id : null, from, to, ...treeVerdict(take), archived: !!take.archived});
+    const ev = w.evidence(id), p = w.place(dealer, take.edge, take.hub, ev), [from, to] = nodesOf(take.edge, take.hub), tree = p.group === 'kopplad' ? p.tree! : null;
+    out.push({id, tree: tree?.id ?? null, from, to, ...treeVerdict(take), archived: !!take.archived, ...seatOf(w, tree, ev)});
   }
   return out;
 }
@@ -491,8 +503,8 @@ function deliveries(w: World, dealer: string): Delivery[] {
     if (!waiting) continue;
     const ev = new Map<string, string>();
     for (const as of ['startFrame', 'endFrame'] as const) { const e = w.picture(o, as); if (e) ev.set(e, `beställningen ${o.id}`); }
-    const p = w.place(dealer, edge, null, ev), [from, to] = nodesOf(edge);
-    out.push({order: o.id, tree: p.group === 'kopplad' ? p.tree!.id : null, from, to, ...(o.title ? {title: o.title} : {})});
+    const p = w.place(dealer, edge, null, ev), [from, to] = nodesOf(edge), tree = p.group === 'kopplad' ? p.tree! : null;
+    out.push({order: o.id, tree: tree?.id ?? null, from, to, ...(o.title ? {title: o.title} : {}), ...seatOf(w, tree, ev)});
   }
   return out;
 }

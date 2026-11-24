@@ -9,6 +9,8 @@
 // pictures, the rest in each chip's title. Geometry: lib/map-layout.ts treeLayout. Where she speaks, on A1, the Tal chip
 // says how many of her lines the game has a talk film for in the tree ("25/25", lib/tree-talk.ts), a count of its own
 // beside the 36 steps; a click opens the tree's talk (TalkSheet).
+// From another camera than the straight one (camera, CameraRail.tsx) the same tree is drawn with what is made from that seat:
+// a step nothing is made for is a faint line without a chip, not a red one (nothing is missing where nothing is begun).
 import "@xyflow/react/dist/style.css";
 import { Background, BackgroundVariant, BaseEdge, EdgeLabelRenderer, ReactFlow, useReactFlow, useStore, type Edge, type EdgeProps, type Node, type NodeProps } from "@xyflow/react";
 import { ImageOff, Speech } from "lucide-react";
@@ -21,6 +23,7 @@ import { talkWord, type TreeTalk } from "@/lib/tree-talk";
 import { VERDICT_LABEL } from "@/lib/verdict";
 import { ProofStill } from "../proofs";
 import { coverOfEntry } from "../material/Tile";
+import { CAMERA_RAIL_SPACE } from "./CameraRail";
 import { SHEET_W } from "./EdgeSheet";
 import { LINE, PlayDot } from "./EdgeChip";
 import { RailEdge, type RailEdgeType } from "./MapEdges";
@@ -51,7 +54,8 @@ const ARROW_PATH = "M0,0 L-8,-4.5 L-8,4.5 Z";
 type Pic = { node: TreeNode | null; entry: EntryAnswer | null };
 /** One picture on the map as a button: its node, whether a click does anything, its places in the path, faded or not. */
 type Shot = { node: string; pic: Pic; can: boolean; mark: number[] | null; off: boolean };
-type Act = { picking: boolean; onOpen: (node: string) => void };
+/** none: what an empty box says when pointed at ("ingen bild i trädet", "ingen bild från kamera 2"). */
+type Act = { picking: boolean; onOpen: (node: string) => void; none: string };
 /** The Tal chip on A1: the tree's talk count, whether its panel is open, and what opens it. */
 type TalkChipData = { have: number; total: number; on: boolean; onOpen: () => void };
 type PictureData = { box: TreeBox; shot: Shot; act: Act; dim: boolean; note: string | null; label: string; talk: TalkChipData | null };
@@ -70,7 +74,7 @@ const labelScale = (zoom: number) => Math.round(Math.min(2, Math.max(1, 1 / zoom
  * A picture of Material, or an empty box with the node's name when the tree has none for it; mark: its places in the path;
  * stateTop: the state's mark stays at the top (the foot holds the Tal chip).
  */
-function Picture({ pic, code, small = false, mark = null, stateTop = false }: { pic: Pic; code: string; small?: boolean; mark?: number[] | null; stateTop?: boolean }) {
+function Picture({ pic, code, none, small = false, mark = null, stateTop = false }: { pic: Pic; code: string; none: string; small?: boolean; mark?: number[] | null; stateTop?: boolean }) {
   const scale = useStore((s) => labelScale(s.transform[2]));
   const cover = pic.entry ? coverOfEntry(pic.entry) : null;
   const state = pic.node?.state && pic.node.state !== "gäller" ? pic.node.state : null;
@@ -82,7 +86,7 @@ function Picture({ pic, code, small = false, mark = null, stateTop = false }: { 
   return (
     <div
       className={cn("relative h-full w-full overflow-hidden rounded-md", cover ? "border border-line-strong bg-well" : "border border-dashed border-line-strong bg-transparent")}
-      title={pic.node?.entry ? `${named}${state ? ` (${state} i Material)` : ""}` : `${code}: ingen bild i trädet`}
+      title={pic.node?.entry ? `${named}${state ? ` (${state} i Material)` : ""}` : `${code}: ${none}`}
     >
       {cover ? (
         <ProofStill cover={cover} fps={pic.entry?.fps ?? 30} className={cn("absolute inset-0", (state === "ersatt" || state === "arkiverad") && "saturate-[0.7]")} />
@@ -137,7 +141,7 @@ function ShotButton({ shot, act, code, small = false, stateTop = false }: { shot
         shot.off && "opacity-35",
       )}
     >
-      <Picture pic={shot.pic} code={code} small={small} mark={shot.mark} stateTop={stateTop} />
+      <Picture pic={shot.pic} code={code} none={act.none} small={small} mark={shot.mark} stateTop={stateTop} />
     </button>
   );
 }
@@ -194,8 +198,8 @@ function CardsNode({ data }: NodeProps<CardsNodeType>) {
 }
 
 // ── Lines ───────────────────────────────────────────────────────────────────
-/** marked: the step lies on the path being picked. */
-type StepData = { line: TreeLine; step: ViewStep; active: boolean; hover: boolean; marked: boolean; dim: boolean; onPick: (s: ViewStep) => void; onHover: (id: string | null) => void };
+/** marked: the step lies on the path being picked. ghost: a step of another camera that nothing is made for. */
+type StepData = { line: TreeLine; step: ViewStep; active: boolean; hover: boolean; marked: boolean; dim: boolean; ghost: boolean; onPick: (s: ViewStep) => void; onHover: (id: string | null) => void };
 type StepEdgeType = Edge<StepData, "step">;
 
 /** A step's chip: the verdict's dot where a film is, a waiting dot for a prov, an empty red ring where nothing is. */
@@ -228,7 +232,9 @@ function StepChip({ step, active, dim, onClick, onHover }: { step: ViewStep; act
 
 function StepEdge({ id, data }: EdgeProps<StepEdgeType>) {
   if (!data) return null;
-  const { line, step, active, hover, marked, dim, onPick, onHover } = data;
+  const { line, step, active, hover, marked, dim, ghost, onPick, onHover } = data;
+  // Nothing made from this camera: the tree's shape only, nothing to point at or open.
+  if (ghost) return line.path ? <BaseEdge id={id} path={line.path} interactionWidth={0} style={{ stroke: "var(--color-line-strong)", strokeWidth: 1.5, strokeDasharray: STEP_LINE.saknas.dash, pointerEvents: "none" }} /> : null;
   const color = lineColor(step);
   const lit = active || hover || marked;
   const opacity = dim ? 0.2 : 1;
@@ -277,13 +283,15 @@ export type TreeCanvasProps = {
   /** The Tal panel is open. */
   talkOn?: boolean;
   onTalk?: () => void;
+  /** The seat the tree is seen from when not the straight camera's (view is then that camera's, cameraView); null: the straight one. */
+  camera?: number | null;
 };
 
-export function TreeCanvas({ view, layout, media, active, hover, sheetOpen, path, onPick, onHover, onOpen, talk = null, talkOn = false, onTalk }: TreeCanvasProps) {
+export function TreeCanvas({ view, layout, media, active, hover, sheetOpen, path, onPick, onHover, onOpen, talk = null, talkOn = false, onTalk, camera = null }: TreeCanvasProps) {
   const width = useStore((s) => s.width);
   const height = useStore((s) => s.height);
   const { getViewport, setViewport } = useReactFlow();
-  const fit = useFitMap(layout, false);
+  const fit = useFitMap(layout, false, CAMERA_RAIL_SPACE);
 
   // Fit when the map is first sized, when the tree's shape changes and when the window is resized.
   const fitted = useRef("");
@@ -315,7 +323,7 @@ export function TreeCanvas({ view, layout, media, active, hover, sheetOpen, path
       const n = view.nodes.find((x) => x.node === node) ?? null;
       return { node: n, entry: n?.entry ? (media.get(n.entry) ?? null) : null };
     };
-    const act: Act = { picking: !!path, onOpen };
+    const act: Act = { picking: !!path, onOpen, none: camera ? `ingen bild från kamera ${camera}` : "ingen bild i trädet" };
     const shot = (node: string): Shot => {
       const p = pic(node), mark = path?.at.get(node) ?? null;
       return path ? { node, pic: p, can: path.next.has(node), mark, off: !mark && !path.next.has(node) } : { node, pic: p, can: !!p.entry, mark: null, off: false };
@@ -333,7 +341,7 @@ export function TreeCanvas({ view, layout, media, active, hover, sheetOpen, path
       const said = b.kind === "vila" && talk && onTalk ? { have: talk.have, total: talk.total, on: talkOn, onOpen: onTalk } : null;
       return { ...base, type: "picture", data: { box: b, shot: shot(b.node!), act, dim, note, label: nodeCode(b.node!), talk: said } } satisfies PictureNodeType;
     });
-  }, [layout, view, media, active, litNodes, path, onOpen, talk, talkOn, onTalk]);
+  }, [layout, view, media, active, litNodes, path, onOpen, talk, talkOn, onTalk, camera]);
 
   const edges = useMemo<Edge[]>(() => {
     const rails: RailEdgeType[] = layout.rails.map((rail) => ({ id: rail.id, source: view.hub, target: "P1", type: "rail", data: { rail }, selectable: false, focusable: false, deletable: false }));
@@ -345,11 +353,17 @@ export function TreeCanvas({ view, layout, media, active, hover, sheetOpen, path
       const marked = !!path?.steps.has(line.id);
       return [{
         id: line.id, source: line.nodes[0], target: line.nodes[line.nodes.length - 1], type: "step", selectable: false, focusable: false, deletable: false,
-        data: { line, step, active: active === line.id, hover: hover === line.id, marked, dim: active ? active !== line.id : away(step), onPick, onHover },
+        data: { line, step, active: active === line.id, hover: hover === line.id, marked, dim: active ? active !== line.id : away(step), ghost: !!camera && step.state === "saknas", onPick, onHover },
       }];
     }).sort((a, b) => Number(a.id === lit || !!a.data?.marked) - Number(b.id === lit || !!b.data?.marked)); // the chosen step and the path drawn last, over the others
     return [...rails, ...lines];
-  }, [layout, view.hub, steps, active, hover, lit, path, onPick, onHover]);
+  }, [layout, view.hub, steps, active, hover, lit, path, onPick, onHover, camera]);
+
+  // A step nothing is made for from another camera opens nothing.
+  const open = (id: string) => {
+    const s = steps.get(id);
+    return s && !(camera && s.state === "saknas") ? s : null;
+  };
 
   return (
     <ReactFlow
@@ -367,8 +381,8 @@ export function TreeCanvas({ view, layout, media, active, hover, sheetOpen, path
       elementsSelectable={false}
       zoomOnDoubleClick={false}
       proOptions={{ hideAttribution: true }}
-      onEdgeClick={(_, e) => { const s = e.type === "step" ? steps.get(e.id) : null; if (s) onPick(s); }}
-      onEdgeMouseEnter={(_, e) => e.type === "step" && onHover(e.id)}
+      onEdgeClick={(_, e) => { const s = e.type === "step" ? open(e.id) : null; if (s) onPick(s); }}
+      onEdgeMouseEnter={(_, e) => e.type === "step" && open(e.id) && onHover(e.id)}
       onEdgeMouseLeave={() => onHover(null)}
       style={{ background: "var(--color-canvas)" }}
     >

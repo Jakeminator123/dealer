@@ -65,7 +65,8 @@ function Command({ text }: { text: string }) {
   );
 }
 
-export function StepOrder({ view, step, media, onClose, onOpen }: { view: TreeView; step: ViewStep | null; media: ReadonlyMap<string, EntryAnswer>; onClose: () => void; onOpen?: (entry: EntryAnswer) => void }) {
+/** camera: the seat the step is seen from when not the straight camera's; the guide orders the straight camera's films only, so no Beställ there. */
+export function StepOrder({ view, step, media, camera = null, onClose, onOpen }: { view: TreeView; step: ViewStep | null; media: ReadonlyMap<string, EntryAnswer>; camera?: number | null; onClose: () => void; onOpen?: (entry: EntryAnswer) => void }) {
   const toast = useToast();
   const { graph } = useBank();
   const [copied, setCopied] = useState<string | null>(null);
@@ -90,7 +91,7 @@ export function StepOrder({ view, step, media, onClose, onOpen }: { view: TreeVi
   const from = shown ? pic(shown.from) : null;
   const to = shown ? pic(shown.to) : null;
   return (
-    <Sheet open={!!shown} onOpenChange={(open) => !open && onClose()} title={shown?.name ?? ""} subtitle={shown ? `${view.tree.name} · ${STATE_LINE[shown.state]}` : ""} width={STEP_SHEET_W}>
+    <Sheet open={!!shown} onOpenChange={(open) => !open && onClose()} title={shown?.name ?? ""} subtitle={shown ? `${view.tree.name}${camera ? ` · kamera ${camera}` : ""} · ${STATE_LINE[shown.state]}` : ""} width={STEP_SHEET_W}>
       {shown && from && to ? (
         <div className="flex flex-col gap-5">
           <div className="flex items-center gap-2">
@@ -113,7 +114,7 @@ export function StepOrder({ view, step, media, onClose, onOpen }: { view: TreeVi
             </div>
           ) : null}
 
-          {view.tree.state === "vilar" ? (
+          {camera ? null : view.tree.state === "vilar" ? (
             <p className="text-sm text-dim">{view.tree.name} vilar: inget beställs till trädet nu.</p>
           ) : (
             <Link href={guideHref(view.dealer, view.tree.id, { from: shown.from, to: shown.to })} className={cn(buttonClasses({ variant: "primary", size: "md" }), "self-start")}>
