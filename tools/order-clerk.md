@@ -143,7 +143,7 @@ Look at every frame of every take yourself in full size, and fix what is easy to
   fixed copy is a film of its own and is reviewed again.
 - Into the bank, waiting for Jakob in the inbox: `node tools/order-bring.ts <id> <n> [--prov <proof id>] [--inford] [--dry]`.
   It takes `take-<n>/after.mp4` (or `after.png`) when there is one, registers a film through `tools/register-order.ts`,
-  makes its card track, copies it to Material as a candidate (`assets/films/<dealer>/<name>/`), brings a still into Material
+  makes its card track, gives it a candidate entry in Material that points at the bank's file (no copy), brings a still into Material
   as a candidate of the role the order makes, and sets `INFÖRD` once the reviewer's verdict is on the take (or with
   `--inford`). A part already there is left alone, so it can be run again. A fixed copy:
   `node tools/register-order.ts <id> <n> --fixed <k>`. Neither writes over a take Jakob has decided on.

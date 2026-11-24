@@ -147,7 +147,7 @@ returen 1/5" så att Protokoll läser den (`reviewerNote`, `scoresOf` i `studio/
 **13. In i banken eller Material.** `node tools/order-bring.ts <id> <n> [--prov <prov-id>] [--inford] [--dry]` tar
 `after.mp4` eller `after.png` när de finns (V). En film går genom `tools/register-order.ts` till
 `assets/motions/<klipp>/source.mp4` med `generation.json`, en post i filmregistret med `review.inbox: true` och en härledd
-tagning i `data/clip-jobs.json`, och en kopia blir `kandidat` i Material (`assets/films/<dealer>/<namn>/`). En stillbild
+tagning i `data/clip-jobs.json`, och en post i Material (`kandidat`, rollen film) pekar på bankens fil, utan kopia. En stillbild
 blir `kandidat` i Material under den roll ordern gör. Status INFÖRD sätts när granskarens dom finns på tagningen (eller
 med `--inford`) (V). Kortspåret görs i samma körning för en film med kort (`tools/track-card.ts` skriver
 `assets/tracking/<klipp>/card-track.json`); går det inte står raden som gör det för hand i svaret.
@@ -267,5 +267,5 @@ Där en källa bara är text eller ett skript utanför repot står det "inget i 
 | Domord i banken | Primär (`MAIN`), Godkänd (`ACCEPTED`), Variant (`VARIANT`), Underkänd (`REJECTED`), Väntar (`PENDING`); preliminär dom = `review.provisional`, `userAccepted: false`, i studion "dömd åt dig" (väntar inte i hans kö); `review.inbox` = från en order, inte dömd | `DECISIONS`, `applyProvisional` i `tools/review-store.ts` |
 | Bildtillstånd i Material | `kandidat` → `gäller` eller `ersatt`; `gäller` → `ersatt`; en `gäller` per roll, nod och kort | `STATES` i `studio/lib/media.ts`; `CHANGES` i `studio/components/material/state.ts` |
 | Filer per order | `data/orders/<id>.json`; `assets/orders/<id>/`: `first.png`, `last.png`, `reference.mp4`, `anchor.png`, `receipt.json`; `take-<n>/`: `source.*`, `fetched.json`, `after.*`, `after.json`, `fixed-<k>.*` | `src/order-model.ts`; `tools/order-collect.ts`; `tools/film-after.ts` |
-| Filer i banken | `assets/motions/<klipp>/source.mp4`, `generation.json`; posten i filmregistret (`data/motions.jsonl`); `assets/tracking/<klipp>/card-track.json`; utanför banken `assets/films/<dealer>/<namn>/` | `tools/register-order.ts`; `tools/track-card.ts`; `tools/order-bring.ts` |
+| Filer i banken | `assets/motions/<klipp>/source.mp4`, `generation.json`; posten i filmregistret (`data/motions.jsonl`); `assets/tracking/<klipp>/card-track.json` | `tools/register-order.ts`; `tools/track-card.ts`; `tools/order-bring.ts` |
 | Pris och tak | Aktuell prislista och tidsatt mandat i orderpolicyn; nya starter reserverar värsta kostnaden mot tim- och totaltak. Läs saldo med MCP före beställning. | `data/order-policy.json`; egna reservationer i orderkvittona |

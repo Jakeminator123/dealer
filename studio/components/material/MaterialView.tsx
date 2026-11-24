@@ -2,7 +2,8 @@
 
 // Material (/material/?bild=<id>, ?dealer=<id> for another dealer than the studio's): the one place where Jakob sees what
 // is what, per dealer. At the top the chain at a glance (ingångsbild → keystone → ankare 1 → 2.1 → 2.2 → 2.3 → landningar →
-// filmer; the landings counted seat by seat), then one row per role with large stills, a state chip and how many of the bank's films start or end on each picture; an empty role says what is
+// filmer; the landings counted seat by seat, and the step shown only while the dealer has a landing picture that is not
+// archived), then one row per role with large stills, a state chip and how many of the bank's films start or end on each picture; an empty role says what is
 // missing. A click opens the picture over the whole window with its facts on demand (MaterialViewer). Under the chain:
 // references, the rest, the archived pictures (folded, each with Ta tillbaka in the viewer), and the sources of measures the register lists. Proofs are Granska's Prov, registered by their own
 // proof.json, and not listed here. "Lägg till bild" adds a picture (not in the online copy).
@@ -117,14 +118,17 @@ export function MaterialView() {
 
   // Archived pictures are out of the lists: the chain, the rows and what a role has are read without them.
   const live = { ...dealer, entries: dealer.entries.filter((e) => e.state !== "arkiverad") };
+  // Landningar is a step only for a dealer who has a landing picture that is not archived (Jakob 2026-11-24: giv and
+  // return in one film need no A3 picture); without one the step is not shown at all, and Filmer follows the anchors.
+  const chain = live.entries.some((e) => e.role === "landning") ? CHAIN : CHAIN.filter((r) => r !== "landning");
   // The landings are counted seat by seat: a seat's own landing picture, else the cut frame of the bank's own film to it.
   const bankFacts: BankFacts | null = bank ? { ...(bank as BankFacts), cutChecks: CUT_CHECKS } : null;
-  const landings = seatEndsStatus(seatEnds(live.entries, bankFacts, dealer.id));
-  const missingRoles = CHAIN.filter((r) => (r === "landning" ? landings.status : roleStatus(live, r, bankTakes)) === "saknas");
+  const landings = chain.includes("landning") ? seatEndsStatus(seatEnds(live.entries, bankFacts, dealer.id)) : null;
+  const missingRoles = chain.filter((r) => (r === "landning" && landings ? landings.status : roleStatus(live, r, bankTakes)) === "saknas");
   // The header says the chain is whole only when it is: a station where some seats still lack their end picture is named.
-  const partly = landings.status === "delvis" ? `Landningar ${landings.have} av ${landings.total}` : null;
-  const chainLine = missingRoles.length || partly ? [missingRoles.length ? `saknas: ${missingRoles.length} av ${CHAIN.length} i kedjan` : null, partly].filter(Boolean).join(" · ") : "hela kedjan finns";
-  const step = (role: Role) => CHAIN.indexOf(role) + 1;
+  const partly = landings?.status === "delvis" ? `Landningar ${landings.have} av ${landings.total}` : null;
+  const chainLine = missingRoles.length || partly ? [missingRoles.length ? `saknas: ${missingRoles.length} av ${chain.length} i kedjan` : null, partly].filter(Boolean).join(" · ") : "hela kedjan finns";
+  const step = (role: Role) => chain.indexOf(role) + 1;
   return (
     <Page
       title="Material"
@@ -145,14 +149,14 @@ export function MaterialView() {
     >
       <div className="flex flex-col">
         <div className="flex flex-col gap-3 pb-2">
-          <ChainStrip dealer={live} bankTakes={bankTakes} landings={landings} />
+          <ChainStrip dealer={live} bankTakes={bankTakes} landings={landings ?? undefined} chain={chain} />
           <OrderFrom dealer={live} onOpen={(e) => setParams({ bild: e.id })} />
           {answer.unassigned.length ? (
             <p className="text-xs text-[#f0b07a]">{answer.unassigned.length} bilder som filmer börjar eller slutar på saknar roll i registret.</p>
           ) : null}
         </div>
         <div className="divide-y divide-line/70">
-          {CHAIN.map((role) =>
+          {chain.map((role) =>
             role === "film" ? (
               <FilmsRow key={role} dealer={live} graph={graph} step={step(role)} open={open?.id ?? null} onOpen={(e) => setParams({ bild: e.id })} lineage={lineage} />
             ) : role === "landning" ? (

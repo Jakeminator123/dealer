@@ -135,8 +135,8 @@ Vad som skickades och hur det gick: studions Protokoll (`node tools/order-ledger
 - **Kvitton från äldre vägar** (`data/clip-jobs.json`, liggarna på D:) är källbevis och står kvar; ett osäkert anrop
   beställs aldrig om, och `request.lock` eller SUBMITTING tas aldrig bort.
 - **Inkorgen:** en tagning från en order förs in med `review.inbox: true` och spelas bara där steget saknar annan film
-  tills Jakob har dömt den. En film som inte förs in men kan användas läggs i `assets/films/<dealer>/<namn>/` med
-  `receipt.json` och rollen film i `data/media-roles.json`.
+  tills Jakob har dömt den. Filmen ligger på ett ställe, `assets/motions/<klipp>/source.mp4`: posten med rollen film i
+  `data/media-roles.json` pekar dit, och ingen kopia görs under `assets/films/`.
 
 ### Lärdomar som gäller
 

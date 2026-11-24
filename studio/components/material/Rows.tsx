@@ -33,10 +33,10 @@ const SIGN_TONE: Record<SeatEndsState, string> = {
 const SIGN: Record<SeatEndsState, string> = { gäller: "✓", finns: "✓", delvis: "◐", kandidat: "◐", saknas: "✕" };
 
 /** The chain from the first picture to the films, each step with how it stands; a click goes to its row. */
-export function ChainStrip({ dealer, bankTakes, landings }: { dealer: DealerAnswer; bankTakes: number; /** The landings counted seat by seat (seatEndsStatus). */ landings?: { status: SeatEndsState; have: number; total: number } }) {
+export function ChainStrip({ dealer, bankTakes, landings, chain = CHAIN }: { dealer: DealerAnswer; bankTakes: number; /** The landings counted seat by seat (seatEndsStatus). */ landings?: { status: SeatEndsState; have: number; total: number }; /** The steps shown: without Landningar for a dealer who has no landing picture (MaterialView). */ chain?: readonly Role[] }) {
   return (
     <nav aria-label="Kedjan" className="flex flex-wrap items-center gap-1.5">
-      {CHAIN.map((role, i) => {
+      {chain.map((role, i) => {
         // Landings are counted per seat: how many seats have an end picture of their own, never one picture for all.
         const status = role === "landning" && landings ? landings.status : roleStatus(dealer, role, bankTakes);
         const n = role === "landning" && landings ? `${landings.have}/${landings.total}` : role === "film" ? bankTakes : dealer.entries.filter((e) => e.role === role).length;

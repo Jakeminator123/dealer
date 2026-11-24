@@ -3,8 +3,9 @@
 //   a film:  1. the clip bank's inbox (tools/register-order.ts; a round trip is split where the hand starts back: the frame is
 //               found in the film, tools/round-trip-split.ts, and --split <frame> goes before it; no safe frame and none given
 //               stops the run before anything is written), and the card track of a film with a card (tools/track-card.ts),
-//            2. Material, row Filmer, as a candidate: a copy under assets/films/<dealer>/<name>/ with a receipt, role film,
-//               state kandidat, in data/media-roles.json,
+//            2. Material, row Filmer, as a candidate: an entry in data/media-roles.json, role film, state kandidat, that
+//               points at the bank's own file (assets/motions/<clip>/source.mp4). No copy is made: the film lies once, and
+//               where it came from stands in the bank's generation.json,
 //   a still: the after-worked picture into Material as a candidate of the role the order makes (ankare-2.1, ankare-2.2),
 //            through the register's own add (tools/media-roles.ts), never as gäller: Jakob approves it there;
 //   then, with --prov <proof id>, a copy in that proof folder (assets/proofs/<id>/ with a proof.json); and the receipt's
@@ -17,7 +18,7 @@
 // No test of its own holds it now (tools/order-bring.test.ts is gone); run it with --dry first.
 import { readFile, writeFile, mkdir, rename, copyFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-import { createHash, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -29,7 +30,6 @@ import { mediaRoles } from './media-roles.ts';
 import { NAME, NAME_LIMIT, TITLE_LIMIT, validateRegister, type Entry, type Register } from '../studio/lib/media.ts';
 import { reviewerNote } from '../studio/lib/ledger.ts';
 
-const sha = (b: Buffer) => createHash('sha256').update(b).digest('hex');
 const posix = (root: string, file: string) => path.relative(root, file).split(path.sep).join('/');
 const NOTE_LIMIT = 400;
 
@@ -54,7 +54,7 @@ export function reviewed(take: { history?: unknown; review?: unknown } | null | 
   return take ? reviewerNote(take.history, take.review) : null;
 }
 
-/** A film's entry in Material, role film, as a candidate; the receipt beside the copy says where it came from. */
+/** A film's entry in Material, role film, as a candidate; its path is the bank's own file. */
 export function filmEntry(input: { id: string; title: string; path: string; frames: number; fps: number; note: string; order: string; take: number; day: string }): Entry {
   return { id: input.id, role: 'film', name: input.title, path: input.path, still: Math.min(Math.round(input.frames * 0.55), input.frames - 1), fps: input.fps, state: 'kandidat', note: input.note, source: { from: `beställning i Kön, tagning ${input.take}`, when: input.day } } as Entry;
 }
@@ -145,24 +145,16 @@ export async function bring(root: string, id: string, take: number, options: Bri
       else try { (options.track ?? trackCard)(root, clip); out.notes.push(`Kortspåret: assets/tracking/${clip}/card-track.json.`); }
       catch (error) { out.notes.push(`Kortspåret gick inte att göra (${String((error as Error).message).split('\n')[0].slice(0, 200)}): node tools/track-card.ts ${clip}`); }
     }
-    // 2. Material, row Filmer, as a candidate.
-    const dealer = order.dealer, materialId = `${dealer}-film-${name}`, dir = path.join(root, 'assets', 'films', dealer, name), copy = path.join(dir, 'source.mp4');
-    const facts = probe(film), fps = Math.round(facts.rate * 100) / 100;
-    const entryOut = filmEntry({ id: materialId, title: title.slice(0, 80), path: posix(root, copy), frames: facts.frames, fps, note, order: id, take, day: now().toISOString().slice(0, 10) });
+    // 2. Material, row Filmer, as a candidate: the entry points at the bank's file, so the film lies in one place only.
+    if (!clip) throw new OrderError(`${id} tagning ${take} har inget klipp i banken.`);
+    const dealer = order.dealer, materialId = `${dealer}-film-${name}`, banked = path.join(root, 'assets', 'motions', clip, 'source.mp4');
     const registerText = await readFile(path.join(root, 'data', 'media-roles.json'), 'utf8');
     if (registerText.includes(`"id": "${materialId}"`)) out.material = { id: materialId, done: 'fanns' };
     else if (options.dry) out.material = { id: materialId, done: 'skulle föras in' };
     else {
-      if (existsSync(copy) && sha(await readFile(copy)) !== sha(await readFile(film))) throw new OrderError(`En annan film ligger redan i ${posix(root, copy)}.`);
-      await mkdir(dir, { recursive: true });
-      if (!existsSync(copy)) { const part = `${copy}.${randomUUID()}.part`; await copyFile(film, part); await rename(part, copy); }
-      const receipt = {
-        schemaVersion: 1, id: materialId, dealer, role: 'film', name: title.slice(0, 80), createdAt: now().toISOString(), by: who,
-        original: { path: posix(root, film), sha256: sha(await readFile(film)), order: id, take, delivered: `assets/orders/${id}/take-${take}/source.mp4` },
-        output: { path: posix(root, copy), sha256: sha(await readFile(copy)), width: facts.width, height: facts.height, fps, frames: facts.frames },
-        note: 'Efterarbetad tagning ur en beställning i Kön. Kandidat tills Jakob har dömt.',
-      };
-      if (!existsSync(path.join(dir, 'receipt.json'))) await writeFile(path.join(dir, 'receipt.json'), JSON.stringify(receipt, null, 2) + '\n', { flag: 'wx' });
+      if (!existsSync(banked)) throw new OrderError(`${posix(root, banked)} finns inte: filmen kom inte in i banken.`);
+      const facts = probe(banked), fps = Math.round(facts.rate * 100) / 100;
+      const entryOut = filmEntry({ id: materialId, title: title.slice(0, 80), path: posix(root, banked), frames: facts.frames, fps, note, order: id, take, day: now().toISOString().slice(0, 10) });
       out.material = { id: materialId, done: await addFilmEntry(root, dealer, entryOut) };
     }
   } else {
