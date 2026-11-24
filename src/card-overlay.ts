@@ -569,7 +569,9 @@ export const cardInFront = (overrides: Override[], frame: number) => overrides.s
 // styvt-kort-i-handen): in Scen the card's track is the stiff card's (tools/python/kort-dataset/styvt_kort.ts), read from TRIAL.stiff
 // by the clip's name, with no word (trackFolder below). A film without a stiff card keeps its stored track; ?kortprov=idag gives the
 // stored track for every film, and spar still reads its own. Scen is the lab's 3D page and the studio's views, which mount the
-// same scene (SCEN below); the game's page (game.html, also where the studio's Casino shows it) reads the stored track.
+// same scene (SCEN below). The game's page (game.html, also where the studio's Casino shows it) reads the stored track under its
+// own line, and the stiff card's only while the drawn card is in her hand (carry 'object': the look's "Överlägg i handen", or
+// kort=hand), so that the Casino draws the card Scen showed when he set the choice there (Jakob 2026-11-24).
 // The white rim goes with the film's card (his yes in Beslut 2026-11-23, card styvt-kort-vit-kant): in a film whose card has a
 // white rim round its colour the stiff track also carries the card with that rim (`whole`), and what is light and not warm inside
 // it goes with the film's card (WHITE_RIM: readMatte here, the key in src/scene3d-film.ts). ?kortprov=medkant reads the frames
@@ -586,7 +588,7 @@ export const TRIAL = {word: 'kortprov', folder: 'assets/proofs/kort-fram-bak-202
 // blue under green), since the film's card reaches beyond the drawn one while it is carried.
 export const WHITE_RIM = {light: 440, warm: 12, beyond: 3, mark: 40};
 export type TrialPart = typeof TRIAL.parts[number] | 'mat' | 'styvt' | 'idag' | 'medkant';
-const SCEN = /(^|\/)scene3d\.html$|^\/studio\//;
+const SCEN = /(^|\/)scene3d\.html$|^\/studio\//, GAME = /(^|\/)game\.html$/;
 /** The trial's parts asked for by a page's address, or null: only Scen, only by its word. */
 export function trialParts(path: string, search: string): Set<TrialPart> | null {
   if (!SCEN.test(path)) return null;
@@ -595,9 +597,12 @@ export function trialParts(path: string, search: string): Set<TrialPart> | null 
   const asked = word.split(',').filter(w => w === 'mat' || w === 'styvt' || w === 'idag' || w === 'medkant' || (TRIAL.parts as readonly string[]).includes(w)) as TrialPart[];
   return asked.length ? new Set(asked) : null;
 }
-/** The folder a page reads the card's track from by the clip's name, or null for the stored track: in Scen the stiff card's, unless its address says otherwise (see above). */
-export function trackFolder(path: string, search: string): string | null {
-  if (!SCEN.test(path)) return null;
+/**
+ * The folder a page reads the card's track from by the clip's name, or null for the stored track: in Scen the stiff card's, unless
+ * its address says otherwise; on the game's page the stiff card's while the drawn card is in her hand (drawnInHand), else null (see above).
+ */
+export function trackFolder(path: string, search: string, drawnInHand = false): string | null {
+  if (!SCEN.test(path)) return drawnInHand && GAME.test(path) ? TRIAL.stiff : null;
   const words = (new URLSearchParams(search).get(TRIAL.word) ?? '').split(',');
   return words.includes('idag') ? null : words.includes('styvt') ? TRIAL.stiff : words.includes('1') || words.includes('spar') ? TRIAL.folder : TRIAL.stiff;
 }

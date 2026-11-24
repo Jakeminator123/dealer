@@ -7,19 +7,19 @@ Beslut, labbservern och rutinverktygen. Här står bara det som gäller nu; det 
 - Scen & bord (adressen `/bordet/`) är labbvyn: Kortplan (tre steg: Var kortet landar, Hur det kommer dit, Beställ),
   Kön, Scen, Råfilm och Efterarbete. `/`, `/scen/`, `/placering/`, `/bestall/` och `/lab.html` leder dit; gamla labbet
   är borttaget. Dockan är Kortplans steg 2, ännu inte som en yta; dealerns kort läggs stängt eller öppet i Docklabbet
-  ([LASMIG](../../dealer3d/LASMIG.md), Överlämning). Menyn: Scen & bord, Karta, Granska, Material, Lipsync, Casino; i foten Beslut, Ordlista, Ljud och Modeller.
-- Basgrund behåller bordskorten. Överlägg i handen är av i Scen och Casino; Karta skiljer primära från spelbara steg. Scen har labbprovet bordet BORD-02 (Bord → Bordsmodell, `tableModel=bord-02`, 2026-11-20): avslaget som förval, och spelet slår inte på det före Jakobs ja.
+  ([LASMIG](../../dealer3d/LASMIG.md), Överlämning). Menyns fot: Beslut, Ordlista, Ljud, Modeller och Grafik (prov).
+- Basgrund behåller bordskorten. Överlägg i handen är av i grunden: brytaren står överst i Scens panel och följer med "Använd i Casino" in i spelet. Karta skiljer primära från spelbara steg. Scen har labbprovet bordet BORD-02 (Bord → Bordsmodell, `tableModel=bord-02`, 2026-11-20): avslaget som förval, och spelet slår inte på det före Jakobs ja.
 - Lokal klickdiagnostik sparar högst 200 långsamma händelser; läs med `node tools/interaction-diagnostics.ts` (rutin: `tools/local-work.md`). Vercels rapporterade 17-minutersvärde är ännu inte återskapat.
 - En beställning är en rak linje i Kortplan: plats och kort, hur kortet kommer dit, och i steg 3 "Det här skickas" med serverns text, bilder, pris och värden före sparning; slutbild och referensfilm ändras under Undantag. Saknas platsens slutbild går given utan som förval, och A3 görs ur filmens sista ruta; returen väntar på den. Dockans film spelas vid valet. Knappen Spelet visar filmen i spelets storlek. Utkastet godkänns i Kön. Under korten ligger den valda dealerns docka (en annan väljs i listan, `?bakgrund=docka-standard`; måtten i `dealer3d/LASMIG.md`).
-- Karta visar varje dealers träd (Paow: Casino, Tatuerad, Ingången) med vad som finns och saknas av 36 steg, och kommandot som beställer ett saknat steg (`/karta/?dealer=paow&trad=tatuerad`). Material visar ankare 2.3 och en bricka per plats
+- Karta visar varje dealers träd (Paow: Casino, Ingången, Tatuerad, Tatuerad nyp) med vad som finns och saknas av 36 steg, och kommandot som beställer ett saknat steg (`/karta/?dealer=paow&trad=tatuerad`). Material visar ankare 2.3 och en bricka per plats
   för landningar. Studiobyggets fulla SHA står i `studio/out/bygge.json`; `/vinklar.html` binder två kameravinklar i en scen.
-- Material för hand (`da339a5`): Jakob kan göra vilken bild som helst gällande, lägga den åt sidan, arkivera den och ta
-  tillbaka den, och klipp byggda på en äldre bild mörkas. I Karta (`9a09570`) arkiveras ett klipp för hand och tas
+- Material för hand: Jakob kan göra vilken bild som helst gällande, lägga den åt sidan, arkivera den och ta
+  tillbaka den, och klipp byggda på en äldre bild mörkas. I Karta arkiveras ett klipp för hand och tas
   tillbaka; ett arkiverat klipp spelas inte.
-- Prov (`e2a95ae`, `79d1d4a`): bricka bara på tagningar, "Väntar på granskaragenten" där ett omdöme saknas, och Jakobs
+- Prov: bricka bara på tagningar, "Väntar på granskaragenten" där ett omdöme saknas, och Jakobs
   egen åsikt och kommentar på varje film och bild (`data/proof-notes.json`). 96 tagningar i 18 prov saknar en
   granskares omdöme.
-- Det oanvända i `assets/` är arkiverat (`53dc116`) med samma sökvägar i
+- Det oanvända i `assets/` är arkiverat med samma sökvägar i
   `D:/dealer-archive/dealer-ej-anvant-2026-11-17/`, och allt går att ta tillbaka.
 - `placements/default.json` är Jakobs plan. Bara Bordet skriver den: Kortplan och Efterarbete (Kortmaterial), båda med
   Spara i kortplanen.

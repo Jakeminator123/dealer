@@ -4,7 +4,7 @@
 // The lab's own 3D scene (src/scene3d-view.ts, read from the lab server at run time) in a React view. It makes its own
 // <canvas> in a host element, builds the scene's data as the lab's page does (src/scene3d-ui.ts: the contract, Jakob's
 // placement plan, the room pictures and the rooms of data/scene-rooms.json), starts it, keeps it sized to the host, and
-// wires the lab page's mouse: drag to turn or lean, wheel to zoom, double click for the home view. With keys (default on)
+// wires the lab page's mouse: drag to turn or lean, Ctrl or ⌘ and the wheel to zoom, double click for the home view. With keys (default on)
 // Space plays and pauses the scene's film and the arrow keys step one frame, as on the lab page; a view with its own
 // transport turns them off. The card track of the film on screen is followed, so focus "follow" and rendered cards work.
 // Unmounting disposes the scene and removes the canvas (a canvas whose context is released cannot be used again); it is
@@ -76,7 +76,7 @@ export function SceneCanvas({
     const undo: (() => void)[] = [];
     const canvas = document.createElement("canvas");
     canvas.className = "block touch-none select-none cursor-grab active:cursor-grabbing";
-    canvas.setAttribute("aria-label", "3D-scenen: dra för att vrida, rulla för zoom, dubbelklicka för hemvy");
+    canvas.setAttribute("aria-label", "3D-scenen: dra för att vrida, Ctrl och rulla för zoom, dubbelklicka för hemvy");
     box.appendChild(canvas);
 
     // The card track of the clip on screen (src/scene3d-ui.ts followTrack): never the previous clip's track on this clip's frames.
@@ -179,7 +179,8 @@ export function SceneCanvas({
   );
 }
 
-// The lab page's mouse and keys (src/scene3d-ui.ts): drag turns the view ("look") or moves it ("lean"), the wheel zooms,
+// The lab page's mouse and keys (src/scene3d-ui.ts): drag turns the view ("look") or moves it ("lean"), Ctrl or ⌘ and the wheel zoom
+// (a plain wheel over the scene changed the view unnoticed, and the zoom followed into the address and the saved look),
 // a double click goes home. Returns what takes them off again.
 function wire(scene: Scene, canvas: HTMLCanvasElement, keys: () => boolean): () => void {
   const state = scene.state;
@@ -207,6 +208,7 @@ function wire(scene: Scene, canvas: HTMLCanvasElement, keys: () => boolean): () 
     drag = null;
   };
   const wheel = (e: WheelEvent) => {
+    if (!e.ctrlKey && !e.metaKey) return;
     e.preventDefault();
     state.zoom = clamp(state.zoom * Math.exp(-e.deltaY * 0.0012), 0.45, 2.5);
   };

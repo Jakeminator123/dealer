@@ -39,6 +39,10 @@ const COLOUR = {BACK: [0.91, 0.82, 0.02], FRONT: [0, 0.475, 0.89]};
 // is calibrated at that light; brighter or darker frames scale it.
 const LYING = {BACK: 0.835, FRONT: 0.44};
 const HELD = 1 / MARGIN;   // in the hand the rendered card is the film's card itself; it grows to the plan's size as it settles
+// The stiff card's track is already the card itself, without the overlay's margin: taken down once more it was drawn at 0.85 of
+// the film's card in her hand and grew by a fifth as it landed (measured over 33 films, 2026-11-24). It is drawn as the overlay
+// page draws it (Grafik (prov)): one size from the hand to the table.
+const HELD_STIFF = 1;
 const EDGE_PX = 1.8;       // ... with the film card's pale edge: corners moved out this far (sides about 1.4 px)
 const LIFT = 0.0004;       // metres over the felt: under the film's table layer (1.5 mm), over the felt
 const TILT = 0.7;          // a held card leans toward the camera: how much of the normal turns that way (the light shows it)
@@ -311,6 +315,7 @@ export function createDealLayer(o: Options) {
   }
   // The quad drawn in a frame: the overlay's pose at the held size in the hand, or a thin quad along an edge-on card's line.
   type Drawn = {pose: NonNullable<ReturnType<typeof poseAt>>; q: number[][]; line: number[][] | null};
+  const stiffOnes = new WeakSet<CardTrack>();   // the tracks that are a film's stiff card (trialOf below)
   const drawnAt = (track: CardTrack, frame: number, choice: Choice, extra: Extra, videoFrame = frame): Drawn | null => {
     if (frame < 0 || frame >= track.frames.length) return null;
     const pose = poseAt(track, scene, videoFrame, choice.scale, 12, extra.shift ?? null, extra.land ?? null);
@@ -326,7 +331,7 @@ export function createDealLayer(o: Options) {
         const pivot = grip?.length === 2 ? {x: grip[0] + c.x - raw.x, y: grip[1] + c.y - raw.y} : c;
         return {pose, q: pts(pose.quad.map(p => ({x: pivot.x + (p.x - pivot.x) * by, y: pivot.y + (p.y - pivot.y) * by}))), line: null}; } }
     // in the hand: the film's card and its pale edge (the contract measures that rim at 1.33 px), which belongs to the card
-    if (pose?.quad) { const k = heldScale(pose.resting, HELD), c = centre(pose.quad); return {pose, q: pts(grown(pose.quad.map(p => ({x: c.x + (p.x - c.x) * k, y: c.y + (p.y - c.y) * k})), EDGE_PX * (1 - pose.resting))), line: null}; }
+    if (pose?.quad) { const k = heldScale(pose.resting, stiffOnes.has(track) ? HELD_STIFF : HELD), c = centre(pose.quad); return {pose, q: pts(grown(pose.quad.map(p => ({x: c.x + (p.x - c.x) * k, y: c.y + (p.y - c.y) * k})), EDGE_PX * (1 - pose.resting))), line: null}; }
     if (pose?.edge) { const [a, b] = pose.edge; return {pose, q: edgeQuad([a.x, a.y], [b.x, b.y], 1.4), line: [[a.x, a.y], [b.x, b.y]]}; }
     return null;
   };
@@ -370,15 +375,17 @@ export function createDealLayer(o: Options) {
   const trial = typeof location === 'undefined' ? null : trialParts(location.pathname, location.search);
   // The card's track in place of the film's stored one, fetched once per film by the clip's name; the stored track until it has
   // come, and for good where there is none. In Scen it is the stiff card's (card-overlay.ts trackFolder; only a film that has a
-  // stiff card, the file's `stiff`), with the word spar the trial's own. rim: the film card's white rim goes with it (`whole`), unless the word medkant.
+  // stiff card, the file's `stiff`), with the word spar the trial's own; on the game's page the stiff card's while the drawn card is
+  // in her hand (inHand), the stored one under the game's own line. rim: the film card's white rim goes with it (`whole`), unless the word medkant.
   // The file is asked for from the server's root, since the studio mounts this scene on its own pages.
   const fetched = new Map<string, Pick<CardTrack, 'clip' | 'frames' | 'edgeWindow'> | null>(), swapped = new WeakMap<object, CardTrack>();
-  const folder = typeof location === 'undefined' ? null : trackFolder(location.pathname, location.search), rim = folder === TRIAL.stiff && !trial?.has('medkant');
-  const trialOf = (stored: CardTrack | null): CardTrack | null => {
+  const folderOf = (inHand: boolean) => typeof location === 'undefined' ? null : trackFolder(location.pathname, location.search, inHand), folders = {held: folderOf(true), plain: folderOf(false)};
+  const trialOf = (stored: CardTrack | null, inHand: boolean): CardTrack | null => {
+    const folder = inHand ? folders.held : folders.plain, rim = folder === TRIAL.stiff && !trial?.has('medkant');
     if (!folder || !stored?.clip || !stored.frames) return stored;
     const done = swapped.get(stored); if (done) return done;
     const clip = stored.clip; if (!fetched.has(clip)) { fetched.set(clip, null); fetch(`/${folder}/${encodeURIComponent(clip)}.json`).then(r => r.ok ? r.json() : null).then(t => { if (t && (folder !== TRIAL.stiff || t.stiff)) fetched.set(clip, t); }).catch(() => {}); }
-    const own = trialTrack(stored, fetched.get(clip) ?? null, rim); if (own !== stored) swapped.set(stored, own); return own;
+    const own = trialTrack(stored, fetched.get(clip) ?? null, rim); if (own !== stored) { swapped.set(stored, own); if (folder === TRIAL.stiff) stiffOnes.add(own); } return own;
   };
   // ljus: the film's light on its card in this frame, read back from three pixels (READ_FRAGMENT) ...
   let reader: {target: T.WebGLRenderTarget; material: T.ShaderMaterial; scene: T.Scene; camera: T.Camera; bytes: Uint8Array} | null = null;
@@ -555,8 +562,8 @@ export function createDealLayer(o: Options) {
       // A film element between two frames (seeking, at the change to a new part) keeps the cards as they were drawn: turned off for
       // that frame, the film's own yellow card showed in the shoe window as the rest film began (the boss film at 6.40 and 143.27).
       if (video.readyState < 2) return false;
-      const camera = o.camera(), solved = solveCamera(camera), track = trialOf(trackIn as CardTrack | null), options = (extraIn ?? {}) as Extra;
-      const carry = carryOf(options), continues = !alwaysMatte && carry !== 'matte' && options.returning && options.filmContinuesDeal;
+      const camera = o.camera(), solved = solveCamera(camera), options = (extraIn ?? {}) as Extra;
+      const carry = carryOf(options), track = trialOf(trackIn as CardTrack | null, carry === 'object'), continues = !alwaysMatte && carry !== 'matte' && options.returning && options.filmContinuesDeal;
       const fadeEnd = continues && carry === 'film' && track ? restFade(track)?.to : undefined;
       const extra = continues && !returnAfterFilmLanding(track, frame, options, fadeEnd) ? {...options, returning: false} : options;
       lens.lens.value.set((FILM.width - 1) / 2, (FILM.height - 1) / 2, camera.focalPx, solved.pitch); lens.eye.value.set(0, camera.heightM, 0); lens.edgeRow.value = camera.edgeRow; lens.edgeZ.value = o.edgeZ();

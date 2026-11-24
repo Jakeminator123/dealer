@@ -2,9 +2,10 @@
 
 // const editor = useSceneEditor(firstLook): the scene editor of Bordet's Scen, Råfilm and Efterarbete (components/bordet/SceneBody.tsx), without a scene of its own.
 // The view's stage builds the one scene and hands it here (editor.onScene); the editor drives that same object: every key
-// of its state as a control (studio/lib/scene-keys.ts) in the panel (Scen: all groups but the cards' and chips'; Efterarbete:
-// only those), every saved look as a chip in the bar over the scene (PresetBar) with basgrund, what the game shows today, as
-// the baseline (a key that differs from it carries a brass dot and its own "återställ"), "Jämför med basgrund" (or hold B),
+// of its state as a control (studio/lib/scene-keys.ts) in the panel (Scen: all groups but the cards' and chips', and over them
+// the one choice for the cards, the drawn card in her hand; Efterarbete: only the cards' and chips'), every saved look as a
+// chip in the bar over the scene (PresetBar) with basgrund, what the game shows today, as the baseline (a key that differs
+// from it carries a brass dot and its own "återställ"), "Jämför med basgrund" (or hold B),
 // the objects on the table and the cards' bend and gloss. Loading a preset makes it the look's origin: what has changed
 // since is measured from it. Nothing here changes the game but "Använd i Casino", on his click; "Prova i Casino" shows the
 // look there to try. The look travels in the address (address.ts): editor.lookText says it, and editor.ask takes a new one
@@ -18,7 +19,7 @@ import { asApiError, getRooms } from "../../lib/api.ts";
 import { casinoAddress } from "../../lib/casino.ts";
 import { isSnapshot } from "../../lib/mode.ts";
 import { placesOf } from "../../lib/rounds.ts";
-import { BUILT_BLUR, sameValue, type GroupId, type SceneKey } from "../../lib/scene-keys.ts";
+import { BUILT_BLUR, keySpec, sameValue, type GroupId, type SceneKey } from "../../lib/scene-keys.ts";
 import { BASE, BRED_LINS, CASINO_PRESET, SHIPPED, differences, effective, initialSceneState, isShipped, matchPreset, patchOf, savedGeometri, scenePageAddress } from "../../lib/scene-presets.ts";
 import type { Scene } from "../stage";
 import { SegmentedControl, Skeleton, Switch, useToast } from "../ui";
@@ -26,7 +27,7 @@ import { askedPart, lookPart, type LookAsk } from "./address.ts";
 import { CardMaterial, useCardMaterial } from "./CardMaterial";
 import { ControlPanel, type Extra } from "./ControlPanel";
 import { createExtras, type Extras, type ExtrasNote, type ExtrasState, type TrayModel } from "./extras.ts";
-import { KeyRow } from "./KeyControl";
+import { KeyControl, KeyRow } from "./KeyControl";
 import { createPatcher } from "./patcher.ts";
 import { PresetBar } from "./PresetBar";
 import { deletePreset, listPresets, savePreset, type Preset } from "./presetApi.ts";
@@ -154,6 +155,14 @@ export function useSceneEditor(firstLook: () => LookAsk, page: { geometri?: stri
   const change = (key: SceneKey, value: unknown) => {
     const patch = { [key]: value } as Partial<SceneState>;
     if (key === "room") patch.blur = blurOf(String(value)); // each room with the blur that suits it, as the lab and the game do
+    setCurrent((was) => (was ? { ...was, ...patch } : was));
+    patcher.set(patch);
+  };
+  // Scen's one choice for the cards (Jakob 2026-11-24: the overlay as one choice he sets before the Casino, "det är för mycket
+  // val"): the drawn card also in her hand. Turning it on turns the drawn cards on too, which it needs; "Använd i Casino" saves
+  // it with the look, and the Casino then draws the card as Scen does (src/card-overlay.ts trackFolder).
+  const overlay = (on: boolean) => {
+    const patch: Partial<SceneState> = on && !current?.cards ? { cards: true, cardInHand: true } : { cardInHand: on };
     setCurrent((was) => (was ? { ...was, ...patch } : was));
     patcher.set(patch);
   };
@@ -359,14 +368,19 @@ export function useSceneEditor(firstLook: () => LookAsk, page: { geometri?: stri
     />
   );
   // The panel with only what is laid over the film (Bordet's Efterarbete): the cards' and chips' group. Their look is changed
-  // only there (Jakob 2026-11-17, "Knappen Efterarbete"), so Scen's panel has every group but that one.
+  // there (Jakob 2026-11-17, "Knappen Efterarbete"), so Scen's panel has every group but that one, and of the cards only whether
+  // the drawn card is in her hand too: one switch over the groups (Jakob 2026-11-24, "Det bör rimligtvis ställas in i 'Scen'").
+  const cardChoice =
+    current && baseline ? (
+      <KeyControl spec={keySpec("cardInHand")!} value={current.cardInHand} base={baseline.cardInHand} differs={differ.has("cardInHand")} onChange={(on) => overlay(!!on)} onReset={() => overlay(!!baseline.cardInHand)} />
+    ) : null;
   const afterwork =
     current && baseline ? (
       <ControlPanel current={current} baseline={baseline} differ={differ} rooms={rooms} extras={extraRows} onChange={change} onReset={(k) => change(k, baseline[k])} only={["kort"]} />
     ) : null;
   const panel =
     current && baseline ? (
-      <ControlPanel current={current} baseline={baseline} differ={differ} rooms={rooms} extras={extraRows} onChange={change} onReset={(k) => change(k, baseline[k])} without={["kort"]} />
+      <ControlPanel current={current} baseline={baseline} differ={differ} rooms={rooms} extras={extraRows} onChange={change} onReset={(k) => change(k, baseline[k])} without={["kort"]} first={cardChoice} />
     ) : (
       <div className="flex flex-col gap-3 p-4" aria-busy>
         <Skeleton className="h-8 w-full rounded-md" />

@@ -35,7 +35,7 @@ Arkivet är det tidigare projektet på D: (snyggare-dealer). Sidorna har kvar si
 | --- | --- |
 | [AGENTS](AGENTS.md) | Arbetsregler för agenter. |
 | [HANDOFF](HANDOFF.md) | Startsidan, en sida (högst 120 rader och 900 ord, `tools/handoff.test.ts`): läget i korthet, nästa steg, vem som äger vad och pekarna vidare. Läs den först. |
-| [Läget per bana](docs/lage/) | En lägesfil per bana i fast form (Läget, Nästa steg, Väntar på Jakob, Var saker ligger, Fällor), högst 60 rader och 800 ord: [film](docs/lage/film.md), [kort](docs/lage/kort.md), [labbet och studion](docs/lage/labbet-och-studion.md), [spelet](docs/lage/spelet.md) och den stängda [mätningen](docs/lage/matning.md); 3D-banans är [dealer3d/LASMIG.md](dealer3d/LASMIG.md). |
+| [Läget per bana](docs/lage/) | En lägesfil per bana i fast form (Läget, Nästa steg, Väntar på Jakob, Var saker ligger, Fällor), högst 60 rader och 800 ord: [film](docs/lage/film.md), [karta](docs/lage/karta.md), [kort](docs/lage/kort.md), [labbet och studion](docs/lage/labbet-och-studion.md), [spelet](docs/lage/spelet.md) och den stängda [mätningen](docs/lage/matning.md); 3D-banans är [dealer3d/LASMIG.md](dealer3d/LASMIG.md). |
 | [Jakobs besked](docs/BESKED.md) | Hans gällande besked per ämne, högst två rader per besked; äldre och ersatta besked finns i Git. Slås upp när ett besked är i fråga. |
 | [Kända brister](docs/BRISTER.md) | Varje känd brist: var den syns, vad som är prövat och vad som stänger den. |
 | [SYSTEM](docs/SYSTEM.md) | Kontrakt: koordinater, register, 3D-scenen, spelet, klippbanken och ordlistan. |
@@ -88,7 +88,7 @@ Dokumenten länkar till dessa i stället för att föra egna statusregister. Med
   eller blir tom där webbläsaren inte låter en sida stänga sin flik. Rutinen:
   [DRIFT](docs/DRIFT.md#labbservern-och-fliken). Servern står kvar tills `STOPP.cmd` körs.
 - [Studion](http://127.0.0.1:4319/studio/) är skalet (`/` och `lab.html` leder dit): en Next.js-app i `studio/` som
-  byggs med `npm --prefix studio run build` och lämnas ut av samma server. Den öppnar på Bordet. Menyn
+  byggs ur en commit med `node tools/studio-from-commit.ts` ([DRIFT](docs/DRIFT.md#labbservern-och-fliken)) och lämnas ut av samma server. Den öppnar på Bordet. Menyn
   (`studio/components/shell/Rail.tsx`) har vyerna:
   - **Bordet**: bordet i en ram, med delarna **Kortplan** (kortplanen på bilden: var kortet landar och hur det kommer dit;
     Spara skriver bara `placements/default.json`), **Beställ** (filmerna att beställa, med det som skickas till Runway för

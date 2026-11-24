@@ -9,6 +9,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
 ## Arbetet och dokumenten
 
 - **Målet** (2026-11-13): "nu ska vi skapa en bättre version av blackjackspelet". Arbetet gäller spelet i studion.
+- **En väg för varje sak, färre val** (2026-11-24): "det är för mycket val, för komplicerat i onödan". Repot ska hålla
+  samman "med klara självklara vägar för allt", också när det "tränger undan gamla klipp eller vägar". Planen: HANDOFF.
 - **Frikopplat från Scoutgaming** (2026-11-23): "Detta proejkt ska vara frikopplat mot scoutgaming i nuläget". Repot
   står på egna ben och behöver inget därifrån; inget ändras i Scoutgaming härifrån.
 - **Normalt repo utan specialregler** (2026-11-13): "så normalt som möjligt i repot, utan specialregler". Arbetet görs i
@@ -56,8 +58,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   "bara en giv per kort för respektive spelare" tills trädet är fullt.
 - **Kort i Beslut bara för provmaterial** (2026-11-21): ett kort bär en film eller bild han ska döma. Teknik,
   publicering, Blob och arbetssätt frågas i chatten: "Sånt här ska den inte ha att göra med alls!"
-- **Överlägg i handen är av i grunden** (2026-11-19), även i Casino: "Ta bort det svarta kortöverlägget som standard så
-  jag slipper speciallänkar. Behåll korten som ligger på bordet."
+- **Överlägg i handen: av i grunden, hans val i Scen följer in i Casinot** (2026-11-19, 2026-11-24): "ett val jag ska
+  kunna sätta på innan jag kommer in på casinot"; senare "högre privilegie att faktiskt typ alltid visas". Korten på bordet behålls.
 - **Beställ visar exakt vad som skickas** (2026-11-17): varje rad visar instruktionerna och referenserna som går till
   Runway, och inget beskrivs i labbet som inte skickas.
 - **Färre val när en film beställs** (2026-11-18): från vilket ankare och till vilken plats. Resten är stegets recept
@@ -66,8 +68,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   markernas utseende ändras bara i Bordets läge Efterarbete; valören ritas när rundan spelas.
 - **Grafiken på kortet** (2026-11-23, till dealer-e7): "grafiken" är det som läggs på kortets baksida och framsida, på
   kortmodellens spår. Han vill se den "på och mot" alla filmer som finns (`/kortlandning.html`) och "ett bra system med grafiken".
-- **Styvt kort i handen, utan vit kant** (2026-11-23, två ja i Beslut): Scen ritar kortet med en storlek i handen och tar
-  bort den vita kanten kring filmens kort. Spelet rörs inte förrän han har sagt ja till det där.
+- **Styvt kort i handen, utan vit kant** (2026-11-23, två ja i Beslut): Scen ritar kortet med en storlek från handen till
+  bordet och tar bort filmkortets vita kant. Casinot ritar samma kort bara när hans val i Scen är på; spelets egen linje är orörd.
 - **Kortets efterarbete görs i förväg per film** (2026-11-17): spelet målar inte kortet medan filmen spelas; det ritade
   kortet är "något procent större än kortet".
 - **Kortbanan följer filmerna** (2026-11-17, "VIKTIGT"): labbets ritade bana och vändning stämmer med hur dealern
@@ -272,12 +274,12 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
 
 ## Kortet
 
-- **Gul rygg, blå framsida** (2026-11-17, 2026-11-20): gult är ryggen (stängt kort, slätt), blått är framsidan (öppet
+- **Gul rygg, blå framsida** (2026-11-17, 2026-11-20): gult är ryggen (stängt kort), blått är framsidan (öppet
   kort); utan vit kant, "bara … blåa, med rundade kanter".
 - **Märket på blå sidan** (2026-11-20): ett litet rosa kryss och en liten röd cirkel i ett hörn, så att filmen inte kan
   "fuska med vilken sida av kortet som syns".
-- **Märke på gula sidan, som prov** (2026-11-23, till dealer-e7): fylld röd cirkel i mitten och rosa kryss nära kortänden,
-  blå sidans färger "men motsatta symboler". Prövas på en film först (`paow-giv-2-3-p4-03`); A2.3 gäller oförändrat.
+- **Ett kort per sida, överallt** (2026-11-23, 2026-11-24): gula sidan bär fylld röd cirkel i mitten och rosa kryss nära
+  kortänden, "EN OCH SAMMA TYP AV KORT för respektive sida" i Kortplan, på dockan, i beställningens bilder och text. Mått: `CARD_MARK`.
 - **Kortens färger** (2026-11-20) står på ett ställe, `CARD_RGB` (`src/placement-model.ts`): gul 241, 216, 0 · blå
   0, 130, 218 · kryss 255, 120, 200 · cirkel 225, 30, 35.
 - **Rent tills efterarbetet** (2026-11-18): "Du kan behålla SG-ryggen. men so msagt vill jag allt ska vara rent tills

@@ -46,9 +46,9 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   `src/card-track.ts` behåller ett skymt korts form), papperets ljus hoppar när `cardBase` i `src/scene3d-film.ts` tar
   reservfärgen, fyrhörningen är färgregelns kärna (under 0,8 av kortet), och kanten mot fingrarna. Labbprovet `kortprov`
   (bara i Scen, av som förval: `/scene3d.html?cards=1&cardInHand=1&kortprov=1`, delarna `spar`, `skarpa`, `ljus`, `mat`, `styvt`)
-  sänker det största ljussteget från 36 till 13 av 255. Stänger: Jakobs ja på Beslut-kortet
-  `kortet-i-handen-provet-i-spelet`, sedan skärpan mot handen och mätningen in i `tools/track-card.ts` (i dag ur
-  etiketterna i `tools/python/kort-dataset/`).
+  sänker det största ljussteget från 36 till 13 av 255, men fick hans nej i Beslut 2026-11-21 ("kortets handrygg
+  fortfarande darrar"). Det styva kortet (hans ja 2026-11-23) har tagit dess plats i Scen. Stänger: skärpan mot handen och
+  mätningen in i `tools/track-card.ts` (i dag ur etiketterna i `tools/python/kort-dataset/`).
 - **Kortets sidor:** hans ord är rygg och framsida (BESKED, "Gul rygg, blå framsida"), men ordlistan och sidorna säger
   ännu baksida, och mallarna säger "back" och "face" (`PLAIN_CARD` i `src/order-prompts.ts`). Stänger: ordlistan och
   sidorna följer hans ord.

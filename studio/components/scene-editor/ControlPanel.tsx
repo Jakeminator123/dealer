@@ -26,6 +26,7 @@ export function ControlPanel({
   onReset,
   only,
   without,
+  first,
 }: {
   current: SceneState;
   baseline: SceneState;
@@ -36,8 +37,10 @@ export function ControlPanel({
   onReset: (key: SceneKey) => void;
   /** Only these groups, open (Bordet's Efterarbete: Kort och marker); every group when absent. */
   only?: readonly GroupId[];
-  /** Groups left out (Bordet's Scen: Kort och marker, which only Efterarbete changes). */
+  /** Groups left out (Bordet's Scen: Kort och marker, whose look Efterarbete changes). */
   without?: readonly GroupId[];
+  /** A row over the groups, outside any fold (Bordet's Scen: the one choice for the cards, the drawn card in her hand). */
+  first?: ReactNode;
 }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState<ReadonlySet<GroupId>>(() => new Set(only ?? GROUPS.filter((g) => !g.folded).map((g) => g.id)));
@@ -91,6 +94,7 @@ export function ControlPanel({
         </div>
       )}
       <ScrollArea className="flex-1">
+        {first && !searching ? <div className="border-b border-line px-4 py-1">{first}</div> : null}
         {searching && !groups.length ? <p className="px-4 py-6 text-sm text-faint">Inget reglage heter så.</p> : null}
         {groups.map((g) => {
           const expanded = searching || open.has(g.id);

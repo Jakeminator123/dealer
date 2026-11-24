@@ -263,7 +263,7 @@ canvas.addEventListener('pointermove', e => { if (!drag) return; const dx = e.cl
   else { state.dx = clamp(drag.from.dx - dx * 0.0016, -0.9, 0.9); state.dy = clamp(drag.from.dy + dy * 0.0016, -0.3, 0.5); }
   sync(); hud(); });
 for (const type of ['pointerup', 'pointercancel']) canvas.addEventListener(type, () => { drag = null; });
-canvas.addEventListener('wheel', e => { e.preventDefault(); state.zoom = clamp(state.zoom * Math.exp(-e.deltaY * 0.0012), 0.45, 2.5); sync(); hud(); }, {passive: false});
+canvas.addEventListener('wheel', e => { if (!e.ctrlKey && !e.metaKey) return; e.preventDefault(); state.zoom = clamp(state.zoom * Math.exp(-e.deltaY * 0.0012), 0.45, 2.5); sync(); hud(); }, {passive: false});
 canvas.addEventListener('dblclick', () => scene.home());
 addEventListener('keydown', e => { if (e.target instanceof HTMLInputElement && e.target.type === 'text' || e.target instanceof HTMLSelectElement) return;
   if (e.code === 'Space') { e.preventDefault(); scene.players.toggle(); } else if (e.code === 'ArrowRight') void scene.players.step(1); else if (e.code === 'ArrowLeft') void scene.players.step(-1); });

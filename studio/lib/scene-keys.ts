@@ -155,7 +155,7 @@ export const SCENE_KEYS: readonly KeySpec[] = [
   spec("tolerance", "kamera", "U", "Skärpedjup", slider(0, 0.8, 0.01), "Hur mycket runt skärpeplanet som är skarpt."),
   spec("yaw", "kamera", "U", "Vrid sidled", slider(-60, 60, 0.5, "°"), "Kameran vriden åt sidan. Dra i bilden gör detsamma."),
   spec("pitch", "kamera", "D", "Vrid höjdled", slider(-35, 25, 0.5, "°"), "Kameran vriden upp eller ned; spelet ser bordet från −8°."),
-  spec("zoom", "kamera", "D", "Zoom", slider(0.45, 2.5, 0.01, "×"), "Bildvinkeln; spelet visar hela bordet med 0,84."),
+  spec("zoom", "kamera", "D", "Zoom", slider(0.45, 2.5, 0.01, "×"), "Bildvinkeln; spelet visar hela bordet med 0,84. Mushjulet zoomar bara med Ctrl eller ⌘ nedtryckt."),
   spec("dx", "kamera", "U", "Flytta sidled", slider(-0.9, 0.9, 0.005, " m"), "Kameran flyttad åt sidan; filmen börjar ljuga ju längre."),
   spec("dy", "kamera", "U", "Flytta höjd", slider(-0.3, 0.5, 0.005, " m"), "Kameran flyttad upp eller ned."),
   spec("dz", "kamera", "U", "Flytta djup", slider(-0.5, 1.6, 0.005, " m"), "Kameran flyttad bakåt eller framåt."),
