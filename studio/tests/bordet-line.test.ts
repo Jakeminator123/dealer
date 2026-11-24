@@ -155,6 +155,12 @@ test("Bordet's rows for a card with handbyte and one without say what the store'
   t.after(() => rm(root, { recursive: true, force: true }));
   for (const dir of ["data", "placements", "assets/anchors/paow-bild"]) await mkdir(path.join(root, dir), { recursive: true });
   for (const file of ["data/order-policy.json", "data/dealers.json", "data/order-methods.json"]) await copyFile(path.join(repo, file), path.join(root, file));
+  // The recipe of the deal from A2.3 as this test follows it, fixed here: bara dit, 3 s, template 14, ending on the seat's
+  // own end picture. The recipe in force (giv och återgång in one film since 2026-11-24) is compared row against store for
+  // every card in studio/tests/line-same.test.ts, so a change of it does not change what this test compares.
+  const methods = JSON.parse(await readFile(path.join(root, "data/order-methods.json"), "utf8"));
+  Object.assign(methods.methods.find((m: { id: string }) => m.id === "giv-2.3"), { template: 14, seconds: 3, shape: "ONE_WAY", lastPicture: "platsens-slutbild" });
+  await writeFile(path.join(root, "data/order-methods.json"), JSON.stringify(methods, null, 2));
   // The plan's places as they are (read from his plan, written only into this temporary lab), its motions fixed here: seat
   // 4's second card with handbyte, every other card without.
   const plan = JSON.parse(await readFile(path.join(repo, "placements/default.json"), "utf8"));

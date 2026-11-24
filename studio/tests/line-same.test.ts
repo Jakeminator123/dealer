@@ -22,10 +22,11 @@ import os from "node:os";
 import path from "node:path";
 import sharp from "sharp";
 import { orderRoutes } from "../../tools/order-routes.ts";
+import { TEXTURE } from "../../tools/order-images.ts";
 import { motionRegister } from "../../tools/register-store.ts";
 import { STEPS, openEndWords, readCutChecks, seatWords, type BankFacts, type OrdersAnswer } from "../../src/order-model.ts";
 import { productionList, readProduction } from "../../tools/produce.ts";
-import { REFERENCE_ABSENT, recipeFor } from "../../src/order-methods.ts";
+import { REFERENCE_ABSENT, lastPictureOf, recipeFor } from "../../src/order-methods.ts";
 import { NO_MODEL, cardWishes, filmRow, type FilmWish, type RowChoice } from "../lib/bordet.ts";
 
 const repo = path.resolve(import.meta.dirname, "../..");
@@ -91,15 +92,23 @@ test("Bordet's row and the store agree for every standard step and card, and the
   const cutFrames = { frames: [{ clip: "paow-giv-2-1-d-01-01", frame: 99, target: "D.C1", holds: false, problems: ["kortet ligger utanför planens kort"], windowPrinted: false, offFromPlan: 40 }] };
   await writeFile(path.join(root, "data/cut-frames.json"), JSON.stringify(cutFrames));
   // The dummy's rendered films: the pinch to seat 1 (a far seat takes nothing else) and to seat 4, the entry to anchor 2.3,
-  // and the deal with two hands to seat 4 (laid with the right hand).
-  const rendered: { id: string; edge: string; path: string; sha256: string; seconds: number; lays?: "RH" }[] = [];
-  for (const [id, edge, seconds, lays] of [["docka-giv-p1-4", "READY>P1.C1", 3.967], ["docka-giv-p4-4", "READY>P4.C1", 3.967], ["docka-till-2-3", "IDLE>READY-C", 4], ["docka-giv-2-3-p4", "READY-C>P4.C1", 3, "RH"]] as const) {
+  // and the deal with two hands to seat 4 and back (laid with the right hand; it says ROUND_TRIP, as the doll's built films
+  // from A2.3 do in data/rendered-references.json).
+  const rendered: { id: string; edge: string; path: string; sha256: string; seconds: number; lays?: "RH"; shape?: "ROUND_TRIP" }[] = [];
+  for (const [id, edge, seconds, lays, shape] of [["docka-giv-p1-4", "READY>P1.C1", 3.967], ["docka-giv-p4-4", "READY>P4.C1", 3.967], ["docka-till-2-3", "IDLE>READY-C", 4], ["docka-giv-2-3-p4", "READY-C>P4.C1", 4, "RH", "ROUND_TRIP"]] as const) {
     const bytes = Buffer.from(`docka ${id}`);
     await mkdir(path.join(root, "assets/references/docka", id), { recursive: true });
     await writeFile(path.join(root, "assets/references/docka", id, "source.mp4"), bytes);
-    rendered.push({ id, edge, path: `assets/references/docka/${id}/source.mp4`, sha256: sha(bytes), seconds, ...(lays ? { lays } : {}) });
+    rendered.push({ id, edge, path: `assets/references/docka/${id}/source.mp4`, sha256: sha(bytes), seconds, ...(lays ? { lays } : {}), ...(shape ? { shape } : {}) });
   }
   await writeFile(path.join(root, "data/rendered-references.json"), JSON.stringify({ schemaVersion: 1, about: "test", films: rendered }));
+  // The bank's real card, which the store draws on a last picture (TEXTURE in tools/order-images.ts: a deal from A2.3 ends on
+  // its anchor with the card drawn at the place), copied into the lab where this checkout has media.
+  const textured = existsSync(path.join(repo, TEXTURE.image));
+  if (textured) {
+    await mkdir(path.join(root, path.dirname(TEXTURE.image)), { recursive: true });
+    await copyFile(path.join(repo, TEXTURE.image), path.join(root, TEXTURE.image));
+  }
 
   let origin = "";
   const handle = { fn: null as null | ReturnType<typeof orderRoutes> };
@@ -128,7 +137,7 @@ test("Bordet's row and the store agree for every standard step and card, and the
   const shown = entries.map((e) => ({ ...e, served: e.path }));
 
   const made: Record<string, string | null> = {}, refused: Record<string, string> = {}, without: Record<string, string> = {};
-  let compared = 0, texts = 0, opened = 0, drawnReturns = 0;
+  let compared = 0, texts = 0, opened = 0, drawnReturns = 0, drawnDeals = 0, undrawn = 0;
   // The dealers' looks and the landing pictures' marks, as the page has them, so that the row writes the text it shows.
   const rowOf = (wish: FilmWish, choice?: RowChoice) => filmRow("paow", wish, register, all.policy, { bank, entries: shown, plan: all.plan ?? null, dealers: all.dealers, marks: all.marks, choice });
   // The hole card's turn is left out: its pictures are drawn from a bank film that the temporary lab does not have.
@@ -164,6 +173,9 @@ test("Bordet's row and the store agree for every standard step and card, and the
     // the hole card's turn): the row is compared with the production list above, and its draft where that film is
     // (tools/order-routes.test.ts).
     if (step.start === "LAND" && !row.why) { drawnReturns++; continue; }
+    // A deal that goes there and back ends on its anchor with the card drawn too (from A2.3 since 2026-11-24): its draft is
+    // made where this checkout has the bank's card, and elsewhere the row is compared with the production list only.
+    if (!textured && !row.why && lastPictureOf(step, row.resolved.shape) === "ritat-kort") { undrawn++; continue; }
     const preview = await call("POST", "/api/orders/preview", input);
     if (row.why) {
       // What the row cannot send as it stands, the store refuses, and for the same reason. The row says what to do about
@@ -197,8 +209,11 @@ test("Bordet's row and the store agree for every standard step and card, and the
     assert.deepEqual(shownOrder.prompt, o.prompt, `${key}: the exact text`);
     // New with the decision that the row tells the truth (2026-11-21): the text the row shows is the order's, word for word,
     // wherever the row writes one (not where a picture is drawn or read off a film's frame).
+    const drawn = lastPictureOf(step, line.shape) === "ritat-kort";
+    assert.equal(row.text === null, drawn, `${key}: the row writes the text itself, except where the last picture is drawn`);
     if (row.text !== null) assert.equal(row.text, o.prompt.text, `${key}: the row's text is the order's`);
     if (row.text !== null) texts++;
+    else drawnDeals++;
     assert.deepEqual(shownOrder.pictures.map((p: { sha256: string }) => p.sha256), o.pictures.map((p: { sha256: string }) => p.sha256), `${key}: the same image bytes`);
     assert.equal(shownOrder.reference.sha256, o.reference.sha256, `${key}: the same reference bytes`);
     // The draft's notes name the recipe with what has been tried with it, in the row's own words (never a status), and where
@@ -232,13 +247,16 @@ test("Bordet's row and the store agree for every standard step and card, and the
     compared++;
   }
   // Three entries, three ways out and rest; every deal whose seat has its last picture: the pinch and the drag to every card
-  // but the dealer's first (8 + 8), the two-hand deal to seat 4, the one seat with an A3 for the right hand; and every deal
-  // whose seat has none yet, made without a last picture: the dealer's first card (the pinch and the drag; its only cut
-  // frame does not hold, and it has no landing picture) and the two-hand deal to the eight cards without an A3 for the
-  // right hand.
-  assert.equal(compared, 7 + 8 + 8 + 1 + 2 + 8, `${compared} orders compared`);
-  assert.equal(opened, 2 + 8, `${opened} deals made without a last picture, by the row and the store alike`);
-  assert.equal(texts, compared, `${texts} of ${compared} texts compared word for word`);
+  // but the dealer's first (8 + 8); the two-hand deal to every card (9), which goes there and back and ends on its anchor
+  // with the card drawn at the place, so it waits for no end picture of the seat; and the deals whose seat has none yet,
+  // made without a last picture: the dealer's first card (the pinch and the drag; its only cut frame does not hold, and
+  // it has no landing picture).
+  assert.equal(compared + undrawn, 7 + 8 + 8 + 9 + 2, `${compared} orders compared`);
+  assert.equal(opened, 2, `${opened} deals made without a last picture, by the row and the store alike`);
+  // The text is the row's own, word for word, everywhere but the nine two-hand deals: their last picture is drawn by the
+  // store, which reads the card's marks off it for the text.
+  assert.equal(drawnDeals + undrawn, 9, "the two-hand deals, whose last picture the store draws");
+  assert.equal(texts, compared - drawnDeals, `${texts} of ${compared} texts compared word for word`);
   // Refused as they stand, in the row and in the store alike: the returns to 2.1 and 2.2, which have no recipe, and the
   // return to rest from the dealer's first card; the three from that card wait for the deal there before that. The return
   // to rest from the other eight cards has a recipe (2026-11-23) and starts on the card's landing picture.
