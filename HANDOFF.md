@@ -25,7 +25,7 @@ Planen, i ordning (Jakob 2026-11-24: en rak plan, en väg för varje sak, färre
 `D:/dealer-scratch/tmp/sammanhallning-20261124/` (`repots-vagar.md`, `studions-val.md`).
 
 1. En väg, skriven där alla läser: `tools/dealer-line.md` kortas till Kortplan steg 1–3, Kön, Granska och Karta.
-2. Kön läggs med en klient i `tools/`; i dag ligger den utanför Git i `.runtime/natt-1121/api/`, som städas först då.
+2. Kön läggs med `tools/runway-api.ts` när MCP-inloggningen saknas: en klient och en liggare (DRIFT, "Direkt API").
 3. Dockan: givarna från A2.1 byggs om, ETT sätt att göra dockans film, och Kortplanens val följer dockan
    ([LASMIG](dealer3d/LASMIG.md), "Överlämning"). Sedan en pilot från A2.1 som han ser först.
 4. Tatuerad fylls från A2.3 med giv och återgång i en film: plats 7 görs om, och D.C1 saknar filmen som vänder upp

@@ -20,8 +20,8 @@ utfall står i handboken (`tools/film-prompting.md` §5), historien i Git.
 - Sista given går direkt till vila (`order-new.ts paow RETUR-1 P4.C1`, 3 s): plats 2–4 godkända åt honom, 1 och 5
   varianter, plats 6 hans "Inte bra".
 - A3-bilder görs inte: landningsbilderna är arkiverade (Jakob 2026-11-24).
-- Fria givar (Kling 4, ingen dockfilm): takt och väg styrs inte; plats 4, Kortet i luften och plats 7 är varianter i
-  banken. En annan stol: [FILMMODELLER](../FILMMODELLER.md), "Vinklar, 3D och Runways lista"; stol 1 fick "nästan".
+- Fria givar (Kling 4, ingen dockfilm): takt och väg styrs inte; plats 4, Kortet i luften och plats 7 är varianter.
+  Andra stolar: [FILMMODELLER](../FILMMODELLER.md), "Vinklar, 3D och Runways lista"; stol 1 och 5 godkända åt honom.
 - Tatuerads A2.1 är `paow-nyp-tatuerad` (trädet Tatuerad nyp). Sex givar därifrån 2026-11-24 (816 krediter, avlästa
   dockfilmer): Jakob underkände plats 1, 2, 4, 5 och 7 ("MÅSTE FINNAS METODFEL"); plats 3 variant, returerna godkända.
 - Pengar: gränser, mandat och saldo i `data/order-policy.json`; giv med återgång 91, giv 3 s 68, retur 57, WAN 3 20 per s.
@@ -37,13 +37,13 @@ utfall står i handboken (`tools/film-prompting.md` §5), historien i Git.
 6. Skons fönster: [kort](kort.md), Nästa steg 3. Fler vilor (handboken §3.6). Mall 15: friare vändning.
 7. Vilan `paow-vila-28-01-fix-1` är införd (godkänd åt honom); originalet arkiverar Jakob.
 
-**Väntar på Jakob.** Hans egen dom i Granska på `paow-giv-2-3-d-03-01` (stängt kort, mall 16) och på piloten med
-kortets märken (Prov `vinkelprov-p4c2-20261124`, film 13–15). I chatten: Tatuerads A2.3 med märke?
-Noirfilmen med heltatuerad trappa: hans "inte bra" 2026-11-24.
+**Väntar på Jakob.** Hans dom på `paow-giv-2-3-d-03-01` (mall 16), piloten med märken (Prov `vinkelprov-p4c2-20261124`,
+film 13–15) och stolsserien (Prov `stolsserien-p4c2-20261124`; stol 6:s pilot). I chatten: Tatuerads A2.3 med märke?
+Stol 2: nytt ankare ur filmens första ruta eller ny dockfilm? Noirfilmen med heltatuerad trappa: hans "inte bra" 2026-11-24.
 
 **Var saker ligger.** Vägen för en ny dealer i [tools/dealer-line.md](../../tools/dealer-line.md), handboken i
 [tools/film-prompting.md](../../tools/film-prompting.md), granskningen i `tools/film-review.md`, läget per dealer med
-`node tools/produce.ts paow`. Under `.runtime/`: `natt-1121/api/` (API-klienten, liggaren) och `kvall/` (kvällens skript).
+`node tools/produce.ts paow`. API-klienten är `tools/runway-api.ts`, liggaren `.runtime/runway-api/ledger.json`.
 På `D:/dealer-scratch/tmp/`: `yt-referens/` (går aldrig in i Git, `assets/` eller ett Prov) och `dealer-3d/ut/` (dockans filmer).
 
 **Fällor.**

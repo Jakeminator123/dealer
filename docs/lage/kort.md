@@ -11,7 +11,7 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
 - P4.C2 har egna filmer/spår: vila55, släpp64 i Cykel01/65 i Cykel02. Det svagare omtaget är arkiverat med bevis kvar.
 - Kortplanen ritas i verkligt perspektiv (`918e7f4`): där planen säger Plant bord ritas varje kort som ett verkligt
   kort (63 × 88 mm, storlek 1,00) genom linsen som ger dealern människostorlek (`src/table-lens.ts`). `planCardQuad` i
-  `src/card-plan.ts` är den enda regeln, och samma fyrhörningar används i Bordets Kortplan, kortbanans landning, Ny
+  `src/card-plan.ts` är den enda regeln, och samma fyrhörningar används i Bordets Kortplan, Ny
   beställnings bild, "Det här skickas" och en ny beställnings sista bild.
 - Perspektiv smalnar den bortre kanten kring kortets mitt: 80–96 % för alla kort, med Din plan (87 %, även förval) och Verkligt (96 %).
 - Spelet och scenen följer nu B-linsen (`TABLE_GEOMETRY = lens`): kort, extra kort, split och filmkamera. Insatsringarna

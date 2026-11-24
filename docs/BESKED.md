@@ -72,8 +72,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   bordet och tar bort filmkortets vita kant. Casinot ritar samma kort bara när hans val i Scen är på; spelets egen linje är orörd.
 - **Kortets efterarbete görs i förväg per film** (2026-11-17): spelet målar inte kortet medan filmen spelas; det ritade
   kortet är "något procent större än kortet".
-- **Kortbanan följer filmerna** (2026-11-17, "VIKTIGT"): labbets ritade bana och vändning stämmer med hur dealern
-  faktiskt släpar eller nyper kortet, inte tvärtom. Skons kort i labbet mäts mot en ruta ur en film.
+- **Skons kort mäts mot filmen** (2026-11-17, "VIKTIGT"): skons kort i labbet mäts mot en ruta ur en film. Kortets
+  bana och vändning kommer sedan 2026-11-24 ur dockan ("Dockan från A2.1 görs om", nedan); den ritade kortbanan är borta.
 - **Karta med Primära** (2026-11-17): en sida där nodträdet följs, med Primär och högst tre sekundära filmer per steg.
 - **Rundan byggs av noderna** (2026-11-17): egna vägar ur de noder som finns, inga tre förval.
 - **Menyn** (2026-11-17): det som hör ihop är en knapp: Placering, Beställ och Scen i Bordet, Prov i Granska. Att spela
@@ -91,8 +91,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   tagning han själv har dömt rörs aldrig, och hans beslut ersätter en dom som gjorts åt honom.
 - **Domar åt honom, och ingen kö** (2026-11-13): "Med andra ord vill jag inte se en sån här lista när jag är tillbaka!"
   Huvudagenten och en oberoende granskare dömer i hans ställe (`node tools/review-put.ts`), märkt som inte hans.
-- **Mandatet natten 2026-11-24** (kl. 02.25, till huvudagenten dealer-d1): "Du har hög budget, säg 2000krediter p årunway i 2h
-  from nu"; mandatet `dealer-d1-20261124` i `data/order-policy.json` slutar kl. 04.25 och ersätter dealer-ac:s.
+- **Mandatet 2026-11-24** (till huvudagenten dealer-5b): kl. 05.50 "kör, du har 1000 till krediter", kl. 06.00 "Du får 1500
+  krediter till. måste dra godnatt"; `dealer-5b-20261124` i `data/order-policy.json`, 2 500 till midnatt, ersätter dealer-d1:s.
 - **Bara sätt som håller, och en pilot först** (2026-11-24, efter fem fällda givar): "Se till att fel som detta med metod inte
   kan göas typ. Det ska vara klagklar vilka sätt vi kan använda oss av för att producera filmer!" Sätten står i `data/order-methods.json`.
 - **Betald generering utan hans klick** (2026-11-13): "beställer lämpliga filmer automatiskt utan mitt godkännande".

@@ -83,6 +83,12 @@ kredit kostar 0,01 dollar och köps i utvecklarportalen, per projekt.
   och sista bilden med Nano Banana 2.1, dockans ruta som `@layout` (kamera, pose, sko, bordskant) och bankens bild som
   `@frame` (utseendet); Kling 4 mellan de två bilderna med dockans film från samma öga som referensfilm. Hon, tatueringarna
   och posen höll från stol 1, och händerna följde dockan (Ö, huvudagenten; Jakobs dom väntar).
+- **Kling 4 som redigerare från en stol** (Jakobs "Bra" 2026-11-24; Prov `stolsserien-p4c2-20261124`, 91 krediter för
+  4 s): `/v1/video_to_video` med dockans film från stolens öga, stolens ankare som första bild och hennes A2.3 framifrån
+  som referensbild; texten säger båda sidornas märken. Stol 1, 3, 5 och 6 höll. Kling följer dockfilmens kamera före
+  första bilden: stol 2:s ankare gjordes av bildmodellen från en annan kamera och syns bara i ruta 0. Från stol 6 drog
+  referensbilden kameran framåt två gånger, utan den höll den (oprövat, en pilot). Från stol 7 blev ryggens kryss en röd
+  prick i båda tagningarna (Ö, huvudagenten och en oberoende granskare).
 - **En vinkel ur en film som finns:** Aleph 2.0 med en stillbild från den nya vinkeln som nyckelbild vid 0 s byter vinkel
   och behåller hennes rörelse, 112 krediter för 4 s. Vid cirka 30° följde kortet med; vid stol 1:s 63° tappades kortets
   väg (kastet kom tillbaka till handen, ett extra kort på bordet) (Ö). Gemini Omni Flash 1.2 ändrade inte vinkeln.

@@ -1,7 +1,7 @@
 // Brings a take ordered OUTSIDE Beställ into the repo: an agent's call through Runway's MCP server, written down entry by entry
 // in a ledger on the scratch disk (bestallningar.json: model, parameters, the text word for word, the pictures and the reference
 // film with their hashes, who approved it and on whose word, the call's time, task id and credits, the film as delivered and as
-// after-worked), or a call through the API key, as the API client's ledger has it (.runtime/natt-1121/api/ledger.json: the
+// after-worked), or a call through the API key, as the API client's ledger has it (tools/runway-api.ts, .runtime/runway-api/ledger.json: the
 // endpoint, the body as sent, the files with their hashes, the delivery; fromApiEntry reads it). It becomes an order in
 // data/orders/<id>.json and a receipt that say exactly that, marked as placed outside Beställ (order.outside, the receipt's
 // take outside: true, and via: api for a call through the API key), so that the bank takes it in the usual way afterwards:

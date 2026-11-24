@@ -3933,6 +3933,48 @@
           }
         },
         {
+          "id": "paow-film-giv-2-3-p4-c2-stol-5-01-t1",
+          "role": "film",
+          "name": "Giv P4.C2 sedd från stol 5, med märken (Kling 4 som redigerare)",
+          "path": "assets/motions/paow-giv-2-3-p4-c2-stol-5-01-01/source.mp4",
+          "still": 53,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Stolsserien 2026-11-24: dockans giv till P4.C2 sedd från stol 5, gjord om till Paow med Kling 4 som redigerare, med kortet som i dag (båda sidornas märken). Står på stolens ankare; sista rutan är inget ankare, så filmen går inte att kedja. Leveransen som den kom (1764 × 1172), inte efterarbetad. Ingen dom av Jakob.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-24"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-3-p4-c2-stol-6-01-t1",
+          "role": "film",
+          "name": "Giv P4.C2 sedd från stol 6, med märken (Kling 4 som redigerare)",
+          "path": "assets/motions/paow-giv-2-3-p4-c2-stol-6-01-01/source.mp4",
+          "still": 53,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Stolsserien 2026-11-24: dockans giv till P4.C2 sedd från stol 6, gjord om till Paow med Kling 4 som redigerare, med kortet som i dag (båda sidornas märken). Tredje anropet, utan referensbild (två lämnade stolens kamera). Står på stolens ankare; sista rutan är inget ankare, så filmen går inte att kedja. Leveransen som den kom (1764 × 1172), inte efterarbetad. Ingen dom av Jakob.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-24"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-3-p4-c2-stol-1-03-t1",
+          "role": "film",
+          "name": "Giv P4.C2 sedd från stol 1, med märken (Kling 4 som redigerare)",
+          "path": "assets/motions/paow-giv-2-3-p4-c2-stol-1-03-01/source.mp4",
+          "still": 53,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Stolsserien 2026-11-24: dockans giv till P4.C2 sedd från stol 1, gjord om till Paow med Kling 4 som redigerare, med kortet som i dag (båda sidornas märken). Står på stolens ankare; sista rutan är inget ankare, så filmen går inte att kedja. Leveransen som den kom (1764 × 1172), inte efterarbetad. Ingen dom av Jakob.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-24"
+          }
+        },
+        {
           "id": "paow-film-intro-noir-3-startruta",
           "role": "arbetsmaterial",
           "name": "Startrutan till filmen före spelet",

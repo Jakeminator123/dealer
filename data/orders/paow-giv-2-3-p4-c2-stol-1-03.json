@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-giv-2-3-p4-c2-stol-1-03",
+  "title": "Två händer, ett kort till platsen · plats 4, kort 2 · beställd utanför Beställ (vinkelprov-p4c2-oga-1-kling-sidor-2)",
+  "summary": "Gör en film av Paow: två händer, ett kort till platsen till plats 4, kort 2. Beställd utanför Beställ genom Runways API (utvecklarprojektets krediter) och införd i efterhand ur liggaren.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "GIV-2.3",
+    "label": "Två händer, ett kort till platsen",
+    "edge": "READY-C>P4.C2",
+    "shape": "ONE_WAY",
+    "cutInto": [
+      "READY-C>P4.C2"
+    ],
+    "makes": null
+  },
+  "motion": {
+    "grip": "TWO_HANDS",
+    "hand": "LH",
+    "pass": true,
+    "turn": true,
+    "flipAxis": "FREE",
+    "target": "P4.C2",
+    "side": "FRONT"
+  },
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · A2.3 från stol 1 (tatuerad)",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-giv-2-3-p4-c2-stol-1-03/first.png",
+      "sha256": "4cb853d04466cda21f4b10b2ea64356972f87cb49e3655ca4f2a256a124dbddb",
+      "from": {
+        "entry": "paow-ankare-2-3-d-stol-1",
+        "path": "assets/anchors/paow-ankare-2-3-d-stol-1/anchor.png",
+        "note": "ur liggaren ledger.json (assets/anchors/paow-ankare-2-3-d-stol-1/anchor.png)"
+      },
+      "waits": null
+    }
+  ],
+  "reference": {
+    "status": "FINNS",
+    "clips": [],
+    "path": "assets/orders/paow-giv-2-3-p4-c2-stol-1-03/reference.mp4",
+    "sha256": "832b944237a463782da6f7e961cecaf0847ea8224c3b662cf955a27a1ad929c9",
+    "seconds": 4,
+    "goesTo": "P4.C2",
+    "approvedStraight": false
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "kling-4",
+    "params": {
+      "resolution": "1080p",
+      "duration": 4
+    }
+  },
+  "prompt": {
+    "template": null,
+    "text": "Keep the movement of the video exactly as it is, with exactly the same timing, the same locked camera and the same framing: every position of the head, the arms, the hands and the fingers stays. Change what it looks like. The white mannequin becomes the real woman of the first frame and of the reference image: the same face, the same blonde bob, the same black jacket and cream top, and the same dark tattoos on her neck and on the backs of both her hands, sharp and fixed in the skin all through the video. She moves naturally, like a practised dealer, on exactly the mannequin's path. The grey table becomes the flat even green table of the first frame, and everything behind and beside her is the same flat even green screen. The black box becomes her black card shoe, as the first frame shows it, standing still in the same place. The card stays exactly as in the video: one small flat card that leaves the shoe with its yellow back up, is turned over once on its way, and is laid flat on the table exactly where the mannequin lays it, with its blue face up; it lies still there while her hand glides back to where it began. Only one card moves, and it keeps its size. Its back is one flat solid yellow right out to the corners with a filled red circle in the middle and a small pink cross near one end, and its face is one flat solid blue right out to the corners with a small pink cross in the middle and a small red dot in one corner: each mark exactly where the video shows it, sharp and unchanged for as long as its side shows; no border, no frame and no other print. Wherever the video shows yellow in the window of the shoe, a yellow card with the same red circle shows there: as she strokes one card out, the next one is already in the window. Photographic and sharp, the same soft even light as in the first frame.",
+    "sha256": "1d72ddfe4f4490d599dd05fa9bc4c8947eb26d3ea9746c769899c65b7c7aa66d",
+    "extra": null,
+    "middle": false
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 91,
+    "total": 91,
+    "worstPerTake": 91,
+    "worstTotal": 91,
+    "basis": "liggaren: saldot före minus saldot efter"
+  },
+  "limits": {
+    "maxCredits": 91,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Beställd utanför Beställ: dealer-5b (huvudagent) lade anropet genom Runways API (utvecklarprojektets krediter) (generate_video, kling-4) 2026-11-24T05:34:41.150Z, task 9bb0cef8-6768-4cc7-9153-6ccc76b328f6, 91 krediter (saldot 6561 före, 6288 efter).",
+    "Texten är den som skickades, ord för ord (liggarens body.promptText), inte promptFor:s. Vänster hand stryker ut kortet, höger lägger det.",
+    "Gjord med modellen som redigerare (/v1/video_to_video): referensfilmen är filmen som gjordes om, och den nya följer dess rörelse; .runtime/vinkelprov-p4c2/frame.png gick med som bild av utseendet (references)."
+  ],
+  "created": "2026-11-24T05:34:41.150Z",
+  "createdBy": "dealer-5b (huvudagent)",
+  "outside": {
+    "ledger": ".runtime/runway-api/ledger.json",
+    "ledgerSha256": "d54cc26836e692863a933cfa5d4da11b911efda5d656ad05df65b6149c411939",
+    "entry": "vinkelprov-p4c2-oga-1-kling-sidor-2",
+    "placedBy": "dealer-5b (huvudagent)",
+    "approvedBy": "Stolsserien på Jakobs ord 2026-11-24 (\"kör, du har 1000 till krediter\", \"Du får 1500 krediter till\"): given till P4.C2 från stol 1, som provet han sade Bra om, med kortet som i dag: ett kort per sida, båda sidornas märken. Tagning 2: den första fick en vit kant runt kortets blå sida (oberoende granskare).",
+    "mandate": null,
+    "importedAt": "2026-11-24T05:39:35.009Z",
+    "importedBy": "tools/order-import.ts",
+    "note": "Godkänd av huvudagenten före anropet, med orden i approvedBy; approval nedan är det godkännandet, skrivet när ordern fördes in, med hashen av ordern som den står här."
+  },
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-24T05:34:41.150Z",
+    "orderSha256": "93e21e58e7b623ee95abe1c7aee6cb85526c7ab671a26fba9b9037063572d064",
+    "mandate": "Stolsserien på Jakobs ord 2026-11-24 (\"kör, du har 1000 till krediter\", \"Du får 1500 krediter till\"): given till P4.C2 från stol 1, som provet han sade Bra om, med kortet som i dag: ett kort per sida, båda sidornas märken. Tagning 2: den första fick en vit kant runt kortets blå sida (oberoende grans"
+  },
+  "status": "GODKÄND"
+}
