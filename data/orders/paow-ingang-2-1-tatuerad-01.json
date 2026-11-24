@@ -80,7 +80,7 @@
   "created": "2026-11-23T21:12:52.430Z",
   "createdBy": "huvudagenten dealer-ac",
   "outside": {
-    "ledger": "c:/Users/jakem/dev/super-feature-sg/dealer/.runtime/natt-1121/api/ledger.json",
+    "ledger": ".runtime/natt-1121/api/ledger.json",
     "ledgerSha256": "701a43883bba56ba25fc1c20e2b1bff24b2dba0cc447e1e42bddeb5d511a7bbf",
     "entry": "paow-ingang-2-1-tatuerad-pilot-4",
     "placedBy": "huvudagenten dealer-ac",
@@ -93,7 +93,7 @@
   "approval": {
     "by": "huvudagent",
     "at": "2026-11-23T21:12:52.430Z",
-    "orderSha256": "e1b24280dbac96b370decd924bc53d2d32b770458c89042790839eca81a091fe",
+    "orderSha256": "4707968732483d74c95f748f2bb22b616d6f9ac68e10b670d16b04aa247a5c4a",
     "mandate": "Prov utanför Beställ, inom mandatet dealer-ac-20261123 och på Jakobs ord 2026-11-23 kl. 21.10: \"Jag skulle vilja att vi ordnar så att A2.1 också blir me hennes aningen mindre händer och såklart tatueringarna\"; kl. 21.35 \"Kör på i övrigt\". Kling 4, 4 s, 1080p, utan referensfilm: första bild trädet Ta"
   },
   "status": "GODKÄND"

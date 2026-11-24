@@ -91,7 +91,7 @@
   "created": "2026-11-23T16:20:26.528Z",
   "createdBy": "huvudagenten dealer-c2",
   "outside": {
-    "ledger": "c:/Users/jakem/dev/super-feature-sg/dealer/assets/proofs/fria-givar-20261123/leveranser/ledger.json",
+    "ledger": "assets/proofs/fria-givar-20261123/leveranser/ledger.json",
     "ledgerSha256": "dc1ff1f09b88c6a29ad06f7cfb6a4a3632664a0758915e3b69e652d163ee6319",
     "entry": "paow-fri-giv-p7-take-1",
     "placedBy": "huvudagenten dealer-c2",
@@ -104,7 +104,7 @@
   "approval": {
     "by": "huvudagent",
     "at": "2026-11-23T16:20:26.528Z",
-    "orderSha256": "fe6f6a79357dd9d4ba0fcb12a8c935d481f7308a279f83ec479f84ade4f2d20f",
+    "orderSha256": "6340254321c3c8f17c03f00540e213f8becdbeae172168962bb5e392152344ed",
     "mandate": "Prov utanför Beställ, på Jakobs svar i Beslut 2026-11-23 (kortet paow-fri-giv-p4: \"Ja, som variant\"; kortet lovar att samma sätt prövas för plats 7, vars giv med dockans film är underkänd) och hans anteckning 61 (\"hennes andra hand är för stel.. Hon gör ingenting med den\"): paow, A2.3 till plats 7 o"
   },
   "status": "GODKÄND"

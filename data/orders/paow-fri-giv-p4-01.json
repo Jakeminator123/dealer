@@ -91,7 +91,7 @@
   "created": "2026-11-23T15:45:42.763Z",
   "createdBy": "huvudagenten dealer-c2",
   "outside": {
-    "ledger": "c:/Users/jakem/dev/super-feature-sg/dealer/assets/proofs/fria-givar-20261123/leveranser/ledger.json",
+    "ledger": "assets/proofs/fria-givar-20261123/leveranser/ledger.json",
     "ledgerSha256": "dc1ff1f09b88c6a29ad06f7cfb6a4a3632664a0758915e3b69e652d163ee6319",
     "entry": "paow-fri-giv-p4-prov-take-1",
     "placedBy": "huvudagenten dealer-c2",
@@ -104,7 +104,7 @@
   "approval": {
     "by": "huvudagent",
     "at": "2026-11-23T15:45:42.763Z",
-    "orderSha256": "e7c85d7548bf47c7605f9fc26ef3c58150a4bd4a73aca7282e0a04f9346b341b",
+    "orderSha256": "4ed5ba7958ffd359e8884c84883db08bbe45c6bfd76ce9e73f790ddb560271dd",
     "mandate": "Prov utanför Beställ, på Jakobs ord 2026-11-23 i Prov (anteckning 56 och 57: \"hur ska man göra för att få som en variant på själva A2.3 - P4C1? Är det vår docka som stör?\", \"kan man inte frångå bara lite?\"): paow, A2.3 till plats 4 och tillbaka till A2.3, Kling 4, 4 s, 1080p, första bild Paows A2.3,"
   },
   "status": "GODKÄND"

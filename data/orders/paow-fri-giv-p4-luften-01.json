@@ -91,7 +91,7 @@
   "created": "2026-11-23T16:16:25.227Z",
   "createdBy": "huvudagenten dealer-c2",
   "outside": {
-    "ledger": "c:/Users/jakem/dev/super-feature-sg/dealer/assets/proofs/fria-givar-20261123/leveranser/ledger.json",
+    "ledger": "assets/proofs/fria-givar-20261123/leveranser/ledger.json",
     "ledgerSha256": "dc1ff1f09b88c6a29ad06f7cfb6a4a3632664a0758915e3b69e652d163ee6319",
     "entry": "paow-fri-giv-p4-kortet-i-luften-take-1",
     "placedBy": "huvudagenten dealer-c2",
@@ -104,7 +104,7 @@
   "approval": {
     "by": "huvudagent",
     "at": "2026-11-23T16:16:25.227Z",
-    "orderSha256": "ea70587884ff908659ccee45d2bd9a647ddadb19ab237a53d8b5ae4335bd629b",
+    "orderSha256": "bae4ab61832cab5f089cba4e4dd628060e85d2e7b17ee5a63b09309085d2e114",
     "mandate": "Prov utanför Beställ, på Jakobs ord 2026-11-23 i Prov (anteckning 61 och 62 om den fria given: \"hennes andra hand är för stel.. Hon gör ingenting med den\", \"Om vi ska göra en fri giv, och köra det som en variant, låt göra den och kalla den filmen typ 'kasta kortet i luften ...' eller 'kortet bakom r"
   },
   "status": "GODKÄND"
