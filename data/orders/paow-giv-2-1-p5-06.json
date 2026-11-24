@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 1,
+  "title": "Paow · Nyp, ett kort till platsen · A3P5C1 · tur och retur",
+  "summary": "Gör en film av Paow: ett kort från ankare 2.1 till plats 5, tur och retur.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "GIV-2.1",
+    "label": "Nyp, ett kort till platsen",
+    "edge": "READY>P5.C1",
+    "shape": "ROUND_TRIP",
+    "cutInto": [
+      "READY>P5.C1",
+      "P5.C1>READY"
+    ],
+    "makes": null
+  },
+  "motion": {
+    "grip": "PINCH",
+    "hand": "LH",
+    "pass": false,
+    "turn": true,
+    "flipAxis": "FREE",
+    "target": "P5.C1",
+    "side": "FRONT",
+    "fromPlan": true,
+    "planned": {
+      "grip": "PINCH",
+      "flipAxis": "FREE"
+    }
+  },
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows A2.1",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-giv-2-1-p5-06/first.png",
+      "sha256": "cffeda9388c050f392f616c0f70285529890ec62e1cfeb2889185b8cb7339e4f",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-nyp-tatuerad",
+        "path": "assets/anchors/paow-nyp-tatuerad/anchor.png",
+        "note": "Nyp, tatuerade händer (gäller)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Slutbild · samma + kortet öppet på plats 5",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-giv-2-1-p5-06/last.png",
+      "sha256": "30f902312af47c92fa94d752f43706f1c1eb389494336925f123ed65e6f6bb18",
+      "from": {
+        "built": "första bilden + kortet P5.C1 där planen säger"
+      },
+      "waits": null,
+      "width": 1764,
+      "height": 1174,
+      "drawn": {
+        "target": "P5.C1",
+        "side": "FRONT",
+        "as": "verkligt perspektiv: ett verkligt kort genom bordets lins, formen 87 % (src/card-plan.ts)",
+        "plan": {
+          "path": "placements/default.json",
+          "sha256": "a4f84f4a7039b78ae252eac980738fc2f25ce8f3ff06e712499316e7338ade86",
+          "updatedAt": "2026-11-23T23:42:05.513Z"
+        },
+        "texture": {
+          "image": "assets/cards/kortets-textur.png",
+          "sha256": "8a027a00d7f4dad1428b8db2c8b5a7ca283db92b8b93d96eb23cf77ce55df5a9"
+        },
+        "quad": [
+          [
+            1034.3,
+            1023.6
+          ],
+          [
+            1106.2,
+            1023.6
+          ],
+          [
+            1119.3,
+            1091.6
+          ],
+          [
+            1037.2,
+            1091.6
+          ]
+        ],
+        "centre": [
+          1074.3,
+          1057.6
+        ],
+        "measured": {
+          "centre": [
+            1074.5,
+            1058.5
+          ],
+          "area": 5695,
+          "box": [
+            88,
+            71
+          ],
+          "changedElsewhere": 0
+        },
+        "measuredOffsetPx": 0.9,
+        "mark": {
+          "cross": [
+            255,
+            120,
+            200
+          ],
+          "dot": [
+            225,
+            30,
+            35
+          ]
+        }
+      }
+    }
+  ],
+  "reference": {
+    "status": "FINNS",
+    "clips": [
+      "docka-paow-2-1-p5c1-avlast-03-a"
+    ],
+    "path": "assets/orders/paow-giv-2-1-p5-06/reference.mp4",
+    "sha256": "a831cb08b95ffd332db70298f5278fc483ba4e522addf99e8e67f9c1bcc86c4a",
+    "seconds": 5.458,
+    "goesTo": "P5.C1",
+    "approvedStraight": false,
+    "dealer": "docka",
+    "from": {
+      "film": "docka-paow-2-1-p5c1-avlast-03-a",
+      "path": "assets/references/docka/docka-paow-2-1-p5c1-avlast-03-a/source.mp4",
+      "sha256": "a831cb08b95ffd332db70298f5278fc483ba4e522addf99e8e67f9c1bcc86c4a",
+      "edge": "READY>P5.C1",
+      "verdict": "EJ_DÖMD",
+      "words": null,
+      "frames": null,
+      "also": []
+    }
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "kling-4",
+    "params": {
+      "resolution": "1080p",
+      "duration": 6
+    }
+  },
+  "prompt": {
+    "template": "film-giv-kort@12",
+    "style": "KORT",
+    "text": "Locked camera, one continuous shot. Video 1 shows only the movement: she moves like the dealer in video 1, with the same timing. Her hand at the shoe draws the yellow card up out of the window, holding it by its short end between thumb and fingers, its broad yellow side towards the camera, and carries it low over the felt towards its place a little to the right of the middle of the picture, where the last frame shows it. On the way her wrist rolls once and her hand and the card turn over together about the card's long side, like turning a key: the broad yellow side narrows to a thin edge, then the broad blue side opens towards the camera. With her hand still turned, she lays the card flat at its place and lets go of it; only then does her empty hand turn palm down. Then her open hand glides back low over the felt, palm down, to the shoe and takes the next card. The other hand rests on the felt. Only one card moves: a small card, about half as long as her hand, which keeps the size it has in the last frame all the way from the shoe to its place. Its back is blank solid yellow, right out to its corners, and its face is solid blue with a small pink cross in the middle and a small red dot in one corner, as the last frame shows it; the next card in the window is the same blank yellow.",
+    "sha256": "b21c36a82e9f7da57f411cf0faf902667b39aebe5dbc9958aad0c2361ea513bc",
+    "extra": null,
+    "middle": false,
+    "faceMark": true
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 128,
+    "total": 128,
+    "worstPerTake": 141,
+    "worstTotal": 141,
+    "basis": "21,3 krediter per s × 6 s. Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12. Prislistan 2026-11-24: 11,28 per s av 'the greater of total input duration and output duration' till 2026-11-30, sedan 14,1; referensfilmer är indata."
+  },
+  "limits": {
+    "maxCredits": 141,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Recept giv-2.1-mitten: prövat i 2 beställningar.",
+    "Undantag från receptet: tur och retur i stället för bara dit; referensfilmen är dockan paows egen film (docka-paow-2-1-p5c1-avlast-03-a), vald med namn: en dockas film är aldrig förvald."
+  ],
+  "createdBy": "huvudagenten, tools/order-new.ts",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-24T02:07:48.718Z",
+    "orderSha256": "b53b7c1a5b30289387ea81cd6a4304fadb98921c07fdb6f98165812d3be49fa4",
+    "mandate": "Jakob 2026-11-24 kl. 02.25 i chatten: 2000 krediter i två timmar (mandatet dealer-d1-20261124); en giv per plats från tatuerat A2.1, efter piloten paow-giv-2-1-p4-18"
+  },
+  "status": "GODKÄND",
+  "id": "paow-giv-2-1-p5-06",
+  "created": "2026-11-24T01:55:12.326Z"
+}

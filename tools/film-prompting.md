@@ -402,6 +402,18 @@ sidan upp, kortet beskrivs bara som gult (blått nämns inte), och återgången 
 `paow-giv-2-3-d-03` (mätt i full upplösning): gult i alla 73 rutor, ingen blå yta, kortet 0 px från planen. Val:
 `--mall 16`.
 
+**Avläst dockfilm mot en text som säger något annat (2026-11-24).** Sex givar med återgång från det tatuerade A2.1
+(`paow-giv-2-1-p4-18`, `-p1-10`, `-p2-05`, `-p3-04`, `-p5-06`, `-p7-07`; mall 12, 816 krediter) fick dockans AVLÄSTA
+Casinogivar som referensfilm, med textens "she moves like the dealer in video 1, with the same timing". Jakob underkände
+fem av sex givar ("MÅSTE FINNAS METODFEL"; plats 3 blev variant, returerna godkända). Kling följde dockan inom några
+rutor, inte texten: texten bad om "carries it low over the felt" och "lays the card flat at its place", dockan lyfte
+kortet till axelhöjd, lät det hänga, lade det före platsen och sköt det med platt hand (plats 4, 5, 7), eller lade det
+gult och vände det efteråt (plats 2, 3). Där text och docka sade olika färg bytte kortet färg i bilden utan vändning
+(plats 1 ruta 69→70, plats 2 ruta 81). Rutmåtten fångade inget av det: ett kort, kantruta, landning inom 1,5 px, slutet
+mötte A2.1. Det som har hållit: en BYGGD naturlig cykel, lika lång som filmen, som "rough guide" med en text som
+beskriver samma rörelse (mall 15 från A2.3), eller ingen dockfilm alls (`paow-giv-2-1-p1-04`, mall 5). Se dockfilmen som
+kontaktark före ordern, och visa Jakob en pilot i spelstorlek före resten.
+
 **Kort rörelse, stilla slut.** I ett nytt tidsprov kan prompten ange att hela rörelsen inklusive returen når
 slutankaret tidigt och därefter håller samma pose. Ändra inte receptet för befintliga order. `film-after.ts` föreslår
 en kortning i `after.json.stillAnchorTail` bara om minst 0,4 s i slutet ligger inom två färgsteg per kanal från både

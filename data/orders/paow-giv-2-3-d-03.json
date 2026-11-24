@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 1,
+  "title": "Paow · A3DC1 stängt · giv och återgång, mall 16",
+  "summary": "Gör en film av Paow: ett kort från ankare 2.3 till dealerns plats, tur och retur.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "GIV-2.3",
+    "label": "Två händer, ett kort till platsen",
+    "edge": "READY-C>D.C1",
+    "shape": "ROUND_TRIP",
+    "cutInto": [
+      "READY-C>D.C1",
+      "D.C1>READY-C"
+    ],
+    "makes": null
+  },
+  "motion": {
+    "grip": "TWO_HANDS",
+    "hand": "LH",
+    "pass": true,
+    "turn": false,
+    "flipAxis": null,
+    "target": "D.C1",
+    "side": "BACK",
+    "fromPlan": true,
+    "planned": {
+      "grip": "PINCH",
+      "flipAxis": null
+    }
+  },
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · Paows A2.3 · arkiverad",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-giv-2-3-d-03/first.png",
+      "sha256": "8e60b0eae86e271f5fd191dc16a37bc8256f2b5fb2a58a2fe65206623927e386",
+      "width": 1764,
+      "height": 1174,
+      "from": {
+        "entry": "paow-ankare-2-3-d",
+        "path": "assets/anchors/paow-ankare-2-3-d/anchor.png",
+        "note": "Blicken ned mot kortet, vänster hand uppifrån på kortet (arkiverad)"
+      },
+      "waits": null
+    },
+    {
+      "name": "last.png",
+      "label": "Slutbild · samma + kortet stängt på dealerns plats",
+      "goesAs": "endFrame",
+      "path": "assets/orders/paow-giv-2-3-d-03/last.png",
+      "sha256": "cf683e9e7a945b7352d510641e7d05eb8855bf39208a11d8437b7cfb1066e85d",
+      "from": {
+        "built": "första bilden + kortet D.C1 där planen säger"
+      },
+      "waits": null,
+      "width": 1764,
+      "height": 1174,
+      "drawn": {
+        "target": "D.C1",
+        "side": "BACK",
+        "as": "verkligt perspektiv: ett verkligt kort genom bordets lins, formen 87 % (src/card-plan.ts)",
+        "plan": {
+          "path": "placements/default.json",
+          "sha256": "a4f84f4a7039b78ae252eac980738fc2f25ce8f3ff06e712499316e7338ade86",
+          "updatedAt": "2026-11-23T23:42:05.513Z"
+        },
+        "texture": {
+          "image": "assets/cards/kortets-textur.png",
+          "sha256": "8a027a00d7f4dad1428b8db2c8b5a7ca283db92b8b93d96eb23cf77ce55df5a9"
+        },
+        "quad": [
+          [
+            817.5,
+            902.1
+          ],
+          [
+            884.6,
+            902.1
+          ],
+          [
+            887.5,
+            959.5
+          ],
+          [
+            812.2,
+            959.5
+          ]
+        ],
+        "centre": [
+          850.4,
+          930.8
+        ],
+        "measured": {
+          "centre": [
+            850.6,
+            931.7
+          ],
+          "area": 4475,
+          "box": [
+            76,
+            60
+          ],
+          "changedElsewhere": 0
+        },
+        "measuredOffsetPx": 0.9
+      }
+    }
+  ],
+  "reference": {
+    "status": "FINNS",
+    "clips": [
+      "docka-paow-2-3-dc1-bestalld-c"
+    ],
+    "path": "assets/orders/paow-giv-2-3-d-03/reference.mp4",
+    "sha256": "0f38c593edb1b81dd413b2c47c1287a24f3fe7df2bff8be14fbe2e8348ee9a18",
+    "seconds": 3,
+    "goesTo": "D.C1",
+    "approvedStraight": false,
+    "dealer": "docka",
+    "from": {
+      "film": "docka-paow-2-3-dc1-bestalld-c",
+      "path": "assets/references/docka/docka-paow-2-3-dc1-bestalld-c/source.mp4",
+      "sha256": "0f38c593edb1b81dd413b2c47c1287a24f3fe7df2bff8be14fbe2e8348ee9a18",
+      "edge": "READY-C>D.C1",
+      "verdict": "EJ_DÖMD",
+      "words": null,
+      "frames": null,
+      "also": []
+    }
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "kling-4",
+    "params": {
+      "resolution": "1080p",
+      "duration": 3
+    }
+  },
+  "prompt": {
+    "template": "film-giv-kort@16",
+    "style": "KORT",
+    "text": "Locked camera, one continuous shot. Video 1 shows only the movement, as a rough guide: her hands go the way the hands go in video 1, at about the same moments. Above all she moves naturally, like a practised dealer, with soft, relaxed arms and hands. Her hand at the shoe strokes the yellow card out of the window and slides it flat on the felt a short way out from the shoe, where her other hand meets it. There her other hand lays its fingertips flat on the card and slides it on along the felt, yellow side up, towards its place close in front of her, in the middle of the picture, where the last frame shows it. She stops it there and lifts her fingertips off it. Then that hand glides back low over the felt, palm down, and comes to rest flat on the felt in front of her, as in the first frame. The hand from the shoe lets go as her other hand takes over and settles back at the shoe. A yellow card shows in the window of the shoe all the time: as she strokes one out, the next one is already there. Her head stays bowed and turns towards the place where the card will lie. Only one card moves: a small card, about half as long as her hand, which keeps the size it has in the last frame all the way from the shoe to its place. It is blank, solid yellow right out to its corners, and the next card in the window is the same blank yellow. Only the card and the hands holding it move quickly, as in video 1; her head, her gaze and her free hand keep an ordinary, unhurried pace.",
+    "sha256": "fcad65e885a72baa6de4d40bad76e37ecfa18cfb56738f8090537dadf3a29d67",
+    "extra": "Only the card and the hands holding it move quickly, as in video 1; her head, her gaze and her free hand keep an ordinary, unhurried pace.",
+    "middle": false
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 64,
+    "total": 64,
+    "worstPerTake": 71,
+    "worstTotal": 71,
+    "basis": "21,3 krediter per s × 3 s. Liggarna b19 och b20: 7 s i 1080p = 149 krediter; listpris 23,5 per s i verktyget generate_video 2026-11-12. Prislistan 2026-11-24: 11,28 per s av 'the greater of total input duration and output duration' till 2026-11-30, sedan 14,1; referensfilmer är indata."
+  },
+  "limits": {
+    "maxCredits": 71,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Recept giv-2.3: prövat i 6 beställningar.",
+    "Undantag från receptet: tur och retur i stället för bara dit; mall 16 i stället för 14; referensfilmen är dockan paows egen film (docka-paow-2-3-dc1-bestalld-c), vald med namn: en dockas film är aldrig förvald."
+  ],
+  "createdBy": "huvudagenten, tools/order-new.ts",
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-24T01:57:41.339Z",
+    "orderSha256": "cdc2d4a4cda24b4da20f0f893d85357da71fded90439eb9c7ee36dc0c7813998",
+    "mandate": "Jakob 2026-11-24 natt (kl. 02): D.C1 stängt som i hans plan. Huvudagenten dealer-d1 godkänner omtagningen paow-giv-2-3-d-03 (mall 16, sedan paow-giv-2-3-d-02 vände kortet till blått), en tagning, högst två tagningar och 150 krediter i allt för D.C1, inom mandatet dealer-d1-20261124."
+  },
+  "status": "GODKÄND",
+  "id": "paow-giv-2-3-d-03",
+  "created": "2026-11-24T01:57:17.539Z"
+}

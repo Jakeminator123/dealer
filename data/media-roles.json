@@ -3765,6 +3765,132 @@
           }
         },
         {
+          "id": "paow-film-giv-2-3-d-02-t1",
+          "role": "film",
+          "name": "Paow · A3DC1 · giv och återgång, dockans sparade rörelse, tagning 1",
+          "path": "assets/films/paow/giv-2-3-d-02-t1/source.mp4",
+          "still": 40,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Beställarens titt (inte en dom): kortet ska vara stängt hela vägen men vänds till blått i ruta 9–11, ligger blått 11–43 och byter till gult utan beröring i ruta 44. Delning ruta 33 (handen lyfter från kortet).",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-24"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-3-d-c2-02-t1",
+          "role": "film",
+          "name": "Paow · A3DC2 · giv och återgång, dockans sparade rörelse, tagning 1",
+          "path": "assets/films/paow/giv-2-3-d-c2-02-t1/source.mp4",
+          "still": 40,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Beställarens titt (inte en dom): gult ur skon, vänds i höger hand ruta 14–17, blått från ruta 18 och på D.C2-platsen till slutet; delning ruta 32 funnen av verktyget.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-24"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-3-d-03-t1",
+          "role": "film",
+          "name": "Paow · A3DC1 stängt · giv och återgång, mall 16, tagning 1",
+          "path": "assets/films/paow/giv-2-3-d-03-t1/source.mp4",
+          "still": 40,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i Kön. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-24"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-1-p4-18-t1",
+          "role": "film",
+          "name": "Paow · Nyp, ett kort till platsen · A3P4C1 · tur och retur, tagning 1",
+          "path": "assets/films/paow/giv-2-1-p4-18-t1/source.mp4",
+          "still": 80,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i Kön. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-24"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-1-p1-10-t1",
+          "role": "film",
+          "name": "Paow · Nyp, ett kort till platsen · A3P1C1 · tur och retur, tagning 1",
+          "path": "assets/films/paow/giv-2-1-p1-10-t1/source.mp4",
+          "still": 80,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i Kön. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-24"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-1-p2-05-t1",
+          "role": "film",
+          "name": "Paow · Nyp, ett kort till platsen · A3P2C1 · tur och retur, tagning 1",
+          "path": "assets/films/paow/giv-2-1-p2-05-t1/source.mp4",
+          "still": 93,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i Kön. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-24"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-1-p3-04-t1",
+          "role": "film",
+          "name": "Paow · Nyp, ett kort till platsen · A3P3C1 · tur och retur, tagning 1",
+          "path": "assets/films/paow/giv-2-1-p3-04-t1/source.mp4",
+          "still": 80,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i Kön. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-24"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-1-p5-06-t1",
+          "role": "film",
+          "name": "Paow · Nyp, ett kort till platsen · A3P5C1 · tur och retur, tagning 1",
+          "path": "assets/films/paow/giv-2-1-p5-06-t1/source.mp4",
+          "still": 80,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i Kön. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-24"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-1-p7-07-t1",
+          "role": "film",
+          "name": "Paow · Nyp, ett kort till platsen · A3P7C1 · tur och retur, tagning 1",
+          "path": "assets/films/paow/giv-2-1-p7-07-t1/source.mp4",
+          "still": 67,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Efterarbetad tagning ur en beställning i Kön. Kandidat tills Jakob har dömt.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-24"
+          }
+        },
+        {
           "id": "paow-film-intro-noir-3-startruta",
           "role": "arbetsmaterial",
           "name": "Startrutan till filmen före spelet",
