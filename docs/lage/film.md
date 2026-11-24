@@ -35,10 +35,11 @@ utfall står i handboken (`tools/film-prompting.md` §5), historien i Git.
 4. Bryggorna för Tatuerad nyp: utgången A2.1 → A1 (ingången baklänges) och A2.1 ↔ A2.3 vid skon ([karta](karta.md)).
 5. Avslöjandet av dealerns stängda kort (D.C1) behöver en film (hålkortsfilmerna vänder D.C2); mall 15: mer frihet i vändningen.
 6. Det vita i skons fönster: [kort](kort.md), Nästa steg 3. Fler vilor för Tatuerad (handboken §3.6, inom taket).
-7. Vilan `paow-vila-28-01-fix-1` är införd (godkänd åt honom); originalet arkiverar Jakob, annars spelas båda.
+7. Vilan `paow-vila-28-01-fix-1` är införd (godkänd åt honom); originalet arkiverar Jakob.
 
-**Väntar på Jakob.** I chatten: noirfilmen med heltatuerad trappa (`assets/noir/fardiga/…-heltatuerad.mp4`, i Prov
-`trailer-noir-3`; spelet byter först på hans ja), ansiktsbilden, och om Tatuerad ska byta till A2.3 med märke.
+**Väntar på Jakob.** Hans egen dom i Granska på `paow-giv-2-3-d-03-01` (stängt kort, mall 16) och på piloten med
+kortets märken (Prov `vinkelprov-p4c2-20261124`, film 13–15). I chatten: Tatuerads A2.3 med märke?
+Noirfilmen med heltatuerad trappa: hans "inte bra" 2026-11-24.
 
 **Var saker ligger.** Vägen för en ny dealer i [tools/dealer-line.md](../../tools/dealer-line.md), handboken i
 [tools/film-prompting.md](../../tools/film-prompting.md), granskningen i `tools/film-review.md`, läget per dealer med

@@ -1048,14 +1048,6 @@
       "at": "2026-11-24T02:30:57.384Z"
     },
     {
-      "id": 111,
-      "proof": "vinkelprov-p4c2-20261124",
-      "file": null,
-      "choice": null,
-      "text": "fÖRSTA FILMEN FÅR HON SPETSIGA FINGRAR CH ANORLUNDA ANSIKTE. dET ANDRA ÄR BRA",
-      "at": "2026-11-24T02:38:05.836Z"
-    },
-    {
       "id": 112,
       "proof": "trailer-noir-3",
       "file": "noir-trailer-3-kort-heltatuerad.mp4",
@@ -1086,6 +1078,30 @@
       "choice": "inte-bra",
       "text": "",
       "at": "2026-11-24T02:47:13.202Z"
+    },
+    {
+      "id": 116,
+      "proof": "vinkelprov-p4c2-20261124",
+      "file": "16-kortet-nara-i-sista-rutan-dockan-och-paow.png",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-24T03:34:10.853Z"
+    },
+    {
+      "id": 117,
+      "proof": "vinkelprov-p4c2-20261124",
+      "file": "12-dockans-ruta-och-startbilden-per-kamera.png",
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-24T03:34:25.750Z"
+    },
+    {
+      "id": 118,
+      "proof": "vinkelprov-p4c2-20261124",
+      "file": null,
+      "choice": "bra",
+      "text": "",
+      "at": "2026-11-24T03:34:47.471Z"
     }
   ]
 }

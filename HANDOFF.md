@@ -6,14 +6,15 @@ Läs AGENTS.md, den här sidan och EN lägesfil för din bana. Ersätt inaktuell
 ## Läget
 
 - Målet är en trovärdig utdelning i spelet i studion: två kort till plats 1–7 och två eller tre till dealern, med
-  returer till redo och vila. Paow är dealern; Pamela är arkiverad (BESKED). Projektet är tills vidare frikopplat från
-  Scoutgaming (Jakob 2026-11-23).
+  returer till redo och vila. Paow är dealern; Pamela är arkiverad (BESKED).
 - Labbet är en vy, Bordet, där en film beställs längs en rak linje: kortets plats och steget, receptet ger resten.
   Kommandot `node tools/order-new.ts` gör samma utkast; Karta visar varje dealers träd.
-  Dockan är Kortplans steg 2 (`?lage=docka`), med Docklabbet och dockans filmer; steg 3 sparar given ur den.
-- Spelet körs enbart med hennes tatuerade händer (Jakob 2026-11-24), i två träd: skjutet från A2.3 och nypet från
-  A2.1, som görs om tatuerat och snabbare ([film](docs/lage/film.md)). Karta binder dem till en viktad komposition;
-  Casinot spelar `?trad=<id>` eller `?komposition=<id>` ([karta](docs/lage/karta.md)). Dealerns första kort ligger stängt.
+  Dockan är Kortplans steg 2 (`?lage=docka`); steg 3 sparar given ur den.
+- Spelet spelar trädet Tatuerad (Jakob 2026-11-24: bara hennes tatuerade händer), skjutet från A2.3; nypet från A2.1
+  är trädet Tatuerad nyp, som byggs. Karta binder dem till en viktad komposition; Casinot spelar `?trad=<id>` eller
+  `?komposition=<id>` ([karta](docs/lage/karta.md)). Dealerns första kort (D.C1) ligger stängt.
+- Beställ släpper bara sätt som håller, och ett oprövat sätt får en pilot som Jakob dömer först (2026-11-24;
+  `node tools/verdicts-per-method.ts paow`, [film](docs/lage/film.md)).
 - Kopian på nätet är publicerad på `c9d006d` den 2026-11-20 på Jakobs ord, utan nya filmer. Telefonmått, fysisk
   telefon och ljud återstår ([spelet](docs/lage/spelet.md)).
 - Kontrollen före en push körs bara på datorn. Kontots tokengräns delas av alla sessioner: få underagenter.
@@ -22,18 +23,16 @@ Läs AGENTS.md, den här sidan och EN lägesfil för din bana. Ersätt inaktuell
 
 Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-18), med EN trovärdig giv först ([film](docs/lage/film.md)).
 
-1. Giv och återgång i en film är sättet (Jakob 2026-11-23): plats 1–6, kort 1, ligger i banken; plats 7 görs om;
-   kort 2–7 återbrukar platsens film. Sista given går direkt till vila, en retur per plats. Hans godkända fria givar ligger i banken
-   som varianter ([film](docs/lage/film.md)).
-2. Dockan: kortet i handen genom vändningen, ingångarna A2.1–A2.3 och handen över skon
-   ([LASMIG](dealer3d/LASMIG.md), "Naturlig ställning", Kvar).
+1. Giv och återgång i en film är sättet (Jakob 2026-11-23): plats 1–6, kort 1, ligger i banken; plats 7 görs om,
+   och en film som vänder upp D.C1 saknas ([film](docs/lage/film.md)).
+2. Dockan: givarna från A2.1 byggs om, ETT sätt att göra dockans film, och Kortplanens val följer vad dockan kan
+   (Jakob 2026-11-24; [LASMIG](dealer3d/LASMIG.md), "Överlämning"). Sedan en pilot från A2.1 som han ser först.
 3. Jakobs plan, domar och orderutkast skrivs aldrig över; läs hans anteckningar med `node tools/proof-notes.ts`.
-4. Rundans 22 filmbehov täcks; P6 går via A2.2 ([kort](docs/lage/kort.md)).
-5. Den neutrala munnen gäller alla Paows repliker utom blackjack, som väntar på hans ja; ljudet hörs ([spelet](docs/lage/spelet.md)).
+4. Den neutrala munnen gäller alla Paows repliker utom blackjack, som väntar på hans ja; ljudet hörs ([spelet](docs/lage/spelet.md)).
 
 ## Vem äger vad
 
-- **Huvudagentens adress: `dealer-d1`.** Claude-sessionen `dealer-d1` äger commits, push, taggar, studion,
+- **Huvudagentens adress: `dealer-5b`.** Claude-sessionen `dealer-5b` äger commits, push, taggar, studion,
   labbservern, spelet, 3D-scenens filmlager, `src/clip-graph.ts`, registren och styrdokumenten.
   En i taget kör kontrollen och pushar: den som ska pusha säger det till den andre och väntar på "kör".
 - **Jakob talar helst med huvudagenten, som delegerar** (hans ord 2026-11-17), men öppnar andra chattar när han
@@ -44,7 +43,7 @@ Sammanhängande lokal väg från underlag till spelbar Blackjack (Jakob 2026-11-
   ord) och börjar från [dealer3d/LASMIG.md](dealer3d/LASMIG.md). Mätningen är stängd; givarna från A2.3 är filmbanans.
 - **Kartabanan** (vyn Karta och dealerns träd) är huvudagentens sedan 2026-11-24 och börjar från
   [docs/lage/karta.md](docs/lage/karta.md).
-- **Andra sessioner:** `dealer-ac`, `dealer-a4`, `dealer-e7` och `dealer-19` är stängda (2026-11-24). Bordets filer, `src/order-*.ts`,
+- **Andra sessioner:** `dealer-ac`, `dealer-a4`, `dealer-e7`, `dealer-19` och `dealer-d1` är stängda (2026-11-24). Bordets filer, `src/order-*.ts`,
   `tools/doll-order.ts`, `data/order-methods.json` och `dealer3d/` är huvudagentens tills en ny session tar över från
   [LASMIG](dealer3d/LASMIG.md), "Överlämning", och säger till. Filmregistret är `data/motions.jsonl`, läst genom en SQLite-databas under
   `.runtime/register/` (`node tools/register.ts`; BESKED, "Registren i en databas").
