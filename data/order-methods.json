@@ -369,36 +369,56 @@
       "id": "giv-2.3",
       "step": "GIV-2.3",
       "seats": null,
-      "status": "prov",
+      "status": "gäller",
       "model": "kling-4",
       "resolution": "1080p",
       "style": "KORT",
-      "template": 14,
-      "seconds": 3,
+      "template": 15,
+      "seconds": 4,
       "takes": 1,
       "turn": "FREE",
       "hand": null,
-      "shape": "ONE_WAY",
+      "shape": "ROUND_TRIP",
       "reference": "renderad",
-      "lastPicture": "platsens-slutbild",
+      "lastPicture": "ritat-kort",
       "extra": null,
       "evidence": {
-        "orders": ["paow-giv-2-3-p4-h24-03", "paow-giv-2-3-p4-h24-cykel-01", "paow-giv-2-3-p4-h24-cykel-02", "paow-giv-2-3-p4-c2-h24-cykel-01", "paow-giv-2-3-p3-02", "paow-giv-2-3-p3-03"],
-        "reviewer": ["H24-03: giv Variant 4/5. Cykel01: giv underkänd, retur Variant 4/5. Cykel02: giv Variant 3/5, retur Variant 4/5. C2-cykel01 t1: giv Variant 3/5, retur Variant 4/5. Detaljer och bildbevis ligger vid tagningarna."],
+        "orders": [
+          "paow-giv-2-3-p1-03",
+          "paow-giv-2-3-p2-02",
+          "paow-giv-2-3-p3-04",
+          "paow-giv-2-3-p4-02",
+          "paow-giv-2-3-p5-05"
+        ],
+        "reviewer": [
+          "Plats 1–5, kort 1: domblocken i banken är satta åt Jakob; plats 6 (paow-giv-2-3-p6-02) likaså."
+        ],
         "owner": [
           {
-            "take": "paow-giv-2-3-p3-02-01",
-            "words": "Jakob 2026-11-23: godkänd i labbet."
+            "take": "paow-giv-2-3-p1-03-01",
+            "words": "Jakob 2026-11-23: Ja, alla håller"
           },
           {
-            "take": "paow-giv-2-3-p3-03-01",
-            "words": "Jakob 2026-11-23: Detta är okej. Vit kant runt kortet dock, aningen robotliknande rörese. men är helt okej"
+            "take": "paow-giv-2-3-p2-02-01",
+            "words": "Jakob 2026-11-23: Ja, alla håller"
+          },
+          {
+            "take": "paow-giv-2-3-p3-04-01",
+            "words": "Jakob 2026-11-23: Ja, alla håller"
+          },
+          {
+            "take": "paow-giv-2-3-p4-02-01",
+            "words": "Jakob 2026-11-23: Ja, alla håller"
+          },
+          {
+            "take": "paow-giv-2-3-p5-05-01",
+            "words": "Jakob 2026-11-23: Ja, alla håller"
           }
         ],
-        "note": "Giv med två händer från ankare 2.3. Receptet är fortfarande prov: H24-03 (3 s, MINIMAL) gav Variant 4/5, och undantaget H24-cykel02 (4 s, giv och retur) gav Variant 3/5 respektive 4/5. Det är inte belägg för seriereceptet ovan. Cykelns skokort håller gult med slutbild, framsidan bleknar; färgat filmkort är synprovat i scenen. Orderspecifika inställningar och bevis finns i respektive order, sammanvägningen i tools/film-prov.md. Ytterplatser och hela given återstår. Mall 14 är receptets mall sedan 2026-11-23 (Jakob samma dag: \"naturlig primärt, så var inte extremt nitsk med dockans rörelse\", docs/BESKED.md). Belägget är två givar till plats 3 med samma dockfilm (docka-2-3-p3c1-svep24d), en tagning var, båda godkända av Jakob 2026-11-23: paow-giv-2-3-p3-02 (mall 14) \"godkänd i labbet.\", och paow-giv-2-3-p3-03 (mall 12, och en annan första bild: provet utan vit linje i skon) med orden \"aningen robotliknande rörese\". En plats och en film per mall: receptet är fortfarande prov."
+        "note": "Giv och återgång i EN film från ankare 2.3: Kling 4, 4 s, mall 15, första bild A2.3, sista bild samma med kortet ritat på platsen, dockans BYGGDA film (plan hand, 24 rutor/s) som referensfilm. Jakobs ja står i Beslut-kortet paow-givar-2-3-c1 (fältet beslut nedan) och i docs/BESKED.md, \"Högerhanden vid nedsläppet\". Receptet sade tidigare mall 14, 3 s, bara dit (prov): det var vägen före hans ja och beställs inte längre som recept. Plats 7 håller inte än (händerna vänder inte kortet); dealerns stängda kort skrivs med mall 16."
       },
-      "setBy": "huvudagentens underagent (rak linje), på Jakobs ord 2026-11-18 om för många val; ur handboken §5 och de tidigare raderna; mallen 14: huvudagenten genom en underagent 2026-11-23, på Jakobs domar samma dag",
-      "setAt": "2026-11-18"
+      "setBy": "huvudagenten dealer-d1 2026-11-24, på Jakobs ja i Beslut 2026-11-23 (\"Ja, alla håller\"); receptet följer nu filmerna han sade ja till",
+      "setAt": "2026-11-24"
     },
     {
       "id": "retur-2.1",

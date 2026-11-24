@@ -386,10 +386,10 @@ ledning, att händerna går samma väg vid ungefär samma ögonblick och att hon
 dealer med mjuka, avspända armar och händer; den säger fortfarande att video 1 bara visar rörelsen, eftersom dockan är
 vit och saknar ansikte. Ingången till 2.3 säger var den andra handen slutar i ankaret som nu är sista bild
 (`paow-ankare-2-3-c`): platt på filten framför henne, där mall 12 säger att båda händerna går till skon och att den
-andra väntar intill den. Mall 13:s korta texter ingår inte. Sedan 2026-11-23 är mall 14 receptets mall för given från
-A2.3 och ingången dit (GIV-2.3 och INGANG-2.3 i `data/order-methods.json`, båda fortfarande prov): en order av de stegen
-skrivs med den utan att säga något, och mall 12 är där ett val (`--mall 12`); för andra steg är mall 14 ett val per order
-(`--mall 14`). Jakobs domar samma dag: given `paow-giv-2-3-p3-02` (mall 14) godkänd, "godkänd i labbet."; given
+andra väntar intill den. Mall 13:s korta texter ingår inte. Sedan 2026-11-23 är mall 14 receptets mall för ingången till
+A2.3 (INGANG-2.3 i `data/order-methods.json`, prov): en order av det steget skrivs med den utan att säga något, och mall 12
+är där ett val (`--mall 12`); för andra steg är mall 14 ett val per order (`--mall 14`). Given från A2.3 har sedan
+2026-11-24 receptet Jakob sade ja till (GIV-2.3, gäller): giv och återgång i en film, 4 s, mall 15. Jakobs domar samma dag: given `paow-giv-2-3-p3-02` (mall 14) godkänd, "godkänd i labbet."; given
 `paow-giv-2-3-p3-03` (mall 12, samma dockfilm, en annan första bild) godkänd med orden "aningen robotliknande rörese";
 ingången `paow-ingang-2-3-02` (mall 14) underkänd för blicken, "Annars bra!", och blicken kommer ur ankarbilden, inte ur
 texten. Mall 14 ändrar bara den korta texten: en film i den minimala texten skrivs med mall 12.

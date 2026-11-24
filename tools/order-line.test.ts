@@ -154,7 +154,7 @@ test('the recipe\'s text for every deal says each thing once and nothing against
     for (const name of ['kameran', 'greppet ur skon', 'läggningen', 'kortets utseende']) assert.equal(said(name), 1, `${c.step} → ${c.target}: ${name}\n${p.text}`);
     assert.equal(said('referensfilmen'), c.reference ? 1 : 0, `${c.step} → ${c.target}: referensfilmen`);
     assert.equal(said('vändningen'), c.motion.side === 'FRONT' ? 1 : 0, `${c.step} → ${c.target}: vändningen\n${p.text}`);
-    assert.equal(said('vägen tillbaka'), 0, 'bara dit: no way back');
+    assert.equal(said('vägen tillbaka'), c.shape === 'ONE_WAY' ? 0 : 1, `${c.step} → ${c.target}: bara dit has no way back, tur och retur says it once: ${p.text}`);
     // Her eyes are in the pictures, not in a deal's text (handbook §5); the deal from 2.3 says where her head turns, as measured.
     assert.equal(said('blicken'), c.motion.grip === 'TWO_HANDS' ? 1 : 0, `${c.step} → ${c.target}: blicken`);
     assert.equal(said('den vilande handen'), 1, `${c.step} → ${c.target}: the hand that does not lay the card\n${p.text}`);
@@ -225,7 +225,8 @@ test('every other recipe of the register says each thing once with its own addit
 
 test('a deal with no last picture (round two, 2026-11-21): the two-hand deal from 2.3 in 12, 13 and 14 names no last frame and still says each thing once', async () => {
   const { recipe } = await cases();
-  const twoHand = recipe.filter((c) => c.step === 'GIV-2.3' && c.shape === 'ONE_WAY' && c.motion.side === 'FRONT' && c.reference);
+  // Bara dit is the exception since 2026-11-24 (the recipe is giv och återgång in one film): the recipe's cases, said bara dit.
+  const twoHand = recipe.filter((c) => c.step === 'GIV-2.3' && c.motion.side === 'FRONT' && c.reference).map((c) => ({ ...c, shape: 'ONE_WAY' as const }));
   assert.ok(twoHand.length >= 7, `${twoHand.length} two-hand deals with a reference film`);
   for (const c of twoHand) for (const version of TEMPLATE_CHOICES) {
     // The marks are said: the seat's A3 is made afterwards with the plan's card drawn on it, marks and all.
