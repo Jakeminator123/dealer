@@ -1424,7 +1424,7 @@ test('the steps a round needs: a deal to the hole card, its turn from rest and t
 test('the template is a choice per order (12, 13 or 14), kept when the draft is changed or written again; the command line chooses it too', async (t) => {
   const { call, request } = await lab(t);
   const input = { dealer: 'paow', step: 'GIV-2.3', target: 'P4.C1', ...TUR };
-  for (const [body, why] of [[{ ...input, template: 16 }, /Mallen är 12, 13, 14 eller 15\./], [{ ...input, template: 13, style: 'MINIMAL' }, /bara för en film i den korta texten/], [{ dealer: 'paow', step: 'ANKARE-2.1', template: 13 }, /bara för en film/]] as const) {
+  for (const [body, why] of [[{ ...input, template: 17 }, /Mallen är 12, 13, 14, 15 eller 16\./], [{ ...input, template: 13, style: 'MINIMAL' }, /bara för en film i den korta texten/], [{ dealer: 'paow', step: 'ANKARE-2.1', template: 13 }, /bara för en film/]] as const) {
     const refused = await request('POST', '/api/orders/preview', { body });
     assert.equal(refused.status, 400);
     assert.match(refused.json.error, why);

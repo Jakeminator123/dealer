@@ -161,6 +161,10 @@ export function checkDeal(frames: readonly FrameCard[], ctx: DealContext): DealC
     if (s.yellowAfterBlue.length) fails.push({ code: 'vant-tillbaka', text: 'Brett gult igen efter det blå: kortet vänds tillbaka.', frames: s.yellowAfterBlue });
     if (s.secondEdge.length) fails.push({ code: 'andra-kanten', text: 'Kortet går på kant en gång till efter vändningen, innan det ligger: färgen växlar en gång för mycket.', frames: s.secondEdge });
   }
+  // A closed card stays yellow all the way: a broad blue face on the way is a card that was turned (paow-giv-2-3-d-02,
+  // the dealer's first card: blue in frames 11–43 and yellow again from 44, which passed while only an open card's
+  // colours were read).
+  if (!open && s.laidArea && s.firstBlue !== null) fails.push({ code: 'stangt-kort-vant', text: `Kortet ska ligga stängt men syns brett blått från ruta ${s.firstBlue}: det har vänts.`, frames: [s.firstBlue] });
   if (s.sizeMedian !== null && s.sizeMedian > T.sizeFail) fails.push({ code: 'for-stort', text: `Kortet i handen är ${Math.round((s.sizeMedian - 1) * 100)} % större än ett verkligt kort sett rakt framifrån där (median).` });
   else if (s.sizeMedian !== null && s.sizeMedian > T.sizeRemark) remarks.push({ code: 'stort', text: `Kortet i handen är ${Math.round((s.sizeMedian - 1) * 100)} % större än ett verkligt kort sett rakt framifrån där (median; största ${Math.round(((s.sizeMax ?? 1) - 1) * 100)} %).` });
   const laidN = median(lastFrames.map((x) => x.blue?.n ?? 0).filter((n) => n > 0));

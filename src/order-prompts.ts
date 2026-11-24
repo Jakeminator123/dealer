@@ -125,8 +125,18 @@ export const TEMPLATE_VERSION = 12;
  * that lays the card is flat with a relaxed wrist, it goes back to where the first frame has it (the felt in front of her,
  * not the shoe, which 14 says against the picture), and a yellow card shows in the shoe's window all through (the window
  * stood empty for 42 frames). A choice per order (--mall 15) until a trial shows it holds; the recipe stays 14.
+ * 16 (2026-11-24): 15 word for word but for the closed card with two hands from anchor 2.3 (SAY.v16; sixteen chooses),
+ * after the first closed card ordered from 2.3 (paow-giv-2-3-d-02, template 15, the dealer's first card): the card came
+ * over to its blue side where the hands met (frames 9 to 11), lay blue and jumped to yellow in one frame (44), though the
+ * doll's film and the last picture show yellow all the way. The closed words until then (SAY.takeClosed, untried) had the
+ * other hand take the card "by its short end" and "carry" it, the grip and the lift of the turn, where the doll's film
+ * slides it flat under the fingertips; the card's look named a blue side that a closed card never shows; and the way back
+ * went "to the shoe" against the first picture (15's way back was the open card's alone). 16 says what the film shows:
+ * the other hand lays its fingertips on the card and slides it on flat along the felt, stops it and lifts off it, goes back
+ * to rest in front of her, a yellow card shows in the window all through, and the card is blank yellow. A choice per order
+ * (--mall 16); an open card is written as 15 writes it.
  */
-export const TEMPLATE_CHOICES: readonly number[] = [TEMPLATE_VERSION, 13, 14, 15];
+export const TEMPLATE_CHOICES: readonly number[] = [TEMPLATE_VERSION, 13, 14, 15, 16];
 /** The choices as the words of a Swedish message: "12, 13 eller 14". */
 export const TEMPLATE_CHOICES_WORDS = new Intl.ListFormat('sv', { type: 'disjunction' }).format(TEMPLATE_CHOICES.map(String));
 /** The version of the long text (template 3, 2026-11-13); Utförlig writes it unchanged. */
@@ -401,6 +411,16 @@ export const SAY = {
     back: 'Then the hand that laid it glides back low over the felt, palm down, and comes to rest flat on the felt in front of her, as in the first frame.',
     window: 'A yellow card shows in the window of the shoe all the time: as she strokes one out, the next one is already there.',
   },
+  // Template 16, the closed card with two hands from anchor 2.3 (TEMPLATE_CHOICES' note): slid flat under the fingertips
+  // as the doll's film shows it, never taken by an end or lifted; stopped with SAY.stopFlat or SAY.stopFlatOneWay, the
+  // words of a slid card; and a card whose look names its yellow alone.
+  v16: {
+    slideClosed: (carry: string): string => `There her other hand lays its fingertips flat on the card and slides it on along the felt, yellow side up, ${carry}.`,
+    back: 'Then that hand glides back low over the felt, palm down, and comes to rest flat on the felt in front of her, as in the first frame.',
+    shoeHandBack: 'The hand from the shoe lets go as her other hand takes over and settles back at the shoe.',
+    cardSized: 'Only one card moves: a small card, about half as long as her hand, which keeps the size it has in the last frame all the way from the shoe to its place. It is blank, solid yellow right out to its corners, and the next card in the window is the same blank yellow.',
+    cardFree: 'Only one card moves: a small card, about half as long as her hand. It is blank, solid yellow right out to its corners, and the next card in the window is the same blank yellow.',
+  },
 } as const;
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -531,9 +551,11 @@ function stillText(input: PromptInput): Prompt {
  */
 const templateOf = (kind: string, style: TextStyle) => (style === 'UTFÖRLIG' ? `${kind}@${LONG_VERSION}` : `${kind}-${style === 'KORT' ? 'kort' : 'minimal'}@${TEMPLATE_VERSION}`);
 /** Template 14 (TEMPLATE_CHOICES) is 12 but for two sentences of the short text (SAY.v14): the reference film's, and the reach of the entry to anchor 2.3. 15 keeps them. */
-const fourteen = (input: PromptInput) => (input.version === 14 || input.version === 15) && (input.style ?? 'KORT') === 'KORT';
-/** Template 15 is 14 but for the open deal with two hands tur och retur (SAY.v15). */
-const fifteen = (input: PromptInput) => input.version === 15 && (input.style ?? 'KORT') === 'KORT';
+const fourteen = (input: PromptInput) => (input.version === 14 || input.version === 15 || input.version === 16) && (input.style ?? 'KORT') === 'KORT';
+/** Template 15 is 14 but for the open deal with two hands tur och retur (SAY.v15). 16 keeps it. */
+const fifteen = (input: PromptInput) => (input.version === 15 || input.version === 16) && (input.style ?? 'KORT') === 'KORT';
+/** Template 16 is 15 but for the closed card with two hands from anchor 2.3 (SAY.v16). */
+const sixteen = (input: PromptInput) => input.version === 16 && (input.style ?? 'KORT') === 'KORT';
 const referencePart = (input: PromptInput): Part => ({ text: input.reference ? (fourteen(input) ? SAY.v14.reference : SAY.reference) : '', from: ['reference'] });
 const extraPart = (input: PromptInput): Part => ({ text: input.extra?.trim() || '', from: ['extra'] });
 const DEFAULT_MOTION: DealMotion = { grip: 'PINCH', hand: 'LH', pass: false, turn: true, flipAxis: 'FREE', side: 'FRONT' };
@@ -748,18 +770,20 @@ function twoHandDeal(input: PromptInput, m: DealMotion): Prompt {
   const lay = twelve
     ? (open ? (one ? SAY.layAtPlaceOneWay : SAY.layAtPlace) : one ? SAY.layClosedOneWay : SAY.layClosed)
     : open ? (one ? SAY.v11.layPalmDown : SAY.v11.layPalmDownRound) : one ? SAY.v11.layClosedOneWay : SAY.v11.layClosed;
+  // Template 16: the closed card is slid flat under the fingertips and its look names its yellow alone (SAY.v16).
+  const closed16 = sixteen(input) && !open;
   const parts: Part[] = [
     { text: SAY.camera, from: [] },
     referencePart(input),
     { text: `${SAY.handAtShoe} ${twelve ? SAY.strokeOut : SAY.v11.strokeOut} ${meet}.`, from: ['hand', ...(placed ? (['place'] as Choice[]) : [])] },
-    { text: open ? SAY.raiseAndTurn(carry) : SAY.takeClosed(carry), from: [open ? 'turn' : 'side', ...(placed ? (['place'] as Choice[]) : [])] },
-    { text: lay, from: input.oneWay ? ['shape'] : ['side'] },
+    { text: open ? SAY.raiseAndTurn(carry) : closed16 ? SAY.v16.slideClosed(carry) : SAY.takeClosed(carry), from: [open ? 'turn' : 'side', ...(placed ? (['place'] as Choice[]) : [])] },
+    { text: closed16 ? (one ? SAY.stopFlatOneWay : SAY.stopFlat) : lay, from: input.oneWay ? ['shape'] : ['side'] },
     { text: round15 ? SAY.v15.flatHand : '', from: ['hand'] },
-    { text: input.oneWay ? '' : round15 ? SAY.v15.back : SAY.backTwoHands, from: ['hand'] },
-    { text: open ? SAY.shoeHandBack : SAY.shoeHandBackClosed, from: ['hand'] },
-    { text: round15 ? SAY.v15.window : '', from: [] },
+    { text: input.oneWay ? '' : round15 ? SAY.v15.back : closed16 ? SAY.v16.back : SAY.backTwoHands, from: ['hand'] },
+    { text: open ? SAY.shoeHandBack : closed16 ? SAY.v16.shoeHandBack : SAY.shoeHandBackClosed, from: ['hand'] },
+    { text: round15 || (closed16 && !one) ? SAY.v15.window : '', from: [] },
     { text: SAY.headToPlace, from: [] },
-    { text: cardLook(input, sized ? SAY.oneCardMovesFree : SAY.oneCardMovesSized), from: [] },
+    { text: closed16 ? (sized ? SAY.v16.cardFree : SAY.v16.cardSized) : cardLook(input, sized ? SAY.oneCardMovesFree : SAY.oneCardMovesSized), from: [] },
     extraPart(input),
   ];
   return { template: templateOf('film-giv', 'KORT'), style: 'KORT', text: joined(parts), parts };

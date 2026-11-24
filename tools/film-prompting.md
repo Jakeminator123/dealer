@@ -393,6 +393,15 @@ hela tiden. Dockans film gjordes samtidigt om med plan hand (`docka-cykel.ts --f
 97 rutor (i -04 tomt rutorna 14–46), kortet 0 px från sista bilden; given 4/5, returen 4/5. Kvar: vändningen görs med
 en hand kring långsidan, och fingret glider över kortet när handen går tillbaka. Mall 15 är ett val (`--mall 15`).
 
+**Mall 16: stängt kort från A2.3 (2026-11-24).** Dealerns första kort ligger stängt. `paow-giv-2-3-d-02` (mall 15)
+vände det: blått ruta 11–43 och gult igen från 44, fast slutbilden och dockans film var gula hela vägen. Felet stod i
+texten: andra handen "takes it by its short end … and carries it" (vändningens grepp och lyft), kortet beskrevs med
+"solid blue on the other" sida, och vägen tillbaka gick "to the shoe". Mall 16 ändrar bara det stängda kortet (öppna
+kort är mall 15 ord för ord): andra handen lägger fingertopparna plant på kortet och skjuter det längs filten med gula
+sidan upp, kortet beskrivs bara som gult (blått nämns inte), och återgången och skons fönster är mall 15:s. Utfall
+`paow-giv-2-3-d-03` (mätt i full upplösning): gult i alla 73 rutor, ingen blå yta, kortet 0 px från planen. Val:
+`--mall 16`.
+
 **Kort rörelse, stilla slut.** I ett nytt tidsprov kan prompten ange att hela rörelsen inklusive returen når
 slutankaret tidigt och därefter håller samma pose. Ändra inte receptet för befintliga order. `film-after.ts` föreslår
 en kortning i `after.json.stillAnchorTail` bara om minst 0,4 s i slutet ligger inom två färgsteg per kanal från både
