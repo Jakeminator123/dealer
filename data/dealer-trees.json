@@ -7,31 +7,31 @@
         {
           "id": "casino",
           "name": "Casino",
-          "state": "spelas",
+          "state": "vilar",
           "root": "paow-vila-ung-2",
           "anchors": [
             {"entry": "paow-vila-ung-2"},
             {"entry": "paow-nyp-ung-1"},
             {"entry": "paow-ankare-2-2-t1"}
           ],
-          "note": "What the game plays today: the older hands. Every film of this tree was made from these pictures, and the tree keeps them, although Jakob archived paow-vila-ung-2 and paow-ankare-2-2-t1 in Material (2026-11-23). Its A2.2 is used by one step: the deal to P6C1, whose Primär starts there."
+          "note": "The older hands, resting since Jakob 2026-11-24 (\"vi ska köra enbart med hennes nya händer och de tatuerade klippen\"); the game played it until then, and ?trad=casino still does. Every film of this tree was made from these pictures, and the tree keeps them, although Jakob archived paow-vila-ung-2 and paow-ankare-2-2-t1 in Material (2026-11-23). Its A2.2 is used by one step: the deal to P6C1, whose Primär starts there."
         },
         {
           "id": "ingangen",
           "name": "Ingången",
-          "state": "spelas",
+          "state": "vilar",
           "root": "paow-vila-ung-2",
           "shares": "casino",
           "opening": "paow-film-intro-noir-3",
           "anchors": [
             {"entry": "paow-vila-ung-2"}
           ],
-          "note": "The way into the Casino through the film before the game (/trailer): the film ends on the Casino's A1 and the game goes on with the Casino's own films."
+          "note": "The way into the Casino through the film before the game (/trailer): the film ends on the Casino's A1 and the game goes on with the Casino's own films. Rests with the Casino since 2026-11-24; a film that ends on the tattooed A1 is not made yet."
         },
         {
           "id": "tatuerad",
           "name": "Tatuerad",
-          "state": "byggs",
+          "state": "spelas",
           "root": "paow-vila-tatuerad",
           "anchors": [
             {"entry": "paow-vila-tatuerad"},
@@ -39,7 +39,7 @@
             {"entry": "paow-a3-p4-ur-film-1120"},
             {"entry": "paow-ankare-2-3-c"}
           ],
-          "note": "The tattooed set where she pushes the card out, from A2.3 (Jakob 2026-11-21; 2026-11-24: \"A2.3 så skjuter hon ut kort\"): A1 paow-vila-tatuerad; A2.3 paow-ankare-2-3-d with two hands, the anchor at the shoe, her gaze down on the card (Jakob 2026-11-23 in Beslut: \"Ja, byt blicken\"). It has no A2.2: he archived paow-ankare-2-2-blick-a in Material 2026-11-23 (\"Ser inte att den används\"), and no film of the tree started there. paow-ankare-2-3-c was the A2.3 until then, the same picture with her gaze to the side: it stays among the anchors, after the one that holds, so that the films that begin or end on it stay in the tree until they are remade (the first anchor given for a node is the node's picture). The A3 anchor for P4 is taken from the first deal of that earlier A2.3. It stands before Tatuerad nyp, so the films on their common A1 (rest, talk, the hole card) are this tree's. Her tattooed A2.1 is the tree Tatuerad nyp."
+          "note": "What the game plays since 2026-11-24 (Jakob: \"vi ska köra enbart med hennes nya händer och de tatuerade klippen\"). The tattooed set where she pushes the card out, from A2.3 (Jakob 2026-11-21; 2026-11-24: \"A2.3 så skjuter hon ut kort\"): A1 paow-vila-tatuerad; A2.3 paow-ankare-2-3-d with two hands, the anchor at the shoe, her gaze down on the card (Jakob 2026-11-23 in Beslut: \"Ja, byt blicken\"). It has no A2.2: he archived paow-ankare-2-2-blick-a in Material 2026-11-23 (\"Ser inte att den används\"), and no film of the tree started there. paow-ankare-2-3-c was the A2.3 until then, the same picture with her gaze to the side: it stays among the anchors, after the one that holds, so that the films that begin or end on it stay in the tree until they are remade (the first anchor given for a node is the node's picture). The A3 anchor for P4 is taken from the first deal of that earlier A2.3. It stands before Tatuerad nyp, so the films on their common A1 (rest, talk, the hole card) are this tree's. Her tattooed A2.1 is the tree Tatuerad nyp."
         },
         {
           "id": "tatuerad-nyp",

@@ -33,25 +33,31 @@
   "pictures": [
     {
       "name": "first.png",
-      "label": "Första bild · Paows A2.3 · arkiverad",
+      "label": "Första bild · Paows A2.3",
       "goesAs": "startFrame",
       "path": "assets/orders/paow-giv-2-3-d-c2-01/first.png",
-      "sha256": "8e60b0eae86e271f5fd191dc16a37bc8256f2b5fb2a58a2fe65206623927e386",
+      "sha256": "e348b657b167edb725a96d5063ceb671bf93c542e4190aacdda6dae397acb9b8",
       "width": 1764,
       "height": 1174,
       "from": {
-        "entry": "paow-ankare-2-3-d",
-        "path": "assets/anchors/paow-ankare-2-3-d/anchor.png",
-        "note": "Blicken ned mot kortet, vänster hand uppifrån på kortet (arkiverad)"
+        "entry": "paow-ankare-2-3-marke",
+        "path": "assets/anchors/paow-ankare-2-3-marke/anchor.png",
+        "note": "A2.3 utan det vita i skon, med märke (prov) (gäller)"
       },
-      "waits": null
+      "waits": null,
+      "replaced": {
+        "at": "2026-11-24T02:53:00.528Z",
+        "was": "Första bild · Paows A2.3 · arkiverad (Blicken ned mot kortet, vänster hand uppifrån på kortet)",
+        "entry": "paow-ankare-2-3-d",
+        "sha256": "8e60b0eae86e271f5fd191dc16a37bc8256f2b5fb2a58a2fe65206623927e386"
+      }
     },
     {
       "name": "last.png",
       "label": "Slutbild · samma + kortet stängt på dealerns hålkort",
       "goesAs": "endFrame",
       "path": "assets/orders/paow-giv-2-3-d-c2-01/last.png",
-      "sha256": "9ab566c1b4f68a365f1846d7b5bc65e30077472ec61e16104c5a86ddfb07bf3b",
+      "sha256": "438f24170da512a745a6d0284336bb77e6206648b5d636367a35ca1ad8c51acd",
       "from": {
         "built": "första bilden + kortet D.C2 där planen säger"
       },
@@ -64,8 +70,8 @@
         "as": "verkligt perspektiv: ett verkligt kort genom bordets lins, formen 87 % (src/card-plan.ts)",
         "plan": {
           "path": "placements/default.json",
-          "sha256": "956bc38ac4c82cf13c1db453cfea18b5d9a2f11a09fba16024217d12672e1a55",
-          "updatedAt": "2026-11-21T18:16:55.501Z"
+          "sha256": "a4f84f4a7039b78ae252eac980738fc2f25ce8f3ff06e712499316e7338ade86",
+          "updatedAt": "2026-11-23T23:42:05.513Z"
         },
         "texture": {
           "image": "assets/cards/kortets-textur.png",

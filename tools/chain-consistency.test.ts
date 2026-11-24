@@ -100,9 +100,11 @@ test('a picture that holds for a dealer who is not paused says who made it hold 
 });
 
 // ── The game's own maps against the registers ────────────────────────────────
-test('the game\'s maps name real places and real anchors: SEAT_HUB deals a seat\'s first card from a READY variant that is an anchor of a tree the game plays; STAND_IN_FILM stands one card for another', () => {
+test('the game\'s maps name real places and real anchors: SEAT_HUB deals a seat\'s first card from a READY variant that is an anchor of one of the dealer\'s trees; STAND_IN_FILM stands one card for another', () => {
   const trees = json('data/dealer-trees.json').dealers as Record<string, {trees: {state: string; anchors: {entry: string}[]}[]}>;
-  const played = (dealer: string) => new Set((trees[dealer]?.trees ?? []).filter(t => t.state === 'spelas').flatMap(t => t.anchors.map(a => a.entry)));
+  // Any tree, played or resting: the rule applies only where the films for it can be played (src/game-director.ts dealHub), and a
+  // resting tree is still played with its tree word (?trad=casino).
+  const inTree = (dealer: string) => new Set((trees[dealer]?.trees ?? []).flatMap(t => t.anchors.map(a => a.entry)));
   for (const [dealer, map] of Object.entries(SEAT_HUB)) {
     assert.ok(dealerList.some(d => d.id === dealer), `SEAT_HUB names ${dealer}, who is not in data/dealers.json`);
     for (const [card, hub] of Object.entries(map)) {
@@ -111,7 +113,7 @@ test('the game\'s maps name real places and real anchors: SEAT_HUB deals a seat\
       assert.notEqual(hub, 'READY', `${dealer}: ${card} is mapped to plain READY`);
       const role = roleOfNode.get(hub);
       assert.ok(role, `${dealer}: ${hub} is no anchor the order model knows (ANCHOR_NODE)`);
-      assert.ok(entriesOf(dealer).some(e => e.role === role && e.node === hub && !e.card && played(dealer).has(e.id)), `${dealer}: the game deals ${card} from ${hub}, but no tree that is played has a ${role} there`);
+      assert.ok(entriesOf(dealer).some(e => e.role === role && e.node === hub && !e.card && inTree(dealer).has(e.id)), `${dealer}: the game deals ${card} from ${hub}, but no tree of the dealer has a ${role} there`);
     }
   }
   for (const [dealer, map] of Object.entries(STAND_IN_FILM)) for (const [card, film] of Object.entries(map)) {

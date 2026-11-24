@@ -13,7 +13,7 @@ utfall står i handboken (`tools/film-prompting.md` §5), historien i Git.
   delar den där handen börjar gå tillbaka och sparar given och returen i banken.
 - Ett ankare heter alltid A och numret (A1, A2.3, A3P4C1), aldrig med en bokstav efter (Jakob 2026-11-21); id:nas
   bokstäver är arbetsnamn: Tatuerads A2.3 är `paow-ankare-2-3-d` (givarna börjar på `-c`); i Material gäller `-marke`.
-- Trädet Tatuerad (`/studio/karta/?dealer=paow&trad=tatuerad`, 22/36) fylls från A2.3. I banken: giv och återgång till
+- Trädet Tatuerad (`/studio/karta/?dealer=paow&trad=tatuerad`, 22/36) är det spelet spelar och fylls från A2.3. I banken: giv och återgång till
   plats 1–6, kort 1 (mall 15; plats 1–5 Jakobs "Ja, alla håller", plats 6 "Bra"), dealerns kort (godkända åt honom):
   D.C1 stängt `paow-giv-2-3-d-03` (mall 16) och D.C2 öppet `paow-giv-2-3-d-c2-02`, utgången A2.3 → A1, hålkortet upp
   och vilorna (`paow-vila-20-01`, `paow-vila-tat-…`). Plats 7 är underkänd: händerna vänder inte kortet.
@@ -33,7 +33,7 @@ utfall står i handboken (`tools/film-prompting.md` §5), historien i Git.
    har bara givsteg med ett kort ([LASMIG](../../dealer3d/LASMIG.md)).
 3. Plats 7 från A2.3: dockan ska hålla kortet genom vändningen; sedan dockans film, given igen och dess retur.
 4. Bryggorna för Tatuerad nyp: utgången A2.1 → A1 (ingången baklänges) och A2.1 ↔ A2.3 vid skon ([karta](karta.md)).
-5. Avslöjandet av dealerns stängda kort (D.C1) behöver en film; mall 15: mer frihet åt filmen i vändningen.
+5. Avslöjandet av dealerns stängda kort (D.C1) behöver en film (hålkortsfilmerna vänder D.C2); mall 15: mer frihet i vändningen.
 6. Det vita i skons fönster: [kort](kort.md), Nästa steg 3. Fler vilor för Tatuerad (handboken §3.6, inom taket).
 7. Vilan `paow-vila-28-01-fix-1` är införd (godkänd åt honom); originalet arkiverar Jakob, annars spelas båda.
 
