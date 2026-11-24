@@ -9,13 +9,15 @@
 //                   is chosen in the lab, unless sliders are moved and not saved there: the lab then says which card it still
 //                   shows, and that card is Bordet's.
 //   Dockans filmer  the doll's films for the chosen card, each beside the films ordered with it (DollFilms.tsx)
-// Step 2 says which saved standard the card's deal is (DollNote), and step 3 makes the draft from it for a deal from A2.3 to a
-// player's card (NewFilm.tsx; lib/orders.ts orderDoll, tools/doll-order.ts): what is saved in the lab is what is ordered.
+// Step 2 says in one line which saved standard the card's deal is (DollNote), and step 3 makes the draft from it for a deal from
+// A2.3 to a player's card or one of the dealer's own (DOLL_CARD; NewFilm.tsx; lib/orders.ts orderDoll, tools/doll-order.ts):
+// what is saved in the lab is what is ordered. The dealer's own cards lie closed or open as the lab saved them; where that
+// side is not the plan's, both steps say so before anything is made (sideClash).
 // The frame stays loaded while the plan or the films are looked at, so that sliders moved and not saved are still there on the
 // way back. Only in the local lab (the copy has no doll lab).
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { OrdersAnswer } from "../../../src/order-model.ts";
-import { SHOE, type Place } from "../../../src/placement-model.ts";
+import { SHOE, type Place, type Side } from "../../../src/placement-model.ts";
 import { dollFilms, takesOf, type DollGroup } from "../../lib/doll-films.ts";
 import type { Ledger } from "../../lib/ledger.ts";
 import { swedishMoment } from "../../lib/mode.ts";
@@ -28,8 +30,12 @@ export type DollPart = "stall" | "filmer";
 export const dollPartOf = (word: string | null): DollPart => (word === "filmer" ? "filmer" : "stall");
 /** The films without a card (the entry to an anchor) among the cards of the films' row. */
 const ENTRY = "ingang";
-/** A player's card, the cards a deal from A2.3 is ordered to from the doll. */
-export const PLAYER_CARD = /^P[1-7]\.C[12]$/;
+/** The cards a deal from A2.3 is ordered to from the doll: a player's, or one of the dealer's own (tools/doll-order.ts). */
+export const DOLL_CARD = /^(?:P[1-7]\.C[12]|D\.C[1-3])$/;
+/** The dealer's own cards: the ones the doll lays closed or open (dealer3d/page/lay.ts Steer.side). */
+const DEALER_CARD = /^D\.C[1-3]$/;
+/** A card's side as it lies, in the words of the plan's "Vid landning" and of the doll lab's "Kortet ligger". */
+const SIDE_WORD: Record<Side, string> = { BACK: "stängt", FRONT: "öppet" };
 
 /** The doll lab's word for the chosen dealer's doll: hers, or the standard doll for a dealer without one. */
 const dollWord = (dealer: string) => dollFor(dealer).id.replace(/^docka-/, "");
@@ -44,8 +50,12 @@ export function useDollGroups(orders: OrdersAnswer | null, ledger: Ledger | null
   }, [orders, ledger]);
 }
 
-/** His saved standard for the doll's deal from A2.3 to a card, as the lab saved it (dealer3d/standard/<doll>-<card>.json). */
-export type DollStandard = { name: string; savedAt: string; cardTempo: number };
+/**
+ * His saved standard for the doll's deal from A2.3 to a card, as the lab saved it (dealer3d/standard/<doll>-<card>.json).
+ * `side`: the side it lays one of the dealer's own cards with: closed only where the lab saved that, since a standard saved
+ * without a side lays the card open (lay.ts sideOf, which the order's tool reads the same way).
+ */
+export type DollStandard = { name: string; savedAt: string; cardTempo: number; side: Side };
 /** What is known of the card's standard: being read, read (null: none saved), or not readable. */
 export type StandardState = { state: "läser" } | { state: "läst"; standard: DollStandard | null } | { state: "fel" };
 
@@ -64,8 +74,8 @@ export function useDollStandard(dealer: string, place: Place, tick: number, on: 
       const list = (await (await fetch("/dealer3d/standard", { cache: "no-store" })).json()) as { standards: { name: string; savedAt: string }[] };
       const found = list.standards.find((s) => s.name === name);
       if (!found) return null;
-      const file = (await (await fetch(`/dealer3d/standard/${name}.json`, { cache: "no-store" })).json()) as { lab?: { steer?: { cardTempo?: number } } };
-      return { name, savedAt: found.savedAt, cardTempo: file.lab?.steer?.cardTempo ?? 1 };
+      const file = (await (await fetch(`/dealer3d/standard/${name}.json`, { cache: "no-store" })).json()) as { lab?: { steer?: { cardTempo?: number; side?: unknown } } };
+      return { name, savedAt: found.savedAt, cardTempo: file.lab?.steer?.cardTempo ?? 1, side: file.lab?.steer?.side === "BACK" ? ("BACK" as const) : ("FRONT" as const) };
     })().then(
       (standard) => live && setRead({ key, state: { state: "läst", standard } }),
       () => live && setRead({ key, state: { state: "fel" } }),
@@ -77,29 +87,46 @@ export function useDollStandard(dealer: string, place: Place, tick: number, on: 
   return read?.key === key ? read.state : { state: "läser" };
 }
 
-/** Step 2's line on the doll: which saved standard the card's deal is, and what step 3 orders from it. */
-export function DollNote({ dealer, place, standard }: { dealer: string; place: Place; standard: StandardState }) {
+/** The doll's side of a card and the plan's, in words, where they are not the same. */
+export type SideClash = { doll: string; plan: string };
+/**
+ * Where the doll lays one of the dealer's own cards with another side than the plan says. The order's text follows the plan,
+ * so tools/doll-order.ts stops such an order before any film is made; step 2 and 3 say it beforehand. Only a saved standard
+ * can differ: with none saved the doll takes the plan's side. Null where they agree, for a player's card, and while the
+ * standard is not read.
+ */
+export function sideClash(place: string, standard: StandardState, planSide: Side | null): SideClash | null {
+  if (!DEALER_CARD.test(place) || !planSide || standard.state !== "läst" || !standard.standard) return null;
+  return standard.standard.side === planSide ? null : { doll: SIDE_WORD[standard.standard.side], plan: SIDE_WORD[planSide] };
+}
+
+/**
+ * Step 2's one line on the doll: when the card's standard was saved, the card's tempo where it is not the ordinary, and for
+ * one of the dealer's own cards the side it is laid with. Where that side is not the plan's (`planSide`), the line says so in
+ * the warning's colour instead.
+ */
+export function DollNote({ dealer, place, standard, planSide }: { dealer: string; place: Place; standard: StandardState; planSide: Side | null }) {
   if (place === SHOE) return null;
-  const code = placeCode(place);
-  const doll = dollFor(dealer).word;
-  const said =
-    standard.state === "läser"
-      ? "Läser din sparade standard …"
+  const clash = sideClash(place, standard, planSide);
+  const saved = standard.state === "läst" ? standard.standard : null;
+  const said = clash
+    ? `${clash.doll}, planen säger ${clash.plan}`
+    : standard.state === "läser"
+      ? "läser …"
       : standard.state === "fel"
-        ? "Den sparade standarden kunde inte läsas från docklabbet."
-        : standard.standard
-          ? `Din sparade standard ${standard.standard.name}, ${swedishMoment(standard.standard.savedAt)}${standard.standard.cardTempo !== 1 ? `, kortets fart ${Math.round(standard.standard.cardTempo * 100)} %` : ""}.`
-          : `Ingen sparad standard för ${code}: Naturlig som förval.`;
+        ? "standarden kunde inte läsas"
+        : saved
+          ? [`sparad ${swedishMoment(saved.savedAt) ?? "utan datum"}`, saved.cardTempo !== 1 ? `kortet ${Math.round(saved.cardTempo * 100)} %` : null, DEALER_CARD.test(place) ? SIDE_WORD[saved.side] : null].filter(Boolean).join(" · ")
+          : "ingen sparad standard · Naturlig";
+  const title = clash
+    ? `Dockan lägger ${placeCode(place)} ${clash.doll}, kortplanen säger ${clash.plan}. Välj samma sida i docklabbet (Kortet ligger) och spara, eller ändra Vid landning.`
+    : saved
+      ? `Din sparade standard ${saved.name}`
+      : undefined;
   return (
-    <div data-doll-note className="mx-4 mt-1 flex flex-col gap-1 rounded-md border border-brass/30 bg-brass/5 px-3 py-2 text-sm leading-5">
-      <span className="font-semibold text-ink">
-        {doll} · giv till {code}
-      </span>
-      <span className="text-dim">{said}</span>
-      <span className="text-xs text-faint">
-        {PLAYER_CARD.test(place) && ownDoll(dealer) ? "Ställ dockan och spara som standard; Ny film (steg 3) beställer given från A2.3 med det som är sparat." : "Ställ dockan och spara som standard."}
-      </span>
-    </div>
+    <p data-doll-note data-side-clash={clash ? "" : undefined} role={clash ? "alert" : undefined} title={title} className={cn("mx-4 mt-1 text-sm leading-5", clash ? "text-[#f0b07a]" : "text-dim")}>
+      <span className="font-semibold text-ink">{dollFor(dealer).word}</span> · {said}
+    </p>
   );
 }
 

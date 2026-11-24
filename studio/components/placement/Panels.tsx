@@ -4,7 +4,7 @@
 // and whether it is checked; the card's own direction and shape only where the table is card by card, since on the real
 // perspective the lens draws every card) and TablePanel (what holds for every card: the real perspective, the table's
 // direction, its one Perspektiv). Step 2, Hur det kommer dit: MotionPanel (handbyte, how the card lands, the one line of what
-// the recipe does with it, the card's way). A real card has no size of its own here (Jakob 2026-11-17: "kör vi 1.0 så kanske
+// the recipe does with it, the card's way; folded under "Kortplanens avsikt" where the doll is the card's way). A real card has no size of its own here (Jakob 2026-11-17: "kör vi 1.0 så kanske
 // det är bra"; its size is adjusted only in Efterarbete). Every change goes to the draft as one step (a slider's drag is one
 // step); nothing is saved here, and the plan keeps every field it has, also those no panel shows.
 import { Crosshair, Grid2x2, RotateCcw, Square, Users } from "lucide-react";
@@ -169,15 +169,17 @@ export function PlacePanel({ plan, id, editable }: { plan: PlacementPlan; id: Pl
  * sides at the shoe, the turn) stay in the plan as they are, but choose nothing: the anchor and its recipe decide them
  * (lib/bordet.ts motionLine, which `line` is). `anchor`: the anchor the card's films go from ("A2.3"), named on the way.
  * `lit`: the step the card path shows now, while it plays this card ("Spela kortbanan" over the picture); null otherwise.
+ * `fold`: where the doll is the card's way (Jakob 2026-11-24: step 2 "ger allt dubbelt"), the panel is folded under
+ * "Kortplanens avsikt" with one line of what it says, "closed" or "open" to begin with; without it the panel stands as it is.
  */
-export function MotionPanel({ plan, id, editable, lit, line, anchor }: { plan: PlacementPlan; id: Place; editable: boolean; lit: string | null; line: string | null; anchor: string }) {
+export function MotionPanel({ plan, id, editable, lit, line, anchor, fold }: { plan: PlacementPlan; id: Place; editable: boolean; lit: string | null; line: string | null; anchor: string; fold?: "closed" | "open" }) {
   const toast = useToast();
   if (id === SHOE) return null;
   const off = !editable;
   const i = plan.targets[id].intent;
   const set = <K extends keyof Intent>(key: K, value: Intent[K]) => draftActions.edit((p) => editIntent(p, id, key, value));
   const way = motionSteps(id, i, anchor);
-  return (
+  const panel = (
     <>
       <Section title="Det som styr">
         <Switch checked={i.pass} disabled={off} onChange={(v) => set("pass", v)} label="Handbyte" />
@@ -223,6 +225,15 @@ export function MotionPanel({ plan, id, editable, lit, line, anchor }: { plan: P
       </Section>
       ) : null}
     </>
+  );
+  if (!fold) return panel;
+  return (
+    <details key={id} data-plan-intent open={fold === "open"}>
+      <summary className="cursor-pointer px-4 py-2.5 text-sm text-ink hover:bg-raised/40">
+        Kortplanens avsikt <span className="text-xs text-dim">· {i.pass ? "handbyte" : "utan handbyte"} · {i.endSide === "BACK" ? "stängt" : "öppet"}</span>
+      </summary>
+      {panel}
+    </details>
   );
 }
 

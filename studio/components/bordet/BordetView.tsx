@@ -10,8 +10,10 @@
 //                step, the step's recipe, what is sent and "Spara utkastet"; NewFilm.tsx). The guide is the one way to a draft.
 //                The doll has its one place here (Jakob 2026-11-23: "EN väg och ETT ställe man använder dockan"): step 2 shows
 //                the doll lab where the picture is, and the toolbar chooses Planen, Ställ dockan or Dockans filmer
-//                (DollPanel.tsx); step 1 and 3 show the plan again. Step 3 makes a deal from A2.3 to a player's card from
-//                the doll's saved standard where the dealer has a doll of her own.
+//                (DollPanel.tsx); step 1 and 3 show the plan again. Step 3 makes a deal from A2.3 to a player's card or one
+//                of the dealer's own from the doll's saved standard where the dealer has a doll of her own. Where the doll
+//                is the card's way, step 2 is one surface (Jakob 2026-11-24: it "ger allt dubbelt"): one line on the doll,
+//                and the plan's own choices folded under "Kortplanens avsikt" (open while the picture shows Planen).
 //   Kön          the orders (OrderView): what a round lacks, the drafts to approve, an order open with "Det här skickas"
 //   Scen, Råfilm, Efterarbete   the live picture (SceneBody: the 3D scene, the films on their green, what is laid over)
 // The plan is the draft Placering kept (useDraft): nothing is written until Jakob's click on "Spara i kortplanen", which
@@ -51,7 +53,7 @@ import { draftActions, useDraft } from "../placement/useDraft.ts";
 import { Page } from "../shell";
 import { Badge, Button, ErrorState, IconButton, SegmentedControl, Select, Skeleton, Switch, cn, useToast } from "../ui";
 import type { Made } from "./FilmList";
-import { DollNote, DollStage, PLAYER_CARD, dollPartOf, ownDoll, useDollGroups, useDollStandard, type DollPart } from "./DollPanel";
+import { DOLL_CARD, DollNote, DollStage, dollPartOf, ownDoll, sideClash, useDollGroups, useDollStandard, type DollPart, type StandardState } from "./DollPanel";
 import { NewFilm, type Phase } from "./NewFilm";
 import type { SceneKind } from "./SceneBody";
 import { RowSends } from "./Sends";
@@ -299,11 +301,16 @@ export function BordetView() {
   // The doll's standard for the chosen card (step 2 says it, step 3 orders from it), and the doll's films by card.
   const standard = useDollStandard(dealer, place, savedTick, !isSnapshot && mode === "kortplan" && (step === "motion" || step === "order"));
   const doll = useDollGroups(orders, ledger);
-  // Step 3 orders a deal from A2.3 to a player's card from the doll's saved standard (BESKED "Ett ställe för dockan"; "Givarna
-  // från A2.3 beställs ändå med dockans film"), where the dealer has a doll of her own. tools/doll-order.ts sends the anchor
-  // that holds in Material; where the tree's own picture is another, the panel says so (treePicture).
+  // Step 3 orders a deal from A2.3 to a player's card or one of the dealer's own from the doll's saved standard (BESKED "Ett
+  // ställe för dockan"; "Givarna från A2.3 beställs ändå med dockans film"), where the dealer has a doll of her own.
+  // tools/doll-order.ts sends the anchor that holds in Material; where the tree's own picture is another, the panel says so
+  // (treePicture). It reads the saved plan for the side of a dealer's card, and stops where the doll's is another (clash;
+  // the standard read is the board's card's, which the guide's step follows).
   const dollTarget = guideRow?.wish.step === "GIV-2.3" ? guideRow.wish.target : null;
-  const dollWay = dollTarget && PLAYER_CARD.test(dollTarget) && ownDoll(dealer) ? { place: dollTarget, standard, treePicture: base } : null;
+  const dollWay =
+    dollTarget && DOLL_CARD.test(dollTarget) && ownDoll(dealer)
+      ? { place: dollTarget, standard, treePicture: base, clash: dollTarget === place ? sideClash(dollTarget, standard, d?.saved.targets[dollTarget]?.intent.endSide ?? null) : null }
+      : null;
   /** A step chosen among the tiles: its card is chosen on the board (and its path played), and the guide goes on to Hur. */
   const pickItem = (i: GuideItem, go: (card: Place) => void) => {
     setGuide((g) => ({ ...g, pick: { from: i.from, to: i.to }, phase: "hur" }));
@@ -438,7 +445,7 @@ export function BordetView() {
             setStage={setStage}
             dollCount={doll.count}
             doll={isSnapshot ? null : <DollStage part={dollShown} place={place} setPlace={setPlace} dealer={dealer} orders={orders} ordersRead={ordersRead} groups={doll.groups} onSaved={onDollSaved} />}
-            dollNote={isSnapshot ? null : <DollNote dealer={dealer} place={place} standard={standard} />}
+            standard={isSnapshot ? null : standard}
             place={place}
             setPlace={setPlace}
             marked={marked}
@@ -457,7 +464,7 @@ export function BordetView() {
 }
 
 function TableBody({
-  menu, step, setStep, stage, setStage, dollCount, doll, dollNote, place, setPlace, marked, dealer, methods, dealRow, newFilm, newFilmSummary,
+  menu, step, setStep, stage, setStage, dollCount, doll, standard, place, setPlace, marked, dealer, methods, dealRow, newFilm, newFilmSummary,
 }: {
   menu: ReactNode;
   step: StepId | null;
@@ -469,8 +476,8 @@ function TableBody({
   dollCount: number;
   /** The doll's lab and films (DollStage), kept loaded while the plan shows; null in the copy. */
   doll: ReactNode;
-  /** Step 2's line on the doll's saved standard; null in the copy. */
-  dollNote: ReactNode;
+  /** The doll's saved standard for the chosen card (step 2's line on the doll); null in the copy. */
+  standard: StandardState | null;
   place: Place;
   setPlace: (p: Place) => void;
   /** The cards the board rings: those that lack a film in the guide's tree. */
@@ -548,6 +555,12 @@ function TableBody({
     paths.play(card);
   };
   const toggle = (s: StepId) => setStep(step === s ? null : s);
+  // The doll is the card's way where a deal to it is ordered from the doll (step 3): the dealer's own doll, a card it deals.
+  // Step 2 is then the doll's, whatever the plan says of handbyte: the plan's own choices are folded, and open by themselves
+  // while the picture shows the plan (its card path lights its steps there) or where the doll's side of the card is not the
+  // plan's (the plan's side is chosen there).
+  const dollIsWay = !!standard && !shoe && DOLL_CARD.test(place) && ownDoll(dealer);
+  const clash = standard && dollIsWay ? sideClash(place, standard, intent?.endSide ?? null) : null;
   const steps: { id: StepId; title: string; summary: string | null; body: ReactNode }[] = [
     {
       id: "place",
@@ -564,7 +577,7 @@ function TableBody({
             summary: stepTwoSummary(dealer, place, intent),
             body: (
               <>
-                {dollNote}
+                {standard ? <DollNote dealer={dealer} place={place} standard={standard} planSide={dollIsWay ? (intent?.endSide ?? null) : null} /> : null}
                 <MotionPanel
                   plan={plan}
                   id={place}
@@ -572,6 +585,7 @@ function TableBody({
                   lit={paths.run?.id === place ? paths.lit : null}
                   line={withReference(motionLine(dealer, place, intent, methods ?? null), dealRow)}
                   anchor={nodeCode(ANCHOR_NODE[wishAnchor(dealer, place, intent)])}
+                  fold={dollIsWay ? (stage === "plan" || clash ? "open" : "closed") : undefined}
                 />
               </>
             ),

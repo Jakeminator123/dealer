@@ -10,10 +10,11 @@
 //   Hur     the step's recipe in plain words: its film where it has one, the five marks, the pictures the server will send
 //           (the last is the step's end picture), the reference film, the text and his exceptions (Sends.tsx)
 //   Skicka  exactly what is sent and its price, the server's draft before it is saved, and "Spara utkastet"; afterwards the
-//           draft, the way to Kön and the way back to the tree in Karta. A deal from A2.3 to a player's card is saved from
-//           the doll (Jakob 2026-11-23: "EN väg och ETT ställe man använder dockan"): its film of his saved standard is
-//           made first, about a minute, and goes as the reference (lib/orders.ts orderDoll, tools/doll-order.ts); "Utan
-//           dockan" saves the recipe's draft instead.
+//           draft, the way to Kön and the way back to the tree in Karta. A deal from A2.3 to a player's card or one of the
+//           dealer's own is saved from the doll (Jakob 2026-11-23: "EN väg och ETT ställe man använder dockan"): its film of
+//           his saved standard is made first, about a minute, and goes as the reference (lib/orders.ts orderDoll,
+//           tools/doll-order.ts); "Utan dockan" saves the recipe's draft instead. Where the doll lays a dealer's card with
+//           another side than the plan says, Hur and Skicka say so before anything is made (the tool would stop there).
 // Karta's "Beställ" opens it on a step (lib/new-film.ts guideHref). It approves nothing: the draft is approved in Kön.
 import { ArrowLeft, ArrowRight, Check, Copy } from "lucide-react";
 import Link from "next/link";
@@ -34,15 +35,27 @@ import { pictureName } from "../order/Pictures";
 import { ProofStill } from "../proofs";
 import { TakeCard } from "../takes";
 import { Badge, Button, SegmentedControl, Skeleton, buttonClasses, cn, useToast } from "../ui";
-import type { StandardState } from "./DollPanel";
+import type { SideClash, StandardState } from "./DollPanel";
 import { Marks } from "./FilmList";
 import { DraftSends } from "./Sends";
 
 export type Phase = "vad" | "hur" | "skicka";
 const STATE_CHIP = { saknas: { tone: "remark", word: "saknas" }, prov: { tone: "wait", word: "väntar på dom" }, finns: { tone: "ok", word: "finns" } } as const;
-/** A deal saved from the doll: the card, and his saved standard for it as the lab has it. */
-export type DollWay = { place: string; standard: StandardState; treePicture: string | null };
+/**
+ * A deal saved from the doll: the card, and his saved standard for it as the lab has it. `clash`: the doll's side of a
+ * dealer's card and the saved plan's where they differ (DollPanel.tsx sideClash), else null.
+ */
+export type DollWay = { place: string; standard: StandardState; treePicture: string | null; clash: SideClash | null };
 
+/** The doll lays a dealer's card with another side than the plan: said before the draft is asked for, with what to do. */
+function Clash({ doll }: { doll: DollWay }) {
+  if (!doll.clash) return null;
+  return (
+    <p data-side-clash role="alert" className="rounded-sm bg-[#3a2a1a] px-2.5 py-1.5 text-sm text-[#f0b07a]">
+      Dockan lägger {doll.place} {doll.clash.doll}, kortplanen säger {doll.clash.plan}. Välj samma sida i docklabbet och spara, eller ändra kortplanen (steg 2).
+    </p>
+  );
+}
 
 export function NewFilm({
   dealer, dealers, onDealer, trees, view, onTree, item, phase, onPhase, onPick, place, row, body, sends, entries, names, ordering, blocked, made, orders, composition, onCreated, doll, onDollMade,
@@ -122,7 +135,7 @@ export function NewFilm({
         <>
           <Head item={item} view={view} onBack={() => onPhase("vad")} />
           {phase === "hur" ? (
-            <How item={item} row={row} body={body} sends={sends} graph={graph} order={shown ?? null} loading={preview.loading} foreign={shown ? foreign(shown) : []} view={view} pictureOf={pictureOf} doll={!!doll} onNext={() => onPhase("skicka")} />
+            <How item={item} row={row} body={body} sends={sends} graph={graph} order={shown ?? null} loading={preview.loading} foreign={shown ? foreign(shown) : []} view={view} pictureOf={pictureOf} doll={doll} onNext={() => onPhase("skicka")} />
           ) : (
             <Send
               key={`${dealer}|${item.id}`}
@@ -291,7 +304,7 @@ function Foreign({ pictures, view }: { pictures: readonly Order["pictures"][numb
   return <p className="text-xs text-[#f0b07a]">{pictures.map((p) => pictureName(p)).join(", ")}: inte {genitive(view.tree.name)} egen bild. Det är bilden som gäller i Material som skickas.</p>;
 }
 
-function How({ item, row, body, sends, graph, order, loading, foreign, view, pictureOf, doll, onNext }: { item: GuideItem; row: FilmRow | null; body: NewOrderInput | null; sends: ReactNode; graph: ReturnType<typeof useBank>["graph"]; order: Order | null; loading: boolean; foreign: Order["pictures"]; view: TreeView | null; pictureOf: (node: string) => EntryAnswer | null; doll: boolean; onNext: () => void }) {
+function How({ item, row, body, sends, graph, order, loading, foreign, view, pictureOf, doll, onNext }: { item: GuideItem; row: FilmRow | null; body: NewOrderInput | null; sends: ReactNode; graph: ReturnType<typeof useBank>["graph"]; order: Order | null; loading: boolean; foreign: Order["pictures"]; view: TreeView | null; pictureOf: (node: string) => EntryAnswer | null; doll: DollWay | null; onNext: () => void }) {
   const take = item.step?.take && (item.state === "finns" || item.state === "prov") ? (graph?.takes[item.step.take] ?? null) : null;
   const off = item.wish ? stepOf(item.wish.step)?.off : null;
   return (
@@ -302,7 +315,7 @@ function How({ item, row, body, sends, graph, order, loading, foreign, view, pic
       {body && loading && !order ? <p role="status" className="text-xs text-dim">Hämtar bilderna som skickas …</p> : null}
       <Foreign pictures={foreign} view={view} />
       {off && item.step?.order?.command ? <Command text={item.step.order.command} /> : null}
-      {doll ? <p data-doll-way-note className="text-xs text-dim">Givet sparas från dockan (Skicka): dockans film av din sparade standard blir referensfilm. Valen nedan gäller bara om du sparar utan dockan.</p> : null}
+      {doll?.clash ? <Clash doll={doll} /> : doll ? <p data-doll-way-note className="text-xs text-dim">Givet sparas från dockan (Skicka): dockans film av din sparade standard blir referensfilm. Valen nedan gäller bara om du sparar utan dockan.</p> : null}
       {sends}
       <Button variant="primary" icon={<ArrowRight />} disabled={!body} onClick={onNext} className="self-start" title={body ? "Det som skickas, med pris" : (row?.why ? sentence(row.why) : undefined)}>
         Skicka
@@ -400,6 +413,7 @@ function Send({
           </span>
           {doll.treePicture ? <span className="text-xs text-[#f0b07a]">A2.3-bilden blir den som gäller i Material, inte trädets egen ({doll.treePicture}).</span> : null}
         </div>
+        <Clash doll={doll} />
         {blocked ? <p className="text-sm text-[#f0b07a]">{blocked}</p> : null}
         {dolling.error ? <p role="alert" className="text-sm text-[#f0b07a]">{dolling.error}</p> : null}
         <div className="flex flex-wrap items-center gap-2">
