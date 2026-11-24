@@ -7,6 +7,12 @@
 // take outside: true, and via: api for a call through the API key), so that the bank takes it in the usual way afterwards:
 //   node tools/order-import.ts <ledger.json> <entry name> --id <order-id> --step <STEG> [--target P5.C1] --by "<who placed it>"
 //                              [--shape ROUND_TRIP] [--no-pass] [--files <folder>] [--after <after.mp4>] [--flip <FREE|…>] [--dry]
+//                              [--first <Material id>] [--word "<whose word, and when>"]
+// A call to /v1/video_to_video (the model as editor: the film it made over is the order's reference film, and a picture sent
+// as references is named in the notes) is read like one from pictures. --first: the first picture IS that picture of Material
+// (the same bytes, or the picture its receipt says it was made from; checked), so that the film stands on it in the dealer's
+// tree (a seat's anchor). --word: the call was placed on that word and not on the main agent's approval; the order says so
+// (outside.note, approval.mandate).
 //   then  node tools/film-after.ts <order-id> 1 (unless --after) and node tools/order-bring.ts <order-id> 1
 //         (the clip bank's inbox and Material, as for any order)
 // --shape ROUND_TRIP: the film is a deal and its return in one, and the bank splits it (step.cutInto). --no-pass: in a deal with
@@ -32,23 +38,26 @@ type Named = {file: string; sha256: string; assetId?: string; what?: string};
 type Ledger = {about?: string; mandate?: string; sent?: Record<string, Named>; orders: LedgerEntry[]};
 type LedgerEntry = {name: string; take?: number; tool: string; model: string; params: {resolution?: string; duration?: number; startFrame?: string | null; endFrame?: string | null; referenceVideos?: {file: string; durationSeconds?: number}[]; ratio?: string | null};
   textFile?: string; text?: string; channel?: 'api' | 'mcp'; pictures?: Record<string, Named>; reference?: Record<string, Named>; approvedBy: string; requestedAt: string; taskId: string; credits: number; creditsHow?: string; balanceBefore?: number; balanceAfter?: number;
-  delivered: {file: string; sha256: string; fetchedAt?: string}; after?: {file: string; sha256: string; tool?: string}; outcome?: string; dealCheck?: unknown};
+  delivered: {file: string; sha256: string; fetchedAt?: string}; after?: {file: string; sha256: string; tool?: string}; outcome?: string; dealCheck?: unknown; how?: string};
 /** An entry of the API client's ledger: the call as it was sent to Runway's API, and what came back. */
-type ApiEntry = {name: string; what?: string; endpoint: string; body: {model: string; promptImage?: {uri: string; position: string}[]; promptText: string; duration: number; ratio?: string; referenceVideos?: {uri: string}[]};
+type ApiEntry = {name: string; what?: string; endpoint: string; body: {model: string; promptImage?: {uri: string; position: string}[]; promptText: string; duration: number; ratio?: string; referenceVideos?: {uri: string}[]; videoUri?: string; references?: {uri: string}[]};
   files?: Record<string, {sha256: string}>; requestedAt: string; finishedAt?: string; taskId: string; cost?: number; expectCredits?: number; balanceBefore?: number; balanceAfter?: number; delivery?: {path: string; sha256: string}};
 /** The API's names of the models the order model knows. */
 const API_MODELS: Record<string, string> = {kling_4: 'kling-4'};
 
 /** An entry of the API client's ledger in the form the MCP ledgers have, so that one plan serves both. */
 export function fromApiEntry(e: ApiEntry): LedgerEntry {
-  if (e.endpoint !== '/v1/image_to_video') throw new StoreError(400, `${e.name}: ${e.endpoint} är inget filmanrop ur bilder.`);
+  const edited = e.endpoint === '/v1/video_to_video'; // the model as editor: body.videoUri is the film it makes over
+  if (e.endpoint !== '/v1/image_to_video' && !edited) throw new StoreError(400, `${e.name}: ${e.endpoint} är inget filmanrop ur bilder eller ur en film.`);
+  if (edited && !e.body.videoUri) throw new StoreError(400, `${e.name}: ${e.endpoint} utan film att göra om (videoUri).`);
   const model = API_MODELS[e.body.model];
   if (!model) throw new StoreError(400, `${e.name}: ${e.body.model} är ingen modell ordermodellen känner.`);
   if (!e.delivery) throw new StoreError(400, `${e.name}: liggaren har ingen leverans.`);
   const file = (uri: string) => uri.replace(/^\$file:/, ''), at = (position: string) => { const p = e.body.promptImage?.find((x) => x.position === position); return p ? file(p.uri) : null; };
   const named = (keys: (string | null)[]) => Object.fromEntries(keys.filter((k): k is string => !!k).map((k) => { const f = e.files?.[k]; if (!f) throw new StoreError(404, `${e.name}: ${k} saknas bland liggarens filer.`); return [k, {file: k, sha256: f.sha256}]; }));
-  const films = (e.body.referenceVideos ?? []).map((v) => file(v.uri));
-  return {name: e.name, tool: MODELS[model].tool, model, channel: 'api', text: e.body.promptText,
+  const films = edited ? [file(e.body.videoUri!)] : (e.body.referenceVideos ?? []).map((v) => file(v.uri)), looks = edited ? (e.body.references ?? []).map((r) => file(r.uri)) : [];
+  const how = edited ? `Gjord med modellen som redigerare (${e.endpoint}): referensfilmen är filmen som gjordes om, och den nya följer dess rörelse${looks.length ? `; ${looks.join(', ')} gick med som bild av utseendet (references)` : ''}.` : undefined;
+  return {name: e.name, tool: MODELS[model].tool, model, channel: 'api', text: e.body.promptText, ...(how ? {how} : {}),
     params: {resolution: /^auto_(\d+p)$/.exec(e.body.ratio ?? '')?.[1], duration: e.body.duration, startFrame: at('first'), endFrame: at('last'), referenceVideos: films.map((f) => ({file: f}))},
     pictures: named([at('first'), at('last')]), reference: named(films), approvedBy: e.what ?? '', requestedAt: e.requestedAt, taskId: e.taskId,
     credits: e.cost ?? e.expectCredits ?? 0, creditsHow: e.cost === undefined ? 'liggarens väntade belopp' : 'liggaren: saldot före minus saldot efter', balanceBefore: e.balanceBefore, balanceAfter: e.balanceAfter,
@@ -74,12 +83,28 @@ export function namedFiles(ledger: Ledger): Record<string, Named> {
   return out;
 }
 
-export type ImportInput = {ledgerPath: string; entry: string; id: string; step: string; target?: string | null; by: string; after?: string | null; flip?: string | null; shape?: Shape | null; pass?: boolean; files?: string | null; now?: () => Date};
+export type ImportInput = {ledgerPath: string; entry: string; id: string; step: string; target?: string | null; by: string; after?: string | null; flip?: string | null; shape?: Shape | null; pass?: boolean; files?: string | null; first?: string | null; word?: string | null; now?: () => Date};
 export type ImportPlan = {order: Order; copies: [string, string, string][]; receipt: {requestedAt: string; taskId: string; creditsRemainingAfter: number | null; file: string; placedBy: string; fetched: string; after: string | null; via?: 'api' | 'mcp'}};
+
+/** A picture of Material named as an order's first picture (--first): the dealer's own, and the same bytes as the one that was sent. */
+async function materialPicture(root: string, id: string, sha256: string): Promise<{id: string; path: string; name: string; how?: string}> {
+  const roles = JSON.parse(await readFile(path.join(root, 'data', 'media-roles.json'), 'utf8')) as {dealers: Record<string, {entries: {id: string; path?: string; name?: string}[]}>};
+  const found = roles.dealers.paow?.entries.find((e) => e.id === id);
+  if (!found?.path) throw new StoreError(404, `${id} är ingen bild för Paow i Material.`);
+  // The picture itself, or the picture it was made from: a still brought to the bank's frame names the still as delivered in its receipt (madeFrom).
+  const file = path.join(root, ...found.path.split('/')), receipt = path.join(path.dirname(file), 'receipt.json');
+  const madeFrom = existsSync(receipt) ? (JSON.parse(await readFile(receipt, 'utf8')) as {madeFrom?: {sha256?: string; how?: string}}).madeFrom : undefined;
+  const same = sha(await readFile(file)) === sha256;
+  if (!same && madeFrom?.sha256 !== sha256) throw new StoreError(409, `${id} är varken bilden som skickades eller gjord av den (sha256 skiljer).`);
+  return {id, path: found.path, name: found.name ?? id, ...(same ? {} : {how: `${id} är den skickade bilden ${madeFrom!.how ?? 'i bankens ram'}`})};
+}
 
 /** Works out the order, the files and the receipt's take, and refuses before anything is written. */
 export async function planImport(root: string, input: ImportInput): Promise<ImportPlan> {
   const ledgerFile = path.resolve(input.ledgerPath), base = path.dirname(ledgerFile), ledgerText = await readFile(ledgerFile, 'utf8');
+  // The ledger as the order names it: from the project's root when it lies inside the project (the repo is public, and an absolute
+  // path carries this machine's folders), as it stands when it lies outside (the scratch disk).
+  const inRoot = path.relative(root, ledgerFile), ledgerSaid = (inRoot.startsWith('..') || path.isAbsolute(inRoot) ? ledgerFile : inRoot).split(path.sep).join('/');
   const ledger = JSON.parse(ledgerText) as Ledger, raw = ledger.orders?.find((o) => o.name === input.entry) as LedgerEntry | ApiEntry | undefined;
   if (!raw) throw new StoreError(404, `${input.entry} finns inte i ${ledgerFile}.`);
   const entry = 'endpoint' in raw ? fromApiEntry(raw) : raw, api = entry.channel === 'api';
@@ -116,7 +141,8 @@ export async function planImport(root: string, input: ImportInput): Promise<Impo
     const n = named[key];
     if (!n) throw new StoreError(404, `${entry.name}: ${key} saknas bland liggarens filer.`);
     await checked(n.file, n.sha256, rel(name));
-    pictures.push({name, label: `${goesAs === 'startFrame' ? 'Första' : 'Sista'} bild · ${n.what ?? path.basename(n.file)}`.slice(0, 300), goesAs, path: rel(name), sha256: n.sha256, from: {path: shown(n.file), note: `ur liggaren ${path.basename(ledgerFile)} (${key}${n.assetId ? `, uppladdad som ${n.assetId}` : ''})`}, waits: null} as Order['pictures'][number]);
+    const material = goesAs === 'startFrame' && input.first ? await materialPicture(root, input.first, n.sha256) : null;
+    pictures.push({name, label: `${goesAs === 'startFrame' ? 'Första' : 'Sista'} bild · ${material?.name ?? n.what ?? path.basename(n.file)}`.slice(0, 300), goesAs, path: rel(name), sha256: n.sha256, from: {...(material ? {entry: material.id} : {}), path: material?.path ?? shown(n.file), note: `ur liggaren ${path.basename(ledgerFile)} (${key}${n.assetId ? `, uppladdad som ${n.assetId}` : ''})${material?.how ? `; ${material.how}` : ''}`}, waits: null} as Order['pictures'][number]);
   }
   if (!pictures.some((p) => p.goesAs === 'startFrame')) throw new StoreError(400, `${entry.name}: ingen första bild.`);
   const refKey = entry.params.referenceVideos?.[0]?.file ?? null;
@@ -162,14 +188,17 @@ export async function planImport(root: string, input: ImportInput): Promise<Impo
     notes: [
       `Beställd utanför Beställ: ${input.by} lade anropet genom ${channel} (${entry.tool}, ${entry.model}) ${when(entry.requestedAt)}, task ${entry.taskId}, ${entry.credits} krediter${entry.balanceBefore !== undefined && entry.balanceAfter !== undefined ? ` (saldot ${entry.balanceBefore} före, ${entry.balanceAfter} efter)` : ''}.`,
       `Texten är den som skickades, ord för ord (${textFrom}), inte promptFor:s.${twoHands && pass ? ' Vänster hand stryker ut kortet, höger lägger det.' : ''}`,
+      ...(entry.how ? [entry.how.slice(0, 2000)] : []),
       ...(entry.outcome ? [`Utfallet enligt den som beställde: ${entry.outcome}`.slice(0, 2000)] : []),
     ],
     created: requestedAt, createdBy: input.by,
-    outside: {ledger: ledgerFile.split(path.sep).join('/'), ledgerSha256: sha(ledgerText), entry: entry.name, placedBy: input.by, approvedBy: entry.approvedBy, mandate: api ? null : ledger.mandate ?? null, importedAt: now, importedBy: 'tools/order-import.ts',
-      note: 'Godkänd av huvudagenten före anropet, med orden i approvedBy; approval nedan är det godkännandet, skrivet när ordern fördes in, med hashen av ordern som den står här.'},
+    outside: {ledger: ledgerSaid, ledgerSha256: sha(ledgerText), entry: entry.name, placedBy: input.by, approvedBy: entry.approvedBy, mandate: api ? null : ledger.mandate ?? null, importedAt: now, importedBy: 'tools/order-import.ts',
+      note: input.word?.trim()
+        ? 'Lagd på det ord som står i approval.mandate, inte på huvudagentens godkännande i Beställ; approvedBy är anropets egen beskrivning i liggaren. approval nedan skrevs när ordern fördes in, så att banken tar emot den, med hashen av ordern som den står här.'
+        : 'Godkänd av huvudagenten före anropet, med orden i approvedBy; approval nedan är det godkännandet, skrivet när ordern fördes in, med hashen av ordern som den står här.'},
     approval: null as Order['approval'], status: 'GODKÄND',
   } as unknown as Order & {outside: unknown};
-  order.approval = {by: 'huvudagent', at: requestedAt, orderSha256: '', mandate: entry.approvedBy.slice(0, 300)} as Order['approval'];
+  order.approval = {by: 'huvudagent', at: requestedAt, orderSha256: '', mandate: (input.word?.trim() || entry.approvedBy).slice(0, 300)} as Order['approval'];
   order.approval!.orderSha256 = sha(hashInput(order));
   const {errors} = validateOrder(order);
   if (errors.length) throw new StoreError(422, `Ordern håller inte: ${errors.join(' ')}`);
@@ -201,11 +230,11 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const args = process.argv.slice(2), flag = (name: string) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : undefined; };
   const [ledgerPath, entry] = args;
   try {
-    if (!ledgerPath || !entry || ledgerPath.startsWith('--') || entry.startsWith('--')) throw new StoreError(400, 'Använd: node tools/order-import.ts <liggare.json> <post> --id <order-id> --step <STEG> [--target P5.C1] --by "<vem>" [--shape ROUND_TRIP] [--no-pass] [--files <mapp>] [--after <after.mp4>] [--flip <vändning>] [--dry]');
+    if (!ledgerPath || !entry || ledgerPath.startsWith('--') || entry.startsWith('--')) throw new StoreError(400, 'Använd: node tools/order-import.ts <liggare.json> <post> --id <order-id> --step <STEG> [--target P5.C1] --by "<vem>" [--shape ROUND_TRIP] [--no-pass] [--files <mapp>] [--after <after.mp4>] [--flip <vändning>] [--first <bild i Material>] [--word "<vems ord och när>"] [--dry]');
     const shape = flag('--shape') ?? null;
     if (shape !== null && shape !== 'ROUND_TRIP' && shape !== 'ONE_WAY') throw new StoreError(400, '--shape är ROUND_TRIP eller ONE_WAY.');
     const root = path.resolve(fileURLToPath(new URL('../', import.meta.url)));
-    const plan = await planImport(root, {ledgerPath, entry, id: flag('--id') ?? '', step: flag('--step') ?? '', target: flag('--target') ?? null, by: flag('--by') ?? '', after: flag('--after') ?? null, flip: flag('--flip') ?? null, shape, pass: args.includes('--no-pass') ? false : undefined, files: flag('--files') ?? null});
+    const plan = await planImport(root, {ledgerPath, entry, id: flag('--id') ?? '', step: flag('--step') ?? '', target: flag('--target') ?? null, by: flag('--by') ?? '', after: flag('--after') ?? null, flip: flag('--flip') ?? null, shape, pass: args.includes('--no-pass') ? false : undefined, files: flag('--files') ?? null, first: flag('--first') ?? null, word: flag('--word') ?? null});
     if (!args.includes('--dry')) await writeImport(root, plan);
     console.log(JSON.stringify({written: !args.includes('--dry'), order: `data/orders/${plan.order.id}.json`, title: plan.order.title, files: plan.copies.map(([, to]) => path.relative(root, to).split(path.sep).join('/')), receipt: plan.receipt,
       next: [...(plan.receipt.after ? [] : [`node tools/film-after.ts ${plan.order.id} 1`]), `node tools/order-put.ts review ${plan.order.id} 1 --note "Oberoende granskare: …"`, `node tools/order-bring.ts ${plan.order.id} 1`]}, null, 2));

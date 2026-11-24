@@ -155,7 +155,7 @@ export type Production = {
 const isPicture = (e: Entry) => !!e.path && (e.frame !== undefined || /\.(?:png|jpe?g)$/i.test(e.path)) && !/^[A-Za-z]:\//.test(e.path);
 /** The dealer's anchor that holds (gäller, no card, its node), as the store takes it (tools/order-store.ts holding). */
 export function anchorHolding(entries: readonly Entry[], at: AnchorKey): Entry | null {
-  return entries.find((e) => e.role === ANCHOR_ROLE[at] && e.state === 'gäller' && !e.card && e.node === ANCHOR_NODE[at] && isPicture(e)) ?? null;
+  return entries.find((e) => e.role === ANCHOR_ROLE[at] && e.state === 'gäller' && !e.card && !e.seat && e.node === ANCHOR_NODE[at] && isPicture(e)) ?? null;
 }
 /** A seat's landing picture that holds, as the store takes it (landingEntry). */
 export function landingHolding(entries: readonly Entry[], target: string | null): Entry | null {

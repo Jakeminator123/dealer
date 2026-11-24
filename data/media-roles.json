@@ -3891,6 +3891,48 @@
           }
         },
         {
+          "id": "paow-film-giv-2-3-p4-c2-stol-3-01-t1",
+          "role": "film",
+          "name": "Giv P4.C2 sedd från stol 3 (Kling 4 som redigerare)",
+          "path": "assets/films/paow/giv-2-3-p4-c2-stol-3-01-t1/source.mp4",
+          "still": 53,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Prov 2026-11-24: dockans giv till P4.C2 filmad från stol 3 och gjord om till Paow med Kling 4 som redigerare. Står på stolens ankare; sista rutan är inget ankare, så filmen går inte att kedja. Leveransen som den kom (1764 × 1172), inte efterarbetad. Ingen dom.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-24"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-3-p4-c2-stol-1-01-t1",
+          "role": "film",
+          "name": "Giv P4.C2 sedd från stol 1 (Kling 4 som redigerare)",
+          "path": "assets/films/paow/giv-2-3-p4-c2-stol-1-01-t1/source.mp4",
+          "still": 53,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Prov 2026-11-24: dockans giv till P4.C2 filmad från stol 1 och gjord om till Paow med Kling 4 som redigerare. Jakob på provet: \"FÖRSTA FILMEN FÅR HON SPETSIGA FINGRAR OCH ANORLUNDA ANSIKTE\" (troligen den här). Står på stolens ankare; sista rutan är inget ankare, så filmen går inte att kedja. Leveransen som den kom (1764 × 1172), inte efterarbetad. Ingen dom.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-24"
+          }
+        },
+        {
+          "id": "paow-film-giv-2-3-p4-c2-stol-7-01-t1",
+          "role": "film",
+          "name": "Giv P4.C2 sedd från stol 7 (Kling 4 som redigerare)",
+          "path": "assets/films/paow/giv-2-3-p4-c2-stol-7-01-t1/source.mp4",
+          "still": 53,
+          "fps": 24,
+          "state": "kandidat",
+          "note": "Prov 2026-11-24: dockans giv till P4.C2 filmad från stol 7 och gjord om till Paow med Kling 4 som redigerare. Står på stolens ankare; sista rutan är inget ankare, så filmen går inte att kedja. Leveransen som den kom (1764 × 1172), inte efterarbetad. Ingen dom.",
+          "source": {
+            "from": "beställning i Kön, tagning 1",
+            "when": "2026-11-24"
+          }
+        },
+        {
           "id": "paow-film-intro-noir-3-startruta",
           "role": "arbetsmaterial",
           "name": "Startrutan till filmen före spelet",
@@ -4426,6 +4468,90 @@
             "when": "2026-11-23"
           },
           "stateBy": "Jakob 2026-11-23 23:11: kandidat → gäller (Material)"
+        },
+        {
+          "id": "paow-ankare-2-3-d-stol-1",
+          "role": "ankare-2.3",
+          "name": "A2.3 från stol 1 (tatuerad)",
+          "path": "assets/anchors/paow-ankare-2-3-d-stol-1/anchor.png",
+          "node": "READY-C",
+          "seat": 1,
+          "state": "kandidat",
+          "note": "A2.3 sedd från stol 1 (3D-scenens kamera 1), för trädet Tatuerad. Gjord med Nano Banana 2.1 ur dockans första ruta från den stolen (kamera, pose, sko) och paow-ankare-2-3-d (utseendet), skalad till bankens ram 1764 × 1174 (FFmpeg, lanczos), ingen beskärning; ingen bildpunkt är det raka ankarets. Kandidat. Posten bär ingen stol: Material räknar den bland de raka A2.3 tills den gör det.",
+          "source": {
+            "from": "Runways API, Nano Banana 2.1 (uppdrag 84c50263); utanför Beställ, liggaren .runtime/vinkelprov-p4c2/api/ledger.json (vinkelprov-p4c2-still-oga-1-b); original.png bredvid bilden",
+            "when": "2026-11-24"
+          }
+        },
+        {
+          "id": "paow-ankare-2-3-d-stol-2",
+          "role": "ankare-2.3",
+          "name": "A2.3 från stol 2 (tatuerad)",
+          "path": "assets/anchors/paow-ankare-2-3-d-stol-2/anchor.png",
+          "node": "READY-C",
+          "seat": 2,
+          "state": "kandidat",
+          "note": "A2.3 sedd från stol 2 (3D-scenens kamera 2), för trädet Tatuerad. Gjord med Nano Banana 2.1 ur dockans första ruta från den stolen (kamera, pose, sko) och paow-ankare-2-3-d (utseendet), skalad till bankens ram 1764 × 1174 (FFmpeg, lanczos), ingen beskärning; ingen bildpunkt är det raka ankarets. Kandidat. Posten bär ingen stol: Material räknar den bland de raka A2.3 tills den gör det.",
+          "source": {
+            "from": "Runways API, Nano Banana 2.1 (uppdrag c43e350b); utanför Beställ, liggaren .runtime/vinkelprov-p4c2/api/ledger.json (vinkelprov-p4c2-still-oga-2-b); original.png bredvid bilden",
+            "when": "2026-11-24"
+          }
+        },
+        {
+          "id": "paow-ankare-2-3-d-stol-3",
+          "role": "ankare-2.3",
+          "name": "A2.3 från stol 3 (tatuerad)",
+          "path": "assets/anchors/paow-ankare-2-3-d-stol-3/anchor.png",
+          "node": "READY-C",
+          "seat": 3,
+          "state": "kandidat",
+          "note": "A2.3 sedd från stol 3 (3D-scenens kamera 3), för trädet Tatuerad. Gjord med Nano Banana 2.1 ur dockans första ruta från den stolen (kamera, pose, sko) och paow-ankare-2-3-d (utseendet), skalad till bankens ram 1764 × 1174 (FFmpeg, lanczos), ingen beskärning; ingen bildpunkt är det raka ankarets. Kandidat. Posten bär ingen stol: Material räknar den bland de raka A2.3 tills den gör det.",
+          "source": {
+            "from": "Runways API, Nano Banana 2.1 (uppdrag 1a69c8d0); utanför Beställ, liggaren .runtime/vinkelprov-p4c2/api/ledger.json (vinkelprov-p4c2-still-oga-3); original.png bredvid bilden",
+            "when": "2026-11-24"
+          }
+        },
+        {
+          "id": "paow-ankare-2-3-d-stol-5",
+          "role": "ankare-2.3",
+          "name": "A2.3 från stol 5 (tatuerad)",
+          "path": "assets/anchors/paow-ankare-2-3-d-stol-5/anchor.png",
+          "node": "READY-C",
+          "seat": 5,
+          "state": "kandidat",
+          "note": "A2.3 sedd från stol 5 (3D-scenens kamera 5), för trädet Tatuerad. Gjord med Nano Banana 2.1 ur dockans första ruta från den stolen (kamera, pose, sko) och paow-ankare-2-3-d (utseendet), skalad till bankens ram 1764 × 1174 (FFmpeg, lanczos), ingen beskärning; ingen bildpunkt är det raka ankarets. Kandidat. Posten bär ingen stol: Material räknar den bland de raka A2.3 tills den gör det.",
+          "source": {
+            "from": "Runways API, Nano Banana 2.1 (uppdrag c6595c44); utanför Beställ, liggaren .runtime/vinkelprov-p4c2/api/ledger.json (vinkelprov-p4c2-still-oga-5); original.png bredvid bilden",
+            "when": "2026-11-24"
+          }
+        },
+        {
+          "id": "paow-ankare-2-3-d-stol-6",
+          "role": "ankare-2.3",
+          "name": "A2.3 från stol 6 (tatuerad)",
+          "path": "assets/anchors/paow-ankare-2-3-d-stol-6/anchor.png",
+          "node": "READY-C",
+          "seat": 6,
+          "state": "kandidat",
+          "note": "A2.3 sedd från stol 6 (3D-scenens kamera 6), för trädet Tatuerad. Gjord med Nano Banana 2.1 ur dockans första ruta från den stolen (kamera, pose, sko) och paow-ankare-2-3-d (utseendet), skalad till bankens ram 1764 × 1174 (FFmpeg, lanczos), ingen beskärning; ingen bildpunkt är det raka ankarets. Kandidat. Posten bär ingen stol: Material räknar den bland de raka A2.3 tills den gör det.",
+          "source": {
+            "from": "Runways API, Nano Banana 2.1 (uppdrag ae35bbcc); utanför Beställ, liggaren .runtime/vinkelprov-p4c2/api/ledger.json (vinkelprov-p4c2-still-oga-6-b); original.png bredvid bilden",
+            "when": "2026-11-24"
+          }
+        },
+        {
+          "id": "paow-ankare-2-3-d-stol-7",
+          "role": "ankare-2.3",
+          "name": "A2.3 från stol 7 (tatuerad)",
+          "path": "assets/anchors/paow-ankare-2-3-d-stol-7/anchor.png",
+          "node": "READY-C",
+          "seat": 7,
+          "state": "kandidat",
+          "note": "A2.3 sedd från stol 7 (3D-scenens kamera 7), för trädet Tatuerad. Gjord med Nano Banana 2.1 ur dockans första ruta från den stolen (kamera, pose, sko) och paow-ankare-2-3-d (utseendet), skalad till bankens ram 1764 × 1174 (FFmpeg, lanczos), ingen beskärning; ingen bildpunkt är det raka ankarets. Kandidat. Posten bär ingen stol: Material räknar den bland de raka A2.3 tills den gör det.",
+          "source": {
+            "from": "Runways API, Nano Banana 2.1 (uppdrag 490eb7e9); utanför Beställ, liggaren .runtime/vinkelprov-p4c2/api/ledger.json (vinkelprov-p4c2-still-oga-7); original.png bredvid bilden",
+            "when": "2026-11-24"
+          }
         }
       ]
     },

@@ -35,12 +35,13 @@ export const isDecidable = (e: Pick<Entry, "role" | "path" | "frame">): boolean 
  * a candidate or the one that held until now. Only one picture holds per role, node and card: an order finds its anchor that
  * way, and a repaired copy approved after its original must take the original's place (2026-11-13). A keystone is also kept
  * apart by its posture: a dealer has a standing and a sitting one (2026-11-18), and a landing picture by its hand (A3: one per
- * seat and hand; absent is the left).
+ * seat and hand; absent is the left), and a picture seen from a seat's camera by that seat: it never sets the straight one aside.
  */
-export function replacedBy<T extends Pick<Entry, "id" | "role" | "node" | "card" | "state"> & { name?: string; hand?: string }>(entries: readonly T[], entry: T): T[] {
+export function replacedBy<T extends Pick<Entry, "id" | "role" | "node" | "card" | "state"> & { name?: string; hand?: string; seat?: number }>(entries: readonly T[], entry: T): T[] {
   const samePosture = (e: T) => entry.role !== "keystone" || isStanding(e) === isStanding(entry);
   const sameHand = (e: T) => entry.role !== "landning" || (e.hand ?? "LH") === (entry.hand ?? "LH");
-  return entries.filter((e) => e.id !== entry.id && e.role === entry.role && e.node === entry.node && e.card === entry.card && samePosture(e) && sameHand(e) && (e.state === "kandidat" || e.state === "gäller"));
+  const sameCamera = (e: T) => (e.seat ?? null) === (entry.seat ?? null);
+  return entries.filter((e) => e.id !== entry.id && e.role === entry.role && e.node === entry.node && e.card === entry.card && samePosture(e) && sameHand(e) && sameCamera(e) && (e.state === "kandidat" || e.state === "gäller"));
 }
 
 /** "Jakob 2026-11-12 22:40: kandidat → gäller (Material)". */

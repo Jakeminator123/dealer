@@ -69,6 +69,8 @@ export type Entry = {
   card?: string;
   /** A landing picture (A3): the hand whose fingertips rest on the card, LH or RH; absent: the left (src/order-model.ts landingOf). */
   hand?: "LH" | "RH";
+  /** The seat (1-7) whose camera the picture is seen from; absent: the straight camera, the one an order and the game take (data/dealer-trees.json, {entry, seat}). */
+  seat?: number;
   node?: string;
   state?: State;
   /** The entries this picture was made from (a keystone, an anchor), by id, where a receipt says it; empty or missing where nothing does. */

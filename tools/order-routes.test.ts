@@ -474,6 +474,8 @@ test('Material: a picture made to hold replaces the others of its place; any can
   const keystones = [{ id: 'paow-staende', role: 'keystone', name: 'Stående A', state: 'gäller' }, { id: 'paow-sittande', role: 'keystone', name: 'Sittande A', state: 'gäller' }, { id: 'paow-staende-tatuerad', role: 'keystone', name: 'Stående, tatuerade händer', state: 'kandidat' }, { id: 'paow-sittande-tatuerad', role: 'keystone', name: 'Sittande, tatuerade händer', state: 'kandidat' }] as const;
   assert.equal(replacedBy(keystones, keystones[3]).map((e) => e.id).join(), 'paow-sittande', 'a keystone gives way only to one of its own posture: the standing ones are left alone');
   assert.equal(replacedBy(keystones, keystones[2]).map((e) => e.id).join(), 'paow-staende');
+  const cameras = [{ id: 'rak', role: 'ankare-2.3', node: 'READY-C', state: 'gäller' }, { id: 'stol-1', role: 'ankare-2.3', node: 'READY-C', state: 'kandidat', seat: 1 }, { id: 'stol-1-b', role: 'ankare-2.3', node: 'READY-C', state: 'gäller', seat: 1 }] as const;
+  assert.equal(replacedBy(cameras, cameras[1]).map((e) => e.id).join(), 'stol-1-b', 'an anchor seen from a seat gives way only to one from the same seat: the anchor of the straight camera stays');
 });
 
 test('a draft that waits fetches its picture once the anchor holds: with refresh, or at once on Godkänn in Material', async (t) => {

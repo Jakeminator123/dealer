@@ -8599,6 +8599,87 @@
         "id": "paow-giv-2-1-p7-07",
         "take": 1
       }
+    },
+    {
+      "id": "paow-giv-2-3-p4-c2-stol-3-01-01",
+      "kind": "DEAL",
+      "from": "READY-C",
+      "to": "P4.C2",
+      "clip": "paow-giv-2-3-p4-c2-stol-3-01-01",
+      "frames": [
+        0,
+        96
+      ],
+      "purpose": "Beställning paow-giv-2-3-p4-c2-stol-3-01, tagning 1: Två händer, ett kort till platsen · plats 4, kort 2 · beställd utanför Beställ (vinkelprov-p4c2-oga-3-kling-1).",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 4,
+      "promptText": "Keep the movement of the video exactly as it is, with exactly the same timing, the same locked camera and the same framing: every position of the head, the arms, the hands and the fingers stays. Change what it looks like. The white mannequin becomes the real woman of the first frame and of the reference image: the same face, the same blonde bob, the same black jacket and cream top, and the same dark tattoos on her neck and on the backs of both her hands, sharp and fixed in the skin all through the video. She moves naturally, like a practised dealer, on exactly the mannequin's path. The grey table becomes the flat even green table of the first frame, and everything behind and beside her is the same flat even green screen. The black box becomes her black card shoe, as the first frame shows it, standing still in the same place. The card stays exactly as in the video: one small flat card that leaves the shoe with a plain solid yellow back, is turned over once on its way, and is laid flat on the table exactly where the mannequin lays it, with its plain solid blue face up; it lies still there while her hand glides back to where it began. Only one card moves, and it keeps its size. Photographic and sharp, the same soft even light as in the first frame.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-3-p4-c2-stol-3-01/first.png",
+          "sha256": "5ac42e93dc5ad81e7ce44212ef335cf70e76e7607dde539580b51b82d324ac91"
+        },
+        "note": "Första bilden i beställningen paow-giv-2-3-p4-c2-stol-3-01."
+      },
+      "order": {
+        "id": "paow-giv-2-3-p4-c2-stol-3-01",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-3-p4-c2-stol-1-01-01",
+      "kind": "DEAL",
+      "from": "READY-C",
+      "to": "P4.C2",
+      "clip": "paow-giv-2-3-p4-c2-stol-1-01-01",
+      "frames": [
+        0,
+        96
+      ],
+      "purpose": "Beställning paow-giv-2-3-p4-c2-stol-1-01, tagning 1: Två händer, ett kort till platsen · plats 4, kort 2 · beställd utanför Beställ (vinkelprov-p4c2-oga-1-kling-1).",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 4,
+      "promptText": "Keep the movement of the video exactly as it is, with exactly the same timing, the same locked camera and the same framing: every position of the head, the arms, the hands and the fingers stays. Change what it looks like. The white mannequin becomes the real woman of the first frame and of the reference image: the same face, the same blonde bob, the same black jacket and cream top, and the same dark tattoos on her neck and on the backs of both her hands, sharp and fixed in the skin all through the video. She moves naturally, like a practised dealer, on exactly the mannequin's path. The grey table becomes the flat even green table of the first frame, and everything behind and beside her is the same flat even green screen. The black box becomes her black card shoe, as the first frame shows it, standing still in the same place. The card stays exactly as in the video: one small flat card that leaves the shoe with a plain solid yellow back, is turned over once on its way, and is laid flat on the table exactly where the mannequin lays it, with its plain solid blue face up; it lies still there while her hand glides back to where it began. Only one card moves, and it keeps its size. Both its sides are plain and solid right out to the corners, with no border, no frame and no print. Wherever the video shows yellow in the window of the shoe, a plain yellow card shows there: as she strokes one card out, the next one is already in the window. Photographic and sharp, the same soft even light as in the first frame.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-3-p4-c2-stol-1-01/first.png",
+          "sha256": "f546a751bfdc4dbf3b0a711ab3b53b47f33340b9a828309fe11dc0450d52e2e8"
+        },
+        "note": "Första bilden i beställningen paow-giv-2-3-p4-c2-stol-1-01."
+      },
+      "order": {
+        "id": "paow-giv-2-3-p4-c2-stol-1-01",
+        "take": 1
+      }
+    },
+    {
+      "id": "paow-giv-2-3-p4-c2-stol-7-01-01",
+      "kind": "DEAL",
+      "from": "READY-C",
+      "to": "P4.C2",
+      "clip": "paow-giv-2-3-p4-c2-stol-7-01-01",
+      "frames": [
+        0,
+        96
+      ],
+      "purpose": "Beställning paow-giv-2-3-p4-c2-stol-7-01, tagning 1: Två händer, ett kort till platsen · plats 4, kort 2 · beställd utanför Beställ (vinkelprov-p4c2-oga-7-kling-1).",
+      "dealer": "paow",
+      "model": "kling-4",
+      "duration": 4,
+      "promptText": "Keep the movement of the video exactly as it is, with exactly the same timing, the same locked camera and the same framing: every position of the head, the arms, the hands and the fingers stays. Change what it looks like. The white mannequin becomes the real woman of the first frame and of the reference image: the same face, the same blonde bob, the same black jacket and cream top, and the same dark tattoos on her neck and on the backs of both her hands, sharp and fixed in the skin all through the video. She moves naturally, like a practised dealer, on exactly the mannequin's path. The grey table becomes the flat even green table of the first frame, and everything behind and beside her is the same flat even green screen. The black box becomes her black card shoe, as the first frame shows it, standing still in the same place. The card stays exactly as in the video: one small flat card that leaves the shoe with a plain solid yellow back, is turned over once on its way, and is laid flat on the table exactly where the mannequin lays it, with its plain solid blue face up; it lies still there while her hand glides back to where it began. Only one card moves, and it keeps its size. Both its sides are plain and solid right out to the corners, with no border, no frame and no print. Wherever the video shows yellow in the window of the shoe, a plain yellow card shows there: as she strokes one card out, the next one is already in the window. Photographic and sharp, the same soft even light as in the first frame.",
+      "first": {
+        "file": {
+          "path": "assets/orders/paow-giv-2-3-p4-c2-stol-7-01/first.png",
+          "sha256": "e9aa0454cbc09258c0e2c9e992b5617b26024e2837b840b17eb4e4d8756a1fb1"
+        },
+        "note": "Första bilden i beställningen paow-giv-2-3-p4-c2-stol-7-01."
+      },
+      "order": {
+        "id": "paow-giv-2-3-p4-c2-stol-7-01",
+        "take": 1
+      }
     }
   ],
   "edits": []

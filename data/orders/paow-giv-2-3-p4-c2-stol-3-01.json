@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "id": "paow-giv-2-3-p4-c2-stol-3-01",
+  "title": "Två händer, ett kort till platsen · plats 4, kort 2 · beställd utanför Beställ (vinkelprov-p4c2-oga-3-kling-1)",
+  "summary": "Gör en film av Paow: två händer, ett kort till platsen till plats 4, kort 2. Beställd utanför Beställ genom Runways API (utvecklarprojektets krediter) och införd i efterhand ur liggaren.",
+  "group": null,
+  "dealer": "paow",
+  "kind": "FILM",
+  "step": {
+    "key": "GIV-2.3",
+    "label": "Två händer, ett kort till platsen",
+    "edge": "READY-C>P4.C2",
+    "shape": "ONE_WAY",
+    "cutInto": [
+      "READY-C>P4.C2"
+    ],
+    "makes": null
+  },
+  "motion": {
+    "grip": "TWO_HANDS",
+    "hand": "LH",
+    "pass": true,
+    "turn": true,
+    "flipAxis": "FREE",
+    "target": "P4.C2",
+    "side": "FRONT"
+  },
+  "pictures": [
+    {
+      "name": "first.png",
+      "label": "Första bild · A2.3 från stol 3 (tatuerad)",
+      "goesAs": "startFrame",
+      "path": "assets/orders/paow-giv-2-3-p4-c2-stol-3-01/first.png",
+      "sha256": "5ac42e93dc5ad81e7ce44212ef335cf70e76e7607dde539580b51b82d324ac91",
+      "from": {
+        "entry": "paow-ankare-2-3-d-stol-3",
+        "path": "assets/anchors/paow-ankare-2-3-d-stol-3/anchor.png",
+        "note": "ur liggaren ledger.json (.runtime/vinkelprov-p4c2/ut/still-3.png); paow-ankare-2-3-d-stol-3 är den skickade bilden skalad till bankens ram 1764 × 1174 (FFmpeg, lanczos), ingen beskärning"
+      },
+      "waits": null
+    }
+  ],
+  "reference": {
+    "status": "FINNS",
+    "clips": [],
+    "path": "assets/orders/paow-giv-2-3-p4-c2-stol-3-01/reference.mp4",
+    "sha256": "644048d03a2838ab4474f9cde6da62515bcaaf525df7ab7688180819827edfe3",
+    "seconds": 4,
+    "goesTo": "P4.C2",
+    "approvedStraight": false
+  },
+  "generation": {
+    "provider": "runway-app",
+    "tool": "generate_video",
+    "model": "kling-4",
+    "params": {
+      "resolution": "1080p",
+      "duration": 4
+    }
+  },
+  "prompt": {
+    "template": null,
+    "text": "Keep the movement of the video exactly as it is, with exactly the same timing, the same locked camera and the same framing: every position of the head, the arms, the hands and the fingers stays. Change what it looks like. The white mannequin becomes the real woman of the first frame and of the reference image: the same face, the same blonde bob, the same black jacket and cream top, and the same dark tattoos on her neck and on the backs of both her hands, sharp and fixed in the skin all through the video. She moves naturally, like a practised dealer, on exactly the mannequin's path. The grey table becomes the flat even green table of the first frame, and everything behind and beside her is the same flat even green screen. The black box becomes her black card shoe, as the first frame shows it, standing still in the same place. The card stays exactly as in the video: one small flat card that leaves the shoe with a plain solid yellow back, is turned over once on its way, and is laid flat on the table exactly where the mannequin lays it, with its plain solid blue face up; it lies still there while her hand glides back to where it began. Only one card moves, and it keeps its size. Photographic and sharp, the same soft even light as in the first frame.",
+    "sha256": "01de99eca662d2d75fbff20ecb75eeecd249f4edbc3f02a95d307526d051c291",
+    "extra": null,
+    "middle": false
+  },
+  "takes": 1,
+  "cost": {
+    "perTake": 91,
+    "total": 91,
+    "worstPerTake": 91,
+    "worstTotal": 91,
+    "basis": "liggaren: saldot före minus saldot efter"
+  },
+  "limits": {
+    "maxCredits": 91,
+    "stopBelowCredits": 0
+  },
+  "notes": [
+    "Beställd utanför Beställ: dealer-5b (sidosession) lade anropet genom Runways API (utvecklarprojektets krediter) (generate_video, kling-4) 2026-11-24T02:17:15.170Z, task 200fbf72-766d-4f14-8629-1123ca7a66ef, 91 krediter (saldot 7839 före, 7742 efter).",
+    "Texten är den som skickades, ord för ord (liggarens body.promptText), inte promptFor:s. Vänster hand stryker ut kortet, höger lägger det.",
+    "Gjord med modellen som redigerare (/v1/video_to_video): referensfilmen är filmen som gjordes om, och den nya följer dess rörelse; .runtime/vinkelprov-p4c2/frame.png gick med som bild av utseendet (references)."
+  ],
+  "created": "2026-11-24T02:17:15.170Z",
+  "createdBy": "dealer-5b (sidosession)",
+  "outside": {
+    "ledger": ".runtime/vinkelprov-p4c2/api/ledger.json",
+    "ledgerSha256": "1d7f924a590927d5dd3744afac7a46b0bc15d33d0975f7b709ae0a52df95f66b",
+    "entry": "vinkelprov-p4c2-oga-3-kling-1",
+    "placedBy": "dealer-5b (sidosession)",
+    "approvedBy": "Prov utanför Beställ, på Jakobs ord 2026-11-24 kl. 03.10 (\"filma vår docka från Seat 1, 2, 3 och 5, 6, 7 ... samma video man normalt sett skulle få för seat 4 - fast till alla andra platser ... vi måste ta med referensbild på hur hon ser ut också\"): dockans giv till P4.C2 och åter (hans standard paow-p4c2, 4 s) ritad från stol 3, gjord om till Paow. Kling 4 som filmredigerare (video_to_video), 1080p, dockans film som källa, bilden av Paow från samma öga som första bild och hennes A2.3 framifrån som referensbild (utseendet). En tagning.",
+    "mandate": null,
+    "importedAt": "2026-11-24T03:15:41.641Z",
+    "importedBy": "tools/order-import.ts",
+    "note": "Lagd på det ord som står i approval.mandate, inte på huvudagentens godkännande i Beställ; approvedBy är anropets egen beskrivning i liggaren. approval nedan skrevs när ordern fördes in, så att banken tar emot den, med hashen av ordern som den står här."
+  },
+  "approval": {
+    "by": "huvudagent",
+    "at": "2026-11-24T02:17:15.170Z",
+    "orderSha256": "a6b8912824efaa74e1063197afc9dee758c44361acde6ce390cb453d66652731",
+    "mandate": "Jakobs ord i chatten 2026-11-24 kl. 03.10 till dealer-5b: provet med dockans giv sedd från stol 1, 3 och 7; utanför Beställ, tak 800 krediter"
+  },
+  "status": "GODKÄND"
+}

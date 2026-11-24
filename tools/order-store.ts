@@ -194,9 +194,9 @@ const endsInWords = (label: string, dealerName: string, at: string, entry: Pick<
 };
 
 const isPicture = (e: Entry) => !!e.path && (e.frame !== undefined || /\.(?:png|jpe?g)$/i.test(e.path)) && !/^[A-Za-z]:\//.test(e.path);
-/** The entry of a role that holds: state gäller, no card on the table, the anchor's node when given. */
+/** The entry of a role that holds: state gäller, no card on the table, the anchor's node when given, seen from the straight camera. */
 export function holding(register: Register, dealer: string, role: string, node?: string): Entry | null {
-  return register.dealers[dealer]?.entries.find((e) => e.role === role && e.state === 'gäller' && !e.card && (!node || e.node === node) && isPicture(e)) ?? null;
+  return register.dealers[dealer]?.entries.find((e) => e.role === role && e.state === 'gäller' && !e.card && !e.seat && (!node || e.node === node) && isPicture(e)) ?? null;
 }
 /** Why a draft has no reference film, in words of today (rewritten with the draft; the screen computes its own). */
 export const noReferenceWhy = (model: string) => (MODELS[model]?.videos ? 'Ingen referensfilm vald.' : `${MODELS[model]?.label ?? model} tar ingen referensfilm tillsammans med första och sista bild.`);

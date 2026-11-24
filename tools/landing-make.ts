@@ -456,7 +456,7 @@ export async function makeLanding(root: string, o: {source: string; target: stri
   const dealer = o.dealer ?? 'paow';
   if (!LANDING_TARGET.test(o.target)) throw new Error(`${o.target}: ett A3 görs för ett kort som läggs öppet med egen film: en spelares första eller andra kort (P1.C1 … P7.C2) eller dealerns första (D.C1).`);
   const register = JSON.parse(await readFile(path.join(root, 'data', 'media-roles.json'), 'utf8'));
-  const holding = register.dealers?.[dealer]?.entries?.find((e: {role: string; state?: string}) => e.role === 'ankare-2.3' && e.state === 'gäller');
+  const holding = register.dealers?.[dealer]?.entries?.find((e: {role: string; state?: string; seat?: number}) => e.role === 'ankare-2.3' && e.state === 'gäller' && !e.seat);
   const anchorFile = o.anchor ? path.resolve(o.anchor) : holding?.path ? path.join(root, holding.path) : null;
   if (!anchorFile) throw new Error('Inget ankare 2.3 gäller; ange --anchor.');
   const sourceBytes = await readFile(o.source), source = await readRgb(sourceBytes), anchor = await readRgb(anchorFile);
