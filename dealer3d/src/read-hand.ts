@@ -33,13 +33,19 @@ const clamp = (x: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, x
 const smooth = (t: number) => { const x = Math.max(0, Math.min(1, t)); return x * x * (3 - 2 * x); };
 
 /**
+ * How far inside LIMITS herShape keeps a joint, degrees: so far that the file's rounding of every point to a tenth of a
+ * millimetre (lift.ts) does not put it past the limit. Half a degree (before 2026-11-24, the files read then) did not:
+ * clip p4-04, frame 83, her right forefinger's end joint kept at -9.5° measured -10.01° once rounded.
+ */
+const INSIDE = 1.5;
+/**
  * A read hand (`p`, in the room; `sign` +1 her right, -1 her left, as hand-rule.ts measures) made with her own hand
  * `own` (doll.ts DollHand, in its own axes): her palm and her bones' lengths, the thumb's bones pointing as read, each
- * finger bent as read within LIMITS (half a degree inside), turned and placed as the read hand is. Answers the shape
+ * finger bent as read within LIMITS (INSIDE degrees inside), turned and placed as the read hand is. Answers the shape
  * in the read hand's own axes (wrist at nought) and those axes.
  */
 export function herShape(p: Vec3[], sign: number, own: Vec3[]): {shape: Vec3[]; axes: Axes} {
-  const axes = axesOf(p, sign), q = local(p, axes), out = own.map(v => [...v] as Vec3), keep = (x: number, lo: number, hi: number) => Math.max(lo + 0.5, Math.min(hi - 0.5, x));
+  const axes = axesOf(p, sign), q = local(p, axes), out = own.map(v => [...v] as Vec3), keep = (x: number, lo: number, hi: number) => Math.max(lo + INSIDE, Math.min(hi - INSIDE, x));
   const t = FINGERS[0]; for (let j = 1; j <= 3; j++) out[t[j]] = add(out[t[j - 1]], mul(unit(sub(q[t[j]], q[t[j - 1]])), length(sub(own[t[j]], own[t[j - 1]]))));
   const bends = bendsOf(q);
   for (let f = 1; f <= 4; f++) { const c = FINGERS[f], b = bends[f - 1], J = [LIMITS.mcp, LIMITS.pip, LIMITS.dip];

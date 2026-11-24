@@ -218,11 +218,23 @@ export const READ_DEALS: Record<string, string> = {'P1.C1': 'giv-avlast-p1', 'P3
  * Paow's own deals from A2.1, for the doll paow (Jakob 2026-11-23: her motion from the A2.1 films he approved, "genom
  * dockan"): per place the clips read off her films (dealer3d/data/giv-avlast-paow-<place>-<clip>.json, lift.ts --frames
  * from the register's segment, --hand paow), `first` the one shown where none is chosen and `why` in words. Where she has none, READ_DEALS.
+ * Clip 04 is read again with read-hand.ts INSIDE (giv-avlast-paow-p4-04-b; the first reading, -04, kept one joint 0.01° past its limit).
+ * Places 1, 2, 3, 5 and 7 (2026-11-24, Jakob: the best deals from A2.1 ordered again with her tattooed hands): his chosen
+ * film there, one each; p1-06 and p2-03 read to frame 120 and 130, eight and six past the register's segment, since her
+ * fingertip hides a corner of the card until 114 and 125 (the track's rest) and the return holds a fifth of a second after.
+ * Place 6 (2026-11-24, Jakob: from A2.1 she pinches the card): no film deals there from A2.1, and his Primär there from
+ * A2.2 slides the card pressed on the felt, so her deal to place 7 is moved there (lift.ts --to P6.C1), clip "p7-04".
  */
 export const PAOW_READS: Record<string, {first: string; why: string; clips: Record<string, {read: string; film: string}>}> = {
   'P4.C1': {first: '11', why: 'Jakob tycker att 11 nog är bäst, och den mäter bäst: inga fel mot handregeln och fingertopparna på kortet genom hela nypet.', clips: {
-    '04': {read: 'giv-avlast-paow-p4-04', film: 'paow-giv-2-1-p4-04-01'}, '08': {read: 'giv-avlast-paow-p4-08', film: 'paow-giv-2-1-p4-08-01'},
-    '10': {read: 'giv-avlast-paow-p4-10', film: 'paow-giv-2-1-p4-10-01'}, '11': {read: 'giv-avlast-paow-p4-11', film: 'paow-giv-2-1-p4-11-01'}}}};
+    '04': {read: 'giv-avlast-paow-p4-04-b', film: 'paow-giv-2-1-p4-04-01'}, '08': {read: 'giv-avlast-paow-p4-08', film: 'paow-giv-2-1-p4-08-01'},
+    '10': {read: 'giv-avlast-paow-p4-10', film: 'paow-giv-2-1-p4-10-01'}, '11': {read: 'giv-avlast-paow-p4-11', film: 'paow-giv-2-1-p4-11-01'}}},
+  'P1.C1': {first: '06', why: 'Jakobs Primär hit från A2.1 ("Mycket bra").', clips: {'06': {read: 'giv-avlast-paow-p1-06', film: 'paow-giv-2-1-p1-06-01'}}},
+  'P2.C1': {first: '03', why: 'Jakobs Primär hit från A2.1.', clips: {'03': {read: 'giv-avlast-paow-p2-03', film: 'paow-giv-2-1-p2-03-01'}}},
+  'P3.C1': {first: '02', why: 'Jakobs Primär hit från A2.1 ("Riktigt rolig variant", "mer exakt").', clips: {'02': {read: 'giv-avlast-paow-p3-02', film: 'paow-giv-2-1-p3-02-01'}}},
+  'P5.C1': {first: '03', why: 'Jakob om filmen: "handrörelsen är skitbra".', clips: {'03': {read: 'giv-avlast-paow-p5-03', film: 'paow-giv-2-1-p5-03-01'}}},
+  'P7.C1': {first: '04', why: 'Jakob om filmen: "gjord med mycket finess".', clips: {'04': {read: 'giv-avlast-paow-p7-04', film: 'paow-giv-2-1-p7-04-01'}}},
+  'P6.C1': {first: 'p7-04', why: 'ingen giv hit från A2.1 finns, och hans Primär hit (paow-giv-2-2-p6-02-01, från A2.2) skjuter kortet över filten: hennes giv till plats 7 (klipp 04), flyttad hit, som nyper kortet hela vägen.', clips: {'p7-04': {read: 'giv-avlast-paow-p7-04-till-p6', film: 'paow-giv-2-1-p7-04-01'}}}};
 /** The doll's own read clip to a place: `clip` where the place has it, else the place's first; null where the doll has none there. */
 export function readClip(doll: string | null | undefined, target: string, clip?: string | null): {clip: string; read: string; film: string} | null {
   const own = doll === 'paow' && Object.hasOwn(PAOW_READS, target) ? PAOW_READS[target] : null; if (!own) return null;
