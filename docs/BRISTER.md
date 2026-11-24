@@ -37,10 +37,6 @@ Innehåll: Kortet · Filmerna och banken · Läpparna och rösten · Spelet och 
   Platserna är Jakobs. Stänger: hans val i Kortplan.
 - **Kortet i nypet (ankare 2.1) är 8–13 % för långt;** i skons fönster stämmer det (0,94, 3D-banans mätning i
   `D:/dealer-scratch/tmp/dealer-3d/kalibrering.txt`). Stänger: nya ankare; inget ankare krymps för skons skull.
-- **Kortbanan i Bordet** (BESKED, "Kortbanan följer filmerna"): den ritade handen pekar ut från kortets ände, kortet
-  vänds något högre än i filmen, och vid platsen rullas kortet på filten medan Paows film från A2.2 vänder det i luften.
-  Stänger: hans svar på hur vändningen vid platsen ska ritas, och en film med vändningen med handflatan uppåt (`FREE`)
-  att rita efter; ingen sådan finns.
 - **Det ritade kortet i handen** (`cardInHand=1`; mätt på 104 kortspår, Prov `kort-fram-bak-20261120` och
   `kortet-i-handen-orsaker-20261120`): i vändningen står kortet kvar brett och blir en linje (`settleRaws` i
   `src/card-track.ts` behåller ett skymt korts form), papperets ljus hoppar när `cardBase` i `src/scene3d-film.ts` tar

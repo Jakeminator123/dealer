@@ -1,22 +1,20 @@
 "use client";
 
 // What Bordet's Kortplan needs beside <Board>: what lies under the cards (a still or a film, and the list to choose from),
-// the card path's playing state ("Spela kortbanan"), and the keys (Ctrl+Z ångra, X the saved plan or the draft, the arrows
-// nudge the chosen place, Esc stops the path).
+// and the keys (Ctrl+Z ångra, X the saved plan or the draft, the arrows nudge the chosen place).
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
-import { SHOE, type Place, type PlacementPlan } from "../../../src/placement-model.ts";
+import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import { SHOE, type Place } from "../../../src/placement-model.ts";
 import { useBank } from "../../lib/bank.ts";
 import { labUrl } from "../../lib/lab.ts";
-import type { PathPhase } from "../../lib/placement-path.ts";
 import {
-  PLAN_VIEW, START_PLACE, STILLS, bankFilms, dollFor, filmGoesTo, motionSteps, nudged, readPlacementAddress, shownBackdrop, stillsFor, underFilms,
+  PLAN_VIEW, START_PLACE, STILLS, bankFilms, dollFor, filmGoesTo, nudged, readPlacementAddress, shownBackdrop, stillsFor, underFilms,
 } from "../../lib/placement.ts";
-import type { Backdrop, PathRun } from "./Board";
+import type { Backdrop } from "./Board";
 import { useKeyRun } from "./Board";
 import { draftActions } from "./useDraft.ts";
 
-/** The card whose path plays: the chosen card, or the start place's (P4C2, START_PLACE) with the shoe chosen. */
+/** The card a film or a round is shown for: the chosen card, or the start place's (P4C2, START_PLACE) with the shoe chosen. */
 export const pathCard = (place: Place) => (place === SHOE ? START_PLACE : place);
 
 /**
@@ -88,52 +86,8 @@ export function useUnder(place: Place, first: { backdrop: string | null; frame: 
   };
 }
 
-/**
- * "Spela kortbanan": which card plays (null: stopped), at full or half speed, and the step it shows now (lit in step 2).
- * `anchorOf`: the anchor a card's films go from ("A2.3"), named on the step over the picture as step 2 names it.
- */
-export function usePathPlay(plan: PlacementPlan | null, anchorOf?: (id: string) => string) {
-  const [playing, setPlaying] = useState<{ id: string; key: number } | null>(null);
-  const [halfSpeed, setHalfSpeed] = useState(false);
-  const [phase, setPhase] = useState<PathPhase | null>(null);
-  const run = playing && plan?.targets[playing.id] ? playing : null;
-  const lit = run ? phase : null;
-  const step = run && lit && plan ? motionSteps(run.id, plan.targets[run.id].intent, anchorOf?.(run.id)).steps.find((s) => s.id === lit) : null;
-  const path: PathRun | null = run ? { ...run, speed: halfSpeed ? 0.5 : 1, step: step ? `${step.label} · ${step.detail}` : null } : null;
-  return {
-    run,
-    lit,
-    path,
-    halfSpeed,
-    setHalfSpeed,
-    setPhase,
-    /** Another card chosen while the path plays: it plays that card's path from the start. */
-    follow: useCallback((id: Place) => setPlaying((was) => (was && was.id !== pathCard(id) ? { id: pathCard(id), key: Date.now() } : was)), []),
-    /** The button: plays the card's path, or stops it. */
-    toggle: (id: Place) => {
-      setPhase(null);
-      setPlaying((was) => (was ? null : { id: pathCard(id), key: Date.now() }));
-    },
-    /** Plays the card's path from the start. */
-    play: (id: Place) => {
-      setPhase(null);
-      setPlaying({ id: pathCard(id), key: Date.now() });
-    },
-    stop: () => setPlaying(null),
-  };
-}
-
-/**
- * The keys of a view with the plan's draft: Ctrl+Z ångra, X between the draft and the saved plan while there are changes (the
- * view says so on the picture while the saved plan shows, and nothing can be changed then), Esc (onEscape),
- * the arrows nudge the chosen place (on the picture, on the places, or with nothing in focus).
- */
-export function usePlanKeys({ place, editable, dirty, showing, area, onEscape }: { place: Place; editable: boolean; dirty: boolean; showing: "draft" | "saved"; area: RefObject<HTMLElement | null>; onEscape: () => void }) {
+export function usePlanKeys({ place, editable, dirty, showing, area,  }: { place: Place; editable: boolean; dirty: boolean; showing: "draft" | "saved"; area: RefObject<HTMLElement | null> }) {
   const keyRun = useKeyRun();
-  const escape = useRef(onEscape);
-  useEffect(() => {
-    escape.current = onEscape;
-  });
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const el = e.target as HTMLElement;
@@ -148,7 +102,6 @@ export function usePlanKeys({ place, editable, dirty, showing, area, onEscape }:
         draftActions.show(showing === "saved" ? "draft" : "saved");
         return;
       }
-      if (e.key === "Escape") escape.current();
       if (!e.key.startsWith("Arrow") || !editable) return;
       const free = el === document.body || !!area.current?.contains(el) || !!el.closest?.("[data-nudge]");
       if (!free) return;

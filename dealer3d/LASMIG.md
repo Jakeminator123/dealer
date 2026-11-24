@@ -9,24 +9,36 @@ Skriven 2026-11-18 och rättad per arbete sedan; resten står i commitmeddelande
 slaskdisken.
 
 **Läget 2026-11-24 (efter dealer-19 och sessionen om A2.1): börja här.**
+- **En dockfilm görs i ett steg**, från Kortplans steg 3 eller med `node tools/doll-order.ts <dealer> <P5.C1|D.C2> [--dry]`:
+  ingången ur planen, giv och återgång (`tools/docka-cykel.ts`), filmen (`tools/render-reference.ts`, under GPU-låset),
+  referensen och utkastet i Kön. Inget godkänns och inget betalas där.
+- **A2.1 byggs på dockans ben** (Jakob 2026-11-24: de avlästa filmerna var "svindåliga"): `src/pinch-deal.ts` ger giv
+  och återgång från ankaret (`data/ankare-2-1-paow.json`, ruta 0 ur `giv-fran-2-1-p4c1-avlast-11-a-paow.json`, med hash)
+  till varje plats; vänster hand bär kortet ensam och vänder upp det i fingrarna på vägen. Docklabbet, `docka-cykel.ts
+  --from A2.1` och `doll-order.ts` använder den; de avlästa givarna, `--klipp` och klippraden är borta. Sett på
+  kontaktark (`D:/dealer-scratch/tmp/docka-a21/p<n>c1-d/`, inte av Jakob): P3–P7 cirka 4/5; 2,5–3,6 s med återgången,
+  längre än hans 1,3 + 0,8 s.
+- **Planens val följer dockan** (BESKED 2026-11-24, "kortbanan kommer ur dockan"): en källa, `src/doll-choices.ts`, som
+  Kortplans steg 2 (`MotionPanel`), Bordets ankare, docklabbet och `doll-order.ts` läser. Handbyte måste där platsen
+  ligger till höger om hennes högra axel (x < −0,213 m: P1 och P2; från A2.1 går vänster arm 1–46 mm från hennes vilande
+  högra hand, mot P3 52–58 mm och P4–P7 172 mm och mer) och där kortet läggs stängt (D.C1). Reglaget är då låst på med
+  skälet i klartext; planen skrivs inte om. Handbyte går inte: ingenstans än. **Spela kortbanan** spelar dockans giv till
+  kortet i Ställ dockan; den ritade kortbanan är borta.
 - **Kortet bär alltid Kortplans kryss och cirkel**, också i dockans filmer (`src/card-marks.ts`, en källa; dealer-5b).
   Sparade referensfilmer från före 2026-11-24 visar ett omärkt kort.
-- **A2.1 görs om** (Jakob 2026-11-24: dockans filmer från A2.1 är "svindåliga"; BESKED "Dockan från A2.1 görs om, ett
-  sätt, samma kort"). De avlästa givarna (`page/lay.ts` readDeal, `data/giv-avlast-*.json`, `--klipp`) ersätts av en
-  byggd giv på dockans ben, ett sätt för alla platser, och Kortplans val läses ur dockan. Påbörjat, inget i repot ändrat:
-  läget, byggarens tre fel och nästa steg står i `.runtime/docka-a21/LAGE.md`.
-- **P7.C1 görs om** (Jakob: "Det måste fixas"). Vändningen "I handen" (`src/turn-in-hand.ts`, ocommittat, testet grönt)
-  är rättad för P7; kvar enligt `.runtime/p7-greppet/LAGE.md`: ny datafil, rendering och kontaktark; ruta 32 har ring- och
-  lillfinger 3–4 mm i filten; P6 får inte plats med vändningen vid 170 % och ger 97° handled vid 100 %; P4 hålls bara ned
-  till 43,5°. Jakobs `standard/paow-p7c1.json` ger vändningen 12 rutor och den behöver 20: han sparar om den (senare
-  släpp eller lägre kortets fart); skriv inte över den. `tools/doll-order.ts` skickar inte `--vandning` än.
+- **P7.C1 görs om** (Jakob: "Det måste fixas"), från A2.3: vändningen "I handen" (`src/turn-in-hand.ts`) är rättad för
+  P7; kvar enligt `.runtime/p7-greppet/LAGE.md`. Jakobs `standard/paow-p7c1.json` ger vändningen 12 rutor och den
+  behöver 20: han sparar om den (senare släpp eller lägre kortets fart); skriv inte över den.
 - **Tiden** (Jakob 2026-11-24): cirka 1,3 s ut och 0,8 s åter.
-- **Dealerns kort stängt eller öppet** (D.C1–D.C3, `Steer.side`, `docka-cykel.ts --sida`): förvalet är planens sida;
-  stängt skjuts kortet med baksidan upp och vänds aldrig. Jakobs plan och docka för D.C1 är committade.
+- **Dealerns kort stängt eller öppet** (D.C1–D.C3, `Steer.side`, `docka-cykel.ts --sida`): planens sida, som
+  `doll-order.ts` ger dockan; stängt skjuts kortet med baksidan upp och vänds aldrig.
 - **En tagning görs om genom dockan**, aldrig med förra tagningen som referensfilm (den kopieras inom en pixel), och varje
   kort har sin egen dockfilm (grannplatsens film lägger kortet på grannplatsen).
-- **Inte gjort: dockan som EN yta i Kortplan** (Jakob 2026-11-24): `DollNote` en rad, `MotionPanel` hopfälld när dockan
-  är vägen, dealerns kort in i `dollWay`. Hör ihop med planens val ur dockan (A2.1 ovan).
+- **Kvar:** studions beställning av en dockfilm går bara från GIV-2.3 (`BordetView` dollTarget; `tools/order-routes.ts`
+  skickar inte ingången); varningen `sideClash` (DollPanel, NewFilm) dubblar planens sida som `doll-order.ts` nu lägger;
+  `data/giv-avlast-*.json` (utom `-p4`, som `tools/pose-film.ts` läser) och `data/giv-fran-2-1-*-avlast-*.json` läses
+  inte av någon kod. Dockan som EN yta i Kortplan (Jakob 2026-11-24): `DollNote` en rad, `MotionPanel` hopfälld när
+  dockan är vägen, dealerns kort in i `dollWay`.
 
 **Läget.**
 - Gällande docka för givarna från A2.3 är **svep24d** (`data/giv-fran-2-3-p<n>-grepp-svep-d.json` för P1–P5 och
@@ -41,8 +53,6 @@ slaskdisken.
   närbild, slutruta och `KLAR-f.txt` (där står vad som håller och inte). Plats 1 ser inte ut som en människa som delar:
   armen ligger längs filten, för dockan sitter med axeln lågt över bordet.
 - Äldre versioner -b till -e: i sina `KLAR-*.txt`.
-- **A2.1 i dag** (ersätts, se överst): "Avläst giv" i Docklabbet spelar `data/giv-avlast-*.json`, och för Paow hennes
-  giv läst ur hennes filmer (`data/giv-avlast-paow-p4-<nr>.json`, `klipp=`); klipp 11 lyfter kortet till 16 cm över filten.
 - **Dockorna** (se **Dockorna**): `src/doll.ts` har `standard` (som förut, låst) och `paow`, rättad 2026-11-23 efter
   hennes filmer (38 cm bakom bordskanten, egna armbågar och händer); `?docka=paow`, `shoot.ts --doll paow`. Jakob
   2026-11-23 om vändningen vid platsen: "Bättre, men inte än", vänsterarmen ser fel ut mot skon. Scenens sko är rättad
@@ -81,12 +91,12 @@ förblir vänd tills kortet ligger); ingen ring som kortet rullar i, och inga fi
 3. Svepet (flera kort i en film) i -f: `tools/deal-film.ts --beats` tar i dag ETT kort.
 4. Dockans filmer in i `data/rendered-references.json` gör huvudagenten; id som `docka-2-3-p4c1-f`, aldrig samma id två gånger.
 5. SAM-dockan: Jakobs ja 2026-11-23 (BESKED); vad som finns och vad som saknas står sist i **Dockorna**.
-6. A2.1: se överst och `.runtime/docka-a21/LAGE.md`.
+6. P7.C1 från A2.3 och det som är kvar: se överst.
 
 **Väntar på Jakob.** Inget utanför Beslut.
 
-**Var saker ligger.** Koden och renderkommandot finns i repots `dealer3d/`. En dockfilm görs i två steg från repot;
-parametrarna för äldre filmer står i deras `KLAR-f.txt` på slaskdisken:
+**Var saker ligger.** Koden och renderkommandot finns i repots `dealer3d/`. En dockfilm görs i ett steg (överst). De
+äldre gjordes i två steg; parametrarna står i deras `KLAR-f.txt` på slaskdisken:
 1. `node dealer3d/tools/deal-film.ts --to P4.C1 --seconds 3 --right-at 1180,887,83 --beats 4,15,20,36,22,45,58,66 --meet 1
    --single 1 --roll 1 --hand-over-yaw 180 --carry 0.045 --turned-at 0.01 --tuck 300 --push 0.004 --out dealer3d/data/<namn>.json`
    (`--beats`: rutor från 0 för ut, ute, höger tar, kant, vänster släpper, framsidan, i filten, ligger; plats 1–3 även
@@ -115,7 +125,9 @@ använder repots låsta `three` och `sharp`.
 | `src/camera.ts` | Passningen: linsfamiljen `lensForFocal` (alla linser som ger kortet vid plats 4 dess storlek och form i filmen) och vad en lins gör av en sträcka i bilden. Lämnar vidare allt ur `src/table-lens.ts`. Ren räkning. |
 | `src/world.ts` | Det filmen visar (`MEASURED`) och det som antas (`ASSUMED`); `filmLens()`, passningen som väljer den lins som ritar dealerns kropp i verklig storlek (ett test håller den lika med `TABLE_LENS`); planens kortplatser på filten; stolarnas ögon (`seatEye`: varje stols öga står till stolens eget första kort som bankens kamera står till plats 4:s, lika högt, lika brant och lika långt bakom, så det egna kortet landar på samma bildpunkt från varje stol; buret runt dealerkantens mitt, som först, hamnade plats 1:s kort under bildkanten). Ren räkning. |
 | `src/capture.ts` | **En verklig giv lagd i rummet:** händernas 21 punkter och kroppens leder, avlästa ur en film, sätts under linsen punkt för punkt (varje punkt på siktlinjen genom sin egen bildpunkt), kortet följer filmens eget kortspår med sin hållna ände vid fingrarna, och `joints` och `LIMITS` säger vad en arm och en hand kan göra. Ren räkning. |
-| `data/giv-avlast-p4.json`, `-p1`, `-p3`, `-p5` | Den avlästa enhandsgiven från A2.1 som tal, dockans egna data (filmen den lästes ur är arkiverad; namnet står bara i filens `film`): 120 rutor, per ruta kortet, båda armarna och händernas punkter i meter; och samma giv flyttad till plats 1, 3 och 5 (`--to P3.C1`). Skrivna av `tools/lift.ts`; docklabbets A2.1 och `tools/pose-film.ts` läser dem. Hette giv-pamela-* till 2026-11-23 (tre äldre prov namnger dem så). Plats 6 och 7 finns inte: där går handen genom skon. `giv-avlast-p4-los.json` och `-p1-los.json` är samma två med högerhanden släppt fri (`--loose 1`, en modell). |
+| `data/giv-avlast-p4.json`, `-p1`, `-p3`, `-p5` | Den avlästa enhandsgiven från A2.1 som tal, dockans egna data (filmen den lästes ur är arkiverad; namnet står bara i filens `film`): 120 rutor, per ruta kortet, båda armarna och händernas punkter i meter; och samma giv flyttad till plats 1, 3 och 5 (`--to P3.C1`). Skrivna av `tools/lift.ts`; `tools/pose-film.ts` läser `-p4`, inget annat läser dem sedan A2.1 byggs (2026-11-24). Hette giv-pamela-* till 2026-11-23 (tre äldre prov namnger dem så). Plats 6 och 7 finns inte: där går handen genom skon. `giv-avlast-p4-los.json` och `-p1-los.json` är samma två med högerhanden släppt fri (`--loose 1`, en modell). |
+| `src/pinch-deal.ts`, `data/ankare-2-1-paow.json` | **Given från A2.1, byggd på dockans ben** (2026-11-24): `pinchDeal` tar ankarets ställning (ruta 0 ur Paows avlästa giv 11, med hash) och en plats, och ger giv och återgång: vänster hand nyper kortet i skon, bär det ensam och vänder upp det i fingrarna, kroppen lutar och vrider sig dit armen inte når (`reachFrom`), höger hand vilar på filten. Docklabbet och `tools/docka-cykel.ts --from A2.1` lägger den. Ren räkning. |
+| `src/doll-choices.ts` | **Vad dockan kan göra med planens kort**, en källa för Kortplans val och dockan: handbyte måste där vänster arm från A2.1 skulle gå över hennes högra hand (platsen till höger om hennes högra axel, x < −0,213 m) och där kortet läggs stängt; `dollIntent` och `dollEntry` ger planens rörelse och ingång som dockan följer dem. Ren räkning. |
 | `src/real-deal.ts` | **En riktig dealers tvåhandsgiv som tal:** åtta kort (sju platser och hennes eget), för varje kort tio ögonblick i sekunder och de två punkter på filten där händerna byter, avlästa av sessionen MODEL ur en film av ett riktigt bord. Bara tal lämnar den filmen. |
 | `src/two-hand.ts` | **Tvåhandsgiven från pose 2.3**, lagd för hand i den riktiga dealerns takt: kortet ut ur skon som en stege från en vägg, fört på filten till höger hand, rest på kortsidan av båda händerna, fällt framåt i luften (ände över ände), sänkt, skjutet de sista 4 cm; händerna omlott, huvudet följer platsen, kroppen lutar sig dit armen inte når. `startOnAnchor` lägger höger hand där en ankarbild har den. Huvudet på filen säger vad som är avläst och vad som är modell. Ren räkning. |
 | `src/hand-pose.ts` | En hand som stel form i sina egna axlar, och hur en modellerad film rör den: ställd någonstans, vriden i en enda vridning, fingrarna böjda i sina egna leder (varje ben behåller sin längd), tummen förd mot en punkt, och `track` (ett värde genom givna nycklar utan översläng). Ren räkning. |
@@ -135,9 +147,8 @@ använder repots låsta `three` och `sharp`.
 | `../tools/python/landmarks.py` (repots Python-mapp) | Läser en film ruta för ruta med MediaPipe och skriver händernas och kroppens punkter som JSON. Resultatet är mellanlager utanför Git. |
 | `tools/lift.ts` | Lägger en films punkter i rummet (`capture.ts`) med filmens kortspår, skriver `data/<namn>.json` och skriver ut vad som mättes: handens storlek, varje leds omfång, och hur kortet stämmer med filmens. `--frames 0,93` läser bara givens rutor (registrets segment, ges som flagga), `--hand paow` lägger dockans egna händer (`src/read-hand.ts`). |
 | `src/read-hand.ts` | **Hennes egen hand på en avläst giv:** vänsterhanden med dockans ben nyper kortets hållna ände (greppet läst i skon och tippat så att tumme och pekfinger går runt kortet), kortet får vrida sig i nypet så att handleden hamnar på filmens siktlinje utanför filten, och där nypet skulle gå i filten trycks kortet ovanifrån; släpper till den lästa handen när kortet läggs. Armbågen svängs där handleden annars böjs mer än den lästa, tummen vrids ur fingrarna. Ren räkning. |
-| `data/giv-avlast-paow-p4-04.json`, `-08`, `-10`, `-11` | Paows egna givar från A2.1 till plats 4, kort 1, en per film (`paow-giv-2-1-p4-<nr>-01`, givens rutor 0–108, 0–133, 0–103, 0–93; 08 i 30 rutor/s, de andra 24), i filmens takt; docklabbet visar dem för Paow (`page/lay.ts` PAOW_READS, förval 11). Gjorda med `node dealer3d/tools/lift.ts --marks <landmarks.py-utdata> --track assets/tracking/<film>/card-track.json --frames 0,<sista> --hand paow --out dealer3d/data/giv-avlast-paow-p4-<nr>.json`; `tools/docka-cykel.ts --from A2.1 --to P4.C1 --klipp 11` ger giv och återgång. |
+| `data/giv-avlast-paow-p4-04.json`, `-08`, `-10`, `-11` | Paows egna givar från A2.1 till plats 4, kort 1, en per film (`paow-giv-2-1-p4-<nr>-01`, givens rutor 0–108, 0–133, 0–103, 0–93; 08 i 30 rutor/s, de andra 24), i filmens takt; ingen kod läser dem sedan 2026-11-24, utom att 11:s ruta 0 är ankaret A2.1 (`data/ankare-2-1-paow.json`). Gjorda med `node dealer3d/tools/lift.ts --marks <landmarks.py-utdata> --track assets/tracking/<film>/card-track.json --frames 0,<sista> --hand paow --out dealer3d/data/giv-avlast-paow-p4-<nr>.json`. |
 | `tools/measure.ts` | Kalibreringen som tal: linsfamiljen, den valda linsen, ett verkligt kort på planens platser mot planens kontur, kortet i skon, stolarnas ögon. |
-| `tools/camera-proof.ts` | Bilderna till provet `dealer-3d-kamera`: planens kort och verkliga kort på en filmruta, och skons kort förstorat. |
 | `tools/shoot.ts` | Spelar in sidan utan labbserver: en egen filserver på 127.0.0.1 under körningen, headless Chrome med egen profil och port, en PNG per tidpunkt. `--doll paow` väljer dockan. Körs under det delade låset. |
 | `tests/world.test.ts` | Elva tester av passningen, världen och den handritade given, utan media och utan webbläsare; läser bara `placements/default.json`. |
 | `tests/capture.test.ts` | Ett test av `placeHand`: varje punkt tillbaka på sin bildpunkt, handleden på begärt djup. Testerna som läste de lagrade givarna ströks 2026-11-23. |
@@ -387,10 +398,9 @@ fingrar ska sitta som hennes innan dockan används.
   vidare, men bara att dessa måste sättas samman med dockan på ett bra sätt." **Ramen**: ankarna och slutbilden som i
   dag, lagrade rörelser och `dealer3d/standard/` orörda, inga filmer ändras.
 - **Ingång och återgång i docklabbet** (2026-11-23; sedd i headless, inte av Jakob). **Giv från** A2.3 (förval, som
-  förut) eller A2.1; A2.2 är avstängd (bara ankarbilden finns, ingen ställning är läst ur den). Från A2.1 finns bara
-  de avlästa enhandsgivarna ("Avläst giv", `giv-avlast-p1/p3/p4/p5`, plats 1, 3, 4 och 5, kort 1), lagda med filmens sko
-  (`lay.ts readDeal`: kortet och vänsterhanden flyttas stelt till skon medan kortet är där, armbågen löses om); inga
-  reglage, ett sätt. **Giv / Giv och återgång** (förval Giv): återgången är `natural-lab.ts withReturn`, samma som
+  förut) eller A2.1; A2.2 är avstängd (bara ankarbilden finns, ingen ställning är läst ur den). Från A2.1 bygger
+  `src/pinch-deal.ts` given på dockans ben till varje plats utom P1 och P2, där vänster arm skulle gå över hennes högra
+  hand (`src/doll-choices.ts`; knappen är avstängd och säger varför); inga reglage, ett sätt. **Giv / Giv och återgång** (förval Giv): återgången är `natural-lab.ts withReturn`, samma som
   `tools/docka-cykel.ts` (`src/return-cycle.ts`; från A2.1 lyfts vänsterhanden). **Standardernas namn**:
   `standard/<docka>-<plats>.json` är A2.3 (alla äldre filer, lästa som de är), `<docka>-a2-1-<plats>.json` är A2.1
   (`a2-2` hålls för A2.2); filen bär `lab.from`, och med återgången `lab.back` (cykelns uppgifter). **Vänsterhanden
@@ -468,7 +478,6 @@ tools/python/.venv/Scripts/python.exe -I tools/python/landmarks.py <film.mp4> <p
 node dealer3d/tools/lift.ts --marks <punkter.json> --track assets/tracking/<klipp>/card-track.json --out dealer3d/data/<namn>.json
 node dealer3d/tools/shoot.ts --out <mapp> --motion giv-fran-2-3-p4-f --eyes 1,4 --film 30 0 2.9667 --size 1920x640
 node dealer3d/tools/measure.ts
-node dealer3d/tools/camera-proof.ts --frame <ruta 120, png> --pinch <ruta 0, png> --out <mapp>
 node dealer3d/tools/shoot.ts --out <mapp> --eyes 1,4 --times 1.25,1.9,3.5 --size 1920x640
 node dealer3d/tools/shoot.ts --out <mapp> --eyes film --look plain --tags 0 --film 24 0 4 --size 1764x1174
 ```
@@ -501,8 +510,8 @@ node dealer3d/tools/render-reference.ts --motion <ny-cykel.json> --out <ny-mapp>
 
 En dockfilm med giv och återgång till valfri plats, lagd som Docklabbet lägger den med Giv och återgång (Naturlig,
 eller Jakobs sparade standard för docka, ingång och plats där en finns, i det val han sparade den i), görs i ett steg.
-Det skriver en ny datafil och renderkommandot; `--from` är ingången (A2.3 om den utelämnas, A2.1 för de avlästa
-enhandsgivarna), `--no-standard` lägger platsen som om ingen standard fanns, `--flat-hand` lägger högerhanden plan vid
+Det skriver en ny datafil och renderkommandot; `--from` är ingången (A2.3 om den utelämnas; A2.1 ger den byggda
+given och vägrar P1 och P2, där vänster arm skulle gå över hennes högra hand, `src/doll-choices.ts`), `--no-standard` lägger platsen som om ingen standard fanns, `--flat-hand` lägger högerhanden plan vid
 nedsläppet (bara Naturlig), `--sam-hand --recipe-grip-yaw --fingrar-som-forut --en-vinkel` lägger Naturlig som före 2026-11-23
 (den sista: de fria fingrarna utan `src/hand-rule.ts`, för en film gjord före regeln), och cykelns flaggor är
 `return-cycle.ts`:s. Det styrda i en Naturlig standard går ut under återgången, så att sista rutan är den första.

@@ -18,26 +18,22 @@
 // step for Ångra; nothing is saved from here.
 import { Focus, Maximize, Minus, Plus } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type RefObject, type SVGProps } from "react";
-import { CARD_COLOUR, SHOE, TARGETS, VIEWS, WINDOW_CARD, angleToward, defaultPlan, editPlace, fromPixels, toPixels, type Intent, type Place, type PlacementPlan, type Side, type View } from "../../../src/placement-model.ts";
+import { CARD_COLOUR, SHOE, TARGETS, VIEWS, WINDOW_CARD, angleToward, defaultPlan, editPlace, fromPixels, toPixels, type Place, type PlacementPlan, type Side, type View } from "../../../src/placement-model.ts";
 import { planCardQuad } from "../../../src/card-plan.ts";
 import { actualCamera, cardPath, clampCamera, closeUp, fitCamera, fitScale, gameCamera, gameScale, panBy, pictureOrigin, scaleWords, zoomAt, type Camera, type Size } from "../../lib/bordet.ts";
 import { PLAN_VIEW, centreOf, nudged, placeCode, sideWord, sizeFromCorner, taperFromCorner, turnHandle, type Pt } from "../../lib/placement.ts";
-import { PATH_SECONDS, pathFrame, type PathPhase } from "../../lib/placement-path.ts";
 import { IconButton } from "../ui";
 import { cn } from "../ui/cn";
 import { CardMark } from "./CardMark";
 import { draftActions } from "./useDraft.ts";
 
 export type Backdrop = { kind: "still"; src: string } | { kind: "film"; src: string; fps: number; frame: number };
-/** The card path playing: for which card, at which speed (1, or 0.5 half speed), and the step name shown by the picture. */
-export type PathRun = { id: string; key: number; speed: number; step: string | null };
 
 const COLOUR = CARD_COLOUR;
 /** The chosen card's (or the shoe's) marking: a colour no card has, so it is not read as a card's rim. */
 const SELECTED = "#ff4fd8";
 /** A card on the order list (Bordet's step 3): a brass ring round it. */
 const MARKED = "#e8cb85";
-const pts = (q: readonly Pt[]) => q.map((p) => `${p.x},${p.y}`).join(" ");
 type Grip = "move" | "turn" | "size" | "taper";
 
 /**
@@ -96,8 +92,6 @@ export function Board({
   changed,
   backdrop,
   shoeCard,
-  path,
-  onPhase,
   videoRef,
   label,
   marked,
@@ -115,8 +109,6 @@ export function Board({
   backdrop: Backdrop;
   /** Paint the card in the shoe's window yellow with its marks over the doll picture's film card and the window's pale edge; false under a film, which shows its own card. */
   shoeCard: boolean;
-  path: PathRun | null;
-  onPhase: (phase: PathPhase) => void;
   videoRef: RefObject<HTMLVideoElement | null>;
   /** A short name of what lies under the cards, shown in the picture's corner. */
   label: string;
@@ -410,19 +402,10 @@ export function Board({
               SKO
             </text>
           </g>
-          {path && plan.targets[path.id] ? <PathLayer key={path.key} plan={plan} id={path.id} view={view} speed={path.speed} onPhase={onPhase} /> : null}
         </svg>
       </div>
-      {/* what lies under the cards, and the step the card path shows: on the stage's corners, in sight at every zoom */}
+      {/* what lies under the cards: in the stage's corner, in sight at every zoom */}
       {label ? <span className="pointer-events-none absolute left-2.5 top-2.5 rounded-sm border border-white/25 bg-[#121815]/75 px-2 py-1 text-2xs font-medium text-white">{label}</span> : null}
-      {path?.step ? (
-        <span className="pointer-events-none absolute bottom-2.5 left-2.5 flex flex-col rounded-sm border border-[#d3b4ff]/50 bg-[#1b1426]/85 px-2 py-1">
-          <span data-path-step className="text-xs font-medium text-[#f3eaff]">
-            {placeCode(path.id)} · {path.step}
-          </span>
-          <span className="text-2xs text-[#cdbfe0]">En skiss av rörelsen, inte en film</span>
-        </span>
-      ) : null}
       <ZoomControl
         camera={camera}
         fitted={!held}
@@ -532,54 +515,3 @@ function windowCard(plan: PlacementPlan, view: View): Pt[] {
   const was = toPixels(defaultPlan().shoe[view], view);
   return WINDOW_CARD[view].map((p) => ({ x: p.x + at.x - was.x, y: p.y + at.y - was.y }));
 }
-
-/**
- * "Spela kortbanan": the schematic run from the shoe's window to the card and the hand back (lib/placement-path.ts), again
- * and again until it is stopped; `speed` 0.5 is half speed. The step shown is handed up as it changes, for the step chips.
- */
-function PathLayer({ plan, id, view, speed, onPhase }: { plan: PlacementPlan; id: string; view: View; speed: number; onPhase: (phase: PathPhase) => void }) {
-  const [t, setT] = useState(0);
-  const rate = useRef(speed);
-  const told = useRef(onPhase);
-  useEffect(() => {
-    rate.current = speed;
-    told.current = onPhase;
-  });
-  useEffect(() => {
-    let last = performance.now();
-    let at = 0;
-    let frame = 0;
-    const tick = (now: number) => {
-      at = (at + ((now - last) / 1000) * (rate.current / PATH_SECONDS)) % 1;
-      last = now;
-      setT(at);
-      frame = requestAnimationFrame(tick);
-    };
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, []);
-  const intent: Intent = plan.targets[id].intent;
-  const f = pathFrame(t, windowCard(plan, view), planCardQuad(plan, id, view), intent);
-  useEffect(() => {
-    told.current(f.phase);
-  }, [f.phase]);
-  const h = f.hand;
-  const ink = h.palm ? "#5b4680" : "#f3eaff";
-  return (
-    <g pointerEvents="none" data-phase={f.phase} data-seconds={f.seconds.toFixed(2)}>
-      <path d={f.arc} fill="none" stroke="#d3b4ff" strokeWidth={2.5} strokeDasharray="9 8" vectorEffect="non-scaling-stroke" />
-      <CardShape quad={f.points} side={f.side} />
-      {/* the hand: a plain shape, its back dark and its palm light, so that the wrist's turn reads */}
-      <g opacity={intent.grip === "DRAG" ? 0.82 : 0.95}>
-        <polygon points={pts(h.wrist)} fill="#2b2338" stroke="#f3eaff" strokeWidth={1.5} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-        <polygon points={pts(h.outline)} fill={h.palm ? "#efe3ff" : "#6b5590"} stroke={ink} strokeWidth={2} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-        <polygon points={pts(h.thumb)} fill={h.palm ? "#e2d1f7" : "#7d67a3"} stroke={ink} strokeWidth={2} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-        {h.crease ? <polyline points={pts(h.crease)} fill="none" stroke="#5b4680" strokeWidth={2} strokeLinecap="round" vectorEffect="non-scaling-stroke" /> : null}
-        <text x={h.label.x} y={h.label.y + h.size * 0.14} textAnchor="middle" fontSize={Math.max(12, h.size * 0.38)} fontWeight={700} fill={ink}>
-          {f.handName === "LH" ? "V" : "H"}
-        </text>
-      </g>
-    </g>
-  );
-}
-

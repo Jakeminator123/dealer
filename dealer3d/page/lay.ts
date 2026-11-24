@@ -17,6 +17,7 @@ import {sideSeen} from '../src/deal.ts';
 import {REAL_DEAL, type RealCard} from '../src/real-deal.ts';
 import {TWO_HAND, contactGripFits, shoeHolds, startOnAnchor, twoHandDeal, type Limb, type Pace, type Still} from '../src/two-hand.ts';
 import {naturalPace} from '../src/natural.ts';
+import {overHand, type PlanPlaces} from '../src/doll-choices.ts';
 
 export const FPS = 30;
 const BEATS = ['b', 'c', 'd', 'e', 'l', 'f', 'g', 'h'] as const;
@@ -205,79 +206,25 @@ export function recipeFor(target: string): PlaceRecipe | null {
 
 /**
  * The pose a deal begins in and, with its return, ends in (Jakob 2026-11-23: "A2.1, A2.2 och A2.3 är olika in- och
- * utgångar", a saved deal per player and per entry). A2.3: every deal laid above. A2.1, the pinch at the shoe: the read
- * one-hand deals (READ_DEALS), the only deals from it there are; nothing in them is steered. A2.2: not built, only its
- * anchor picture is; no pose is read off it and no deal begins in it.
+ * utgångar", a saved deal per player and per entry). A2.3: every deal laid above. A2.1, the pinch at the shoe: her
+ * one-hand deal to any place her left arm reaches without going over her right hand (dealer3d/src/doll-choices.ts),
+ * built on the doll's bones (dealer3d/src/pinch-deal.ts) from her pose A2.1 (POSE_21), one way. A2.2: not built, only its anchor picture is; no pose is read off it and no deal begins in it.
  */
 export type Entry = 'A2.1' | 'A2.2' | 'A2.3';
 /** A saved standard's name (dealer3d/standard/<name>.json): <doll>-<place> from A2.3, as every standard saved before the entries were, and <doll>-a2-1-<place> (a2-2-) from the others. */
 export const standardName = (doll: string, entry: Entry, place: string) => `${doll}-${entry === 'A2.3' ? '' : `${entry.toLowerCase().replace('.', '-')}-`}${place.toLowerCase().replace('.', '')}`;
-/** The one-hand deals from A2.1 (dealer3d/data/, laid into the room once by dealer3d/tools/lift.ts from the hand and the card of a filmed deal; the names stay, proofs name the files): her left hand takes the card out of the shoe and lays it; all four begin on the same frame, the pose A2.1. */
-export const READ_DEALS: Record<string, string> = {'P1.C1': 'giv-avlast-p1', 'P3.C1': 'giv-avlast-p3', 'P4.C1': 'giv-avlast-p4', 'P5.C1': 'giv-avlast-p5'};
+/** The pose A2.1 per doll that has it (dealer3d/data/<name>.json: the first frame of the deal the lab showed as A2.1, and her hip), which pinch-deal.ts builds the deal from. */
+export const POSE_21: Record<string, string> = {paow: 'ankare-2-1-paow'};
+export type EntryPlace = PlaceRecipe | {pinch: string} | {none: 'unposed' | 'unbuilt' | 'over'};
 /**
- * Paow's own deals from A2.1, for the doll paow (Jakob 2026-11-23: her motion from the A2.1 films he approved, "genom
- * dockan"): per place the clips read off her films (dealer3d/data/giv-avlast-paow-<place>-<clip>.json, lift.ts --frames
- * from the register's segment, --hand paow), `first` the one shown where none is chosen and `why` in words. Where she has none, READ_DEALS.
- * Clip 04 is read again with read-hand.ts INSIDE (giv-avlast-paow-p4-04-b; the first reading, -04, kept one joint 0.01° past its limit).
- * Places 1, 2, 3, 5 and 7 (2026-11-24, Jakob: the best deals from A2.1 ordered again with her tattooed hands): his chosen
- * film there, one each; p1-06 and p2-03 read to frame 120 and 130, eight and six past the register's segment, since her
- * fingertip hides a corner of the card until 114 and 125 (the track's rest) and the return holds a fifth of a second after.
- * Place 6 (2026-11-24, Jakob: from A2.1 she pinches the card): no film deals there from A2.1, and his Primär there from
- * A2.2 slides the card pressed on the felt, so her deal to place 7 is moved there (lift.ts --to P6.C1), clip "p7-04".
+ * Where a deal from `entry` to a place of the plan comes from, or why there is none; null for a place the lab does not know.
+ * From A2.1 the doll's pose A2.1 (POSE_21), which the deal is built from, except where her left arm would go over her right
+ * hand (`over`: the card changes hands there and goes from A2.3; doll-choices.ts overHand, with `plan`).
  */
-export const PAOW_READS: Record<string, {first: string; why: string; clips: Record<string, {read: string; film: string}>}> = {
-  'P4.C1': {first: '11', why: 'Jakob tycker att 11 nog är bäst, och den mäter bäst: inga fel mot handregeln och fingertopparna på kortet genom hela nypet.', clips: {
-    '04': {read: 'giv-avlast-paow-p4-04-b', film: 'paow-giv-2-1-p4-04-01'}, '08': {read: 'giv-avlast-paow-p4-08', film: 'paow-giv-2-1-p4-08-01'},
-    '10': {read: 'giv-avlast-paow-p4-10', film: 'paow-giv-2-1-p4-10-01'}, '11': {read: 'giv-avlast-paow-p4-11', film: 'paow-giv-2-1-p4-11-01'}}},
-  'P1.C1': {first: '06', why: 'Jakobs Primär hit från A2.1 ("Mycket bra").', clips: {'06': {read: 'giv-avlast-paow-p1-06', film: 'paow-giv-2-1-p1-06-01'}}},
-  'P2.C1': {first: '03', why: 'Jakobs Primär hit från A2.1.', clips: {'03': {read: 'giv-avlast-paow-p2-03', film: 'paow-giv-2-1-p2-03-01'}}},
-  'P3.C1': {first: '02', why: 'Jakobs Primär hit från A2.1 ("Riktigt rolig variant", "mer exakt").', clips: {'02': {read: 'giv-avlast-paow-p3-02', film: 'paow-giv-2-1-p3-02-01'}}},
-  'P5.C1': {first: '03', why: 'Jakob om filmen: "handrörelsen är skitbra".', clips: {'03': {read: 'giv-avlast-paow-p5-03', film: 'paow-giv-2-1-p5-03-01'}}},
-  'P7.C1': {first: '04', why: 'Jakob om filmen: "gjord med mycket finess".', clips: {'04': {read: 'giv-avlast-paow-p7-04', film: 'paow-giv-2-1-p7-04-01'}}},
-  'P6.C1': {first: 'p7-04', why: 'ingen giv hit från A2.1 finns, och hans Primär hit (paow-giv-2-2-p6-02-01, från A2.2) skjuter kortet över filten: hennes giv till plats 7 (klipp 04), flyttad hit, som nyper kortet hela vägen.', clips: {'p7-04': {read: 'giv-avlast-paow-p7-04-till-p6', film: 'paow-giv-2-1-p7-04-01'}}}};
-/** The doll's own read clip to a place: `clip` where the place has it, else the place's first; null where the doll has none there. */
-export function readClip(doll: string | null | undefined, target: string, clip?: string | null): {clip: string; read: string; film: string} | null {
-  const own = doll === 'paow' && Object.hasOwn(PAOW_READS, target) ? PAOW_READS[target] : null; if (!own) return null;
-  const id = clip && Object.hasOwn(own.clips, clip) ? clip : own.first; return {clip: id, ...own.clips[id]};
-}
-export type EntryPlace = PlaceRecipe | {read: string; clip?: string} | {none: 'unread' | 'unbuilt'};
-/** Where a deal from `entry` to a place of the plan comes from, or why there is none; null for a place the lab does not know. From A2.1 the doll's own clip (readClip, `clip` chosen) where it has one there, else the read deal of READ_DEALS. */
-export function placeFrom(entry: Entry, target: string, doll?: string | null, clip?: string | null): EntryPlace | null {
+export function placeFrom(entry: Entry, target: string, doll?: string | null, plan?: PlanPlaces): EntryPlace | null {
   const known = recipeFor(target); if (!known || entry === 'A2.3') return known;
   if (entry === 'A2.2') return {none: 'unbuilt'};
-  const own = readClip(doll, target, clip); if (own) return {read: own.read, clip: own.clip};
-  return Object.hasOwn(READ_DEALS, target) ? {read: READ_DEALS[target]} : 'none' in known ? known : {none: 'unread'};
+  if (!doll || !Object.hasOwn(POSE_21, doll)) return {none: 'unposed'};
+  return plan && overHand(plan, target) ? {none: 'over'} : {pinch: POSE_21[doll]};
 }
 
-/** A deal read off a film, as dealer3d/data/giv-avlast-*.json have it (one card, her left hand holding it, no gaze point; `shoe` the shoe it was read with, lift.ts). */
-export type ReadFrame = {card: {c: number[]; l: number[]; n: number[]; id?: number}; L: {s: number[]; e: number[]; w: number[]; k: number; p: number[][]}; R: unknown; h: number[]; g?: number[]};
-export type ReadStored = {fps: number; frameCount: number; rests: number; to?: unknown; shoe?: string; frames: ReadFrame[]} & Record<string, unknown>;
-const READ_CARRY = 0.2; // metres the card goes from the shoe of before over which the move into the films' shoe eases out
-/**
- * A deal from A2.1 (READ_DEALS, PAOW_READS) as the lab lays it, to `place`, with the films' shoe. One read with the
- * films' shoe (`shoe: 'films'`) is laid as read. One read with the shoe of before 2026-11-23, 3 cm off (no `shoe`):
- * while its card is in that shoe's window the card and her left hand, which holds it, are moved as one into the films'
- * shoe (the move cardInFilmsShoe gives the card), and as the card goes out the move eases off over READ_CARRY metres,
- * so that the card is laid where it was read; the left arm is laid again to the moved wrist (body.ts arm, the
- * standard's bones), her right hand and head are as read. Every card has the id 0 (one card). The file is not changed.
- */
-export function readDeal(name: string, stored: ReadStored, place: string | null) {
-  const lens = TABLE_LENS, basis = (s: Shoe) => { const k = shoeCard(shoePose(lens, s), s); return {o: k.centre, b: [k.up, k.across, cross(k.up, k.across)]}; };
-  const from = basis(SHOE_LAID_BEFORE_20261123), to = basis(SHOE);
-  // The turn from the one shoe's card to the other's (to.b[i] from.b[i]ᵀ summed) as an axis and an angle, so that part of it can be taken.
-  const M = [0, 1, 2].map(r => [0, 1, 2].map(c => from.b.reduce((s, e, i) => s + to.b[i][r] * e[c], 0)));
-  const angle = Math.acos(Math.max(-1, Math.min(1, (M[0][0] + M[1][1] + M[2][2] - 1) / 2))), sk: Vec3 = [M[2][1] - M[1][2], M[0][2] - M[2][0], M[1][0] - M[0][1]], n = Math.hypot(...sk), axis: Vec3 = n > 1e-12 ? [sk[0] / n, sk[1] / n, sk[2] / n] : [1, 0, 0];
-  const step = [0, 1, 2].map(i => to.o[i] - from.o[i]);
-  const moved = (p: number[], w: number) => { const q = turned([p[0] - from.o[0], p[1] - from.o[1], p[2] - from.o[2]], axis, angle * w); return [0, 1, 2].map(i => from.o[i] + step[i] * w + q[i]); };
-  const turnedBy = (v: number[], w: number) => turned(v as Vec3, axis, angle * w) as number[];
-  const frames = stored.frames.map(f => {
-    const away = Math.hypot(f.card.c[0] - from.o[0], f.card.c[1] - from.o[1], f.card.c[2] - from.o[2]), x = Math.min(1, away / READ_CARRY), w = stored.shoe === 'films' ? 0 : 1 - x * x * (3 - 2 * x);
-    const card = {c: f.card.c, l: f.card.l, n: f.card.n, id: 0};
-    if (w <= 0) return {...f, card};
-    const wrist = moved(f.L.w, w) as Vec3, laid = arm(f.L.s as Vec3, wrist, [f.L.e[0] - f.L.s[0], f.L.e[1] - f.L.s[1], f.L.e[2] - f.L.s[2]]);
-    if (!laid.reached) throw Error(`${name}: her left arm does not reach the films' shoe at frame ${stored.frames.indexOf(f)}.`);
-    return {...f, card: {c: moved(f.card.c, w), l: turnedBy(f.card.l, w), n: turnedBy(f.card.n, w), id: 0}, L: {...f.L, e: laid.elbow, w: laid.wrist, p: f.L.p.map((q, k) => k ? moved(q, w) : laid.wrist)}};
-  });
-  return {...stored, to: place ? [place] : [], frames, lab: {read: name}};
-}
-export type ReadDeal = ReturnType<typeof readDeal>;

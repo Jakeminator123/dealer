@@ -24,10 +24,11 @@
 // ?ny=1&som=<id> open Kön (that order); ?ny=1&steg=…&plats=… (Ny beställning's, which is gone) opens the guide on that film.
 // In the online copy (lib/mode.ts isSnapshot) the same view reads only: Kortplan shows the plan without saving, Kön, the guide,
 // the doll and everything that writes are not there, and Scen, Råfilm and Efterarbete are the scene as the copy has it. Inside <Suspense>.
-import { Play, RotateCcw, Save, Square, Undo2 } from "lucide-react";
+import { Play, RotateCcw, Save, Undo2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { dollEntry, dollIntent } from "../../../dealer3d/src/doll-choices.ts";
 import { ANCHOR_NODE, stepOf, type BankFacts, type OrdersAnswer } from "../../../src/order-model.ts";
 import { SHOE, VIEWS, type Place } from "../../../src/placement-model.ts";
 import type { Ledger } from "../../lib/ledger.ts";
@@ -48,7 +49,7 @@ import { Board } from "../placement/Board";
 import { FilmBar } from "../placement/FilmBar";
 import { MotionPanel, PlacePanel, TablePanel } from "../placement/Panels";
 import { SlotPicker } from "../placement/SlotPicker";
-import { pathCard, usePathPlay, usePlanKeys, useUnder } from "../placement/useBoard.ts";
+import { pathCard, usePlanKeys, useUnder } from "../placement/useBoard.ts";
 import { draftActions, useDraft } from "../placement/useDraft.ts";
 import { Page } from "../shell";
 import { Badge, Button, ErrorState, IconButton, SegmentedControl, Select, Skeleton, Switch, cn, useToast } from "../ui";
@@ -197,6 +198,13 @@ export function BordetView() {
   };
   // Raised when the doll lab saves a standard: what step 2 and 3 say of it is read again.
   const [savedTick, setSavedTick] = useState(0);
+  // "Spela kortbanan": the doll's deal to the card, played in the doll lab (Ställ dockan) from the start (Jakob 2026-11-24:
+  // "kortbanan kommer ur dockan").
+  const [dollPlay, setDollPlay] = useState(0);
+  const playDoll = () => {
+    setStage("stall");
+    setDollPlay((n) => n + 1);
+  };
   const onDollSaved = useCallback(() => setSavedTick((n) => n + 1), []);
   const [media, setMedia] = useState<MediaAnswer | null>(null);
   const [ledger, setLedger] = useState<Ledger | null>(null);
@@ -336,7 +344,8 @@ export function BordetView() {
   const menu = <SegmentedControl size="sm" label="Bordets delar" value={mode} onChange={setMode} options={SHOWN_MODES.map((m) => ({ value: m.value, label: m.label }))} />;
   // What goes to Runway for the guide's film, before and after its draft is made.
   const names = Object.fromEntries((orders?.dealers ?? []).map((x) => [x.id, x.name]));
-  const intent = plan && place !== SHOE ? (plan.targets[place]?.intent ?? null) : null;
+  // the plan's motion as the doll follows it: with handbyte where the card must change hands (dealer3d/src/doll-choices.ts)
+  const intent = plan && place !== SHOE && plan.targets[place] ? dollIntent(plan, place) : null;
   // The card's deal as Beställ makes it: what step 2's line says of the reference film.
   const dealRow = useMemo(() => {
     const deal = place !== SHOE ? cardWishes(place, intent, dealer)[0] : undefined;
@@ -396,7 +405,7 @@ export function BordetView() {
   const when = d?.saved.updatedAt ? swedishMoment(d.saved.updatedAt) : null;
   // Scen plays the card's round from the anchor its films go from where the bank has that round; the game's own until then.
   const card = pathCard(place);
-  const from = plan?.targets[card] ? wishAnchor(dealer, card, plan.targets[card].intent) : null;
+  const from = plan?.targets[card] ? wishAnchor(dealer, card, dollIntent(plan, card)) : null;
   const roundText = roundFor(card, dealer, from && hasRound(graph, card, from) ? from : null);
 
   // Kön: the same frame and menu over the orders (the queue, or an order open with "Det här skickas").
@@ -443,8 +452,9 @@ export function BordetView() {
             setStep={openStep}
             stage={isSnapshot ? "plan" : stage}
             setStage={setStage}
+            playDoll={isSnapshot ? null : playDoll}
             dollCount={doll.count}
-            doll={isSnapshot ? null : <DollStage part={dollShown} place={place} setPlace={setPlace} dealer={dealer} orders={orders} ordersRead={ordersRead} groups={doll.groups} onSaved={onDollSaved} />}
+            doll={isSnapshot ? null : <DollStage part={dollShown} place={place} from={plan && place !== SHOE && plan.targets[place] ? dollEntry(plan, place) : "A2.3"} play={dollPlay} setPlace={setPlace} dealer={dealer} orders={orders} ordersRead={ordersRead} groups={doll.groups} onSaved={onDollSaved} />}
             standard={isSnapshot ? null : standard}
             place={place}
             setPlace={setPlace}
@@ -464,7 +474,7 @@ export function BordetView() {
 }
 
 function TableBody({
-  menu, step, setStep, stage, setStage, dollCount, doll, standard, place, setPlace, marked, dealer, methods, dealRow, newFilm, newFilmSummary,
+  menu, step, setStep, stage, setStage, playDoll, dollCount, doll, standard, place, setPlace, marked, dealer, methods, dealRow, newFilm, newFilmSummary,
 }: {
   menu: ReactNode;
   step: StepId | null;
@@ -472,6 +482,8 @@ function TableBody({
   /** What the picture shows: the plan, or the doll's lab or films. */
   stage: Stage;
   setStage: (s: Stage) => void;
+  /** "Spela kortbanan": the doll lab plays the doll's deal to the chosen card; null in the copy, which has no doll. */
+  playDoll: (() => void) | null;
   /** How many films of the doll's there are, for the toolbar. */
   dollCount: number;
   /** The doll's lab and films (DollStage), kept loaded while the plan shows; null in the copy. */
@@ -486,7 +498,7 @@ function TableBody({
   methods: OrdersAnswer["methods"] | null;
   /** The chosen card's deal as Beställ makes it (step 2's line on the reference film), or null. */
   dealRow: FilmRow | null;
-  /** Step 3, the guide Ny film; go chooses a card on the board and plays its path. */
+  /** Step 3, the guide Ny film; go chooses a card on the board. */
   newFilm: (go: (card: Place) => void) => ReactNode;
   /** One line of what the guide has chosen, for step 3 folded. */
   newFilmSummary: string | null;
@@ -502,21 +514,11 @@ function TableBody({
   const [grid, setGrid] = useState(false);
   const [tableOpen, setTableOpen] = useState(false);
   const under = useUnder(place, { backdrop: null, frame: 0 });
-  // The anchor a card's films go from, named on the path's steps as step 2 names it.
-  const anchorOf = useCallback((id: string) => nodeCode(ANCHOR_NODE[wishAnchor(dealer, id, plan.targets[id]?.intent ?? null)]), [dealer, plan]);
-  const paths = usePathPlay(plan, anchorOf);
   const changes = useMemo(() => changedPlaces(d.saved, d.plan), [d]);
   const changed = useMemo(() => new Set<Place>(changes.places), [changes]);
-  const { follow } = paths;
-  const choose = useCallback(
-    (id: Place) => {
-      setPlace(id);
-      follow(id);
-    },
-    [follow, setPlace],
-  );
+  const choose = setPlace;
   const stageArea = useRef<HTMLDivElement>(null);
-  usePlanKeys({ place, editable, dirty: draft.dirty, showing: draft.showing, area: stageArea, onEscape: paths.stop });
+  usePlanKeys({ place, editable, dirty: draft.dirty, showing: draft.showing, area: stageArea });
 
   // Side by side (a wide, lying window): the picture gets the height its width allows, less what the toolbar needs, so that
   // the toolbar is never cut off. Upright or narrow: one column that scrolls as one, every part at its own height: the
@@ -548,12 +550,9 @@ function TableBody({
 
   const shoe = place === SHOE;
   const target = !shoe ? plan.targets[place] : null;
-  const intent = target?.intent ?? null;
-  // A step of the guide with a card chooses that card and plays its path, as a click on the card does.
-  const go = (card: Place) => {
-    setPlace(card);
-    paths.play(card);
-  };
+  const intent = target ? dollIntent(plan, place) : null;
+  // A step of the guide with a card chooses that card, as a click on the card does.
+  const go = (card: Place) => setPlace(card);
   const toggle = (s: StepId) => setStep(step === s ? null : s);
   // The doll is the card's way where a deal to it is ordered from the doll (step 3): the dealer's own doll, a card it deals.
   // Step 2 is then the doll's, whatever the plan says of handbyte: the plan's own choices are folded, and open by themselves
@@ -582,7 +581,6 @@ function TableBody({
                   plan={plan}
                   id={place}
                   editable={editable}
-                  lit={paths.run?.id === place ? paths.lit : null}
                   line={withReference(motionLine(dealer, place, intent, methods ?? null), dealRow)}
                   anchor={nodeCode(ANCHOR_NODE[wishAnchor(dealer, place, intent)])}
                   fold={dollIsWay ? (stage === "plan" || clash ? "open" : "closed") : undefined}
@@ -630,10 +628,11 @@ function TableBody({
           ) : null}
           {board ? (
             <>
-              <Button size="sm" variant={paths.run ? "secondary" : "primary"} aria-pressed={!!paths.run} icon={paths.run ? <Square /> : <Play />} onClick={() => paths.toggle(place)} className="shrink-0">
-                {paths.run ? "Stoppa" : "Spela kortbanan"}
-              </Button>
-              <Switch size="sm" checked={paths.halfSpeed} onChange={paths.setHalfSpeed} label="Halv fart" />
+              {playDoll ? (
+                <Button size="sm" variant="primary" icon={<Play />} onClick={playDoll} className="shrink-0" title="Dockans giv till kortet, i Ställ dockan">
+                  Spela kortbanan
+                </Button>
+              ) : null}
               <Select size="sm" aria-label="Under korten" value={under.value} onChange={under.choose} options={under.options} className="w-48 shrink-0" />
               <Switch size="sm" checked={allCards} onChange={setAllCards} label="Alla kort" />
               <Switch size="sm" checked={grid} onChange={setGrid} label="Rutnät" />
@@ -659,8 +658,6 @@ function TableBody({
               changed={changed}
               backdrop={under.under}
               shoeCard={under.shoeCard}
-              path={paths.path}
-              onPhase={paths.setPhase}
               videoRef={under.videoRef}
               label={under.label}
               marked={marked}

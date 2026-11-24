@@ -111,18 +111,18 @@ export function moveNatural(laid: LaidNatural, body: [number, number, number] | 
 /**
  * A deal and its return to the pose it began in, in one motion (Jakob 2026-11-23, "giv och återgång i en film"): what
  * dealer3d/tools/docka-cykel.ts writes for an order, and the lab shows with "Giv och återgång". `deal` is laid with the
- * standard doll: layNatural's or layDeal's `deal` (`way` "naturlig" or "forut"), or a deal from A2.1 (lay.ts readDeal,
- * `way` "read"). Its return is dealer3d/src/return-cycle.ts's (from A2.1 her left hand is lifted off the card, it laid
- * it; `source` is the file the deal was laid from); the whole is posed on the doll (a deal from A2.1 with the hands as
- * read) and in "Naturlig" moved as a person moves, what the sliders steer going out over the return.
+ * standard doll: layNatural's or layDeal's `deal` (`way` "naturlig" or "forut"); the deal from A2.1 is built with its
+ * return (dealer3d/src/pinch-deal.ts). Its return is dealer3d/src/return-cycle.ts's (`source` is the file the deal was
+ * laid from); the whole is posed on the doll and in "Naturlig" moved as a person moves, what the sliders steer going out
+ * over the return.
  */
-export function withReturn<D extends DealMotion & {lab?: {bodyAsked?: [number, number, number]}}>(deal: D, input: {way: Way | 'read'; body: [number, number, number] | null; knobs: Knobs; lens: Lens; doll: Doll;
+export function withReturn<D extends DealMotion & {lab?: {bodyAsked?: [number, number, number]}}>(deal: D, input: {way: Way; body: [number, number, number] | null; knobs: Knobs; lens: Lens; doll: Doll;
   source: {path: string; sha256: string}; cycle?: ReturnCycleOptions; flatHand?: boolean; before?: AsBefore; landing?: Landing; turn?: TurnId; cardTempo?: number}) {
-  const {way, lens} = input, read = way === 'read', doll = read ? input.doll : dollFor(way, input.doll, input.before);
-  const quick = !read && (input.cardTempo ?? 1) !== 1 ? quickReturn(deal, input.cardTempo!) : {};
+  const {way, lens} = input, doll = dollFor(way, input.doll, input.before);
+  const quick = (input.cardTempo ?? 1) !== 1 ? quickReturn(deal, input.cardTempo!) : {};
   const said = Object.fromEntries(Object.entries(input.cycle ?? {}).filter(([, v]) => v !== undefined)) as ReturnCycleOptions; // (a flag not given says nothing)
-  const cycle = buildReturnCycle(deal, input.source, {...quick, ...said, ...(read ? {liftHand: 'L' as const} : {})});
-  const posed = onDoll(lens, cycle, doll, read ? {hands: 'motion'} : undefined);
+  const cycle = buildReturnCycle(deal, input.source, {...quick, ...said});
+  const posed = onDoll(lens, cycle, doll);
   if (way !== 'naturlig') return {cycle, motion: posed.motion, shortMm: posed.shortMm, bodyShare: null, receipt: null, landing: null, turn: null};
   const moved = natural(lens, posed.motion as never, doll, {body: bodyMore(input.body, deal.lab!.bodyAsked!), ...input.knobs, steerOut: [cycle.cycle.liftStarts, cycle.cycle.readyFrom], ...(input.flatHand ? {flatHand: true} : {})});
   const inHand = turnedInHand(moved.motion as never, doll, input.turn ?? TURN_DEFAULT), motion = inHand.motion as typeof moved.motion;

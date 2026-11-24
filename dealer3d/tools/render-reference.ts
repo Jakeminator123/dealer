@@ -108,9 +108,10 @@ async function sha256(file: string): Promise<string> {
 }
 
 const threePath = 'node_modules/three';
-async function renderedSources(): Promise<Record<string, string>> {
-  const roots = command('git', ['ls-files', '-z', '--', 'dealer3d/page', 'dealer3d/src']).split('\0').filter(Boolean);
-  const files = [...roots, 'dealer3d/tools/render-reference.ts', 'dealer3d/tools/shoot.ts', 'src/table-lens.ts',
+/** The files the render is made with and their hashes; `files` the same list again, to see that none of them has changed. */
+async function renderedSources(files?: readonly string[]): Promise<Record<string, string>> {
+  const roots = files ? [] : command('git', ['ls-files', '-z', '--', 'dealer3d/page', 'dealer3d/src']).split('\0').filter(Boolean);
+  files ??= [...roots, 'dealer3d/tools/render-reference.ts', 'dealer3d/tools/shoot.ts', 'src/table-lens.ts',
     'tools/lab-look.ts', `${threePath}/build/three.core.js`, `${threePath}/build/three.module.js`].sort();
   const hashes = [];
   for (const file of files) hashes.push([file, await sha256(path.join(ROOT, file))]);
@@ -201,7 +202,8 @@ async function main(argv: string[]): Promise<void> {
 
     const shot = await readJson(path.join(record, 'ruta.json'));
     verifyCapture(shot, name, settings);
-    if (JSON.stringify(sources) !== JSON.stringify(await renderedSources()) || revision !== command('git', ['rev-parse', 'HEAD'])) {
+    // (the files hashed before the recording, hashed again: another session's commit meanwhile changes nothing it was made with)
+    if (JSON.stringify(sources) !== JSON.stringify(await renderedSources(Object.keys(sources)))) {
       throw Error('Renderkoden ändrades under inspelningen.');
     }
     if (input.motion.sha256 !== await sha256(motionCopy) || input.plan.sha256 !== await sha256(planCopy)) throw Error('De frysta indatafilerna ändrades.');

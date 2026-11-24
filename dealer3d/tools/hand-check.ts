@@ -51,7 +51,7 @@ const lens = filmLens(), plan = await json('placements/default.json'), dollName 
 const recipeNamed = async (name: string) => { const recipe: Recipe = recipeOf(name, await json(`dealer3d/data/${name}.json`) as Stored); return {recipe, pose: await json(`dealer3d/data/${recipe.poseFilm ?? 'till-ankare-2-3'}.json`)}; };
 /** A place laid as the lab lays it (Giv), `before` as natural-lab.ts AsBefore. */
 async function laid(place: string, before: AsBefore) {
-  const found = placeFrom('A2.3', place); if (!found || 'none' in found || 'read' in found) return null;
+  const found = placeFrom('A2.3', place); if (!found || 'none' in found || 'pinch' in found) return null;
   let {recipe, pose} = await recipeNamed(found.recipe);
   const file = `dealer3d/standard/${standardName(dollName, 'A2.3', place)}.json`, saved = existsSync(path.join(ROOT, file));
   let steer: Steer = {...NO_STEER}, knobs: Knobs = structuredClone(NO_KNOBS), landing = landingOf(undefined), turn = turnOf(undefined), way = dollName === 'standard' ? 'forut' : 'naturlig';

@@ -131,11 +131,15 @@ export function DollNote({ dealer, place, standard, planSide }: { dealer: string
 }
 
 export function DollStage({
-  part, place, setPlace, dealer, orders, ordersRead, groups, onSaved,
+  part, place, from, play, setPlace, dealer, orders, ordersRead, groups, onSaved,
 }: {
   /** The view shown, or null while the plan shows (the frame stays loaded). */
   part: DollPart | null;
   place: Place;
+  /** The pose the doll deals the card from, as the plan's choice is followed (dealer3d/src/doll-choices.ts dollEntry). */
+  from: "A2.1" | "A2.3";
+  /** Raised by "Spela kortbanan": the lab plays the doll's deal to the card from the start. */
+  play: number;
   setPlace: (place: Place) => void;
   dealer: string;
   orders: OrdersAnswer | null;
@@ -147,7 +151,7 @@ export function DollStage({
   // The lab is loaded when it is first shown, on the card and the doll chosen then; another dealer's doll loads it again.
   const doll = dollWord(dealer);
   const [lab, setLab] = useState<{ doll: string; src: string } | null>(null);
-  if (part === "stall" && (!lab || lab.doll !== doll)) setLab({ doll, src: labAddress(place, doll) });
+  if (part === "stall" && (!lab || lab.doll !== doll)) setLab({ doll, src: labAddress(place, doll, from, play > 0) });
   const [entry, setEntry] = useState(false);
   const frame = useRef<HTMLIFrameElement>(null);
 
@@ -171,11 +175,16 @@ export function DollStage({
     return () => window.removeEventListener("message", hear);
   }, []);
 
-  // A card chosen in Bordet (its card buttons, the films' row) is asked for in the lab while the lab shows; the lab answers
-  // with the card it shows, which is its own where sliders are moved and not saved.
+  // A card chosen in Bordet (its card buttons, the films' row) is asked for in the lab while the lab shows, from the pose the
+  // plan's choice deals it from; the lab answers with the card it shows, which is its own where sliders are moved and not
+  // saved. "Spela kortbanan" asks the lab to play it from the start.
+  const played = useRef(play);
   useEffect(() => {
-    if (part === "stall" && place !== SHOE) frame.current?.contentWindow?.postMessage({ docklabb: { place } }, window.location.origin);
-  }, [part, place]);
+    if (part !== "stall" || place === SHOE) return;
+    const go = play !== played.current;
+    played.current = play;
+    frame.current?.contentWindow?.postMessage({ docklabb: { place, entry: from, ...(go ? { play: true } : {}) } }, window.location.origin);
+  }, [part, place, from, play]);
 
   const chosen = entry ? ENTRY : place;
   const group = groups.find((g) => (g.place ?? ENTRY) === chosen) ?? null;
@@ -225,10 +234,12 @@ export function DollStage({
   );
 }
 
-/** The doll lab's address inside the frame: embedded, on the chosen card and the doll. */
-function labAddress(place: Place, doll: string): string {
+/** The doll lab's address inside the frame: embedded, on the chosen card, its entry and the doll; `play`: playing from the start. */
+function labAddress(place: Place, doll: string, from: "A2.1" | "A2.3", play: boolean): string {
   const p = new URLSearchParams({ inbaddad: "1" });
   if (place !== SHOE) p.set("plats", placeCode(place).toLowerCase());
+  if (from === "A2.1") p.set("fran", "a2-1");
   p.set("docka", doll);
+  if (play) p.set("spela", "1");
   return `/dealer3d/docka?${p}`;
 }

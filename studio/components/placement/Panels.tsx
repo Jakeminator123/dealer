@@ -9,6 +9,7 @@
 // step); nothing is saved here, and the plan keeps every field it has, also those no panel shows.
 import { Crosshair, Grid2x2, RotateCcw, Square, Users } from "lucide-react";
 import { useState, type ReactNode } from "react";
+import { dollIntent, handChange } from "../../../dealer3d/src/doll-choices.ts";
 import { planTaper, throughLens } from "../../../src/card-plan.ts";
 import {
   CARD_COLOUR, PLANE_HEADINGS, PLAYER_TARGETS, SHOE, TABLE_PERSPECTIVE, TARGETS, copyChoices, dealerAngle, editIntent, editPlace, resetPlace, setTablePerspective, setTableProjection, snapPlace, straightenPlayers,
@@ -168,21 +169,25 @@ export function PlacePanel({ plan, id, editable }: { plan: PlacementPlan; id: Pl
  * What steers the card's way: handbyte and how it lands. The plan's other motion fields (the grip, the hand that takes, the
  * sides at the shoe, the turn) stay in the plan as they are, but choose nothing: the anchor and its recipe decide them
  * (lib/bordet.ts motionLine, which `line` is). `anchor`: the anchor the card's films go from ("A2.3"), named on the way.
- * `lit`: the step the card path shows now, while it plays this card ("Spela kortbanan" over the picture); null otherwise.
+ * Handbyte follows what the doll can do (dealer3d/src/doll-choices.ts, Jakob 2026-11-24: "vad som är anatomiskt möjligt"):
+ * where the card must change hands the switch stands on and locked, with the reason under it, and the steps are the doll's.
  * `fold`: where the doll is the card's way (Jakob 2026-11-24: step 2 "ger allt dubbelt"), the panel is folded under
  * "Kortplanens avsikt" with one line of what it says, "closed" or "open" to begin with; without it the panel stands as it is.
  */
-export function MotionPanel({ plan, id, editable, lit, line, anchor, fold }: { plan: PlacementPlan; id: Place; editable: boolean; lit: string | null; line: string | null; anchor: string; fold?: "closed" | "open" }) {
+export function MotionPanel({ plan, id, editable, line, anchor, fold }: { plan: PlacementPlan; id: Place; editable: boolean; line: string | null; anchor: string; fold?: "closed" | "open" }) {
   const toast = useToast();
   if (id === SHOE) return null;
   const off = !editable;
   const i = plan.targets[id].intent;
+  const need = handChange(plan, id);
+  const doll = dollIntent(plan, id);
   const set = <K extends keyof Intent>(key: K, value: Intent[K]) => draftActions.edit((p) => editIntent(p, id, key, value));
-  const way = motionSteps(id, i, anchor);
+  const way = motionSteps(id, doll, anchor);
   const panel = (
     <>
       <Section title="Det som styr">
-        <Switch checked={i.pass} disabled={off} onChange={(v) => set("pass", v)} label="Handbyte" />
+        <Switch checked={doll.pass} disabled={off || need.must} onChange={(v) => set("pass", v)} label={need.must ? "Handbyte måste" : "Handbyte"} />
+        {need.why ? <p data-hand-change className="text-xs leading-5 text-dim">{need.why}</p> : null}
         <div className="flex items-center justify-between gap-3">
           <span className="text-sm text-dim">Vid landning</span>
           <SegmentedControl size="sm" label="Sida vid landning" value={i.endSide} disabled={off} onChange={(s) => set("endSide", s)} options={SIDES} />
@@ -193,13 +198,13 @@ export function MotionPanel({ plan, id, editable, lit, line, anchor, fold }: { p
           </p>
         ) : null}
       </Section>
-      {/* The steps of the card's way; "Spela kortbanan" over the picture plays them and lights the one it shows. */}
-      <Section title="Kortbanan" aside={lit ? <span className="text-2xs text-[#d3b4ff]">spelar</span> : null}>
+      {/* The steps of the card's way, the doll's; "Spela kortbanan" plays the doll's deal to the card. */}
+      <Section title="Kortbanan">
         <ol className="flex flex-wrap items-center gap-1" aria-label="Kortets väg">
           {way.steps.map((s, n) => (
             <li key={s.id} className="flex items-center gap-1">
               {n ? <span aria-hidden className="text-faint">→</span> : null}
-              <span data-step={s.id} aria-current={lit === s.id ? "step" : undefined} className={cn("flex flex-col rounded-md border px-2 py-1 leading-tight", lit === s.id ? "border-[#d3b4ff] bg-[#d3b4ff]/18 ring-1 ring-[#d3b4ff]/60" : "border-line-strong bg-raised")}>
+              <span data-step={s.id} className="flex flex-col rounded-md border border-line-strong bg-raised px-2 py-1 leading-tight">
                 <b className="text-xs font-semibold text-brass-hi">{s.label}</b>
                 <span className="text-2xs text-dim">{s.detail}</span>
               </span>
@@ -230,7 +235,7 @@ export function MotionPanel({ plan, id, editable, lit, line, anchor, fold }: { p
   return (
     <details key={id} data-plan-intent open={fold === "open"}>
       <summary className="cursor-pointer px-4 py-2.5 text-sm text-ink hover:bg-raised/40">
-        Kortplanens avsikt <span className="text-xs text-dim">· {i.pass ? "handbyte" : "utan handbyte"} · {i.endSide === "BACK" ? "stängt" : "öppet"}</span>
+        Kortplanens avsikt <span className="text-xs text-dim">· {doll.pass ? "handbyte" : "utan handbyte"} · {i.endSide === "BACK" ? "stängt" : "öppet"}</span>
       </summary>
       {panel}
     </details>
