@@ -1,8 +1,7 @@
 // A path through a tree on Karta (Jakob 2026-11-23: "kan man inte tex här också spela upp flera klipp tillsammans"): the
 // nodes he clicks in order (A1, A2.3, A3P4C1, A2.3), each pair of them the tree's step between them, and the parts the stage
 // plays for it back to back (lib/parts.ts). A step plays the film the tree shows on it (src/dealer-trees.ts treeSteps: the
-// Primär where it is the tree's, else its best approved film, the tree's own before a stand-in's; never a waiting or a
-// rejected one). A step without one is a gap: the stage holds the first node's picture for a moment and goes on. The frames
+// film the game plays there, a return the one that continues the deal shown; never a waiting or a rejected one). A step without one is a gap: the stage holds the first node's picture for a moment and goes on. The frames
 // are the game's: each run of films is resolved as a round (src/clip-graph.ts resolveRound) with every step's take locked,
 // so a deal is cut where its return begins, as in the game. Pure: no DOM, no network.
 import { resolveRound, type Gap, type Graph, type Step } from "../../src/clip-graph.ts";

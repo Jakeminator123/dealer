@@ -14,8 +14,9 @@
 //
 // A step's state: finns (a film Primär, Godkänd or Variant, his or given for him), prov (a film delivered and not yet judged,
 // or an order delivered that is not in the bank yet), saknas (nothing, or only films judged Inte bra). Verdicts and Primär
-// are read, never set.
-import { REVEAL_NODE, parseEdge } from './clip-graph.ts';
+// are read, never set. The film a step shows among several approved is the one the game plays there in the tree (gameFilm).
+import { REVEAL_NODE, buildGraph, dealHub, parseEdge, resolveRound, type BankData, type Graph, type Segment } from './clip-graph.ts';
+import { SEAT_HUB, hubChain, judgedBank } from './game-director.ts';
 
 // ── The register ────────────────────────────────────────────────────────────
 export type TreeState = 'spelas' | 'byggs' | 'vilar';
@@ -136,27 +137,65 @@ export type Delivery = { order: string; tree: string | null; from: string; to: s
 export type StepState = 'finns' | 'prov' | 'saknas';
 export const STEP_STATES: readonly StepState[] = ['finns', 'prov', 'saknas'];
 /**
- * A step of a tree: what stands best on it (take, its verdict and whose word), via: the other anchor at the shoe it is
+ * A step of a tree: the film it shows (take, its verdict and whose word), via: the other anchor at the shoe it is
  * given from when not the tree's own, takes: the tree's films on the step (archived left out), ids: those films and its
- * stand-ins' (what Karta's films panel lists), deliveries: orders delivered for it that are not in the bank.
+ * stand-ins' (what Karta's films panel lists), the shown one first, deliveries: orders delivered for it that are not in the bank.
+ * The shown film is the one the game plays on the step in the tree (gameFilm), so a return is the one that continues the
+ * deal shown for its card; where the game plays none of the step's approved films, its best by verdict, the tree's own
+ * before a stand-in's, and with none approved the tree's first film that waits for his verdict.
  */
 export type TreeStep = MeasureStep & { name: string; state: StepState; take: string | null; verdict: Verdict | null; byJakob: boolean; provisional: boolean; via: string | null; takes: number; ids: string[]; deliveries: string[] };
 
-/** The steps of the measure for a tree's films (its own, already placed in it), with `others` standing in for `hub`. */
-export function treeSteps(hub: string, others: readonly string[], takes: readonly TreeTake[], deliveries: readonly Delivery[] = []): TreeStep[] {
+// ── The film a step shows: the game's own choice ────────────────────────────
+/** The takes of a tree's cut (TreeCut own and drop): those placed in the tree whose films it plays, and those placed in another tree of the dealer. */
+export function cutTakes(home: string, takes: readonly Pick<TreeTake, 'id' | 'tree'>[]): { own: string[]; drop: string[] } {
+  return { own: takes.filter((t) => t.tree === home).map((t) => t.id), drop: takes.filter((t) => t.tree !== null && t.tree !== home).map((t) => t.id) };
+}
+/** The game's graph of one tree: the bank cut as ?trad=<id> cuts it (cutBank) and judged as the game reads it (judgedBank; src/game-page.ts). */
+export function treeGame(bank: BankData, dealer: string, cut: { hub: string; own: string[]; drop: string[] }): Graph {
+  return buildGraph(judgedBank(cutBank(bank, cut)), { dealer });
+}
+/** A node of the tree as the game's graph of the tree names it (cutBank): the tree's anchor at the shoe is the game's shoe. */
+const inGame = (hub: string, node: string): string => (hub === 'READY' ? node : node === hub ? 'READY' : node === 'READY' ? hub : node);
+/**
+ * The film the game plays on a step of a tree's measure, by the game's own choice (resolveRound on treeGame's graph); null: none,
+ * or the seat's film played for a second card. A card's deal and its return are resolved as one chain, as the game plays them, so
+ * the return is the one that follows the deal; from the pose at the shoe the game deals the card from (its SEAT_HUB pose when
+ * that pose's four films play, hubChain; else the shoe). dealt: the film the deal step shows and where it is given from; the
+ * chain is then that deal's, named to the game, so the return follows the deal shown also where the game deals another.
+ */
+function gameFilm(game: Graph, hub: string, m: MeasureStep, dealt: { take: string; via: string | null } | null = null): string | null {
+  const own = (s: Segment | undefined) => (s?.take && s.film === s.edge ? s.take.id : null);
+  if (m.kind !== 'giv' && m.kind !== 'retur') return own(resolveRound(game, [{ from: inGame(hub, m.from), to: inGame(hub, m.to) }])[0]);
+  const card = m.card!, seat = dealHub(card, SEAT_HUB[game.dealer]);
+  const pose = dealt ? (dealt.via ? inGame(hub, dealt.via) : 'READY') : seat !== 'READY' && hubChain(game, seat, card) ? seat : 'READY';
+  const chain = resolveRound(game, [{ from: pose, to: card, ...(dealt ? { take: dealt.take } : {}) }, { from: card, to: pose }]);
+  return own(chain[m.kind === 'giv' ? 0 : 1]);
+}
+
+/**
+ * The steps of the measure for a tree's films (its own, already placed in it), with `others` standing in for `hub`.
+ * game: the game's graph of the tree (treeGame); with it each step shows the film the game plays there (TreeStep).
+ */
+export function treeSteps(hub: string, others: readonly string[], takes: readonly TreeTake[], deliveries: readonly Delivery[] = [], game: Graph | null = null): TreeStep[] {
   const live = takes.filter((t) => !t.archived);
+  const dealt = new Map<string, { take: string; via: string | null }>(); // by card: the film its deal step shows (the deals come first in the measure)
   return measure(hub).map((m) => {
     const own = live.filter((t) => t.from === m.from && t.to === m.to);
     const stand = m.from === hub || m.to === hub
       ? others.flatMap((o) => live.filter((t) => t.from === (m.from === hub ? o : m.from) && t.to === (m.to === hub ? o : m.to)).map((t) => ({ t, via: o })))
       : [];
     const ranked = [...own.map((t) => ({ t, via: null as string | null })), ...stand].sort((a, b) => RANK[b.t.verdict] - RANK[a.t.verdict] || Number(!!a.via) - Number(!!b.via));
-    const good = ranked.find((x) => GOOD.includes(x.t.verdict)) ?? null;
+    const approved = ranked.filter((x) => GOOD.includes(x.t.verdict));
+    const played = game && approved.length > 1 ? gameFilm(game, hub, m, m.kind === 'retur' ? dealt.get(m.card!) : null) : null;
+    const good = approved.find((x) => x.t.id === played) ?? approved[0] ?? null;
     const sent = deliveries.filter((d) => d.from === m.from && d.to === m.to).map((d) => d.order);
     const waiting = own.find((t) => t.verdict === 'vantar') ?? null;
     const shown = good ?? (waiting ? { t: waiting, via: null } : null);
     const state: StepState = good ? 'finns' : waiting || sent.length ? 'prov' : 'saknas';
-    return { ...m, name: stepName(m.from, m.to), state, take: shown?.t.id ?? null, verdict: shown?.t.verdict ?? null, byJakob: !!shown?.t.byJakob, provisional: !!shown?.t.provisional, via: shown?.via ?? null, takes: own.length, ids: ranked.map((x) => x.t.id), deliveries: sent };
+    if (m.kind === 'giv' && shown) dealt.set(m.card!, { take: shown.t.id, via: shown.via });
+    const ids = [...(shown ? [shown.t.id] : []), ...ranked.filter((x) => x.t !== shown?.t).map((x) => x.t.id)];
+    return { ...m, name: stepName(m.from, m.to), state, take: shown?.t.id ?? null, verdict: shown?.t.verdict ?? null, byJakob: !!shown?.t.byJakob, provisional: !!shown?.t.provisional, via: shown?.via ?? null, takes: own.length, ids, deliveries: sent };
   });
 }
 
@@ -199,10 +238,14 @@ export type TreeView = {
   count: TreeCount;
 };
 
-/** One tree with its nodes, steps and number, from the films placed in the trees and the orders delivered outside the bank. */
-export function treeView(dealer: string, tree: TreeDef, trees: readonly TreeDef[], entries: ReadonlyMap<string, TreeEntry>, takes: readonly TreeTake[], deliveries: readonly Delivery[] = []): TreeView {
+/**
+ * One tree with its nodes, steps and number, from the films placed in the trees and the orders delivered outside the bank.
+ * bank: the bank the game reads (GET /api/clip-bank); with it each step shows the film the game plays in the tree (TreeStep).
+ */
+export function treeView(dealer: string, tree: TreeDef, trees: readonly TreeDef[], entries: ReadonlyMap<string, TreeEntry>, takes: readonly TreeTake[], deliveries: readonly Delivery[] = [], bank: BankData | null = null): TreeView {
   const home = homeOf(tree, trees), { hub, others } = treeHubs(home, entries);
-  const steps = treeSteps(hub, others, takes.filter((t) => t.tree === home.id), deliveries.filter((d) => d.tree === home.id));
+  const game = bank ? treeGame(bank, dealer, { hub, ...cutTakes(home.id, takes) }) : null;
+  const steps = treeSteps(hub, others, takes.filter((t) => t.tree === home.id), deliveries.filter((d) => d.tree === home.id), game);
   return { dealer, tree, home: home.id, hub, others, nodes: treeNodes(home, entries), steps, count: treeCount(steps) };
 }
 

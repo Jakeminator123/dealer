@@ -31,7 +31,7 @@ import type {IncomingMessage, ServerResponse} from 'node:http';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {buildGraph, type BankData, type Take} from '../src/clip-graph.ts';
-import {TREE_ID, countWord, cutBank, isCard, isTreeHub, levelOf, nodeCode, nodesOf, orderCommand, playedCut, stepName as stepWords, treeHubs, treeView, type Delivery, type GameCut, type MeasureStep, type Need, type OrderFacts, type TreeAnswer, type TreeCut, type TreeDef, type TreeRegister, type TreeState, type TreeStep, type TreeTake, type TreeView, type Verdict as TreeVerdict} from '../src/dealer-trees.ts';
+import {TREE_ID, countWord, cutBank, cutTakes, isCard, isTreeHub, levelOf, nodeCode, nodesOf, orderCommand, playedCut, stepName as stepWords, treeHubs, treeView, type Delivery, type GameCut, type MeasureStep, type Need, type OrderFacts, type TreeAnswer, type TreeCut, type TreeDef, type TreeRegister, type TreeState, type TreeStep, type TreeTake, type TreeView, type Verdict as TreeVerdict} from '../src/dealer-trees.ts';
 import {judgedBank} from '../src/game-director.ts';
 import {ANCHOR_NODE, costOf, modelFor, paramsOf, stepOf, type Policy, type StepKey} from '../src/order-model.ts';
 import {NO_RECIPE, methodFor, readMethods, recipeFor, referenceAbsent, secondsOf, triedWords, type MethodRegister} from '../src/order-methods.ts';
@@ -583,7 +583,8 @@ function viewsOf(w: World, dealer: string): (TreeView & {talk: TreeTalk})[] {
     prices: json<Policy>('data/order-policy.json')?.prices ?? [],
     refs: json<{films?: RefFilm[]}>('data/rendered-references.json')?.films ?? []};
   return defs.map(def => {
-    const view = treeView(dealer, def, defs, w.entries, takes, sent);
+    // With the bank the game reads, each step shows the film the game plays there in the tree (src/dealer-trees.ts TreeStep).
+    const view = treeView(dealer, def, defs, w.entries, takes, sent, w.bank);
     return {...view, steps: view.steps.map(s => s.state === 'finns' ? s : {...s, order: orderFacts(facts, view, s)}), talk: talk(view.home)};
   });
 }
@@ -601,8 +602,7 @@ export async function treeCut(dealer: string, id: string): Promise<TreeCut | nul
   const w = await readWorld(dealer), defs = w.register.dealers[dealer]?.trees ?? [], def = defs.find(t => t.id === id);
   if (!def) return null;
   const takes = placedTakes(w, dealer), view = treeView(dealer, def, defs, w.entries, takes);
-  return {schemaVersion: 1, dealer, tree: def.id, name: def.name, home: view.home, hub: view.hub, count: view.count,
-    own: takes.filter(t => t.tree === view.home).map(t => t.id), drop: takes.filter(t => t.tree !== null && t.tree !== view.home).map(t => t.id)};
+  return {schemaVersion: 1, dealer, tree: def.id, name: def.name, home: view.home, hub: view.hub, count: view.count, ...cutTakes(view.home, takes)};
 }
 
 /**

@@ -22,9 +22,10 @@ import {
   type TreeTake,
 } from "../../src/dealer-trees.ts";
 import { treeLayout } from "../lib/map-layout.ts";
-import { buildGraph, type BankData } from "../../src/clip-graph.ts";
-import { treePlay } from "../../src/dealer-trees.ts";
-import { judgedBank } from "../../src/game-director.ts";
+import { verdictOf } from "../lib/verdict.ts";
+import { buildGraph, resolveRound, returnFits, type BankData } from "../../src/clip-graph.ts";
+import { nodesOf, treePlay } from "../../src/dealer-trees.ts";
+import { hubChain, judgedBank } from "../../src/game-director.ts";
 
 const take = (id: string, from: string, to: string, verdict: TreeTake["verdict"], more: Partial<TreeTake> = {}): TreeTake => ({ id, tree: "t", from, to, verdict, byJakob: true, provisional: false, ...more });
 const byId = <T extends { id: string }>(list: readonly T[], id: string): T => {
@@ -159,6 +160,74 @@ test("the tree map draws one line per step, between boxes it draws", () => {
     assert.ok(layout.lines.every((l) => l.chip.x >= 0 && l.chip.x <= layout.width && l.chip.y >= 0 && l.chip.y <= layout.height));
     assert.equal(layout.boxes.filter((b) => b.kind === "annan").length, others.length);
   }
+});
+
+// What a step shows (Jakob 2026-11-24 at A3P7C1: no film there "actually deals the card the way the return is"): the views
+// showed each step's best film by verdict alone, the game plays a deal with the return cut from it. On made-up films of a tree
+// on A2.3 with an A2.2: seat 7 has a rejected deal with an approved return and a newer deal and return that are variants;
+// seat 5 two approved pairs; seat 6 an approved pair of the tree's own and one from A2.2, where Paow's game deals the seat
+// from (SEAT_HUB); seat 4 a deal that waits and one rejected; seat 3 a rejected deal.
+test("a step's shown return continues its shown deal, and both are the films the game plays in the tree", () => {
+  type Made = { id: string; clip: string; frames: [number, number]; from: string; to: string; decision?: string; variant?: boolean };
+  const pair = (seat: number, word: string, from: string, deal: Partial<Made> = {}, back: Partial<Made> = {}): Made[] => [
+    { id: `p${seat}-${word}-deal`, clip: `p${seat}-${word}`, frames: [0, 60], from, to: `P${seat}.C1`, decision: "ACCEPTED", ...deal },
+    { id: `p${seat}-${word}-back`, clip: `p${seat}-${word}`, frames: [61, 90], from: `P${seat}.C1`, to: from, decision: "ACCEPTED", ...back },
+  ];
+  const one = (id: string, from: string, to: string, decision?: string): Made => ({ id, clip: id, frames: [0, 40], from, to, decision });
+  const made: Made[] = [
+    one("rest", "IDLE", "IDLE", "ACCEPTED"), one("in", "IDLE", "READY-C", "ACCEPTED"), one("out", "READY-C", "IDLE", "ACCEPTED"),
+    one("b-in", "IDLE", "READY-B", "ACCEPTED"), one("b-out", "READY-B", "IDLE", "ACCEPTED"),
+    ...pair(7, "old", "READY-C", { decision: "REJECTED" }), ...pair(7, "new", "READY-C", { variant: true }, { variant: true }),
+    ...pair(5, "a", "READY-C"), ...pair(5, "b", "READY-C"),
+    ...pair(6, "own", "READY-C"), ...pair(6, "b", "READY-B"),
+    one("p4-waits", "READY-C", "P4.C1"), one("p4-fell", "READY-C", "P4.C1", "REJECTED"), one("p3-fell", "READY-C", "P3.C1", "REJECTED"),
+  ];
+  const review = (m: Made) => (m.decision ? { review: { decision: m.decision, ...(m.variant ? { acceptedAs: "VARIANT" } : {}), userAccepted: m.decision === "ACCEPTED" } } : {});
+  // A return starts on the frame after its deal's last, as a film cut in two does.
+  const seam = (m: Made) => (m.id.endsWith("-back") ? { motion: { startsOn: { clip: m.id.replace(/-back$/, "-deal"), frame: m.frames[0] } } } : {});
+  const bank = {
+    jobs: [], edits: [], derived: made.map(({ id, clip, frames, from, to }) => ({ id, clip, frames, from, to })),
+    motions: Object.fromEntries(made.map((m) => [m.id, { ...review(m), ...seam(m) }])),
+    media: Object.fromEntries(made.map((m) => [m.id, { video: `assets/motions/${m.clip}/source.mp4` }])),
+  } as unknown as BankData;
+
+  // The tree, and every film placed in it with its verdict, as tools/dealer-tree.ts placedTakes gives them.
+  const tree: TreeDef = { id: "t", name: "T", state: "byggs", root: "a1", anchors: [{ entry: "a1" }, { entry: "a23" }, { entry: "a22" }] };
+  const entries = new Map<string, TreeEntry>([["a1", { id: "a1", role: "ankare", node: "IDLE" }], ["a23", { id: "a23", role: "ankare", node: "READY-C" }], ["a22", { id: "a22", role: "ankare", node: "READY-B" }]]);
+  const all = buildGraph(bank, { dealer: "paow" });
+  const takes: TreeTake[] = Object.values(all.takes).map((t) => { const [from, to] = nodesOf(t.edge, t.hub), v = verdictOf(t); return { id: t.id, tree: "t", from, to, verdict: v.verdict, byJakob: v.byJakob, provisional: v.provisional }; });
+  const view = treeView("paow", tree, [tree], entries, takes, [], bank), plain = treeView("paow", tree, [tree], entries, takes);
+  assert.deepEqual([view.hub, view.others], ["READY-C", ["READY-B"]]);
+
+  // The game with this tree, as the page builds it (?trad=t), and what it plays to a card and back to the shoe.
+  const cut = { schemaVersion: 1, dealer: "paow", tree: "t", name: "T", home: "t", hub: view.hub, count: view.count, own: takes.map((t) => t.id), drop: [] };
+  const game = buildGraph(judgedBank(treePlay(bank, "t", { status: 200, answer: cut }, "Paow").bank), { dealer: "paow" });
+  const plays = (steps: { from: string; to: string }[]) => resolveRound(game, steps).map((s) => s.take?.id ?? null);
+  const shown = (card: string) => { const deal = view.steps.find((s) => s.kind === "giv" && s.card === card)!, back = view.steps.find((s) => s.kind === "retur" && s.card === card)!; return { deal, back, films: [deal.take, back.take] }; };
+
+  for (const card of ["P5.C1", "P7.C1"]) {
+    const { deal, back, films } = shown(card);
+    assert.deepEqual(films, plays([{ from: "READY", to: card }, { from: card, to: "READY" }]), `${card}: the view shows the game's deal and return`);
+    assert.ok(returnFits(all.takes[back.take!], all.takes[deal.take!]), `${card}: the shown return continues the shown deal`);
+  }
+  assert.deepEqual(shown("P7.C1").films, ["p7-new-deal", "p7-new-back"], "the variant deal with its own return, not the approved return of a rejected deal");
+  assert.deepEqual([shown("P7.C1").back.verdict, shown("P7.C1").back.state], ["variant", "finns"], "the step says the shown film's verdict");
+  assert.deepEqual(shown("P5.C1").films, ["p5-b-deal", "p5-b-back"], "among equals the game plays the newest pair");
+  // Seat 6: the game deals it from A2.2 when that pose's four films play, so both steps show A2.2's films, given from there.
+  const six = shown("P6.C1"), fromB = hubChain(game, "READY-B", "P6.C1");
+  assert.deepEqual(six.films, fromB?.slice(1, 3).map((s) => s.take?.id), "the deal and the return the game plays from A2.2");
+  assert.deepEqual([six.films, six.deal.via, six.back.via], [["p6-b-deal", "p6-b-back"], "READY-B", "READY-B"]);
+  assert.ok(returnFits(all.takes[six.back.take!], all.takes[six.deal.take!]));
+
+  // Only which film is shown changes: every step keeps its state and its films, the shown one first; a step without an approved film is as it was.
+  for (const [k, s] of view.steps.entries()) {
+    assert.deepEqual([s.state, s.takes, [...s.ids].sort()], [plain.steps[k].state, plain.steps[k].takes, [...plain.steps[k].ids].sort()], s.id);
+    if (s.take) assert.equal(s.ids[0], s.take, `${s.id}: the shown film is listed first`);
+  }
+  assert.deepEqual(view.count, plain.count);
+  const at = (id: string) => byId(view.steps, id);
+  assert.deepEqual([at("READY-C>P4.C1").state, at("READY-C>P4.C1").take, at("READY-C>P4.C1").verdict], ["prov", "p4-waits", "vantar"], "a film that waits is shown as before");
+  assert.deepEqual([at("READY-C>P3.C1").state, at("READY-C>P3.C1").take], ["saknas", null], "a rejected film is not shown");
 });
 
 // The game with one tree (?trad=<id>, src/game-page.ts; Jakob 2026-11-23): the contract, on made-up takes. Tree "t" stands on

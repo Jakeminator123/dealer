@@ -9,7 +9,7 @@ en fillista.
   `tools/dealer-tree.ts` hittar varje film vars första och sista bild är trädets ankare och svarar Karta genom
   `GET /api/trees`. Måttet är 36 steg, en giv per kort (`src/dealer-trees.ts`).
 - Paow har tre träd i Karta: Casino 22/36 (det spelet spelar, händer utan tatueringar), Ingången 22/36 och Tatuerad
-  19/36 (byggs, från A2.3). Ingången ÄR Casino: den har bara A1, `shares: casino` och filmen före spelet som väg in,
+  20/36 (byggs, från A2.3). Ingången ÄR Casino: den har bara A1, `shares: casino` och filmen före spelet som väg in,
   men visas som ett eget träd. Utan `?trad=` spelar spelet bara träd med läget `spelas` (nu Casino), ett enda som `?trad=`. Tatuerad blir spelet med
   `casino` och `ingangen` på `vilar`, `tatuerad` på `spelas` (hans ord).
 - En komposition lägger ihop träd (`data/dealer-compositions.json`, `src/composition.ts`, `tools/dealer-composition.ts`
@@ -24,7 +24,7 @@ en fillista.
 - Jakob arkiverade 2026-11-23 Casinots A1 och A2.2 och den tatuerade A2.2 i Material. Casino behåller sina bilder:
   dess giv till plats 6 (hans Primär) börjar på A2.2, och givarna dit från A2.1 är underkända. Tatuerad har ingen A2.2.
 - Tal räknas för sig: på A1 en bricka (25/25, röd vid 0) och panelen Tal (`studio/lib/tree-talk.ts`); Tatuerad 24/25.
-- Ett steg har en Primär och sekundära filmer ("Gör primär" är hans klick). Ett klipp arkiveras och tas tillbaka i Karta.
+- Ett steg visar filmen spelet spelar där; returen fortsätter given. "Gör primär" är hans klick. Klipp arkiveras och tas tillbaka i Karta.
 - Ett ankare kan bära `seat` 1–7; ingen vy visar det. Receptet för en annan stol: [FILMMODELLER](../FILMMODELLER.md), "Vinklar, 3D och Runways lista".
 
 **Nästa steg.**
