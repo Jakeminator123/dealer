@@ -8,39 +8,25 @@ egen vinkel, "avskilt i en egen undermapp" tills delarna är värda att lyfta in
 Skriven 2026-11-18 och rättad per arbete sedan; resten står i commitmeddelandena och i varje filmmapps `KLAR-*.txt` på
 slaskdisken.
 
-**Tar över efter dealer-19 (2026-11-24): börja här.**
-- **En film som följer med kopieras.** Revanschprovet (`paow-giv-2-3-p4-c2-02-revansch-1`, raden i
-  `tools/film-prov.md`): med förra tagningen som extra referensfilm kom samma film igen inom en pixel, och 0 av 3
-  rättningar i texten tog. En tagning görs därför om genom att rätta dockan (det som styr), spara standarden och beställa
-  ur den igen (`tools/doll-order.ts`, samma pris som första gången). Förra tagningen skickas aldrig med; verktyget som
-  gjorde det är borttaget, och `revansch` i `src/order-model.ts` finns kvar bara för att den lagda ordern ska gå att läsa.
-- **Varje kort sin egen dockfilm.** En film till grannplatsen som referens lägger kortet på grannplatsen (bankens
-  P4.C1-film till P4.C2: 49,6 px fel, sedan glider kortet dit). Dockans egna filmer lägger kortet 0,0–1,3 px från
-  orderns sista bild (mätt på P1–P7 kort 1 och D.C1).
-- **P7.C1 görs om** (Jakob: "Det måste fixas"). `paow-giv-2-3-p7-01` följde dockans vändning "Som förut" ruta för ruta:
-  kortet reser sig vid fingertopparna bredvid en platt hand (dockfilmens rutor 26–36). Hans standard
-  `standard/paow-p7c1.json` har ingen `lab.turn`. Nästa: lägg P7.C1 med `--vandning i-handen`, rendera, se remsan i
-  full storlek, visa honom i Docklabbet, och beställ först sedan. `tools/doll-order.ts` skickar varken `--vandning`
-  eller vändningens mening (`TURNS[].sentence`) än.
-- **Tiden** (Jakob 2026-11-24, lämnat åt agenten): cirka 1,3 s ut och 0,8 s åter. Dockans P7-cykel är 2,4 s ut och
-  1,1 s åter (`--hold`, `--ready`, `--kortets-fart`); med hans tid räcker 3 s film. Blir snabba händer suddiga: gör
-  dockfilmen i halv fart och snabba upp den levererade filmen lokalt (hans "ultrarapid"; oprövat, gratis att pröva).
-- **Dealerns kort stängt eller öppet** (2026-11-24; testat utan webbläsare, inte sett i labbet eller av Jakob):
-  D.C1–D.C3 läggs stängt eller öppet (`src/two-hand.ts`, `page/lay.ts` `Steer.side`, Docklabbets rad "Kortet ligger",
-  `docka-cykel.ts --sida stangt|oppet`). Förvalet är planens sida; en standard sparad utan sida läggs öppet. Stängt
-  skjuts kortet med baksidan upp och vänds aldrig. D.C2 går att lägga (kort 1:s recept). `tools/doll-order.ts` tar
-  D.C1–D.C3 och stoppar där dockans sida skiljer sig från planens, innan någon film görs.
-- **Inte gjort: dockan som EN yta i Kortplan** (Jakob 2026-11-24: steg 2, "Hur det kommer dit", ger allt dubbelt och
-  är för krångligt). Inga studiofiler är ändrade. Nästa: (1) i `studio/components/bordet/BordetView.tsx` och
-  `DollPanel.tsx` blir `DollNote` en rad, och `MotionPanel` (`placement/Panels.tsx`) fälls ihop under "Kortplanens
-  avsikt" när dockan är vägen; (2) steg 3 släpper in dealerns kort i dockvägen (`PLAYER_CARD` i `dollWay` tar i dag bara
-  spelarkort) och läser standardens sida, så att `NewFilm` varnar i förväg; (3) `cd studio && npm run build` och en
-  titt i labbet.
-- **Jakobs öppna sparningar, committas inte utan hans ord:** `placements/default.json` (D.C1 stängt, D.C2 öppet) och
-  `standard/paow-dc1.json` (lagd öppet). De säger olika om D.C1, så en dockorder dit stoppas tills han sparat om
-  dockan eller ändrat planen; huvudagenten frågar honom. Samma osparade plan flyttar D.C1 och gör
-  `page/lab.test.ts` ("a stored deal laid again …") rött i arbetsträdet; med den committade planen är det grönt
-  (underagentens körning).
+**Läget 2026-11-24 (efter dealer-19 och sessionen om A2.1): börja här.**
+- **Kortet bär alltid Kortplans kryss och cirkel**, också i dockans filmer (`src/card-marks.ts`, en källa; dealer-5b).
+  Sparade referensfilmer från före 2026-11-24 visar ett omärkt kort.
+- **A2.1 görs om** (Jakob 2026-11-24: dockans filmer från A2.1 är "svindåliga"; BESKED "Dockan från A2.1 görs om, ett
+  sätt, samma kort"). De avlästa givarna (`page/lay.ts` readDeal, `data/giv-avlast-*.json`, `--klipp`) ersätts av en
+  byggd giv på dockans ben, ett sätt för alla platser, och Kortplans val läses ur dockan. Påbörjat, inget i repot ändrat:
+  läget, byggarens tre fel och nästa steg står i `.runtime/docka-a21/LAGE.md`.
+- **P7.C1 görs om** (Jakob: "Det måste fixas"). Vändningen "I handen" (`src/turn-in-hand.ts`, ocommittat, testet grönt)
+  är rättad för P7; kvar enligt `.runtime/p7-greppet/LAGE.md`: ny datafil, rendering och kontaktark; ruta 32 har ring- och
+  lillfinger 3–4 mm i filten; P6 får inte plats med vändningen vid 170 % och ger 97° handled vid 100 %; P4 hålls bara ned
+  till 43,5°. Jakobs `standard/paow-p7c1.json` ger vändningen 12 rutor och den behöver 20: han sparar om den (senare
+  släpp eller lägre kortets fart); skriv inte över den. `tools/doll-order.ts` skickar inte `--vandning` än.
+- **Tiden** (Jakob 2026-11-24): cirka 1,3 s ut och 0,8 s åter.
+- **Dealerns kort stängt eller öppet** (D.C1–D.C3, `Steer.side`, `docka-cykel.ts --sida`): förvalet är planens sida;
+  stängt skjuts kortet med baksidan upp och vänds aldrig. Jakobs plan och docka för D.C1 är committade.
+- **En tagning görs om genom dockan**, aldrig med förra tagningen som referensfilm (den kopieras inom en pixel), och varje
+  kort har sin egen dockfilm (grannplatsens film lägger kortet på grannplatsen).
+- **Inte gjort: dockan som EN yta i Kortplan** (Jakob 2026-11-24): `DollNote` en rad, `MotionPanel` hopfälld när dockan
+  är vägen, dealerns kort in i `dollWay`. Hör ihop med planens val ur dockan (A2.1 ovan).
 
 **Läget.**
 - Gällande docka för givarna från A2.3 är **svep24d** (`data/giv-fran-2-3-p<n>-grepp-svep-d.json` för P1–P5 och
@@ -55,18 +41,8 @@ slaskdisken.
   närbild, slutruta och `KLAR-f.txt` (där står vad som håller och inte). Plats 1 ser inte ut som en människa som delar:
   armen ligger längs filten, för dockan sitter med axeln lågt över bordet.
 - Äldre versioner -b till -e: i sina `KLAR-*.txt`.
-- **A2.1 är dockans egna data:** "Avläst giv" i docklabbet spelar `data/giv-avlast-*.json` (hette giv-pamela-* till
-  2026-11-23; tre äldre prov namnger dem så). Inget i mappen läser den arkiverade dealerns filmer, kortspår eller vilobild.
-- **Paows egen giv från A2.1** (2026-11-23; Jakob om första versionen: given bra, men i nypet höll hon inte kortet;
-  rättat, inte sett av honom): Docklabbet, Paow, Från A2.1, plats 4 kort 1, spelar hennes giv läst ur fyra av hennes
-  A2.1-filmer (`data/giv-avlast-paow-p4-<nr>.json`, nr 04, 08, 10, 11; valet "Paows klipp", `klipp=11` i adressen, förval 11).
-  Vänsterhanden är hennes egen (`src/read-hand.ts`): nyper kortets hållna ände från skon tills det läggs, vrids med
-  kortet och trycker det ovanifrån där det ligger på filten (04 och 08 skjuter det på filten). Mätt på dockan
-  (`tools/hand-check.ts`): klipp 11 inga fel, fingertopparna 0,3–0,6 mm från kortet i alla 69 nyprutor; 04 ett fel,
-  08 tre, 10 nio (före: fel i varje ruta). Svagt: i vändningen (11: ruta 44–47) svepar handleden ~100 mm per ruta och
-  böjs över 95°, för handen sitter fast på kortet; 08:s kortspår stämmer sämst med filmen (16 px i median). Dockfilm
-  av klipp 11, giv och återgång (4,75 s): `docka-paow-2-1-p4c1-avlast-11-a` i `data/rendered-references.json`, rörelsen
-  `data/giv-fran-2-1-p4c1-avlast-11-a-paow.json`. De gamla avlästa givarna är oförändrade (omlagda och jämförda).
+- **A2.1 i dag** (ersätts, se överst): "Avläst giv" i Docklabbet spelar `data/giv-avlast-*.json`, och för Paow hennes
+  giv läst ur hennes filmer (`data/giv-avlast-paow-p4-<nr>.json`, `klipp=`); klipp 11 lyfter kortet till 16 cm över filten.
 - **Dockorna** (se **Dockorna**): `src/doll.ts` har `standard` (som förut, låst) och `paow`, rättad 2026-11-23 efter
   hennes filmer (38 cm bakom bordskanten, egna armbågar och händer); `?docka=paow`, `shoot.ts --doll paow`. Jakob
   2026-11-23 om vändningen vid platsen: "Bättre, men inte än", vänsterarmen ser fel ut mot skon. Scenens sko är rättad
@@ -105,7 +81,7 @@ förblir vänd tills kortet ligger); ingen ring som kortet rullar i, och inga fi
 3. Svepet (flera kort i en film) i -f: `tools/deal-film.ts --beats` tar i dag ETT kort.
 4. Dockans filmer in i `data/rendered-references.json` gör huvudagenten; id som `docka-2-3-p4c1-f`, aldrig samma id två gånger.
 5. SAM-dockan: Jakobs ja 2026-11-23 (BESKED); vad som finns och vad som saknas står sist i **Dockorna**.
-6. Paows egen giv: handleden rullar kortet i vändningen i stället för att svepa med det (`src/read-hand.ts` heldBy).
+6. A2.1: se överst och `.runtime/docka-a21/LAGE.md`.
 
 **Väntar på Jakob.** Inget utanför Beslut.
 
