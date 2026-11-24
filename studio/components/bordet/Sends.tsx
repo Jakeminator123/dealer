@@ -20,7 +20,7 @@ import { referenceName, referenceOwner, referenceRole, sentence, type FilmRow, t
 import { labUrl } from "../../lib/lab.ts";
 import { scoreWords, verdictWords, type LedgerRow } from "../../lib/ledger.ts";
 import { orderLine, picturesInOrder, storedParts, type OrderAnswer, type OrdersAnswer } from "../../lib/orders.ts";
-import { PictureCard, StatusChip } from "../order/Pictures";
+import { PictureCard, StatusChip, WayChip } from "../order/Pictures";
 import { PromptText } from "../order/PromptText";
 import { Badge, SegmentedControl, Select, TextArea, buttonClasses, cn } from "../ui";
 import { queueHref } from "./FilmList";
@@ -277,6 +277,9 @@ export function DraftSends({ answer, all, names, takes = [] }: { answer: OrderAn
         {/* his notation, not the title stored with the order (older words, sometimes a film's id) */}
         <span className="truncate font-mono text-sm text-ink">{orderLine(order) ?? stepOf(order.step.key)?.label ?? order.step.label}</span>
       </div>
+      {/* whether the way holds, and for a draft why it cannot be approved (a way that fell, a pilot that waits for his eyes) */}
+      <WayChip way={answer.way} why />
+
       {takes.length ? (
         <Part title="Filmen som kom">
           <Takes takes={takes} />

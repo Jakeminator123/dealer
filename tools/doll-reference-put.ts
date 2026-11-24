@@ -5,6 +5,9 @@
 // The run folder holds referens.mp4, renderkvitto.json, rorelse.json and kortplan.json. They are copied to
 // assets/references/docka/<id>/ (the film as source.mp4) with a receipt.json of their hashes, and the film gets one entry
 // in data/rendered-references.json. An id is never used twice: a film made again gets a new id (dealer3d/LASMIG.md).
+// A film whose motion is read off a real deal (the motion file's made.way "read", or a chain of such cycles) gets fromDeal,
+// the deal it is read off: an order with it as its reference film is another way of making a film than one with a built
+// cycle (src/order-ways.ts), and that way is tried with a pilot of its own.
 import {copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
@@ -29,9 +32,17 @@ const probe = JSON.parse(execFileSync('ffprobe', ['-v', 'error', '-select_stream
 const [n, d] = String(probe.r_frame_rate).split('/').map(Number), fps = n / (d || 1), frames = Number(probe.nb_read_frames), seconds = Math.round((frames / fps) * 1000) / 1000;
 const files: Record<string, {from: string; sha256: string}> = {'source.mp4': {from: 'referens.mp4', sha256: sha(film)}};
 for (const name of ['renderkvitto.json', 'rorelse.json', 'kortplan.json']) if (existsSync(path.join(run, name))) files[name] = {from: name, sha256: sha(path.join(run, name))};
+/** The deal a motion file is read off: its own film where it was made by reading, else the first read cycle of a chain. */
+const readOff = (file: string): string | null => {
+  if (!existsSync(file)) return null;
+  const m = JSON.parse(readFileSync(file, 'utf8')) as {film?: string; made?: {way?: string; cycles?: string[]}};
+  if (m.made?.way === 'read') return m.film ?? null;
+  return (m.made?.cycles ?? []).map(readOff).find(Boolean) ?? null;
+};
+const fromDeal = motion ? readOff(motion) : null;
 const receipt = {id, sourceRun: path.basename(run), files, video: {width: probe.width, height: probe.height, fps, frames, seconds}, edge, lays, ...(doll ? {doll} : {}), state: 'kandidat', ...(shape ? {shape} : {}),
   ...(motion ? {motion: {path: motion, sha256: sha(motion), ...(doll ? {doll} : {})}} : {}), ...(note ? {note} : {}), copiedAt: new Date().toISOString(), copiedBy: 'huvudagenten, tools/doll-reference-put.ts'};
-const entry = {id, edge, path: `${to}/source.mp4`, sha256: files['source.mp4'].sha256, seconds, lays, ...(shape ? {shape} : {}), check: null, ...(doll ? {doll} : {})};
+const entry = {id, edge, path: `${to}/source.mp4`, sha256: files['source.mp4'].sha256, seconds, ...(fromDeal ? {fromDeal} : {}), lays, ...(shape ? {shape} : {}), check: null, ...(doll ? {doll} : {})};
 if (dry) { console.log(JSON.stringify({written: false, entry, receipt}, null, 2)); process.exit(0); }
 mkdirSync(to, {recursive: true});
 for (const [name, f] of Object.entries(files)) copyFileSync(path.join(run, f.from), path.join(to, name));

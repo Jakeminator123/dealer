@@ -103,8 +103,8 @@ runda") räknar de 33 filmerna med samma funktioner som Karta och ger varje steg
 och väntar på hans dom, godkänd åt honom, beställd, utkast, kommer med given, kan beställas nu, kan provas, väntar på
 en bild, ingen metod än, inte byggd (V). Metoden per steg och platsklass (mitten P3–P5, ytter P1, P2, P6, P7, dealerns
 kort) står i `data/order-methods.json` med status `gäller`, `prov` eller `saknas` och belägg (V). Välj och ändra en
-metod efter Jakobs domar: `node tools/verdicts-per-method.ts <dealer>` räknar dem per modell, vändning, referensfilm och
-mall (V).
+metod efter Jakobs egna domar: `node tools/verdicts-per-method.ts [dealer]` listar per steg vilka sätt (modell, mall, tur
+och retur, slag av referensfilm) som håller, föll eller är oprövade; godkännandet släpper en pilot av ett oprövat sätt (V).
 
 **8. Komponera i Bordet, Beställ** (`/studio/bordet/?lage=bestall`; `/studio/bestall/` leder dit). En rak linje: välj
 steget (som säger ankaret) och kortets plats; allt annat är stegets enda recept i `data/order-methods.json`, visat som

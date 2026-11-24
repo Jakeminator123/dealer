@@ -15,7 +15,7 @@ import { swedishMoment } from "../../lib/mode.ts";
 import { HANDOVER, costWords, orderLine, orderingState, picturesInOrder, sections, styleWords, type OrderAnswer, type OrdersAnswer, type Picture } from "../../lib/orders.ts";
 import { MODELS, approvalWords, credits, scaleWords, stepOf } from "../../../src/order-model.ts";
 import { Card, EmptyState } from "../ui";
-import { StatusChip, pictureName } from "./Pictures";
+import { StatusChip, WayChip, pictureName } from "./Pictures";
 import { Production } from "./Production";
 import { QueueFrame } from "./QueueFrame";
 
@@ -72,6 +72,8 @@ function OrderCard({ answer, dealerName, onOpen }: { answer: OrderAnswer; dealer
               {order.motion && !order.motion.fromPlan ? <span className="text-[#f0b07a]"> · ändrat från kortplanen</span> : null}
             </p>
           ) : null}
+          {/* a draft says whether the way it is made holds: a way that fell, or an untried one with its pilot out, cannot be approved */}
+          {draft ? <WayChip way={answer.way} className="mt-1" /> : null}
           {order.status === "AVBRUTEN" && order.setAside ? <p className="mt-0.5 text-xs text-dim">Avbruten: {order.setAside.why}</p> : null}
           {order.motion?.cardScale && order.motion.cardScale !== 1 ? <p className="mt-0.5 text-xs text-[#f0b07a]">Prov: kortet {scaleWords(order.motion.cardScale)} av planens</p> : null}
         </div>

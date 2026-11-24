@@ -21,8 +21,8 @@ Proceduren står på ett ställe och skrivs inte om här: ingången och station 
 4. **Ramens tagningar och omgångar:** en per prov, två där metoden gäller, varje omgång oberoende granskad innan nästa
    bygger på den, kostnaden berättad efteråt (BESKED, "Två tagningar per klipp"; bandet, "Regler som kostar pengar när de
    bryts").
-5. **Metoden väljs efter Jakobs domar** (`node tools/verdicts-per-method.ts <dealer>`), inte efter granskarens poäng
-   (bandet, station 7).
+5. **Bara sätt som håller, och en pilot först** (Jakob 2026-11-24): `node tools/verdicts-per-method.ts` listar sätten
+   ur hans egna domar, inte granskarens poäng. Godkännandet släpper en pilot av ett oprövat sätt och inget som föll.
 6. **Händerna och vändningen följer receptet och hans ord** (från A2.3 två händer, Jakob 2026-11-21 och 2026-11-23);
    ett avsteg står i utkastets anteckningar (handboken §2).
 7. **Signerade adresser i skriptfiler, aldrig `node -e`, och ingen värdadress i `data/` eller `assets/`**: repot är

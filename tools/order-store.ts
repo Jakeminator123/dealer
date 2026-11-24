@@ -39,15 +39,16 @@ import { readFile, writeFile, mkdir, rename, rm, stat, realpath, readdir } from 
 import { createHash, randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { StoreError } from './placement-store.ts';
-import { MOTIONS_TEXT, motionRegister } from './register-store.ts';
+import { MOTIONS_TEXT, motionRegister, postOfRemoved } from './register-store.ts';
 import { mediaRoles } from './media-roles.ts';
 import { readMandateBudget } from './order-mandate.ts';
 import {
   ANCHOR_NODE, ANCHOR_ROLE, CARD_SCALES, EXTRA_LIMIT, MODELS, FILE_NAME, FLIP_AXES, FLIP_LABEL, STYLE_LABEL, ORDER_ID, RETURN_23_BLOCK, RETURN_23_TRIAL, SEAT_TARGETS, SHORT_TWO_HAND_TURN_HELP, TAKES_MAX, scaleWords, shortTwoHandTurnProblem,
-  LANDING_ROLE, bodyLine, canonical, checkPolicy, costOf, crossesBody, cutFrameOf, cutFrameWords, cutIntoOf, tidyMotion, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, giveEndOf, hashInput, landingMissing, landingOf, a3Candidates, a3Name, openEndWords, archivedReferenceIds, isArchived, modelFor, modelsFor, paramsOf, plannedOf, readCutChecks, referenceCandidates, seatList, seatWords, secondsWords, shownOf, spentOn, stepOf, stylesFor, summaryOf, twoHandDealSideProblem, twoHandDraftProblem, twoHandMotion, validateOrder, waitingOf,
+  LANDING_ROLE, bodyLine, canonical, takeStates, checkPolicy, costOf, crossesBody, cutFrameOf, cutFrameWords, cutIntoOf, tidyMotion, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, giveEndOf, hashInput, landingMissing, landingOf, a3Candidates, a3Name, openEndWords, archivedReferenceIds, isArchived, modelFor, modelsFor, paramsOf, plannedOf, readCutChecks, referenceCandidates, seatList, seatWords, secondsWords, shownOf, spentOn, stepOf, stylesFor, summaryOf, twoHandDealSideProblem, twoHandDraftProblem, twoHandMotion, validateOrder, waitingOf,
   type Anchor, type BankFacts, type CutFrame, type Drawn, type GiveEnd, type FlipAxis, type Motion, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Policy, type Receipt, type RefCandidate, type Reference, type RenderedReference, type SeatPlan, type Shape, type StepDef, type StepKey, type TextStyle, type Waits,
 } from '../src/order-model.ts';
 import { readMethods, recipeFor, recipeHands, referenceAbsent, referenceByRule, secondsOf, triedWords, type MethodRegister } from '../src/order-methods.ts';
+import { dollWayAnswer, filmVerdicts, wayAnswer, wayBook, type WayAnswer, type WayRow } from '../src/order-ways.ts';
 import { TEMPLATE_CHOICES, TEMPLATE_CHOICES_WORDS, TEMPLATE_VERSION, handsIn, orderPrompt } from '../src/order-prompts.ts';
 import { checkCutFrame, patchShoe } from '../src/cut-frame.ts';
 import { H, TEXTURE, W, cardTexture, drawCard, drawCards, markSeen, pictureBytes, planQuad, pngOf, readPlan, readRgb, type Pt, type Texture } from './order-images.ts';
@@ -58,7 +59,11 @@ const sha = (b: Buffer | string) => createHash('sha256').update(b).digest('hex')
 const revisionOf = (text: string) => `"${sha(text)}"`;
 export const orderHash = (order: Order) => sha(hashInput(order));
 
-export type OrderPreview = { revision: string; orders: Order[] };
+/**
+ * ways: per draft, the state of the way it is made (src/order-ways.ts), as the guide shows it by the recipe; null for a still.
+ * dollWays: the same for the deal saved from the doll instead (the guide's "Från dockan"); null for what is not a deal.
+ */
+export type OrderPreview = { revision: string; orders: Order[]; ways?: (WayAnswer | null)[]; dollWays?: (WayAnswer | null)[] };
 type PlanSnapshot = Awaited<ReturnType<typeof readPlan>>;
 type SavePicture = (name: string, bytes: Buffer) => Promise<{ path: string; sha256: string }>;
 type WatchSource = (file: string) => Promise<void>;
@@ -976,7 +981,15 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       }
       previews.set(key, { drafts, size, sources, input });
       previewBytes += size;
-      return { revision, orders: drafts.map(({ draft }, i) => addressed(draft, `${PREVIEW_ID}-${i + 1}`, `api/orders/preview/${key}/${i}`, '')) };
+      // The state of each draft's way, said by the recipe in the guide; a preview is still given where it cannot be read.
+      const tried = await ways().catch(() => null);
+      return {
+        revision, orders: drafts.map(({ draft }, i) => addressed(draft, `${PREVIEW_ID}-${i + 1}`, `api/orders/preview/${key}/${i}`, '')),
+        ...(tried ? {
+          ways: drafts.map(({ draft }) => wayAnswer(draft, tried.book, tried.methods, tried.rendered)),
+          dollWays: drafts.map(({ draft }) => dollWayAnswer(draft, tried.book, tried.methods, tried.rendered)),
+        } : {}),
+      };
     });
   }
 
@@ -1231,6 +1244,25 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     return best;
   }
 
+  /**
+   * Which ways of making a film hold (src/order-ways.ts): every approved film order by its way, with Jakob's own verdicts
+   * on its films in the bank, and what is kept of his verdict on a removed film. Read each time, never stored: the state
+   * of a way is his verdicts as they stand now. A register that cannot be read stops the reader (approve refuses).
+   */
+  async function ways(known?: { orders: readonly Order[]; receipts: readonly (Receipt | null)[] }): Promise<{ book: WayRow[]; methods: MethodRegister | null; rendered: RenderedReference[] }> {
+    let orders = known?.orders, receipts = known?.receipts;
+    if (!orders || !receipts) {
+      const found: Order[] = [];
+      for (const name of (await readdir(dir).catch(() => [] as string[])).sort()) { const other = name.endsWith('.json') && ORDER_ID.test(name.slice(0, -5)) ? await load(name.slice(0, -5)).catch(() => null) : null; if (other) found.push(other.order); }
+      orders = found; receipts = await Promise.all(found.map((o) => readReceipt(o.id)));
+    }
+    const register = motionRegister(root), posts = register.posts() as Map<string, unknown>;
+    const removed = register.removed().filter((row) => !row.forHim && !posts.has(row.id)).map((row) => [row.id, postOfRemoved(row)] as const);
+    const methods = await readMethodRegister(), rendered = await readRendered();
+    const verdicts = filmVerdicts([...posts, ...removed], new Map(orders.map((o) => [o.id, o])));
+    return { book: wayBook(orders.map((order, i) => ({ order, takes: takeStates(order, receipts![i] ?? null) })), verdicts, methods, rendered), methods, rendered };
+  }
+
   /** The problems that keep an order from being approved, with the files checked on disk. */
   async function problemsOf(order: Order): Promise<string[]> {
     const out = draftProblems(order);
@@ -1287,9 +1319,13 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     return { owners, problems };
   }
 
-  async function answerOf(order: Order, revision: string, register: Register | null, policy: Policy | null, spentToday: number, balance: number, dealers: DealerInfo[] = []): Promise<OrderAnswer> {
+  async function answerOf(order: Order, revision: string, register: Register | null, policy: Policy | null, spentToday: number, balance: number, dealers: DealerInfo[] = [], way: WayAnswer | null = null): Promise<OrderAnswer> {
     const receipt = await readReceipt(order.id);
     const problems = await problemsOf(order);
+    // A draft of a way that fell, or of an untried way whose pilot is already approved, says why it cannot be approved.
+    // An order already approved or set aside is stopped by nothing: it only shows the state of its way.
+    if (way && (order.approval || order.status !== 'UTKAST')) way = { ...way, stop: null };
+    if (way?.stop) problems.push(way.stop);
     const hash = orderHash(order);
     if (order.approval && order.approval.orderSha256 !== hash) problems.push('Beställningen har ändrats efter godkännandet: den läggs inte.');
     const { owners, problems: mixed } = ownersOf(order, register, dealers);
@@ -1308,7 +1344,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     // Each picture's name in Material today (the hash above is the stored order's; the names are only shown). A picture
     // built, drawn on or cut from an entry is not that entry: it keeps its own words.
     const named = { ...order, pictures: order.pictures.map((p) => ({ ...p, named: (p.from?.entry && !p.from.built && !p.drawn && !p.cut && register ? entryOf(register, p.from.entry)?.entry.name : null) ?? null })) };
-    return { order: named, revision, hash, shown: shownOf(order, problems, receipt), problems, warnings, waiting, receipt, check, owners, refresh: why };
+    return { order: named, revision, hash, shown: shownOf(order, problems, receipt), problems, warnings, waiting, receipt, check, owners, refresh: why, way };
   }
 
   /**
@@ -1350,8 +1386,9 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     const spent = spentOn(loaded.map((l) => l.order), date, zone);
     const receipts = await Promise.all(loaded.map((l) => readReceipt(l.order.id)));
     const balance = await balanceNow(policy, receipts);
+    const tried = await ways({ orders: loaded.map((l) => l.order), receipts }).catch((error) => { problems.push(`Sättens läge kunde inte läsas (${(error as Error).message}): inget utkast godkänns förrän registret över tagningarna går att läsa.`); return null; });
     const orders = [];
-    for (const { order, revision } of loaded) orders.push(await answerOf(order, revision, register, policy, spent, balance?.credits ?? 0, dealers));
+    for (const { order, revision } of loaded) orders.push(await answerOf(order, revision, register, policy, spent, balance?.credits ?? 0, dealers, tried ? wayAnswer(order, tried.book, tried.methods, tried.rendered) : null));
     // A queue: the oldest first.
     orders.sort((a, b) => (a.order.created < b.order.created ? -1 : a.order.created > b.order.created ? 1 : a.order.id.localeCompare(b.order.id)));
     return {
@@ -1359,8 +1396,8 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       dealers: dealers.map(({ id, name, look, paused }) => ({ id, name, look, paused: paused ?? null })),
       plan,
       marks: await marksOf(register, dealers.map((d) => d.id)),
-      rendered: await readRendered(),
-      methods: await readMethodRegister(),
+      rendered: tried?.rendered ?? await readRendered(),
+      methods: tried?.methods ?? await readMethodRegister(),
       cutChecks: readCutChecks(await readJson(path.join(root, 'data/cut-frames.json'))),
     };
   }
@@ -1399,6 +1436,12 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       if (!check.ok) throw new StoreError(403, check.refusals.join(' '));
       const archived = await archivedSourceProblems(order);
       if (archived.length) throw new StoreError(409, archived.join(' '));
+      // Only ways that hold, and a pilot first (Jakob 2026-11-24): the same answer for his click and for the main agent's.
+      // Last, so that what is wrong with the draft itself is said first.
+      let tried: Awaited<ReturnType<typeof ways>>;
+      try { tried = await ways({ orders: others, receipts }); } catch (error) { throw new StoreError(409, `Sättets läge kan inte läsas: registret över tagningarna går inte att läsa (${(error as Error).message}).`); }
+      const stop = wayAnswer(order, tried.book, tried.methods, tried.rendered)?.stop;
+      if (stop) throw new StoreError(409, stop);
       const approval: Order['approval'] = who ? { by: 'huvudagent', at, orderSha256: orderHash(order), mandate: who.mandate.trim() } : { by: 'jakob', at, orderSha256: orderHash(order) };
       const next: Order = { ...order, status: 'GODKÄND', approval };
       return { order: next, revision: await write(next), check };
@@ -1431,7 +1474,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
     return (await stat(file).then((s) => s.isFile(), () => false)) ? file : null;
   }
 
-  return { list, one, load, create, createMany, preview, savePreview, previewAsset, change, refresh, follow, approve, setAside, servable, readReceipt };
+  return { list, one, load, create, createMany, preview, savePreview, previewAsset, change, refresh, follow, approve, setAside, servable, readReceipt, ways };
 }
 
 export type { Drawn, OrderAnswer, OrdersAnswer };

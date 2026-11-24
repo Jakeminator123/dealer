@@ -1,7 +1,7 @@
 // The main agent's approval on Jakob's mandate (Jakob 2026-11-13: "beställ lämpliga filmer automatiskt utan mitt
 // godkännande"): the same store function as his click in Beställ (tools/order-store.ts approve: nothing waits or is
-// missing, the policy in data/order-policy.json, the order's hash frozen), written as by huvudagent with the mandate it acts
-// on. Or a draft set aside (AVBRUTEN) with why. The route for his click keeps writing jakob and never takes "by" from a
+// missing, the policy in data/order-policy.json, the way holds or this is its one pilot (src/order-ways.ts, Jakob
+// 2026-11-24; no flag goes past it), the order's hash frozen), written as by huvudagent with the mandate it acts on. Or a draft set aside (AVBRUTEN) with why. The route for his click keeps writing jakob and never takes "by" from a
 // page. Placing stays tools/order-put.ts and tools/order-clerk.md.
 //
 //   node tools/order-approve.ts <id> --mandate "<whose word and when>"     approve a draft
@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { StoreError } from './placement-store.ts';
 import { orderStore } from './order-store.ts';
 import { credits } from '../src/order-model.ts';
+import { wayAnswer } from '../src/order-ways.ts';
 
 /** Approves or sets aside one draft in the repo at `root`; returns what the command prints. */
 export async function approveCommand(root: string, args: string[], options: { now?: () => Date } = {}): Promise<Record<string, unknown>> {
@@ -25,8 +26,11 @@ export async function approveCommand(root: string, args: string[], options: { no
   }
   const { order, check } = await store.approve(id, revision, { by: 'huvudagent', mandate: text });
   const cap = Number(JSON.parse(await readFile(path.join(root, 'data/order-policy.json'), 'utf8')).dailyCapCredits);
+  // What the approval rested on: the way's state and what it is counted from (his blocks in Granska, his yes in Beslut).
+  const tried = await store.ways().catch(() => null), way = tried ? wayAnswer(order, tried.book, tried.methods, tried.rendered) : null;
   return {
     ok: true, id, title: order.title, status: order.status, approval: order.approval,
+    ...(way ? { way: `${way.chip}: ${way.words}. ${way.basis}` } : {}),
     cost: { total: order.cost.total, worstTotal: order.cost.worstTotal },
     day: { before: check.spentToday, after: check.afterToday, cap, words: `${credits(check.afterToday)} av ${credits(cap)} krediter intecknade i dag med den här (${credits(check.spentToday)} före)` },
     balanceAfter: check.balanceAfter,

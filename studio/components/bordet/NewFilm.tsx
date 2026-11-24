@@ -21,6 +21,7 @@ import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { genitive, stepOf } from "../../../src/order-model.ts";
 import { isCard, type TreeView } from "../../../src/dealer-trees.ts";
+import type { WayAnswer } from "../../../src/order-ways.ts";
 import { useBank } from "../../lib/bank.ts";
 import { asApiError } from "../../lib/api.ts";
 import { sentence, type FilmRow } from "../../lib/bordet.ts";
@@ -31,7 +32,7 @@ import type { Trees } from "../map/useTrees";
 import { treeChip } from "../map/TreeRow";
 import { coverOfEntry } from "../material/Tile";
 import { PreviewOrder, PreviewPictures, useDraftSave, usePreview } from "../order/OrderPreview";
-import { pictureName } from "../order/Pictures";
+import { WayChip, pictureName } from "../order/Pictures";
 import { ProofStill } from "../proofs";
 import { TakeCard } from "../takes";
 import { Badge, Button, SegmentedControl, Skeleton, buttonClasses, cn, useToast } from "../ui";
@@ -114,6 +115,9 @@ export function NewFilm({
       : [];
   // The server's draft of the body as it stands now (usePreview answers for this body only).
   const shown = preview.preview?.orders[0];
+  // Whether the way the film is made holds (src/order-ways.ts): the recipe's as chosen in Hur, and the doll's where it saves.
+  const way = preview.preview?.ways?.[0] ?? null;
+  const dollWay = doll ? (preview.preview?.dollWays?.[0] ?? null) : null;
 
   return (
     <div data-new-film className="flex flex-col gap-4 px-4 pb-4">
@@ -135,7 +139,7 @@ export function NewFilm({
         <>
           <Head item={item} view={view} onBack={() => onPhase("vad")} />
           {phase === "hur" ? (
-            <How item={item} row={row} body={body} sends={sends} graph={graph} order={shown ?? null} loading={preview.loading} foreign={shown ? foreign(shown) : []} view={view} pictureOf={pictureOf} doll={doll} onNext={() => onPhase("skicka")} />
+            <How item={item} row={row} body={body} sends={sends} graph={graph} order={shown ?? null} way={way} dollWay={dollWay} loading={preview.loading} foreign={shown ? foreign(shown) : []} view={view} pictureOf={pictureOf} doll={doll} onNext={() => onPhase("skicka")} />
           ) : (
             <Send
               key={`${dealer}|${item.id}`}
@@ -143,6 +147,8 @@ export function NewFilm({
               row={row}
               body={body}
               order={shown ?? null}
+              way={way}
+              dollWay={dollWay}
               preview={preview}
               foreign={shown ? foreign(shown) : []}
               view={view}
@@ -304,7 +310,7 @@ function Foreign({ pictures, view }: { pictures: readonly Order["pictures"][numb
   return <p className="text-xs text-[#f0b07a]">{pictures.map((p) => pictureName(p)).join(", ")}: inte {genitive(view.tree.name)} egen bild. Det är bilden som gäller i Material som skickas.</p>;
 }
 
-function How({ item, row, body, sends, graph, order, loading, foreign, view, pictureOf, doll, onNext }: { item: GuideItem; row: FilmRow | null; body: NewOrderInput | null; sends: ReactNode; graph: ReturnType<typeof useBank>["graph"]; order: Order | null; loading: boolean; foreign: Order["pictures"]; view: TreeView | null; pictureOf: (node: string) => EntryAnswer | null; doll: DollWay | null; onNext: () => void }) {
+function How({ item, row, body, sends, graph, order, way, dollWay, loading, foreign, view, pictureOf, doll, onNext }: { item: GuideItem; row: FilmRow | null; body: NewOrderInput | null; sends: ReactNode; graph: ReturnType<typeof useBank>["graph"]; order: Order | null; way: WayAnswer | null; dollWay: WayAnswer | null; loading: boolean; foreign: Order["pictures"]; view: TreeView | null; pictureOf: (node: string) => EntryAnswer | null; doll: DollWay | null; onNext: () => void }) {
   const take = item.step?.take && (item.state === "finns" || item.state === "prov") ? (graph?.takes[item.step.take] ?? null) : null;
   const off = item.wish ? stepOf(item.wish.step)?.off : null;
   return (
@@ -316,7 +322,10 @@ function How({ item, row, body, sends, graph, order, loading, foreign, view, pic
       <Foreign pictures={foreign} view={view} />
       {off && item.step?.order?.command ? <Command text={item.step.order.command} /> : null}
       {doll?.clash ? <Clash doll={doll} /> : doll ? <p data-doll-way-note className="text-xs text-dim">Givet sparas från dockan (Skicka): dockans film av din sparade standard blir referensfilm. Valen nedan gäller bara om du sparar utan dockan.</p> : null}
+      {doll && !doll.clash ? <WayChip way={dollWay} /> : null}
       {sends}
+      {/* whether the way chosen above holds: his own verdicts on films made so (a way that fell cannot be approved); the doll's way has its word above */}
+      {doll && !doll.clash ? null : <WayChip way={way} />}
       <Button variant="primary" icon={<ArrowRight />} disabled={!body} onClick={onNext} className="self-start" title={body ? "Det som skickas, med pris" : (row?.why ? sentence(row.why) : undefined)}>
         Skicka
       </Button>
@@ -346,12 +355,14 @@ function Command({ text }: { text: string }) {
 }
 
 function Send({
-  item, row, body, order, preview, foreign, view, dealer, names, ordering, blocked, made, orders, composition, onCreated, doll, onDollMade, onAgain,
+  item, row, body, order, way, dollWay, preview, foreign, view, dealer, names, ordering, blocked, made, orders, composition, onCreated, doll, onDollMade, onAgain,
 }: {
   item: GuideItem;
   row: FilmRow | null;
   body: NewOrderInput | null;
   order: Order | null;
+  way: WayAnswer | null;
+  dollWay: WayAnswer | null;
   preview: ReturnType<typeof usePreview>;
   foreign: Order["pictures"];
   view: TreeView | null;
@@ -413,6 +424,8 @@ function Send({
           </span>
           {doll.treePicture ? <span className="text-xs text-[#f0b07a]">A2.3-bilden blir den som gäller i Material, inte trädets egen ({doll.treePicture}).</span> : null}
         </div>
+        {/* said before the doll's film is made: a draft of a way that fell, or behind its pilot, cannot be approved */}
+        <WayChip way={dollWay} why />
         <Clash doll={doll} />
         {blocked ? <p className="text-sm text-[#f0b07a]">{blocked}</p> : null}
         {dolling.error ? <p role="alert" className="text-sm text-[#f0b07a]">{dolling.error}</p> : null}
@@ -449,6 +462,7 @@ function Send({
           </button>
         </p>
       ) : null}
+      {order ? <WayChip way={way} why /> : null}
       {order ? <PreviewOrder order={order} names={names} /> : null}
       <Foreign pictures={foreign} view={view} />
       {failure ? <p role="alert" className="text-sm text-[#f0b07a]">{failure.message}{failure.frozen ? " Svaret saknas; utkastet kan redan vara sparat. Försök igen med samma underlag för att få tillbaka det." : ""}</p> : null}

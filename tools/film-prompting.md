@@ -24,11 +24,16 @@ granskaren dömde annorlunda står båda.
 5. **Allt som syns i en bild eller film följer med.** Fel sko, en annan dealers hand, ett föremål: modellen kopierar
    det.
 6. **Två tagningar sållar, de avgör inget.** En metod blir regel först efter fler tagningar (§5).
-7. **Jakob dömer kortet, granskaren måtten.** Han har godkänt 11 av 22 givar och 16 av 21 returer (räknat ur
-   filmregistrets poster `paow-giv-*` 2026-11-13 på morgonen), och underkänt för kortets färg och vändning ("Här ändrar kortet färg
+7. **Jakob dömer kortet, granskaren måtten.** Han har underkänt för kortets färg och vändning ("Här ändrar kortet färg
    ungefär halvvägs", "två vridningsmoment", "ett blått spelkort"), för ett gult kort i slutet och för stelhet ("Hon är
    väldigt stel"); ett kort som skjuts längs filten har han godkänt (`p1-04`, cirka 790 px) (V). Mönstret är skattat
    (S).
+8. **Vilka sätt som håller räknas, de skrivs inte här.** `node tools/verdicts-per-method.ts` listar per steg vilka sätt
+   (recept, modell, mall, tur och retur, slag av referensfilm) som håller, vilka som föll med hans ord, och vilka som är
+   oprövade, räknat ur hans egna domar i banken och hans ja i Beslut om namngivna filmer (`beslut` i
+   `data/order-methods.json`; `--tagningar` visar filmerna, `--alla` även äldre mallar). Godkännandet
+   släpper en pilot av ett oprövat sätt och ingen till förrän han själv har dömt dess film; ett sätt som föll godkänns
+   inte förrän receptet är ändrat (`src/order-ways.ts`).
 
 ## 1. Reglerna med belägg
 

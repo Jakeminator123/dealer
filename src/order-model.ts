@@ -1299,6 +1299,11 @@ export type OrderAnswer = {
   owners?: Record<string, Owner | null>;
   /** Why "Hämta bilderna" would change a draft now (a waited picture holds, a newer anchor holds, the plan changed), or null. */
   refresh?: string | null;
+  /**
+   * The way the film is made and whether it holds, counted from Jakob's own verdicts (src/order-ways.ts): the short word a
+   * draft's row shows, and for a draft why it cannot be approved (stop, which also stands in problems). null for a still.
+   */
+  way?: import('./order-ways.ts').WayAnswer | null;
 };
 /** A dealer as the texts know her (data/dealers.json). */
 export type DealerLook = { id: string; name: string; look: string; paused?: string | null };

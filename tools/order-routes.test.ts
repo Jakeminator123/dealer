@@ -1182,6 +1182,9 @@ test('the line: a deal says its anchor, its seat and its card, and the recipe gi
   const earlier = await call('GET', frozenAddress);
   const frozen = await call('POST', `${frozenAddress}/approve`, { match: earlier.json.revision });
   assert.equal(frozen.status, 200, frozen.json.error);
+  // The frozen order is the pilot of its way (src/order-ways.ts): Jakob approves its film himself, so the way holds and the
+  // orders made the same way below are approved on their own merits.
+  post(root, `${again.id}-01`, { order: { id: again.id, take: 1 }, review: straight });
   const frozenFile = path.join(root, `data/orders/${again.id}.json`);
   const frozenBytes = await readFile(frozenFile);
   const archive = { by: 'Jakob', at: '2026-11-18T00:00:00Z', where: 'Karta' };
@@ -1517,4 +1520,52 @@ test('a film of a dealer’s own doll is never the default: the command names it
   assert.equal(dollFilm(root, 'paow', asked.input).id, 'docka-paow-2-3-p4c2');
   assert.throws(() => dollFilm(root, 'paow', { step: 'GIV-2.3', target: 'P4.C1' }), /Dockan paow har ingen film för READY-C>P4.C1.*den har READY-C>P4.C2/);
   assert.throws(() => newOrderOf(['paow', 'A2.3 - A3P4C2', '--docka', 'paow', '--no-reference']), /--docka väljer referensfilmen/);
+});
+
+// Jakob 2026-11-24 (docs/BESKED.md, "Bara sätt som håller, och en pilot först"): the approval lets ONE order of an untried
+// way through, and no second before he himself has judged its film; a way he rejected is refused until the recipe has
+// changed. The same answer for his click in Beställ and for the main agent on his mandate, and the draft's row carries
+// the reason. The words and the counting: tools/order-ways.test.ts.
+test('a pilot first: a second order of an untried way waits for Jakob\'s own verdict on the pilot\'s film, and a way that fell is refused', async (t) => {
+  const { root, call } = await lab(t);
+  const draft = async (more: Record<string, unknown> = {}) => { const made = await call('POST', '/api/orders', { body: { dealer: 'ada', step: 'VILA', ...more } }); assert.equal(made.status, 201, made.json?.error); return made.json; };
+  const approve = (o: { order: { id: string }; revision: string }) => call('POST', `/api/orders/${o.order.id}/approve`, { match: o.revision });
+  const shown = async (o: { order: { id: string } }) => (await call('GET', `/api/orders/${o.order.id}`)).json;
+  const pilot = await draft(), second = await draft();
+  // Nothing was made this way before: both drafts are untried, and either can be the pilot.
+  assert.deepEqual([pilot.way.state, pilot.way.chip, pilot.way.stop, pilot.problems, second.shown], ['oprövat', 'Oprövat: en pilot först', null, [], 'KLAR_ATT_TRYCKA']);
+  const piloted = await approve(pilot);
+  assert.equal(piloted.status, 200, piloted.json.error);
+
+  // The second is refused, by his click and by the main agent alike, and its row says why.
+  const early = await approve(second);
+  assert.equal(early.status, 409);
+  assert.equal(early.json.error.startsWith(`En pilot först: sättet är oprövat (WAN 3 · mall 12 · utan referensfilm), och piloten ${pilot.order.id} är redan godkänd. Dess film finns inte i banken än (tagningen står som GODKÄND)`), true, early.json.error);
+  await assert.rejects(orderStore(root, { now: () => new Date('2026-11-12T21:00:00Z') }).approve(second.order.id, second.revision, { by: 'huvudagent', mandate: 'Jakob 2026-11-13: beställ lämpliga filmer' }), (error: Error & { status?: number }) => error.status === 409 && error.message === early.json.error);
+  const waiting = await shown(second);
+  assert.deepEqual([waiting.shown, waiting.problems, waiting.way.stop, waiting.order.status], ['UTKAST', [early.json.error], early.json.error, 'UTKAST'], 'the draft says the reason and cannot be clicked');
+
+  // The pilot's film comes into the bank and is approved for him: not his verdict. The answer names the film and where he sees it.
+  const film = `${pilot.order.id}-01`, take = { order: { id: pilot.order.id, take: 1 }, motion: { kind: 'IDLE' } };
+  post(root, film, { ...take, review: { decision: 'ACCEPTED', userAccepted: false, provisional: { by: 'en oberoende granskare', at: '2026-11-12T20:00:00Z', mandate: 'Jakob 2026-11-13: domar åt honom', note: 'ser bra ut' } } });
+  const forHim = await approve(second);
+  assert.equal(forHim.status, 409);
+  assert.equal(forHim.json.error.includes(`Filmen ${film} väntar på Jakobs ögon (den är dömd åt honom, och det räknas inte): han ser och dömer den i Granska, /studio/granska/?tagning=${film}.`), true, forHim.json.error);
+
+  // He rejects it: the way fell, with his words and the day. A changed recipe is another way, and its first order goes through.
+  post(root, film, { ...take, review: { decision: 'REJECTED', userReview: 'Jakob 2026-11-12: Hon stirrar rakt fram.' } });
+  const fell = await approve(second);
+  assert.equal(fell.status, 409);
+  assert.equal(fell.json.error.startsWith(`Sättet föll och beställs inte igen: WAN 3 · mall 12 · utan referensfilm. Jakob underkände ${film} 2026-11-12 (”Hon stirrar rakt fram.”). Ändra receptet`), true, fell.json.error);
+  assert.deepEqual([(await shown(second)).way.state, (await shown(second)).way.chip], ['föll', 'Föll: Hon stirrar rakt fram.']);
+  const changed = await draft({ model: 'kling-4', duration: 4, takes: 1 });
+  assert.deepEqual([changed.way.words, changed.way.stop], ['Kling 4 · mall 12 · utan referensfilm', null]);
+  assert.equal((await approve(changed)).status, 200, 'the changed recipe\'s pilot');
+
+  // He approves the pilot's film himself: the way holds, and the second order is approved.
+  post(root, film, { ...take, review: { decision: 'ACCEPTED', userAccepted: true, userReview: 'Jakob 2026-11-12: Bra.' } });
+  const held = await shown(second);
+  assert.deepEqual([held.way.state, held.way.chip, held.problems, held.shown], ['håller', 'Håller', [], 'KLAR_ATT_TRYCKA']);
+  const approved = await approve(second);
+  assert.equal(approved.status, 200, approved.json.error);
 });

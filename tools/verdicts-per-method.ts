@@ -1,49 +1,55 @@
-// Jakob's own verdicts counted per ordering method (read only): every deal take of a dealer that came from an order in
-// Beställ, with the order's model, reference film, turn, and template, and his verdict on the deal part and on the
-// return part (the take's post in the register, review). One line per take, then a count per method. A provisional verdict
-// (not his) and an unjudged take count as not judged. A take whose film has been removed still counts: the register keeps
-// one row about his verdict on it (data/motions-removed.jsonl, tools/register-store.ts). The handbook's section 5 quotes
-// these counts; run this before a new round is chosen, because his verdicts and a reviewer's scores have differed on about
-// a third of the takes.
-//   node tools/verdicts-per-method.ts [dealer]        (default paow)
-import {readdirSync, readFileSync} from 'node:fs';
-import {motionRegister} from './register-store.ts';
+// Which ways of making a film can be used: the list, in plain text (read only). Per step (ingång, giv från A2.1, giv från
+// A2.3, retur, vila, hålkortet …) every way an approved film order was made with (src/order-ways.ts: the recipe of
+// data/order-methods.json plus model, template, tur och retur or not, the kind of reference film, closed card) and its
+// state, counted from Jakob's own verdicts in the bank: HÅLLER, FÖLL (with his words and date) or OPRÖVAT (with the film
+// that waits for his eyes). A verdict set for him is shown and never counted; his yes in Beslut about a named film
+// (data/order-methods.json beslut) counts where the film has no verdict of his own in Granska, and is said as that. The approval reads the same book
+// (tools/order-store.ts approve): one pilot of an untried way, none of a way that fell. Nothing is written by hand
+// anywhere: run this before a film is ordered (Jakob 2026-11-24, docs/BESKED.md "Bara sätt som håller, och en pilot först").
+//   node tools/verdicts-per-method.ts [dealer] [--tagningar] [--alla]
+//   dealer        only the ways that dealer's orders were made with (the state is still counted over every order)
+//   --tagningar   under each way, one line per film of the bank with its verdict
+//   --alla        also the ways of older templates, which no new order can be written with (history)
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {STEPS} from '../src/order-model.ts';
+import {WAY_STATES, beslutWords, orderable, pilotOf, reviewAddress, type WayRow} from '../src/order-ways.ts';
+import {orderStore} from './order-store.ts';
 
-type Verdict = {v: string; words: string} | null;
-const dealer = process.argv[2] ?? 'paow';
-const orders = new Map<string, any>();
-for (const f of readdirSync('data/orders')) { try { const o = JSON.parse(readFileSync(`data/orders/${f}`, 'utf8')); orders.set(o.id, o); } catch { /* not an order file */ } }
-const register = motionRegister(process.cwd()), posts = register.posts() as Map<string, any>;
-// His verdict on a removed take: the newest row kept for its id.
-const removed = new Map(register.removed().map(r => [r.id, r]));
-const word = (decision: unknown, acceptedAs: unknown) => decision === 'REJECTED' ? 'UNDERKÄND' : decision === 'ACCEPTED' ? (acceptedAs === 'MAIN' ? 'PRIMÄR' : acceptedAs === 'VARIANT' ? 'VARIANT' : 'GODKÄND') : null;
-const verdict = (id: string): Verdict => {
-  const post = posts.get(id);
-  if (!post) { const row = removed.get(id), v = row && !row.forHim && row.note ? word(row.decision, row.acceptedAs) : null; return v ? {v, words: `${row!.note.slice(0, 60)} (filmen borttagen)`} : null; }
-  const r = post.review ?? {};
-  if (r.provisional || !r.userReview) return null;
-  const v = word(r.decision, r.acceptedAs);
-  return v ? {v, words: String(r.userReview).replace(/^\S+ \d{4}-\d{2}-\d{2}: /, '').slice(0, 70)} : null;
-};
-const rows: {take: string; seat: string; method: string; deal: Verdict; back: Verdict}[] = [];
-for (const id of new Set([...posts.keys(), ...removed.keys()])) {
-  const m = /^(.+)-(\d\d)-deal$/.exec(id);
-  if (!m || !id.startsWith(`${dealer}-`)) continue;
-  const order = orders.get(m[1]); if (!order || order.motion?.target == null) continue;
-  const take = `${m[1]}-${m[2]}`, deal = verdict(`${take}-deal`), back = verdict(`${take}-return-ready`) ?? verdict(`${take}-return-idle`);
-  const ref = order.reference?.status === 'FINNS' ? ` + referens${order.reference.goesTo === order.motion.target && /plan|arkiv/.test(order.reference.clips?.[0] ?? '') ? '' : ' (annan pose)'}` : '';
-  rows.push({take: take.replace(`${dealer}-giv-2-1-`, ''), seat: String(order.motion.target).replace('.C1', ''), method: `${order.generation.model}${ref} · ${order.motion.side === 'BACK' ? 'stängt' : order.motion.flipAxis} · ${order.prompt.template}`, deal, back});
+const STATE_WORD = {håller: 'HÅLLER', föll: 'FÖLL', oprövat: 'OPRÖVAT'} as const;
+const short = (words: string | null, max = 110) => (words ? `”${words.length > max ? `${words.slice(0, max - 1).trimEnd()}…` : words}”` : '');
+
+/** The list as lines: a heading per step, a line per way, and with takes a line per film. */
+export function waysText(book: readonly WayRow[], options: {dealer?: string; takes?: boolean; all?: boolean} = {}): string[] {
+  const known = book.filter(r => !options.dealer || r.dealers.includes(options.dealer)), rows = known.filter(r => options.all || orderable(r.way));
+  const stepAt = (r: WayRow) => STEPS.findIndex(s => s.key === r.way.step);
+  rows.sort((a, b) => stepAt(a) - stepAt(b) || a.step.localeCompare(b.step, 'sv') || WAY_STATES.indexOf(a.state) - WAY_STATES.indexOf(b.state) || b.yes + b.no - (a.yes + a.no) || a.words.localeCompare(b.words, 'sv'));
+  const out = ['Sätten att göra en film, per steg. Läget räknas ur Jakobs egna domar i Granska och hans ja i Beslut om namngivna filmer; domar satta åt honom räknas inte.', 'HÅLLER: beställs fritt.  FÖLL: beställs inte igen.  OPRÖVAT: en pilot först, nästa när han har dömt den.'];
+  let step = '';
+  for (const r of rows) {
+    if (r.step !== step) { step = r.step; out.push('', step); }
+    const deal = r.way.step.startsWith('GIV-'), judged = r.yes + r.no;
+    const counts = [
+      judged ? `${deal ? 'given' : 'filmen'} godkänd ${r.yes} av ${judged}${r.beslut.yes ? ` (${r.beslut.yes} ja är ${beslutWords(r.beslut.days)})` : ''}` : 'ingen film dömd av honom',
+      ...(r.back.yes + r.back.no ? [`returen ${r.back.yes} av ${r.back.yes + r.back.no}`] : []),
+      ...(r.forHim.yes + r.forHim.no ? [`dömda åt honom: ${r.forHim.yes} ja, ${r.forHim.no} nej`] : []),
+      `${r.orders.length} order`,
+    ].join(' · ');
+    out.push(`  ${STATE_WORD[r.state].padEnd(8)} ${r.words}`, `           ${counts}`);
+    if (r.said) out.push(`           Jakob${r.said.from === 'beslut' ? ' i Beslut' : ''}${r.said.at ? ` ${r.said.at}` : ''} om ${r.said.film}: ${short(r.said.words) || (r.state === 'föll' ? 'underkänd' : 'godkänd')}`);
+    if (r.state === 'oprövat') {
+      const pilot = pilotOf(r)?.pilot;
+      out.push(`           ${!pilot ? 'ingen pilot är godkänd: nästa order är piloten' : pilot.film ? `väntar på hans ögon: ${pilot.film}${pilot.forHim ? ' (dömd åt honom)' : ''}, ${reviewAddress(pilot.film)}` : `piloten ${pilot.order} är godkänd; dess film finns inte i banken än (${[...new Set(pilot.takes)].join(', ')})`}`);
+    }
+    if (options.takes) for (const f of r.films) out.push(`             ${f.film.padEnd(44)} ${f.part.padEnd(5)} ${(f.his ? `${f.from === 'beslut' ? 'Beslut' : 'Jakob'}: ${f.his}` : f.forHim ? `åt honom: ${f.forHim}` : 'ej dömd').padEnd(14)} ${f.at ?? ''} ${short(f.words, 80)}`.trimEnd());
+  }
+  const n = (state: WayRow['state']) => rows.filter(r => r.state === state).length;
+  out.push('', `${rows.length} sätt: ${n('håller')} håller, ${n('föll')} föll, ${n('oprövat')} oprövade.${known.length > rows.length ? ` ${known.length - rows.length} äldre sätt, med mallar som ingen ny order skrivs med, visas med --alla.` : ''}`);
+  return out;
 }
-rows.sort((a, b) => a.method.localeCompare(b.method) || a.take.localeCompare(b.take));
-const yes = (v: Verdict) => !!v && v.v !== 'UNDERKÄND';
-const by = new Map<string, {dealYes: number; dealNo: number; backYes: number; backNo: number; open: number}>();
-for (const r of rows) {
-  const key = r.method.replace(/ · film-giv[a-zö-]*@\d+$/, '');
-  const c = by.get(key) ?? {dealYes: 0, dealNo: 0, backYes: 0, backNo: 0, open: 0};
-  if (r.deal) { if (yes(r.deal)) c.dealYes++; else c.dealNo++; } else c.open++;
-  if (r.back) { if (yes(r.back)) c.backYes++; else c.backNo++; }
-  by.set(key, c);
-  console.log(`${r.seat.padEnd(5)} ${r.take.padEnd(14)} ${r.method.padEnd(60)} giv: ${(r.deal?.v ?? 'ej dömd').padEnd(10)} retur: ${(r.back?.v ?? 'ej dömd').padEnd(10)} ${r.deal?.words ?? ''}`);
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const args = process.argv.slice(2), dealer = args.find(a => !a.startsWith('--'));
+  const {book} = await orderStore(process.cwd()).ways();
+  console.log(waysText(book, {dealer, takes: args.includes('--tagningar'), all: args.includes('--alla')}).join('\n'));
 }
-console.log('\nPer metod (Jakobs domar; godkänd = Primär, Godkänd eller Variant):');
-for (const [k, c] of [...by].sort((a, b) => (b[1].dealYes + b[1].dealNo) - (a[1].dealYes + a[1].dealNo))) console.log(`  ${k.padEnd(46)} given ${c.dealYes} av ${c.dealYes + c.dealNo}${c.open ? ` (+${c.open} ej dömda)` : ''} · returen ${c.backYes} av ${c.backYes + c.backNo}`);

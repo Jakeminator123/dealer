@@ -12,6 +12,7 @@ import { swedishMoment } from "../../lib/mode.ts";
 import { cardCode } from "../../lib/names.ts";
 import { SHOWN_CHIP, offsetWords, ownerWords, shownWords, type OrderAnswer, type Owner, type Picture } from "../../lib/orders.ts";
 import type { Drawn } from "../../../src/order-model.ts";
+import type { WayAnswer } from "../../../src/order-ways.ts";
 import { CARD_COLOUR } from "../../../src/placement-model.ts";
 import { CardMark } from "../placement/CardMark";
 import { Badge, IconButton, cn } from "../ui";
@@ -48,6 +49,25 @@ export function StatusChip({ answer, size = "sm" }: { answer: Pick<OrderAnswer, 
     <Badge tone={chip.tone} size={size}>
       <span aria-hidden>{chip.sign}</span> {shownWords(answer)}
     </Badge>
+  );
+}
+
+const WAY_TONE = { håller: "ok", föll: "bad", oprövat: "wait" } as const;
+/**
+ * Whether the way a film is made holds, by the recipe (src/order-ways.ts, counted from Jakob's own verdicts): "Håller",
+ * "Föll: <his words>" or "Oprövat: en pilot först", then the way in a line. `why`: also the reason an approval stops, where
+ * the page shows it nowhere else.
+ */
+export function WayChip({ way, why = false, className }: { way: WayAnswer | null | undefined; why?: boolean; className?: string }) {
+  if (!way) return null;
+  return (
+    <div data-way={way.state} className={cn("flex min-w-0 flex-col gap-1", className)}>
+      <p className="flex min-w-0 items-center gap-2 text-xs text-dim" title={way.stop ?? way.basis}>
+        <Badge tone={WAY_TONE[way.state]} className="max-w-full shrink overflow-hidden text-ellipsis">{way.chip}</Badge>
+        <span className="truncate">{way.words}</span>
+      </p>
+      {why && way.stop ? <p data-way-stop className="rounded-sm bg-[#3a2a1a] px-2.5 py-1.5 text-sm text-[#f0b07a]">{way.stop}</p> : null}
+    </div>
   );
 }
 

@@ -5,6 +5,7 @@
 // say what a film is between, and the store, Bordet and the production list all take their defaults from recipeFor here.
 // A recipe gives defaults and tells what has been tried: neither its status nor its reference film rule stops an order
 // (Jakob 2026-11-23, docs/BESKED.md "Rensa bort regler och låsningar som blockerar"; every status was set by an agent).
+// What an approval asks is whether the WAY holds, counted from his own verdicts on the films (src/order-ways.ts, Jakob 2026-11-24).
 // Pure: the register's check against the steps, models and styles that exist, the recipe for a step and a seat, the reference
 // film the recipe's rule finds (referenceByRule), the film's length (secondsOf), and the words the production list
 // (tools/produce.ts), Karta (tools/dealer-tree.ts) and Bordet show. No fs, no network. Tests: tools/order-line.test.ts,
@@ -90,7 +91,14 @@ export type Method = {
   setBy: string;
   setAt: string;
 };
-export type MethodRegister = { about: string; schemaVersion: 1; methods: Method[] };
+/**
+ * Jakob's own yes in Beslut about named films: a card he answered (data/decisions.json, taken out once it is carried out).
+ * It is his word about the way those films were made: src/order-ways.ts counts each film as his own yes where it has no
+ * verdict of his own in Granska (one there goes first). The films' verdict blocks in the bank are his and stay as they are.
+ * words: his answer word for word; source: the card, the commit that took it out and where his words stand.
+ */
+export type BeslutYes = { card: string; at: string; question: string; words: string; source: string; films: string[] };
+export type MethodRegister = { about: string; schemaVersion: 1; methods: Method[]; beslut?: BeslutYes[] };
 
 /** The class of a card's seat: P3–P5 the middle, P1, P2, P6, P7 the far seats, D.* the dealer's own. */
 export function seatClass(target: string | null | undefined): SeatClass | null {
@@ -115,7 +123,8 @@ export function lastPictureOf(step: Pick<StepDef, 'kind' | 'card' | 'start' | 'c
  * The register as read, or null with every fault: each method names a step that exists; a model that can make that step
  * and is still offered, a resolution and seconds the model takes, a style of that step, today's template, 1–4 takes (one
  * for a trial); a seat class only for a step with a seat; gäller and prov carry a whole recipe; the last picture is the
- * one the step's shape has; no two methods for the same step and class.
+ * one the step's shape has; no two methods for the same step and class; a yes in Beslut names its card, the day, his
+ * words, where they stand, and the films.
  */
 export function readMethods(value: unknown): { register: MethodRegister | null; errors: string[] } {
   const errors: string[] = [];
@@ -176,6 +185,16 @@ export function readMethods(value: unknown): { register: MethodRegister | null; 
     if (!isObject(e) || !Array.isArray(e.orders) || !Array.isArray(e.reviewer) || !Array.isArray(e.owner) || typeof e.note !== 'string') errors.push(`${at}: evidence ska ha orders, reviewer, owner och note.`);
     else if (e.owner.some((o) => !isObject(o) || typeof o.take !== 'string' || typeof o.words !== 'string' || !/^\S+ \d{4}-\d{2}-\d{2}: /.test(o.words))) errors.push(`${at}: Jakobs ord citeras som de står i review.userReview ("Jakob 2026-11-13: …"), med tagningen.`);
     if (typeof m.setBy !== 'string' || !m.setBy.trim() || typeof m.setAt !== 'string' || !/^\d{4}-\d{2}-\d{2}/.test(m.setAt)) errors.push(`${at}: setBy och setAt (vem och när) krävs.`);
+  });
+  if (value.beslut !== undefined && !Array.isArray(value.beslut)) errors.push('beslut ska vara en lista.');
+  else (value.beslut as unknown[] | undefined)?.forEach((raw, i) => {
+    const at = `beslut[${i}]`;
+    if (!isObject(raw)) return void errors.push(`${at}: inte ett objekt.`);
+    const b = raw as Partial<BeslutYes>;
+    if (typeof b.card !== 'string' || !ID.test(b.card)) errors.push(`${at}: card ska vara Beslut-kortets id.`);
+    if (typeof b.at !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(b.at)) errors.push(`${at}: at ska vara dagen han svarade (ÅÅÅÅ-MM-DD).`);
+    if (![b.question, b.words, b.source].every((s) => typeof s === 'string' && !!s.trim())) errors.push(`${at}: question, words (hans svar ordagrant) och source (kortet och var hans ord står) krävs.`);
+    if (!Array.isArray(b.films) || !b.films.length || b.films.some((f) => typeof f !== 'string' || !ID.test(f))) errors.push(`${at}: films ska vara filmerna som hans svar gällde.`);
   });
   return { register: errors.length ? null : (value as unknown as MethodRegister), errors };
 }

@@ -4,10 +4,10 @@ Huvudagentens bana: vägen från bild till dealer, beställningen, efterarbetet,
 utfall står i handboken (`tools/film-prompting.md` §5), historien i Git.
 
 **Läget.**
-- En film beställs i Bordets guide Ny film (receptet i `data/order-methods.json` ger resten) eller med
-  `node tools/order-new.ts paow "A2.3 - A3P4C2"`, som gör samma utkast. Huvudagenten godkänner
-  (`tools/order-approve.ts`) och en beställare lägger kön (`tools/order-clerk.md`). Mall 12; given från A2.3 mall 14,
-  giv och återgång mall 15.
+- En film beställs i Bordets guide Ny film (receptet i `data/order-methods.json`) eller med
+  `node tools/order-new.ts paow "A2.3 - A3P4C2"`. Huvudagenten godkänner (`tools/order-approve.ts`), en beställare
+  lägger kön (`tools/order-clerk.md`). Godkännandet släpper EN pilot av ett oprövat sätt och inget som föll; sätten,
+  räknade ur Jakobs egna domar: `node tools/verdicts-per-method.ts`.
 - Metoden som håller (Jakob 2026-11-23): giv och återgång i EN film på Kling 4, 4 s, första bild A2.3, sista bild
   samma med kortet på platsen, dockans film med plan hand i 24 rutor/s som referensfilm. `node tools/order-bring.ts`
   delar den där handen börjar gå tillbaka och sparar given och returen i banken.
