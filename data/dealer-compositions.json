@@ -38,7 +38,11 @@
             },
             {
               "tree": "casino",
-              "share": 0
+              "share": 35
+            },
+            {
+              "tree": "tatuerad-nyp",
+              "share": 70
             }
           ],
           "bridges": [
