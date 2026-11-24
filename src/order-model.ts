@@ -313,7 +313,7 @@ export type Order = {
    * its own (an A3, a bank film's frame): a sent text is history, so it is reproduced from this and never from the plan of
    * now (tools/order-store.ts textOf, src/order-prompts.ts orderPrompt). Absent on orders written before 2026-11-18.
    */
-  /** faceMark: the last picture showed the blue side's marks when the text was written, and the text says them (tools/order-store.ts textOf). backMark: the order was made for a first picture with a mark on the yellow back, and the text says it (a trial; set when the draft is made). */
+  /** faceMark: the last picture showed the blue side's marks when the text was written, and the text says them (tools/order-store.ts textOf). backMark: the first picture showed the yellow side's marks on the card in the shoe's window when the text was written, and the text says them (tools/order-images.ts backMarkSeen). */
   prompt: { template: string; style?: TextStyle; text: string; sha256: string; extra: string | null; middle: boolean; place?: [number, number] | null; faceMark?: boolean; backMark?: boolean };
   takes: number;
   cost: { perTake: number; total: number; worstPerTake: number; worstTotal: number; basis: string };
@@ -1138,14 +1138,6 @@ export function shownOf(order: Order, problems: readonly string[], receipt: Rece
   return live.reduce((a, b) => (TAKE_FLOW.indexOf(a as (typeof TAKE_FLOW)[number]) <= TAKE_FLOW.indexOf(b as (typeof TAKE_FLOW)[number]) ? a : b));
 }
 
-/** What keeps a draft from being approved, in words (pictures waiting, files missing, text missing). Pure part only. */
-/**
- * The return to 2.3 (2026-11-21): its last picture is anchor 2.3 with the card drawn where the plan lays it, so one take, a
- * trial, can be approved; a series waits until a trial has held (the card stays where it lies through the return).
- */
-export const RETURN_23_BLOCK = 'En serie returer till 2.3 kan inte godkännas ännu: först ska ett prov, en tagning, visa att kortet ligger kvar genom returen.';
-export const RETURN_23_TRIAL = 'Returprovet är en tagning och kan godkännas; en serie väntar tills provet har hållit.';
-const returnSeries = (o: { step?: { key?: string } | null; takes?: unknown }) => o.step?.key === 'RETUR-2.3' && Number(o.takes) > 1;
 export const SHORT_TWO_HAND_TURN_HELP = 'KORT för GIV-2.3 vänder över kortänden. Välj MINIMAL för att låta referensfilmen styra vändningen.';
 
 export function shortTwoHandTurnProblem(step: StepKey, style: TextStyle | undefined, turn: boolean | undefined, axis: FlipAxis | null | undefined): string | null {
@@ -1171,9 +1163,13 @@ export function twoHandDraftProblem({ status, approval, step, motion }: Pick<Ord
 export const HAND_PASS_FROM_23 = 'Handbyte ges från A2.3 sedan 21 november: ett utkast från A2.1 med handbyte godkänns inte. Lägg det åt sidan och beställ kortet från A2.3.';
 const oldHandPassDraft = (o: Pick<Order, 'status' | 'approval' | 'step' | 'motion'>) => o.status === 'UTKAST' && !o.approval && o.step.key === 'GIV-2.1' && !!o.motion?.pass;
 
+/**
+ * What keeps a draft from being approved, in words (pictures waiting, files missing, text missing). Pure part only. How many
+ * takes a trial has is the recipe's (data/order-methods.json, one per trial), and whether an untried way may be ordered again
+ * is the pilot's (src/order-ways.ts): no step has a stop of its own for either.
+ */
 export function draftProblems(order: Order): string[] {
   const out: string[] = [];
-  if (returnSeries(order)) out.push(RETURN_23_BLOCK);
   if (order.status === 'UTKAST') {
     const problem = twoHandDealSideProblem(order) ?? shortTwoHandTurnProblem(order.step.key, order.prompt.style, order.motion?.turn, order.motion?.flipAxis);
     if (problem) out.push(problem);
@@ -1276,7 +1272,6 @@ export function validateOrder(value: unknown): { order: Order | null; errors: st
   else if (o.approval && o.approval.by === 'huvudagent' && (typeof o.approval.mandate !== 'string' || !o.approval.mandate.trim() || o.approval.mandate.length > 300)) errors.push('approval: huvudagentens godkännande bär sitt uppdrag (mandate: vems ord och när).');
   if (o.setAside != null && (!isObject(o.setAside) || typeof o.setAside.why !== 'string' || !o.setAside.why.trim() || typeof o.setAside.at !== 'string' || o.status !== 'AVBRUTEN')) errors.push('setAside: en avbruten beställning säger när och varför (why).');
   if (o.status === 'GODKÄND' && !o.approval) errors.push('En godkänd beställning måste ha approval.');
-  if (o.status === 'GODKÄND' && returnSeries(o)) errors.push(RETURN_23_BLOCK);
   if (o.status === 'UTKAST' && o.approval) errors.push('Ett utkast har ingen approval.');
   if (!Array.isArray(o.notes)) errors.push('notes ska vara en lista.');
   return { order: errors.length ? null : (o as Order), errors };

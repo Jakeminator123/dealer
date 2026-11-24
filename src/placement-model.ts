@@ -78,7 +78,8 @@ export const WINDOW_CARD: Readonly<Record<View, readonly {x:number;y:number}[]>>
 // The film card's four colours, kept here and nowhere else (Jakob 2026-11-20: "Spara RGB-färgen för det gula, blåa, kryssets
 // färg och den lilla cirkelns färg på alla kort"): the yellow and the blue above, and the two marks on the blue side, a small
 // pink cross in its middle and a small red circle in one corner, so that a film cannot show the wrong side of the card in the
-// right colour, and so that the card's turn and angle can be read off the cross. The yellow side carries nothing.
+// right colour, and so that the card's turn and angle can be read off the cross. The yellow side carries the opposite marks
+// in the same two colours (CARD_MARK.back).
 export type Rgb3 = readonly [number, number, number];
 export const CARD_RGB: Readonly<Record<'back' | 'face' | 'cross' | 'dot', Rgb3>> = { back: [241, 216, 0], face: [0, 130, 218], cross: [255, 120, 200], dot: [225, 30, 35] };
 const hexOf = (c: Rgb3) => `#${c.map((v) => v.toString(16).padStart(2, '0')).join('')}`;
@@ -88,22 +89,34 @@ export const MARK_COLOUR: Readonly<Record<'cross' | 'dot', string>> = { cross: h
 // square and are `stroke` wide (about 21 mm across, 4 mm wide); the circle has radius `radius` and its middle lies `inset` in
 // from both sides of one corner (9 mm across, 13 mm in), so that blue goes all round it and the card's outline stays whole.
 // `long` is the card's long side in widths (88 mm).
-export const CARD_MARK = { long: 88 / 63, cross: { arm: 0.17, stroke: 0.07 }, dot: { radius: 0.075, inset: 0.2 } } as const;
+//
+// `back` is the yellow side's marks, the opposite ones in the same two colours (Jakob 2026-11-23: "samma RGB ... men motsatta
+// symboler"; 2026-11-24: "EN OCH SAMMA TYP AV KORT för respektive sida"): a filled red circle of radius `radius` in the card's
+// middle (20 mm across) and a pink cross on the card's middle line, its middle `inset` in from one short side (13 mm), its
+// arms and stroke measured as the blue side's (20 mm across, 3.5 mm wide). The cross lies at the short side the blue side's
+// circle lies at: the lower end of the card in the shoe's window, the one her hand leaves free. Measured on A2.3's card in
+// that window (assets/anchors/paow-ankare-2-3-marke), whose marks are drawn in the picture's pixels: carried back through the
+// card's perspective the radius and the arm are 0.13–0.21 widths, the stroke 0.045–0.07 and the inset 0.20–0.23, by direction
+// and by which reading of the card's corners is used; these are the middle values.
+export const CARD_MARK = { long: 88 / 63, cross: { arm: 0.17, stroke: 0.07 }, dot: { radius: 0.075, inset: 0.2 }, back: { dot: { radius: 0.16 }, cross: { arm: 0.16, stroke: 0.055, inset: 0.21 } } } as const;
 /**
- * The marks of a card's blue side as shapes in the picture, for a card drawn as four corners far left, far right, near
- * right, near left (src/card-plan.ts planCardQuad): the cross's two arms and the circle, each a polygon, laid through the
- * same perspective as the corners. The first side (far left to far right) is read as the card's short side, as the plan's
- * cards lie; the circle sits at the near left corner, the one furthest from her fingertips in a landing picture.
+ * The marks of a card's side as shapes in the picture, for a card drawn as four corners far left, far right, near right,
+ * near left (src/card-plan.ts planCardQuad): the cross's two arms and the circle, each a polygon, laid through the same
+ * perspective as the corners. The first side (far left to far right) is read as the card's short side, as the plan's cards
+ * lie. The blue side (the one where `side` is left out): the cross in the middle and the circle at the near left corner, the
+ * one furthest from her fingertips in a landing picture. The yellow side: the circle in the middle and the cross on the
+ * middle line near the near short side, the lower end of the card standing in the shoe's window.
  */
-export function cardMark(quad: readonly { x: number; y: number }[]): { cross: { x: number; y: number }[][]; dot: { x: number; y: number }[] } {
-  const [p0, p1, p2, p3] = quad, M = CARD_MARK;
+export function cardMark(quad: readonly { x: number; y: number }[], side: Side = 'FRONT'): { cross: { x: number; y: number }[][]; dot: { x: number; y: number }[] } {
+  const [p0, p1, p2, p3] = quad, back = side === 'BACK', M = back ? { long: CARD_MARK.long, cross: CARD_MARK.back.cross, dot: CARD_MARK.back.dot } : CARD_MARK;
   const dx1 = p1.x - p2.x, dx2 = p3.x - p2.x, sx = p0.x - p1.x + p2.x - p3.x, dy1 = p1.y - p2.y, dy2 = p3.y - p2.y, sy = p0.y - p1.y + p2.y - p3.y;
   const den = dx1 * dy2 - dx2 * dy1 || 1, g = (sx * dy2 - dx2 * sy) / den, h = (dx1 * sy - sx * dy1) / den;
   // a point of the card in widths (x across 0–1, y along 0–long) to the picture
   const at = (x: number, y: number) => { const s = x, t = y / M.long, w = g * s + h * t + 1; return { x: ((p1.x - p0.x + g * p1.x) * s + (p3.x - p0.x + h * p3.x) * t + p0.x) / w, y: ((p1.y - p0.y + g * p1.y) * s + (p3.y - p0.y + h * p3.y) * t + p0.y) / w }; };
-  const cx = 0.5, cy = M.long / 2, a = M.cross.arm * Math.SQRT1_2, k = (M.cross.stroke / 2) * Math.SQRT1_2;
+  const cx = 0.5, cy = back ? M.long - CARD_MARK.back.cross.inset : M.long / 2, a = M.cross.arm * Math.SQRT1_2, k = (M.cross.stroke / 2) * Math.SQRT1_2;
   const arm = (d: 1 | -1) => [at(cx - a * d - k * d, cy - a + k), at(cx - a * d + k * d, cy - a - k), at(cx + a * d + k * d, cy + a - k), at(cx + a * d - k * d, cy + a + k)];
-  const dot = Array.from({ length: 20 }, (_, i) => at(M.dot.inset + M.dot.radius * Math.cos((i * Math.PI) / 10), M.long - M.dot.inset + M.dot.radius * Math.sin((i * Math.PI) / 10)));
+  const mx = back ? 0.5 : CARD_MARK.dot.inset, my = back ? M.long / 2 : M.long - CARD_MARK.dot.inset, n = back ? 28 : 20;
+  const dot = Array.from({ length: n }, (_, i) => at(mx + M.dot.radius * Math.cos((i * 2 * Math.PI) / n), my + M.dot.radius * Math.sin((i * 2 * Math.PI) / n)));
   return { cross: [arm(1), arm(-1)], dot };
 }
 export const otherHand = (h: Hand): Hand => h==='LH'?'RH':'LH';

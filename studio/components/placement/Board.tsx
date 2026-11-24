@@ -41,9 +41,9 @@ const pts = (q: readonly Pt[]) => q.map((p) => `${p.x},${p.y}`).join(" ");
 type Grip = "move" | "turn" | "size" | "taper";
 
 /**
- * Every card on the stage, one shape: plain yellow (closed) or blue (open), the films' own colours (CARD_COLOUR), with
- * rounded corners and no rim (Jakob 2026-11-17); the blue side carries its pink cross and red circle (CardMark, Jakob
- * 2026-11-20). `grow` widens it by that many picture pixels all round (the shoe's card,
+ * Every card on the stage, one shape: yellow (closed) or blue (open), the films' own colours (CARD_COLOUR), with
+ * rounded corners and no rim (Jakob 2026-11-17); each side carries its own marks, the same on every card (CardMark, Jakob
+ * 2026-11-20 and 2026-11-24). `grow` widens it by that many picture pixels all round (the shoe's card,
  * to cover the backdrop's pale window edge).
  */
 export function CardShape({ quad, side, grow = 0, ...rest }: { quad: readonly Pt[]; side: Side; grow?: number } & Omit<SVGProps<SVGPathElement>, "d" | "fill" | "stroke">) {
@@ -51,7 +51,7 @@ export function CardShape({ quad, side, grow = 0, ...rest }: { quad: readonly Pt
   return (
     <>
       <path d={cardPath(quad)} fill={colour} stroke={grow ? colour : "none"} strokeWidth={grow * 2} strokeLinejoin="round" {...rest} />
-      {side === "FRONT" ? <CardMark quad={quad} /> : null}
+      <CardMark quad={quad} side={side} />
     </>
   );
 }
@@ -113,7 +113,7 @@ export function Board({
   grid: boolean;
   changed: ReadonlySet<Place>;
   backdrop: Backdrop;
-  /** Paint the card in the shoe's window plain yellow over the doll picture's film card and the window's pale edge; false under a film, which shows its own card. */
+  /** Paint the card in the shoe's window yellow with its marks over the doll picture's film card and the window's pale edge; false under a film, which shows its own card. */
   shoeCard: boolean;
   path: PathRun | null;
   onPhase: (phase: PathPhase) => void;
@@ -329,7 +329,7 @@ export function Board({
           </defs>
           {grid ? <rect width="100%" height="100%" fill="url(#placering-grid)" pointerEvents="none" /> : null}
           {shoeCard ? (
-            // the card standing in the shoe's window, plain yellow as in the films with no pale rim round it: the films' card
+            // the card standing in the shoe's window, yellow with its marks as in the films and no pale rim round it: the films' card
             // (WINDOW_CARD), where it hides the pale window edge of the doll's picture
             <CardShape quad={windowCard(plan, view)} side="BACK" grow={2} pointerEvents="none">
               <title>Kortet i skon · stängt</title>

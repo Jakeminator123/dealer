@@ -13,14 +13,14 @@
 //
 // The measure, per tree, with the tree's anchor at the shoe (its first A2.x anchor; A2.1 when it has none):
 //   vila A1 → A1 · ingång A1 → A2.x · 16 givar A2.x → A3 (P1–P7 kort 1 och 2, dealerns DC1 och DC2) · 16 returer A3 → A2.x
-//   · utgång A2.x → A1 · hålkortet A1 → DC2 upp.
+//   · utgång A2.x → A1 · hålkortet A1 → DC1 upp.
 // The return A3 → A1 is not counted: a round goes back to the shoe and leaves by the exit. DC3, Borta and the seats' side
 // cameras are not counted. A tree's other A2.x anchors stand in for a step its own anchor lacks (Casino gives P6C1 from A2.2).
 //
 // A step's state: finns (a film Primär, Godkänd or Variant, his or given for him), prov (a film delivered and not yet judged,
 // or an order delivered that is not in the bank yet), saknas (nothing, or only films judged Inte bra). Verdicts and Primär
 // are read, never set. The film a step shows among several approved is the one the game plays there in the tree (gameFilm).
-import { REVEAL_NODE, buildGraph, dealHub, parseEdge, resolveRound, type BankData, type Graph, type Segment } from './clip-graph.ts';
+import { HOLE_CARD, REVEAL_NODE, buildGraph, dealHub, parseEdge, resolveRound, type BankData, type Graph, type Segment } from './clip-graph.ts';
 import { SEAT_HUB, hubChain, judgedBank } from './game-director.ts';
 
 // ── The register ────────────────────────────────────────────────────────────
@@ -61,8 +61,8 @@ export const isCard = (node: string): boolean => CARD.test(node);
 const HUBS = new Set(['IDLE', 'READY', 'READY-B', 'READY-C']);
 export const isAnchorAtShoe = (node: string): boolean => node === 'READY' || node === 'READY-B' || node === 'READY-C';
 // The same short codes as the studio's words (studio/lib/words.ts ANCHOR_WORDS, studio/lib/names.ts nodeCode).
-const CODE: Record<string, string> = { IDLE: 'A1', READY: 'A2.1', 'READY-B': 'A2.2', 'READY-C': 'A2.3', AWAY: 'Borta', [REVEAL_NODE]: 'DC2 upp' };
-/** A node as he writes it: A1, A2.1, A2.3, A3P4C1, A3DC1, Borta, DC2 upp; seen from a seat, S2-A2.2. */
+const CODE: Record<string, string> = { IDLE: 'A1', READY: 'A2.1', 'READY-B': 'A2.2', 'READY-C': 'A2.3', AWAY: 'Borta', [REVEAL_NODE]: 'DC1 upp' };
+/** A node as he writes it: A1, A2.1, A2.3, A3P4C1, A3DC1, Borta, DC1 upp; seen from a seat, S2-A2.2. */
 export const nodeCode = (node: string, seat?: number): string => `${seat ? `S${seat}-` : ''}${CODE[node] ?? (isCard(node) ? `A3${node.replace('.', '')}` : node)}`;
 /** A step in his words: "A2.3 → A3P4C2". */
 export const stepName = (from: string, to: string): string => `${nodeCode(from)} → ${nodeCode(to)}`;
@@ -98,7 +98,7 @@ export function measure(hub: string): MeasureStep[] {
     ...MEASURE_CARDS.map((c) => measureStep(hub, c, 'giv', c)),
     ...MEASURE_CARDS.map((c) => measureStep(c, hub, 'retur', c)),
     measureStep(hub, 'IDLE', 'utgang'),
-    measureStep('IDLE', REVEAL_NODE, 'halkort', 'D.C2'),
+    measureStep('IDLE', REVEAL_NODE, 'halkort', HOLE_CARD),
   ];
 }
 

@@ -61,7 +61,7 @@ function StepPicture({ row, plan }: { row: ProductionRow; plan: PlanAnswer | nul
               <g key={i}>
                 <circle cx={cx} cy={cy} r={95} fill="none" stroke="#e8cb85" strokeWidth={9} opacity={0.9} />
                 <polygon points={c.quad.map((q) => q.join(",")).join(" ")} fill={CARD_FILL[c.side]} stroke={CARD_FILL[c.side]} strokeWidth={4} strokeLinejoin="round" />
-                {c.side === "FRONT" ? <CardMark quad={c.quad} /> : null}
+                <CardMark quad={c.quad} side={c.side} />
               </g>
             );
           })}

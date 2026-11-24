@@ -27,7 +27,7 @@ const COLOUR = {
 };
 const v3 = (p: Vec3) => new T.Vector3(p[0], p[1], p[2]), UP = new T.Vector3(0, 1, 0);
 
-/** A card: a thin body with rounded corners, the yellow back on one side and the blue face with Kortplan's marks on the other. Local x across, y out of the face, z along the long side. */
+/** A card: a thin body with rounded corners, the yellow back on one side and the blue face on the other, each with Kortplan's marks for that side. Local x across, y out of the face, z along the long side. */
 function cardMesh(): T.Group {
   const w = CARD.width / 2, h = CARD.height / 2, r = CARD.corner, shape = new T.Shape();
   shape.moveTo(-w + r, -h); shape.lineTo(w - r, -h); shape.absarc(w - r, -h + r, r, -Math.PI / 2, 0, false); shape.lineTo(w, h - r); shape.absarc(w - r, h - r, r, 0, Math.PI / 2, false);
@@ -44,6 +44,12 @@ function cardMesh(): T.Group {
   const W = CARD.width, M = CARD_MARKS, lift = CARD.thickness / 2 + 0.00009;
   for (const turn of [1, -1]) add(new T.PlaneGeometry(M.cross.stroke * W, 2 * M.cross.arm * W).rotateZ(turn * Math.PI / 4), side(M.cross.colour), lift);
   add(new T.CircleGeometry(M.dot.radius * W, 24).translate(w - M.dot.inset * W, -(h - M.dot.inset * W), 0), side(M.dot.colour), lift);
+  // The yellow side's marks, the opposite ones in the same colours (Jakob 2026-11-23 and 2026-11-24): a filled red circle in
+  // the middle and a pink cross near the short side the blue side's circle lies at (-z): the lower end of the card in the
+  // shoe, whose long side runs up the plate, so the end that shows in the window under her fingers, as A2.3 has it.
+  const B = M.back, end = -(h - B.cross.inset * W);
+  add(new T.CircleGeometry(B.dot.radius * W, 32), side(M.dot.colour), -lift);
+  for (const turn of [1, -1]) add(new T.PlaneGeometry(B.cross.stroke * W, 2 * B.cross.arm * W).rotateZ(turn * Math.PI / 4).translate(0, end, 0), side(M.cross.colour), -lift);
   g.matrixAutoUpdate = false; return g;
 }
 const place = (o: T.Object3D, x: Vec3, y: Vec3, z: Vec3, at: Vec3) => { o.matrix.makeBasis(v3(x), v3(y), v3(z)).setPosition(v3(at)); o.matrixWorldNeedsUpdate = true; };

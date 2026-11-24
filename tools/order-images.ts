@@ -14,7 +14,7 @@ import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
-import { CARD_RGB, cardMark, validatePlan, type PlacementPlan } from '../src/placement-model.ts';
+import { CARD_RGB, WINDOW_CARD, cardMark, validatePlan, type PlacementPlan } from '../src/placement-model.ts';
 import { planCardQuad, planTaper, throughLens } from '../src/card-plan.ts';
 import { scaleQuad, type Drawn } from '../src/order-model.ts';
 
@@ -127,16 +127,18 @@ const sample = (img: ArrayLike<number>, channels: number, c: number, x: number, 
   return (at(x0, y0) * (1 - fx) + at(x0 + 1, y0) * fx) * (1 - fy) + (at(x0, y0 + 1) * (1 - fx) + at(x0 + 1, y0 + 1) * fx) * fy;
 };
 
-/** The marks of the blue side at a card's outline in the picture (src/placement-model.ts cardMark), as this file's polygons. */
-const markAt = (to: readonly Pt[]) => { const m = cardMark(to.map(([x, y]) => ({ x, y }))), pts = (q: readonly { x: number; y: number }[]): Pt[] => q.map((p) => [p.x, p.y]); return { cross: m.cross.map(pts), dot: pts(m.dot) }; };
+/** The marks of a card's side (the blue one where none is said) at its outline in the picture (src/placement-model.ts cardMark), as this file's polygons. */
+const markAt = (to: readonly Pt[], side: 'FRONT' | 'BACK' = 'FRONT') => { const m = cardMark(to.map(([x, y]) => ({ x, y })), side), pts = (q: readonly { x: number; y: number }[]): Pt[] => q.map((p) => [p.x, p.y]); return { cross: m.cross.map(pts), dot: pts(m.dot) }; };
 
 /**
  * Lays the real card onto `base` at `to` (bilinear; the script used cubic for the pixels). A closed card is made yellow from
  * the card's own shading. An open card carries the blue side's marks, the pink cross and the red circle (Jakob 2026-11-20),
- * in the register's colours (CARD_RGB) under the card's own shading.
+ * in the register's colours (CARD_RGB) under the card's own shading. A closed card carries the yellow side's marks where the
+ * picture it is laid on shows them on the card in the shoe's window (backMarkSeen), and is plain yellow on a picture whose
+ * card there is plain: one kind of card for each side within a film (Jakob 2026-11-24).
  */
 export function layCard(base: Rgb, texture: Texture, to: readonly Pt[], side: 'FRONT' | 'BACK'): Rgb {
-  const out = Buffer.from(base), h = homography(to, texture.quad), mark = side === 'FRONT' ? markAt(to) : null;
+  const out = Buffer.from(base), h = homography(to, texture.quad), mark = side === 'FRONT' || backMarkSeen(base) ? markAt(to, side) : null;
   const xs = to.map((p) => p[0]), ys = to.map((p) => p[1]);
   const x0 = Math.max(0, Math.floor(Math.min(...xs)) - 3), x1 = Math.min(W - 1, Math.ceil(Math.max(...xs)) + 3), y0 = Math.max(0, Math.floor(Math.min(...ys)) - 3), y1 = Math.min(H - 1, Math.ceil(Math.max(...ys)) + 3);
   for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
@@ -145,8 +147,8 @@ export function layCard(base: Rgb, texture: Texture, to: readonly Pt[], side: 'F
     let r = sample(texture.rgb, 3, 0, u, v), g = sample(texture.rgb, 3, 1, u, v), b = sample(texture.rgb, 3, 2, u, v);
     if (side === 'BACK') { r = Math.min(255, b * 1.15); g = Math.min(255, b); b = b * 0.04; }
     if (mark) {
-      // the card's own light and shade on the marks: its blue against the register's blue, within limits
-      const shade = Math.max(0.7, Math.min(1.1, b / CARD_RGB.face[2])), cross = Math.max(coverage(mark.cross[0], x, y), coverage(mark.cross[1], x, y)), dot = coverage(mark.dot, x, y);
+      // the card's own light and shade on the marks: its blue (or its yellow) against the register's, within limits
+      const shade = Math.max(0.7, Math.min(1.1, side === 'FRONT' ? b / CARD_RGB.face[2] : r / CARD_RGB.back[0])), cross = Math.max(coverage(mark.cross[0], x, y), coverage(mark.cross[1], x, y)), dot = coverage(mark.dot, x, y);
       const paint = (c: readonly number[], k: number) => { r += (Math.min(255, c[0] * shade) - r) * k; g += (Math.min(255, c[1] * shade) - g) * k; b += (Math.min(255, c[2] * shade) - b) * k; };
       if (cross > 0) paint(CARD_RGB.cross, cross);
       if (dot > 0) paint(CARD_RGB.dot, dot);
@@ -171,6 +173,23 @@ export function markSeen(rgb: Rgb, quad: readonly Pt[]): boolean {
   };
   const mark = markAt(quad);
   return share(mark.cross, (r, g, b) => r > 150 && b > g + 30 && r > g + 50) >= 0.4 || share([mark.dot], (r, g, b) => r > 140 && g < 100 && b < 100 && r > g + 80) >= 0.4;
+}
+
+/**
+ * Whether a picture shows the yellow side's marks on the card in the shoe's window (WINDOW_CARD; A2.3 with the mark, Jakob
+ * 2026-11-23): enough of the cross's pink inside that card. The pink alone is read: red is also what a hand over the window
+ * gives (A2.2: 145–182 px against the mark's 128), while no anchor without the mark has a single pink pixel there and the
+ * one with it has 81. An order's text follows this for its first picture (tools/order-store.ts textOf), and a closed card
+ * drawn on the picture does too (layCard). A picture from another camera, or with the window covered, shows none.
+ */
+export function backMarkSeen(rgb: Rgb): boolean {
+  const quad: Pt[] = WINDOW_CARD.native.map((p) => [(p.x * (W - 1)) / 1761, p.y]), xs = quad.map((p) => p[0]), ys = quad.map((p) => p[1]);
+  let pink = 0;
+  for (let y = Math.floor(Math.min(...ys)); y <= Math.ceil(Math.max(...ys)); y++) for (let x = Math.floor(Math.min(...xs)); x <= Math.ceil(Math.max(...xs)); x++) {
+    const i = (y * W + x) * 3;
+    if (inPolygon(quad, x, y) && rgb[i] > 150 && rgb[i + 2] > rgb[i + 1] + 30 && rgb[i] > rgb[i + 1] + 50) pink++;
+  }
+  return pink >= 30;
 }
 
 /** What changed between two pictures (more than 40 levels in a channel): the largest part, its centre, area and box, and the rest. */
@@ -212,7 +231,7 @@ export function drawCard(base: Rgb, texture: Texture, plan: PlacementPlan, planF
       measured,
       measuredOffsetPx: measured.area ? r(Math.hypot(measured.centre[0] - centre[0], measured.centre[1] - centre[1])) : null,
       ...(scale !== 1 ? { scale: factor } : {}),
-      ...(side === 'FRONT' ? { mark: { cross: [...CARD_RGB.cross], dot: [...CARD_RGB.dot] } } : {}),
+      ...(side === 'FRONT' || backMarkSeen(base) ? { mark: { cross: [...CARD_RGB.cross], dot: [...CARD_RGB.dot] } } : {}),
     },
   };
 }

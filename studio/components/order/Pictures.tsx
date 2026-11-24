@@ -158,7 +158,7 @@ export function PictureCard({ picture, owner, dealer, planned, className }: { pi
             {planned ? (
               <svg viewBox={`0 0 ${W} ${H}`} className="pointer-events-none absolute inset-0 size-full" aria-label="Där kortet ritas">
                 <polygon points={planned.quad.map((p) => p.join(",")).join(" ")} fill={CARD_COLOUR[planned.side]} stroke={CARD_COLOUR[planned.side]} strokeWidth={4} strokeLinejoin="round" />
-                {planned.side === "FRONT" ? <CardMark quad={planned.quad} /> : null}
+                <CardMark quad={planned.quad} side={planned.side} />
               </svg>
             ) : null}
           </div>

@@ -154,11 +154,15 @@ flera spelare. Hållet av `tools/game-session.test.ts` och `tools/game-view.test
 
 **Ritade kort.** Filmens egna kort har ingen valör: gult är ryggen och blått framsidan (BESKED, "Gul rygg, blå
 framsida"), och sedan 2026-11-20 bär den blå sidan ett litet rosa kryss i mitten och en liten röd cirkel i hörnet nere
-till vänster, som kortet ligger i bilden (BESKED, "Märket på blå sidan"). Färgerna står på ett ställe i koden, `CARD_RGB`
+till vänster, som kortet ligger i bilden (BESKED, "Märket på blå sidan"). Den gula sidan bär de motsatta märkena i samma
+färger (2026-11-24; BESKED, "Ett kort per sida, överallt"): en fylld röd cirkel i mitten och ett rosa kryss nära kortänden.
+Färgerna står på ett ställe i koden, `CARD_RGB`
 i `src/placement-model.ts`, märkets mått i `CARD_MARK` (andelar av kortets bredd), och `cardMark` lägger märket genom
-kortets perspektiv. Labbet ritar det på varje fyllt blått kort (`CardMark`), `layCard` i `tools/order-images.ts` på
-beställningens bild och på en ny A3 (orderns `drawn.mark`), och texten säger märket bara när sista bilden visar det
-(`markSeen`, `prompt.faceMark`). Kortspåret (`assets/tracking/<klipp>/card-track.json`) säger var kortet är i varje
+kortets perspektiv, för den sida som visas. Labbet ritar märkena på varje kort (`CardMark`), dockan likaså
+(`dealer3d/src/card-marks.ts`), `layCard` i `tools/order-images.ts` på
+beställningens bild och på en ny A3 (orderns `drawn.mark`), och texten säger märkena bara när bilden visar dem:
+blå sidans i sista bilden (`markSeen`, `prompt.faceMark`), gula sidans på kortet i skons fönster i första bilden
+(`backMarkSeen`, `prompt.backMark`). Kortspåret (`assets/tracking/<klipp>/card-track.json`) säger var kortet är i varje
 ruta, och scenen ritar ett riktigt kort där (`cardMethod: 'scene'`, förval): ett föremål under filmen, där filmens eget
 kort nycklas bort så att hennes fingrar ligger över det ritade.
 

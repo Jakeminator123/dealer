@@ -26,7 +26,7 @@
 //
 // The hole card's turn (HALKORT) draws only the hole card on both its pictures from her anchor 1 (cardPictures), closed and
 // then open, anew on every refresh: the game draws every lying card itself, and with both dealer cards in the pictures the
-// film lifted both. A deal to D.C2 (her hole card) is a deal like any other and lands closed as the plan says.
+// film lifted both. A deal to D.C1 (her hole card) is a deal like any other and lands closed as the plan says.
 //
 // Template 4 (2026-11-13): a new film draft is written in the short text unless another style is asked for (prompt.style);
 // a draft without a style was written before and is Utförlig, and keeps its text. A return starts on the seat's landing
@@ -43,7 +43,7 @@ import { MOTIONS_TEXT, motionRegister, postOfRemoved } from './register-store.ts
 import { mediaRoles } from './media-roles.ts';
 import { readMandateBudget } from './order-mandate.ts';
 import {
-  ANCHOR_NODE, ANCHOR_ROLE, CARD_SCALES, EXTRA_LIMIT, MODELS, FILE_NAME, FLIP_AXES, FLIP_LABEL, STYLE_LABEL, ORDER_ID, RETURN_23_BLOCK, RETURN_23_TRIAL, SEAT_TARGETS, SHORT_TWO_HAND_TURN_HELP, TAKES_MAX, scaleWords, shortTwoHandTurnProblem,
+  ANCHOR_NODE, ANCHOR_ROLE, CARD_SCALES, EXTRA_LIMIT, MODELS, FILE_NAME, FLIP_AXES, FLIP_LABEL, STYLE_LABEL, ORDER_ID, SEAT_TARGETS, SHORT_TWO_HAND_TURN_HELP, TAKES_MAX, scaleWords, shortTwoHandTurnProblem,
   LANDING_ROLE, bodyLine, canonical, takeStates, checkPolicy, costOf, crossesBody, cutFrameOf, cutFrameWords, cutIntoOf, tidyMotion, dayOf, defaultFlip, defaultStyle, draftProblems, edgeOf, genitive, giveEndOf, hashInput, landingMissing, landingOf, a3Candidates, a3Name, openEndWords, archivedReferenceIds, isArchived, modelFor, modelsFor, paramsOf, plannedOf, readCutChecks, referenceCandidates, seatList, seatWords, secondsWords, shownOf, spentOn, stepOf, stylesFor, summaryOf, twoHandDealSideProblem, twoHandDraftProblem, twoHandMotion, validateOrder, waitingOf,
   type Anchor, type BankFacts, type CutFrame, type Drawn, type GiveEnd, type FlipAxis, type Motion, type Order, type OrderAnswer, type OrdersAnswer, type Owner, type Picture, type PlanAnswer, type Policy, type Receipt, type RefCandidate, type Reference, type RenderedReference, type SeatPlan, type Shape, type StepDef, type StepKey, type TextStyle, type Waits,
 } from '../src/order-model.ts';
@@ -51,7 +51,7 @@ import { readMethods, recipeFor, recipeHands, referenceAbsent, referenceByRule, 
 import { dollWayAnswer, filmVerdicts, wayAnswer, wayBook, type WayAnswer, type WayRow } from '../src/order-ways.ts';
 import { TEMPLATE_CHOICES, TEMPLATE_CHOICES_WORDS, TEMPLATE_VERSION, handsIn, orderPrompt } from '../src/order-prompts.ts';
 import { checkCutFrame, patchShoe } from '../src/cut-frame.ts';
-import { H, TEXTURE, W, cardTexture, drawCard, drawCards, markSeen, pictureBytes, planQuad, pngOf, readPlan, readRgb, type Pt, type Texture } from './order-images.ts';
+import { H, TEXTURE, W, backMarkSeen, cardTexture, drawCard, drawCards, markSeen, pictureBytes, planQuad, pngOf, readPlan, readRgb, type Pt, type Texture } from './order-images.ts';
 import type { PlacementPlan } from '../src/placement-model.ts';
 import type { Entry, Register } from '../studio/lib/media.ts';
 
@@ -103,8 +103,6 @@ export type NewOrder = {
   extra?: string | null;
   /** One more sentence after the addition, the recipe's own included (extra replaces the recipe's; this never does). */
   extraAfter?: string | null;
-  /** The first picture carries a mark on the yellow back, and the text says it (a trial; src/order-prompts.ts backMark). */
-  backMark?: boolean;
   /** The register entry a still is made from, or a film starts on (default: the dealer's anchor that holds). */
   base?: string | null;
   /** RETUR-2.3: approved GIV-2.3 order whose frozen last picture is used as the first picture. */
@@ -487,7 +485,13 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       if (giv && drawn) faceMark = !!drawn.mark;
       else if (kept || shows.path) { try { faceMark = markSeen(await readRgb(kept ?? path.join(root, ...shows.path!.split('/'))), planQuad((snapshot ?? await readPlan(root)).plan, target)); } catch { faceMark = false; } }
     }
-    const backMark = !!order.prompt?.backMark;
+    // The yellow back is said with its marks where the first picture shows them on the card in the shoe's window (A2.3 with
+    // the mark; tools/order-images.ts backMarkSeen), as the blue side's are read off the last picture: a text never says a
+    // blank back against a picture that carries the marks, and nobody has to remember a flag (Jakob 2026-11-24: one kind of
+    // card for each side). A first picture that is not made yet keeps what the draft said.
+    const start = order.pictures.find((p) => p.goesAs === 'startFrame'), startAt = start ? files?.get(start.name) ?? (start.path ? path.join(root, ...start.path.split('/')) : null) : null;
+    let backMark = !!order.prompt?.backMark;
+    if (startAt) { try { backMark = backMarkSeen(await readRgb(startAt)); } catch { /* a picture that cannot be read keeps what the draft said */ } }
     const { template, style, text } = orderPrompt({ ...order, prompt: { ...order.prompt, extra, faceMark, backMark } }, dealer, planPlace);
     return { template, style, text, sha256: sha(text), extra, middle: false, ...(planPlace ? { place: [planPlace.x, planPlace.y] as [number, number] } : {}), ...(faceMark ? { faceMark: true } : {}), ...(backMark ? { backMark: true } : {}) };
   }
@@ -708,7 +712,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       // the recipe by name, with what has been tried with it in plain words (triedWords), never its status
       ...(recipe ? [`Recept ${recipe.method.id}: ${triedWords(recipe.method).tried}.`] : [`Inget recept finns för ${step.label}: varje värde är valt för den här beställningen.`]),
       ...(exceptions.length ? [`Undantag från receptet: ${exceptions.join('; ')}.`] : []),
-      ...(returnStart ? [`Provundantag: A3-kandidaten ${returnStart.entry.name ?? a3Name(target!)} används som första bild, byte för byte ur den godkända givens slutbild.`, takes > 1 ? RETURN_23_BLOCK : RETURN_23_TRIAL] : []),
+      ...(returnStart ? [`Provundantag: A3-kandidaten ${returnStart.entry.name ?? a3Name(target!)} används som första bild, byte för byte ur den godkända givens slutbild.`] : []),
     ];
     const anchorPicture = async (name: string, label: (words: string) => string, goesAs: Picture['goesAs'], at: Anchor, tag?: string): Promise<{ picture: Picture; bytes: Buffer | null }> => {
       const namedBase = !return23 && at === step.from ? input.base : null;
@@ -809,7 +813,7 @@ export function orderStore(root: string, options: StoreOptions = {}) {
       pictures,
       reference,
       generation: { provider: 'runway-app', tool: model.tool, model: model.id, params },
-      prompt: { template: mall !== TEMPLATE_VERSION ? `@${mall}` : '', style, text: '', sha256: '', extra, middle: false, ...(input.backMark === true ? { backMark: true } : {}) },
+      prompt: { template: mall !== TEMPLATE_VERSION ? `@${mall}` : '', style, text: '', sha256: '', extra, middle: false },
       takes,
       cost,
       limits: { maxCredits: cost.worstTotal, stopBelowCredits: policy.minBalance },
@@ -1348,14 +1352,24 @@ export function orderStore(root: string, options: StoreOptions = {}) {
   }
 
   /**
-   * Which landing pictures (A3, gäller or kandidat) of the dealers show the blue side's marks at their card, by register id:
-   * what the store's text says of the card (textOf, markSeen) and Bordet's row says with it. Read once per file and card.
+   * Which pictures of the dealers show the card's marks, by register id: a landing picture (A3, gäller or kandidat) the blue
+   * side's at its card, and an anchor that holds (the straight camera's) the yellow side's on the card in the shoe's window.
+   * What the store's text says of the card (textOf, markSeen, backMarkSeen) and Bordet's row says with it. Read once per file.
    */
   async function marksOf(register: Register | null, dealerIds: readonly string[]): Promise<Record<string, boolean>> {
     const out: Record<string, boolean> = {};
     const plan = await readPlan(root).then((s) => s.plan).catch(() => null);
     if (!register || !plan) return out;
+    const anchorRoles = new Set(Object.values(ANCHOR_ROLE));
     for (const id of dealerIds) for (const e of register.dealers[id]?.entries ?? []) {
+      if (anchorRoles.has(e.role) && e.state === 'gäller' && !e.card && !e.seat && isPicture(e)) {
+        try {
+          const file = path.join(root, ...e.path!.split('/')), facts = await stat(file), key = [e.path, e.frame ?? '', facts.mtimeMs, facts.size, 'back'].join('|');
+          if (!MARKS.has(key)) MARKS.set(key, backMarkSeen(await readRgb(await pictureBytes(root, { path: e.path!, frame: e.frame }))));
+          if (MARKS.get(key)) out[e.id] = true;
+        } catch { /* a picture that cannot be read shows no marks */ }
+        continue;
+      }
       if (e.role !== LANDING_ROLE || (e.state !== 'gäller' && e.state !== 'kandidat') || !e.card || !plan.targets[e.card] || !isPicture(e)) continue;
       try {
         const file = path.join(root, ...e.path!.split('/')), facts = await stat(file), quad = planQuad(plan, e.card);

@@ -4,7 +4,7 @@ Huvudagentens bana: det ritade kortet, kortspåret, underlägget och pålägget,
 bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
 
 **Läget.**
-- Spelets underlägg (`UNDER` i `src/card-overlay.ts`) är förval sedan 2026-11-14. Kortens fjärde steg (`33b164a`) fick 3,75/5 blint.
+- Spelets underlägg (`UNDER` i `src/card-overlay.ts`) är förval sedan 2026-11-14.
 - Provet `kort=liggande&cardMethod=film` behåller filmkortet i 2D; `scene` färgar med `cardBack=dark&cardFace=paper`, även i Bordets giv–retur-par.
 - Vid uppmätt vila består kortet och senaste belagda sida även utan markör; masken kräver aktuell ruta. Toning börjar bara på FRONT.
 - Filmkortsprovet ritar återbrukade C2/split till spelplatsen genom returen. Native splitrunda klar; C2-kant högst 1 px vid två gränser (`paow-game-carry-20261118`). Full rörelsedom återstår.
@@ -20,8 +20,8 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
   Casino-länken och `/casino` läser den. Kortplan och order står på B.
 - Kortplan har en vy; Dator | Mobil och `vy=mobil` är borta. En framtida mobilvy härleds ur samma kort och lins.
 - D.C3 är redigerbart i Kortplan och Beställ; äldre planer bevarar de 16 korten och får dess tidigare spelposition. Sparad D.C3 styr senare dealer-kort. Tre lokala geometrier jämförs i Prov `paow-dc3-tre-geometrier-20261119` (372 krediter); inget Primär-byte.
-- Filmkortet är gult och blått, och den blå sidan bär ett rosa kryss och en röd cirkel (`CARD_RGB`, `cardMark` i
-  `src/placement-model.ts`; [BESKED](../BESKED.md), "Märket på blå sidan"; prövat i tre filmer utanför Beställ, se BRISTER). Spelets rygg med SG står kvar.
+- Filmkortet är gult och blått och bär sin sidas märken överallt: Kortplan, dockan och beställningens bild och text
+  (`CARD_MARK`, `cardMark` i `src/placement-model.ts`; texten läser gula märket ur första bilden, `backMarkSeen`). Spelets rygg med SG står kvar.
 - Jakobs senast sparade plan (Bordet, 2026-11-21 kl. 19.16) är incheckad i `f020312`: P4.C2 har handbyte och vänds
   vid läggningen, och D.C3 finns. Avsmalningen är 0,87 (0,90 står i den stående vyns fält). Hans plan och domar tas
   med vid avslut på hans uttryckliga begäran 2026-11-19.
@@ -34,7 +34,7 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
    med P1/P7 intakta. Rundans behov täcks 22/22; 9 egna givar och 14 återbruk ger 23/24 kortlägen. DC3 är nästa steg.
 2. `data/media-fit.json` är ommätt. Kör `node tools/media-audit.ts --fit --write` igen när plan, lins eller ankare ändras.
 3. Grafiken på kortet ([BESKED](../BESKED.md), "Grafiken på kortet"): gul rygg (SG får stå kvar) och blå framsida, lika i labbet och spelet, på kortmodellens spår. Styvt kort (23/24 A2.3-givar, `styvt_kort.ts`): Scens förval,
-   inte spelets. Provfilmen `paow-giv-2-3-p4-03` (märke på gula sidan) är i banken som variant: det vita är borta ur skon, men krysset blir en röd hörnprick.
+   och Casinots när hans Överlägg i handen är på; en storlek från hand till bord. Provfilmen `paow-giv-2-3-p4-03` gjorde gula sidans kryss till en röd hörnprick: granska det i första filmen från märkt A2.3.
 4. Ta bort kravet på två vyer i planfilen (`validatePlan` kräver ännu båda), utan att planfilen skrivs av en agent.
 
 **Väntar på Jakob.** Inget utanför Beslut.

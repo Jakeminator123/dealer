@@ -352,7 +352,7 @@ export function lineOf(input: {
   policy?: Pick<Policy, "prices"> | null;
   /** The dealers' looks (GET /api/orders), which the text is written with; without them the row has no text. */
   dealers?: readonly Pick<DealerLook, "id" | "name" | "look">[];
-  /** The landing pictures that show the blue side's marks (GET /api/orders, marks): what the text says of the card. */
+  /** The pictures that show the card's marks (GET /api/orders, marks): a landing picture the blue side's, an anchor the yellow side's in the shoe's window. What the text says of the card. */
   marks?: Readonly<Record<string, boolean>>;
 }): Line {
   const { dealer, wish, bank, entries } = input, c = input.choice ?? {};
@@ -440,12 +440,14 @@ export function lineOf(input: {
     const mall = recipe?.template ?? TEMPLATE_VERSION;
     // Without a last picture the marks are said as the store says them for it: pilot 02's (tools/order-store.ts textOf).
     const faceMark = open ? side === "FRONT" : !!shows && side === "FRONT" && !!input.marks?.[shows.id] && (def.start === "LAND" || wish.step.startsWith("GIV-"));
+    // The yellow side's marks are said where the anchor the film starts on shows them on the card in the shoe's window.
+    const backMark = def.start !== "LAND" && !!input.marks?.[holds(def.from)?.id ?? ""];
     text = orderPrompt({
       step: { key: wish.step, shape },
       motion: def.card && seat ? { grip: def.grip ?? "PINCH", hand: held.hand, pass: held.pass, turn, flipAxis: turn ? axis : null, side, target: wish.target } : null,
       // Without a last picture the text is the open deal's, which the store writes from the first picture alone.
       generation: { model: model.id }, pictures: open ? [{ goesAs: "startFrame" } as never] : [],
-      prompt: { extra: (c.extra === undefined ? recipe?.extra : c.extra)?.trim() || null, style, template: mall !== TEMPLATE_VERSION ? `@${mall}` : "", faceMark },
+      prompt: { extra: (c.extra === undefined ? recipe?.extra : c.extra)?.trim() || null, style, template: mall !== TEMPLATE_VERSION ? `@${mall}` : "", faceMark, backMark },
       reference: { status: reference ? "FINNS" : "INGEN" },
     }, look, seat ? { x: seat.centre[0], y: seat.centre[1] } : null).text;
   }

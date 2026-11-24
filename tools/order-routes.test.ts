@@ -862,7 +862,6 @@ test('the return to 2.3 copies the preceding deal’s RH ending, ends on the anc
   assert.equal(order.prompt.template, 'film-retur-kort@13');
   assert.match(order.prompt.text, /lifts off it, and the card stays where it lies.*glides back low over the felt.*as in the last frame\.$/i);
   assert.ok(order.notes.includes(recipeNote('retur-2.3')), order.notes.join('\n'));
-  assert.match(order.notes.join(' '), /Returprovet är en tagning och kan godkännas/);
   // Naming neither the candidate nor the deal: the last approved deal to the seat whose frozen last picture is one.
   const found = await preview({ dealer: 'paow', step: 'RETUR-2.3', target: 'P4.C1' });
   assert.equal(found.status, 200, found.json.error);
@@ -915,15 +914,8 @@ test('the return to 2.3 copies the preceding deal’s RH ending, ends on the anc
   assert.equal(end.label, 'Slutbild · Paows A2.3 + kortet öppet på plats 4');
   assert.equal(moved.refresh, null);
   assert.ok(!moved.warnings.some((w: string) => w.startsWith('Slutbild')), moved.warnings.join('\n'));
-  // A series waits for the trial; the trial, one take, is approved.
-  const series = await call('PUT', `/api/orders/${persisted.id}`, { body: { takes: 2 }, match: moved.revision });
-  assert.equal(series.status, 200, series.json.error);
-  const blocked = await call('POST', `/api/orders/${persisted.id}/approve`, { match: series.json.revision });
-  assert.equal(blocked.status, 409);
-  assert.match(blocked.json.error, /En serie returer till 2\.3/);
-  const trial = await call('PUT', `/api/orders/${persisted.id}`, { body: { takes: 1 }, match: series.json.revision });
-  assert.equal(trial.status, 200, trial.json.error);
-  const approvedTrial = await call('POST', `/api/orders/${persisted.id}/approve`, { match: trial.json.revision });
+  // The trial is approved as any order is: the recipe gives its one take, and the pilot rule (src/order-ways.ts) the next order.
+  const approvedTrial = await call('POST', `/api/orders/${persisted.id}/approve`, { match: moved.revision });
   assert.equal(approvedTrial.status, 200, approvedTrial.json.error);
   assert.equal(approvedTrial.json.order.status, 'GODKÄND');
   assert.equal(JSON.parse(await readFile(registerFile, 'utf8')).dealers.paow.entries.find((e: { id: string }) => e.id === a3.id).state, 'kandidat');

@@ -74,8 +74,8 @@ deras egna ordrar och står kvar i `SAY.v6`, `SAY.v8` och `SAY.v11`); reglerna o
 stil, Minimal är Jakobs prov, Utförlig bara för jämförelse. Skiljer orden sig från reglerna här, rättas orden. Format,
 filer och priser: [dealer-line.md](dealer-line.md), "Format och namn".
 
-**Märket på blå sidan (2026-11-20, prövat i tre filmer utanför Beställ).** Filmkortets rygg är gul och slät (stängt kort); framsidan är blå (öppet
-kort) och bär märket (Jakob 2026-11-20: "gula" ska vara ryggen). Ett öppet kort som lagret ritar på en bild bär ett
+**Märket på blå sidan (2026-11-20, prövat i tre filmer utanför Beställ).** Filmkortets rygg är gul (stängt kort); framsidan är blå (öppet
+kort), och varje sida bär sina märken (Jakob 2026-11-20: "gula" ska vara ryggen; 2026-11-24: ett kort per sida, överallt). Ett öppet kort som lagret ritar på en bild bär ett
 litet rosa kryss i mitten och en liten röd cirkel i hörnet nere till vänster (`layCard` i `tools/order-images.ts`).
 Färgerna som bilderna till en film ritas med, och som en granskare mäter mot (`CARD_RGB`, `src/placement-model.ts`):
 
@@ -85,6 +85,11 @@ Färgerna som bilderna till en film ritas med, och som en granskare mäter mot (
 | Blå framsida | 0, 130, 218 | `#0082da` |
 | Rosa kryss (X), mitt på den blå sidan | 255, 120, 200 | `#ff78c8` |
 | Röd cirkel (prick), hörnet nere till vänster | 225, 30, 35 | `#e11e23` |
+
+Gula sidan bär de motsatta märkena i samma färger: en fylld röd cirkel i mitten (radie 16 % av bredden) och ett rosa
+kryss nära kortänden (`CARD_MARK.back`). Texten säger dem när första bilden visar dem på kortet i skons fönster
+(`backMarkSeen`, `prompt.backMark`): "with a filled red circle in the middle and a small pink cross near one end, as the
+first frame shows it in the shoe's window". Ingen flagga sätts för hand: bilden avgör, som för blå sidan.
 
 Krysset är 34 % av kortets bredd från spets till spets och 7 % tjockt; cirkeln har radien 7,5 % av bredden och sitter
 20 % in från båda kanterna, så att blått omger den (`CARD_MARK`). Siffrorna står aldrig i en filmtext: en videomodell

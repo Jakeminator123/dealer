@@ -165,7 +165,7 @@ export type PromptInput = {
   cardScale?: number;
   /** The last picture shows the blue side's marks, the pink cross and the red circle (tools/order-images.ts markSeen): an open deal's text then says them instead of a blank blue side. */
   faceMark?: boolean;
-  /** The first picture shows a mark on the yellow back in the shoe's window (a trial, Jakob 2026-11-23: a filled red circle in the middle and a pink cross near the card's end): the text then says it instead of a blank yellow back. Set per order, never read from the picture. */
+  /** The first picture shows the yellow side's marks on the card in the shoe's window (Jakob 2026-11-23 and 2026-11-24: a filled red circle in the middle and a pink cross near the card's end; tools/order-images.ts backMarkSeen): the text then says them instead of a blank yellow back. */
   backMark?: boolean;
 };
 /** What a part of the text comes from: a choice in the sheet, Jakob's addition, the reference film, or the bans. */
