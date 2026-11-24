@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "kortplan",
   "space": "image-normalized-bottom-up",
-  "updatedAt": "2026-11-21T18:16:55.501Z",
+  "updatedAt": "2026-11-23T23:42:05.513Z",
   "shoe": {
     "native": {
       "u": 0.733,
@@ -522,7 +522,7 @@
       "geometry": {
         "native": {
           "u": 0.48239636570130606,
-          "v": 0.2097186700767263,
+          "v": 0.20693522207903736,
           "width": 0.0492,
           "height": 0.06119999999999999,
           "angle": 0,
@@ -542,9 +542,9 @@
       "intent": {
         "takeHand": "LH",
         "startSide": "BACK",
-        "endSide": "FRONT",
-        "pass": false,
-        "turn": true,
+        "endSide": "BACK",
+        "pass": true,
+        "turn": false,
         "grip": "PINCH",
         "turnAt": "AIR",
         "flipAxis": "FREE"
@@ -578,9 +578,9 @@
       "intent": {
         "takeHand": "LH",
         "startSide": "BACK",
-        "endSide": "BACK",
-        "pass": false,
-        "turn": false,
+        "endSide": "FRONT",
+        "pass": true,
+        "turn": true,
         "grip": "PINCH",
         "turnAt": "AIR",
         "flipAxis": "FREE"
