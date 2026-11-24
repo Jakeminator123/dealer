@@ -7,7 +7,7 @@ import { DEFAULTS } from "../../src/scene3d-view.ts";
 import { readLook } from "../../src/game-look.ts";
 import { cardsChoice, cardWords } from "../../src/game-film.ts";
 import { CASINO_TABLE, ONLINE_CASINO, casinoAddress, casinoSearch, freshTable, gameSrc, readCasino, readGeometryWord, scenHref, shownGeometry, trialAddress, withGeometry } from "../lib/casino.ts";
-import { BRED_LINS, CASINO_PRESET, SHIPPED, effective, patchOf, readAddress, savedGeometri, scenePageAddress } from "../lib/scene-presets.ts";
+import { BRED_LINS, CASINO_PRESET, SHIPPED, effective, patchOf, readAddress, savedGeometri } from "../lib/scene-presets.ts";
 
 const params = (text: string) => new URLSearchParams(text);
 
@@ -93,9 +93,6 @@ test("Casino, Scen and the lab links retain the explicit geometry with the selec
     assert.equal(tableGeometry(frame.search), mode);
     assert.deepEqual(readLook(frame.searchParams).keys, original.patch);
 
-    const scene = new URL(withGeometry(scenePageAddress(effective(DEFAULTS, original.patch), DEFAULTS), geometri), lab);
-    assert.equal(scene.search, `?cardHand=standard&pitch=-12&zoom=0.95&geometri=${word}`);
-    assert.equal(tableGeometry(scene.search), mode);
     assert.equal(withGeometry("/scene3d.html", geometri), `/scene3d.html?geometri=${word}`);
   }
   assert.equal(withGeometry("/scene3d.html", readGeometryWord(params("geometri=annat"))), "/scene3d.html");

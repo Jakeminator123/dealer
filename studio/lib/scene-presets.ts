@@ -5,10 +5,10 @@
 // yet judged by him). The Scen view's baseline is basgrund: what differs from it is marked. A look saved in one of Jakob's
 // numbered places (Profilval 1–10, 2026-11-13) is a preset of his own like any other, under the name profilval-<n> (slotOf),
 // so that ?forval=profilval-1 plays it wherever a preset is read. A look also travels as an address,
-// /scen/?forval=levande&dust=0.8, and as the 3D page's own, scene3d.html?…. Pure: no DOM, no network.
+// /scen/?forval=levande&dust=0.8. Pure: no DOM, no network.
 import { GEOMETRY_WORDS } from "../../src/card-plan.ts";
 import type { SceneState } from "../../src/scene3d-view.ts";
-import { SCENE_KEYS, checkValue, decodeValue, encodeValue, hasControl, isSceneKey, keySpec, sameValue, type SceneKey } from "./scene-keys.ts";
+import { SCENE_KEYS, checkValue, decodeValue, hasControl, isSceneKey, keySpec, sameValue, type SceneKey } from "./scene-keys.ts";
 
 /**
  * geometri: the table's geometry the game plays the look with, as the address's word (src/card-plan.ts GEOMETRY_WORDS:
@@ -208,14 +208,3 @@ export function readAddress(params: Params, rooms?: readonly string[]): { forval
   return { forval, patch: patch as Partial<SceneState>, ignored };
 }
 
-/**
- * The look on the 3D page (pages/scene3d.html), which starts from the scene's DEFAULTS and reads every key from
- * its address (src/scene3d-ui.ts, the loop over the address's keys): "/scene3d.html?room=panorama&blur=5&…". shoe: the 3D shoe trial is on (?sko=3d).
- */
-export function scenePageAddress(state: SceneState, defaults: SceneState, extra: { shoe?: boolean } = {}): string {
-  const params = new URLSearchParams();
-  for (const key of differences(state, defaults)) params.set(key, encodeValue(keySpec(key)!, state[key]));
-  if (extra.shoe) params.set("sko", "3d");
-  const text = params.toString();
-  return `/scene3d.html${text ? `?${text}` : ""}`;
-}

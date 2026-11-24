@@ -22,7 +22,7 @@
 // Prova i Casino always names it, and Använd i Casino saves it with Casino's look (lib/scene-presets.ts geometri), so that
 // the rail's Casino, and the copy's Casino after its next publishing, play it.
 // Loaded only when one of the three is chosen (Bordet loads it on demand), so that Kortplan stays light.
-import { Copy, ExternalLink, Globe, Spade } from "lucide-react";
+import { Copy, Globe, Spade } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -198,14 +198,6 @@ export function SceneBody({ kind, toolbar, roundText: cardRound }: { kind: Scene
               </Tooltip>
             ) : null}
             <IconButton label="Kopiera länken: samma runda och look" icon={<Copy />} variant="quiet" size="sm" onClick={copyLink} />
-            {!isSnapshot && editor.scenePage ? (
-              <Tooltip content="Samma look på 3D-sidan, med alla reglage">
-                <a href={withGeometry(editor.scenePage, geometri)} className={buttonClasses({ variant: "quiet", size: "sm" })}>
-                  <ExternalLink />
-                  3D-sidan
-                </a>
-              </Tooltip>
-            ) : null}
           </div>
         </div>
         {/* The presets apply to the 3D scene: on a flat picture (Råfilm) they do nothing, and the row is not there. */}

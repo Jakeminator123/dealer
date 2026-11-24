@@ -107,7 +107,7 @@ Dokumenten länkar till dessa i stället för att föra egna statusregister. Med
   - **Material** (vilka bilder som gäller), **Lipsync** (var munnen görs och vad som är inställt, skrivskyddad) och
     **Casino** (spelet med vald look).
   - I foten **Beslut** (det som väntar på Jakobs svar) och **Ordlista**, och sidorna bredvid studion: **Ljud**,
-    **Modeller** och Scens knapp **3D-sidan** (utvecklarens 3D-sida med samma look, [SYSTEM](docs/SYSTEM.md)).
+    **Modeller** och **Grafik (prov)**. Utvecklarens 3D-sida (`/scene3d.html`, [SYSTEM](docs/SYSTEM.md)) har ingen knapp i studion.
 
   **Jämför** (två tagningar av samma steg sida vid sida) nås från en tagning i Granska och Karta. Kopian på nätet har
   samma meny utan Lipsync, Bordet utan Beställ och utan sparning, och i stället för Beslut **Önskemål** och boten (Fråga).
