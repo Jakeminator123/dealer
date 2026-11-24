@@ -14,7 +14,7 @@ import {cardRecords} from '../src/game-director.ts';
 import {createFilm, filmRate} from '../src/game-film.ts';
 import {cardFaces, tableCards} from '../src/game-view.ts';
 import {MEASURE_SIZE, cutBank, gameBank, measure, playedCut, treeView, unplayedTakes, type TreeDef, type TreeEntry, type TreeTake} from '../src/dealer-trees.ts';
-import {assign, checkComposition, compositionPlay, compositionView, createComposer, handsProblem, linkOf, pickFilm, seams, soloComposition, tempoOf, trace, treeBank, weave,
+import {assign, checkComposition, compositionPlay, compositionView, createComposer, handsNote, linkOf, pickFilm, seams, soloComposition, tempoOf, trace, treeBank, weave,
   type BridgeDef, type CompositionCut, type CompositionDef, type CutTree, type LegBeat, type Move} from '../src/composition.ts';
 import {compositionToSave, cutOf} from './dealer-composition.ts';
 
@@ -264,18 +264,16 @@ test('registret: det som inte håller sägs', () => {
   assert.equal(linkOf(both.bridges, 'a1', 'a1'), 'same'); assert.equal(linkOf(both.bridges, 'a1', 'a23'), null);
 });
 
-// Jakob 2026-11-23 21.10: "vi helt enkelt INTE får sätta samman nodträd om de är inkompatibla såsom nu" (Casino's hands are bare,
-// Tatuerad's tattooed). Compatible: the same rest picture, A1.
-test('träd med olika händer sätts inte samman: sparas inte, och ett träd ensamt går att spara', () => {
+// Jakob 2026-11-24: "lossa detta förbud" (from 2026-11-23 21.10 such trees were not put together: Casino's hands are bare,
+// Tatuerad's tattooed). Different hands, another rest picture A1, are said, and the composition is saved.
+test('träd med olika händer går att sätta samman, och det sägs; ett träd ensamt går att spara', () => {
   const onDisk = () => true, save = (def: unknown, of = views) => compositionToSave(def, of, takes, onDisk);
-  const refused = save(both);
-  assert.equal(refused.ok, false);
-  assert.ok(!refused.ok && refused.problems.some(p => p.includes('olika händer') && p.includes('A1') && p.includes('Jakob 2026-11-23')), 'skälet sägs på vanlig svenska, med hans ord');
-  assert.match(handsProblem(compositionView(both, views, takes))!, /^Casino och Tatuerad har olika händer/);
+  assert.equal(save(both).ok, true);
+  assert.match(handsNote(compositionView(both, views, takes))!, /^Casino och Tatuerad har olika händer: trädens vilobild \(A1\) skiljer/);
   // One tree alone holds, with a tempo of its own: what the tempo of a tree is saved in.
   const alone = save({id: 'casino-snabb', name: ' Casino snabb ', trees: [{tree: 'casino', share: 100}], tempo: 2});
   assert.deepEqual(alone, {ok: true, def: {id: 'casino-snabb', name: 'Casino snabb', trees: [{tree: 'casino', share: 100}], tempo: 2}});
-  assert.equal(handsProblem(compositionView(soloComposition(defs[0]), views, takes)), null);
+  assert.equal(handsNote(compositionView(soloComposition(defs[0]), views, takes)), null);
   // Two trees that rest on the same picture are put together as before.
   const more = [...defs, {id: 'kvall', name: 'Kväll', state: 'byggs', root: 'a1', anchors: [{entry: 'a1'}, {entry: 'a21'}]} as TreeDef], same = more.map(def => treeView('paow', def, more, entries, takes));
   const pair = {id: 'casino-kvall', name: 'Casino + Kväll', trees: [{tree: 'casino', share: 80}, {tree: 'kvall', share: 20, tempo: 1.5}]};
@@ -305,7 +303,7 @@ test('två sätt att dela ut med samma händer: sätts samman utan brygga, nypet
   const def: CompositionDef = {id: 'skjut-nyp', name: 'Skjut + nyp', trees: [{tree: 'skjut', share: 50}, {tree: 'nyp', share: 50}]};
   assert.deepEqual(compositionToSave(def, drawn, films, () => true), {ok: true, def});
   const view = compositionView(def, drawn, films), at = (key: string) => view.steps.find(s => s.key === key)!;
-  assert.equal(handsProblem(view), null); assert.equal(view.home, 'skjut');
+  assert.equal(handsNote(view), null); assert.equal(view.home, 'skjut');
   assert.deepEqual(view.joins.map(j => [j.rest.how, j.shoe.how]), [['samma', 'ingen']]);
   assert.deepEqual(at('giv:P4.C1').parts.map(p => [p.tree, p.how, p.percent]), [['skjut', 'eget', 50], ['nyp', 'eget', 50]]);
   assert.deepEqual([at('giv:P5.C1').state, at('giv:P5.C1').lacking, at('giv:P5.C1').reach], ['lanat', ['nyp'], 'vila']);
@@ -423,10 +421,10 @@ test('spelets ord ?komposition=: raden på sidan, och varför när den inte kan 
   assert.equal(compositionPlay('bada', {status: 200, answer: cut}, 'Paow').line, 'Båda 33/36: kort utan film läggs utan hand');
   assert.equal(compositionPlay('bada', {status: 200, answer: cut}, 'Paow').cut, cut);
   assert.equal(compositionPlay('bada', {status: 200, answer: {...cut, tempo: 1.5}}, 'Paow').line, 'Båda 33/36: kort utan film läggs utan hand · fart 1,5×');
-  // Trees with different hands are not played: the game plays as without the word, and the page says why.
-  const mixed = compositionPlay('bada', {status: 200, answer: {...cut, trees: [{...casino}, {...tatuerad}], looks: ['a1', 'a1t']}}, 'Paow');
-  assert.equal(mixed.cut, null);
-  assert.equal(mixed.line, 'Båda spelas inte: träden har olika händer (olika A1), och sådana sätts inte samman. Spelet spelar som vanligt, med alla hennes filmer.');
+  // Trees with different hands are played when he chooses the composition, and the page's line says it.
+  const mixedCut = {...cut, trees: [{...casino}, {...tatuerad}], looks: ['a1', 'a1t']}, mixed = compositionPlay('bada', {status: 200, answer: mixedCut}, 'Paow');
+  assert.equal(mixed.cut, mixedCut);
+  assert.equal(mixed.line, 'Båda 33/36: kort utan film läggs utan hand · olika händer');
   assert.match(compositionPlay('finns-inte', {status: 404, answer: {error: 'x'}}, 'Paow').line!, /Paow har ingen komposition "finns-inte"/);
   assert.match(compositionPlay('Fel Ord', null, 'Paow').line!, /är ingen komposition/);
   assert.match(compositionPlay('bada', null, 'Paow').line!, /kunde inte läsas/);

@@ -8,9 +8,9 @@
 // step's own film "Beställ till <träd>" (Bordet's guide Ny film on that tree and step, lib/new-film.ts guideHref). Spara writes
 // data/dealer-compositions.json through the lab (tools/dealer-composition.ts); Prova i Casino plays the saved composition
 // (?komposition=<id>). The rules, and the words, are src/composition.ts; this file only draws them.
-// Only trees with the same hands (the same A1) are put together (Jakob 2026-11-23, for now): a tree with other hands than the
-// composition's first is shown grey with the reason, and a saved composition of that kind says "spelas inte: olika händer",
-// with Spara and Prova i Casino off. Fart (1× to 2×) is the composition's tempo, saved with it: the round's films go that
+// Trees with different hands (another A1) may be put together (Jakob 2026-11-24: "lossa detta förbud"): a tree with other
+// hands than the composition's first says so, and such a composition says "olika händer" as information; it is saved and
+// played like any other. Fart (1× to 2×) is the composition's tempo, saved with it: the round's films go that
 // many times faster in the Casino, rest and speech as filmed; a tree may have one of its own.
 // Levels (Jakob 2026-11-23: "se nivåer i en till dimension"): the grid of the 36 steps is one level at a time. "Sammanlagt" is
 // what is played; under it one level per tree, the same grid with only that tree's own films and empty where it lacks the
@@ -29,7 +29,7 @@ import {
   compositionView,
   compositionWord,
   handsOf,
-  handsProblem,
+  handsNote,
   linkOf,
   tempoValue,
   tempoWord,
@@ -129,10 +129,10 @@ function Editor({ trees, got, saved, graph, dealer, set, reload }: { trees: Tree
   const id = saved ? saved.def.id : slug(draft.name);
   const def: CompositionDef = { ...draft, id };
   const view = useMemo(() => compositionView({ ...draft, id: id || NEW_COMPOSITION }, trees.trees, got.takes), [draft, id, trees, got]);
-  // Trees with different hands are not put together (src/composition.ts handsProblem): the reason, and what the others are held against.
-  const blocked = handsProblem(view);
+  // Trees with different hands (src/composition.ts handsNote): said as information, and what the others are held against.
+  const hands = handsNote(view);
   const firstTree = got.trees.find((t) => t.tree === view.trees[0]?.tree) ?? null;
-  const problems = [...checkComposition(def, trees.trees.map((v) => v.tree.id)), ...(!saved && taken.has(id) ? [`"${id}" finns redan: välj ett annat namn.`] : []), ...(blocked ? [blocked] : [])];
+  const problems = [...checkComposition(def, trees.trees.map((v) => v.tree.id)), ...(!saved && taken.has(id) ? [`"${id}" finns redan: välj ett annat namn.`] : [])];
   const dirty = !saved || JSON.stringify(saved.def) !== JSON.stringify(def);
   const colorOf = (tree: string) => TREE_COLORS[Math.max(0, got.trees.findIndex((t) => t.tree === tree)) % TREE_COLORS.length];
   const nameOf = (tree: string) => got.trees.find((t) => t.tree === tree)?.name ?? tree;
@@ -259,10 +259,10 @@ function Editor({ trees, got, saved, graph, dealer, set, reload }: { trees: Tree
           {got.trees.map((t) => {
             const mine = draft.trees.find((x) => x.tree === t.tree);
             const shown = view.trees.find((x) => x.tree === t.tree);
-            // Other hands than the composition's first tree: not offered, and said (a saved one that has it can only turn it off).
+            // Other hands than the composition's first tree: said, and offered like the others.
             const other = !!firstTree && firstTree.tree !== t.tree && handsOf(t) !== handsOf(firstTree);
             return (
-              <div key={t.tree} className={cn("rounded-lg border p-3 transition-opacity", mine ? (other ? "border-underkand/60 bg-surface" : "border-line-strong bg-surface") : other ? "border-line opacity-45" : "border-line opacity-60")}>
+              <div key={t.tree} className={cn("rounded-lg border p-3 transition-opacity", mine ? "border-line-strong bg-surface" : "border-line opacity-60")}>
                 <div className="flex items-center gap-2.5">
                   <Still entry={t.rest ? media.get(t.rest) : undefined} code="A1" />
                   <Still entry={t.shoe ? media.get(t.shoe) : undefined} code={nodeCode(t.hub)} />
@@ -275,12 +275,10 @@ function Editor({ trees, got, saved, graph, dealer, set, reload }: { trees: Tree
                       {t.have}/36{view.home === t.tree ? " · vilar här" : ""}
                     </div>
                   </div>
-                  <Switch size="sm" checked={!!mine} disabled={other && !mine} onChange={(on) => setShare(t.tree, on ? (draft.trees.length ? 20 : 100) : null)} aria-label={`${t.name} med i kompositionen`} />
+                  <Switch size="sm" checked={!!mine} onChange={(on) => setShare(t.tree, on ? (draft.trees.length ? 20 : 100) : null)} aria-label={`${t.name} med i kompositionen`} />
                 </div>
                 {other ? (
-                  <div className={cn("mt-2 text-xs", mine ? "text-[#ef8b8b]" : "text-dim")}>
-                    Andra händer än {firstTree!.name} (annan A1): sätts inte samman{mine ? ". Stäng av det ena trädet." : ""}
-                  </div>
+                  <div className="mt-2 text-xs text-dim">Andra händer än {firstTree!.name} (annan A1).</div>
                 ) : null}
                 {mine ? (
                   <Slider
@@ -339,12 +337,12 @@ function Editor({ trees, got, saved, graph, dealer, set, reload }: { trees: Tree
           </div>
         ))}
 
-        {blocked ? (
-          <div role="alert" className="flex items-start gap-2.5 rounded-lg border border-underkand/60 bg-underkand/10 p-3 text-sm text-ink">
-            <Hand className="mt-0.5 size-4 shrink-0 text-underkand" />
+        {hands ? (
+          <div role="note" className="flex items-start gap-2.5 rounded-lg border border-line bg-surface p-3 text-sm text-ink">
+            <Hand className="mt-0.5 size-4 shrink-0 text-dim" />
             <span className="min-w-0 flex-1">
               <span className="block font-medium first-letter:uppercase">{HANDS_WORD}</span>
-              <span className="mt-0.5 block text-xs text-dim">{blocked}</span>
+              <span className="mt-0.5 block text-xs text-dim">{hands}</span>
             </span>
             <span className="flex shrink-0 gap-1">
               {view.looks.map((entry) => (
@@ -374,11 +372,7 @@ function Editor({ trees, got, saved, graph, dealer, set, reload }: { trees: Tree
             </Button>
           </div>
         </div>
-        {blocked ? (
-          <Button variant="secondary" icon={<Play />} disabled title={blocked}>
-            Prova i Casino
-          </Button>
-        ) : saved && !dirty ? (
+        {saved && !dirty ? (
           <Link href={compositionHref(dealer, saved.def.id)} className={buttonClasses({ variant: "secondary" })} title={`Spela ${saved.def.name} i Casinot`}>
             <Play /> Prova i Casino
           </Link>

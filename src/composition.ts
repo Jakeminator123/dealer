@@ -16,10 +16,10 @@
 //   - a seat's second card plays the film of its first, the drawn card laid at its own place (återbruk, the game's own rule).
 // Where the hand rests between steps is one tree's (the home): the one with rest films, the largest share first.
 //
-// For now only trees that rest on the same picture (A1) are put together (Jakob 2026-11-23 21.10: "vi helt enkelt INTE får sätta
-// samman nodträd om de är inkompatibla såsom nu"; Casino's hands are bare and Tatuerad's tattooed, and they were mixed in one
-// round): handsProblem says it, a save is refused and the game does not play such a composition. The bridges between rest
-// pictures are kept, for the day trees with different pictures may meet again.
+// Trees that rest on different pictures (A1) have different hands (Casino's are bare, Tatuerad's tattooed). Putting them
+// together was refused from 2026-11-23 21.10; Jakob loosened it 2026-11-24 ("lossa detta förbud"): handsNote says it where
+// such a composition is listed, it is saved, and the game plays it when he chooses it (?komposition=). Nothing is mixed by
+// itself: without the word the game plays only trees in the state spelas. The bridges between rest pictures are theirs.
 // A composition, and a tree in it, may carry a tempo (1 to 2: how many times faster the round's films go; tempoOf).
 import {REVEAL_NODE} from './clip-graph.ts';
 import {GOOD, MEASURE_SIZE, cutBank, measure, nodeCode, type StepKind, type TreeState, type TreeTake, type TreeView, type Verdict} from './dealer-trees.ts';
@@ -138,7 +138,7 @@ export type CompositionView = {
   def: CompositionDef; trees: ViewTree[]; steps: Cover[]; count: CompositionCount; joins: Join[];
   /** The tree the hand rests in between steps (null: no tree has a rest film; she stands still). */
   home: string | null;
-  /** The pictures at rest that differ between the trees: more than one means two kinds of hands in the same round, and the composition is not played (handsProblem). */
+  /** The pictures at rest that differ between the trees: more than one means two kinds of hands in the same round, which is said where the composition is listed (handsNote). */
   looks: string[];
   problems: string[];
 };
@@ -225,19 +225,19 @@ export function compositionView(def: CompositionDef, views: readonly TreeView[],
   return {def, trees, steps, count, joins, home, looks: [...new Set(trees.map(handsOf))], problems};
 }
 
-// ── Which trees may be put together ─────────────────────────────────────────
+// ── Trees with different hands ──────────────────────────────────────────────
 /** The picture a tree's hands are known by: its rest picture (A1, a Material entry); a tree without one is like no other. */
 export const handsOf = (t: {tree: string; rest: string | null}): string => t.rest ?? `${t.tree}:A1`;
-/** The word where such a composition is listed. */
-export const HANDS_WORD = 'spelas inte: olika händer';
+/** The word where such a composition is listed: said, not a stop. */
+export const HANDS_WORD = 'olika händer';
 /**
- * Why a composition's trees may not be put together, in a sentence, or null when they may: they rest on different pictures (A1),
- * so the hands differ within a round. Jakob 2026-11-23, for now. A saved composition of that kind is kept as it is and not played.
+ * What is said of a composition whose trees rest on different pictures (A1), in a sentence, or null when they rest on the same:
+ * the hands change within a round. Information since Jakob 2026-11-24 ("lossa detta förbud"); such a composition is saved and played.
  */
-export function handsProblem(of: {looks?: readonly string[]; trees: readonly {name: string}[]}): string | null {
+export function handsNote(of: {looks?: readonly string[]; trees: readonly {name: string}[]}): string | null {
   if ((of.looks?.length ?? 0) <= 1) return null;
   const names = of.trees.map(t => t.name), list = names.length > 1 ? `${names.slice(0, -1).join(', ')} och ${names.at(-1)}` : names[0] ?? 'Träden';
-  return `${list} har olika händer: trädens vilobild (A1) skiljer. Sådana träd sätts inte samman (Jakob 2026-11-23).`;
+  return `${list} har olika händer: trädens vilobild (A1) skiljer, så händerna byter utseende i rundan.`;
 }
 /** "33/36". */
 export const compositionWord = (c: CompositionCount): string => `${c.have}/${c.total}`;
@@ -280,8 +280,9 @@ export function treeBank<B extends CutBank>(bank: B, cut: Pick<CompositionCut, '
 export type CompositionReply = {status: number; answer: unknown} | null;
 /**
  * The composition the game plays for ?komposition=<word>, and the page's line. Without the word: none, no line. A composition
- * with films: its cut and "Casino snabb 33/36: kort utan film läggs utan hand · fart 2×". Unknown, without films, unreadable, or
- * of trees with different hands (handsProblem): none, and why in plain words; the game then plays as without the word.
+ * with films: its cut and "Casino snabb 33/36: kort utan film läggs utan hand · fart 2×", with "· olika händer" last when its
+ * trees rest on different pictures (handsNote). Unknown, without films or unreadable: none, and why in plain words; the game
+ * then plays as without the word.
  */
 export function compositionPlay(word: string | null, reply: CompositionReply, dealerName: string): {cut: CompositionCut | null; line: string | null} {
   if (word === null) return {cut: null, line: null};
@@ -293,10 +294,10 @@ export function compositionPlay(word: string | null, reply: CompositionReply, de
     return {cut: null, line: `Kompositionen "${word}" kunde inte läsas.${usual}`};
   const name = cut.name ?? word;
   if (!(cut.count.have > 0) || !cut.trees.some(t => t.share > 0)) return {cut: null, line: `${name} har inga filmer än.${usual}`};
-  if (handsProblem({looks: cut.looks, trees: cut.trees as CutTree[]})) return {cut: null, line: `${name} spelas inte: träden har olika händer (olika A1), och sådana sätts inte samman.${usual}`};
   const tempos = [...new Set([tempoValue(cut.tempo), ...(cut.trees as CutTree[]).map(t => tempoValue(t.tempo))].filter((t): t is number => t !== null))];
   const fast = tempos.some(t => t !== 1) ? ` · fart ${tempos.map(tempoWord).join(' och ')}` : '';
-  return {cut: cut as CompositionCut, line: `${name} ${compositionWord(cut.count)}: kort utan film läggs utan hand${fast}`};
+  const hands = handsNote({looks: cut.looks, trees: cut.trees as CutTree[]}) ? ` · ${HANDS_WORD}` : '';
+  return {cut: cut as CompositionCut, line: `${name} ${compositionWord(cut.count)}: kort utan film läggs utan hand${fast}${hands}`};
 }
 
 // ── The composer: which tree plays what, and how the trees are joined ───────

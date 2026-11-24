@@ -4,17 +4,17 @@
 // tree of the dealer: the tree's rest picture (A1), its name, and a thin meter for its number against his measure (22/36); a
 // tree that is being built has a dot, not a word. The choice is in the address (?trad=<id>), so a link opens a given tree.
 // The dealer's compositions (several trees put together) are folded behind ONE button, "Kompositioner 3": it opens a short
-// list, each with the pictures of its trees, its name and its number; one that is not played (trees with different hands,
-// src/composition.ts handsProblem) has a stop mark with the reason as its title, and "Ny komposition" stands last. The
+// list, each with the pictures of its trees, its name and its number; one whose trees have different hands says so under its
+// name (src/composition.ts handsNote: information, not a stop), and "Ny komposition" stands last. The
 // composition that is open (?komposition=<id>, CompositionKarta) is a tab beside the trees for as long as it is open.
 // Prova i Casino after the tabs opens the Casino with the dealer and the chosen tree (lib/casino.ts casinoAddress, ?trad=):
 // the game plays that tree's films only, and a card without a film is laid without a hand (src/game-page.ts).
 // Beside a tree's meter its talk, a count of its own (lib/tree-talk.ts): her lines with a talk film in the tree, "25/25".
-import { Ban, ChevronDown, Layers, Play, Plus, Speech } from "lucide-react";
+import { ChevronDown, Layers, Play, Plus, Speech } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { HANDS_WORD, compositionWord, handsProblem, type CompositionView } from "../../../src/composition.ts";
+import { HANDS_WORD, compositionWord, handsNote, type CompositionView } from "../../../src/composition.ts";
 import { countWord, type TreeView } from "../../../src/dealer-trees.ts";
 import { casinoAddress } from "@/lib/casino";
 import { withDealer } from "@/lib/dealer";
@@ -72,11 +72,11 @@ function Thumbs({ entries, media }: { entries: readonly (string | null)[]; media
 }
 
 /** n/36 as a thin bar and a small number. */
-function Meter({ have, total, stopped = false }: { have: number; total: number; stopped?: boolean }) {
+function Meter({ have, total }: { have: number; total: number }) {
   return (
     <span className="flex items-center gap-1.5">
       <span className="relative block h-[3px] w-11 overflow-hidden rounded-full bg-line-strong">
-        <span className={cn("absolute inset-y-0 left-0 rounded-full", stopped ? "bg-faint" : "bg-brass/85")} style={{ width: `${total ? (100 * have) / total : 0}%` }} />
+        <span className="absolute inset-y-0 left-0 rounded-full bg-brass/85" style={{ width: `${total ? (100 * have) / total : 0}%` }} />
       </span>
       <span className="text-[10px] leading-none tabular-nums text-faint">
         {have}/{total}
@@ -95,7 +95,7 @@ function TalkCount({ talk }: { talk: TreeTalk }) {
   );
 }
 
-/** A name over its meter; mark: a dot or a stop mark after the name. */
+/** A name over its meter; mark: a dot after the name. */
 function Words({ name, mark, children }: { name: string; mark?: ReactNode; children: ReactNode }) {
   return (
     <span className="flex min-w-0 flex-col gap-[5px]">
@@ -108,7 +108,6 @@ function Words({ name, mark, children }: { name: string; mark?: ReactNode; child
   );
 }
 
-const StopMark = () => <Ban aria-label="Spelas inte" className="size-3.5 shrink-0 text-underkand" />;
 
 export function TreeRow({
   trees,
@@ -130,7 +129,7 @@ export function TreeRow({
   const media = useMedia();
   const picked = composition ? null : (trees.find((v) => v.tree.id === chosen) ?? null);
   const open = composition ? (compositions?.find((c) => c.def.id === composition) ?? null) : null;
-  const openStop = open ? handsProblem(open) : null;
+  const openHands = open ? handsNote(open) : null;
   return (
     <div className="flex min-w-0 items-center gap-2">
       <div role="radiogroup" aria-label="Träd" className="flex min-w-0 items-center gap-1 overflow-x-auto [scrollbar-width:none]">
@@ -161,12 +160,12 @@ export function TreeRow({
           );
         })}
         {composition ? (
-          <button type="button" role="radio" aria-checked onClick={() => onCompose?.(composition)} title={openStop ?? (open ? `Komposition: ${open.trees.map((t) => `${t.name} ${Math.round(t.percent)} %`).join(", ")}` : "En komposition som inte är sparad än")} className={tab(true)}>
+          <button type="button" role="radio" aria-checked onClick={() => onCompose?.(composition)} title={open ? `Komposition: ${open.trees.map((t) => `${t.name} ${Math.round(t.percent)} %`).join(", ")}${openHands ? `. ${openHands}` : ""}` : "En komposition som inte är sparad än"} className={tab(true)}>
             {open ? (
               <>
                 <Thumbs entries={open.trees.map((t) => t.rest)} media={media} />
-                <Words name={open.def.name} mark={openStop ? <StopMark /> : null}>
-                  <Meter have={open.count.have} total={open.count.total} stopped={!!openStop} />
+                <Words name={open.def.name}>
+                  <Meter have={open.count.have} total={open.count.total} />
                 </Words>
               </>
             ) : (
@@ -252,8 +251,8 @@ function CompositionMenu({ compositions, composition, media, onCompose }: { comp
         ? createPortal(
             <div ref={list} role="menu" aria-label="Kompositioner" style={{ left: at.left, top: at.top, width: MENU_WIDTH }} className="fixed z-50 flex max-h-[70vh] flex-col gap-0.5 overflow-y-auto rounded-lg border border-line-strong bg-surface p-1.5 shadow-pop">
               {compositions.map((c) => {
-                // Trees with different hands are not put together (Jakob 2026-11-23): a saved one of that kind is kept, and marked.
-                const stop = handsProblem(c);
+                // Trees with different hands: said under the name, as information (Jakob 2026-11-24).
+                const hands = handsNote(c);
                 return (
                   <button
                     key={c.def.id}
@@ -261,15 +260,14 @@ function CompositionMenu({ compositions, composition, media, onCompose }: { comp
                     role="menuitemradio"
                     aria-checked={composition === c.def.id}
                     onClick={() => choose(c.def.id)}
-                    title={stop ?? `${c.trees.map((t) => `${t.name} ${Math.round(t.percent)} %`).join(", ")}. ${compositionWord(c.count)} steg har en film, varav ${c.count.own} egna`}
+                    title={`${c.trees.map((t) => `${t.name} ${Math.round(t.percent)} %`).join(", ")}. ${compositionWord(c.count)} steg har en film, varav ${c.count.own} egna${hands ? `. ${hands}` : ""}`}
                     className={row(composition === c.def.id)}
                   >
                     <Thumbs entries={c.trees.map((t) => t.rest)} media={media} />
                     <Words name={c.def.name}>
-                      <Meter have={c.count.have} total={c.count.total} stopped={!!stop} />
-                      {stop ? <span className="text-[11px] leading-tight text-underkand first-letter:uppercase">{HANDS_WORD}</span> : null}
+                      <Meter have={c.count.have} total={c.count.total} />
+                      {hands ? <span className="text-[11px] leading-tight text-dim first-letter:uppercase">{HANDS_WORD}</span> : null}
                     </Words>
-                    {stop ? <span className="ml-auto"><StopMark /></span> : null}
                   </button>
                 );
               })}

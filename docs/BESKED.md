@@ -138,8 +138,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   hur det ses från stolen, "inte tidpunkt", och kameran "känns högre än kamera frammifrån".
 - **Träd läggs ihop till en komposition** (2026-11-23): nodträd kombineras med andelar ("A2.3 … 20% och 80% A2.1"), varianter
   likaså; en retur går hem till sitt eget A2, med skarv eller kort brygga emellan. Alla vyer ska hänga ihop med träden.
-- **Bara träd som passar ihop** (2026-11-23 kl. 21.10): "för nu … INTE får sätta samman nodträd om de är inkompatibla såsom
-  nu" (olika händer). Det tatuerade trädet byggs vidare; A2.1 görs om med hennes mindre händer och tatueringar.
+- **Träd med olika händer får sättas samman igen** (2026-11-24, i dealer-5b:s chatt): "lossa detta förbud, och andra förbud som ska
+  granskas.. Återkom med suspekta förbud.." Karta säger "olika händer" som upplysning; en sådan spelas bara när han väljer den.
 - **Tatuerads A2.1 och vilor** (2026-11-23 kl. 22.46 och 23.01, Beslut): ja till A2.1-bilden (`paow-nyp-tatuerad`; givarna från
   A2.1 görs om från den genom dockan) och till Casinots vilor med de tatuerade händerna inlagda ("Myckert bra").
 - **Bara de tatuerade filmerna i spelet** (2026-11-24 kl. 02): "vi ska köra enbart med hennes nya händer och de tatuerade klippen".

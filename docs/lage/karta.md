@@ -7,14 +7,14 @@ Vyn Karta, dealerns träd och hur de hänger ihop med Material, Scen & bord, Gra
 - Ett träd är en uppsättning ankare ur Material (`data/dealer-trees.json`). Filmerna står inte där:
   `tools/dealer-tree.ts` lägger varje film i trädet vars ankare är dess första och sista bild och svarar Karta genom
   `GET /api/trees`. Måttet är 36 steg, en giv per kort (`src/dealer-trees.ts`).
-- Paow har fyra träd: Casino 22/36 (det spelet spelar, händer utan tatueringar), Ingången (ÄR Casino: `shares: casino`
-  och filmen före spelet som väg in), Tatuerad 20/36 (byggs; hon skjuter kortet från A2.3) och Tatuerad nyp 1/36 (byggs;
-  hon nyper från A2.1 `paow-nyp-tatuerad`; hans ord 2026-11-24). Ett utdelningssätt är ett träd.
+- Paow har fyra träd: Tatuerad 22/36 (det spelet spelar sedan 2026-11-24; hon skjuter kortet från A2.3), Tatuerad nyp
+  1/36 (byggs; hon nyper från A2.1 `paow-nyp-tatuerad`), Casino (vilar; händer utan tatueringar) och Ingången (vilar; ÄR
+  Casino: `shares: casino`, filmen före spelet som väg in). Ett utdelningssätt är ett träd.
 - De två tatuerade träden vilar på samma A1. En film som bara står på den bilden (vila, tal, hålkort) är Tatuerads, det
   första i registret; nypet lånar den i en komposition. En film från `paow-nyp-tatuerad` hamnar i Tatuerad nyp av sin
   första bild, vad ordern än hette; `node tools/order-new.ts … --trad tatuerad-nyp` vägrar ett annat träds ankare.
-- Utan `?trad=` spelar spelet bara träd med läget `spelas` (nu Casino), ett enda som `?trad=`. Tatuerad blir spelet med
-  `casino` och `ingangen` på `vilar`, `tatuerad` på `spelas` (hans ord).
+- Utan `?trad=` spelar spelet bara träd med läget `spelas` (nu Tatuerad), ett enda som `?trad=`. Casino och Ingången
+  vilar och spelas med `?trad=casino` (hans ord 2026-11-24).
 - En komposition lägger ihop träd (`data/dealer-compositions.json`, `src/composition.ts`, `tools/dealer-composition.ts`
   bakom `/api/compositions`): andel per träd och per film på ett steg, lån av steg ett träd saknar, returen hem till sitt
   eget ankare och kort 2 på kort 1:s film. Chips efter träden i Karta; labbets spel spelar den med `?komposition=<id>`
@@ -22,12 +22,12 @@ Vyn Karta, dealerns träd och hur de hänger ihop med Material, Scen & bord, Gra
 - `tatuerad-skjut-nyp` är skjutet och nypet i en runda (50/50; andelen sätts i Karta). Där nypet saknar film spelar
   skjutet. Träden möts i vilan: utan brygga vid skon byter handen sätt bara när ett steg börjar eller filmen saknas, med
   brygga (film eller klipp, väljs i Karta) kort för kort.
-- Träd med olika A1 (olika händer) sätts inte samman (Jakob 2026-11-23): spara vägras, spelet spelar inte en sådan, och
-  Paows tre med Casino visas "spelas inte: olika händer".
+- Träd med olika A1 (olika händer) går att sätta samman igen (Jakob 2026-11-24): Karta säger "olika händer" som
+  upplysning, och en sådan spelas bara när han väljer den med `?komposition=`; utan ordet bara träd med läget `spelas`.
 - Tal räknas för sig, på A1 och i panelen Tal (`studio/lib/tree-talk.ts`); Tatuerad 24/25.
 - Ett steg visar spelets förstaval; utan Primär (hans klick, låser steget) spelar spelet stegets godkända filmer i tur,
   returen efter sin giv (BESKED). Klipp arkiveras och tas tillbaka i Karta.
-- Ett ankare kan bära `seat` 1–7: trädet från den stolens kamera, aldrig spelat som rak film eller i en komposition.
+- Ankare med `seat` 1–7 är trädet från den stolens kamera, aldrig spelat rakt; Tatuerad har A2.3 från sex stolar.
 
 **Nästa steg.**
 1. Nypet: givarna från `paow-nyp-tatuerad` (plats 4, sedan 1, 2, 3, 5, 7) fyller trädet när de är godkända. Saknas med
