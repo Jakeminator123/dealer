@@ -154,7 +154,9 @@ export function createStage(canvas: HTMLCanvasElement, plan: Plan, options: {loo
     if (read) { const at = Math.min(read.frameCount - 1, now * read.fps), i = Math.min(read.frameCount - 2, Math.floor(at)), k = at - i; let a = read.frames[i], b = read.frames[i + 1];
       for (const l of lying) l.mesh.visible = at >= l.from - 0.5;
       if (a.card.id !== b.card.id) { const whole = k < 0.5 ? a : b; a = {...a, card: whole.card}; b = {...b, card: whole.card}; } // between two frames of two different cards there is no card half way
-      const long = norm(mix(a.card.l, b.card.l, k)), toward = mix(a.card.n, b.card.n, k), d = toward[0] * long[0] + toward[1] * long[1] + toward[2] * long[2], normal = norm([toward[0] - long[0] * d, toward[1] - long[1] * d, toward[2] - long[2] * d]);
+      // (a card and the same card with its ends swapped are one, and a motion may give its long side either way from one frame to the next: half way between the two ways is no way, and drew the card turned wrong for a moment)
+      const bl = a.card.l[0] * b.card.l[0] + a.card.l[1] * b.card.l[1] + a.card.l[2] * b.card.l[2] < 0 ? b.card.l.map(x => -x) : b.card.l;
+      const long = norm(mix(a.card.l, bl, k)), toward = mix(a.card.n, b.card.n, k), d =toward[0] * long[0] + toward[1] * long[1] + toward[2] * long[2], normal = norm([toward[0] - long[0] * d, toward[1] - long[1] * d, toward[2] - long[2] * d]);
       c = {centre: mix(a.card.c, b.card.c, k), long, normal, across: cross(normal, long)};
       const limbOf = (side: 'L' | 'R') => ({shoulder: mix(a[side].s, b[side].s, k), elbow: mix(a[side].e, b[side].e, k), wrist: mix(a[side].w, b[side].w, k)}), R = limbOf('R'), L = limbOf('L');
       jointed[0].set(a.R.p.map((p, j) => mix(p, b.R.p[j], k))); jointed[1].set(a.L.p.map((p, j) => mix(p, b.L.p[j], k)));

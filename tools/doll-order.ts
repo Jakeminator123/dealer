@@ -5,11 +5,15 @@
 //   2. dealer3d/tools/render-reference.ts   the doll's film of it (headless Chrome under the shared lock, about a minute)
 //   3. tools/doll-reference-put.ts      the film into assets/references/docka/ and data/rendered-references.json
 //   4. tools/order-new.ts               the draft: giv och återgång in one film, the doll's film as reference, template 15;
-//                                       a landing other than the default (dealer3d/src/landing.ts) adds its sentence to the text,
-//                                       and so does a card's tempo over 100 % (Kortets fart: only the card's hands are quicker)
+//                                       the turn in her hand (dealer3d/src/turn-in-hand.ts, "I handen") adds its sentence to the
+//                                       text, and so do a landing other than the default (dealer3d/src/landing.ts) and a card's
+//                                       tempo over 100 % (Kortets fart: only the card's hands are quicker)
 //
-//   node tools/doll-order.ts <dealer> <P6.C1|D.C2> [--mall 15] [--flat-hand] [--dry]
+//   node tools/doll-order.ts <dealer> <P6.C1|D.C2> [--mall 15] [--flat-hand] [--vandning forut|i-handen] [--dry]
 //
+// The turn is the saved standard's (`lab.turn`), or --vandning's on top of it. Where the turn asked for does not go at
+// the card's tempo saved (the cycle tool's line "vändning <id> (går inte här: …)"), the doll's film would turn the card as
+// before while the text says the hand turns it: nothing is rendered and the draft is not made.
 // Her own card lies closed or open as the doll laid it (the cycle tool's line "sida ..."), and the order's text says the
 // side the plan says (placements/default.json): where the two differ nothing is rendered and the draft is not made.
 //
@@ -25,10 +29,12 @@ import { StoreError } from './placement-store.ts';
 import { newCommand, stepOfNotation } from './order-new.ts';
 import { STEPS, edgeOf } from '../src/order-model.ts';
 import { LANDINGS, LANDING_DEFAULT } from '../dealer3d/src/landing.ts';
+import { TURNS, TURN_DEFAULT, type TurnId } from '../dealer3d/src/turn-in-hand.ts';
 
 const run = promisify(execFile);
 
-export type DollOrderAsk = { dealer: string; place: string; template?: number; flatHand?: boolean };
+/** `turn`: the turn in her hand to lay on top of the saved standard (docka-cykel.ts --vandning); left out, the standard's. */
+export type DollOrderAsk = { dealer: string; place: string; template?: number; flatHand?: boolean; turn?: TurnId };
 export type DollOrderPlan = { dealer: string; doll: string; place: string; notation: string; edge: string; name: string; film: string; motion: string; title: string };
 
 /** What the order will be called and where its files go: a new name each time, since a film made again gets a new id. */
@@ -56,10 +62,31 @@ export function dollOrderPlan(root: string, ask: DollOrderAsk): DollOrderPlan {
 /** What the text says of a card's tempo over 100 % (BESKED "Snabbare: bara händerna med kortet"): the film shows it, the text keeps the rest of her unhurried. */
 export const CARD_TEMPO_SENTENCE = 'Only the card and the hands holding it move quickly, as in video 1; her head, her gaze and her free hand keep an ordinary, unhurried pace.';
 
+/**
+ * What the cycle tool said it laid (dealer3d/tools/docka-cykel.ts's lines), as the order needs it: the film's length, the
+ * standard, the card's tempo, the turn in her hand and the landing where they are not the default, and the sentences the
+ * order's text adds for them, so that the text says the same as the film shows. Throws where the film and the text would
+ * part: her own card on another side than the plan's (line "sida …"), or a turn that does not go here (line "vändning
+ * <id> (går inte här: …)": the doll then turns the card as before).
+ */
+export function readLaid(place: string, laid: string) {
+  const seconds = /--seconds (\d+(?:\.\d+)?) --fps 24/.exec(laid)?.[1];
+  if (!seconds) throw new StoreError(500, 'Dockans rörelse sade inte hur lång den är.');
+  const sides = /^sida (\S+) \(planen: ([^)]+)\)/m.exec(laid);
+  if (sides && sides[1] !== sides[2]) throw new StoreError(409, `${place}: dockan lägger kortet ${sides[1]}, men kortplanen säger ${sides[2]}, och beställningens text följer planen. Välj samma sida i docklabbet och spara, eller ändra kortplanen.`);
+  const turned = /^vändning (\S+)(?: \(går inte här: ([^;)]+))?/m.exec(laid), found = TURNS.find((t) => t.id === turned?.[1]);
+  if (found && found.id !== TURN_DEFAULT && turned?.[2]) throw new StoreError(409, `${place}: vändningen "${found.label}" går inte här (${turned[2]}), så dockans film skulle vända kortet som förut medan texten säger att handen vänder det. Lägg en vändning som går i docklabbet (vid hög kortets fart: sänk farten) och spara.`);
+  const turn = found && found.id !== TURN_DEFAULT ? found : null, landing = LANDINGS.find((l) => l.id === /^landning (\S+)/m.exec(laid)?.[1]);
+  const tempo = Number(/^kortets fart (\d+) %/m.exec(laid)?.[1] ?? 100), standard = /hans standard (\S+?),/.exec(laid)?.[1] ?? null;
+  const sentences = [turn?.sentence ?? null, landing && landing.id !== LANDING_DEFAULT ? landing.sentence : null, tempo !== 100 ? CARD_TEMPO_SENTENCE : null].filter((x): x is string => !!x);
+  return { seconds, standard, tempo, turn, landing: landing ?? null, sentences };
+}
+
 /** Makes the doll's film from the saved movement and the draft that orders with it; returns what the command prints. */
 export async function dollOrder(root: string, ask: DollOrderAsk, options: { dry?: boolean } = {}): Promise<Record<string, unknown>> {
+  if (ask.turn !== undefined && !TURNS.some((t) => t.id === ask.turn)) throw new StoreError(400, `Vändningen ska vara en av ${TURNS.map((t) => t.id).join(', ')}.`);
   const plan = dollOrderPlan(root, ask);
-  if (options.dry) return { ok: true, dry: true, ...plan };
+  if (options.dry) return { ok: true, dry: true, ...plan, ...(ask.turn ? { turn: ask.turn } : {}) };
   const node = async (what: string, args: string[]) => {
     try { return (await run(process.execPath, args, { cwd: root, maxBuffer: 32 * 1024 * 1024, windowsHide: true })).stdout; }
     catch (error) {
@@ -69,28 +96,18 @@ export async function dollOrder(root: string, ask: DollOrderAsk, options: { dry?
     }
   };
   const [from, to] = plan.edge.split('>'), folder = path.join(root, '.runtime', 'docka-bestall'), out = path.join(folder, plan.name);
-  const laid = await node('Dockans rörelse', ['dealer3d/tools/docka-cykel.ts', '--to', plan.place, '--out', plan.motion, '--doll', plan.doll, ...(ask.flatHand ? ['--flat-hand'] : [])]);
+  const laid = await node('Dockans rörelse', ['dealer3d/tools/docka-cykel.ts', '--to', plan.place, '--out', plan.motion, '--doll', plan.doll, ...(ask.flatHand ? ['--flat-hand'] : []), ...(ask.turn ? ['--vandning', ask.turn] : [])]);
   try {
-    const seconds = /--seconds (\d+(?:\.\d+)?) --fps 24/.exec(laid)?.[1];
-    if (!seconds) throw new StoreError(500, 'Dockans rörelse sade inte hur lång den är.');
-    // (her own card: the side the doll laid it with against the plan's, which the order's text says)
-    const sides = /^sida (\S+) \(planen: ([^)]+)\)/m.exec(laid);
-    if (sides && sides[1] !== sides[2]) throw new StoreError(409, `${plan.place}: dockan lägger kortet ${sides[1]}, men kortplanen säger ${sides[2]}, och beställningens text följer planen. Välj samma sida i docklabbet och spara, eller ändra kortplanen.`);
+    const { seconds, standard, tempo, turn, landing, sentences } = readLaid(plan.place, laid);
     mkdirSync(folder, { recursive: true });
     rmSync(out, { recursive: true, force: true });
     await node('Dockans film', ['dealer3d/tools/render-reference.ts', '--motion', plan.motion, '--out', out, '--seconds', seconds, '--fps', '24']);
-    const standard = /hans standard (\S+?),/.exec(laid)?.[1] ?? null;
-    const tempo = Number(/^kortets fart (\d+) %/m.exec(laid)?.[1] ?? 100);
-    const note = `Gjord från Scen & bord, Kortplan: ${standard ? `hans sparade standard ${standard}` : 'ingen sparad standard, Naturlig som förval'}, giv och återgång i en film${tempo !== 100 ? `, kortets fart ${tempo} %` : ''}.`;
+    const note = `Gjord från Scen & bord, Kortplan: ${standard ? `hans sparade standard ${standard}` : 'ingen sparad standard, Naturlig som förval'}, giv och återgång i en film${turn ? `, vändningen ${turn.label.toLowerCase()}` : ''}${tempo !== 100 ? `, kortets fart ${tempo} %` : ''}.`;
     await node('Registret över dockans filmer', ['tools/doll-reference-put.ts', out, '--id', plan.film, '--from', from, '--to', to, '--shape', 'ROUND_TRIP', '--doll', plan.doll, '--lays', 'RH', '--motion', plan.motion, '--note', note]);
     rmSync(out, { recursive: true, force: true });
-    // The hand's landing at the laid card as the doll laid it (the cycle tool's line "landning <id>"), and the card's tempo
-    // (its line "kortets fart N %"): the text says the same as the film shows.
-    const landing = LANDINGS.find((l) => l.id === /^landning (\S+)/m.exec(laid)?.[1]);
-    const sentences = [landing && landing.id !== LANDING_DEFAULT ? landing.sentence : null, tempo !== 100 ? CARD_TEMPO_SENTENCE : null].filter((x): x is string => !!x);
     const said = sentences.length ? ['--extra-efter', sentences.join(' ')] : [];
     const draft = await newCommand(root, [plan.dealer, plan.notation, '--tur-retur', '--docka', plan.doll, '--mall', String(ask.template ?? 15), '--sekunder', String(Math.round(Number(seconds))), '--title', plan.title, ...said]);
-    return { ok: true, dry: false, id: draft.id, title: draft.title, place: plan.place, film: plan.film, motion: plan.motion, standard, landing: landing?.id ?? null, cardTempo: tempo, seconds: draft.seconds, cost: draft.cost, notes: draft.notes };
+    return { ok: true, dry: false, id: draft.id, title: draft.title, place: plan.place, film: plan.film, motion: plan.motion, standard, turn: turn?.id ?? null, landing: landing?.id ?? null, cardTempo: tempo, seconds: draft.seconds, cost: draft.cost, notes: draft.notes };
   } catch (error) {
     // a movement that got no film in the register is taken away again, so that the name is free
     const kept = existsSync(path.join(root, 'assets', 'references', 'docka', plan.film));
@@ -104,9 +121,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const root = path.resolve(fileURLToPath(new URL('../', import.meta.url)));
   try {
     if (path.resolve(process.cwd()).toLowerCase() !== root.toLowerCase()) throw new StoreError(400, 'Kör från dealer-katalogen.');
-    const args = process.argv.slice(2), at = args.indexOf('--mall'), template = at > 0 ? Number(args[at + 1]) : undefined;
-    const plain = args.filter((a, i) => !a.startsWith('--') && (at < 0 || i !== at + 1));
-    if (plain.length !== 2 || (at > 0 && !Number.isInteger(template))) throw new StoreError(400, 'Använd: node tools/doll-order.ts <dealer> <P6.C1|D.C2> [--mall 15] [--flat-hand] [--dry]');
-    console.log(JSON.stringify(await dollOrder(root, { dealer: plain[0], place: plain[1], template, flatHand: args.includes('--flat-hand') }, { dry: args.includes('--dry') }), null, 2));
+    const args = process.argv.slice(2), at = args.indexOf('--mall'), template = at > 0 ? Number(args[at + 1]) : undefined, tv = args.indexOf('--vandning'), turn = tv >= 0 ? args[tv + 1] as TurnId : undefined;
+    const plain = args.filter((a, i) => !a.startsWith('--') && (at < 0 || i !== at + 1) && (tv < 0 || i !== tv + 1));
+    if (plain.length !== 2 || (at > 0 && !Number.isInteger(template)) || (tv >= 0 && !turn)) throw new StoreError(400, 'Använd: node tools/doll-order.ts <dealer> <P6.C1|D.C2> [--mall 15] [--flat-hand] [--vandning forut|i-handen] [--dry]');
+    console.log(JSON.stringify(await dollOrder(root, { dealer: plain[0], place: plain[1], template, flatHand: args.includes('--flat-hand'), ...(turn ? { turn } : {}) }, { dry: args.includes('--dry') }), null, 2));
   } catch (error) { console.error(`[RÖD] ${(error as Error).message}`); process.exitCode = 1; }
 }
