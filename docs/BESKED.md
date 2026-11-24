@@ -195,8 +195,8 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
   vridning och axlar är reglage, fingrarna visar hur de verkar på kortet; allt "kompatibelt med material skapat".
 - **Ett ställe för dockan** (2026-11-23, i dealer-19:s chatt): Kortplan och Docka "känns som typ samma sak"; "EN väg
   och ETT ställe man använder dockan".
-- **Dockan från A2.1 görs om, ett sätt, samma kort** (2026-11-24): dockans filmer från A2.1 är "svindåliga"; rörelserna rättas, inga "dubbla sätt
-  att generera sådana filmer", prickar och kryss på dockans kort som i Kortplan, och planens val följer "vad so mär anatomiskt möjligt".
+- **Dockan från A2.1 görs om, enklare, samma kort** (2026-11-24): dockans filmer från A2.1 är "svindåliga" och rörelserna rättas. Inga "dubbla
+  sätt" eller "dubbla BUD MED DOCKORNA OCH KORTBANER": kortbanan kommer ur dockan, planens val följer vad som är anatomiskt möjligt; båda ställningarna är kvar.
 - **Dockan framåt** (2026-11-23): en giv till en spelare tar 2 s som förval, valbart i Docka. För framtiden: A2.2 ur
   fotot, och dockan tar över Siluetten i Scen & Bord med valen som finns där.
 - **Skon** (2026-11-23): "Se över och fixa så allt blir rätt bara": den ritade skon i 3D-scenen flyttas till filmens
@@ -204,6 +204,7 @@ versionen: `c7bd6fe`). Det som väntar på hans svar står som kort i Beslut (`d
 - **3D-labbet har samma standard som allt övrigt** (2026-11-23): "det ska vara och ha samam standard som allt övrigt".
   En egen standard där kan vara skälet till att dockan ser ihoptryckt ut.
 - **Nej till Meshy-modellen av Paow** (2026-11-18); ja till att avlästa leder styr en klädd figur (2026-11-20).
+- **Landningsbilderna är arkiverade** (2026-11-24): "Arkivera - landningsbilderna - ja!" Giv och återgång i en film behöver ingen A3-bild.
 - **A3P6C1 ges utan sista bild** (2026-11-23): ingen genererad A3-bild för plats 6; given dit beställs med dockans film
   som ledning när dockan har hans ja.
 - **Dealern från en annan stol** (2026-11-18): sidans kamera har samma höjd och lutning som den i mitten, bara flyttad

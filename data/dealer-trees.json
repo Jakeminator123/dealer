@@ -36,7 +36,7 @@
           "anchors": [
             {"entry": "paow-vila-tatuerad"},
             {"entry": "paow-ankare-2-3-d"},
-            {"entry": "paow-a3-p4-ur-film-1120"},
+            {"entry": "paow-ankare-2-3-marke"},
             {"entry": "paow-ankare-2-3-c"},
             {"entry": "paow-ankare-2-3-d-stol-1", "seat": 1},
             {"entry": "paow-ankare-2-3-d-stol-2", "seat": 2},
@@ -45,7 +45,7 @@
             {"entry": "paow-ankare-2-3-d-stol-6", "seat": 6},
             {"entry": "paow-ankare-2-3-d-stol-7", "seat": 7}
           ],
-          "note": "What the game plays since 2026-11-24 (Jakob: \"vi ska köra enbart med hennes nya händer och de tatuerade klippen\"). The tattooed set where she pushes the card out, from A2.3 (Jakob 2026-11-21; 2026-11-24: \"A2.3 så skjuter hon ut kort\"): A1 paow-vila-tatuerad; A2.3 paow-ankare-2-3-d with two hands, the anchor at the shoe, her gaze down on the card (Jakob 2026-11-23 in Beslut: \"Ja, byt blicken\"). It has no A2.2: he archived paow-ankare-2-2-blick-a in Material 2026-11-23 (\"Ser inte att den används\"), and no film of the tree started there. paow-ankare-2-3-c was the A2.3 until then, the same picture with her gaze to the side: it stays among the anchors, after the one that holds, so that the films that begin or end on it stay in the tree until they are remade (the first anchor given for a node is the node's picture). The A3 anchor for P4 is taken from the first deal of that earlier A2.3. It stands before Tatuerad nyp, so the films on their common A1 (rest, talk, the hole card) are this tree's. Her tattooed A2.1 is the tree Tatuerad nyp."
+          "note": "What the game plays since 2026-11-24 (Jakob: \"vi ska köra enbart med hennes nya händer och de tatuerade klippen\"). The tattooed set where she pushes the card out, from A2.3 (Jakob 2026-11-21; 2026-11-24: \"A2.3 så skjuter hon ut kort\"): A1 paow-vila-tatuerad; A2.3 paow-ankare-2-3-d with two hands, the anchor at the shoe, her gaze down on the card (Jakob 2026-11-23 in Beslut: \"Ja, byt blicken\"). It has no A2.2: he archived paow-ankare-2-2-blick-a in Material 2026-11-23 (\"Ser inte att den används\"), and no film of the tree started there. paow-ankare-2-3-c was the A2.3 until then, the same picture with her gaze to the side: it stays among the anchors, after the one that holds, so that the films that begin or end on it stay in the tree until they are remade (the first anchor given for a node is the node's picture). paow-ankare-2-3-marke is the same picture changed only in the shoe's window (no white round the card, the mark on the yellow side); it holds in Material since 2026-11-23, so a new order starts on it, and it stands after the picture the films in the bank start on until they are remade or their shoe window is laid in. The tree has no A3: he archived the landing pictures 2026-11-24 (\"Arkivera - landningsbilderna - ja!\"); giv and return in one film needs none. It stands before Tatuerad nyp, so the films on their common A1 (rest, talk, the hole card) are this tree's. Her tattooed A2.1 is the tree Tatuerad nyp."
         },
         {
           "id": "tatuerad-nyp",

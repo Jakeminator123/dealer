@@ -4000,7 +4000,7 @@
           "node": "LAND(P4.C1)",
           "card": "P4.C1",
           "hand": "RH",
-          "state": "kandidat",
+          "state": "arkiverad",
           "builtOn": [
             "paow-ankare-2-3-a"
           ],
@@ -4008,7 +4008,8 @@
           "source": {
             "from": "gjord: a3-p4-ip.png",
             "when": "2026-11-18"
-          }
+          },
+          "stateBy": "Jakob 2026-11-24 04:59: kandidat → arkiverad (hans besked i chatten: \"Arkivera - landningsbilderna - ja!\"; fört in av dealer-d1)"
         },
         {
           "id": "paow-a3-p1",
@@ -4018,7 +4019,7 @@
           "node": "LAND(P1.C1)",
           "card": "P1.C1",
           "hand": "RH",
-          "state": "kandidat",
+          "state": "arkiverad",
           "builtOn": [
             "paow-ankare-2-3-a"
           ],
@@ -4026,7 +4027,8 @@
           "source": {
             "from": "gjord: a3-p1-nb.png",
             "when": "2026-11-18"
-          }
+          },
+          "stateBy": "Jakob 2026-11-24 04:59: kandidat → arkiverad (hans besked i chatten: \"Arkivera - landningsbilderna - ja!\"; fört in av dealer-d1)"
         },
         {
           "id": "paow-a3-p5",
@@ -4036,7 +4038,7 @@
           "node": "LAND(P5.C1)",
           "card": "P5.C1",
           "hand": "RH",
-          "state": "kandidat",
+          "state": "arkiverad",
           "builtOn": [
             "paow-ankare-2-3-a"
           ],
@@ -4044,7 +4046,8 @@
           "source": {
             "from": "gjord: t4-slut.png",
             "when": "2026-11-18"
-          }
+          },
+          "stateBy": "Jakob 2026-11-24 04:59: kandidat → arkiverad (hans besked i chatten: \"Arkivera - landningsbilderna - ja!\"; fört in av dealer-d1)"
         },
         {
           "id": "docka-2-3-p4c1-h24",
@@ -4332,12 +4335,13 @@
           "node": "LAND(P4.C1)",
           "card": "P4.C1",
           "hand": "RH",
-          "state": "kandidat",
+          "state": "arkiverad",
           "note": "A3 för P4C1 med höger hand vid kortet, gjord med landningsverktyget.",
           "source": {
             "from": "gjord: kalla-p4-d.png",
             "when": "2026-11-20"
-          }
+          },
+          "stateBy": "Jakob 2026-11-24 04:59: kandidat → arkiverad (hans besked i chatten: \"Arkivera - landningsbilderna - ja!\"; fört in av dealer-d1)"
         },
         {
           "id": "paow-a3-p4-23c",
@@ -4347,12 +4351,13 @@
           "node": "LAND(P4.C1)",
           "card": "P4.C1",
           "hand": "RH",
-          "state": "kandidat",
+          "state": "arkiverad",
           "note": "A3 för P4C1 med höger hand vid kortet, gjord med landningsverktyget.",
           "source": {
             "from": "gjord: kalla-p4-e.png",
             "when": "2026-11-20"
-          }
+          },
+          "stateBy": "Jakob 2026-11-24 04:59: kandidat → arkiverad (hans besked i chatten: \"Arkivera - landningsbilderna - ja!\"; fört in av dealer-d1)"
         },
         {
           "id": "paow-a3-p4-ur-film-1120",
@@ -4362,7 +4367,7 @@
           "node": "LAND(P4.C1)",
           "card": "P4.C1",
           "hand": "RH",
-          "state": "kandidat",
+          "state": "arkiverad",
           "builtOn": [
             "paow-ankare-2-3-c"
           ],
@@ -4370,7 +4375,8 @@
           "source": {
             "from": "ruta 72 ur pilotgiven från ankare 2.3 C, tagning 1 (Runway-uppdrag 2e5704dc; receipt.json bredvid bilden)",
             "when": "2026-11-20"
-          }
+          },
+          "stateBy": "Jakob 2026-11-24 04:59: kandidat → arkiverad (hans besked i chatten: \"Arkivera - landningsbilderna - ja!\"; fört in av dealer-d1)"
         },
         {
           "id": "paow-a3-p4c2-ur-paow-giv-2-3-p4-c2-01",
@@ -4380,7 +4386,7 @@
           "node": "LAND(P4.C2)",
           "card": "P4.C2",
           "hand": "RH",
-          "state": "kandidat",
+          "state": "arkiverad",
           "builtOn": [
             "paow-ankare-2-3-c"
           ],
@@ -4388,7 +4394,8 @@
           "source": {
             "from": "ruta 68 ur given A2.3 → A3P4C2, tagning 1",
             "when": "2026-11-21"
-          }
+          },
+          "stateBy": "Jakob 2026-11-24 04:59: kandidat → arkiverad (hans besked i chatten: \"Arkivera - landningsbilderna - ja!\"; fört in av dealer-d1)"
         },
         {
           "id": "paow-ankare-2-3-utan-vit-linje",
