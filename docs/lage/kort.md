@@ -34,7 +34,7 @@ bara det som gäller nu; kontraktet står i `docs/SYSTEM.md`, "Ritade kort".
    med P1/P7 intakta. Rundans behov täcks 22/22; 9 egna givar och 14 återbruk ger 23/24 kortlägen. DC3 är nästa steg.
 2. `data/media-fit.json` är ommätt. Kör `node tools/media-audit.ts --fit --write` igen när plan, lins eller ankare ändras.
 3. Grafiken på kortet ([BESKED](../BESKED.md), "Grafiken på kortet"): gul rygg (SG får stå kvar) och blå framsida, lika i labbet och spelet, på kortmodellens spår. Styvt kort (23/24 A2.3-givar, `styvt_kort.ts`): Scens förval,
-   och Casinots när hans Överlägg i handen är på; en storlek från hand till bord. Provfilmen `paow-giv-2-3-p4-03` gjorde gula sidans kryss till en röd hörnprick: granska det i första filmen från märkt A2.3.
+   och Casinots när Överlägg i handen är på (senare förval, hans ord: `DEFAULTS.cardInHand`, `cardsChoice`); en storlek från hand till bord. Provfilmen `paow-giv-2-3-p4-03` gjorde gula sidans kryss till en röd hörnprick: granska det i första filmen från märkt A2.3.
 4. Ta bort kravet på två vyer i planfilen (`validatePlan` kräver ännu båda), utan att planfilen skrivs av en agent.
 
 **Väntar på Jakob.** Inget utanför Beslut.
